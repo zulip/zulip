@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from __future__ import absolute_import
 
 import optparse
 import os
@@ -12,6 +13,10 @@ import traceback
 
 from six.moves.urllib.parse import urlunparse
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 from tornado import httpclient
 from tornado import httputil
 from tornado import gen
@@ -19,7 +24,8 @@ from tornado import web
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler, websocket_connect
 
-if False: from typing import Any, Callable, Generator, Optional
+if False:
+    from typing import Any, Callable, Generator, List, Optional
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
@@ -38,6 +44,13 @@ behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
 """)
 
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+from tools.lib.test_script import (
+    get_provisioning_status,
+)
+
 parser.add_option('--test',
                   action='store_true', dest='test',
                   help='Use the testing database and ports')
@@ -50,24 +63,46 @@ parser.add_option('--no-clear-memcached',
                   action='store_false', dest='clear_memcached',
                   default=True, help='Do not clear memcached')
 
+parser.add_option('--force', dest='force',
+                  action="store_true",
+                  default=False, help='Run command despite possible problems.')
+
+parser.add_option('--enable-tornado-logging', dest='enable_tornado_logging',
+                  action="store_true",
+                  default=False, help='Enable access logs from tornado proxy server.')
+
 (options, arguments) = parser.parse_args()
+
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
 
 if options.interface is None:
     user_id = os.getuid()
     user_name = pwd.getpwuid(user_id).pw_name
-    if user_name == "vagrant":
+    if user_name in ["vagrant", "zulipdev"]:
         # In the Vagrant development environment, we need to listen on
         # all ports, and it's safe to do so, because Vagrant is only
-        # exposing certain guest ports (by default just 9991) to the host.
-        options.interface = ""
+        # exposing certain guest ports (by default just 9991) to the
+        # host.  The same argument applies to the remote development
+        # servers using username "zulipdev".
+        options.interface = None
     else:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
+elif options.interface == "":
+    options.interface = None
 
+runserver_args = [] # type: List[str]
 base_port = 9991
 if options.test:
     base_port = 9981
     settings_module = "zproject.test_settings"
+    # Don't auto-reload when running casper tests
+    runserver_args = ['--noreload']
 else:
     settings_module = "zproject.settings"
 
@@ -77,6 +112,22 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from scripts.lib.zulip_tools import WARNING, ENDC
+from django.conf import settings
+
+if 'zproject.backends.GitHubAuthBackend' in settings.AUTHENTICATION_BACKENDS:
+    if not (settings.SOCIAL_AUTH_GITHUB_KEY and
+            settings.SOCIAL_AUTH_GITHUB_SECRET):
+        print('\n'.join([
+            WARNING,
+            "You are using the GitHub auth backend. Please make sure of the following:",
+            "- You have updated SOCIAL_AUTH_GITHUB_KEY and "
+            "  SOCIAL_AUTH_GITHUB_SECRET settings.",
+            "- You have added http://localhost:9991/complete/github/' ",
+            "  as the callback URL in the OAuth application in GitHub.",
+            "  You can create OAuth apps from ",
+            "  https://github.com/settings/developers.",
+            ENDC]))
+        sys.exit(1)
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -102,12 +153,28 @@ if options.clear_memcached:
 # and all of the processes they spawn.
 os.setpgrp()
 
+# Save pid of parent process to the pid file. It can be used later by
+# tools/stop-run-dev to kill the server without having to find the
+# terminal in question.
+
+if options.test:
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/casper/run_dev.pid'))
+else:
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
+
+# Required for compatibility python versions.
+if not os.path.exists(os.path.dirname(pid_file_path)):
+    os.makedirs(os.path.dirname(pid_file_path))
+pid_file = open(pid_file_path, 'w+')
+pid_file.write(str(os.getpgrp()) + "\n")
+pid_file.close()
+
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['python', 'manage.py', 'rundjango'] +
-        manage_args + ['127.0.0.1:%d' % (django_port,)],
-        ['python', '-u', 'manage.py', 'runtornado'] +
+        ['./manage.py', 'runserver'] +
+        manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
+        ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
@@ -193,6 +260,7 @@ class BaseWebsocketHandler(WebSocketHandler):
             # close websocket proxy connection if no connection with target websocket server
             return self.close()
         self.client.write_message(message, binary)
+        return None
 
     def check_origin(self, origin):
         # type: (str) -> bool
@@ -214,6 +282,7 @@ class CombineHandler(BaseWebsocketHandler):
         # type: (*Any, **Any) -> Optional[Callable]
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super(CombineHandler, self).get(*args, **kwargs)
+        return None
 
     def head(self):
         # type: () -> None
@@ -261,6 +330,8 @@ class CombineHandler(BaseWebsocketHandler):
     @web.asynchronous
     def prepare(self):
         # type: () -> None
+        if 'X-REAL-IP' not in self.request.headers:
+            self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super(CombineHandler, self).prepare()
         url = transform_url(
@@ -302,10 +373,9 @@ class TornadoHandler(CombineHandler):
 
 
 class Application(web.Application):
-    def __init__(self):
-        # type: () -> None
+    def __init__(self, enable_logging=False):
+        # type: (bool) -> None
         handlers = [
-            (r"/sockjs/.*/websocket$", TornadoHandler),
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
@@ -313,7 +383,12 @@ class Application(web.Application):
             (r"/socket.io.*", WebPackHandler),
             (r"/.*", DjangoHandler)
         ]
-        super(Application, self).__init__(handlers)
+        super(Application, self).__init__(handlers, enable_logging=enable_logging)
+
+    def log_request(self, handler):
+        # type: (BaseWebsocketHandler) -> None
+        if self.settings['enable_logging']:
+            super(Application, self).log_request(handler)
 
 
 def on_shutdown():
@@ -342,16 +417,18 @@ print("".join((WARNING,
                    proxy_port), ENDC)))
 
 try:
-    app = Application()
-    app.listen(proxy_port)
+    app = Application(enable_logging=options.enable_tornado_logging)
+    app.listen(proxy_port, address=options.interface)
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
     ioloop.start()
-except:
+except Exception:
     # Print the traceback before we get SIGTERM and die.
     traceback.print_exc()
     raise
 finally:
     # Kill everything in our process group.
     os.killpg(0, signal.SIGTERM)
+    # Remove pid file when development server closed correctly.
+    os.remove(pid_file_path)

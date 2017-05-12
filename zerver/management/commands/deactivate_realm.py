@@ -16,15 +16,15 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('domain', metavar='<domain>', type=str,
-                            help='domain of realm to deactivate')
+        parser.add_argument('string_id', metavar='<string_id>', type=str,
+                            help='string_id of realm to deactivate')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["domain"])
+        realm = get_realm(options["string_id"])
         if realm is None:
-            print("Could not find realm %s" % (options["domain"],))
+            print("Could not find realm %s" % (options["string_id"],))
             sys.exit(1)
-        print("Deactivating", options["domain"])
+        print("Deactivating", options["string_id"])
         do_deactivate_realm(realm)
         print("Done!")

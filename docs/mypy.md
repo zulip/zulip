@@ -187,14 +187,14 @@ Mypy can help with this.  We just have to annotate each string as either
 `str` or `unicode` and mypy's static type checking will tell us if we
 are incorrectly mixing the two.  However, `unicode` is not defined in
 Python 3.  We want our code to be Python 3 compatible in the future.
-This can be achieved using 'six', a Python 2 and 3 compatibility library.
+This can be achieved using 'typing.Text', a Python 2 and 3 compatibility type.
 
-`six.text_type` is defined as `str` in Python 3 and as `unicode` in
-Python 2.  We'll be using `text_type` (instead of `unicode`) and `str`
+`typing.Text` is defined as `str` in Python 3 and as `unicode` in
+Python 2.  We'll be using `Text` (instead of `unicode`) and `str`
 to annotate strings in Zulip's code.  We follow the style of doing
-`from six import text_type` and using `text_type` for annotation instead
-of doing `import six` and using `six.text_type` for annotation, because
-`text_type` is used so extensively for type annotations that we don't
+`from typing import Text` and using `Text` for annotation instead
+of doing `import typing` and using `typing.Text` for annotation, because
+`Text` is used so extensively for type annotations that we don't
 need to be that verbose.
 
 Sometimes you'll find that you have to convert strings from one type to

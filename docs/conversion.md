@@ -34,7 +34,7 @@ document:
 This document focuses almost entirely on the **export** piece.  Issues
 with getting Zulip itself running are out of scope here; see [the
 production installation instructions](index.html#prod-install-docs).
-As for the import side of things, we only touch on it implicity.  (My
+As for the import side of things, we only touch on it implicitly.  (My
 reasoning was that we *had* to get the export piece right in a timely
 fashion, even if it meant we would have to sort out some straggling
 issues on the import side later.)
@@ -55,7 +55,7 @@ Things that we still may need:
 - We may want to export multiple single users simultaneously.
 - We may want to limit users within realm exports.
 - We may want more operational robustness/convenience while doing
-  several exports simultaenously.
+  several exports simultaneously.
 - We may want to merge multiple export files to remove duplicates.
 
 We have a few major classes of data.  They are listed below in the order
@@ -63,7 +63,7 @@ that we process them in `do_export_realm()`:
 
 #### Public Realm Data
 
-`Realm/RealmAlias/RealmEmoji/RealmFilter/DefaultStream`.
+`Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`.
 
 #### Cross Realm Data
 
@@ -90,7 +90,7 @@ when you try to deal with multi-user subsets.
 
 `Attachment`
 
-This includes `Attachment`, and it referencs the `avatar_source` field
+This includes `Attachment`, and it references the `avatar_source` field
 of `UserProfile`.  Most importantly, of course, it requires us to grab
 files from S3.  Finally, `Attachment`'s `m2m` relationship ties to
 `Message`.
@@ -127,7 +127,7 @@ We have two major mechanisms for getting data:
 Get realm data, then all users in realm, then all recipients, then all
 messages, etc.
 
-The problem with the top down approach will be **filtering**.  Also,
+The problem with the top-down approach will be **filtering**.  Also,
 if errors arise during top-down passes, it may be time consuming to
 re-run the processes.
 
@@ -261,7 +261,7 @@ We have code in place to exclude `password` and `api_key` from
 
 ### Public Realm Data
 
-- models: `Realm/RealmAlias/RealmEmoji/RealmFilter/DefaultStream`
+- models: `Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`
 - asserts: `realm.json`
 
 All of these tables are public (per-realm), and they are keyed by

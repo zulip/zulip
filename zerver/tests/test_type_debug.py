@@ -14,9 +14,9 @@ def add(x=0, y=0):
     # type: (Any, Any) -> Any
     return x + y
 
-def to_dict(l=[]):
+def to_dict(v=[]):
     # type: (Iterable[Tuple[Any, Any]]) -> Dict[Any, Any]
-    return dict(l)
+    return dict(v)
 
 class TypesPrintTest(TestCase):
 
@@ -24,6 +24,7 @@ class TypesPrintTest(TestCase):
     def _pre_setup(self):
         # type: () -> None
         pass
+
     def _post_teardown(self):
         # type: () -> None
         pass
@@ -48,8 +49,8 @@ class TypesPrintTest(TestCase):
         def empty_func():
             # type: () -> None
             pass
-        self.check_signature("empty_func() -> None", None, empty_func) # type: ignore # https://github.com/python/mypy/issues/1932
-        self.check_signature("<lambda>() -> None", None, (lambda: None)) # type: ignore # https://github.com/python/mypy/issues/1932
+        self.check_signature("empty_func() -> None", None, empty_func)  # type: ignore # https://github.com/python/mypy/issues/1932
+        self.check_signature("<lambda>() -> None", None, (lambda: None))  # type: ignore # https://github.com/python/mypy/issues/1932
 
     def test_basic(self):
         # type: () -> None
@@ -90,15 +91,23 @@ class TypesPrintTest(TestCase):
 
     def test_class(self):
         # type: () -> None
-        class A(object): pass
-        class B(str): pass
+        class A(object):
+            pass
+
+        class B(str):
+            pass
+
         self.check_signature("<lambda>(A) -> str", 'A', (lambda x: x.__class__.__name__), A())
         self.check_signature("<lambda>(B) -> int", 5, (lambda x: len(x)), B("hello"))
 
     def test_sequence(self):
         # type: () -> None
-        class A(list): pass
-        class B(list): pass
+        class A(list):
+            pass
+
+        class B(list):
+            pass
+
         self.check_signature("add(A([]), B([str])) -> [str]",
                              ['two'], add, A([]), B(['two']))
         self.check_signature("add(A([int]), B([str])) -> [int, ...]",
@@ -108,10 +117,13 @@ class TypesPrintTest(TestCase):
 
     def test_mapping(self):
         # type: () -> None
-        class A(dict): pass
-        def to_A(l=[]):
+        class A(dict):
+            pass
+
+        def to_A(v=[]):
             # type: (Iterable[Tuple[Any, Any]]) -> A
-            return A(l)
+            return A(v)
+
         self.check_signature("to_A() -> A([])", A(()), to_A)
         self.check_signature("to_A([(int, str)]) -> A([(int, str)])",
                              {2: 'two'}, to_A, [(2, 'two')])

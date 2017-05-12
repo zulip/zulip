@@ -1,8 +1,8 @@
 global.assert = require('assert');
-require('third/string-prototype-codepointat/codepointat.js');
+require('node_modules/string.prototype.codepointat/codepointat.js');
 
 global.Dict = require('js/dict');
-global._ = require('third/underscore/underscore.js');
+global._ = require('node_modules/underscore/underscore.js');
 var _ = global._;
 
 // Find the files we need to run.
@@ -18,11 +18,20 @@ global.set_global = namespace.set_global;
 global.patch_builtin = namespace.patch_builtin;
 global.add_dependencies = namespace.add_dependencies;
 global.stub_out_jquery = namespace.stub_out_jquery;
+global.with_overrides = namespace.with_overrides;
+
+// Set up stub helpers.
+var stub = require('./stub.js');
+global.with_stub = stub.with_stub;
 
 // Set up helpers to render templates.
 var render = require('./render.js');
-global.use_template = render.use_template;
-global.make_sure_all_templates_have_been_compiled = render.make_sure_all_templates_have_been_compiled;
+global.make_sure_all_templates_have_been_compiled =
+    render.make_sure_all_templates_have_been_compiled;
+global.find_included_partials = render.find_included_partials;
+global.compile_template = render.compile_template;
+global.render_template = render.render_template;
+global.walk = render.walk;
 
 // Set up helpers to output HTML
 var output = require('./output.js');

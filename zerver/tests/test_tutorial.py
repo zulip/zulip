@@ -7,6 +7,9 @@ from typing import Any, Dict
 from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     most_recent_message,
+)
+
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
@@ -25,8 +28,8 @@ def fix_params(raw_params):
 class TutorialTests(ZulipTestCase):
     def test_send_message(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
 
         welcome_bot = get_user_profile_by_email("welcome-bot@zulip.com")

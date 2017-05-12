@@ -7,19 +7,20 @@
     var Cache = require('i18next-localstorage-cache');
 
     var backendOptions = {
-        loadPath: '/static/locale/__lng__/translations.json'
+        loadPath: '/static/locale/__lng__/translations.json',
     };
     var callbacks = [];
     var initialized = false;
 
     var detectionOptions = {
         order: ['htmlTag'],
-        htmlTag: document.documentElement
+        htmlTag: document.documentElement,
     };
 
     var cacheOptions = {
         enabled: true,
-        prefix: page_params.server_generation + ':'
+        prefix: 'i18next:' + page_params.server_generation + ':',
+        expirationTime: 2*7*24*60*60*1000,  // 2 weeks
     };
 
     i18n.use(XHR)
@@ -30,16 +31,16 @@
             keySeparator: false,
             interpolation: {
                 prefix: "__",
-                suffix: "__"
+                suffix: "__",
             },
             backend: backendOptions,
             detection: detectionOptions,
             cache: cacheOptions,
-            fallbackLng: 'en'
+            fallbackLng: 'en',
         }, function () {
             var i;
             initialized = true;
-            for (i=0; i<callbacks.length; i++) {
+            for (i=0; i<callbacks.length; i += 1) {
                 callbacks[i]();
             }
         });

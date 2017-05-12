@@ -5,10 +5,11 @@ import ujson
 import zlib
 
 from django.utils.translation import ugettext as _
-from six import binary_type, text_type
+from six import binary_type
 
-from zerver.lib.avatar import get_avatar_url
-from zerver.lib.avatar_hash import gravatar_hash
+from typing import Set, Text
+
+from zerver.lib.avatar import avatar_url_from_dict
 import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
@@ -17,16 +18,19 @@ from zerver.lib.timestamp import datetime_to_timestamp
 
 from zerver.models import (
     get_display_recipient_by_id,
+    get_user_profile_by_id,
     Message,
+    Realm,
     Recipient,
     Stream,
     UserProfile,
     UserMessage,
+    Reaction
 )
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Text
 
-RealmAlertWords = Dict[int, List[text_type]]
+RealmAlertWords = Dict[int, List[Text]]
 
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
@@ -57,27 +61,30 @@ class MessageDict(object):
     def to_dict_uncached_helper(message, apply_markdown):
         # type: (Message, bool) -> Dict[str, Any]
         return MessageDict.build_message_dict(
-                apply_markdown = apply_markdown,
-                message = message,
-                message_id = message.id,
-                last_edit_time = message.last_edit_time,
-                edit_history = message.edit_history,
-                content = message.content,
-                subject = message.subject,
-                pub_date = message.pub_date,
-                rendered_content = message.rendered_content,
-                rendered_content_version = message.rendered_content_version,
-                sender_id = message.sender.id,
-                sender_email = message.sender.email,
-                sender_realm_domain = message.sender.realm.domain,
-                sender_full_name = message.sender.full_name,
-                sender_short_name = message.sender.short_name,
-                sender_avatar_source = message.sender.avatar_source,
-                sender_is_mirror_dummy = message.sender.is_mirror_dummy,
-                sending_client_name = message.sending_client.name,
-                recipient_id = message.recipient.id,
-                recipient_type = message.recipient.type,
-                recipient_type_id = message.recipient.type_id,
+            apply_markdown = apply_markdown,
+            message = message,
+            message_id = message.id,
+            last_edit_time = message.last_edit_time,
+            edit_history = message.edit_history,
+            content = message.content,
+            subject = message.subject,
+            pub_date = message.pub_date,
+            rendered_content = message.rendered_content,
+            rendered_content_version = message.rendered_content_version,
+            sender_id = message.sender.id,
+            sender_email = message.sender.email,
+            sender_realm_id = message.sender.realm_id,
+            sender_realm_str = message.sender.realm.string_id,
+            sender_full_name = message.sender.full_name,
+            sender_short_name = message.sender.short_name,
+            sender_avatar_source = message.sender.avatar_source,
+            sender_avatar_version = message.sender.avatar_version,
+            sender_is_mirror_dummy = message.sender.is_mirror_dummy,
+            sending_client_name = message.sending_client.name,
+            recipient_id = message.recipient.id,
+            recipient_type = message.recipient.type,
+            recipient_type_id = message.recipient.type_id,
+            reactions = Reaction.get_raw_db_rows([message.id])
         )
 
     @staticmethod
@@ -88,27 +95,30 @@ class MessageDict(object):
         all the relevant fields populated
         '''
         return MessageDict.build_message_dict(
-                apply_markdown = apply_markdown,
-                message = None,
-                message_id = row['id'],
-                last_edit_time = row['last_edit_time'],
-                edit_history = row['edit_history'],
-                content = row['content'],
-                subject = row['subject'],
-                pub_date = row['pub_date'],
-                rendered_content = row['rendered_content'],
-                rendered_content_version = row['rendered_content_version'],
-                sender_id = row['sender_id'],
-                sender_email = row['sender__email'],
-                sender_realm_domain = row['sender__realm__domain'],
-                sender_full_name = row['sender__full_name'],
-                sender_short_name = row['sender__short_name'],
-                sender_avatar_source = row['sender__avatar_source'],
-                sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
-                sending_client_name = row['sending_client__name'],
-                recipient_id = row['recipient_id'],
-                recipient_type = row['recipient__type'],
-                recipient_type_id = row['recipient__type_id'],
+            apply_markdown = apply_markdown,
+            message = None,
+            message_id = row['id'],
+            last_edit_time = row['last_edit_time'],
+            edit_history = row['edit_history'],
+            content = row['content'],
+            subject = row['subject'],
+            pub_date = row['pub_date'],
+            rendered_content = row['rendered_content'],
+            rendered_content_version = row['rendered_content_version'],
+            sender_id = row['sender_id'],
+            sender_email = row['sender__email'],
+            sender_realm_id = row['sender__realm__id'],
+            sender_realm_str = row['sender__realm__string_id'],
+            sender_full_name = row['sender__full_name'],
+            sender_short_name = row['sender__short_name'],
+            sender_avatar_source = row['sender__avatar_source'],
+            sender_avatar_version = row['sender__avatar_version'],
+            sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
+            sending_client_name = row['sending_client__name'],
+            recipient_id = row['recipient_id'],
+            recipient_type = row['recipient__type'],
+            recipient_type_id = row['recipient__type_id'],
+            reactions=row['reactions']
         )
 
     @staticmethod
@@ -125,36 +135,43 @@ class MessageDict(object):
             rendered_content_version,
             sender_id,
             sender_email,
-            sender_realm_domain,
+            sender_realm_id,
+            sender_realm_str,
             sender_full_name,
             sender_short_name,
             sender_avatar_source,
+            sender_avatar_version,
             sender_is_mirror_dummy,
             sending_client_name,
             recipient_id,
             recipient_type,
             recipient_type_id,
+            reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
+        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
-        avatar_url = get_avatar_url(sender_avatar_source, sender_email)
+        avatar_url = avatar_url_from_dict(dict(
+            avatar_source=sender_avatar_source,
+            avatar_version=sender_avatar_version,
+            email=sender_email,
+            id=sender_id,
+            realm_id=sender_realm_id))
 
         display_recipient = get_display_recipient_by_id(
-                recipient_id,
-                recipient_type,
-                recipient_type_id
+            recipient_id,
+            recipient_type,
+            recipient_type_id
         )
 
         if recipient_type == Recipient.STREAM:
             display_type = "stream"
         elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
-            assert not isinstance(display_recipient, text_type)
+            assert not isinstance(display_recipient, Text)
             display_type = "private"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
                 # someone and his self, preserving ordering
                 recip = {'email': sender_email,
-                         'domain': sender_realm_domain,
                          'full_name': sender_full_name,
                          'short_name': sender_short_name,
                          'id': sender_id,
@@ -169,20 +186,22 @@ class MessageDict(object):
             sender_email      = sender_email,
             sender_full_name  = sender_full_name,
             sender_short_name = sender_short_name,
-            sender_domain     = sender_realm_domain,
+            sender_realm_str  = sender_realm_str,
             sender_id         = sender_id,
             type              = display_type,
             display_recipient = display_recipient,
             recipient_id      = recipient_id,
             subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
-            gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
-        obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
+        if obj['type'] == 'stream':
+            obj['stream_id'] = recipient_type_id
 
-        if last_edit_time != None:
+        obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
+
+        if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
             obj['edit_history'] = ujson.loads(edit_history)
 
@@ -203,7 +222,7 @@ class MessageDict(object):
 
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
-                rendered_content = render_markdown(message, content, sender_realm_domain)
+                rendered_content = render_markdown(message, content, realm=message.get_realm())
                 message.rendered_content = rendered_content
                 message.rendered_content_version = bugdown.version
                 message.save_rendered_content()
@@ -218,23 +237,20 @@ class MessageDict(object):
             obj['content'] = content
             obj['content_type'] = 'text/x-markdown'
 
+        obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
+                            for reaction in reactions]
         return obj
 
-def re_render_content_for_management_command(message):
-    # type: (Message) -> None
 
-    '''
-    Please avoid using this function, as its only used in a management command that
-    is somewhat deprecated.
-    '''
-    assert Message.need_to_render_content(message.rendered_content,
-                                          message.rendered_content_version,
-                                          bugdown.version)
+class ReactionDict(object):
+    @staticmethod
+    def build_dict_from_raw_db_row(row):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        return {'emoji_name': row.get('emoji_name'),
+                'user': {'email': row.get('user_profile__email'),
+                         'id': row.get('user_profile__id'),
+                         'full_name': row.get('user_profile__full_name')}}
 
-    rendered_content = render_markdown(message, message.content)
-    message.rendered_content = rendered_content
-    message.rendered_content_version = bugdown.version
-    message.save_rendered_content()
 
 def access_message(user_profile, message_id):
     # type: (UserProfile, int) -> Tuple[Message, UserMessage]
@@ -275,8 +291,8 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, domain=None, realm_alert_words=None, message_users=None):
-    # type: (Message, text_type, Optional[text_type], Optional[RealmAlertWords], Set[UserProfile]) -> text_type
+def render_markdown(message, content, realm=None, realm_alert_words=None, message_users=None):
+    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Set[UserProfile]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
@@ -288,36 +304,44 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     else:
         message_user_ids = {u.id for u in message_users}
 
-    message.mentions_wildcard = False
-    message.is_me_message = False
-    message.mentions_user_ids = set()
-    message.alert_words = set()
+    if message is not None:
+        message.mentions_wildcard = False
+        message.is_me_message = False
+        message.mentions_user_ids = set()
+        message.alert_words = set()
+        message.links_for_preview = set()
+        message.outgoing_webhook_bot_triggers = []
 
-    if not domain:
-        domain = message.sender.realm.domain
-    if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
-        # Use slightly customized Markdown processor for content
-        # delivered via zephyr_mirror
-        domain = u"zephyr_mirror"
+        if realm is None:
+            realm = message.get_realm()
 
-    possible_words = set() # type: Set[text_type]
+    possible_words = set() # type: Set[Text]
     if realm_alert_words is not None:
         for user_id, words in realm_alert_words.items():
             if user_id in message_user_ids:
                 possible_words.update(set(words))
 
+    if message is None:
+        # If we don't have a message, then we are in the compose preview
+        # codepath, so we know we are dealing with a human.
+        sent_by_bot = False
+    else:
+        sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
+
     # DO MAIN WORK HERE -- call bugdown to convert
-    rendered_content = bugdown.convert(content, domain, message, possible_words)
+    rendered_content = bugdown.convert(content, message=message, message_realm=realm,
+                                       possible_words=possible_words,
+                                       sent_by_bot=sent_by_bot)
 
-    message.user_ids_with_alert_words = set()
+    if message is not None:
+        message.user_ids_with_alert_words = set()
 
-    if realm_alert_words is not None:
-        for user_id, words in realm_alert_words.items():
-            if user_id in message_user_ids:
-                if set(words).intersection(message.alert_words):
-                    message.user_ids_with_alert_words.add(user_id)
+        if realm_alert_words is not None:
+            for user_id, words in realm_alert_words.items():
+                if user_id in message_user_ids:
+                    if set(words).intersection(message.alert_words):
+                        message.user_ids_with_alert_words.add(user_id)
 
-    message.is_me_message = Message.is_status_message(content, rendered_content)
+        message.is_me_message = Message.is_status_message(content, rendered_content)
 
     return rendered_content
-

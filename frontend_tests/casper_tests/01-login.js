@@ -12,7 +12,7 @@ common.init_viewport();
 casper.start(realm_url, common.initialize_casper);
 
 casper.then(function () {
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/login/, 'Redirected to /login');
+    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/login/, 'Redirected to /login');
 });
 
 common.then_log_in();

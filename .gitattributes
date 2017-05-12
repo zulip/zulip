@@ -10,14 +10,12 @@
 *.tif binary
 .gitignore export-ignore
 .gitattributes export-ignore
-/analytics export-ignore
 /static/assets export-ignore
 /bots export-ignore
 /corporate export-ignore
 /static export-ignore
 /tools export-ignore
 /zilencer export-ignore
-/templates/analytics export-ignore
 /templates/corporate export-ignore
 /templates/zilencer export-ignore
 /puppet/zulip_internal export-ignore

@@ -28,6 +28,7 @@ Contents:
 * :ref:`dev-install-docs`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
+* :ref:`code-testing`
 * :ref:`system-docs`
 
 .. _user-docs:
@@ -49,10 +50,11 @@ Contents:
    :caption: Zulip in production
 
    prod-requirements
-   prod-install
+   Installing a production server <prod-install>
    prod-troubleshooting
    prod-customize
    prod-maintain-secure-upgrade
+   security-model
    prod-authentication-methods
    prod-postgres
 
@@ -60,15 +62,13 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Installation for developers
+   :caption: Development environment
 
-   dev-overview
-   dev-env-first-time-contributors
-   brief-install-vagrant-dev
-   install-ubuntu-without-vagrant-dev
-   install-generic-unix-dev
-   install-docker-dev
-   using-dev-environment
+   Development environment installation <dev-overview>
+   Recommended setup (Vagrant) <dev-env-first-time-contributors>
+   Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
+   Using the development environment <using-dev-environment>
+   Developing remotely <dev-remote>
 
 .. _tutorial-docs:
 
@@ -77,9 +77,11 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
+   webhook-walkthrough
    new-feature-tutorial
    writing-views
    life-of-a-request
+   reading-list
 
 .. _code-docs:
 
@@ -90,9 +92,23 @@ Contents:
    git-guide
    version-control
    code-style
-   testing
    mypy
    code-reviewing
+   chat-zulip-org
+   zulipbot-usage
+
+.. _code-testing:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code testing
+
+   testing
+   linters
+   testing-with-node
+   testing-with-django
+   testing-with-casper
+   manual-testing
 
 .. _system-docs:
 
@@ -101,7 +117,9 @@ Contents:
    :caption: Subsystem documentation
 
    settings
+   events-system
    queuing
+   bots-guide
    custom-apps
    pointer
    markdown
@@ -109,7 +127,13 @@ Contents:
    front-end-build-process
    schema-migrations
    html_css
+   hashchange-system
+   emoji
    full-text-search
+   analytics
    translating
+   client
    logging
+   release-checklist
    README
+   user-docs

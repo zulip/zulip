@@ -13,7 +13,8 @@ from irc.client import ip_numstr_to_quad, ip_quad_to_numstr, Event, ServerConnec
 import zulip
 import optparse
 
-if False: from typing import Any
+if False:
+    from typing import Any, Dict
 
 IRC_DOMAIN = "irc.example.com"
 
@@ -26,7 +27,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
         # type: (irc.bot.Channel, str, str, int) -> None
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
-        self.channel = channel # type: irc.bot.Channel
+        self.channel = channel  # type: irc.bot.Channel
 
     def on_nicknameinuse(self, c, e):
         # type: (ServerConnection, Event) -> None
@@ -35,6 +36,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         # type: (ServerConnection, Event) -> None
         c.join(self.channel)
+
         def forward_to_irc(msg):
             # type: (Dict[str, Any]) -> None
             if msg["type"] == "stream":
@@ -63,11 +65,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
         # Forward the PM to Zulip
         print(zulip_client.send_message({
-                "sender": sender,
-                "type": "private",
-                "to": "username@example.com",
-                "content": content,
-                }))
+            "sender": sender,
+            "type": "private",
+            "to": "username@example.com",
+            "content": content,
+        }))
 
     def on_pubmsg(self, c, e):
         # type: (ServerConnection, Event) -> None
@@ -79,13 +81,13 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
         # Forward the stream message to Zulip
         print(zulip_client.send_message({
-                "forged": "yes",
-                "sender": sender,
-                "type": "stream",
-                "to": stream,
-                "subject": "IRC",
-                "content": content,
-                }))
+            "forged": "yes",
+            "sender": sender,
+            "type": "stream",
+            "to": stream,
+            "subject": "IRC",
+            "content": content,
+        }))
 
     def on_dccmsg(self, c, e):
         # type: (ServerConnection, Event) -> None
@@ -104,11 +106,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 return
             self.dcc_connect(address, port)
 
-usage = """python irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> [optional args]
+usage = """./irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> [optional args]
 
 Example:
 
-python irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
+./irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
   --site=https://zulip.example.com --user=irc-bot@example.com
   --api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 

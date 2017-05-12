@@ -27,13 +27,14 @@ from __future__ import print_function
 import os
 import sys
 import optparse
-import six.moves.configparser
+from six.moves.configparser import ConfigParser, NoSectionError, NoOptionError
 
 import zulip
 VERSION = "0.9"
 CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id):
+    # type: (ConfigParser, int) -> None
     if 'search' not in config.sections():
         config.add_section('search')
     config.set('search', 'since_id', since_id)
@@ -42,7 +43,8 @@ def write_config(config, since_id):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@zulip.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --search="@nprnews,quantum physics"
+%prog --user username@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+    --search="@nprnews,quantum physics"
 
 Send Twitter search results to a Zulip stream.
 
@@ -55,12 +57,13 @@ To use this script:
 2. Subscribe to the stream that will receive Twitter updates (default stream: twitter)
 3. Test the script by running it manually, like this:
 
-/usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"
+/usr/local/share/zulip/integrations/twitter/twitter-search-bot \
+    --search="@nprnews,quantum physics" --site=https://zulip.example.com
 
 4. Configure a crontab entry for this script. A sample crontab entry
 that will process tweets every 5 minutes is:
 
-*/5 * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"
+*/5 * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot [options]
 
 == Setting up Twitter authentications ==
 
@@ -109,22 +112,22 @@ if not opts.search_terms:
     parser.error('You must specify a search term.')
 
 try:
-    config = six.moves.configparser.ConfigParser()
+    config = ConfigParser()
     config.read(CONFIGFILE)
 
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
-except (six.moves.configparser.NoSectionError, six.moves.configparser.NoOptionError):
-   parser.error("Please provide a ~/.zulip_twitterrc")
+except (NoSectionError, NoOptionError):
+    parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not (consumer_key and consumer_secret and access_token_key and access_token_secret):
-   parser.error("Please provide a ~/.zulip_twitterrc")
+    parser.error("Please provide a ~/.zulip_twitterrc")
 
 try:
     since_id = config.getint('search', 'since_id')
-except (six.moves.configparser.NoOptionError, six.moves.configparser.NoSectionError):
+except (NoOptionError, NoSectionError):
     since_id = 0
 
 try:
@@ -173,10 +176,10 @@ for status in statuses[::-1][:opts.limit_tweets]:
         search_term_used = "mentions"
 
     message = {
-      "type": "stream",
-      "to": [opts.stream],
-      "subject": search_term_used,
-      "content": url,
+        "type": "stream",
+        "to": [opts.stream],
+        "subject": search_term_used,
+        "content": url,
     }
 
     ret = client.send_message(message)

@@ -1,0 +1,47 @@
+<p>
+    First, create the stream you'd like to use for GitHub Webhook notifications,
+    and subscribe all interested parties to this stream. The integration will
+    use the default stream <code>github</code> if no stream is supplied in
+    the hook; you still need to create the stream even if you are using this
+    default.
+</p>
+
+<p>Next, go to your repository page and click <b>"Settings"</b>:</p>
+<p><img src="/static/images/integrations/github_webhook/001.png"/></p>
+
+<p>From there, select <b>"Webhooks"</b>:</p>
+<p><img src="/static/images/integrations/github_webhook/002.png"/></p>
+
+<p>Click <b>"Add webhook"</b>.</p>
+<p><img class="screenshot" src="/static/images/integrations/github_webhook/003.png"/></p>
+
+<p>Authorize yourself and configure your webhook.</p>
+
+<p>In the <b>"Payload URL"</b> field, enter a URL constructed like this:</p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/github?api_key=abcdefgh&amp;stream=github</code></p>
+
+<p>
+    where <code>api_key</code> is the API key of your Zulip
+    bot.
+</p>
+<p>
+    You can also limit the branches you receive notifications for by
+    specifying them in a comma-separated list at the end of the URL,
+    like so:
+</p>
+<p><code>{{ external_api_uri_subdomain }}/v1/external/github?api_key=abcdefgh&amp;stream=github&amp;branches=master,development</code></p>
+<p>
+    Then, set <b>"Content type"</b> to <code>application/json</code>.
+</p>
+<p>
+    Next, select the actions that you want to result in a
+    Zulip notification and click <b>Add Webhook</b>.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    Your messages will look like this:
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/github_webhook/004.png"/></p>

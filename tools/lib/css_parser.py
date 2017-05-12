@@ -13,27 +13,36 @@ class Token(object):
         self.col = col
 
 class CssParserException(Exception):
-    # TODO: Have callers pass in line numbers.
-    pass
+    def __init__(self, msg, token):
+        # type: (str, Token) -> None
+        self.msg = msg
+        self.token = token
 
-def find_end_brace(tokens, i):
-    # type: (List[Token], int) -> int
+    def __str__(self):
+        # type: () -> str
+        return self.msg
+
+def find_end_brace(tokens, i, end):
+    # type: (List[Token], int, int) -> int
     depth = 0
-    while i < len(tokens):
+    while i < end:
         s = tokens[i].s
         if s == '{':
             depth += 1
         elif s == '}':
             if depth == 0:
-                raise CssParserException('unexpected }')
+                raise CssParserException('unexpected }', tokens[i])
             elif depth == 1:
                 break
             depth -= 1
         i += 1
+    else:
+        raise CssParserException('missing }', tokens[i-1])
+
     return i
 
-def get_whitespace_and_comments(tokens, i, line=None):
-    # type: (List[Token], int, int) -> Tuple[int, str]
+def get_whitespace_and_comments(tokens, i, end, line=None):
+    # type: (List[Token], int, int, int) -> Tuple[int, str]
 
     def is_fluff_token(token):
         # type: (Token) -> bool
@@ -52,7 +61,7 @@ def get_whitespace_and_comments(tokens, i, line=None):
         return False
 
     text = ''
-    while (i < len(tokens)) and is_fluff_token(tokens[i]):
+    while (i < end) and is_fluff_token(tokens[i]):
         s = tokens[i].s
         text += s
         i += 1
@@ -63,27 +72,29 @@ def get_whitespace_and_comments(tokens, i, line=None):
 ############### Begin parsing here
 
 
-def parse_sections(tokens):
-    # type: (List[Token]) -> CssSectionList
-    i = 0
+def parse_sections(tokens, start, end):
+    # type: (List[Token], int, int) -> CssSectionList
+    i = start
     sections = []
-    while i < len(tokens):
-        start, pre_fluff = get_whitespace_and_comments(tokens, i)
+    while i < end:
+        start, pre_fluff = get_whitespace_and_comments(tokens, i, end)
 
-        i = find_end_brace(tokens, start)
+        if start >= end:
+            raise CssParserException('unexpected empty section', tokens[end-1])
 
-        section_tokens = tokens[start:i+1]
-        i, post_fluff = get_whitespace_and_comments(tokens, i+1)
+        i = find_end_brace(tokens, start, end)
 
-        if section_tokens:
-            section = parse_section(
-                tokens=section_tokens,
-                pre_fluff=pre_fluff,
-                post_fluff=post_fluff
-            )
-            sections.append(section)
-        else:
-            raise CssParserException('unexpected empty section')
+        section_end = i + 1
+        i, post_fluff = get_whitespace_and_comments(tokens, i+1, end)
+
+        section = parse_section(
+            tokens=tokens,
+            start=start,
+            end=section_end,
+            pre_fluff=pre_fluff,
+            post_fluff=post_fluff
+        )
+        sections.append(section)
 
     section_list = CssSectionList(
         tokens=tokens,
@@ -91,16 +102,15 @@ def parse_sections(tokens):
     )
     return section_list
 
-def parse_section(tokens, pre_fluff, post_fluff):
-    # type: (List[Token], str, str) -> Union[CssNestedSection, CssSection]
-    assert not ws(tokens[0].s)
-    assert tokens[-1].s == '}' # caller should strip trailing fluff
+def parse_section(tokens, start, end, pre_fluff, post_fluff):
+    # type: (List[Token], int, int, str, str) -> Union[CssNestedSection, CssSection]
+    assert not ws(tokens[start].s)
+    assert tokens[end-1].s == '}'  # caller should strip trailing fluff
 
-    first_token = tokens[0].s
+    first_token = tokens[start].s
     if first_token in ('@media', '@keyframes') or first_token.startswith('@-'):
-        i, selector_list = parse_selectors_section(tokens) # not technically selectors
-        body_tokens = tokens[i+1:-1]
-        section_list = parse_sections(body_tokens)
+        i, selector_list = parse_selectors_section(tokens, start, end)  # not technically selectors
+        section_list = parse_sections(tokens, i+1, end-1)
         nested_section = CssNestedSection(
             tokens=tokens,
             selector_list=selector_list,
@@ -110,8 +120,8 @@ def parse_section(tokens, pre_fluff, post_fluff):
         )
         return nested_section
     else:
-        i, selector_list = parse_selectors_section(tokens)
-        declaration_block = parse_declaration_block(tokens[i:])
+        i, selector_list = parse_selectors_section(tokens, start, end)
+        declaration_block = parse_declaration_block(tokens, i, end)
         section = CssSection(
             tokens=tokens,
             selector_list=selector_list,
@@ -121,35 +131,34 @@ def parse_section(tokens, pre_fluff, post_fluff):
         )
         return section
 
-def parse_selectors_section(tokens):
-    # type: (List[Token]) -> Tuple[int, CssSelectorList]
-    start, pre_fluff = get_whitespace_and_comments(tokens, 0)
+def parse_selectors_section(tokens, start, end):
+    # type: (List[Token], int, int) -> Tuple[int, CssSelectorList]
+    start, pre_fluff = get_whitespace_and_comments(tokens, start, end)
     assert pre_fluff == ''
     i = start
     text = ''
-    while i < len(tokens) and tokens[i].s != '{' :
+    while i < end and tokens[i].s != '{':
         s = tokens[i].s
         text += s
         i += 1
-    selector_list = parse_selectors(tokens[start:i])
+    selector_list = parse_selectors(tokens, start, i)
     return i, selector_list
 
-def parse_selectors(tokens):
-    # type: (List[Token]) -> CssSelectorList
-    i = 0
-    start = i
+def parse_selectors(tokens, start, end):
+    # type: (List[Token], int, int) -> CssSelectorList
+    i = start
     selectors = []
-    while i < len(tokens):
+    while i < end:
         s = tokens[i].s
         if s == ',':
-            selector = parse_selector(tokens[start:i])
+            selector = parse_selector(tokens, start, i)
             selectors.append(selector)
             i += 1
             start = i
         if s.startswith('/*'):
-            raise CssParserException('Comments in selector section are not allowed')
+            raise CssParserException('Comments in selector section are not allowed', tokens[i])
         i += 1
-    selector = parse_selector(tokens[start:i])
+    selector = parse_selector(tokens, start, i)
     selectors.append(selector)
     selector_list = CssSelectorList(
         tokens=tokens,
@@ -157,12 +166,12 @@ def parse_selectors(tokens):
     )
     return selector_list
 
-def parse_selector(tokens):
-    # type: (List[Token]) -> CssSelector
-    i, pre_fluff = get_whitespace_and_comments(tokens, 0)
+def parse_selector(tokens, start, end):
+    # type: (List[Token], int, int) -> CssSelector
+    i, pre_fluff = get_whitespace_and_comments(tokens, start, end)
     levels = []
     last_i = None
-    while i < len(tokens):
+    while i < end:
         token = tokens[i]
         i += 1
         if not ws(token.s[0]):
@@ -170,10 +179,10 @@ def parse_selector(tokens):
             levels.append(token)
 
     if last_i is None:
-        raise CssParserException('Missing selector')
+        raise CssParserException('Missing selector', tokens[-1])
 
     assert last_i is not None
-    start, post_fluff = get_whitespace_and_comments(tokens, last_i)
+    start, post_fluff = get_whitespace_and_comments(tokens, last_i, end)
     selector = CssSelector(
         tokens=tokens,
         pre_fluff=pre_fluff,
@@ -182,21 +191,20 @@ def parse_selector(tokens):
     )
     return selector
 
-def parse_declaration_block(tokens):
-    # type: (List[Token]) -> CssDeclarationBlock
-    assert tokens[0].s == '{' # caller should strip leading fluff
-    assert tokens[-1].s == '}' # caller should strip trailing fluff
-    tokens = tokens[1:-1]
-    i = 0
+def parse_declaration_block(tokens, start, end):
+    # type: (List[Token], int, int) -> CssDeclarationBlock
+    assert tokens[start].s == '{'  # caller should strip leading fluff
+    assert tokens[end-1].s == '}'  # caller should strip trailing fluff
+    i = start + 1
     declarations = []
-    while i < len(tokens):
+    while i < end-1:
         start = i
-        i, _ = get_whitespace_and_comments(tokens, i)
-        while (i < len(tokens)) and (tokens[i].s != ';'):
+        i, _ = get_whitespace_and_comments(tokens, i, end)
+        while (i < end) and (tokens[i].s != ';'):
             i += 1
-        if i < len(tokens):
-            i, _ = get_whitespace_and_comments(tokens, i+1, line=tokens[i].line)
-        declaration = parse_declaration(tokens[start:i])
+        if i < end:
+            i, _ = get_whitespace_and_comments(tokens, i+1, end, line=tokens[i].line)
+        declaration = parse_declaration(tokens, start, i)
         declarations.append(declaration)
 
     declaration_block = CssDeclarationBlock(
@@ -205,26 +213,25 @@ def parse_declaration_block(tokens):
     )
     return declaration_block
 
-def parse_declaration(tokens):
-    # type: (List[Token]) -> CssDeclaration
-    i, pre_fluff = get_whitespace_and_comments(tokens, 0)
-    try:
-        css_property = tokens[i].s
-    except IndexError:
-        raise CssParserException('Empty declaration')
+def parse_declaration(tokens, start, end):
+    # type: (List[Token], int, int) -> CssDeclaration
+    i, pre_fluff = get_whitespace_and_comments(tokens, start, end)
 
+    if (i >= end) or (tokens[i].s == '}'):
+        raise CssParserException('Empty declaration or missing semicolon', tokens[i-1])
+
+    css_property = tokens[i].s
     if tokens[i+1].s != ':':
-        # print(css_property)
-        raise CssParserException('We expect a colon here')
+        raise CssParserException('We expect a colon here', tokens[i])
     i += 2
     start = i
-    while (i < len(tokens)) and (tokens[i].s != ';'):
+    while (i < end) and (tokens[i].s != ';') and (tokens[i].s != '}'):
         i += 1
-    css_value = parse_value(tokens[start:i])
-    semicolon = (i < len(tokens)) and (tokens[i].s == ';')
+    css_value = parse_value(tokens, start, i)
+    semicolon = (i < end) and (tokens[i].s == ';')
     if semicolon:
         i += 1
-    _, post_fluff = get_whitespace_and_comments(tokens, i)
+    _, post_fluff = get_whitespace_and_comments(tokens, i, end)
     declaration = CssDeclaration(
         tokens=tokens,
         pre_fluff=pre_fluff,
@@ -235,11 +242,14 @@ def parse_declaration(tokens):
     )
     return declaration
 
-def parse_value(tokens):
-    # type: (List[Token]) -> CssValue
-    i, pre_fluff = get_whitespace_and_comments(tokens, 0)
-    value = tokens[i]
-    i, post_fluff = get_whitespace_and_comments(tokens, i+1)
+def parse_value(tokens, start, end):
+    # type: (List[Token], int, int) -> CssValue
+    i, pre_fluff = get_whitespace_and_comments(tokens, start, end)
+    if i < end:
+        value = tokens[i]
+    else:
+        raise CssParserException('Missing value', tokens[i-1])
+    i, post_fluff = get_whitespace_and_comments(tokens, i+1, end)
     return CssValue(
         tokens=tokens,
         value=value,
@@ -247,6 +257,99 @@ def parse_value(tokens):
         post_fluff=post_fluff,
     )
 
+def handle_prefluff(pre_fluff, indent=False):
+    # type: (str, bool) -> str
+    pre_fluff_lines = pre_fluff.split('\n')
+    formatted_pre_fluff_lines = []
+    comment_indent = ''
+    general_indent = ''
+    if indent:
+        general_indent = '    '
+    for i, ln in enumerate(pre_fluff_lines):
+        line_indent = ''
+        if ln.strip() != '':
+            if not i:
+                line_indent = general_indent
+                comment_indent = '   '
+            else:
+                if comment_indent:
+                    if ('*/' in ln or '*' in ln) and (ln.strip()[:2] in ('*/', '* ', '*')):
+                        line_indent = general_indent
+                        if '*/' in ln:
+                            comment_indent = ''
+                    else:
+                        line_indent = general_indent + comment_indent
+                else:
+                    line_indent = general_indent
+                    comment_indent = '   '
+        elif len(pre_fluff_lines) == 1 and indent and ln != '':
+            line_indent = ' '
+        formatted_pre_fluff_lines.append(line_indent + ln.strip())
+    if formatted_pre_fluff_lines[-1] != '':
+        if formatted_pre_fluff_lines[-1].strip() == '' and indent:
+            formatted_pre_fluff_lines[-1] = ''
+        formatted_pre_fluff_lines.append('')
+    pre_fluff = '\n'.join(formatted_pre_fluff_lines)
+    res = ''
+    if indent:
+        if '\n' in pre_fluff:
+            res = pre_fluff + '    '
+        elif pre_fluff == '':
+            res = '    '
+        else:
+            res = pre_fluff.rstrip() + ' '
+    else:
+        res = pre_fluff
+
+    return res
+
+def handle_postfluff(post_fluff, indent=False, space_after_first_line=False):
+    # type: (str, bool, bool) -> str
+    post_fluff_lines = post_fluff.split('\n')
+    formatted_post_fluff_lines = []
+    comment_indent = ''
+    general_indent = ''
+    if indent:
+        general_indent = '    '
+    for i, ln in enumerate(post_fluff_lines):
+        line_indent = ''
+        if ln.strip() != '':
+            if i:
+                if comment_indent:
+                    if ('*/' in ln or '*' in ln) and (ln.strip()[:2] in ('*/', '* ', '*')):
+                        line_indent = general_indent
+                        if '*/' in ln:
+                            comment_indent = ''
+                    else:
+                        line_indent = general_indent + comment_indent
+                else:
+                    line_indent = general_indent
+                    comment_indent = '   '
+            elif indent and not i and len(post_fluff_lines) > 2:
+                formatted_post_fluff_lines.append('')
+                line_indent = general_indent
+                comment_indent = '   '
+            elif space_after_first_line:
+                line_indent = ' '
+                if not i:
+                    comment_indent = '   '
+            elif not i:
+                comment_indent = '   '
+        formatted_post_fluff_lines.append(line_indent + ln.strip())
+    if len(formatted_post_fluff_lines) == 1 and not space_after_first_line:
+        if formatted_post_fluff_lines[-1].strip() == '':
+            if formatted_post_fluff_lines[-1] != '':
+                formatted_post_fluff_lines[-1] = ' '
+        else:
+            formatted_post_fluff_lines.append('')
+    elif formatted_post_fluff_lines[-1].strip() == '':
+        formatted_post_fluff_lines[-1] = ''
+        if len(formatted_post_fluff_lines) == 1 and indent:
+            formatted_post_fluff_lines.append('')
+    elif space_after_first_line:
+        formatted_post_fluff_lines.append('')
+    post_fluff = '\n'.join(formatted_post_fluff_lines)
+    return post_fluff
 
 #### Begin CSS classes here
 
@@ -275,8 +378,15 @@ class CssNestedSection(object):
         res = ''
         res += self.pre_fluff
         res += self.selector_list.text()
-        res += '{'
-        res += self.section_list.text()
+        res += ' {'
+        section_list_lines = self.section_list.text().split('\n')
+        formatted_section_list = []
+        for ln in section_list_lines:
+            if ln.strip() == '':
+                formatted_section_list.append('')
+            else:
+                formatted_section_list.append('    ' + ln)
+        res += '\n'.join(formatted_section_list)
         res += '}'
         res += self.post_fluff
         return res
@@ -293,10 +403,11 @@ class CssSection(object):
     def text(self):
         # type: () -> str
         res = ''
-        res += self.pre_fluff
+        res += handle_prefluff(self.pre_fluff)
         res += self.selector_list.text()
+        res += ' '
         res += self.declaration_block.text()
-        res += self.post_fluff
+        res += handle_postfluff(self.post_fluff, space_after_first_line=True)
         return res
 
 class CssSelectorList(object):
@@ -307,8 +418,7 @@ class CssSelectorList(object):
 
     def text(self):
         # type: () -> str
-        res = ','.join(sel.text() for sel in self.selectors)
-        return res
+        return ',\n'.join(sel.text() for sel in self.selectors)
 
 class CssSelector(object):
     def __init__(self, tokens, pre_fluff, post_fluff, levels):
@@ -320,10 +430,7 @@ class CssSelector(object):
 
     def text(self):
         # type: () -> str
-        res = ''
-        res += self.pre_fluff
-        res += ' '.join(level.s for level in self.levels)
-        res += self.post_fluff
+        res = ' '.join(level.s for level in self.levels)
         return res
 
 class CssDeclarationBlock(object):
@@ -353,13 +460,18 @@ class CssDeclaration(object):
     def text(self):
         # type: () -> str
         res = ''
-        res += self.pre_fluff
+        res += handle_prefluff(self.pre_fluff, True)
         res += self.css_property
         res += ':'
-        res += self.css_value.text()
-        if self.semicolon:
-            res += ';'
-        res += self.post_fluff
+        value_text = self.css_value.text()
+        if '\n' in value_text:
+            # gradient values can be multi-line
+            res += value_text.rstrip()
+        else:
+            res += ' '
+            res += value_text.strip()
+        res += ';'
+        res += handle_postfluff(self.post_fluff, True, True)
         return res
 
 class CssValue(object):
@@ -377,7 +489,7 @@ class CssValue(object):
 def parse(text):
     # type: (str) -> CssSectionList
     tokens = tokenize(text)
-    section_list = parse_sections(tokens=tokens)
+    section_list = parse_sections(tokens, 0, len(tokens))
     return section_list
 
 #### Begin tokenizer section here
@@ -469,7 +581,7 @@ def tokenize(text):
             while (state.i < len(text)) and not looking_at('*/'):
                 state.i += 1
             if not looking_at('*/'):
-                raise CssParserException('unclosed comment')
+                raise CssParserException('unclosed comment', tokens[-1])
             s = text[old_i:state.i+2]
             state.i = old_i
 

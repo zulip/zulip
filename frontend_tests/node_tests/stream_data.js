@@ -1,14 +1,24 @@
 global.stub_out_jquery();
 
+set_global('page_params', {
+    is_admin: false,
+    realm_users: [],
+});
+
 add_dependencies({
+    marked: 'third/marked/lib/marked.js',
+    people: 'js/people.js',
     stream_color: 'js/stream_color.js',
-    util: 'js/util.js'
+    narrow: 'js/narrow.js',
+    hash_util: 'js/hash_util.js',
+    hashchange: 'js/hashchange.js',
+    util: 'js/util.js',
 });
 
 set_global('blueslip', {});
-set_global('page_params', {is_admin: false});
 
 var stream_data = require('js/stream_data.js');
+var people = global.people;
 
 (function test_basics() {
     var denmark = {
@@ -16,7 +26,7 @@ var stream_data = require('js/stream_data.js');
         color: 'blue',
         name: 'Denmark',
         stream_id: 1,
-        in_home_view: false
+        in_home_view: false,
     };
     var social = {
         subscribed: true,
@@ -24,7 +34,7 @@ var stream_data = require('js/stream_data.js');
         name: 'social',
         stream_id: 2,
         in_home_view: true,
-        invite_only: true
+        invite_only: true,
     };
     var test = {
         subscribed: true,
@@ -32,7 +42,7 @@ var stream_data = require('js/stream_data.js');
         name: 'test',
         stream_id: 3,
         in_home_view: false,
-        invite_only: false
+        invite_only: false,
     };
     stream_data.add_sub('Denmark', denmark);
     stream_data.add_sub('social', social);
@@ -62,12 +72,6 @@ var stream_data = require('js/stream_data.js');
 
     assert(stream_data.in_home_view('social'));
     assert(!stream_data.in_home_view('denmark'));
-
-    // Deleting a subscription makes you unsubscribed from the perspective of
-    // the client.
-    // Deleting a subscription is case-insensitive.
-    stream_data.delete_sub('SOCIAL');
-    assert(!stream_data.is_subscribed('social'));
 }());
 
 (function test_get_by_id() {
@@ -77,13 +81,50 @@ var stream_data = require('js/stream_data.js');
         name: 'Denmark',
         subscribed: true,
         color: 'red',
-        stream_id: id
+        stream_id: id,
     };
     stream_data.add_sub('Denmark', sub);
     sub = stream_data.get_sub('Denmark');
     assert.equal(sub.color, 'red');
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
+
+    stream_data.rename_sub(sub, 'Sweden');
+    sub = stream_data.get_sub_by_id(id);
+    assert.equal(sub.color, 'red');
+    assert.equal(sub.name, 'Sweden');
+}());
+
+(function test_unsubscribe() {
+    stream_data.clear_subscriptions();
+
+    var sub = {name: 'devel', subscribed: false, stream_id: 1};
+    var me = {
+        email: 'me@zulip.com',
+        full_name: 'Current User',
+        user_id: 81,
+    };
+
+    // set up user data
+    people.add(me);
+    people.initialize_current_user(me.user_id);
+
+    // set up our subscription
+    stream_data.add_sub('devel', sub);
+    sub.subscribed = true;
+    stream_data.set_subscribers(sub, [me.user_id]);
+
+    // ensure our setup is accurate
+    assert(stream_data.is_subscribed('devel'));
+
+    // DO THE UNSUBSCRIBE HERE
+    stream_data.unsubscribe_myself(sub);
+    assert(!sub.subscribed);
+    assert(!stream_data.is_subscribed('devel'));
+
+    // make sure subsequent calls work
+    sub = stream_data.get_sub('devel');
+    assert(!sub.subscribed);
 }());
 
 (function test_subscribers() {
@@ -92,7 +133,26 @@ var stream_data = require('js/stream_data.js');
 
     stream_data.add_sub('Rome', sub);
 
-    stream_data.set_subscribers(sub, ['fred@zulip.com', 'george@zulip.com']);
+    var fred = {
+        email: 'fred@zulip.com',
+        full_name: 'Fred',
+        user_id: 101,
+    };
+    var not_fred = {
+        email: 'not_fred@zulip.com',
+        full_name: 'Not Fred',
+        user_id: 102,
+    };
+    var george = {
+        email: 'george@zulip.com',
+        full_name: 'George',
+        user_id: 103,
+    };
+    people.add(fred);
+    people.add(not_fred);
+    people.add(george);
+
+    stream_data.set_subscribers(sub, [fred.user_id, george.user_id]);
     assert(stream_data.user_is_subscribed('Rome', 'FRED@zulip.com'));
     assert(stream_data.user_is_subscribed('Rome', 'fred@zulip.com'));
     assert(stream_data.user_is_subscribed('Rome', 'george@zulip.com'));
@@ -101,31 +161,44 @@ var stream_data = require('js/stream_data.js');
     stream_data.set_subscribers(sub, []);
 
     var email = 'brutus@zulip.com';
+    var brutus = {
+        email: email,
+        full_name: 'Brutus',
+        user_id: 104,
+    };
+    people.add(brutus);
     assert(!stream_data.user_is_subscribed('Rome', email));
 
     // add
-    stream_data.add_subscriber('Rome', email);
+    var ok = stream_data.add_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
 
     // verify that adding an already-added subscriber is a noop
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
 
     // remove
-    stream_data.remove_subscriber('Rome', email);
+    ok = stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
+    // Defensive code will give warnings, which we ignore for the
+    // tests, but the defensive code needs to not actually blow up.
+    global.blueslip.warn = function () {};
+
     // verify that removing an already-removed subscriber is a noop
-    stream_data.remove_subscriber('Rome', email);
+    ok = stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert(!ok);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -135,25 +208,33 @@ var stream_data = require('js/stream_data.js');
     // can be undefined.
     stream_data.set_subscribers(sub);
     stream_data.add_sub('Rome', sub);
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     sub.subscribed = true;
     assert(stream_data.user_is_subscribed('Rome', email));
 
-    // Verify that we noop and don't crash when unsubsribed.
+    // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
-    global.blueslip.warn = function () {};
-    stream_data.add_subscriber('Rome', email);
+    ok = stream_data.add_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
 
+    // Verify that we don't crash and return false for a bad stream.
+    ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);
+    assert(!ok);
+
+    // Verify that we don't crash and return false for a bad user id.
+    global.blueslip.error = function () {};
+    ok = stream_data.add_subscriber('Rome', 9999999);
+    assert(!ok);
 }());
 
 (function test_process_message_for_recent_topics() {
     var message = {
         stream: 'Rome',
         timestamp: 101,
-        subject: 'toPic1'
+        subject: 'toPic1',
     };
     stream_data.process_message_for_recent_topics(message);
 
@@ -163,14 +244,14 @@ var stream_data = require('js/stream_data.js');
             subject: 'toPic1',
             canon_subject: 'topic1',
             count: 1,
-            timestamp: 101
-        }
+            timestamp: 101,
+        },
     ]);
 
     message = {
         stream: 'Rome',
         timestamp: 102,
-        subject: 'Topic1'
+        subject: 'Topic1',
     };
     stream_data.process_message_for_recent_topics(message);
     history = stream_data.get_recent_topics('Rome');
@@ -179,14 +260,14 @@ var stream_data = require('js/stream_data.js');
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 
     message = {
         stream: 'Rome',
         timestamp: 103,
-        subject: 'topic2'
+        subject: 'topic2',
     };
     stream_data.process_message_for_recent_topics(message);
     history = stream_data.get_recent_topics('Rome');
@@ -195,14 +276,14 @@ var stream_data = require('js/stream_data.js');
             subject: 'topic2',
             canon_subject: 'topic2',
             count: 1,
-            timestamp: 103
+            timestamp: 103,
         },
         {
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 
     stream_data.process_message_for_recent_topics(message, true);
@@ -212,27 +293,58 @@ var stream_data = require('js/stream_data.js');
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
+}());
+
+(function test_is_active() {
+    stream_data.clear_subscriptions();
+
+    var sub = {name: 'pets', subscribed: false, stream_id: 1};
+    stream_data.add_sub('pets', sub);
+
+    assert(!stream_data.is_active(sub));
+
+    stream_data.subscribe_myself(sub);
+    assert(stream_data.is_active(sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert(!stream_data.is_active(sub));
+
+    sub = {name: 'lunch', subscribed: false, stream_id: 1};
+    stream_data.add_sub('lunch', sub);
+
+    assert(!stream_data.is_active(sub));
+
+    var message = {
+        stream: 'lunch',
+        timestamp: 108,
+        subject: 'topic2',
+    };
+    stream_data.process_message_for_recent_topics(message);
+
+    assert(stream_data.is_active(sub));
 }());
 
 (function test_admin_options() {
     function make_sub() {
-        return {
+        var sub = {
             subscribed: false,
             color: 'blue',
             name: 'stream_to_admin',
             stream_id: 1,
             in_home_view: false,
-            invite_only: false
+            invite_only: false,
         };
+        stream_data.add_sub(sub.name, sub);
+        return sub;
     }
 
     // non-admins can't do anything
     global.page_params.is_admin = false;
     var sub = make_sub();
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(!sub.is_admin);
     assert(!sub.can_make_public);
     assert(!sub.can_make_private);
@@ -245,7 +357,7 @@ var stream_data = require('js/stream_data.js');
 
     // admins can make public streams become private
     sub = make_sub();
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
     assert(!sub.can_make_public);
     assert(sub.can_make_private);
@@ -255,7 +367,7 @@ var stream_data = require('js/stream_data.js');
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = false;
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
     assert(!sub.can_make_public);
     assert(!sub.can_make_private);
@@ -263,7 +375,7 @@ var stream_data = require('js/stream_data.js');
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
     assert(sub.can_make_public);
     assert(!sub.can_make_private);
@@ -274,21 +386,21 @@ var stream_data = require('js/stream_data.js');
         stream_id: 1,
         name: 'c',
         color: 'cinnamon',
-        subscribed: true
+        subscribed: true,
     };
 
     var blue = {
         stream_id: 2,
         name: 'b',
         color: 'blue',
-        subscribed: false
+        subscribed: false,
     };
 
     var amber = {
         stream_id: 3,
         name: 'a',
         color: 'amber',
-        subscribed: true
+        subscribed: true,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon.name, cinnamon);
@@ -296,8 +408,28 @@ var stream_data = require('js/stream_data.js');
     stream_data.add_sub(blue.name, blue);
 
     var sub_rows = stream_data.get_streams_for_settings_page();
-    assert.equal(sub_rows[0].color, 'amber');
-    assert.equal(sub_rows[1].color, 'cinnamon');
-    assert.equal(sub_rows[2].color, 'blue');
+    assert.equal(sub_rows[0].color, 'blue');
+    assert.equal(sub_rows[1].color, 'amber');
+    assert.equal(sub_rows[2].color, 'cinnamon');
 
+}());
+
+(function test_delete_sub() {
+    var canada = {
+        stream_id: 101,
+        name: 'Canada',
+        subscribed: true,
+    };
+
+    stream_data.clear_subscriptions();
+    stream_data.add_sub('Canada', canada);
+
+    assert(stream_data.is_subscribed('Canada'));
+    assert(stream_data.get_sub('Canada').stream_id, canada.stream_id);
+    assert(stream_data.get_sub_by_id(canada.stream_id).name, 'Canada');
+
+    stream_data.delete_sub(canada.stream_id);
+    assert(!stream_data.is_subscribed('Canada'));
+    assert(!stream_data.get_sub('Canada'));
+    assert(!stream_data.get_sub_by_id(canada.stream_id));
 }());

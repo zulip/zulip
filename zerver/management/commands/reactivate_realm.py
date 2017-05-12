@@ -16,15 +16,15 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('domain', metavar='<domain>', type=str,
-                            help='domain of realm to reactivate')
+        parser.add_argument('string_id', metavar='<string_id>', type=str,
+                            help='subdomain or string_id of realm to reactivate')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["domain"])
+        realm = get_realm(options["string_id"])
         if realm is None:
-            print("Could not find realm %s" % (options["domain"],))
+            print("Could not find realm %s" % (options["string_id"],))
             sys.exit(1)
-        print("Reactivating", options["domain"])
+        print("Reactivating", options["string_id"])
         do_reactivate_realm(realm)
         print("Done!")

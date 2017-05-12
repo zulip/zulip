@@ -3,13 +3,16 @@ from __future__ import absolute_import
 
 from typing import Any
 
+import django
 import mock
 from django.test import TestCase
 from django.conf import settings
 from django.http import HttpResponse
 from six.moves.http_cookies import SimpleCookie
 
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.management.commands import makemessages
 
 
@@ -25,7 +28,7 @@ class TranslationTestCase(ZulipTestCase):
         response = getattr(self.client, method)(url, **kwargs)
         self.assertEqual(response.status_code, expected_status,
                          msg="Expected %d, received %d for %s to %s" % (
-                expected_status, response.status_code, method, url))
+                             expected_status, response.status_code, method, url))
         return response
 
     def test_accept_language_header(self):
@@ -33,7 +36,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
-                     ('zh-cn', u'注册'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
@@ -46,11 +49,13 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
-                     ('zh-cn', u'注册'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
-            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang})
+            # Applying str function to LANGUAGE_COOKIE_NAME to convert unicode
+            # into an ascii otherwise SimpleCookie will raise an exception
+            self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
 
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
@@ -60,7 +65,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
-                     ('zh-cn', u'注册'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:

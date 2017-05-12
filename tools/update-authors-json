@@ -1,0 +1,116 @@
+#!/usr/bin/env python
+"""
+Fetch contributors data from Github using their API, convert it to structured
+JSON data for the /authors page.
+"""
+
+from __future__ import absolute_import, print_function
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from typing import Any, Dict, List, Optional, Union, Text
+
+import os
+import sys
+import argparse
+from datetime import date
+import subprocess
+
+from six.moves import range
+import requests
+import simplejson as json
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+from zerver.lib.utils import split_by
+
+FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/authors.json')
+GITHUB_LINK = 'https://api.github.com/repos/zulip/zulip/stats/contributors'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--max-retries', type=int, default=3,
+                    help='Number of times to retry fetching data from Github')
+# In Travis CI and development environment, we use test fixture to avoid
+# fetching from Github constantly.
+parser.add_argument('--use-fixture', action='store_true', default=False,
+                    help='Use fixture data instead of fetching from Github')
+parser.add_argument('--not-required', action='store_true', default=False,
+                    help='Consider failures to reach GitHub nonfatal')
+args = parser.parse_args()
+
+def fetch_data(retries, link):
+    # type: (int, str) -> Optional[List[Dict[str, Any]]]
+    for _ in range(retries):
+        try:
+            r = requests.get(link)  # type: requests.Response
+            if r.status_code == 200:
+                return r.json()
+            else:
+                print('Github API return non 200 status.')
+        except requests.exceptions.RequestException as e:
+            print(e)
+
+    return None
+
+def write_to_disk(json_data, out_file):
+    # type: (Dict[str, Any], str) -> None
+    with open(out_file, 'w') as f:
+        try:
+            f.write("{}\n".format(json.dumps(json_data)))
+        except IOError as e:
+            print(e)
+            sys.exit(1)
+
+def run_production():
+    # type: () -> None
+    """
+    Fetch data from Github and stored it in
+    `static/generated/github-contributors.json`
+    """
+    json_data = fetch_data(args.max_retries, GITHUB_LINK)  # type: Optional[List[Dict[str, Any]]]
+    if json_data:
+        # Successfully fetch data from Github
+        contribs = []
+        for user in json_data:
+            author = user.get('author')
+            try:
+                result_user = dict(
+                    avatar=author.get('avatar_url'),
+                    name=author.get('login'),
+                    commits=user.get('total')
+                )
+                contribs.append(result_user)
+            except AttributeError:
+                print("Unable to access fields for %s" % (user,))
+
+        out_contrib_data = split_by(
+            sorted(contribs, key=lambda k: k.get('commits'), reverse=True),
+            4, None
+        )  # type: List[List[Optional[Dict[str, Union[Text, int]]]]]
+
+        out_data = dict(
+            data=out_contrib_data,
+            date=str(date.today())
+        )  # type: Dict[str, Any]
+
+        write_to_disk(out_data, settings.CONTRIBUTORS_DATA)
+
+    elif not args.not_required:
+        print('Fail to fetch data from Github.')
+        sys.exit(1)
+
+def copy_fixture():
+    # type: () -> None
+    """
+    Copy test fixture file from zerver/fixtures. This is used to avoid
+    constantly fetching data from Github during testing.
+    """
+    subprocess.check_call(['cp', FIXTURE_FILE, settings.CONTRIBUTORS_DATA])
+
+if args.use_fixture:
+    copy_fixture()
+else:
+    run_production()

@@ -18,11 +18,11 @@ body {
 body,
 #tab_bar_underpadding {
     background-color: #ffffff;
-   -webkit-transition: background-color 200ms linear;
-   -moz-transition: background-color 200ms linear;
-   -o-transition: background-color 200ms linear;
-   -ms-transition: background-color 200ms linear;
-   transition: background-color 200ms linear;
+    -webkit-transition: background-color 200ms linear;
+    -moz-transition: background-color 200ms linear;
+    -o-transition: background-color 200ms linear;
+    -ms-transition: background-color 200ms linear;
+    transition: background-color 200ms linear;
 }
 
 input,
@@ -39,6 +39,14 @@ blockquote p {
 
 a {
     cursor: pointer;
+}
+
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 p.n-margin {
@@ -61,16 +69,24 @@ p.n-margin {
     clear: both;
 }
 
-.light {
-    font-weight: 300;
-}
-
 .no-margin {
     margin: 0;
 }
 
 .border-radius {
     border-radius: 4px;
+}
+
+.modal-backdrop {
+    z-index: 102;
+}
+
+.top-messages-logo {
+    position: absolute;
+    left: calc(50% - 12px);
+    top: 67px;
+    width: 24px;
+    height: 24px;
 }
 
 #unmute_muted_topic_notification {
@@ -115,6 +131,18 @@ p.n-margin {
     }
 }
 
+.fade-in-message {
+    animation-name: fadeInMessage;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+.fade-in-message .message_edit_notice {
+    animation-name: fadeInEditNotice;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
 #unmute_muted_topic_notification .btn {
     background-color: transparent;
     border: 1px solid #444;
@@ -148,6 +176,7 @@ p.n-margin {
     height: 100%;
     overflow-y: scroll;
     z-index: 99;
+    -webkit-overflow-scrolling: touch;
 }
 
 .app-main,
@@ -227,7 +256,7 @@ input {
 
 textarea,
 label {
-    font-size:   inherit;
+    font-size: inherit;
     line-height: inherit;
 }
 
@@ -246,10 +275,9 @@ input[type="email"],
 input[type="url"],
 input[type="search"],
 input[type="tel"],
-input[type="color"]
-{
+input[type="color"] {
     font-size: inherit;
-    height:    1.4em;
+    height: 1.4em;
 }
 
 li,
@@ -259,9 +287,32 @@ li,
 }
 
 .btn {
-    font-size:  inherit;
-    height:     auto;
+    font-size: inherit;
+    height: auto;
     line-height: 100%;
+}
+
+.copy_message,
+.copy_message:focus {
+    background-color: white;
+    height: 20px;
+    width: 15px;
+    padding: 5px 10px;
+    border: none;
+    position: relative;
+    top: 28px;
+    left: -5px;
+    margin-top: -24px;
+    display: block;
+}
+
+#clipboard_image {
+    margin-top: -5px;
+    margin-left: -8px;
+}
+
+.copy_message:hover svg path {
+    fill: black;
 }
 
 .btn-large {
@@ -328,6 +379,17 @@ code {
     font-size: 0.857em;
 }
 
+.message_content code {
+    white-space: pre-wrap;
+    padding: 0px 4px;
+    background-color: #fff;
+}
+
+/* This ensures bulleted lists are nicely centered in 1-line messages */
+.message_content ul {
+    margin: 5px 0 5px 20px;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
@@ -335,16 +397,20 @@ code {
 }
 
 pre {
-    /* 12/14 em, so bootstrap's default 12 px,
-       when body is the default 14 px */
-    font-size: 0.857em;
-    line-height: inherit;
+    /* code block text is a bit smaller than normal text */
+    font-size: 0.8em;
+    line-height: 1.4;
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
     /* Bootstrap's default here is top: 0px, bottom: 10px */
     margin-top: 5px;
     margin-bottom: 5px;
+    /* Bootstrap's default here is 9.5 on all sides */
+    padding-top: 5px;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
 }
 
 /* Ensure the horizontal scrollbar is visible on Mac */
@@ -373,12 +439,12 @@ pre code {
 /* Style inline code inside a link
    to look more like a normal link */
 a code {
-    color:        #08C;
+    color: #08C;
     border-color: #08C;
 }
 
 a:hover code {
-    color:        #005580;
+    color: #005580;
     border-color: #005580;
 }
 
@@ -402,13 +468,13 @@ a:hover code {
     font-size: 12px;
 }
 
-
 .logout {
     white-space: nowrap;
 }
 
 .sidebar-title {
-    font-size: 11px;
+    font-size: 1em;
+    color: #aaa;
     font-weight: normal;
     display: inline;
 }
@@ -423,7 +489,7 @@ a:hover code {
 }
 
 #message_edit_tooltip:hover {
-   opacity: 1.0;
+    opacity: 1.0;
 }
 
 .message-edit-tooltip-inner {
@@ -438,186 +504,24 @@ a:hover code {
     position: relative;
 }
 
-#group-pms li:hover,
-#user_presences li:hover {
-    background-color: #e2e8dd;
-}
-
-#user_presences,
-#group-pms {
-    list-style-position: inside; /* Draw the bullets inside our box */
-    margin-left: 0;
-    overflow: hidden;
-}
-
-#user_presences:hover,
-#group-pms:hover {
-    overflow-y: auto;
-}
-
-#user_presences .user_sidebar_entry:hover,
-#group-pms .group-pms-sidebar-entry:hover {
-    cursor: pointer;
-}
-
-#user_presences li {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    display: none;
-}
-
-#user_presences li,
-#group-pms li {
-    list-style-type: none;
-}
-
-.user-status-indicator,
-.group-pm-status-indicator {
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 1px solid;
-    float: left;
-    position: relative;
-    top: 5px;
-    margin-right: 0.5em;
-}
-
-.user_active .user-status-indicator,
-.group-pm-status-indicator {
-    background-color: #44C21D;
-    border-color: #44C21D;
-}
-
-.user_idle .user-status-indicator {
-    border-color: #EC7E18;
-    background-color: #EC7E18;
-
-    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 50%, rgba(236,126,24,1) 50%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,rgba(255,255,255,0)), color-stop(50%,rgba(236,126,24,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* IE10+ */
-    background: linear-gradient(to bottom,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
-}
-
-.user_offline .user-status-indicator {
-    background-color: none;
-    border-color: gray;
-}
-
-.user-device-indicator {
-    display: inline-block;
-    font-size: 20px;
-    line-height: 0px;
-    position: absolute;
-    right: 12px;
-    top: 0px;
-    color: #777777;
-}
-
-.user-with-count .user-device-indicator {
-    right: 35px;
-}
-
-#user_presences a,
-#group-pms a {
-    color: #333;
-}
-
-#invite-user-link i {
-    text-decoration: none;
-    margin-right: 5px;
-}
-
 .message_header_stream a.message_label_clickable {
     color: #333;
-}
-
-.group-pms-sidebar-entry .selectable_sidebar_block {
-    width: 235px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    width: 218px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
-    width: 204px;
-}
-
-.group-pm-link {
-    margin-left: 17px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block {
-    width: 200px;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
-    width: 180px;
-}
-
-.user_sidebar_entry.user-with-count .count {
-    display: inherit;
-}
-
-.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
-    width: 170px;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    position: absolute;
-    right: 20px;
-    top: 4px;
-    padding: 2px 3px 1px 3px;
-    background: #80837f;
-    border-radius: 0px;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: normal;
-    letter-spacing: 0.6px;
-}
-
-.group-pms-sidebar-entry .count {
-    right: 2px;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    line-height: 13px;
-    top: 2px;
 }
 
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
+    text-align: center;
+    margin-right: 3px;
 }
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 68px;
+    margin-top: 100px;
     /* This is needed for the floating recipient bar
-     in Firefox only, for some reason; otherwise it gets
-     a scrollbar */
+       in Firefox only, for some reason;
+       otherwise it gets a scrollbar */
     overflow: visible;
 }
 
@@ -679,19 +583,43 @@ td.pointer {
 
 .message_time {
     display: block;
-    font-size: 11px;
-    color: #a1a1a1;
+    font-size: 12px;
+    color: #b1b1b1;
     vertical-align: middle;
     padding: 1px;
-    font-weight: 300;
+    font-weight: 400;
     position: absolute;
-    right: -80px;
+    right: -105px;
     line-height: 20px;
     text-align: right;
     -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     transition: background-color 2.7s ease-in, color 2.7s ease-in;
+}
+
+/* The way this overrides the menus with a background-color and a high
+   z-index is kinda hacky, and requires some annoying color-matching,
+   but it works. */
+.alert-copied {
+    position: absolute;
+    right: -110px;
+    font-size: 14px;
+    color: #52c2af;
+    background-color: white;
+    z-index: 999;
+    padding-left: 20px;
+    padding-right: 40px;
+    font-weight: 400;
+    display: none;
+}
+
+.private-message .alert-copied {
+    background-color: #f0f4f5;
+}
+
+.include-sender .alert-copied {
+    top: -3px;
 }
 
 .status-time {
@@ -702,7 +630,24 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -38px;
+    right: -56px;
+    z-index: 1;
+}
+
+.message_controls > div {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.2s ease;
+}
+
+.messagebox:hover .message_controls > div {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.message_controls > div {
+    padding: 0px 1px;
 }
 
 .include-sender .message_controls {
@@ -719,13 +664,13 @@ td.pointer {
 
 .message_header {
     vertical-align: middle;
-    text-align:     left;
+    text-align: left;
     /* We can overflow-y if the font size gets big */
-    overflow:       hidden;
-    text-overflow:  ellipsis;
-    white-space:    nowrap;
-    font-weight:    600;
-    line-height:    14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    line-height: 14px;
     position: relative;
     z-index: 0;
 }
@@ -768,35 +713,35 @@ td.pointer {
 }
 
 .stream_label:after {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width: 0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -11px;
-   border-style: solid;
-   border-width: 11px 0 11px 5px;
-   border-color: inherit;
-   z-index: 2;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -11px;
+    border-style: solid;
+    border-width: 11px 0 11px 5px;
+    border-color: inherit;
+    z-index: 2;
+    -moz-transform: scale(.9999);
 }
 
 .stream_label:before {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width:  0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -14px;
-   border-style: solid;
-   border-width: 14px 0 14px 6px;
-   border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
-   z-index: 1;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -14px;
+    border-style: solid;
+    border-width: 14px 0 14px 6px;
+    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+    z-index: 1;
+    -moz-transform: scale(.9999);
 }
 
 .stream_topic {
@@ -805,6 +750,27 @@ td.pointer {
     margin-left: -5px;
     height: 17px;
     line-height: 17px;
+}
+
+.recipient_row_date {
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    color: #888;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 11px 2px 10px;
+    height: 17px;
+    line-height: 17px;
+}
+
+.recipient_row_date.hide-date {
+    display: none;
+}
+
+.floating_recipient .recipient_row_date.hide-date {
+    display: block;
 }
 
 .summary_row .message_header {
@@ -862,8 +828,8 @@ td.pointer {
 }
 
 /*
-We can't collapse the floating recipient bar yet, so this is
-just a temporary hack.
+   We can't collapse the floating recipient bar yet, so this is
+   just a temporary hack.
 */
 .floating_recipient .messages-collapse {
     display: none;
@@ -880,28 +846,102 @@ just a temporary hack.
 }
 
 @-webkit-keyframes rotate {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(359deg); }
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+    }
 }
 
 @-moz-keyframes rotate {
-    from { -moz-transform: rotate(0deg); }
-    to { -moz-transform: rotate(359deg); }
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(359deg);
+    }
 }
 
 @-ms-keyframes rotate {
-    from { -ms-transform: rotate(0deg); }
-    to { -ms-transform: rotate(359deg); }
+    from {
+        -ms-transform: rotate(0deg);
+    }
+    to {
+        -ms-transform: rotate(359deg);
+    }
 }
 
 @-moz-keyframes rotate {
-    from { -o-transform: rotate(0deg); }
-    to { -o-transform: rotate(359deg); }
+    from {
+        -o-transform: rotate(0deg);
+    }
+    to {
+        -o-transform: rotate(359deg);
+    }
 }
 
 @keyframes rotate {
-    from { transform:rotate(0deg); }
-    to { transform:rotate(359deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@-webkit-keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@-moz-keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
 }
 
 .messagebox-bottom {
@@ -935,6 +975,7 @@ just a temporary hack.
     font-size: 14px;
     height: 17px;
     line-height: 17px;
+    border-left-color: #444;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -947,10 +988,10 @@ just a temporary hack.
 
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
-    background-color: #feffe0;
+    background-color: #f0f4f5;
 }
 
-.message_header_private_message .message-header-contents {
+.floating_recipient .message-header-contents {
     border-right: 1px solid #e2e2e2;
 }
 
@@ -1039,18 +1080,19 @@ just a temporary hack.
     vertical-align: top;
     line-height: 12px;
     font-size: 14px;
+    margin-left: -3px;
 }
 
 .sender-status {
-    display: block;
-    left: 45px;
-    top: -26px;
-    padding-bottom: 6px;
-    padding-right: 35px;
+    display: inline-block;
+    margin: 8px 0px 8px -3px;
+    /* this normalizes the margin of the emoji reactions with normal messages. */
+    padding-bottom: 5px;
     vertical-align: middle;
     line-height: 18px;
     font-size: 14px;
     position: relative;
+    max-width: calc(100% - 50px);
 }
 
 .message_controls.sender-status-controls {
@@ -1071,6 +1113,20 @@ just a temporary hack.
     border-color: #0088CC;
 }
 
+.message_sender .bot-icon {
+    position: relative;
+    vertical-align: top;
+    top: -4px;
+
+    height: 20px;
+    width: 20px;
+}
+
+.message_sender .sender-status .bot-icon {
+    top: -1px;
+    margin-left: -3px;
+}
+
 .actions_hover:hover {
     color: #0088CC;
 }
@@ -1085,12 +1141,7 @@ just a temporary hack.
 .message_failed {
     font-weight: bold;
     color: red;
-    padding: 0px 1px 0px 1px;
-}
-
-.message_failed i {
-    margin-left: 2px;
-    margin-right: 2px;
+    position: relative;
 }
 
 a.message_label_clickable:hover {
@@ -1112,28 +1163,46 @@ a.message_label_clickable:hover {
     opacity: 1.0;
 }
 
-.edit_content {
-    opacity: .4;
-    width: 0px;
-    height: 0px;
-    display: inline-block;
-    position: relative;
+.on_hover_topic_mute {
+    opacity: .1;
 }
 
-.edit_content i {
-    position: absolute;
-    display: block;
-    background: #ffffff;
-    top: -0.9em;
-    left: 0.4em;
-    border-radius: 1px;
-    padding: 1px 2px;
-    border: 1px dotted #ccc;
+.on_hover_topic_mute:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
+.edit_content {
+    width: 12px;
+    display: inline-block;
+    position: relative;
+    color: #bbb;
 }
 
 .edit_content:hover {
     cursor: pointer;
-    opacity: 1.0;
+    color: #0088CC;
+}
+
+.reactions_hover {
+    display: inline-block;
+    position: relative;
+    color: #bbb;
+}
+
+.reactions_hover:hover {
+    color: #0088CC;
+}
+
+.message_hovered .reactions_hover,
+.has_emoji_popover .reactions_hover {
+    opacity: 1;
+}
+
+.message_hovered .info,
+.has_actions_popover .info,
+.message_hovered .empty-star {
+    opacity: 1;
 }
 
 /* Brighten text because of the dark background */
@@ -1149,7 +1218,12 @@ a.dark_background:hover,
 }
 
 .message_top_line {
+    pointer-events: none;
     position: relative;
+}
+
+.message_top_line * {
+    pointer-events: auto;
 }
 
 .include-sender .message_top_line {
@@ -1174,9 +1248,11 @@ a.dark_background:hover,
     cursor: pointer;
 }
 
-.message_hovered .info,
-.message_hovered .empty-star {
-    visibility: visible;
+.info {
+    display: inline-block;
+    position: relative;
+    font-size: 15px;
+    color: #bbb;
 }
 
 .actions_hovered .actions_link {
@@ -1204,24 +1280,26 @@ div.focused_table {
     display: block;
 }
 
-.include-sender .message_content {
+.include-sender .message_content:not(:empty) {
     margin-top: -16px;
 }
 
 .message_content {
     line-height: 17px;
     font-size: 14px;
-    padding-left: 46px;
+    margin-left: 46px;
     display: block;
     position: relative;
 }
 
-.message_content p {
-    overflow: auto;
+.message_content:empty {
+    display: none;
 }
 
 .message_edit_content {
     line-height: 18px;
+    resize: vertical!important;
+    max-height: 24em;
 }
 
 .message_edit_countdown_timer {
@@ -1276,6 +1354,22 @@ div.focused_table {
     max-width: 100%;
 }
 
+#message-edit-history .message_author {
+    position: relative;
+}
+
+#message-edit-history .author_details {
+    display: block;
+    font-size: 12px;
+    vertical-align: middle;
+    padding: 1px;
+    font-weight: 300;
+    position: absolute;
+    right: -80px;
+    line-height: 20px;
+    text-align: right;
+}
+
 .message_content.condensed {
     max-height: 8.5em;
     overflow: hidden;
@@ -1293,6 +1387,8 @@ div.focused_table {
     /* to match .message_content */
     margin-left: 5px;
     margin-right: 35px;
+    /* to make message-uncollapse easier */
+    margin-top: 10px;
 }
 
 .message_length_controller:hover {
@@ -1331,7 +1427,7 @@ blockquote {
 
 blockquote p {
     line-height: inherit;
-    font-size:   inherit;
+    font-size: inherit;
 }
 
 .messagebox {
@@ -1342,7 +1438,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 4px 90px 1px 10px;
+    padding: 4px 115px 1px 10px;
 }
 
 .last_message .messagebox-content {
@@ -1350,7 +1446,11 @@ blockquote p {
 }
 
 .messagebox p {
-    margin: 3px 0px 3px 0px;
+    margin: 3px 0px 10px 0px;
+}
+
+.messagebox p:last-of-type {
+    margin-bottom: 3px;
 }
 
 .messagebox blockquote {
@@ -1389,10 +1489,6 @@ blockquote p {
 .home-error-bar {
     margin-top: 5px;
     display: none;
-}
-
-#connection-error {
-    font-size: 13px;
 }
 
 .streamname {
@@ -1437,61 +1533,61 @@ blockquote p {
 }
 
 #tab_list li {
-   white-space: nowrap;
-   list-style-type: none;
-   display: inline-block;
-   position: relative;
-   font-weight: 300;
-   background-color: #f9f9f9;
-   margin: 0px;
-   padding: 0px;
-   text-overflow: ellipsis;
-   height: 40px;
+    white-space: nowrap;
+    list-style-type: none;
+    display: inline-block;
+    position: relative;
+    font-weight: 300;
+    background-color: #f9f9f9;
+    margin: 0px;
+    padding: 0px;
+    text-overflow: ellipsis;
+    height: 40px;
 }
 
 #tab_list li.inactive {
-   border-top-color: rgba(0, 0, 0, 0);
-   border-right-color: rgba(0, 0, 0, 0);
-   border-bottom-color: rgba(0, 0, 0, 0);
-   background-color: #e2e2e2;
-   border-left-color: #e2e2e2;
-   border-width: 0px;
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    background-color: #e2e2e2;
+    border-left-color: #e2e2e2;
+    border-width: 0px;
 }
 
 #tab_list li.private_message a {
-   color: #ffffff;
+    color: #ffffff;
 }
 
 #tab_list li.inactive:after {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width:  0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -25px;
-   border-style: solid;
-   border-width: 25px 0 25px 12px;
-   border-color: inherit;
-   z-index: 2;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -25px;
+    border-style: solid;
+    border-width: 25px 0 25px 12px;
+    border-color: inherit;
+    z-index: 2;
+    -moz-transform: scale(.9999);
 }
 
 #tab_list li.inactive:before {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width:  0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -28px;
-   border-style: solid;
-   border-width: 28px 0 28px 14px;
-   border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
-   z-index: 1;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -28px;
+    border-style: solid;
+    border-width: 28px 0 28px 14px;
+    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+    z-index: 1;
+    -moz-transform: scale(.9999);
 }
 
 #tab_list a {
@@ -1522,13 +1618,13 @@ blockquote p {
 }
 
 #tab_list li.private_message {
-   border-top-color: rgba(0, 0, 0, 0);
-   border-right-color: rgba(0, 0, 0, 0);
-   border-bottom-color: rgba(0, 0, 0, 0);
-   background-color: #111111;
-   border-left-color: #111111;
-   color: #ffffff;
-   border-width: 0px;
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    background-color: #111111;
+    border-left-color: #111111;
+    color: #ffffff;
+    border-width: 0px;
 }
 
 #tab_list .root {
@@ -1615,27 +1711,6 @@ blockquote p {
     color: #ffffff;
 }
 
-#userlist-toggle {
-    display: none;
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    text-align: center;
-    vertical-align: middle;
-    border-left: 2px solid #afbfca;
-}
-
-#userlist-toggle-button {
-    text-decoration: none;
-    background-color: #e4e4e4;
-    color: #858585;
-    display: block;
-    width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
-}
-
 .nav .dropdown-menu {
     left: auto;
     right: 0px;
@@ -1701,6 +1776,45 @@ blockquote p {
     z-index: 5;
 }
 
+
+nav .column-left {
+    text-align: center;
+}
+
+nav a.no-style:hover {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+nav .column-left .nav-logo {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 8px;
+    width: 25px;
+    height: 25px;
+    background-image: url(../images/logo/zulip-icon-128x128.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+nav .column-left .company-name {
+    display: inline-block;
+    vertical-align: top;
+    text-transform: uppercase;
+    margin-top: 12px;
+    margin-left: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #52c2af;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+nav a .no-style {
+    text-decoration: none;
+}
+
 .navbar-search {
     margin-top: 0px;
     width: auto;
@@ -1729,7 +1843,7 @@ blockquote p {
 
 
 #search_query:focus {
-     box-shadow: inset 0px 0px 0px 2px #afbfca;
+    box-shadow: inset 0px 0px 0px 2px #afbfca;
 }
 
 #searchbox .search_button,
@@ -1758,6 +1872,16 @@ blockquote p {
 
 #searchbox .search_button[disabled] {
     visibility: hidden;
+}
+
+#searchbox a.search_icon {
+    color: #ccc;
+    text-decoration: none;
+}
+
+#searchbox a.search_icon:hover {
+    color: #000;
+    text-decoration: none;
 }
 
 .highlight {
@@ -1839,13 +1963,9 @@ div.floating_recipient {
     user-select: none;
 }
 
-#home-error {
-    display: none;
-}
-
 .loading_indicator_spinner {
     /* If you change these, make sure to adjust the constants in
-     * loading.make_indicator as well */
+       loading.make_indicator as well */
     height: 38px;
     width: 38px;
     float: left;
@@ -1853,11 +1973,18 @@ div.floating_recipient {
 
 .loading_indicator_text {
     /* If you change these, make sure to adjust the constants in
-     * loading.make_indicator as well */
-    margin-left: 20px;
-    font-size:   33px;
-    font-weight: bold;
+       loading.make_indicator as well */
+    margin-left: 5px;
+    font-size: 1.2em;
+    font-weight: 300;
     line-height: 38px;
+}
+
+.settings-section #admin_page_users_loading_indicator,
+.settings-section #admin_page_deactivated_users_loading_indicator,
+.settings-section #admin_page_bots_loading_indicator,
+.settings-section #admin_page_streams_loading_indicator {
+    margin: 0 auto;
 }
 
 .settings-section .loading_indicator_text {
@@ -1867,11 +1994,13 @@ div.floating_recipient {
     line-height: 20px;
     display: inline-block;
     float: none;
+    margin-top: 9px;
 }
 
 .settings-section .loading_indicator_spinner {
-    width: 12px;
-    height: 12px;
+    width: 20%;
+    height: 20px;
+    margin-top: 7px;
     vertical-align: middle;
     display: inline-block;
 }
@@ -1924,35 +2053,13 @@ div.floating_recipient {
     font-weight: bold;
 }
 
-.popover {
-    width: auto;
+.katex-html {
+    line-height: initial;
+    white-space: initial;
 }
 
-.popover-title {
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-
-    font-size:   inherit;
-    line-height: inherit;
-}
-
-.popover-title:empty {
-    display: none;
-}
-
-.popover_info {
-    text-align: center;
-}
-
-.popover hr {
-    margin-top:    5px;
-    margin-bottom: 5px;
-}
-
-.popover-left,
-.popover-right {
-    max-width: 200px;
+.tex-error {
+    color: red;
 }
 
 .hotkeys_table {
@@ -1995,17 +2102,30 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: 25px;
-    border: 1px rgb(100, 100, 100) solid;
-    background-color: rgba(230, 230, 230, 0.8);
+    top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
-       -moz-border-radius: 6px;
-            border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
 }
 
 #page_loading_indicator {
     margin: 10px auto;
+}
+
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -40px;
+    z-index: 1;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
 }
 
 .table-striped thead th {
@@ -2013,27 +2133,13 @@ div.floating_recipient {
     color: white;
 }
 
-#fmt_help_table {
+.help-table {
     table-layout: fixed;
 }
 
-.administration {
-    margin-top: 55px;
-    padding-left: 15px;
-}
-
-.subject-name {
-    display: block;
-    line-height: 1.3em;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .conversation-partners {
-    display: block;
-    line-height: 1.2em;
+    display: inline-block;
+    line-height: 1.2;
     width: 90%;
     overflow: hidden;
 }
@@ -2051,32 +2157,22 @@ div.floating_recipient {
     float: none;
 }
 
-.streams_popover .sp-container {
-    background: white;
-    cursor: pointer;
-    border: none;
+#stream-checkboxes {
+    margin-top: 10px;
+    display: none;
 }
 
-.sp-container {
-    z-index: 100;
+#stream-checkboxes .checkbox {
+    display: block;
 }
 
-.streams_popover .sp-palette-container {
-    border-right: none;
-}
-
-.streams_popover .colorpicker-container {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.streams_popover .popover_sub_unsub_button {
-    margin-top: 0px;
+#stream-checkboxes .checkbox input[type=checkbox] {
+    margin: 5px 0px;
     float: none;
 }
 
-.streams_popover .popover_sub_unsub_button::after {
-    content: " Unsubscribe";
+#copy-from-stream-expand-collapse {
+    cursor: pointer;
 }
 
 .stream_sub_unsub_button {
@@ -2117,8 +2213,9 @@ button.topic_edit_cancel {
     overflow: hidden;
     margin-top: 0;
     top: 5%;
-    outline: 0; /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
-                   so avoid the outline it causes */
+    /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
+       so avoid the outline it causes */
+    outline: 0;
 }
 
 .modal-body {
@@ -2129,13 +2226,62 @@ button.topic_edit_cancel {
     margin-bottom: 0px;
 }
 
+#invite-user {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#invite-user .modal-header {
+    padding: 7px 15px;
+    border-color: #ddd;
+}
+
+#invite-user .modal-header .exit {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    color: #aaa;
+}
+
 #invitee_emails {
     min-height: 40px;
     max-height: 300px;
 }
 
+#invite-user .custom_invite_body {
+    margin-top: 10px;
+}
+
+#invite-user .overlay-content {
+    position: relative;
+    width: 500px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+#invite-user .modal-body {
+    margin-bottom: 58px;
+}
+
+#invite-user .modal-footer {
+    position: absolute;
+    bottom: 0px;
+    width: calc(100% - 30px);
+}
+
 #invite_status {
     display: none;
+}
+
+#invite-user #invite-user-label {
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
 }
 
 .settings-dropdown-caret {
@@ -2169,12 +2315,17 @@ button.topic_edit_cancel {
     text-align: center;
 }
 
+.notification {
+    cursor: pointer;
+}
+
 #empty_narrow_private_message p,
 #empty_narrow_message p {
     text-align: center;
 }
 
-.faded {
+.message-fade,
+.user_sidebar_entry.user-fade {
     opacity: 0.4;
 }
 
@@ -2186,10 +2337,27 @@ button.topic_edit_cancel {
     margin-top: -7px;
 }
 
+div.emoji {
+    /* This is needed when using the sprite sheets */
+    top: 6px;
+}
+
+img.emoji {
+    /* This is the right offset for <img> style emoji */
+    top: 3px;
+}
+
+.emoji.realm-emoji {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .twitter-tweet {
     border: 1px solid #ddd;
     padding: .5em .75em;
     margin-bottom: 0.25em;
+    word-break: break-word;
 }
 
 .twitter-avatar {
@@ -2201,14 +2369,17 @@ button.topic_edit_cancel {
 
 .star {
     display: inline-block;
-    opacity: 1;
     font-size: 14px;
     color: #2c8211;
 }
 
+.star:not(.empty-star) {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
 .empty-star {
     color: #bbb;
-    visibility: hidden;
 }
 
 .empty-star:hover {
@@ -2216,15 +2387,8 @@ button.topic_edit_cancel {
     color: #565656;
 }
 
-.info {
-    display: inline-block;
-    font-size: 15px;
-    color: #bbb;
-    visibility: hidden;
-}
-
 .star:hover {
-    cursor:  pointer;
+    cursor: pointer;
     color: #0d7245;
 }
 
@@ -2297,24 +2461,8 @@ button.topic_edit_cancel {
     margin-right: -50%;
 }
 
-#group-pm-list {
-    display: none;
-}
-
-#userlist-header,
-#group-pm-header {
-    border-top: 1px solid #e2e2e2;
-    margin-top: 5px;
-    margin-right: 10px;
-}
-
-.sidebar-items:first-of-type #userlist-header {
-    border-top: none;
-}
-
-#feedback_section {
-    text-align: left;
-    padding-bottom: 10px;
+.include-sender .message_edit {
+    margin-top: -14px;
 }
 
 .message_edit {
@@ -2324,17 +2472,12 @@ button.topic_edit_cancel {
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
-#message_edit_form .edit-control-label {
-    width: auto;
-    float: left;
-    font-size: 80%;
-    vertical-align: top;
-    padding-top: 0px;
-    margin-right: 10px;
+#message_edit_form {
+    margin-bottom: 10px;
 }
 #message_edit_form .edit-controls {
-    margin-left: 35px; /* Match .message_content padding less 7px textarea padding and border */
-    margin-right: -7px;
+    margin-left: 0px;
+    margin-top: 0px;
 }
 #message_edit_form textarea {
     width: 100%;
@@ -2345,6 +2488,23 @@ button.topic_edit_cancel {
 }
 #message_edit_form .control-group.no-margin {
     margin-bottom: 0px;
+}
+
+#message_edit_form a.message-control-button {
+    display: inline;
+    color: #777;
+    text-decoration: none;
+    font-size: 12px;
+    width: 12px;
+    height: 14px;
+    text-align: center;
+    float: right;
+    padding-left: 5px;
+    padding-top: 3px;
+}
+
+#message_edit_form .action-buttons {
+    margin: 10px 0px;
 }
 
 #topic_edit_form {
@@ -2390,13 +2550,13 @@ button.topic_edit_cancel {
     background-color: #c9fcc1;
 }
 
-#administration h1,
+#organization h1,
 #settings h1 {
     font-size: 25px;
     font-weight: 300;
 }
 
-#administration .administration-icon,
+#organization .organization-icon,
 #settings .settings-icon {
     margin-right: 10px;
     font-size: 20px;
@@ -2404,53 +2564,6 @@ button.topic_edit_cancel {
 
 #home {
     margin-top: 41px;
-}
-
-#home .alert-bar-container {
-    position: fixed;
-    width: 100%;
-    top: 41px;
-    left: 0px;
-    z-index: 101;
-}
-
-#home .alert-bar {
-    width: 100%;
-    max-width: 1210px;
-    margin: auto;
-    text-align: center;
-}
-
-#home .alert-bar-contents {
-    background: rgba(163,211,147,0.95);
-    font-weight: 400;
-    padding: 10px 35px 10px 10px;
-    display: inline-block;
-    position: relative;
-    z-index: 99;
-}
-
-#home .alert-bar .alert-icon {
-    font-size: 20px;
-    margin-right: 10px;
-    line-height: 5px;
-}
-
-#home .alert-bar .close-alert-icon {
-    display: block;
-    height: 100%;
-    width: 28px;
-    line-height: 38px;
-    font-size: 15px;
-    opacity: 0.5;
-    position: absolute;
-    top: 0px;
-    right: 0px;
-}
-
-#home .alert-bar .close-alert-icon:hover {
-    opacity: 0.7;
-    cursor: pointer;
 }
 
 .message-pane {
@@ -2485,15 +2598,83 @@ button.topic_edit_cancel {
     margin-right: 25px;
 }
 
-.deactivated_user {
+.deactivated_user .user_name,
+.deactivated_user .email {
     text-decoration: line-through;
 }
 
-.admin-menu-item {
-    display: none;
+/* embed */
+.message_content .message_embed {
+    display: block;
+    position: relative;
+    margin: 5px 0px;
+    border: none;
+    border-left: 3px solid #eee;
+    height: 70px;
+    padding: 5px;
+    z-index: 1;
 }
 
-.user-list-filter ,
-.add-user-list-filter {
-    width: 80%;
+.message_content .message_embed > * {
+    display: inherit;
+    padding: 5px;
+    border: none;
+}
+
+.message_embed .message_embed_title {
+    padding-top: 0px;
+    /* to remove the spacing that the font has from the top of the container. */
+    margin-top: -1px;
+
+    font-size: 1em;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.message_embed .message_embed_description {
+    position: relative;
+    margin-top: -5px;
+    max-width: 500px;
+
+    /* to put it below the container gradient. */
+    z-index: -1;
+}
+
+.message_embed .message_embed_image {
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    background-size: cover;
+    background-position: center;
+}
+
+.message_embed .data-container {
+    padding: 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+    max-width: calc(100% - 115px);
+    max-height: 70px;
+    overflow: hidden;
+}
+
+.message_embed .data-container div {
+    display: block;
+    border: none;
+}
+
+@media (max-width: 600px) {
+    .message_content .message_embed {
+        height: auto;
+    }
+
+    .message_embed .message_embed_image {
+        width: 100%;
+        height: 100px;
+    }
+
+    .message_embed .data-container {
+        display: block;
+        max-width: 100%;
+        margin-top: 10px;
+    }
 }

@@ -1,0 +1,48 @@
+<ol>
+    <li>
+        <p>
+            Follow the "Getting Started with Hubot" section of the
+            <a href="https://hubot.github.com/docs/#getting-started-with-hubot">Hubot README</a> to create your Hubot.
+            You'll have a new directory from which <code>bin/hubot</code> starts a vanilla Hubot instance with the shell
+            backend.
+        </p>
+    </li>
+
+    <li>In your Hubot's directory, install the Zulip adapter. Run:
+        <pre><code>npm install --save hubot-zulip</code></pre>
+    </li>
+
+    <li>
+        <p>
+            On your {{ settings_html|safe }}, create a bot account. Note its username, API key and full name; you
+            will use them on the next step.
+        </p>
+    </li>
+
+    <li>To run Hubot locally, use:
+        <pre><code>HUBOT_ZULIP_SITE={{ external_api_path_subdomain }} HUBOT_ZULIP_BOT=hubot-bot@example.com HUBOT_ZULIP_API_KEY=your_key bin/hubot --adapter zulip --name "myhubot"</code></pre>
+
+    </li>
+</ol>
+
+<p>
+    The bot account email address and API key are passed to Hubot via environment variables
+    <code>HUBOT_ZULIP_BOT</code> and <code>HUBOT_ZULIP_API_KEY</code>. The <code>--name</code> parameter must match
+    the name you gave the bot on the settings page.
+</p>
+
+<p>
+    Hubot will automatically listen for commands on all public streams. You can also invite Hubot to invite-only
+    streams.
+</p>
+
+<p>
+    To test your Hubot installation, send it an @-notification with a basic command, for example
+    <code>@Hubot pug me</code>, which should produce a result like this:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/hubot/001.png"/>
+
+<p><a href='https://github.com/zulip/hubot-zulip'>Source code for the hubot-zulip adapter is available on GitHub</a>.
+</p>
+<p><a href="#hubot-integrations">Check out additional Zulip integrations available via Hubot</a></p>

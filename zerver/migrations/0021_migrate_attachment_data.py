@@ -6,11 +6,10 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.conf import settings
 
-from zerver.models import Recipient
-
 def migrate_existing_data(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None
     Attachment = apps.get_model('zerver', 'Attachment')
+    Recipient = apps.get_model('zerver', 'Recipient')
     Stream = apps.get_model('zerver', 'Stream')
 
     attachments = Attachment.objects.all()
@@ -21,7 +20,7 @@ def migrate_existing_data(apps, schema_editor):
             if owner == message.sender:
                 if message.recipient.type == Recipient.STREAM:
                     stream = Stream.objects.get(id=message.recipient.type_id)
-                    is_realm_public = stream.realm.domain != "mit.edu" and not stream.invite_only
+                    is_realm_public = not stream.realm.is_zephyr_mirror_realm and not stream.invite_only
                     entry.is_realm_public = entry.is_realm_public or is_realm_public
 
         entry.save()

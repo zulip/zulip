@@ -1,0 +1,39 @@
+<p>
+    Zulip supports both Git and Mercurial notifications from
+    Bitbucket. This integration is for the new-style Bitbucket
+    webhooks used by the Bitbucket SAAS service.
+</p>
+
+<p>
+    First, create the stream you'd like to use for Bitbucket notifications,
+    and subscribe all interested parties to this stream. The integration will
+    use the default stream <code>bitbucket</code> if no stream is supplied in the
+    hook; you still need to create the stream even if you are using this
+    default.
+</p>
+
+<p>The URL you create will be in the following format:</p>
+<p><code>{{ external_api_uri_subdomain }}/v1/external/bitbucket2?api_key=abcdefgh&amp;stream=bitbucket</code></p>
+<p>
+    where <code>api_key</code> is the API key of your Zulip bot,
+    and <code>stream</code> is the stream name you want the
+    notifications sent to.
+</p>
+<p>
+    You can also limit the notifications you receive to specific
+    branches by specifying them in a comma-separated list at the end
+    of the URL, like so:
+</p>
+<p><code>{{ external_api_uri_subdomain }}/v1/external/bitbucket2?api_key=abcdefgh&amp;stream=bitbucket&amp;branches=master,development</code></p>
+
+<p>
+    Next, from your repository's web page, go to the Settings page and choose Webhooks on the left-hand side.
+    Click <code>Add webhook</code>, set URL to the URL you created above. Remember to click the 'active' checkbox.
+    Click <code>Save</code>.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    Example message:
+</p>
+<img class="screenshot" src="/static/images/integrations/bitbucket/003.png"/>

@@ -1,3 +1,4 @@
+// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
 var reload = (function () {
 
 var exports = {};
@@ -14,6 +15,19 @@ exports.is_in_progress = function () {
 };
 
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
+    if (!localstorage.supported()) {
+        // If local storage is not supported by the browser, we can't
+        // save the browser's position across reloads (since there's
+        // no secure way to pass that state in a signed fashion to the
+        // next instance of the browser client).
+        //
+        // So we jure return here and let the reload proceed without
+        // having preserved state.  We keep the hash the same so we'll
+        // at least save their narrow state.
+        blueslip.log("Can't preserve state; no local storage.");
+        return;
+    }
+
     if (send_after_reload === undefined) {
         send_after_reload = 0;
     }
@@ -21,17 +35,18 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
     if (save_compose) {
-        if (compose.composing() === 'stream') {
+        var msg_type = compose_state.get_message_type();
+        if (msg_type === 'stream') {
             url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose.stream_name());
-            url += "+subject=" + encodeURIComponent(compose.subject());
-        } else if (compose.composing() === 'private') {
+            url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+            url += "+subject=" + encodeURIComponent(compose_state.subject());
+        } else if (msg_type === 'private') {
             url += "+msg_type=private";
-            url += "+recipient=" + encodeURIComponent(compose.recipient());
+            url += "+recipient=" + encodeURIComponent(compose_state.recipient());
         }
 
-        if (compose.composing()) {
-            url += "+msg=" + encodeURIComponent(compose.message_content());
+        if (msg_type) {
+            url += "+msg=" + encodeURIComponent(compose_state.message_content());
         }
     }
 
@@ -44,7 +59,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
     if (save_narrow) {
         var row = home_msg_list.selected_row();
-        if (!narrow.active()) {
+        if (!narrow_state.active()) {
             if (row.length > 0) {
                 url += "+offset=" + row.offset().top;
             }
@@ -68,7 +83,22 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
     url += "+oldhash=" + encodeURIComponent(oldhash);
 
-    window.location.replace(url);
+    var ls = localstorage();
+    // Delete all the previous preserved states.
+    ls.removeRegex('reload:\\d+');
+
+    // To protect the browser against CSRF type attacks, the reload
+    // logic uses a random token (to distinct this browser from
+    // others) which is passed via the URL to the browser (post
+    // reloading).  The token is a key into local storage, where we
+    // marshall and store the URL.
+    //
+    // TODO: Remove the now-unnecessary URL-encoding logic above and
+    // just pass the actual data structures through local storage.
+    var token = util.random_int(0, 1024*1024*1024*1024);
+
+    ls.set("reload:" + token, url);
+    window.location.replace("#reload:" + token);
 }
 
 
@@ -76,10 +106,29 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 // done before the first call to get_events
 exports.initialize = function reload__initialize() {
     var location = window.location.toString();
-    var fragment = location.substring(location.indexOf('#') + 1);
-    if (fragment.search("reload:") !== 0) {
+    var hash_fragment = location.substring(location.indexOf('#') + 1);
+
+    // hash_fragment should be e.g. `reload:12345123412312`
+    if (hash_fragment.search("reload:") !== 0) {
         return;
     }
+
+    // Using the token, recover the saved pre-reload data from local
+    // storage.  Afterwards, we clear the reload entry from local
+    // storage to avoid a local storage space leak.
+    var ls = localstorage();
+    var fragment = ls.get(hash_fragment);
+    if (fragment === undefined) {
+        // Since this can happen sometimes with hand-reloading, it's
+        // not really worth throwing an exception if these don't
+        // exist, but be log it so that it's available for future
+        // debugging if an exception happens later.
+        blueslip.info("Invalid hash change reload token");
+        hashchange.changehash("");
+        return;
+    }
+    ls.remove(hash_fragment);
+
     fragment = fragment.replace(/^reload:/, "");
     var keyvals = fragment.split("+");
     var vars = {};
@@ -88,17 +137,11 @@ exports.initialize = function reload__initialize() {
         vars[pair[0]] = decodeURIComponent(pair[1]);
     });
 
-    // Prevent random people on the Internet from constructing links
-    // that make you send a message.
-    if (vars.csrf_token !== csrf_token) {
-        return;
-    }
-
     if (vars.msg !== undefined) {
         var send_now = parseInt(vars.send_after_reload, 10);
 
         // TODO: preserve focus
-        compose.start(vars.msg_type, {stream: vars.stream || '',
+        compose_actions.start(vars.msg_type, {stream: vars.stream || '',
                                       subject: vars.subject || '',
                                       private_message_recipient: vars.recipient || '',
                                       content: vars.msg || ''});
@@ -110,8 +153,8 @@ exports.initialize = function reload__initialize() {
     var pointer = parseInt(vars.pointer, 10);
 
     if (pointer) {
-        page_params.orig_initial_pointer = page_params.initial_pointer;
-        page_params.initial_pointer = pointer;
+        page_params.orig_initial_pointer = page_params.pointer;
+        page_params.pointer = pointer;
     }
     var offset = parseInt(vars.offset, 10);
     if (offset) {
@@ -131,47 +174,17 @@ exports.initialize = function reload__initialize() {
     hashchange.changehash(vars.oldhash);
 };
 
-function clear_message_list(msg_list) {
-    if (!msg_list) { return; }
-    msg_list.clear();
-    // Some pending ajax calls may still be processed and they to not expect an
-    // empty msg_list.
-    msg_list._items = [{id: 1}];
-}
-
-function cleanup_before_reload() {
-    try {
-        // Unbind all the jQuery event listeners
-        $('*').off();
-
-        // Abort all pending ajax requests`
-        channel.abort_all();
-
-        // Free all the DOM in the main_div
-        $("#main_div").empty();
-
-        // Now that the DOM is empty our beforeunload callback may
-        // have been removed, so explicitly remove event queue here.
-        server_events.cleanup_event_queue();
-
-        // Empty the large collections
-        clear_message_list(message_list.all);
-        clear_message_list(home_msg_list);
-        clear_message_list(message_list.narrowed);
-        message_store.clear();
-
-    } catch (ex) {
-        blueslip.error('Failed to cleanup before reloading',
-                       undefined, ex.stack);
-    }
-}
-
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
     if (reload_in_progress) { return; }
 
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
-        preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        try {
+            preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        } catch (ex) {
+            blueslip.error('Failed to preserve state',
+                           undefined, ex.stack);
+        }
     }
 
     if (message === undefined) {
@@ -179,12 +192,15 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     }
 
     // TODO: We need a better API for showing messages.
-    ui.report_message(message, $("#reloading-application"));
+    ui_report.message(message, $("#reloading-application"));
     blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
 
-    if (feature_flags.cleanup_before_reload) {
-        cleanup_before_reload();
+    try {
+        server_events.cleanup_event_queue();
+    } catch (ex) {
+        blueslip.error('Failed to cleanup before reloading',
+                       undefined, ex.stack);
     }
 
     window.location.reload(true);
@@ -196,7 +212,7 @@ exports.initiate = function (options) {
         save_pointer: true,
         save_narrow: true,
         save_compose: true,
-        send_after_reload: false
+        send_after_reload: false,
     });
 
     if (options.save_pointer === undefined ||
@@ -225,9 +241,10 @@ exports.initiate = function (options) {
     var unconditional_timeout = 1000*60*30 + util.random_int(0, 1000*60*5);
     var composing_timeout     = 1000*60*5  + util.random_int(0, 1000*60);
     var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
-    var compose_done_handler, compose_started_handler;
+    var compose_done_handler;
+    var compose_started_handler;
 
-    function reload_from_idle () {
+    function reload_from_idle() {
         do_reload_app(false,
                       options.save_pointer,
                       options.save_narrow,
@@ -240,29 +257,29 @@ exports.initiate = function (options) {
 
     compose_done_handler = function () {
         idle_control.cancel();
-        idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: home_timeout,
+                                         onIdle: reload_from_idle});
         $(document).off('compose_canceled.zulip compose_finished.zulip',
                         compose_done_handler);
         $(document).on('compose_started.zulip', compose_started_handler);
     };
     compose_started_handler = function () {
         idle_control.cancel();
-        idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: composing_timeout,
+                                         onIdle: reload_from_idle});
         $(document).off('compose_started.zulip', compose_started_handler);
         $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     };
 
-    if (compose.composing()) {
-        idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': reload_from_idle});
+    if (compose_state.composing()) {
+        idle_control = $(document).idle({idle: composing_timeout,
+                                         onIdle: reload_from_idle});
         $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     } else {
-        idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: home_timeout,
+                                         onIdle: reload_from_idle});
         $(document).on('compose_started.zulip', compose_started_handler);
     }
 };
@@ -279,3 +296,7 @@ window.addEventListener('beforeunload', function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = reload;
+}

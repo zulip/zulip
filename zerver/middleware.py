@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 
-from six import text_type, binary_type
-from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional
+from six import binary_type
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Text
 
 from django.conf import settings
+from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error
@@ -14,14 +15,13 @@ from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches, resolve_subdomain_to_realm
+from zerver.models import flush_per_request_caches, get_realm
 from zerver.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
-from zproject.jinja2 import render_to_response
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 import logging
 import time
@@ -85,7 +85,7 @@ def format_timedelta(timedelta):
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta, path):
-    # type: (float, text_type) -> bool
+    # type: (float, Text) -> bool
     if time_delta < 1.2:
         return False
     is_exempt = \
@@ -101,12 +101,12 @@ def is_slow_query(time_delta, path):
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
-    # type: (MutableMapping[str, Any], text_type, str, str, text_type, text_type, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
+    # type: (MutableMapping[str, Any], Text, str, str, Text, Text, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
 
-# For statsd timer name
+    # For statsd timer name
     if path == '/':
         statsd_path = u'webreq'
     else:
@@ -140,9 +140,9 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         if 'remote_cache_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
             remote_cache_time_delta += (log_data['remote_cache_time_stopped'] -
-                                     log_data['remote_cache_time_restarted'])
+                                        log_data['remote_cache_time_restarted'])
             remote_cache_count_delta += (log_data['remote_cache_requests_stopped'] -
-                                      log_data['remote_cache_requests_restarted'])
+                                         log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
             remote_cache_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
@@ -194,13 +194,13 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     else:
         extra_request_data = ""
     logger_client = "(%s via %s)" % (email, client_name)
-    logger_timing = '%5s%s%s%s%s%s %s' % \
+    logger_timing = ('%5s%s%s%s%s%s %s' %
                      (format_timedelta(time_delta), optional_orig_delta,
                       remote_cache_output, bugdown_output,
-                      db_time_output, startup_output, path)
-    logger_line = '%-15s %-7s %3d %s%s %s' % \
-                    (remote_ip, method, status_code,
-                     logger_timing, extra_request_data, logger_client)
+                      db_time_output, startup_output, path))
+    logger_line = ('%-15s %-7s %3d %s%s %s' %
+                   (remote_ip, method, status_code,
+                    logger_timing, extra_request_data, logger_client))
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
         logger.debug(logger_line)
     else:
@@ -216,10 +216,11 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
+        assert error_content_iter is not None
         error_content_list = list(error_content_iter)
         if error_content_list:
             error_data = u''
-        elif isinstance(error_content_list[0], text_type):
+        elif isinstance(error_content_list[0], Text):
             error_data = u''.join(error_content_list)
         elif isinstance(error_content_list[0], binary_type):
             error_data = repr(b''.join(error_content_list))
@@ -239,7 +240,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -297,8 +298,9 @@ class JsonErrorHandler(object):
 
 class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         self.process_request(request)
+
     def process_request(self, request):
         # type: (HttpRequest) -> None
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
@@ -307,7 +309,7 @@ class TagRequests(object):
             request.error_format = "HTML"
 
 def csrf_failure(request, reason=""):
-    # type: (HttpRequest, Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, Optional[Text]) -> HttpResponse
     if request.error_format == "JSON":
         return json_error(_("CSRF Error: %s") % (reason,), status=403)
     else:
@@ -348,17 +350,27 @@ class FlushDisplayRecipientCache(object):
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
+        try:
+            request.get_host()
+        except DisallowedHost:
+            # If we get a DisallowedHost exception trying to access
+            # the host, (1) the request is failed anyway and so the
+            # below code will do nothing, and (2) the below will
+            # trigger a recursive exception, breaking things, so we
+            # just return here.
+            return response
+
         if settings.REALMS_HAVE_SUBDOMAINS:
-            if (not request.path.startswith("/static/") and not request.path.startswith("/api/")
-                and not request.path.startswith("/json/")):
+            if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
+                    not request.path.startswith("/json/")):
                 subdomain = get_subdomain(request)
                 if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
                     return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                               settings.EXTERNAL_HOST))
                 if subdomain != "":
-                    realm = resolve_subdomain_to_realm(subdomain)
+                    realm = get_realm(subdomain)
                     if (realm is None):
-                        return render_to_response("zerver/invalid_realm.html")
+                        return render(request, "zerver/invalid_realm.html")
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie.
@@ -394,9 +406,30 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     if settings.REALMS_HAVE_SUBDOMAINS:
                         session_cookie_domain = host
                     response.set_cookie(settings.SESSION_COOKIE_NAME,
-                            request.session.session_key, max_age=max_age,
-                            expires=expires, domain=session_cookie_domain,
-                            path=settings.SESSION_COOKIE_PATH,
-                            secure=settings.SESSION_COOKIE_SECURE or None,
-                            httponly=settings.SESSION_COOKIE_HTTPONLY or None)
+                                        request.session.session_key, max_age=max_age,
+                                        expires=expires, domain=session_cookie_domain,
+                                        path=settings.SESSION_COOKIE_PATH,
+                                        secure=settings.SESSION_COOKIE_SECURE or None,
+                                        httponly=settings.SESSION_COOKIE_HTTPONLY or None)
         return response
+
+class SetRemoteAddrFromForwardedFor(object):
+    """
+    Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
+
+    This middleware replicates Django's former SetRemoteAddrFromForwardedFor middleware.
+    Because Zulip sits behind a NGINX reverse proxy, if the HTTP_X_FORWARDED_FOR
+    is set in the request, then it has properly been set by NGINX.
+    Therefore HTTP_X_FORWARDED_FOR's value is trusted.
+    """
+    def process_request(self, request):
+        # type: (HttpRequest) -> None
+        try:
+            real_ip = request.META['HTTP_X_FORWARDED_FOR']
+        except KeyError:
+            return None
+        else:
+            # HTTP_X_FORWARDED_FOR can be a comma-separated list of IPs.
+            # For NGINX reverse proxy servers, the client's IP will be the first one.
+            real_ip = real_ip.split(",")[0].strip()
+            request.META['REMOTE_ADDR'] = real_ip

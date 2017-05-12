@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Optional
+from typing import Optional, Any
 
 import sys
 import unittest
@@ -18,9 +18,17 @@ except ImportError:
     sys.exit(1)
 
 class ParserTest(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        # This method should be removed when we migrate to version 3 of Python
+        import six
+        if six.PY2:
+            self.assertRaisesRegex = self.assertRaisesRegexp  # type: ignore
+        super(ParserTest, self).__init__(*args, **kwargs)
+
     def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
         # type: (str, Optional[str], Optional[str], bool) -> None
-        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(TemplateParserException, error):  # type: ignore # See https://github.com/python/typeshed/issues/372
             validate(fn=fn, text=text, check_indent=check_indent)
 
     def test_is_django_block_tag(self):
@@ -49,6 +57,14 @@ class ParserTest(unittest.TestCase):
                 <p>{{stream}}</p>
             {{/with}}
             '''
+        validate(text=my_html)
+
+    def test_validate_comment(self):
+        # type: () -> None
+        my_html = '''
+            <!---
+                <h1>foo</h1>
+            -->'''
         validate(text=my_html)
 
     def test_validate_django(self):
@@ -96,42 +112,51 @@ class ParserTest(unittest.TestCase):
         my_html = '''
             {{# foo
         '''
-        self._assert_validate_error('Tag missing }}', text=my_html)
+        self._assert_validate_error('''Tag missing "}}" at Line 2 Col 13:"{{# foo
+        "''', text=my_html)
 
     def test_validate_incomplete_handlebars_tag_2(self):
         # type: () -> None
         my_html = '''
             {{# foo }
         '''
-        self._assert_validate_error('Tag missing }}', text=my_html)
+        self._assert_validate_error('Tag missing "}}" at Line 2 Col 13:"{{# foo }\n"', text=my_html)
 
     def test_validate_incomplete_django_tag_1(self):
         # type: () -> None
         my_html = '''
             {% foo
         '''
-        self._assert_validate_error('Tag missing %}', text=my_html)
+        self._assert_validate_error('''Tag missing "%}" at Line 2 Col 13:"{% foo
+        "''', text=my_html)
 
     def test_validate_incomplete_django_tag_2(self):
         # type: () -> None
         my_html = '''
             {% foo %
         '''
-        self._assert_validate_error('Tag missing %}', text=my_html)
+        self._assert_validate_error('Tag missing "%}" at Line 2 Col 13:"{% foo %\n"', text=my_html)
 
     def test_validate_incomplete_html_tag_1(self):
         # type: () -> None
         my_html = '''
             <b
         '''
-        self._assert_validate_error('Tag missing >', text=my_html)
+        self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<b
+        "''', text=my_html)
 
     def test_validate_incomplete_html_tag_2(self):
         # type: () -> None
         my_html = '''
             <a href="
         '''
-        self._assert_validate_error('Tag missing >', text=my_html)
+        my_html1 = '''
+            <a href=""
+        '''
+        self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<a href=""
+        "''', text=my_html1)
+        self._assert_validate_error('''Unbalanced Quotes at Line 2 Col 13:"<a href="
+        "''', text=my_html)
 
     def test_validate_empty_html_tag(self):
         # type: () -> None
@@ -185,7 +210,6 @@ class ParserTest(unittest.TestCase):
                 >@ZulipStatus on Twitter</a>.
             '''
         validate(text=my_html)
-
 
     def test_tokenize(self):
         # type: () -> None

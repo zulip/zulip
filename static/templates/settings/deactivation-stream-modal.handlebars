@@ -1,0 +1,13 @@
+<div id="deactivation_stream_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_stream_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deactivation_stream_modal_label">{{t "Delete stream" }} <span class="stream_name"></span></h3>
+    </div>
+    <div class="modal-body">
+        <p>{{t "Deleting this stream will immediately unsubscribe everyone, and the stream's content will not be recoverable." }} <strong>{{t "Are you sure you want to do this?" }}</strong></p>
+    </div>
+    <div class="modal-footer">
+        <button class="button white rounded" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
+        <button class="button white rounded btn-danger" id="do_deactivate_stream_button">{{t "Yes, delete this stream" }}</button>
+    </div>
+</div>

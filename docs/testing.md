@@ -14,6 +14,8 @@ This document covers more general testing issues, such as how to run the
 entire test suite, how to troubleshoot database issues, how to manually
 test the front end, and how to plan for the future upgrade to Python3.
 
+We also document [how to manually test the app](manual-testing.html).
+
 ## Running tests
 
 Zulip tests must be run inside a Zulip development environment; if
@@ -30,13 +32,13 @@ Then, to run the full Zulip test suite, do this:
 ./tools/test-all
 ```
 
-This runs the linter (`tools/lint-all`) plus all of our test suites;
+This runs the linter (`tools/lint`) plus all of our test suites;
 they can all be run separately (just read `tools/test-all` to see
 them).  You can also run individual tests which can save you a lot of
 time debugging a test failure, e.g.:
 
 ```
-./tools/lint-all # Runs all the linters in parallel
+./tools/lint # Runs all the linters in parallel
 ./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-backend BugdownTest # Run `test-backend --help` for more options
 ./tools/test-js-with-casper 09-navigation.js
@@ -109,9 +111,14 @@ it. On Ubuntu:
     sudo pg_dropcluster --stop 9.1 main
     sudo pg_createcluster --locale=en_US.utf8 --start 9.1 main
 
-## Manual testing (local app + web browser)
+## Local browser testing (local app + web browser)
 
-### Clearing the manual testing database
+This section is about troubleshooting your local development environment.
+
+There is a [separate manual testing doc](manual-testing.html) that
+enumerates things you can test as part of manual QA.
+
+### Clearing the development database
 
 You can use:
 
@@ -163,3 +170,13 @@ installed).
 To run `check-py3` on just the Python files in a particular directory, you
 can change the current working directory (e.g. `cd zerver/`) and run
 `check-py3` from there.
+
+Also, if you're using Vagrant or if you set up virtualenvs in the
+[non-Vagrant setup](dev-setup-non-vagrant.html#all-systems), you should
+have two different virtualenvs: one for Python 2 (which is the one used by
+default), and another one for Python 3. This is useful if you want to do
+some manual testing using either version.
+
+To switch between both virtualenvs, run:
+ - Use Python 2: `source /srv/zulip-venv/bin/activate`
+ - Use Python 3: `source /srv/zulip-py3-venv/bin/activate`

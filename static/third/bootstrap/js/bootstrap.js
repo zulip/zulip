@@ -1033,7 +1033,9 @@
       }
 
     , removeBackdrop: function () {
-        this.$backdrop.remove()
+        if (this.$backdrop && this.$backdrop.remove) {
+          this.$backdrop.remove();
+        }
         this.$backdrop = null
       }
 
@@ -1841,10 +1843,10 @@
 
     constructor: Typeahead
 
-  , select: function () {
+  , select: function (e) {
       var val = this.$menu.find('.active').data('typeahead-value')
       this.$element
-        .val(this.updater(val))
+        .val(this.updater(val, e))
         .change()
       return this.hide()
     }
@@ -2065,7 +2067,7 @@
         case 9: // tab
         case 13: // enter
           if (!this.shown) return
-          this.select()
+          this.select(e)
           break
 
         case 27: // escape
@@ -2096,7 +2098,7 @@
   , click: function (e) {
       e.stopPropagation()
       e.preventDefault()
-      this.select()
+      this.select(e)
     }
 
   , mouseenter: function (e) {

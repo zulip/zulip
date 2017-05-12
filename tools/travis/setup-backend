@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 set -x
-python tools/provision.py --travis
+
+tools/provision --travis
 sudo mkdir -p /var/lib/nagios_state
 sudo chown travis /var/lib/nagios_state

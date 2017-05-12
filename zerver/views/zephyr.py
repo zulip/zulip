@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
+from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence, Text
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest
@@ -16,13 +16,19 @@ import logging
 import subprocess
 import ujson
 
-from six import text_type
+
+# Hack for mit.edu users whose Kerberos usernames don't match what they zephyr
+# as.  The key is for Kerberos and the value is for zephyr.
+kerberos_alter_egos = {
+    'golem': 'ctl',
+}
 
 @authenticated_json_view
 @has_request_variables
 def webathena_kerberos_login(request, user_profile,
                              cred=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+    global kerberos_alter_egos
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))
     if not user_profile.realm.webathena_enabled:
@@ -31,10 +37,8 @@ def webathena_kerberos_login(request, user_profile,
     try:
         parsed_cred = ujson.loads(cred)
         user = parsed_cred["cname"]["nameString"][0]
-        if user == "golem":
-            # Hack for an mit.edu user whose Kerberos username doesn't
-            # match what he zephyrs as
-            user = "ctl"
+        if user in kerberos_alter_egos:
+            user = kerberos_alter_egos[user]
         assert(user == user_profile.email.split("@")[0])
         ccache = make_ccache(parsed_cred)
     except Exception:

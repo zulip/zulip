@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_rename_stream
 from zerver.lib.str_utils import force_text
-from zerver.models import Realm, get_realm
+from zerver.models import Realm, get_realm, get_stream
 
 import sys
 
@@ -17,8 +17,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('domain', metavar='<domain>', type=str,
-                            help="domain to operate on")
+        parser.add_argument('string_id', metavar='<string_id>', type=str,
+                            help="subdomain or string_id to operate on")
         parser.add_argument('old_name', metavar='<old name>', type=str,
                             help='name of stream to be renamed')
         parser.add_argument('new_name', metavar='<new name>', type=str,
@@ -26,15 +26,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        domain = options['domain']
+        string_id = options['string_id']
         old_name = options['old_name']
         new_name = options['new_name']
         encoding = sys.getfilesystemencoding()
 
-        realm = get_realm(force_text(domain, encoding))
+        realm = get_realm(force_text(string_id, encoding))
         if realm is None:
-            print("Unknown domain %s" % (domain,))
+            print("Unknown subdomain or string_id %s" % (string_id,))
             exit(1)
 
-        do_rename_stream(realm, force_text(old_name, encoding),
-                         force_text(new_name, encoding))
+        stream = get_stream(force_text(old_name, encoding), realm)
+        do_rename_stream(stream, force_text(new_name, encoding))

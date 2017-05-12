@@ -6,31 +6,32 @@ from typing import Any, Callable, Optional
 from zerver.models import get_user_profile_by_id
 from zerver.lib.rate_limiter import client, max_api_calls, max_api_window
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
 from optparse import make_option
 
-import time, logging
+import logging
+import time
 
 class Command(BaseCommand):
     help = """Checks redis to make sure our rate limiting system hasn't grown a bug and left redis with a bunch of data
 
     Usage: ./manage.py [--trim] check_redis"""
 
-    option_list = BaseCommand.option_list + (
-        make_option('-t', '--trim',
-                    dest='trim',
-                    default=False,
-                    action='store_true',
-                    help="Actually trim excess"),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-t', '--trim',
+                            dest='trim',
+                            default=False,
+                            action='store_true',
+                            help="Actually trim excess")
 
     def _check_within_range(self, key, count_func, trim_func=None):
         # type: (str, Callable[[], int], Optional[Callable[[str, int], None]]) -> None
         user_id = int(key.split(':')[1])
         try:
             user = get_user_profile_by_id(user_id)
-        except:
+        except Exception:
             user = None
         max_calls = max_api_calls(user=user)
 
@@ -73,5 +74,5 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
             # elements to trim. We'd have to go through every list item and take
             # the intersection. The best we can do is expire it
             self._check_within_range(zset,
-                                     lambda:  client.zcount(zset, 0, now),
-                                     lambda key, max_calls:  None)
+                                     lambda: client.zcount(zset, 0, now),
+                                     lambda key, max_calls: None)

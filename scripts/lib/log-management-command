@@ -12,10 +12,14 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 from django.conf import settings
 
 logger = logging.getLogger("zulip.management")
+if not os.path.exists(settings.MANAGEMENT_LOG_PATH):
+    dir = os.path.dirname(settings.MANAGEMENT_LOG_PATH)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
 file_handler = logging.FileHandler(settings.MANAGEMENT_LOG_PATH)
 formatter = logging.Formatter("%(asctime)s: %(message)s")
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
-
 logger.info("Ran '%s'" % (sys.argv[1],))

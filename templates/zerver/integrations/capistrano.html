@@ -1,0 +1,54 @@
+<p>
+    First, download and install our <a href="/api">Python
+    bindings and example scripts</a> on your Capistrano server.
+    Once you've done that, you'll use the <code>zulip-send</code>
+    utility to notify you when certain events happen.
+</p>
+
+<p>
+    Here's some example code for sending a Zulip notification
+    after a deployment has completed:
+</p>
+<div class="codehilite"><pre><span class="n">after</span> <span class="s1">'deploy'</span><span class="p">,</span> <span
+    class="s1">'notify:humbug'</span>
+
+<span class="n">namespace</span> <span class="ss">:notify</span> <span class="k">do</span>
+  <span class="n">desc</span> <span class="s2">"Post a message to Zulip that we've deployed"</span>
+  <span class="n">task</span> <span class="ss">:humbug</span> <span class="k">do</span>
+    <span class="c1"># this will post to Zulip as the user defined in
+    # ~/.zuliprc if you omit --user and --api-key</span>
+    <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span
+        class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | zulip-send \
+    --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+    --site={{ external_api_uri_subdomain }} \
+    --stream commits --subject deployments || true"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+<p>Some notes:</p>
+<ul>
+    <li>If you prefer not to use <code>--user</code> and <code>--api-key</code> above, you can fill out
+        <code>~/.zuliprc</code> on your Capistrano
+        machine. For instructions on how to write that file, see <a href="/api">the API page</a>.
+    </li>
+    <li>You may need to change the <code>deploy</code> above to
+        another step of your deployment process, if you'd like the
+        notification to fire at a different time.
+    </li>
+</ul>
+<em></em>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> Whenever you do a
+    deployment, you'll get an automated notification that looks like
+    this:
+</p>
+<img class="screenshot" src="/static/images/integrations/capistrano/001.png"/>
+
+<p>
+    <small>Thanks to Wes of TurboVote for <a href="https://gist.github.com/cap10morgan/5100822">submitting this
+        integration</a>!
+    </small>
+</p>

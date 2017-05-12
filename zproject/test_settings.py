@@ -19,14 +19,19 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
-DATABASES["default"] = {"NAME": "zulip_test",
-                        "USER": "zulip_test",
-                        "PASSWORD": LOCAL_DATABASE_PASSWORD,
-                        "HOST": "localhost",
-                        "SCHEMA": "zulip",
-                        "ENGINE": "django.db.backends.postgresql_psycopg2",
-                        "TEST_NAME": "django_zulip_tests",
-                        "OPTIONS": {"connection_factory": TimeTrackingConnection },}
+# Used to clone DBs in backend tests.
+BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
+
+DATABASES["default"] = {
+    "NAME": "zulip_test",
+    "USER": "zulip_test",
+    "PASSWORD": LOCAL_DATABASE_PASSWORD,
+    "HOST": "localhost",
+    "SCHEMA": "zulip",
+    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "TEST_NAME": "django_zulip_tests",
+    "OPTIONS": {"connection_factory": TimeTrackingConnection},
+}
 if USING_PGROONGA:
     # We need to have "pgroonga" schema before "pg_catalog" schema in
     # the PostgreSQL search path, because "pgroonga" schema overrides
@@ -50,6 +55,9 @@ else:
     TORNADO_SERVER = None
     CAMO_URI = 'https://external-content.zulipcdn.net/'
     CAMO_KEY = 'dummy'
+
+if "CASPER_TESTS" in os.environ:
+    CASPER_TESTS = True
 
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
@@ -82,17 +90,32 @@ TUTORIAL_ENABLED = False
 
 # Disable use of memcached for caching
 CACHES['database'] = {
-    'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
+    'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     'LOCATION': 'zulip-database-test-cache',
-    'TIMEOUT':  3600,
+    'TIMEOUT': 3600,
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'MAX_ENTRIES': 100000
     }
 }
 
-LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
-LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+
+if CASPER_TESTS:
+    # Don't auto-restart Tornado server during casper tests
+    AUTORELOAD = False
+else:
+    # Use local memory cache for backend tests.
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    }
+    LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
+    LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+    LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
+    LOGGING['loggers']['fakeldap'] = {'level': 'ERROR'}
+
+# Enable file:/// hyperlink support by default in tests
+ENABLE_FILE_LINKS = True
+
 
 LOCAL_UPLOADS_DIR = 'var/test_uploads'
 
@@ -103,3 +126,12 @@ REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
+
+INLINE_URL_EMBED_PREVIEW = False
+
+HOME_NOT_LOGGED_IN = '/login'
+LOGIN_URL = '/accounts/login'
+
+# By default will not send emails when login occurs.
+# Explicity set this to True within tests that must have this on.
+SEND_LOGIN_EMAILS = False

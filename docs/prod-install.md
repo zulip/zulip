@@ -1,11 +1,15 @@
-# Installation
+# Production Installation
 
-Ensure you have an Ubuntu system that satisfies [the installation
-requirements](prod-requirements.html).  In short, you should have an
-Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit server instance,
-with at least 4GB RAM, 2 CPUs, and 10 GB disk space.  You should also
-have a domain name available and have updated its DNS record to point
-to the server.
+Make sure you want to install a Zulip production server; if you'd
+instead like to test or develop a new feature, we recommend the
+[Zulip server development environment](dev-overview.html#requirements) instead.
+
+You will need an Ubuntu system that satisfies
+[the installation requirements](prod-requirements.html).  In short,
+you should have an Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit
+server instance, with at least 4GB RAM, 2 CPUs, and 10 GB disk space.
+You should also have a domain name available and have updated its DNS
+record to point to your server.
 
 ## Step 0: Subscribe
 
@@ -29,13 +33,13 @@ paths, and move on to the next step.
 ## Step 2: Download and install latest release
 
 If you haven't already, download and unpack [the latest built server
-tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz)
+tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
 ```
 sudo -i  # If not already root
 cd /root
-wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
+wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 rm -rf /root/zulip && mkdir /root/zulip
 tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
 ```
@@ -46,7 +50,8 @@ Then, run the Zulip install script:
 ```
 
 This may take a while to run, since it will install a large number of
-dependencies.
+dependencies. It also creates `zulip` user, which will be used to run
+the various Zulip servers.
 
 The Zulip install script is designed to be idempotent, so if it fails,
 you can just rerun it after correcting the issue that caused it to
@@ -62,36 +67,41 @@ heading `### MANDATORY SETTINGS`.
 
 These settings include:
 
-- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your Zulip
-  installation. This will be the domain for which you have DNS A records
-  pointing to this server and for which you configured SSL certificates.
+- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
+  Zulip installation (aka what users will type in their web
+  browser). This should of course match the DNS name you configured to
+  point to your server and for which you configured SSL certificates.
+  If you plan to use multiple domains, add the others to
+  `ALLOWED_HOSTS`.
 
-- `ZULIP_ADMINISTRATOR`: the email address of the person or team maintaining
-  this installation and who will get support emails.
+- `ZULIP_ADMINISTRATOR`: the email address of the person or team
+  maintaining this installation and who will get support and error
+  emails.
+
+- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
+  credentials for an outgoing SMTP server so Zulip can send emails
+  when needed (don't forget to set `email_password` in the
+  `zulip-secrets.conf` file!).  We highly recommend reading our
+  [production email docs](prod-email.html) and following the test
+  procedure discussed there to make sure you've setup outgoing email
+  correctly, since outgoing email is the most common configuration
+  problem.
 
 - `AUTHENTICATION_BACKENDS`: a list of enabled authentication
   mechanisms.  You'll need to enable at least one authentication
   mechanism by uncommenting its corresponding line, and then also do
   any additional configuration required for that backend as documented
-  in the `settings.py` file.  See the [section on
-  Authentication](prod-authentication-methods.html) for more detail on the
-  available authentication backends and how to configure them.
-
-- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
-  Regardless of which authentication backends you enable, you must
-  provide settings for an outgoing SMTP server so Zulip can send
-  emails when needed (and don't forget to set `email_password` in
-  the `zulip-secrets.conf` file).  We highly recommend testing
-  your configuration using `manage.py send_test_email` to confirm
-  your outgoing email configuration is working correctly.
-
-- `ALLOWED_HOSTS`: Replace `*` with the fully qualified DNS name for
-  your Zulip server here.
+  in the `settings.py` file (the email backend requires no extra
+  configuration).  See the
+  [section on Authentication](prod-authentication-methods.html) for
+  more detail on the available authentication backends and how to
+  configure them.
 
 ## Step 4: Initialize Zulip database
 
-At this point, you are done doing things as root.  To initialize the
-Zulip database for your production install, run:
+At this point, you are done doing things as root. The remaining
+commands are run as the `zulip` user using `su zulip`. To initialize
+the Zulip database for your production install, run:
 
 ```
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
@@ -107,17 +117,17 @@ in your Zulip installation.
 
 ## Step 5: Create a Zulip organization and login
 
-* If you haven't already, verify that your server can send email using
-`./manage.py send_test_email username@example.com`.  You'll need
-working outgoing email to complete the setup process.
+* If you haven't already, verify that your
+  [outgoing email configuration works](prod-email.html#testing-and-troubleshooting).
+  The organization creation process will fail if outgoing email is not
+  configured properly.
 
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
 
   ```
   su zulip # If you weren't already the zulip user
-  cd /home/zulip/deployments/current
-  ./manage.py generate_realm_creation_link
+  /home/zulip/deployments/current/manage.py generate_realm_creation_link
   ```
 
   This will print out a secure 1-time use link that allows creation of a
@@ -138,8 +148,8 @@ log in!
 
 **Congratulations!** You are logged in as an organization
 administrator for your new Zulip organization.  After getting
-oriented, we recommend visiting the special "Administration" tab
-linked to from the upper-right gear menu in the Zulip app to configure
+oriented, we recommend visiting the "Organization settings" UI (linked
+from the upper-right gear menu in the Zulip webapp) to configure
 important policy settings like how users can join your new
 organization. By default, your organization will be configured as
 follows depending on what type of organization you selected:
@@ -161,9 +171,9 @@ Next, you'll likely want to do one of the following:
 
 If you get an error after `scripts/setup/install` completes, check
 `/var/log/zulip/errors.log` for a traceback, and consult the
-[troubleshooting section](prod-troubleshooting.html) for advice on
-how to debug.  If that doesn't help, please visit [the "installation
-help" stream in the Zulip developers'
-chat](https://zulip.tabbott.net/#narrow/stream/installation.20help)
-for realtime help or email zulip-help@googlegroups.com with the
+[troubleshooting section](prod-troubleshooting.html) for advice on how
+to debug.  If that doesn't help, please visit
+[#production help](https://chat.zulip.org/#narrow/stream/production.20help)
+in the [Zulip developerment community server](chat-zulip-org.html) for
+realtime help or email zulip-help@googlegroups.com with the full
 traceback and we'll try to help you out!

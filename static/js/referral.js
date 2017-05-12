@@ -26,12 +26,12 @@ exports.update_state = function (granted, used) {
         $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());
         $("#invite-hearts").empty();
         var i;
-        for (i = 0; i < used; i++) {
+        for (i = 0; i < used; i += 1) {
             $("#invite-hearts").append($('<i class="icon-vector-heart"> </i>'));
         }
 
         var invites_left = Math.max(0, granted - used);
-        for (i = 0; i < invites_left; i++) {
+        for (i = 0; i < invites_left; i += 1) {
             $("#invite-hearts").append($('<i class="icon-vector-heart-empty"> </i>'));
         }
 
@@ -77,7 +77,7 @@ $(function () {
                     // We ignore errors from the server because
                     // they're unlikely and we'll get an email either
                     // way
-                }
+                },
             });
 
             show_and_fade_elem($("#tell-a-friend-success"));
@@ -90,10 +90,10 @@ $(function () {
         showErrors: function () {
             this.defaultShowErrors();
             resize.resize_page_components();
-        }
+        },
     });
 
-    $("#referral-form input").on('blur', function (e) {
+    $("#referral-form input").on('blur', function () {
         if ($("#referral-form input").val() === '') {
             validator.resetForm();
             resize.resize_page_components();
@@ -116,3 +116,7 @@ $(function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = referral;
+}

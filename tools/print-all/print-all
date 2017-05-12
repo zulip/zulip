@@ -35,7 +35,6 @@ certs
 exclude_files = """
 zilencer/management/commands/test_messages.txt
 tools/usability_testing/humbug_usability_test_data
-tools/jslint/jslint.js
 """.split()
 
 extensions = dict(

@@ -3,7 +3,7 @@
     display: none !important;
 }
 
-/* This max-width must be synced with viewport.is_narrow */
+/* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 975px) {
 
     .screen-full-show {
@@ -32,12 +32,13 @@
     }
 
     .column-right.expanded .right-sidebar {
-        background: rgba(255,255,255,0.9);
+        background: rgba(255,255,255,1);
         box-shadow: 0px -2px 3px 0px rgba(0,0,0,0.1);
         border-left: 1px solid #dddddd;
         margin-top: 40px;
         padding-top: 10px;
         height: 100%;
+        right: 0px;
     }
 
     .header-main .column-right {
@@ -67,6 +68,10 @@
         margin-right: 7px;
     }
 
+    #typing_notifications {
+        margin-right: 7px;
+    }
+
     .nav .dropdown-menu {
         min-width: 180px;
         -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
@@ -92,7 +97,7 @@
 @media (max-width: 775px) {
 
     body {
-       padding: 0px;
+        padding: 0px;
     }
 
     .screen-narrow-show {
@@ -112,7 +117,7 @@
     }
 
     .column-left.expanded .left-sidebar {
-        background: rgba(255,255,255,0.9);
+        background: rgba(255,255,255,1);
         box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.1);
         border-right: 1px solid #dddddd;
         margin-top: 40px;
@@ -122,7 +127,8 @@
         width: 250px;
     }
 
-    body, html,
+    body,
+    html,
     .app-main,
     .header-main {
         min-width: 350px;
@@ -130,7 +136,7 @@
 
     .column-middle,
     .app-main .column-middle {
-        margin-left:  7px;
+        margin-left: 7px;
         margin-right: 7px;
     }
 
@@ -139,7 +145,7 @@
     }
 
     .column-middle-inner {
-        margin-left:  0px;
+        margin-left: 0px;
         margin-right: 15px;
     }
 
@@ -157,6 +163,11 @@
     }
 
     .compose-content {
+        margin-right: 7px;
+        margin-left: 7px;
+    }
+
+    #typing_notifications {
         margin-right: 7px;
         margin-left: 7px;
     }
@@ -180,16 +191,28 @@
 }
 
 @media (max-width: 500px) {
-    .compose_stream_button_label,
-    .compose_private_button_label {
-        display: none;
-    }
-
     .stream-name {
         max-width: 120px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .column-right.expanded .right-sidebar,
+    .column-left.expanded .left-sidebar {
+        margin-top: 31px;
+    }
+
+    .column-left.expanded .left-sidebar {
+        padding: 0px;
+    }
+
+    .column-left.expanded .left-sidebar #streams_header {
+        padding-right: 10px;
+    }
+
+    .column-left.expanded .bottom_sidebar {
+        margin-top: 10px;
     }
 }
 
@@ -242,7 +265,8 @@
         top: 5px;
     }
 
-    #searchbox .search_button, #searchbox .search_button[disabled]:hover {
+    #searchbox .search_button,
+    #searchbox .search_button[disabled]:hover {
         top: 2px;
     }
 
@@ -260,22 +284,17 @@
     }
 
     .message_controls {
-        right: -16px;
-        top: -2px;
+        width: 56px;
+        right: -10px;
+        top: 0px;
     }
 
     .message_hovered .message_controls {
-        width: 35px;
-        height: 20px;
-        background: rgba(255,255,255,0.8);
         z-index: 10;
-        border: 1px solid #e2e2e2;
-        right: -16px;
-        top: -2px;
     }
 
     .selected_message .message_controls {
-        right: -13px;
+        right: -10px;
     }
 
     .include-sender .message_controls {
@@ -291,17 +310,7 @@
     }
 
     .include-sender .message_controls {
-        right: 36px;
-    }
-
-    .star {
-        position: absolute;
-        right: 2px;
-    }
-
-    .info {
-        position: absolute;
-        right: 18px;
+        right: 40px;
     }
 
     .sender_name {
@@ -322,6 +331,10 @@
 
     #floating_recipient_bar {
         top: 40px;
+    }
+
+    .message_content {
+        padding-right: 50px;
     }
 
 }

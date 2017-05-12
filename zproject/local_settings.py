@@ -9,8 +9,9 @@
 import platform
 import six.moves.configparser
 from base64 import b64decode
+from typing import Set
 
-config_file = six.moves.configparser.RawConfigParser() # type: ignore # https://github.com/python/typeshed/pull/206
+config_file = six.moves.configparser.RawConfigParser()  # type: ignore # https://github.com/python/typeshed/pull/206
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that PRODUCTION does
@@ -22,8 +23,8 @@ PRODUCTION = config_file.has_option('machine', 'deploy_type')
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
-ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod')
-             or ZULIP_COM_STAGING)
+ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod') or
+             ZULIP_COM_STAGING)
 if not ZULIP_COM:
     raise Exception("You should create your own local settings from prod_settings_template.")
 
@@ -46,10 +47,9 @@ EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# We use mandrill, so this doesn't actually get used on our hosted deployment
 DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
 # The noreply address to be used as Reply-To for certain generated emails.
-NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
+NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@zulip.com>"
 WELCOME_EMAIL_SENDER = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
@@ -77,7 +77,7 @@ TERMS_OF_SERVICE = 'corporate/terms.md'
 
 # Buckets used for Amazon S3 integration for storing files and user avatars.
 S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
-S3_AVATAR_BUCKET="humbug-user-avatars"
+S3_AVATAR_BUCKET = "humbug-user-avatars"
 
 APNS_SANDBOX = False
 APNS_FEEDBACK = "feedback_production"
@@ -99,7 +99,7 @@ EMAIL_GATEWAY_EXTRA_PATTERN_HACK = r'@[\w-]*\.zulip\.net'
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 
-SSO_APPEND_DOMAIN = None # type: str
+SSO_APPEND_DOMAIN = None  # type: str
 
 AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
                            'zproject.backends.GoogleMobileOauth2Backend')
@@ -141,4 +141,4 @@ EXTRA_INSTALLED_APPS = [
 ]
 
 EVENT_LOGS_ENABLED = True
-SYSTEM_ONLY_REALMS = set() # type: Set[str]
+SYSTEM_ONLY_REALMS = set()  # type: Set[str]

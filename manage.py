@@ -11,7 +11,7 @@ import scripts.lib.setup_path_on_import
 if __name__ == "__main__":
     if 'posix' in os.name and os.geteuid() == 0:
         from django.core.management.base import CommandError
-        raise CommandError("manage.py should not be run as root.")
+        raise CommandError("manage.py should not be run as root.  Use `su zulip` to drop root.")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
     os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py"))
 

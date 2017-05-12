@@ -3,8 +3,7 @@ from __future__ import print_function
 import sys
 import functools
 
-from typing import Any, Callable, IO, Mapping, Sequence, TypeVar
-from six import text_type
+from typing import Any, Callable, IO, Mapping, Sequence, TypeVar, Text
 
 def get_mapping_type_str(x):
     # type: (Mapping) -> str
@@ -48,7 +47,7 @@ def get_sequence_type_str(x):
         else:
             return '%s([%s, ...])' % (container_type, elem_type)
 
-expansion_blacklist = [text_type, bytes]
+expansion_blacklist = [Text, bytes]
 
 def get_type_str(x):
     # type: (Any) -> str
@@ -82,13 +81,13 @@ def print_types_to(file_obj):
             kwarg_types = [key + "=" + get_type_str(value) for key, value in kwargs.items()]
             ret_val = func(*args, **kwargs)
             output = "%s(%s) -> %s" % (func.__name__,
-                                    ", ".join(arg_types + kwarg_types),
-                                    get_type_str(ret_val))
+                                       ", ".join(arg_types + kwarg_types),
+                                       get_type_str(ret_val))
             print(output, file=file_obj)
             return ret_val
-        return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
+        return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
 
 def print_types(func):
     # type: (FuncT) -> FuncT
-    return print_types_to(sys.stdout)(func) # type: ignore # https://github.com/python/mypy/issues/1551
+    return print_types_to(sys.stdout)(func)  # type: ignore # https://github.com/python/mypy/issues/1551

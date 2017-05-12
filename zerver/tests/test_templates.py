@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import re
 from typing import Any, Dict, Iterable
 import logging
 
@@ -9,8 +10,12 @@ from django.test import override_settings
 from django.template import Template, Context
 from django.template.loader import get_template
 
-from zerver.models import get_user_profile_by_email
-from zerver.lib.test_helpers import get_all_templates, ZulipTestCase
+from zerver.lib.test_helpers import get_all_templates
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
+from zerver.context_processors import common_context
+
 
 class get_form_value(object):
     def __init__(self, value):
@@ -43,8 +48,86 @@ class TemplateTestCase(ZulipTestCase):
         # Just add the templates whose context has a conflict with other
         # templates' context in `defer`.
         defer = ['analytics/activity.html']
-        skip = defer + ['tests/test_markdown.html', 'zerver/terms.html']
-        templates = [t for t in get_all_templates() if t not in skip]
+
+        # Django doesn't send template_rendered signal for parent templates
+        # https://code.djangoproject.com/ticket/24622
+        covered = [
+            'zerver/portico.html',
+            'zerver/portico_signup.html',
+        ]
+
+        logged_out = [
+            'confirmation/confirm.html',  # seems unused
+            'confirmation/confirm_mituser.html',  # seems unused
+            'zerver/landing_nav_blue.html',
+            'zerver/footer.html',
+        ]
+
+        logged_in = [
+            'analytics/stats.html',
+            'zerver/drafts.html',
+            'zerver/home.html',
+            'zerver/invite_user.html',
+            'zerver/keyboard_shortcuts.html',
+            'zerver/left_sidebar.html',
+            'zerver/landing_nav.html',
+            'zerver/logout.html',
+            'zerver/markdown_help.html',
+            'zerver/navbar.html',
+            'zerver/right_sidebar.html',
+            'zerver/search_operators.html',
+            'zerver/settings_overlay.html',
+            'zerver/settings_sidebar.html',
+            'zerver/stream_creation_prompt.html',
+            'zerver/subscriptions.html',
+            'zerver/tutorial_finale.html',
+            'zerver/message_history.html',
+        ]
+        unusual = [
+            'zerver/emails/confirm_registration_mit.txt',
+            'zerver/emails/confirm_registration_mit.subject',
+            'zerver/emails/invitation_mit.txt',
+            'zerver/emails/invitation_mit.subject',
+            'zerver/emails/confirm_new_email.subject',
+            'zerver/emails/confirm_new_email.html',
+            'zerver/emails/confirm_new_email.txt',
+            'zerver/emails/notify_change_in_email.subject',
+            'zerver/emails/digest.subject',
+            'zerver/emails/digest.html',
+            'zerver/emails/digest.txt',
+            'zerver/emails/followup_day1.subject',
+            'zerver/emails/followup_day1.html',
+            'zerver/emails/followup_day1.txt',
+            'zerver/emails/followup_day2.subject',
+            'zerver/emails/followup_day2.txt',
+            'zerver/emails/followup_day2.html',
+            'corporate/mit.html',
+            'corporate/zephyr.html',
+            'corporate/zephyr-mirror.html',
+            'pipeline/css.jinja',
+            'pipeline/inline_js.jinja',
+            'pipeline/js.jinja',
+            'zilencer/enterprise_tos_accept_body.txt',
+            'zerver/zulipchat_migration_tos.html',
+            'zilencer/enterprise_tos_accept_body.txt',
+            'zerver/closed_realm.html',
+            'zerver/topic_is_muted.html',
+            'zerver/bankruptcy.html',
+            'zerver/lightbox_overlay.html',
+            'zerver/invalid_realm.html',
+            'zerver/compose.html',
+            'zerver/debug.html',
+            'zerver/base.html',
+            'zerver/api_content.json',
+            'zerver/handlebars_compilation_failed.html',
+        ]
+
+        integrations_regexp = re.compile('zerver/integrations/.*.html')
+
+        skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html',
+                                                                     'zerver/terms.html',
+                                                                     'zerver/privacy.html']
+        templates = [t for t in get_all_templates() if not (t in skip or integrations_regexp.match(t))]
         self.render_templates(templates, self.get_context())
 
         # Test the deferred templates with updated context.
@@ -52,12 +135,12 @@ class TemplateTestCase(ZulipTestCase):
         self.render_templates(defer, self.get_context(**update))
 
     def render_templates(self, templates, context):
-        # type: (Iterable[Template], Dict[str, Any]) -> None
-        for template in templates:
-            template = get_template(template)
+        # type: (Iterable[str], Dict[str, Any]) -> None
+        for template_name in templates:
+            template = get_template(template_name)
             try:
                 template.render(context)
-            except Exception:
+            except Exception:  # nocoverage # nicer error handler
                 logging.error("Exception while rendering '{}'".format(template.template.name))
                 raise
 
@@ -82,20 +165,22 @@ class TemplateTestCase(ZulipTestCase):
             context.
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
 
         context = dict(
+            article="zerver/help/index.md",
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
-            product_name='testing',
             form=DummyForm(
                 full_name=get_form_value('John Doe'),
                 terms=get_form_value(True),
                 email=get_form_value(email),
+                emails=get_form_value(email),
             ),
             current_url=lambda: 'www.zulip.com',
+            hubot_lozenges_dict={},
             integrations_dict={},
             referrer=dict(
                 full_name='John Doe',
@@ -107,6 +192,12 @@ class TemplateTestCase(ZulipTestCase):
             messages=[dict(header='Header')],
             new_streams=dict(html=''),
             data=dict(title='Title'),
+            device_info={"device_browser": "Chrome",
+                         "device_os": "Windows",
+                         "device_ip": "127.0.0.1",
+                         "login_time": "9:33am NewYork, NewYork",
+                         },
+            zulip_support="zulip-admin@example.com",
         )
 
         context.update(kwargs)
@@ -122,11 +213,36 @@ class TemplateTestCase(ZulipTestCase):
 
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         self.assertEqual(content_sans_whitespace,
-                         'header<h1>Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
+                         'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
     def test_custom_tos_template(self):
         # type: () -> None
         response = self.client_get("/terms/")
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_response(u"Thanks for using our products and services (\"Services\"). ", response)
-        self.assert_in_response(u"By using our Services, you are agreeing to these terms", response)
+
+        self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
+                                         u"By using our Services, you are agreeing to these terms"],
+                                        response)
+
+    def test_custom_terms_of_service_template(self):
+        # type: () -> None
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'terms of service'
+        with self.settings(TERMS_OF_SERVICE=None):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(TERMS_OF_SERVICE='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template(self):
+        # type: () -> None
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'privacy policy'
+        with self.settings(PRIVACY_POLICY=None):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(PRIVACY_POLICY='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)

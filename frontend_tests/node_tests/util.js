@@ -1,7 +1,7 @@
 global.stub_out_jquery();
 
 add_dependencies({
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 var util = global.util;
@@ -13,7 +13,7 @@ var _ = global._;
     var cv = new util.CachedValue({
         compute_value: function () {
             return x * 2;
-        }
+        },
     });
 
     assert.equal(cv.get(), 10);
@@ -23,6 +23,17 @@ var _ = global._;
     cv.reset();
     assert.equal(cv.get(), 12);
 
+}());
+
+(function test_extract_pm_recipients() {
+    assert.equal(util.extract_pm_recipients('bob@foo.com, alice@foo.com').length, 2);
+    assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
+}());
+
+(function test_rtrim() {
+    assert.equal(util.rtrim('foo'), 'foo');
+    assert.equal(util.rtrim('  foo'), '  foo');
+    assert.equal(util.rtrim('foo  '), 'foo');
 }());
 
 (function test_lower_bound() {
@@ -36,7 +47,7 @@ var _ = global._;
 
     arr = [{x: 10}, {x: 20}, {x:30}];
 
-    function compare (a, b) {
+    function compare(a, b) {
         return a.x < b;
     }
 
@@ -47,42 +58,25 @@ var _ = global._;
 }());
 
 (function test_same_recipient() {
-    _.each([util.same_recipient, util.same_major_recipient], function (same) {
-        assert(same(
-            {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'fOO', subject: 'bar'}
-        ));
-
-        assert(!same(
-            {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'yo', subject: 'whatever'}
-        ));
-
-        assert(same(
-            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}
-        ));
-
-        assert(same(
-            {type: 'private', reply_to: 'fred@zulip.com'},
-            {type: 'private', reply_to: 'Fred@zulip.com'}
-        ));
-
-        assert(!same(
-            {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'private', reply_to: 'Fred@zulip.com'}
-        ));
-    });
-
-    assert(util.same_major_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'}
-    ));
+    assert(util.same_recipient(
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 101, subject: 'bar'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'}
-    ));
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 102, subject: 'whatever'}));
+
+    assert(util.same_recipient(
+        {type: 'private', to_user_ids: '101,102'},
+        {type: 'private', to_user_ids: '101,102'}));
+
+    assert(!util.same_recipient(
+        {type: 'private', to_user_ids: '101,102'},
+        {type: 'private', to_user_ids: '103'}));
+
+    assert(!util.same_recipient(
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'private'}));
 
 }());
 
@@ -101,7 +95,9 @@ var _ = global._;
 }());
 
 (function test_normalize_recipients() {
-    assert(util.normalize_recipients(' bob@foo.com, alice@foo.com '), 'alice@foo.com,bob@foo.com');
+    assert.equal(
+        util.normalize_recipients('ZOE@foo.com, bob@foo.com, alice@foo.com, AARON@foo.com '),
+        'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com');
 }());
 
 (function test_random_int() {
@@ -116,33 +112,6 @@ var _ = global._;
     });
 }());
 
-(function test_enforce_arity() {
-    function f1() {}
-    var eaf1 = util.enforce_arity(f1);
-
-    assert.doesNotThrow(function () { f1('foo'); });
-    assert.doesNotThrow(function () { eaf1(); });
-    assert.throws(function () { eaf1('foo'); }, /called with \d+ arguments/);
-    assert.throws(function () { eaf1('foo', 'bar'); }, /called with \d+ arguments/);
-
-    function f2(x) {}
-    var eaf2 = util.enforce_arity(f2);
-
-    assert.doesNotThrow(function () { f2(); });
-    assert.doesNotThrow(function () { eaf2('foo'); });
-    assert.throws(function () { eaf2(); }, /called with \d+ arguments/);
-    assert.throws(function () { eaf2('foo', 'bar'); }, /called with \d+ arguments/);
-
-    function f3(x, y) {}
-    var eaf3 = util.enforce_arity(f3);
-
-    assert.doesNotThrow(function () { f3(); });
-    assert.doesNotThrow(function () { eaf3('foo', 'bar'); });
-    assert.throws(function () { eaf3(); }, /called with \d+ arguments/);
-    assert.throws(function () { eaf3('foo'); }, /called with \d+ arguments/);
-    assert.throws(function () { eaf3('foo','bar', 'baz'); }, /called with \d+ arguments/);
-}());
-
 (function test_all_and_everyone_mentions_regexp() {
     var messages_with_all_mentions = [
       '@all',
@@ -152,7 +121,7 @@ var _ = global._;
       '@**all**',
       'some text before @**all** some text after',
       '@**all** some text after only',
-      'some text before only @**all**'
+      'some text before only @**all**',
     ];
 
     var messages_with_everyone_mentions = [
@@ -163,36 +132,92 @@ var _ = global._;
       '@**everyone**',
       'some text before @**everyone** some text after',
       '@**everyone** some text after only',
-      'some text before only @**everyone**'
+      'some text before only @**everyone**',
     ];
 
     var messages_without_all_mentions = [
       '`@everyone`',
       'some_email@everyone.com',
       '`@**everyone**`',
-      'some_email@**everyone**.com'
+      'some_email@**everyone**.com',
     ];
 
     var messages_without_everyone_mentions = [
       '`@everyone`',
       'some_email@everyone.com',
       '`@**everyone**`',
-      'some_email@**everyone**.com'
+      'some_email@**everyone**.com',
     ];
     var i;
-    for(i=0; i<messages_with_all_mentions.length; i++) {
+    for (i=0; i<messages_with_all_mentions.length; i += 1) {
         assert(util.is_all_or_everyone_mentioned(messages_with_all_mentions[i]));
     }
 
-    for(i=0; i<messages_with_everyone_mentions.length; i++) {
+    for (i=0; i<messages_with_everyone_mentions.length; i += 1) {
         assert(util.is_all_or_everyone_mentioned(messages_with_everyone_mentions[i]));
     }
 
-    for(i=0; i<messages_without_all_mentions.length; i++) {
+    for (i=0; i<messages_without_all_mentions.length; i += 1) {
         assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
     }
 
-    for(i=0; i<messages_without_everyone_mentions.length; i++) {
+    for (i=0; i<messages_without_everyone_mentions.length; i += 1) {
         assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+    }
+}());
+
+(function test_move_array_elements_to_front() {
+    var strings = [
+        'string1',
+        'string3',
+        'string2',
+        'string4',
+    ];
+    var strings_selection = [
+        'string4',
+        'string1',
+    ];
+    var strings_expected = [
+        'string1',
+        'string4',
+        'string3',
+        'string2',
+    ];
+    var strings_no_selection = util.move_array_elements_to_front(strings, []);
+    var strings_no_array = util.move_array_elements_to_front([], strings_selection);
+    var strings_actual = util.move_array_elements_to_front(strings, strings_selection);
+    var emails = [
+        'test@zulip.com',
+        'test@test.com',
+        'test@localhost',
+        'test@invalid@email',
+        'something@zulip.com',
+    ];
+    var emails_selection = [
+        'test@test.com',
+        'test@localhost',
+        'test@invalid@email',
+    ];
+    var emails_expected = [
+        'test@test.com',
+        'test@localhost',
+        'test@invalid@email',
+        'test@zulip.com',
+        'something@zulip.com',
+    ];
+    var emails_actual = util.move_array_elements_to_front(emails, emails_selection);
+    var i;
+    assert(strings_no_selection.length === strings.length);
+    for (i = 0; i < strings_no_selection.length; i += 1) {
+        assert(strings_no_selection[i] === strings[i]);
+    }
+    assert(strings_no_array.length === 0);
+    assert(strings_actual.length === strings_expected.length);
+    for (i = 0; i < strings_actual.length; i += 1) {
+        assert(strings_actual[i] === strings_expected[i]);
+    }
+    assert(emails_actual.length === emails_expected.length);
+    for (i = 0; i < emails_actual.length; i += 1) {
+        assert(emails_actual[i] === emails_expected[i]);
     }
 }());

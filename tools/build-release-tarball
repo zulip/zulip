@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
-set -e
-set -x
+set -eux
+
+usage() {
+    echo "Usage: $0 [--py3] <ZULIP_VERSION>" >&2
+    exit 1
+}
+
+args="$(getopt -o '' -l 'py3' -n "$0" -- "$@")"
+eval "set -- $args"
+
+py3=
+while true; do
+    case "$1" in
+        --py3) py3=t; shift;;
+        --) shift; break;;
+        *) usage;;
+    esac
+done
 
 GITID=$(git rev-parse HEAD)
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <ZULIP_VERSION>"
-    exit 1
+if [ -z "${1:-}" ]; then
+    usage
 fi
 version="$1"
 prefix="zulip-server-$version"
@@ -21,8 +36,11 @@ fi
 
 if ! git diff --exit-code >/dev/null; then
     set +x
-    echo; echo "\033[31mWARNING: tarballs builds are based on a commit hash so your changes will not be included\033[0m"; echo
-    set -x
+    echo "ERROR: tarballs builds are based on a commit hash so your changes "
+    echo "will not be included; you should commit or stash them based on "
+    echo "what you want and then try again."
+    echo
+    exit 1
 fi
 
 TMP_CHECKOUT=$TMPDIR/$prefix/
@@ -38,6 +56,13 @@ if tar -tf "$TARBALL" | grep -q -e zilencer -e zproject/local_settings.py -e pup
 	exit 1;
 else
 	echo "Check for excluded files passed";
+fi
+
+if [ "$py3" ]; then
+    tools/replace-tarball-shebang \
+        '#!/usr/bin/env python' '#!/usr/bin/env python3' \
+        < "$TARBALL" > "$TARBALL.new"
+    mv "$TARBALL.new" "$TARBALL"
 fi
 
 # Check out a temporary full copy of the index to generate static files
@@ -86,11 +111,11 @@ mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 rm -f zproject/dev-secrets.conf
 
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
-find prod-static/serve/third/gemoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
+find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
 
 cd "$TMPDIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version"
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json"
 
 rm -rf "$prefix"
 

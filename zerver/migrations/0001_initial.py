@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     ]
 
     if "postgres" not in settings.DATABASES["default"]["ENGINE"]:
-        zulip_postgres_migrations = [] # type: ignore # https://github.com/JukkaL/mypy/issues/1164
+        zulip_postgres_migrations = []  # type: ignore # https://github.com/JukkaL/mypy/issues/1164
     else:
         zulip_postgres_migrations = [
             # Full-text search
@@ -48,7 +48,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
   BEFORE INSERT OR UPDATE OF subject, rendered_content ON zerver_message
   FOR EACH ROW EXECUTE PROCEDURE append_to_fts_update_log();
 """),
-            ]
+        ]
 
     operations = [
         migrations.CreateModel(

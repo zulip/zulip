@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Set, Tuple
+from typing import List, Set, Tuple
 
 import os
 import re
@@ -14,13 +14,22 @@ GENERIC_KEYWORDS = [
     'disabled',
     'error',
     'expanded',
+    'fade-out',
+    'first',
     'hide',
+    'in',
     'show',
     'notdisplayed',
     'popover',
+    'no-border',
+    'second',
+    'selected',
+    'slide-left',
     'success',
     'text-error',
     'warning',
+    'zoom-in',  # TODO: clean these up, they are confusing
+    'zoom-out',
 ]
 
 def raise_error(fn, i, line):
@@ -51,6 +60,7 @@ def generic(html_class):
     for kw in GENERIC_KEYWORDS:
         if kw in html_class:
             return True
+    return False
 
 def display(fns):
     # type: (List[str]) -> None
@@ -60,15 +70,15 @@ def display(fns):
 
 def find(fns):
     # type: (List[str]) -> List[Tuple[str, str]]
-    encountered = set() # type: Set[str]
-    tups = [] # type: List[Tuple[str, str]]
+    encountered = set()  # type: Set[str]
+    tups = []  # type: List[Tuple[str, str]]
     for fn in fns:
         lines = list(open(fn))
         fn = os.path.basename(fn)
-        module_classes = set() # type: Set[str]
+        module_classes = set()  # type: Set[str]
         for i, line in enumerate(lines):
             if 'addClass' in line:
-                html_classes = [] # type: List[str]
+                html_classes = []  # type: List[str]
                 m = re.search('addClass\([\'"](.*?)[\'"]', line)
                 if m:
                     html_classes = [m.group(1)]
@@ -81,7 +91,7 @@ def find(fns):
                         continue
                     elif fn == 'signup.js' and 'class_to_add' in line:
                         html_classes = ['error', 'success']
-                    elif fn == 'ui.js' and 'status_classes' in line:
+                    elif fn == 'ui_report.js' and 'status_classes' in line:
                         html_classes = ['alert']
 
                 if not html_classes:

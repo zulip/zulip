@@ -4,6 +4,7 @@ if [ "$EUID" -ne 0 ]; then
     echo "Error: The installation script must be run as root" >&2
     exit 1
 fi
+umask 022
 mkdir -p /var/log/zulip
 
 "$(dirname "$(dirname "$0")")/lib/install" "$@" 2>&1 | tee -a /var/log/zulip/install.log

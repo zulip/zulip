@@ -7,6 +7,18 @@ def command?(name)
   $?.success?
 end
 
+if Vagrant::VERSION == "1.8.7" then
+    path = `which curl`
+    if path.include?('/opt/vagrant/embedded/bin/curl') then
+        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 1.8.6 "\
+             "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the "\
+             "issue before provisioning. See "\
+             "https://github.com/mitchellh/vagrant/issues/7997 "\
+             "for reference."
+        exit
+    end
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # For LXC. VirtualBox hosts use a different box, described below.
@@ -15,6 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
   http_proxy = https_proxy = no_proxy = ""
+  host_ip_addr = "127.0.0.1"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
@@ -30,11 +43,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "HTTPS_PROXY"; https_proxy = value
       when "NO_PROXY"; no_proxy = value
       when "HOST_PORT"; host_port = value.to_i
+      when "HOST_IP_ADDR"; host_ip_addr = value
       end
     end
   end
 
-  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
 
   if Vagrant.has_plugin?("vagrant-proxyconf")
     if http_proxy != ""
@@ -80,12 +94,30 @@ $provision_script = <<SCRIPT
 set -x
 set -e
 set -o pipefail
+# If the host is running SELinux remount the /sys/fs/selinux directory as read only,
+# needed for apt-get to work.
+if [ -d "/sys/fs/selinux" ]; then
+  sudo mount -o remount,ro /sys/fs/selinux
+fi
+
+# Set default locale, this prevents errors if the user has another locale set.
+if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
+    echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
+fi
+
+# Provision the development environment
 ln -nsf /srv/zulip ~/zulip
-/usr/bin/python /srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
+/srv/zulip/tools/provision
+
+# Run any custom provision hooks the user has configured
+if [ -f /srv/zulip/tools/custom_provision ]; then
+  chmod +x /srv/zulip/tools/custom_provision
+  /srv/zulip/tools/custom_provision
+fi
 SCRIPT
 
   config.vm.provision "shell",
-    # We want provision.py to be run with the permissions of the vagrant user.
+    # We want provision to be run with the permissions of the vagrant user.
     privileged: false,
     inline: $provision_script
 end

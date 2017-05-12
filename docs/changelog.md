@@ -4,21 +4,225 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+Highlights:
+
+* Completely redesigned the Zulip settings interfaces to look a lot
+  nicer and be easier to navigate.
+* Completely redesigned the logged-out pages, including
+  login, registration, integrations, etc.  Now organization admins can
+  configure an icon, name, and description for their organization that
+  is displayed on the login/registration pages.
+* Redesigned the numerous UI elements, including the keyboard
+  shortcuts, emoji picker, user profile popovers, sidebars, compose, etc.
+* Massive performance improvements to presence and settings pages,
+  especially for very large organizations (1000+ users).
+* Added typing notifications for private message threads.
+* Added a dozen useful new keyboard shortcuts, from editing messages
+  to emoji reactions to drafts and managing streams.
+* Mobile web now works much better, especially on iOS.
+* Apps documentation now recommends Electron and React Native mobile apps.
+* Added support for users changing their own email address.
+* Added a new saved drafts feature, backed by local storage.
+
+Full feature Changelog:
+
+* Added Basecamp, Gogs, Greenhouse, Home Assistant, Slack, Splunk, and
+  WordPress webhook integrations.
+* Added LaTeX support to the markdown processor.
+* Added support for filtering branches to all Git integrations.
+* Added read-only access to organization-level settings for all users.
+* Added UI for managing muted topics and uploaded files.
+* Added UI for displaying message edit history.
+* Added support for various features needed by new mobile app.
+* Added deep links for settings/subscriptions interfaces.
+* Added an animation when messages are edited.
+* Added support for registration with GitHub auth (not just login).
+* Added tracking of uploaded file quotas.
+* Added option to display emoji as their alt codes.
+* Added new audit log table, to eventually support an auditing UI.
+* Added several new permissions-related organization settings.
+* Added new endpoint for fetching presence data, useful in employee directories.
+* Added typeahead for language for syntax highlighting in code blocks.
+* Added support for basic markdown in stream descriptions.
+* Added email notifications on new Zulip logins.
+* Added security hardening before serving uploaded files.
+* Added new PRIVACY_POLICY setting to provide a Markdown privacy policy.
+* Added an icon to distinguish bot users as message senders.
+* Added a command-line Slack importer tool using the API.
+* Redesigned bots UI.  Now can changing owners and reactivate bots.
+* Redesigned the visuals of code blocks to be prettier.
+* Changed right sidebar presence UI to only show recently active users.
+* Converted realm emoji to be uploaded, not links, for better robustness.
+* Switched the default password hasher for new passwords to Argon2.
+* Increased the paragraph spacing, making multi-paragraph.
+* Improved formatting of all Git integrations.
+* Improved the UI of the /stats analytics pages.
+* Improved search typeahead to support group private messages.
+* Improved logic for when the compose box should open/close.
+* Improved lightbox to support scrolling through images.
+* Improved markdown support for bulleted lists.
+* Improved copy-to-clipboard support in various places.
+* Improved subject lines of missed message emails.
+* Significantly improved UI of off-the-Internet errors.
+* Parallelized the backend test suite; now runs 1600 tests in <30s.
+* Fixed various bugs and performance issues with stream management.
+* Fixed an issue with the fake emails assigned to bot users.
+* Fixed a subtle interaction between click-to-reply and copy-paste.
+* Fixed various formatting issues with /me messages.
+* Fixed numerous real-time sync issues involving users changing their
+  name, avatar, or email address and streams being renamed.
+* Fixed numerous performance issues across the project.
+* Fixed various left sidebar ordering and live-updated bugs.
+* Fixed numerous bugs with the message editing widget.
+* Fixed missing logging / rate limiting on browser endpoints.
+* Fixed regressions in Zulip's browser state preservation on reload logic.
+* Fixed support for unicode characters in the email mirror system.
+* Fixed load spikes when email mirror is receiving a lot of traffic.
+* Fixed the ugly grey flicker when scrolling fast on Macs.
+* Fixed previews of GitHub image URLs.
+* Eliminated the idea of a realm having a canonical domain; now
+  there's simply the list of allowed domains for new users.
+* Migrated avatars to a user-id-based storage setup (not email-based).
+* Trailing whitespace is now stripped in code blocks, avoiding
+  unnecessary scrollbars.
+* Most API payloads now refer to users primarily by user ID, with
+  email available for backwards-compatibility.  In the future, we may
+  remove email support.
+* Cleaned up Zulip's supervisord configuration.  A side effect is the
+  log files names have changed for all the queue workers.
+* Refactored various endpoints to use a single code path for security
+  hardening.
+* Removed support for the MANDRILL_CLIENT setting.  It hadn't been
+  used in years.
+* Changed NOREPLY_EMAIL_ADDRESS setting to `Name <user@example.com>` format.
+* Backend test coverage is now 92%, with 100% in views code.
+
+### 1.5.1 -- 2017-02-07
+
+- Fix exception trying to copy node_modules during upgrade process.
+- Improved styling of /stats page to remove useless login/register links.
+
+### 1.5.0 -- 2017-02-06
+
+Highlights:
+
+- Completely redesigned the Manage streams interface.
+- Added support for emoji reactions to messages.
+- Added a lightbox for viewing images and videos.
+- Added an extensive user documentation site at /help/.
+- Added admin setting to auto-linkify certain strings (useful for
+  issue numbers and Git commit IDs).
+- Upgraded how the main application runs from FastCGI on Django 1.8 to
+  uwsgi and Django 1.10.
+- Added preliminary support for open graph previews of links (the
+  setting, `INLINE_URL_EMBED_PREVIEW`, is disabled by default in this
+  release).
+
+Full feature Changelog:
+
+- Added an emoji picker/browser to the compose box.
+- Added markdown preview support to the compose box.
+- Added a new analytics system to track interesting usage statistics.
+- Added a /stats page with graphs of the analytics data.
+- Added display of subscriber counts in Manage streams.
+- Added support for filtering streams in Manage streams.
+- Added support for setting a stream description on creation.
+- Added support for copying subscribers from existing streams on creation.
+- Added several new search/filtering UI elements.
+- Added UI for deactivating your own Zulip account.
+- Added support for viewing the raw markdown content of a message.
+- Added support for deploying Zulip with subdomains for each realm.
+  This entailed numerous changes to ensure a consistent experience.
 - Added support for (optionally) using PGRoonga to support full-text
   search in all languages (not just English).
-- Added GitLab and Sentry integrations.
+- Added AppFollow, GitLab, Google Calendar, GoSquared, HelloSign,
+  Heroku, Librato, MailChimp, Mention, Papertrail, Sentry, Solano
+  Labs, Stripe and Zapier integrations.
+- Added a webhook integration for GitHub, replacing the deprecated
+  github-services hook.
+- Normalized the message formatting for all the Zulip Git integrations.
 - Added support for VMWare Fusion Vagrant provider for faster OSX
   development.
+- Added a shields.io style badge for joining a Zulip server.
+- Added admin setting for which email domains can join a realm.
+- Added admin setting for controlling who can create streams.
+- Added admin setting to limit stream creation to older users.
+- Added a notification when you muted a topic.
+- Added a new hotkey for muting/unmuting topics.
+- Added support for testing websockets to the Nagios plugins.
+- Added a configuration option to disable websockets.
+- Added support for removing one's own Zulip account.
+- Added support for realm admins which auth backends are supported.
+- Added new organization type concept.  This will be used to control
+  whether Zulip is optimized around protecting user privacy
+  vs. administrative control.
+- Added #**streamName** syntax for linking to a stream.
+- Added support for viewing markdown source of messages.
+- Added setting to always send push notifications.
+- Added setting to hide private message content in desktop
+  notifications.
+- Added buttons to download .zuliprc files.
+- Added italics and strikethrough support in markdown implementation.
+- Added errors for common installations mistakes (e.g. too little RAM).
+- Added a new /authors page showing the contributors to the current
+  Zulip version.
+- Upgraded all Python dependencies to modern versions, including
+  Django 1.10 (all of Zulip's patches have been merged into mainline).
+- Increased backend test coverage of Python codebase to 90%.
+- Increased mypy static type coverage of Python code to 100%.
+- Added several new linters (eslint, pep8) and cleaned the codebase.
+- Optimized the speed of the Zulip upgrade process, especially with Git.
+- Have peer_add events send user_id, not email.
+- Fixed problems with rabbitmq when installing Zulip.
+- Fixed JavaScript not being gzip-compressed properly.
+- Fixed a major performance bug in the Tornado service.
+- Fixed a frontend performance bug creating streams in very large realms.
+- Fixed numerous bugs where strings were not properly tagged for translation.
+- Fixed several real-time sync bugs, and removed several AJAX calls.
+  Zulip should be more performant than ever before.
 - Fixed Zulip Tornado service not working with http_proxy set in environment.
 - Fixed text overflow in stream subscriptions.
 - Fixed CSS issues with message topic editing.
-- Upgrade jQuery to the latest 1.12 release.
+- Fixed several transactionality bugs (e.g. in Huddle creation).
+- Fixed missed-message email configuration error handling.
+- Fixed annoying @-mentions in Jira integration.
+- Fixed various mismatches between frontend and backend markdown
+  implementations.
+- Fixed various popover-related UI bugs.
+- Fixed duplicate notifications with multiple open Zulip tabs.
+- Fixed support for emailing the server administrator about backend exceptions.
+- Cleaned up the "edit message" form.
+- Eliminated most of the legacy API endpoints.
+- Improved typeahead and autocomplete across the application.
+  Highlights include much better handling of many users with similar names.
+- Improved the color scheme for code blocks.
+- Improved the message editing UI in several ways.
+- Improved how dates are displayed in the UI.
+- Improved default settings for zxcvbn password strength checker.
+- Upgraded jQuery to the latest 1.12 release.
+- Made numerous improvements to the development tooling.
+- Made extensive improvements to code organization.
 - Restyled all the registration pages to look nicer and be responsive.
+- Extensively refactored views to use common functions for fetching
+  stream and message objects.
 - Suppressed @-all mentions being treated as mentions on muted
   streams.
 - Documented preliminary design for interactive bot system.
 
+### 1.4.3 - 2017-01-29
+- CVE-2017-0881: Users could subscribe to invite-only streams.
+
+### 1.4.2 - 2016-09-27
+
+- Upgraded Django to version 1.8.15 (with the Zulip patches applied),
+  fixing a CSRF vulnerability in Django (see
+  https://www.djangoproject.com/weblog/2016/sep/26/security-releases/),
+  and a number of other Django bugs from past Django stable releases
+  that largely affects parts of Django that are not used by Zulip.
+- Fixed buggy logrotate configuration.
+
 ### 1.4.1 - 2016-09-03
+
 - Fixed settings bug upgrading from pre-1.4.0 releases to 1.4.0.
 - Fixed local file uploads integration being broken for new 1.4.0
   installations.

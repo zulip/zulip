@@ -1,0 +1,55 @@
+<p>
+    First, create the stream you'd like to use for Gogs notifications, and then
+    subscribe all interested parties to this stream. The integration will use
+    the default stream <code>commits</code> if no stream is supplied in the
+    hook; you still need to
+    <a target="_blank" href="../help/create-a-stream">create the stream</a>
+    even if you are using this default.
+</p>
+
+<p>Next, go to your repository page and click <b>Settings</b>:</p>
+<p><img src="/static/images/integrations/gogs/001.png"/></p>
+
+<p>
+    On the <b>Settings</b> page, select the <b>Webhooks</b> link on the left
+    sidebar:
+</p>
+<p><img src="/static/images/integrations/gogs/002.png"/></p>
+
+<p>
+    Click the <b>Add Webhook</b> button and then select the <b>Gogs</b> option
+    from the dropdown that appears.
+</p>
+<p><img class="screenshot" src="/static/images/integrations/gogs/003.png"/></p>
+
+<p>Authorize yourself and configure your webhook.</p>
+
+<p>In the <b>Payload URL</b> field, enter a URL in the format of:</p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/gogs?api_key=abcdefgh&amp;stream=gogs</code></p>
+
+<p>where <code>api_key</code> is the API key of your Zulip bot.</p>
+
+<p>
+    You can also limit the notifications you receive to specific
+    branches by specifying them in a comma-separated list at the end
+    of the URL, like so:
+</p>
+<p><code>{{ external_api_uri_subdomain }}/v1/external/gogs?api_key=abcdefgh&amp;stream=gogs&amp;branches=master,development</code></p>
+
+<p>Then, set <b>Content type</b> to <code>application/json</code>.</p>
+
+<p>
+    Next, select the events that you want to trigger Zulip notifications. After
+    you have selected all the desired events, click the <b>Add Webhook</b>
+    button.
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/gogs/004.png"/></p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    Your messages will look like this:
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/gogs/005.png"/></p>

@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import subprocess
+
+from django.http import HttpResponse
 from django.test import TestCase
 
 from zerver.lib.test_helpers import (
-    ZulipTestCase,
     most_recent_message,
     most_recent_usermessage,
+    POSTRequestMock)
+
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 
 from zerver.models import (
-    get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient, get_realm,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+    Recipient
 )
 
 from zerver.lib.actions import (
@@ -28,6 +36,7 @@ from zerver.lib.digest import handle_digest_email
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
 )
+from zerver.management.commands import email_mirror
 
 from email.mime.text import MIMEText
 
@@ -39,19 +48,18 @@ import mock
 import os
 import sys
 from os.path import dirname, abspath
-from six import text_type
 from six.moves import cStringIO as StringIO
 from django.conf import settings
 
 from zerver.lib.str_utils import force_str
-from typing import Any, Callable, Mapping, Union
+from typing import Any, Callable, Dict, Mapping, Union, Text
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self):
         # type: () -> None
 
         def get_token(address):
-            # type: (text_type) -> text_type
+            # type: (Text) -> Text
             with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                 return get_missed_message_token_from_address(address)
 
@@ -81,7 +89,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -110,7 +118,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # build dummy messages for stream
         # test message with empty body is not sent
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -133,9 +141,9 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # so calling process_stream_message directly
         try:
             process_stream_message(incoming_valid_message['To'],
-                incoming_valid_message['Subject'],
-                incoming_valid_message,
-                debug_info)
+                                   incoming_valid_message['Subject'],
+                                   incoming_valid_message,
+                                   debug_info)
         except ZulipEmailForwardError as e:
             # empty body throws exception
             exception_message = str(e)
@@ -155,7 +163,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
                                                      "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         usermessage = most_recent_usermessage(user_profile)
 
         # we don't want to send actual emails but we do need to create and store the
@@ -173,11 +181,11 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
 
         # self.login("hamlet@zulip.com")
         # confirm that Hamlet got the message
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
-        self.assertEqual(message.sender, get_user_profile_by_email("othello@zulip.com"))
+        self.assertEqual(message.sender, self.example_user('othello'))
         self.assertEqual(message.recipient.id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
@@ -196,7 +204,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
                                                                         "iago@zulip.com"])})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
         usermessage = most_recent_usermessage(user_profile)
 
         # we don't want to send actual emails but we do need to create and store the
@@ -213,19 +221,19 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         process_message(incoming_valid_message)
 
         # Confirm Iago received the message.
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        user_profile = self.example_user('iago')
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
-        self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
+        self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
         # Confirm Othello received the message.
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
-        self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
+        self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
 class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
@@ -239,7 +247,7 @@ class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
                                                                         "iago@zulip.com"])})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
         usermessage = most_recent_usermessage(user_profile)
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
             mm_address = create_missed_message_address(user_profile, usermessage.message)
@@ -262,13 +270,12 @@ class TestDigestEmailMessages(ZulipTestCase):
                                                      "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("othello@zulip.com")
-        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple()) # type: ignore # https://github.com/python/typeshed/pull/597
+        user_profile = self.example_user('othello')
+        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
 
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)
-        self.assertEqual(mock_send_future_email.call_args[0][0][0]['email'],
-                         u'othello@zulip.com')
+        self.assertEqual(mock_send_future_email.call_args[0][1], u'othello@zulip.com')
 
 class TestReplyExtraction(ZulipTestCase):
     def test_reply_is_extracted_from_plain(self):
@@ -277,12 +284,12 @@ class TestReplyExtraction(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
-        text =  """Reply
+        text = """Reply
 
         -----Original Message-----
 
@@ -308,7 +315,7 @@ class TestReplyExtraction(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -348,33 +355,140 @@ class TestReplyExtraction(ZulipTestCase):
 
 MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email")
 
-class TestCommandMTA(TestCase):
 
-    @mock.patch('zerver.lib.queue.queue_json_publish')
-    def test_success(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+class TestScriptMTA(TestCase):
+
+    def test_success(self):
+        # type: () -> None
+        script = os.path.join(os.path.dirname(__file__),
+                              '../../scripts/lib/email-mirror-postfix')
 
         sender = "hamlet@zulip.com"
-        stream = get_stream("Denmark", get_realm("zulip.com"))
+        stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
 
         template_path = os.path.join(MAILS_DIR, "simple.txt")
         with open(template_path) as template_file:
             mail_template = template_file.read()
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
+        read_pipe, write_pipe = os.pipe()
+        os.write(write_pipe, mail.encode())
+        os.close(write_pipe)
+        subprocess.check_call(
+            [script, '-r', force_str(stream_to_address), '-s', settings.SHARED_SECRET, '-t'],
+            stdin=read_pipe)
+
+    def test_error_no_recipient(self):
+        # type: () -> None
+        script = os.path.join(os.path.dirname(__file__),
+                              '../../scripts/lib/email-mirror-postfix')
+
+        sender = "hamlet@zulip.com"
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        template_path = os.path.join(MAILS_DIR, "simple.txt")
+        with open(template_path) as template_file:
+            mail_template = template_file.read()
+        mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
+        read_pipe, write_pipe = os.pipe()
+        os.write(write_pipe, mail.encode())
+        os.close(write_pipe)
+        success_call = True
+        try:
+            subprocess.check_output([script, '-s', settings.SHARED_SECRET, '-t'],
+                                    stdin=read_pipe)
+        except subprocess.CalledProcessError as e:
+            self.assertEqual(
+                e.output,
+                b'5.1.1 Bad destination mailbox address: No missed message email address.\n'
+            )
+            self.assertEqual(e.returncode, 67)
+            success_call = False
+        self.assertFalse(success_call)
+
+
+class TestEmailMirrorTornadoView(ZulipTestCase):
+
+    def send_private_message(self):
+        # type: () -> Text
+        self.login("othello@zulip.com")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "test_receive_missed_message_email_messages",
+                "client": "test suite",
+                "to": ujson.dumps(["cordelia@zulip.com", "iago@zulip.com"])
+            })
+        self.assert_json_success(result)
+
+        user_profile = self.example_user('cordelia')
+        user_message = most_recent_usermessage(user_profile)
+        return create_missed_message_address(user_profile, user_message.message)
+
+    @mock.patch('zerver.lib.email_mirror.queue_json_publish')
+    def send_offline_message(self, to_address, sender, mock_queue_json_publish):
+        # type: (str, str, mock.Mock) -> HttpResponse
+        template_path = os.path.join(MAILS_DIR, "simple.txt")
+        with open(template_path) as template_file:
+            mail_template = template_file.read()
+        mail = mail_template.format(stream_to_address=to_address, sender=sender)
 
         def check_queue_json_publish(queue_name, event, processor):
             # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None]) -> None
             self.assertEqual(queue_name, "email_mirror")
-            self.assertEqual(event, {"rcpt_to": stream_to_address, "message": mail})
+            self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
+
         mock_queue_json_publish.side_effect = check_queue_json_publish
+        request_data = {
+            "recipient": to_address,
+            "msg_text": mail
+        }
+        post_data = dict(
+            data=ujson.dumps(request_data),
+            secret=settings.SHARED_SECRET
+        )
+        return self.client_post('/email_mirror_message', post_data)
 
-        original_stdin = sys.stdin
-        try:
-            sys.stdin = StringIO(mail)
+    def test_success_stream(self):
+        # type: () -> None
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        result = self.send_offline_message(stream_to_address, "hamlet@zulip.com")
+        self.assert_json_success(result)
 
-            from zerver.management.commands import email_mirror
-            command = email_mirror.Command()
-            command.handle(recipient=force_str(stream_to_address))
-        finally:
-            sys.stdin = original_stdin
+    def test_error_to_stream_with_wrong_address(self):
+        # type: () -> None
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        stream_to_address = stream_to_address.replace("Denmark", "Wrong_stream")
+
+        result = self.send_offline_message(stream_to_address, "hamlet@zulip.com")
+        self.assert_json_error(
+            result,
+            "5.1.1 Bad destination mailbox address: "
+            "Please use the address specified in your Streams page.")
+
+    def test_success_to_private(self):
+        # type: () -> None
+        mm_address = self.send_private_message()
+        result = self.send_offline_message(mm_address, "cordelia@zulip.com")
+        self.assert_json_success(result)
+
+    def test_using_mm_address_twice(self):
+        # type: () -> None
+        mm_address = self.send_private_message()
+        self.send_offline_message(mm_address, "cordelia@zulip.com")
+        result = self.send_offline_message(mm_address, "cordelia@zulip.com")
+        self.assert_json_error(
+            result,
+            "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
+
+    def test_wrong_missed_email_private_message(self):
+        # type: () -> None
+        self.send_private_message()
+        mm_address = 'mm' + ('x' * 32) + '@testserver'
+        result = self.send_offline_message(mm_address, "cordelia@zulip.com")
+        self.assert_json_error(
+            result,
+            "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")

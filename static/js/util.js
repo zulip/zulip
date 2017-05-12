@@ -19,7 +19,10 @@ exports.random_int = function random_int(min, max) {
 // Usage: lower_bound(array, value, [less])
 //        lower_bound(array, first, last, value, [less])
 exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
-    var first, last, value, less;
+    var first;
+    var last;
+    var value;
+    var less;
     if (arg3 === undefined) {
         first = 0;
         last = array.length;
@@ -39,13 +42,12 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     var len = last - first;
     var middle;
     var step;
-    var lower = 0;
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;
         if (less(array[middle], value, middle)) {
             first = middle;
-            first++;
+            first += 1;
             len = len - step - 1;
         } else {
             len = step;
@@ -54,14 +56,31 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     return first;
 };
 
-exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
-    // Streams and topics are case-insensitive.
-    return ((a.stream.toLowerCase() === b.stream.toLowerCase()) &&
-            (a.subject.toLowerCase() === b.subject.toLowerCase()));
+// Produces an easy-to-read preview on an HTML element.  Currently
+// only used for including in error report emails; be sure to discuss
+// with other developers before using it in a user-facing context
+// because it is not XSS-safe.
+exports.preview_node = function (node) {
+    if (node.constructor === jQuery) {
+        node = node[0];
+    }
+
+    var tag = node.tagName.toLowerCase();
+    var className = node.className.length ? node.className : false;
+    var id = node.id.length ? node.id : false;
+
+    var node_preview = "<" + tag +
+       (id ? " id='" + id + "'" : "") +
+       (className ? " class='" + className + "'" : "") +
+       "></" + tag + ">";
+
+      return node_preview;
 };
 
-exports.is_current_user = function (email) {
-    return email.toLowerCase() === page_params.email.toLowerCase();
+exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
+    // Streams and topics are case-insensitive.
+    return ((a.stream_id === b.stream_id) &&
+            (a.subject.toLowerCase() === b.subject.toLowerCase()));
 };
 
 exports.is_pm_recipient = function (email, message) {
@@ -70,28 +89,9 @@ exports.is_pm_recipient = function (email, message) {
 };
 
 exports.extract_pm_recipients = function (recipients) {
-    return recipients.split(/\s*[,;]\s*/);
-};
-
-exports.same_major_recipient = function (a, b) {
-    // Same behavior as same_recipient, except that it returns true for messages
-    // on different topics but the same stream.
-    if ((a === undefined) || (b === undefined)) {
-        return false;
-    }
-    if (a.type !== b.type) {
-        return false;
-    }
-
-    switch (a.type) {
-    case 'private':
-        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
-    case 'stream':
-        return a.stream.toLowerCase() === b.stream.toLowerCase();
-    }
-
-    // should never get here
-    return false;
+    return _.filter(recipients.split(/\s*[,;]\s*/), function (recipient) {
+        return recipient.trim() !== "";
+    });
 };
 
 exports.same_recipient = function util_same_recipient(a, b) {
@@ -104,7 +104,10 @@ exports.same_recipient = function util_same_recipient(a, b) {
 
     switch (a.type) {
     case 'private':
-        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
+        if (a.to_user_ids === undefined) {
+            return false;
+        }
+        return a.to_user_ids === b.to_user_ids;
     case 'stream':
         return exports.same_stream_and_topic(a, b);
     }
@@ -122,7 +125,8 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = _.map(recipients.split(','), $.trim);
+    recipients = _.map(recipients.split(','), function (s) { return s.trim(); });
+    recipients = _.map(recipients, function (s) { return s.toLowerCase(); });
     recipients = _.filter(recipients, function (s) { return s.length > 0; });
     recipients.sort();
     return recipients.join(',');
@@ -141,10 +145,14 @@ exports.robust_uri_decode = function (str) {
             if (!(e instanceof URIError)) {
                 throw e;
             }
-            end--;
+            end -= 1;
         }
     }
     return '';
+};
+
+exports.rtrim = function (str) {
+    return str.replace(/\s+$/, '');
 };
 
 // If we can, use a locale-aware sorter.  However, if the browser
@@ -156,9 +164,10 @@ exports.strcmp = (function () {
         var collator = new Intl.Collator();
         return collator.compare;
     } catch (e) {
+        // continue regardless of error
     }
 
-    return function util_strcmp (a, b) {
+    return function util_strcmp(a, b) {
         return (a < b ? -1 : (a > b ? 1 : 0));
     };
 }());
@@ -174,17 +183,12 @@ exports.array_compare = function util_array_compare(a, b) {
         return false;
     }
     var i;
-    for (i = 0; i < a.length; ++i) {
+    for (i = 0; i < a.length; i += 1) {
         if (a[i] !== b[i]) {
             return false;
         }
     }
     return true;
-};
-
-exports.string_in_list_case_insensitive = function (str, list) {
-    var dict = Dict.from_array(list || [], {fold_case: true});
-    return dict.has(str);
 };
 
 /* Represents a value that is expensive to compute and should be
@@ -210,18 +214,7 @@ exports.CachedValue.prototype = {
 
     reset: function CachedValue_reset() {
         this._value = unassigned_value_sentinel;
-    }
-};
-
-exports.enforce_arity = function util_enforce_arity(func) {
-    return function () {
-        if (func.length !== arguments.length) {
-            throw new Error("Function '" + func.name + "' called with "
-                            + arguments.length + " arguments, but expected "
-                            + func.length);
-        }
-        return func.apply(this, arguments);
-    };
+    },
 };
 
 exports.execute_early = function (func) {
@@ -235,6 +228,31 @@ exports.execute_early = function (func) {
 exports.is_all_or_everyone_mentioned = function (message_content) {
     var all_everyone_re = /(^|\s)(@\*{2}(all|everyone)\*{2})|(@(all|everyone))($|\s)/;
     return all_everyone_re.test(message_content);
+};
+
+exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
+    var i;
+    var selected_hash = {};
+    for (i = 0; i < selected.length; i += 1) {
+        selected_hash[selected[i]] = true;
+    }
+    var selected_elements = [];
+    var unselected_elements = [];
+    for (i = 0; i < array.length; i += 1) {
+        if (selected_hash[array[i]]) {
+            selected_elements.push(array[i]);
+        } else {
+            unselected_elements.push(array[i]);
+        }
+    }
+    // Add the unselected elements after the selected ones
+    return selected_elements.concat(unselected_elements);
+};
+
+// check by the userAgent string if a user's client is likely mobile.
+exports.is_mobile = function () {
+    var regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
+    return new RegExp(regex, "i").test(window.navigator.userAgent);
 };
 
 return exports;

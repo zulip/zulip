@@ -1,16 +1,45 @@
-<div id="create_or_filter_stream_row">
-    <div class="subscription_table_elem">
-      <form id="add_new_subscription" class="form-inline" action="">
-          <input type="text" name="stream_name" id="search_stream_name"
-            placeholder="{{t 'Filter by stream name' }}" value="" autocomplete="off" />
-          {{#if can_create_streams}}
-              <input type="submit" class="btn btn-primary"
-                id="create_stream_button" value="{{t 'Create new stream' }}" />
-          {{/if}}
-      </form>
+<div id="subscription_overlay" class="overlay new-style" data-overlay="subscriptions">
+    <div class="flex overlay-content">
+        <div class="subscriptions-container">
+            <div class="subscriptions-header">
+                <div class="icon-vector-chevron-left"></div>
+                <span class="subscriptions-title">{{t 'Streams' }}</span>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+            </div>
+            <div class="left">
+                <div class="search-container">
+                    <form id="add_new_subscription" class="form-inline" action="">
+                        <input type="text" name="stream_name" id="search_stream_name"
+                          placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
+                        {{#if can_create_streams}}
+                        <input type="submit" class=""
+                          id="create_stream_button" value="+" />
+                        {{/if}}
+                        <div class="float-clear"></div>
+                    </form>
+                    <div class="clear-float"></div>
+                </div>
+                <div class="streams-list">
+                    {{#each subscriptions}}
+                    {{partial "subscription"}}
+                    {{/each}}
+                </div>
+            </div>
+            <div class="right">
+                <div class="display-type">
+                    <div id="add_new_stream_title" class="stream-info-title">{{t 'Create stream' }}</div>
+                    <div id="stream_settings_title" class="stream-info-title">{{t 'Stream settings' }}</div>
+                </div>
+                <div class="nothing-selected">
+                    {{t 'Nothing selected.' }}
+                </div>
+                <div class="settings">
+                    {{!-- edit stream here --}}
+                </div>
+                {{ partial "subscription_creation_form" }}
+            </div>
+        </div>
     </div>
 </div>
-
-{{#each subscriptions}}
-{{partial "subscription"}}
-{{/each}}

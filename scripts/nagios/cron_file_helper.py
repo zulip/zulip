@@ -1,8 +1,8 @@
-#!/usr/bin/env python
 import time
 
 # Avoid requiring the typing module to be installed
-if False: from typing import Tuple
+if False:
+    from typing import Tuple
 
 def nagios_from_file(results_file):
     # type: (str) -> Tuple[int, str]

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2014 Zulip, Inc.
@@ -25,6 +24,7 @@
 # Change these values to configure authentication for the plugin
 ZULIP_USER = "p4-bot@example.com"
 ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
+ZULIP_SITE = "https://zulip.example.com"
 
 # commit_notice_destination() lets you customize where commit notices
 # are sent to with the full power of a Python function.
@@ -58,6 +58,3 @@ def commit_notice_destination(path, changelist):
 ## If properly installed, the Zulip API should be in your import
 ## path, but if not, set a custom path below
 ZULIP_API_PATH = None
-
-# This should not need to change unless you have a custom Zulip subdomain.
-ZULIP_SITE = "https://api.zulip.com"

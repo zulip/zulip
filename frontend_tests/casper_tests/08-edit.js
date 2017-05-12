@@ -10,7 +10,9 @@ function then_edit_last_message() {
             $('.popover_edit_message').click();
         });
     });
-    casper.waitForSelector(".message_edit_content");
+    casper.then(function () {
+        casper.waitUntilVisible(".message_edit_content");
+    });
 }
 
 // Send and edit a stream message
@@ -18,7 +20,7 @@ function then_edit_last_message() {
 common.then_send_message('stream', {
     stream:  'Verona',
     subject: 'edits',
-    content: 'test editing'
+    content: 'test editing',
 });
 
 casper.waitForText("test editing");
@@ -42,7 +44,7 @@ casper.waitWhileVisible("textarea.message_edit_content", function () {
 common.then_send_message('stream', {
     stream:  'Verona',
     subject: 'edits',
-    content: '/me test editing one line with me'
+    content: '/me test editing one line with me',
 });
 
 casper.waitForText("test editing one line with me");
@@ -65,7 +67,7 @@ casper.waitWhileVisible("textarea.message_edit_content", function () {
 
 common.then_send_message('private', {
     recipient: "cordelia@zulip.com",
-    content: "test editing pm"
+    content: "test editing pm",
 });
 
 casper.waitForText("test editing pm");
@@ -80,8 +82,63 @@ casper.then(function () {
     });
 });
 
-casper.waitWhileVisible("textarea.message_edit_content", function () {
-    casper.test.assertSelectorHasText(".last_message .message_content", "test edited pm");
+casper.then(function () {
+    casper.waitWhileVisible("textarea.message_edit_content", function () {
+        casper.test.assertSelectorHasText(".last_message .message_content", "test edited pm");
+    });
+});
+
+// test editing last own message
+// 37 is left arrow key code
+casper.then(function () {
+    casper.test.assertNotVisible('form.message_edit_form', 'Message edit box not visible');
+
+    common.keypress(37);
+    casper.waitUntilVisible(".message_edit_content", function () {
+        var fieldVal = common.get_form_field_value('.message_edit_content');
+        casper.test.assertEquals(fieldVal, "test edited pm", "Opened editing last own message");
+        casper.click('.message_edit_cancel');
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileVisible('.message_edit', function () {
+        casper.click('body');
+        casper.page.sendEvent('keypress', "c");
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#compose', function () {
+        casper.evaluate(function () {
+            $('#new_message_content').expectOne().focus();
+            $('#new_message_content').trigger($.Event('keydown', { which: 37 }));
+        });
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible(".message_edit_form", function () {
+        casper.echo("Opened editing last own message");
+        casper.click('.message_edit_cancel');
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileVisible('.message_edit', function () {
+        casper.click('body');
+        casper.page.sendEvent('keypress', "c");
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#compose', function () {
+        casper.evaluate(function () {
+            $('#new_message_content').expectOne().focus().val('test');
+            $('#new_message_content').trigger($.Event('keydown', { which: 37 }));
+        });
+        casper.test.assertNotVisible('form.message_edit_form', "Last own message edit doesn't open if the compose box not empty");
+    });
 });
 
 casper.run(function () {

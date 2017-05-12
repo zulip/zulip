@@ -38,6 +38,10 @@ Files: confirmation/*
 Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
 
+Files: docs/code-of-conduct.md
+Copyright: 2017, Kandra Labs Inc.
+License: CC-BY-SA-4.0
+
 Files: puppet/apt/*
 Copyright: 2011, Evolving Web Inc.
 License: Expat
@@ -86,7 +90,7 @@ Files: static/audio/zulip.*
 Copyright: 2011 Vidsyn
 License: CC-0-1.0
 
-Files: static/styles/thirdparty-fonts.css
+Files: static/third/thirdparty-fonts.css
 Copyright: 2012-2013 Dave Gandy
 License: Expat
 
@@ -115,10 +119,9 @@ Copyright: 2013 Nijiko Yonskai
 License: Apache-2.0
 Comment: The software has been modified.
 
-Files: static/third/gemoji/images/emoji/unicode/* tools/setup/emoji_dump/*.ttf
+Files: static/generated/emoji/images/emoji/unicode/* tools/setup/emoji/*.ttf
 Copyright: Google, Inc.
 License: Apache-2.0
-Comment: These are actually Noto Emoji, not gemoji.
 
 Files: static/third/html5-formdata/formdata.js
 Copyright: 2010 François de Metz
@@ -171,10 +174,6 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/third/string-prototype-codepointat/*
-Copyright: 2014 Mathias Bynens
-License: Expat
-
 Files: static/third/sockjs/sockjs-0.3.4.js
 Copyright: 2011-2012 VMware, Inc.
  2012 Douglas Crockford
@@ -192,39 +191,9 @@ Files: static/third/spectrum/*
 Copyright: 2013 Brian Grinstead
 License: Expat
 
-Files: static/third/spin/spin.js
-Copyright: 2011-2013 Felix Gnass
-License: Expat
-
-Files: static/third/underscore/underscore.js
-Copyright: 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-License: Expat
-Comment: https://github.com/jashkenas/underscore/blob/master/LICENSE
-
-Files: static/third/winchan/*
-Copyright: 2012 Lloyd Hilaiel
-License: Expat
-Comment: https://github.com/mozilla/winchan
-
-Files: static/third/xdate/*
-Copyright: 2010 C. F., Wong
-License: Expat
-
 Files: static/third/zocial/*
 Copyright: Sam Collins
 License: Expat
-
-Files: tools/inject-messages/othello
-Copyright: Shakespeare
-License: public-domain
-
-Files: tools/jslint/jslint.js
-Copyright: 2002 Douglas Crockford
-License: XXX-good-not-evil
-
-Files: tools/review
-Copyright: 2010 Ksplice, Inc.
-License: Apache-2.0
 
 Files: zerver/lib/bugdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg

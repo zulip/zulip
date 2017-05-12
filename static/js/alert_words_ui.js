@@ -16,16 +16,16 @@ function update_alert_words() {
 }
 
 function add_alert_word(word, event) {
-    if (word === '') {
+    if ($.trim(word) === '') {
         $("#empty_alert_word_error").show();
         return;
     }
-    var final_li = templates.render('alert_word_settings_item', {'word': word, editing: false});
+    var final_li = templates.render('alert_word_settings_item', {word: word, editing: false});
 
     var li = $(event.target).parents('li');
     li.replaceWith(final_li);
 
-    var new_word = templates.render('alert_word_settings_item', {'word': '', editing: true});
+    var new_word = templates.render('alert_word_settings_item', {word: '', editing: true});
     var word_list = $('#alert_words_list');
     word_list.append(new_word);
 
@@ -41,10 +41,10 @@ exports.set_up_alert_words = function () {
 
     var word_list = $('#alert_words_list');
     _.each(alert_words.words, function (word) {
-        var li = templates.render('alert_word_settings_item', {'word': word});
+        var li = templates.render('alert_word_settings_item', {word: word});
         word_list.append(li);
     });
-    var new_word = templates.render('alert_word_settings_item', {'word': '', editing: true});
+    var new_word = templates.render('alert_word_settings_item', {word: '', editing: true});
     word_list.append(new_word);
 
     $('#alert_words_list').on('click', '#create_alert_word_button', function (event) {
@@ -79,3 +79,7 @@ exports.set_up_alert_words = function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = alert_words_ui;
+}

@@ -54,14 +54,18 @@ import sys
 import boto.utils
 import netifaces
 from six.moves import range
+if False:
+    from typing import Optional
 
 def address_of(device_id):
+    # type: (int) -> Optional[str]
     try:
         return netifaces.ifaddresses("ens%i" % device_id)[netifaces.AF_INET][0]['addr']
     except KeyError:
         return None
 
 def guess_gateway(device_id):
+    # type: (int) -> str
     # This will not work if the default gateway isn't n.n.n.1.
     address = address_of(device_id).split('.')
     address[3] = '1'
@@ -106,14 +110,13 @@ for device in macs.values():
         # Horrible hack to route return packets on the correct interface
         # See http://unix.stackexchange.com/a/4421/933
         subprocess.check_call(
-                ['/sbin/ip', 'rule', 'add', 'fwmark', str(device_number), 'table', str(device_number)])
+            ['/sbin/ip', 'rule', 'add', 'fwmark', str(device_number), 'table', str(device_number)])
         subprocess.check_call(
-                ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', str(device_number), 'dev',
-                    'ens%i' % device_number, 'via', guess_gateway(device_number)])
+            ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', str(device_number), 'dev',
+             'ens%i' % device_number, 'via', guess_gateway(device_number)])
         subprocess.check_call(
-                ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
-                    address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
-
+            ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
+             address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
 
     to_configure.remove(address_of(device_number))
 
@@ -123,8 +126,8 @@ for device in macs.values():
         log.info("Configuring %s with IP %s" % (device, ip))
         subprocess.check_call(['/sbin/ifconfig', device, ip])
         subprocess.check_call(
-                ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
-                    ip, '-j', 'MARK', '--set-mark', str(device_number)])
+            ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
+             ip, '-j', 'MARK', '--set-mark', str(device_number)])
 
     for throwaway in range(2):
         # Don't freak out if this doens't work.

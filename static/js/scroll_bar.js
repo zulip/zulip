@@ -2,7 +2,7 @@ $(function () {
     $("#stream-filters-container").perfectScrollbar({
         suppressScrollX: true,
         useKeyboard: false,
-        wheelSpeed: 20
+        wheelSpeed: 20,
     });
 });
 
@@ -35,10 +35,10 @@ $(function () {
 
     $(".column-right").css("right", sbWidth + "px");
     $(".app-main .right-sidebar").css({"margin-left": (sbWidth) + "px",
-                                       "width": (250 - sbWidth) + "px"});
+                                       width: (250 - sbWidth) + "px"});
 
     $("#compose").css("left", "-" + sbWidth + "px");
-    $(".compose-content").css({"left": sbWidth + "px",
+    $(".compose-content").css({left: sbWidth + "px",
                                "margin-right": (250 + sbWidth) + "px"});
     $("#compose-container").css("max-width", (1400 + sbWidth) + "px");
 

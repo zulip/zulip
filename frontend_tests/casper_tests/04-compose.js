@@ -6,11 +6,11 @@ common.start_and_log_in();
 common.then_send_many([
     { stream: 'Verona',
       subject: 'Reply test',
-      content: "We reply to this message"
+      content: "We reply to this message",
     },
     { recipient: "cordelia@zulip.com",
-      content: "And reply to this message"
-    }
+      content: "And reply to this message",
+    },
 ]);
 
 casper.waitForText("And reply to this message", function () {
@@ -163,7 +163,7 @@ casper.then(function () {
         casper.test.assertEquals(casper.getHTML('#preview_content'), "", "Markdown preview area is empty");
 
         casper.fill('form[action^="/json/messages"]', {
-            content: '**Markdown Preview** >> Test for markdown preview'
+            content: '**Markdown Preview** >> Test for markdown preview',
         }, false);
 
         casper.click("#markdown_preview");
@@ -171,7 +171,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileVisible("#markdown_preview", function () {
+    casper.waitForSelectorTextChange("#preview_content", function () {
         casper.test.assertEquals(casper.getHTML('#preview_content'), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
     });
 });

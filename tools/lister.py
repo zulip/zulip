@@ -10,6 +10,7 @@ import re
 from collections import defaultdict
 import argparse
 from six.moves import filter
+
 from typing import Union, List, Dict
 
 def get_ftype(fpath, use_shebang):
@@ -75,8 +76,8 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     # throw away empty lines and non-files (like symlinks)
     files = list(filter(os.path.isfile, files_gen))
 
-    result_dict = defaultdict(list) # type: Dict[str, List[str]]
-    result_list = [] # type: List[str]
+    result_dict = defaultdict(list)  # type: Dict[str, List[str]]
+    result_list = []  # type: List[str]
 
     for fpath in files:
         # this will take a long time if exclude is very large
@@ -109,7 +110,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     else:
         return result_list
 
-if __name__=="__main__":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="List files tracked by git and optionally filter by type")
     parser.add_argument('targets', nargs='*', default=[],
                         help='''files and directories to include in the result.

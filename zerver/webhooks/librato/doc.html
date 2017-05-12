@@ -1,0 +1,77 @@
+<p>Get Zulip notifications for your Librato alerts or snapshots!</p>
+
+<p>
+    First, create the stream you'd like to use for Librato notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>librato</code>.
+</p>
+
+<p>
+    Next, on your <a href="/#settings" target="_blank">Zulip settings
+    page</a>, create a Librato bot. Please note the bot name and API key. Then:
+</p>
+
+<p><b>Alerts configuration</b></p>
+
+<p>1. Login into your Librato account and switch to the integrations page:</p>
+<p><img src="/static/images/integrations/librato/001.png"/></p>
+
+<p>2. From there, select <b>"Webhook"</b> integration:</p>
+<p><img src="/static/images/integrations/librato/002.png"/></p>
+
+<p>3. Fill in the title and URL fields using your bot's API key</p>
+<p><img class="screenshot" src="/static/images/integrations/librato/003.png"/></p>
+
+<p>The default stream name is <b>librato</b> and default topic name is <b>Alert alert_name</b>.</p>
+
+<div class="codehilite"><pre>
+  URL = {{ external_api_uri }}/v1/external/librato?api_key=<b>your_api_key</b></pre>
+</div>
+
+<p>You can customize the stream name and topic name:</p>
+
+<div class="codehilite"><pre>
+  URL = {{ external_api_uri }}/v1/external/librato?stream=<b>your_stream_name</b>&amp;topic=<b>your_topic_name</b>&amp;api_key=<b>your_api_key</b></pre>
+</div>
+
+
+<p>4. Next, go to your alerts page:</p>
+<p><img class="screenshot" src="/static/images/integrations/librato/004.png"/></p>
+
+<p>
+    5. Choose the alert conditions and enable the your new
+    webhook under "Notification Services":
+</p>
+<p><img class="screenshot" src="/static/images/integrations/librato/005.png"/></p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    When an alert triggers, you'll get a Zulip notification that looks like this:
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/librato/006.png"/></p>
+
+
+<p><b>Snapshot configuration</b></p>
+
+<p>
+    Because of limitations in Librato's API, you need to use the
+    Slack integration to get Librato snapshots sent into Zulip.
+</p>
+<p><img src="/static/images/integrations/librato/007.png"/></p>
+<p>Default stream name is <b>librato</b> and default topic name is <b>snapshots</b>.</p>
+
+<p>
+    To send a snapshot, just click at one of your chart, use
+    the <b>send a snapshot</b> option and add the proper
+    integration.
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/librato/008.png"/></p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    When a snapshot comes, you'll get a Zulip notification that looks like this:
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/librato/009.png"/></p>

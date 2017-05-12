@@ -13,45 +13,46 @@ var exports = {};
         channel.post({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([{'name': stream_name}])
-            }
+                subscriptions: JSON.stringify([{name: stream_name}]),
+            },
         }).then(
             function (data) {
                 if (!$.isEmptyObject(data.already_subscribed)) {
                     // Display the canonical stream capitalization.
-                    var true_stream_name = data.already_subscribed[page_params.email][0];
-                    ui.report_success(i18n.t("Already subscribed to __stream__", {'stream': true_stream_name}),
+                    var my_email = people.my_current_email();
+                    var true_stream_name = data.already_subscribed[my_email][0];
+                    ui_report.success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                       $status_message);
                 }
             }, function (xhr) {
-                ui.report_error(i18n.t("Error adding subscription"), xhr, $status_message);
+                ui_report.error(i18n.t("Error adding subscription"), xhr, $status_message);
             }
         );
     }
 
     function remove_sub(stream_name, $status_message) {
-        channel.post({
-            url: '/json/subscriptions/remove',
+        channel.del({
+            url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([stream_name])
-            }
+                subscriptions: JSON.stringify([stream_name]),
+            },
         }).then(
-            function (data) {
+            function () {
                 $status_message.hide();
             }, function (xhr) {
-                ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);
+                ui_report.error(i18n.t("Error removing subscription"), xhr, $status_message);
             }
         );
     }
 
     function display_subscribe($button, stream_name) {
-        $button.text(i18n.t('Subscribe to __stream__', {'stream': stream_data.canonicalized_name(stream_name)}))
+        $button.text(i18n.t('Subscribe to __stream__', {stream: stream_data.canonicalized_name(stream_name)}))
             .removeClass('btn-success')
             .addClass('btn-default');
     }
 
     function display_unsubscribe($button, stream_name) {
-        $button.text(i18n.t('Unsubscribe from __stream__', {'stream': stream_data.canonicalized_name(stream_name)}))
+        $button.text(i18n.t('Unsubscribe from __stream__', {stream: stream_data.canonicalized_name(stream_name)}))
             .removeClass('btn-default')
             .addClass('btn-success');
     }
@@ -81,7 +82,10 @@ var exports = {};
     });
 
     $(document).on('message_rendered.zulip', function (e) {
-        var $inline_subscribe, $button, stream_name, id;
+        var $inline_subscribe;
+        var $button;
+        var stream_name;
+        var id;
         $inline_subscribe = $(e.target).find('.inline-subscribe');
         if ($inline_subscribe.length === 0) {
             return;

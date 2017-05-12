@@ -1,5 +1,45 @@
 /* Reusable, object-oriented CSS base components for the Zulip redesign */
 
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide {
+    display: none;
+}
+
+.light {
+    font-weight: 300;
+}
+
+.display-none {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.box-shadow {
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.bg-white {
+    background-color: #FFF;
+}
+
+.clear-float {
+    clear: both;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
@@ -16,20 +56,7 @@
     border-radius: 2px;
 
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-/* -- button states -- */
-.new-style .button:hover {
-    -webkit-filter: brightness(1.1);
-    -moz-filter: brightness(1.1);
-    filter: brightness(1.1);
-}
-
-.new-style .button:active {
-    -webkit-filter: brightness(0.9);
-    -moz-filter: brightness(0.9);
-    filter: brightness(0.9);
+    transition: all 0.2s ease;
 }
 
 /* -- button style variations -- */
@@ -43,6 +70,10 @@
     box-shadow: none !important;
 }
 
+.new-style .button.rounded {
+    border-radius: 4px;
+}
+
 .new-style .button.green {
     background-color: #64ad89;
 }
@@ -52,6 +83,7 @@
 }
 
 .new-style .button.white {
+    padding: 7px 14px;
     background-color: #fff;
     color: inherit;
     border: 1px solid #CCC;
@@ -68,26 +100,87 @@
     padding: 6px 10px;
 }
 
-.new-style .button.btn-danger {
-    color: #fff;
-    background-color: #d9534f;
-    border-color: #d43f3a;
-}
-
-.new-style .button.btn-warning {
-    color: #fff;
-    background-color: #f0ad4e;
-    border-color: #eea236;
-}
-
-.new-style .button.sea-green {
-    background-color: #24cac2;
-    color: #fff;
-}
-
 .new-style .button.small-flex {
     width: auto;
     min-width: inherit;
+}
+
+/* -- button states -- */
+.new-style .button:hover {
+    -webkit-filter: brightness(1.1);
+    -moz-filter: brightness(1.1);
+    filter: brightness(1.1);
+}
+
+.new-style .button.white:hover {
+    border-color: #888;
+    background-color: #e4e4e4;
+}
+
+.new-style .button:active {
+    -webkit-filter: brightness(0.94);
+    -moz-filter: brightness(0.94);
+    filter: brightness(0.94);
+}
+
+.new-style .button[disabled="disabled"] {
+    cursor: not-allowed;
+    -webkit-filter: saturate(0);
+    -moz-filter: saturate(0);
+    filter: saturate(0);
+    background-color: #eee;
+    color: #888181;
+}
+
+.new-style .button.sea-green {
+    color: #5bb792;
+    border-color: #addcc9;
+}
+
+.new-style .button.btn-warning {
+    color: #f1a02e;
+    border-color: #ffdfb1;
+}
+
+.new-style .button.btn-danger {
+    color: #e6898d;
+    border-color: #f5d0ce;
+}
+
+.new-style .button.btn-danger:hover {
+    background-color: rgba(245, 179, 179, 0.05);
+    color: #d1686c;
+    border: 1px solid #e2a7a5;
+}
+
+.new-style .button.btn-warning:hover {
+    background-color: rgba(238, 162, 54, 0.05);
+    color: #ff9600;
+    border: 1px solid #eea236;
+}
+
+.new-style .button.sea-green:hover {
+    background-color: rgba(91,183,146,0.05);
+    border: 1px solid #52c2af;
+    color: #1daf93;
+}
+
+.new-style .button.sea-green:active {
+    color: #1daf93;
+    background-color: rgba(91, 183, 146, 0.2);
+    border: 1px solid #52c2af;
+}
+
+.new-style .button.btn-danger:active {
+    color: #d1686c;
+    background-color: rgba(245, 179, 179, 0.2);
+    border: 1px solid #e2a7a5;
+}
+
+.new-style .button.btn-warning:active {
+    color: #eea236;
+    background-color: rgba(238, 162, 54, 0.2);
+    border: 1px solid #eea236;
 }
 
 /* -- tab switcher -- */
@@ -101,11 +194,32 @@
 .new-style .tab-switcher .ind-tab {
     display: inline-block;
     width: 90px;
-    margin: 0px -2px;
+    margin: 0px -0.5px;
     text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
     padding: 3px 10px;
     background-color: #fff;
     cursor: pointer;
+    justify-content: center;
+    align-items: center;
+}
+
+.informational-overlays .tab-switcher {
+    display: flex;
+}
+
+.informational-overlays .tab-switcher .ind-tab {
+    display: flex;
+    text-overflow: initial;
+    white-space: initial;
+    vertical-align: middle;
+}
+
+.new-style .tab-switcher.large .ind-tab {
+    width: 130px;
 }
 
 .new-style .tab-switcher .ind-tab:not(.selected) {
@@ -114,12 +228,15 @@
 
 .new-style .tab-switcher .ind-tab.first {
     border-radius: 5px 0px 0px 5px;
-    border-right: none;
+    border-right: 1px solid transparent;
 }
 
-.new-style .tab-switcher .ind-tab.second {
+.new-style .tab-switcher .ind-tab.middle {
+    border-right: 1px solid transparent;
+}
+
+.new-style .tab-switcher .ind-tab.last {
     border-radius: 0px 5px 5px 0px;
-    border-left: none;
 }
 
 .new-style .tab-switcher .ind-tab.selected {
@@ -134,4 +251,136 @@
     pointer-events: none;
     color: #CCC;
     border-color: #DDD;
+}
+
+.new-style label.checkbox {
+    padding: 0px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.new-style label.checkbox input[type=checkbox] {
+    display: none;
+}
+
+.new-style label.checkbox input[type=checkbox] ~ span {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+
+    padding: 1px;
+    margin: 0px 5px 0px 0px;
+    height: 12px;
+    width: 12px;
+
+    font-weight: 300;
+    line-height: 0.8;
+    font-size: 1.3rem;
+    text-align: center;
+    border: 2px solid #ccc;
+    color: #ccc;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.new-style label.checkbox input[type=checkbox]:checked ~ span {
+    color: transparent;
+
+    background-image: url(/static/images/checkbox-green.png);
+    background-size: 85%;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    -webkit-filter: grayscale(1);
+}
+
+.new-style label.checkbox input[type=checkbox]:disabled ~ span {
+    opacity: 0.3;
+}
+
+.new-style input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.new-style a.no-style {
+    color: inherit;
+}
+
+/* -- unified overlay design component -- */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+
+    background-color: rgba(32,32,32,0.8);
+    z-index: 105;
+
+    pointer-events: none;
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+}
+
+.overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.overlay .overlay-content {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+
+    z-index: 102;
+
+    transition: transform 0.3s ease;
+}
+
+.overlay.show .overlay-content {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+.input-append {
+    font-size: 90%;
+    letter-spacing: -.3em;
+}
+
+.input-append input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.clear_search_button:hover {
+    color: #000;
+}
+
+.clear_search_button[disabled] {
+    visibility: hidden;
+}
+
+.clear_search_button,
+.clear_search_button:focus,
+.clear_search_button:active,
+.clear_search_button[disabled]:hover {
+    position: relative;
+    right: 20px;
+    background: none;
+    border: none;
+    text-align: center;
+    padding-top: 8px;
+    padding-left: 4px;
+    color: #ccc;
+    text-shadow: none;
+    outline: none !important;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    z-index: 5;
 }

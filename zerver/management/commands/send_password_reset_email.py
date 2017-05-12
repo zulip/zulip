@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
@@ -10,7 +10,6 @@ from django.core.mail import send_mail, BadHeaderError
 from zerver.forms import PasswordResetForm
 from zerver.models import UserProfile, get_user_profile_by_email, get_realm
 from django.template import loader
-from django.core.mail import EmailMultiAlternatives
 
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -46,8 +45,8 @@ class Command(BaseCommand):
         self.send(users)
 
     def send(self, users,
-             subject_template_name='registration/password_reset_subject.txt',
-             email_template_name='registration/password_reset_email.txt',
+             subject_template_name='zerver/emails/password_reset.subject',
+             email_template_name='zerver/emails/password_reset.txt',
              use_https=True, token_generator=default_token_generator,
              from_email=None, html_email_template_name=None):
         # type: (List[UserProfile], str, str, bool, PasswordResetTokenGenerator, Optional[Text], Optional[str]) -> None
@@ -66,24 +65,26 @@ class Command(BaseCommand):
             }
 
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
-            self.send_mail(subject_template_name, email_template_name,
-                           context, from_email, user_profile.email,
-                           html_email_template_name=html_email_template_name)
+            # Our password reset flow is basically a patch of Django's password
+            # reset flow, so this is aligned with Django code rather than using
+            # zerver.lib.send_email.send_email.
+            self.send_email(subject_template_name, email_template_name,
+                            context, from_email, user_profile.email,
+                            html_email_template_name=html_email_template_name)
 
-    def send_mail(self, subject_template_name, email_template_name,
-                  context, from_email, to_email, html_email_template_name=None):
+    def send_email(self, subject_template_name, email_template_name,
+                   context, from_email, to_email, html_email_template_name=None):
         # type: (str, str, Dict[str, Any], Text, Text, Optional[str]) -> None
         """
-        Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
+        Sends a django.core.mail.send_mail to `to_email`.
         """
         subject = loader.render_to_string(subject_template_name, context)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         body = loader.render_to_string(email_template_name, context)
 
-        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
         if html_email_template_name is not None:
             html_email = loader.render_to_string(html_email_template_name, context)
-            email_message.attach_alternative(html_email, 'text/html')
-
-        email_message.send()
+            send_mail(subject, body, from_email, [to_email], html_message=html_email)
+        else:
+            send_mail(subject, body, from_email, [to_email])

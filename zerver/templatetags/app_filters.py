@@ -1,6 +1,19 @@
-from django.template import Library
+from typing import Dict, Optional, Any
+
+from django.conf import settings
+from django.template import Library, loader
 from django.utils.safestring import mark_safe
-from django.utils.functional import memoize
+from django.utils.lru_cache import lru_cache
+
+from zerver.lib.utils import force_text
+from typing import List
+import zerver.lib.bugdown.fenced_code
+
+import markdown
+import markdown.extensions.admonition
+import markdown.extensions.codehilite
+import markdown.extensions.toc
+import markdown_include.include
 
 register = Library()
 
@@ -41,19 +54,35 @@ def display_list(values, display_limit):
 
     return display_string
 
-memoize_cache = {} # type: Dict[str, str]
+md_extensions = None
 
 @register.filter(name='render_markdown_path', is_safe=True)
-def render_markdown_path(markdown_file_path):
-    # type: (str) -> str
-    """
-    Given a path to a markdown file, return the rendered html
-    """
-    import markdown
-    def path_to_html(path):
-        # type: (str) -> str
-        markdown_string = open(path).read()
-        return markdown.markdown(markdown_string, safe_mode='escape')
+def render_markdown_path(markdown_file_path, context=None):
+    # type: (str, Optional[Dict[Any, Any]]) -> str
+    """Given a path to a markdown file, return the rendered html.
 
-    html = memoize(path_to_html, memoize_cache, 1)(markdown_file_path)
+    Note that this assumes that any HTML in the markdown file is
+    trusted; it is intended to be used for documentation, not user
+    data."""
+    global md_extensions
+    if md_extensions is None:
+        md_extensions = [
+            markdown.extensions.toc.makeExtension(),
+            markdown.extensions.admonition.makeExtension(),
+            markdown.extensions.codehilite.makeExtension(
+                linenums=False,
+                guess_lang=False
+            ),
+            zerver.lib.bugdown.fenced_code.makeExtension(),
+            markdown_include.include.makeExtension(base_path='templates/zerver/help/include/'),
+        ]
+    md_engine = markdown.Markdown(extensions=md_extensions)
+    md_engine.reset()
+
+    if context is None:
+        context = {}
+
+    template = loader.get_template(markdown_file_path)
+    markdown_string = template.render(context)
+    html = md_engine.convert(markdown_string)
     return mark_safe(html)

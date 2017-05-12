@@ -1,0 +1,299 @@
+.app-main {
+    padding: 0;
+    width: auto;
+    max-width: none;
+}
+
+body {
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+}
+
+p {
+    margin-bottom: 0px;
+}
+
+svg {
+    -webkit-font-smoothing: antialiased;
+}
+
+.alert {
+    display: none;
+}
+
+.analytics-page-header {
+    margin-top: 30px;
+    margin-bottom: 50px;
+    text-align: center;
+    font-size: 36px;
+}
+
+.page-content {
+    width: 100%;
+    overflow: auto;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.center-container {
+    min-height: 0px;
+}
+
+.graph-title {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+#graph_container {
+    position: relative;
+}
+
+#button_label {
+    font-size: 15px;
+    margin-left: 40px;
+    margin-bottom: 0px;
+}
+
+#hoverinfo {
+    position: relative;
+    top: -33px;
+    height: 0;
+    width: 400px;
+    z-index: 1;
+    font-size: 14px;
+    margin-left: 40px;
+}
+
+#id_messages_sent_over_time {
+    user-select: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
+    opacity: 0.5;
+}
+
+#hover_date {
+    font-weight: 400;
+}
+
+#hover_human {
+    font-weight: 400;
+    margin-left: 10px;
+    display: none;
+}
+
+#hover_me,
+#hover_bot {
+    font-weight: 400;
+    margin-left: 8px;
+    display: none;
+}
+
+.button {
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    border: none;
+    border-radius: 4px;
+    outline: none;
+}
+
+.button:hover {
+    background: #D8D8D8 !important;
+}
+
+.pie-button {
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    font-weight: inherit;
+    border: none;
+    border-radius: 4px;
+    padding: 0px 5px 0px 5px;
+    margin: 5px 0px 0px 0px;
+}
+
+.pie-button:hover {
+    background: #D8D8D8 !important;
+}
+
+#button_container {
+    position: absolute;
+    top: -12px;
+    z-index: 1;
+}
+
+#hourly_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 14px;
+    margin-left: 40px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#daily_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 14px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#weekly_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 14px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#cumulative_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 14px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_realm_button {
+    font-size: 14px;
+    background: #D8D8D8;
+}
+
+#messages_by_client_user_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_cumulative_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_last_year_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_last_month_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_last_week_button {
+    font-size: 14px;
+    margin-left: 50px;
+    background: #F0F0F0;
+}
+
+#messages_by_type_realm_button {
+    font-size: 14px;
+    margin-bottom: 100px;
+    background: #D8D8D8;
+}
+
+#messages_by_type_user_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    margin-bottom: 100px;
+}
+
+#messages_by_type_cumulative_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+}
+
+#messages_by_type_last_year_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+}
+
+#messages_by_type_last_month_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+}
+
+#messages_by_type_last_week_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+    margin-left: 50px;
+}
+
+#pie_container {
+    text-align: center;
+}
+
+#pie_messages_sent_by_client {
+    display: inline-block;
+    vertical-align: top;
+    margin: 100px 40px 0px 0px;
+}
+
+#pie_messages_sent_by_type {
+    display: inline-block;
+    vertical-align: top;
+    margin: 100px 0px 0px 0px;
+}
+
+#pie_messages_sent_by_client_total {
+    font-size: 14px;
+    text-align: left;
+    margin: 0px 0px 5px 45px;
+}
+
+#pie_messages_sent_by_type_total {
+    font-size: 14px;
+    text-align: left;
+    margin: 0px 0px 5px 53px;
+}
+
+#users_hover_info {
+    position: relative;
+    top: -65px;
+    height: 0;
+    width: 400px;
+    z-index: 1;
+    font-size: 14px;
+    margin-left: 20px;
+}
+
+#users_hover_date {
+    font-weight: 400;
+    margin-left: 18px;
+}
+
+#users_hover_humans {
+    font-weight: 400;
+    margin-left: 18px;
+    display: none;
+}
+
+.last-update {
+    display: none;
+    color: #aaa;
+    padding: 50px 0px;
+    font-weight: bolder;
+    font-size: 16px;
+}
+
+.last-update .icon-vector-question-sign {
+    margin-left: 5px;
+}
+
+.tooltip-inner {
+    padding: 10px;
+    max-width: 350px;
+
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: left;
+    line-height: 1.4;
+}
+
+@media (max-width: 1127px) {
+    #pie_messages_sent_by_client {
+        margin-right: 0px;
+        margin-bottom: 40px;
+    }
+}

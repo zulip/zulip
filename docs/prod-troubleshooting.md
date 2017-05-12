@@ -119,4 +119,15 @@ problems and how to resolve them:
   service nginx restart
   ```
 
+* If your host is being port scanned by unauthorized users, you may see
+  messages in `/var/log/zulip/server.log` like
+  ```
+  2017-02-22 14:11:33,537 ERROR Invalid HTTP_HOST header: '10.2.3.4'. You may need to add u'10.2.3.4' to ALLOWED_HOSTS.
+  ```
+  Django uses the hostnames configured in `ALLOWED_HOSTS` to identify
+  legitimate requests and block others. When an incoming request does
+  not have the correct HTTP Host header, Django rejects it and logs the
+  attempt. For more on this issue, see the [Django release notes on Host header
+  poisoning](https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning)
+
 Next: [Making your Zulip instance awesome.](prod-customize.html)

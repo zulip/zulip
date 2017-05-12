@@ -22,6 +22,14 @@ with these details in mind:
   as needed thereafter. If you're unfamiliar with how to rebase a pull request,
   [read this excellent guide][github-rebase-pr].
 
+  We use this strategy in order to avoid the extra commits that appear
+  when another branch is merged, that clutter the commit history (it's
+  popular with other large projects such as Django).  This makes
+  Zulip's commit history more readable, but a side effect is that many
+  pull requests we merge will be reported by GitHub's UI as *closed*
+  instead of *merged*, since GitHub has poor support for
+  rebase-oriented workflows.
+
 - We have a **[code style guide][zulip-rtd-code-style]**, a **[commit message
   guide][zulip-rtd-commit-messages]**, and strive for each commit to be *a
   minimal coherent idea* (see **[commit
@@ -30,6 +38,9 @@ with these details in mind:
 - We provide **many tools to help you submit quality code.** These include
   [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], continuous
   integration with [TravisCI][travis-ci], and [mypy][zulip-rtd-mypy].
+
+- We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
+pull requests to create a better GitHub workflow for contributors.
 
 Finally, take a quick look at [Zulip-specific Git scripts][self-zulip-tools],
 install the [Zulip developer environment][zulip-rtd-dev-overview], and then
@@ -102,7 +113,7 @@ Here are the top things to know:
 
 - **Most Git operations are local:** Git is a distributed version control
   system, so once you've cloned a repository, you have a complete copy of that
-  repository's *entire history*. Staging, commiting, branching, and browsing
+  repository's *entire history*. Staging, committing, branching, and browsing
   history are all things you can do locally without network access and without
   immediately affecting any remote repositories. To make or receive changes
   from remote repositories, you need to `git fetch`, `git pull`, or `git push`.
@@ -110,7 +121,7 @@ Here are the top things to know:
 - **Nearly all Git actions add information to the Git database**, rather than
   removing it. As such, it's hard to make Git perform actions that you can't
   undo. However, Git can't undo what it doesn't know about, so it's a good
-  practice to frequently commit your changes and freqently push your commits to
+  practice to frequently commit your changes and frequently push your commits to
   your remote repository.
 
 - **Git is designed for lightweight branching and merging.** Branches are
@@ -311,9 +322,9 @@ upstream https://github.com/zulip/zulip.git (fetch)
 upstream https://github.com/zulip/zulip.git (push)
 ```
 
-### Step 2: Set up the Zulip dev environment
+### Step 2: Set up the Zulip development environment
 
-If you haven't already, now is a good time to install the Zulip dev environment
+If you haven't already, now is a good time to install the Zulip development environment
 ([overview][zulip-rtd-dev-overview]). If you're new to working on Zulip or open
 source projects in general, we recommend following our [detailed guide for
 first-time contributors][zulip-rtd-dev-first-time].
@@ -636,8 +647,8 @@ Integrate Fail2Ban.
 Updates Zulip logging to put an unambiguous entry into the logs such
 that fail2ban can be configured to look for these entries.
 
-Tested on my local Ubuntu dev server, but would appreciate someone
-testing on a production install with more users.
+Tested on my local Ubuntu development server, but would appreciate
+someone testing on a production install with more users.
 
 Fixes #1755.
 ```
@@ -1047,7 +1058,7 @@ Date:   Mon Oct 10 13:25:51 2016 -0700
 Some graphical Git clients may also create merge commits.
 
 To undo a merge commit, first run `git reflog` to identify the commit you want
-to to roll back to:
+to roll back to:
 
 ```
 $ git reflog
@@ -1290,12 +1301,14 @@ pre-commit -> ../../tools/pre-commit
 `tools/reset-to-pull-request` is a short-cut for [checking out a pull request
 locally][self-fetch-pr]. It works slightly differently from the method
 described above in that it does not create a branch for the pull request
-checkout. You should run this script only while in the master branch.
+checkout.
 
-**This script will discard any uncommitted changes. Use with caution.**
+**This tool checks for uncommitted changes, but it will move the
+  current branch using `git reset --hard`.  Use with caution.**
 
-First, make sure you are working in branch `master`. Then run the script with
-the ID number of the pull request as the first argument.
+First, make sure you are working in a branch you want to move (in this
+example, we'll use the local `master` branch). Then run the script
+with the ID number of the pull request as the first argument.
 
 ```
 $ git checkout master
@@ -1382,7 +1395,7 @@ Current branch review-1913 is up to date.
 [github-help-create-pr-fork]: https://help.github.com/articles/creating-a-pull-request-from-a-fork/
 [github-help-co-pr-locally]: https://help.github.com/articles/checking-out-pull-requests-locally/
 [github-help-add-ssh-key]: https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
-[github-help-resolve-merge-conflict]: https://help.github.com/articles/resolving-a-merge-conflict-from-the-command-line/
+[github-help-resolve-merge-conflict]: https://help.github.com/articles/resolving-a-merge-conflict-using-the-command-line/
 [github-help-closing-issues]: https://help.github.com/articles/closing-issues-via-commit-messages/
 [zulip-rtd-version-control]: version-control.html
 [zulip-rtd-commit-messages]: version-control.html#commit-messages
@@ -1394,6 +1407,7 @@ Current branch review-1913 is up to date.
 [zulip-rtd-travis-ci]: travis-ci.html
 [zulip-rtd-dev-overview]: dev-overview.html
 [zulip-rtd-dev-first-time]: dev-env-first-time-contributors.html
+[zulip-rtd-zulipbot-usage]: zulipbot-usage.html
 [gitgui-tower]: https://www.git-tower.com/
 [gitgui-fork]: https://git-fork.com/
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/

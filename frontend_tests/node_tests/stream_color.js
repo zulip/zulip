@@ -2,7 +2,7 @@ global.stub_out_jquery();
 
 var stream_color = require('js/stream_color.js');
 
-(function test_pick_color () {
+(function test_pick_color() {
     var used_colors = ["#76ce90", "#fae589"];
 
     // Colors are assigned randomly, so this test is a little vague and brittle,

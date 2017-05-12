@@ -55,7 +55,7 @@ class Command(BaseCommand):
       will need to direct your integrations at the new server.
       Usually this means updating the URL and the bots' API keys.  You
       can see a list of all the bots that have been configured for
-      your realm on the `/#administration` page, and use that list to
+      your realm on the `/#organization` page, and use that list to
       make sure you migrate them all.
 
     The proper procedure for using this to export a realm is as follows:
@@ -122,7 +122,7 @@ class Command(BaseCommand):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
-        print("Exporting realm %s" % (realm.domain,))
+        print("Exporting realm %s" % (realm.string_id,))
         num_threads = int(options['threads'])
         if num_threads < 1:
             raise CommandError('You must have at least one thread.')

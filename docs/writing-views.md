@@ -3,16 +3,16 @@
 ## What this covers
 
 This page documents how views work in Zulip. You may want to read the
-[new feature tutorial](https://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
-or the [integration guide](https://zulip.readthedocs.io/en/latest/integration-guide.html),
+[new feature tutorial](new-feature-tutorial.html)
+or the [integration guide](integration-guide.html),
 and treat this as a reference.
 
 If you have experience with Django, much of this will be familiar, but
 you may want to read about how REST requests are dispatched, and how
 request authentication works.
 
-This document supplements the [new feature tutorial](https://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
-and the [testing](https://zulip.readthedocs.io/en/latest/testing.html)
+This document supplements the [new feature tutorial](new-feature-tutorial.html)
+and the [testing](testing.html)
 documentation.
 
 ## What is a view?
@@ -87,14 +87,16 @@ redirects the browser to a login page. This is used in the root path
 (`/`) of the website for the web client. If a request comes from a
 browser without a valid session cookie, they are redirected to a login
 page.  It is a small fork of Django's
-[login_required](https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.decorators.login_required),
-adding a few extra checks specific to Zulip.
+[login_required][login-required-link], adding a few extra checks
+specific to Zulip.
 
 ```py
 @zulip_login_required
 def home(request):
     # type: (HttpRequest) -> HttpResponse
 ```
+
+[login-required-link]: https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.decorators.login_required
 
 ### Writing a template
 
@@ -109,7 +111,8 @@ request bodies, and return JSON-string responses.  Almost all Zulip
 view code is in the implementations of API REST endpoints.
 
 The REST API does authentication of the user through `rest_dispatch`,
-which is documented in detail at [zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
+which is documented in detail at
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
 This method will authenticate the user either through a session token
 from a cookie on the browser, or from a base64 encoded `email:api-key`
 string given via HTTP Basic Auth for API clients.
@@ -194,7 +197,9 @@ REQ also helps us with request variable validation. For example:
   integer (`converter` differs from `validator` in that it does not
   automatically marshall the input from JSON).
 
-See [zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py) for more validators and their documentation.
+See
+[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
+for more validators and their documentation.
 
 ### Deciding which HTTP verb to use
 
@@ -270,7 +275,7 @@ and in [zerver/lib/actions.py](https://github.com/zulip/zulip/blob/master/zerver
 
 ```py
 def do_set_realm_name(realm, name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     realm.name = name
     realm.save(update_fields=['name'])
     event = dict(
@@ -303,7 +308,7 @@ channel.patch({
     data: data,
     success: function (response_data) {
         if (response_data.name !== undefined) {
-            ui.report_success(i18n.t("Name changed!"), name_status);
+            ui_report.success(i18n.t("Name changed!"), name_status);
         }
         ...
 ```
@@ -350,15 +355,16 @@ target server for the webhook, and an API key.
 
 If the webhook does not have an option to provide a bot email, use the
 `api_key_only_webhook_view` decorator, to fill in the `user_profile` and
-`client` fields of a request:
+`request.client` fields of a request:
 
 ``` py
 @api_key_only_webhook_view('PagerDuty')
 @has_request_variables
-def api_pagerduty_webhook(request, user_profile, client,
+def api_pagerduty_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='pagerduty'),
                           topic=REQ(default=None)):
 ```
-The `client` will be the result of `get_client("ZulipPagerDutyWebhook")`
-in this example.
+`request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
+in this example and it will be passed to `check_send_message`. For more
+information, see [Clients in Zulip](client.html).

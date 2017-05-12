@@ -68,7 +68,7 @@ PrintLastLog yes
 TCPKeepAlive yes
 #UseLogin no
 
-MaxStartups 20:30:60
+MaxStartups 40:50:60
 #Banner /etc/issue.net
 
 # Commented out to prevent use of client locales. This causes problems

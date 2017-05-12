@@ -39,7 +39,7 @@ common.then_send_many([
       content:   'personal D' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal E' }
+      content:   'personal E' },
 ]);
 
 
@@ -51,11 +51,11 @@ function expect_home() {
             common.expected_messages('zhome', [
                 'Verona > frontend test',
                 'You and Cordelia Lear, King Hamlet',
-                'You and Cordelia Lear'
+                'You and Cordelia Lear',
             ], [
                 '<p>test message D</p>',
                 '<p>personal D</p>',
-                '<p>personal E</p>'
+                '<p>personal E</p>',
             ]);
         });
     });
@@ -67,12 +67,12 @@ function expect_stream() {
             common.expected_messages('zfilt', [
                 'Verona > frontend test',
                 'Verona > other subject',
-                'Verona > frontend test'
+                'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
                 '<p>test message C</p>',
-                '<p>test message D</p>'
+                '<p>test message D</p>',
             ]);
         });
     });
@@ -82,11 +82,11 @@ function expect_stream_subject() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test'
+                'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
-                '<p>test message D</p>'
+                '<p>test message D</p>',
             ]);
         });
     });
@@ -98,12 +98,12 @@ function expect_subject() {
             common.expected_messages('zfilt', [
                 'Verona > frontend test',
                 'Denmark > frontend test',
-                'Verona > frontend test'
+                'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
                 '<p>other message</p>',
-                '<p>test message D</p>'
+                '<p>test message D</p>',
             ]);
         });
     });
@@ -113,11 +113,11 @@ function expect_huddle() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear, King Hamlet'
+                'You and Cordelia Lear, King Hamlet',
             ], [
                 '<p>personal A</p>',
                 '<p>personal B</p>',
-                '<p>personal D</p>'
+                '<p>personal D</p>',
             ]);
         });
     });
@@ -127,10 +127,10 @@ function expect_1on1() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear'
+                'You and Cordelia Lear',
             ], [
                 '<p>personal C</p>',
-                '<p>personal E</p>'
+                '<p>personal E</p>',
             ]);
         });
     });
@@ -141,13 +141,13 @@ function expect_all_pm() {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
                 'You and Cordelia Lear, King Hamlet',
-                'You and Cordelia Lear'
+                'You and Cordelia Lear',
             ], [
                 '<p>personal A</p>',
                 '<p>personal B</p>',
                 '<p>personal C</p>',
                 '<p>personal D</p>',
-                '<p>personal E</p>'
+                '<p>personal E</p>',
             ]);
         });
     });
@@ -205,7 +205,7 @@ function search_non_existing_user(str, item) {
 casper.then(function () {
     common.wait_for_receive(function () {
         casper.test.info('Narrowing by clicking stream');
-        casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
+        casper.click('*[title="Narrow to stream \\"Verona\\""]');
     });
 });
 
@@ -219,7 +219,7 @@ expect_home();
 
 casper.then(function () {
     casper.test.info('Narrowing by clicking subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
+    casper.click('*[title="Narrow to stream \\"Verona\\", topic \\"frontend test\\""]');
 });
 
 expect_stream_subject();
@@ -303,11 +303,11 @@ un_narrow();
 // Make sure stream search filters the stream list
 casper.then(function () {
     casper.test.info('Search streams using left sidebar');
-    casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible initially');
+    casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible initially');
     casper.click('#streams_header .sidebar-title');
 });
 
-casper.waitWhileSelector('.stream-list-filter.notdisplayed', function () {
+casper.waitWhileSelector('.input-append.notdisplayed', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Original stream list contains Denmark');
     casper.test.assertExists('#stream_filters [data-name="Scotland"]', 'Original stream list contains Scotland');
     casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Original stream list contains Verona');
@@ -325,10 +325,10 @@ casper.then(function () {
 
 // There will be no race condition between these two waits because we
 // expect them to happen in parallel.
-casper.waitWhileSelector('#stream_filters [data-name="Denmark"]', function () {
+casper.waitWhileVisible('#stream_filters [data-name="Denmark"]', function () {
     casper.test.assertDoesntExist('#stream_filters [data-name="Denmark"]', 'Filtered stream list does not contain Denmark');
 });
-casper.waitWhileSelector('#stream_filters [data-name="Scotland"]', function () {
+casper.waitWhileVisible('#stream_filters [data-name="Scotland"]', function () {
     casper.test.assertDoesntExist('#stream_filters [data-name="Scotland"]', 'Filtered stream list does not contain Scotland');
 });
 
@@ -348,21 +348,21 @@ casper.then(function () {
 
 // There will be no race condition between these waits because we
 // expect them to happen in parallel.
-casper.waitForSelector('#stream_filters [data-name="Denmark"]', function () {
+casper.waitUntilVisible('#stream_filters [data-name="Denmark"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Denmark');
 });
-casper.waitForSelector('#stream_filters [data-name="Scotland"]', function () {
+casper.waitUntilVisible('#stream_filters [data-name="Scotland"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Scotland');
 });
-casper.waitForSelector('#stream_filters [data-name="Verona"]', function () {
+casper.waitUntilVisible('#stream_filters [data-name="Verona"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Verona');
 });
 
 
 casper.thenClick('#streams_header .sidebar-title');
 
-casper.waitForSelector('.stream-list-filter.notdisplayed', function () {
-    casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible after second click');
+casper.waitForSelector('.input-append.notdisplayed', function () {
+    casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible after second click');
 });
 
 un_narrow();

@@ -1,0 +1,131 @@
+<p>
+  See WordPress.com blog notifications in Zulip!
+</p>
+
+<p>
+  This integration works with <a href="http://wordpress.com">WordPress.com</a> blogs.
+</p>
+
+<p>
+  Support for self-installed blogs using software from <a href="http://wordpress.org">
+  WordPress.org</a> and the <a href="https://wordpress.org/plugins/hookpress/">
+  HookPress plugin</a> is experimental. For more details on the two, please see the
+  WordPress.com support page about <a href="https://en.support.wordpress.com/com-vs-org/">
+  the difference between WordPress.com and WordPress.org.</a>
+</p>
+
+<p>
+  The destination stream for your WordPress notifications must already exist. The
+  default stream is <code>wordpress</code>. Some actions are only available for self-
+  installed blogs. For a complete list of supported action types, please see the table
+  at the bottom of this page.
+</p>
+
+<p>
+  <b>Configuration</b>
+</p>
+
+<p>
+  To configure a new webhook from WordPress, go to the <b>Webhooks</b> page in the
+  <b>Settings</b> section of your blog dashboard and click <b>Add webhook</b>.
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/wordpress/wordpress_hookpress.png" /></p>
+
+<p>
+  If you have trouble locating the correct page on WordPress.com, you can reach
+  it by manually typing the url in your browser address bar as in this example:
+</p>
+
+<p>
+  <code>https://<em><b>yourblogname</b></em>.wordpress.com/wp-admin/options-general.php?page=webhooks</code>
+</p>
+
+<p>
+  Select the hook type <b>action</b> and the specific action that should trigger
+  this webhook notification. This example uses <b>publish_post</b>, which is triggered
+  when a new blog post is created.
+</p>
+
+<p>
+  The Zulip WordPress integration uses the fields <b>post_title</b>, <b>post_type</b>,
+  and <b>post_url</b> for a <b>publish_post</b> action, so select those three fields in
+  the list.
+</p>
+
+<p>
+  Next, enter the URL for the Zulip endpoint, specifying your desired destination
+  stream and topic. Construct your URL like this for a WordPress.com blog:
+</p>
+
+<p>
+  <code>{{ external_api_uri_subdomain }}/v1/external/wordpress?api_key=abcdefgh&stream=wordpress&topic=New%20Posts</code>
+</p>
+
+<p>
+  and like this for a self-installed blog:
+</p>
+
+<p>
+  <code>{{ external_api_uri_subdomain }}/v1/external/wordpress?api_key=abcdefgh;stream=wordpress;topic=New%20Posts</code>
+</p>
+
+<p>
+  The parameters are as follows:
+  <ul>
+    <li><code>api_key</code>: the API key for your Zulip bot</li>
+    <li><code>stream</code>: the stream your WordPress notifications should be posted in</li>
+    <li><code>topic</code>: the name of the topic in that stream</li>
+  </ul>
+</p>
+
+<p>
+  <em>
+    <b>Important:</b> the HookPress plugin requires parameters delimited by
+    semicolons. If you have a self-installed blog, separate parameters with <code>;</code>
+    instead of <code>&</code>.
+  </em>
+</p>
+
+<p>
+  <img class="screenshot" src="/static/images/integrations/wordpress/wordpress_configure_url.png" />
+</p>
+
+<p>
+  When you are done, your configured webhook should look like this:
+</p>
+
+<p>
+  <img class="screenshot" src="/static/images/integrations/wordpress/wordpress_config_done.png" />
+</p>
+
+<p>
+  When a new post is published, a message is created in the specified Zulip stream
+  and topic.
+</p>
+
+<p>
+  <img class="screenshot" src="/static/images/integrations/wordpress/wordpress_post_created.png" />
+</p>
+
+<p>
+  <b>Congratulations! You're done!</b><br />
+</p>
+
+<h3>Types of Actions</h3>
+
+<p>
+  To configure other actions, choose a supported action from the dropdown list and
+  select the appropriate fields.
+</p>
+
+<p>
+  <table style="width: 100%" >
+    <tr><td><b>Action</b></td><td><b>Required Fields</b></td><td><b>Blog Type</b></td></tr>
+    <tr><td>publish_post</td><td>post_title, post_type, post_url</td><td>Both</td></tr>
+    <tr><td>publish_page</td><td>post_title, post_type, post_url</td><td>Both</td></tr>
+    <tr><td>user_register</td><td>display_name, user_email</td><td>Self-installed</td></tr>
+    <tr><td>wp_login</td><td>user_login</td><td>Self-installed</td></tr>
+  </table>
+</p>
+

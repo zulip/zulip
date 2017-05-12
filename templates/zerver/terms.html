@@ -4,13 +4,18 @@
 
 {% block portico_content %}
 
-<div class="app terms-page">
-  <div class="app-main terms-page-container">
-
-  {% if terms_of_service %}
-  {{ terms_of_service|render_markdown_path }}
-  {% endif %}
-  </div>
+<div class="app terms-page inline-block">
+    <div class="app-main terms-page-container">
+        {% if terms_of_service %}
+            {{ terms_of_service|render_markdown_path }}
+        {% else %}
+            {% trans %}
+            This installation of Zulip does not have a configured terms of service.
+            Contact this <a href="mailto:{{ support_email }}">server's administrator</a>
+            if you have any questions.
+            {% endtrans %}
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

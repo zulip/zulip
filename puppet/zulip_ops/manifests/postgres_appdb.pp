@@ -10,4 +10,14 @@ class zulip_ops::postgres_appdb {
     mode => 640,
     source => "puppet:///modules/zulip_ops/postgresql/pg_hba.conf",
   }
+
+  file { "/usr/share/postgresql/${zulip::base::postgres_version}/zulip_nagios_setup.sql":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
+    ensure => file,
+    owner  => "postgres",
+    group  => "postgres",
+    mode => 640,
+    source => "puppet:///modules/zulip_ops/postgresql/zulip_nagios_setup.sql",
+  }
+
 }

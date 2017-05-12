@@ -6,6 +6,7 @@ from typing import Any
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.db.models import Count, QuerySet
+from django.utils.timezone import now as timezone_now
 
 from zerver.models import UserActivity, UserProfile, Realm, \
     get_realm, get_user_profile_by_email
@@ -17,9 +18,9 @@ class Command(BaseCommand):
 
 Usage examples:
 
-python manage.py client_activity
-python manage.py client_activity zulip.com
-python manage.py client_activity jesstess@zulip.com"""
+./manage.py client_activity
+./manage.py client_activity zulip
+./manage.py client_activity hamlet@zulip.com"""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
@@ -38,7 +39,7 @@ python manage.py client_activity jesstess@zulip.com"""
         #
         # Importantly, this does NOT tell you anything about the relative
         # volumes of requests from clients.
-        threshold = datetime.datetime.now() - datetime.timedelta(days=7)
+        threshold = timezone_now() - datetime.timedelta(days=7)
         client_counts = user_activity_objects.filter(
             last_visit__gt=threshold).values("client__name").annotate(
             count=Count('client__name'))
@@ -57,7 +58,6 @@ python manage.py client_activity jesstess@zulip.com"""
             print("%25s %15d" % (count[1], count[0]))
         print("Total:", total)
 
-
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         if options['arg'] is None:
@@ -69,13 +69,13 @@ python manage.py client_activity jesstess@zulip.com"""
                 # Report activity for a user.
                 user_profile = get_user_profile_by_email(arg)
                 self.compute_activity(UserActivity.objects.filter(
-                        user_profile=user_profile))
+                    user_profile=user_profile))
             except UserProfile.DoesNotExist:
                 try:
                     # Report activity for a realm.
                     realm = get_realm(arg)
                     self.compute_activity(UserActivity.objects.filter(
-                            user_profile__realm=realm))
+                        user_profile__realm=realm))
                 except Realm.DoesNotExist:
-                    print("Unknown user or domain %s" % (arg,))
+                    print("Unknown user or realm %s" % (arg,))
                     exit(1)

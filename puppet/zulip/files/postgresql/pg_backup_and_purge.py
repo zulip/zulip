@@ -10,7 +10,8 @@ import logging
 import dateutil.parser
 import pytz
 from datetime import datetime, timedelta
-if False: from typing import List
+if False:
+    from typing import Dict, List
 
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
     f.write(now.isoformat())
     f.write("\n")
 
-backups = {} # type: Dict[datetime, str]
+backups = {}  # type: Dict[datetime, str]
 lines = run(['env-wal-e', 'backup-list']).split("\n")
 for line in lines[1:]:
     if line:

@@ -24,13 +24,14 @@ or just done things that are kind of unique in Zulip.
 ## Running tests
 
 Our tests live in `zerver/tests/`. You can run them with
-`./tools/test-backend`. It generally takes about a minute to run
-the entire test suite.  When you are in iterative mode, you
-can run individual tests or individual modules, following the
-dotted.test.name convention below:
+`./tools/test-backend`. The tests run in parallel using multiple
+threads in your development environment, and can finish in under 30s
+on a fast machine.  When you are in iterative mode, you can run
+individual tests or individual modules, following the dotted.test.name
+convention below:
 
     cd /srv/zulip
-    ./tools/test-backend zerver.tests.tests.WorkerTest
+    ./tools/test-backend zerver.tests.test_queue_worker.WorkerTest
 
 There are many command line options for running Zulip tests, such
 as a `--verbose` option.  The
@@ -46,7 +47,9 @@ tests.
 Another thing to note is that our tests generally "fail fast," i.e. they
 stop at the first sign of trouble.  This is generally a good thing for
 iterative development, but you can override this behavior with the
-`--nonfatal-errors` option.
+`--nonfatal-errors` option.  A useful option to combine with that is
+the `--rerun` option, which will rerun just the tests that failed in
+the last test run.
 
 ## How to write tests.
 
@@ -63,9 +66,11 @@ that a test fails before you implement the feature ensures that if somebody
 accidentally regresses the feature in the future, the test will catch
 the regression.
 
-Another important file to skim is
+Another important files to skim are
 [zerver/lib/test_helpers.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_helpers.py),
-which contains test helpers and our `ZulipTestCase` class.
+which contains test helpers.
+[zerver/lib/test_classes.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_classes.py),
+which contains our `ZulipTestCase` and `WebhookTestCase` classes.
 
 ### Setting up data for tests
 
@@ -238,6 +243,13 @@ typically simulate their behavior using mocks.
 
 - **Coverage** We have 100% line coverage on several of our backend
 modules.  You can use the `--coverage` option to generate coverage
-reports, and new code should have 100% coverage, which generally requires
-testing not only the "happy path" but also error handling code and
-edge cases.
+reports, and new code should have 100% coverage, which generally
+requires testing not only the "happy path" but also error handling
+code and edge cases.  It will generate a nice HTML report that you can
+view right from your browser (the tool prints the URL where the report
+is exposed in your development environment).
+
+Note that `test-backend --coverage` will assert that
+various specific files in the project have 100% test coverage and
+throw an error if their coverage has fallen.  One of our project goals
+is to expand that checking to ever-larger parts of the codebase.

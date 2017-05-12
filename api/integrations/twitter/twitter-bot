@@ -27,13 +27,14 @@ from __future__ import print_function
 import os
 import sys
 import optparse
-import six.moves.configparser
+from six.moves.configparser import ConfigParser, NoSectionError, NoOptionError
 
 import zulip
 VERSION = "0.9"
 CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id, user):
+    # type: (ConfigParser, int, int) -> None
     config.set('twitter', 'since_id', since_id)
     config.set('twitter', 'user_id', user)
     with open(CONFIGFILE, 'wb') as configfile:
@@ -41,7 +42,7 @@ def write_config(config, since_id, user):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
+%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle --site=https://zulip.example.com
 
     Slurp tweets on your timeline into a specific zulip stream.
 
@@ -74,14 +75,14 @@ parser = optparse.OptionParser(r"""
 """)
 
 parser.add_option('--twitter-id',
-    help='Twitter username to poll for new tweets from"',
-    metavar='URL')
+                  help='Twitter username to poll for new tweets from"',
+                  metavar='URL')
 parser.add_option('--stream',
-    help='Default zulip stream to write tweets to')
+                  help='Default zulip stream to write tweets to')
 parser.add_option('--limit-tweets',
-    default=15,
-    type='int',
-    help='Maximum number of tweets to push at once')
+                  default=15,
+                  type='int',
+                  help='Maximum number of tweets to push at once')
 
 parser.add_option_group(zulip.generate_option_group(parser))
 (options, args) = parser.parse_args()
@@ -90,18 +91,18 @@ if not options.twitter_id:
     parser.error('You must specify --twitter-id')
 
 try:
-    config = six.moves.configparser.ConfigParser()
+    config = ConfigParser()
     config.read(CONFIGFILE)
 
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
-except (six.moves.configparser.NoSectionError, six.moves.configparser.NoOptionError):
-   parser.error("Please provide a ~/.zulip_twitterrc")
+except (NoSectionError, NoOptionError):
+    parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not consumer_key or not consumer_secret or not access_token_key or not access_token_secret:
-   parser.error("Please provide a ~/.zulip_twitterrc")
+    parser.error("Please provide a ~/.zulip_twitterrc")
 
 try:
     import twitter
@@ -122,12 +123,12 @@ if not user.id:
 
 try:
     since_id = config.getint('twitter', 'since_id')
-except six.moves.configparser.NoOptionError:
+except NoOptionError:
     since_id = -1
 
 try:
     user_id = config.get('twitter', 'user_id')
-except six.moves.configparser.NoOptionError:
+except NoOptionError:
     user_id = options.twitter_id
 
 client = zulip.Client(
@@ -141,18 +142,18 @@ if since_id < 0 or options.twitter_id != user_id:
     # No since id yet, fetch the latest and then start monitoring from next time
     # Or, a different user id is being asked for, so start from scratch
     # Either way, fetch last 5 tweets to start off
-    statuses = api.GetFriendsTimeline(user=options.twitter_id, count=5)
+    statuses = api.GetUserTimeline(screen_name=options.twitter_id, count=5)
 else:
     # We have a saved last id, so insert all newer tweets into the zulip stream
-    statuses = api.GetFriendsTimeline(user=options.twitter_id, since_id=since_id)
+    statuses = api.GetUserTimeline(screen_name=options.twitter_id, since_id=since_id)
 
 for status in statuses[::-1][:options.limit_tweets]:
     composed = "%s (%s)" % (status.user.name, status.user.screen_name)
     message = {
-      "type": "stream",
-      "to": [options.stream],
-      "subject": composed,
-      "content": status.text,
+        "type": "stream",
+        "to": [options.stream],
+        "subject": composed,
+        "content": status.text,
     }
 
     ret = client.send_message(message)

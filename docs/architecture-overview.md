@@ -24,19 +24,17 @@ bindings](https://github.com/zulip/zulip-node); and our [full-text
 search PostgreSQL extension](https://github.com/zulip/tsearch_extras).
 
 Our mobile clients are separate code repositories:
-[Android](https://github.com/zulip/zulip-android), [iOS
-(stable)](https://github.com/zulip/zulip-ios), and [our experimental
-React Native iOS app](https://github.com/zulip/zulip-mobile). Our
-[legacy desktop application (implemented in
-QT/WebKit)](https://github.com/zulip/zulip-desktop) and our new, alpha
-[cross-platform desktop app (implemented in
-Electron)](https://github.com/zulip/zulip-electron) are also separate
-repositories.
+[Android](https://github.com/zulip/zulip-android) and
+[React Native iOS app](https://github.com/zulip/zulip-mobile).  Our
+[legacy desktop application (implemented in QT/WebKit)](https://github.com/zulip/zulip-desktop)
+and our new, alpha
+[cross-platform desktop app (implemented in Electron)](https://github.com/zulip/zulip-electron)
+are also separate repositories.
 
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
 translations.
 
-In this overview we'll mainly discuss the core Zulip server and web
+In this overview, we'll mainly discuss the core Zulip server and web
 application.
 
 Usage assumptions and concepts
@@ -47,7 +45,7 @@ similar groups ranging in size from a small team to more than a thousand
 users. It features real-time notifications, message persistence and
 search, public group conversations (*streams*), invite-only streams,
 private one-on-one and group conversations, inline image previews, team
-presence/buddy list, a rich API, Markdown message support, and numerous
+presence/buddy lists, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
 users who connect to Zulip using dedicated iOS, Android, Linux, Windows,
 and Mac OS X clients, as well as people using modern web browsers or
@@ -60,10 +58,8 @@ be a user of multiple Zulip realms. The administrators of a realm can
 choose whether to allow anyone to register an account and join, or
 only allow people who have been invited, or restrict registrations to
 members of particular groups (using email domain names or corporate
-single-sign-on login for verification). For more on scalability and
-security considerations, see [the security section of the production
-maintenance
-instructions](prod-maintain-secure-upgrade.html#security-model).
+single-sign-on login for verification). For more on security
+considerations, see [the security model section](security-model.html).
 
 The default Zulip home screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
@@ -75,7 +71,7 @@ users, in strict chronological order. A user can *narrow* to view only
 the messages in a single stream, and can further narrow to focus on a
 *topic* (thread) within that stream. Each narrow has its own URL. The
 user can quickly see what conversation they're in -- the stream and
-topic, or the names of the the user(s) they're private messaging with
+topic, or the names of the user(s) they're private messaging with
 -- using *the recipient bar* displayed atop each conversation.
 
 Zulip's philosophy is to provide sensible defaults but give the user
@@ -87,10 +83,14 @@ real-time notifications they find irrelevant.
 Components
 ----------
 
-### Tornado and Django
+  ![architecture-simple](images/architecture_simple.png)
 
-We use both the [Tornado](http://www.tornadoweb.org) and
-[Django](https://www.djangoproject.com/) Python web frameworks.
+### Django and Tornado
+
+Zulip is primarily implemented in the
+[Django](https://www.djangoproject.com/) Python web framework.  We
+also make use of [Tornado](http://www.tornadoweb.org) for the
+real-time push system.
 
 Django is the main web application server; Tornado runs the
 server-to-client real-time push system. The app servers are configured
@@ -113,6 +113,10 @@ The parts that are activated relatively rarely (e.g. when people type or
 click on something) are processed by the Django application server. One
 exception to this is that Zulip uses websockets through Tornado to
 minimize latency on the code path for **sending** messages.
+
+There is detailed documentation on the
+[real-time push and event queue system](events-system.html); most of
+the code is in `zerver/tornado`.
 
 ### nginx
 
@@ -139,9 +143,9 @@ from outside.
     nginx gets the hostname for the Tornado server via
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`.
 -   Requests to all other paths are sent to the Django app via the UNIX
-    socket `unix:/home/zulip/deployments/fastcgi-socket` (defined in
+    socket `unix:/home/zulip/deployments/uwsgi-socket` (defined in
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`). We use
-    `zproject/wsgi.py` to implement FastCGI here (see
+    `zproject/wsgi.py` to implement uWSGI here (see
     `django.core.wsgi`).
 
 ### Supervisor
@@ -150,8 +154,8 @@ We use [supervisord](http://supervisord.org/) to start server processes,
 restart them automatically if they crash, and direct logging.
 
 The config file is
-`zulip/puppet/zulip/files/supervisor/conf.d/zulip.conf`. This is where
-Tornado and Django are set up, as well as a number of background
+`zulip/puppet/zulip/templates/supervisor/zulip.conf.template.erb`. This
+is where Tornado and Django are set up, as well as a number of background
 processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
 expensive (in terms of performance) and don't have to be synchronous
@@ -197,13 +201,11 @@ thread. It's also used for communication between the application server
 and the Tornado push system.
 
 Two simple wrappers around `pika` (the Python RabbitMQ client) are in
-`zulip/server/lib/queue.py`. There's an asynchronous client for use in
-Tornado and a more general client for use elsewhere.
-
-`zerver/lib/event_queue.py` has helper functions for putting events into
-one queue or another. Most of the processes started by Supervisor are
-queue processors that continually pull things out of a RabbitMQ queue
-and handle them.
+`zulip/zerver/lib/queue.py`. There's an asynchronous client for use in
+Tornado and a more general client for use elsewhere.  Most of the
+processes started by Supervisor are queue processors that continually
+pull things out of a RabbitMQ queue and handle them; they are defined
+in `zerver/worker/queue_processors.py`.
 
 Also see [the queuing guide](queuing.html).
 
@@ -220,10 +222,10 @@ list of stopwords used by a Postgresql extension.
 
 In a development environment, configuration of that postgresql
 extension is handled by `tools/postgres-init-dev-db` (invoked by
-`tools/provision.py`).  That file also manages setting up the
+`tools/provision`).  That file also manages setting up the
 development postgresql user.
 
-`tools/provision.py` also invokes `tools/do-destroy-rebuild-database`
+`tools/provision` also invokes `tools/do-destroy-rebuild-database`
 to create the actual database with its schema.
 
 ### Nagios
@@ -252,11 +254,15 @@ are welcome!
     topic]", or "Link to this conversation". To avoid visual clutter,
     the chevron only appears in the web UI upon hover.
 
+* **huddle**: What the codebase calls a "group private message".
+
 * **message editing**: If the realm admin allows it, then after a user
     posts a message, the user has a few minutes to click "Edit" and
     change the content of their message. If they do, Zulip adds a
     marker such as "(EDITED)" at the top of the message, visible to
     anyone who can see the message.
+
+* **realm**: What the codebase calls an "organization" in the UI.
 
 * **recipient bar**: A visual indication of the context of a message
     or group of messages, displaying the stream and topic or private
@@ -274,3 +280,11 @@ are welcome!
     constraint. Whether a user has or has not starred a particular
     message is private; other users and realm admins don't know
     whether a message has been starred, or by whom.
+
+* **subject**: What the codebase calls a "topic" in many places.
+
+* **bankruptcy**: When a user has been off Zulip for several days and
+    has hundreds of unread messages, they are prompted for whether
+    they want to mark all their unread messages as read.  This is
+    called "declaring bankruptcy" (in reference to the concept in
+    finance).

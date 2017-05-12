@@ -2,6 +2,17 @@ var typeahead_helper = (function () {
 
 var exports = {};
 
+// Returns an array of private message recipients, removing empty elements.
+// For example, "a,,b, " => ["a", "b"]
+exports.get_cleaned_pm_recipients = function (query_string) {
+    var recipients = util.extract_pm_recipients(query_string);
+    recipients = _.filter(recipients, function (elem) {
+        return elem.match(/\S/);
+    });
+    return recipients;
+};
+
+
 // Loosely based on Bootstrap's default highlighter, but with escaping added.
 exports.highlight_with_escaping = function (query, item) {
     // query: The text currently in the searchbox
@@ -50,7 +61,7 @@ exports.highlight_query_in_phrase = function (query, phrase) {
 
     var result = "";
     var parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i++) {
+    for (i = 0; i < parts.length; i += 1) {
         if (i > 0) {
             result += " ";
         }
@@ -64,6 +75,21 @@ exports.render_person = function (person) {
         return person.special_item_text;
     }
     return person.full_name + " <" + person.email + ">";
+};
+
+exports.render_stream = function (token, stream) {
+    var desc = stream.description;
+    var short_desc = desc.substring(0, 35);
+
+    if (desc === short_desc) {
+        desc = exports.highlight_with_escaping(token, desc);
+    } else {
+        desc = exports.highlight_with_escaping(token, short_desc) + "...";
+    }
+
+    var name = exports.highlight_with_escaping(token, stream.name);
+
+    return name + '&nbsp;&nbsp;<small class = "autocomplete_secondary">' + desc + '</small>';
 };
 
 function prefix_sort(query, objs, get_item) {
@@ -95,15 +121,40 @@ function prefix_sort(query, objs, get_item) {
 
 }
 
+function split_by_subscribers(people, current_stream) {
+    var subscribers = [];
+    var non_subscribers = [];
+
+    if (!stream_data.get_sub(current_stream)) {
+        // If there is no stream specified, everyone is considered as a subscriber.
+        return {subscribers: people, non_subscribers: []};
+    }
+
+    _.each(people, function (person) {
+        if (person.email === "all" || person.email === "everyone") {
+            subscribers.push(person);
+        } else if (stream_data.user_is_subscribed(current_stream, person.email)) {
+            subscribers.push(person);
+        } else {
+            non_subscribers.push(person);
+        }
+    });
+
+    return {subscribers: subscribers, non_subscribers: non_subscribers};
+}
+
 exports.sorter = function (query, objs, get_item) {
    var results = prefix_sort(query, objs, get_item);
    return results.matches.concat(results.rest);
 };
 
 exports.compare_by_pms = function (user_a, user_b) {
-    if (user_a.pm_recipient_count > user_b.pm_recipient_count) {
+    var count_a = people.get_recipient_count(user_a);
+    var count_b = people.get_recipient_count(user_b);
+
+    if (count_a > count_b) {
         return -1;
-    } else if (user_a.pm_recipient_count < user_b.pm_recipient_count) {
+    } else if (count_a < count_b) {
         return 1;
     }
 
@@ -119,26 +170,49 @@ exports.compare_by_pms = function (user_a, user_b) {
         return -1;
     } else if (user_a === user_b) {
         return 0;
-    } else {
-        return 1;
     }
+    return 1;
 };
 
-exports.sort_by_pms = function (objs) {
-    objs.sort(exports.compare_by_pms);
-    return objs;
+exports.sort_for_at_mentioning = function (objs, current_stream) {
+    var objs_split = split_by_subscribers(objs, current_stream);
+
+    var subs_sorted = objs_split.subscribers.sort(exports.compare_by_pms);
+    var non_subs_sorted = objs_split.non_subscribers.sort(exports.compare_by_pms);
+    return subs_sorted.concat(non_subs_sorted);
 };
 
-function identity(item) {
-    return item;
-}
+exports.compare_by_popularity = function (lang_a, lang_b) {
+    var diff = pygments_data.langs[lang_b] - pygments_data.langs[lang_a];
+    if (diff !== 0) {
+        return diff;
+    }
+    return util.strcmp(lang_a, lang_b);
+};
 
-exports.sort_recipients = function (matches, query) {
+exports.sort_languages = function (matches, query) {
+    var results = prefix_sort(query, matches, function (x) { return x; });
+
+    // Languages that start with the query
+    results.matches = results.matches.sort(exports.compare_by_popularity);
+    // Languages that have the query somewhere in their name
+    results.rest = results.rest.sort(exports.compare_by_popularity);
+    return results.matches.concat(results.rest);
+};
+
+exports.sort_recipients = function (matches, query, current_stream) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
-    var matches_sorted_by_pms = exports.sort_by_pms(name_results.matches.concat(email_results.matches));
-    var rest_sorted_by_pms = exports.sort_by_pms(email_results.rest);
-    return matches_sorted_by_pms.concat(rest_sorted_by_pms);
+
+    var matches_sorted = exports.sort_for_at_mentioning(
+        name_results.matches.concat(email_results.matches),
+        current_stream
+    );
+    var rest_sorted = exports.sort_for_at_mentioning(
+        email_results.rest,
+        current_stream
+    );
+    return matches_sorted.concat(rest_sorted);
 };
 
 exports.sort_emojis = function (matches, query) {
@@ -147,16 +221,54 @@ exports.sort_emojis = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_streams = function (matches, query) {
-    var results = prefix_sort(query, matches, function (x) { return x; });
-    return results.matches.concat(results.rest);
+// Gives stream a score from 0 to 3 based on its activity
+function activity_score(sub) {
+    var stream_score = 0;
+    if (sub.pin_to_top) {
+        stream_score += 2;
+    }
+    // Note: A pinned stream may accumulate a 3rd point if it is active
+    if (stream_data.is_active(sub)) {
+        stream_score += 1;
+    }
+    return stream_score;
+}
+
+// Sort streams by ranking them by activity. If activity is equal,
+// as defined bv activity_score, decide based on subscriber count.
+exports.compare_by_activity = function (stream_a, stream_b) {
+    var diff = activity_score(stream_b) - activity_score(stream_a);
+    if (diff !== 0) {
+        return diff;
+    }
+    diff = stream_b.subscribers.num_items() - stream_a.subscribers.num_items();
+    if (diff !== 0) {
+        return diff;
+    }
+    return util.strcmp(stream_a.name, stream_b.name);
 };
 
-exports.sort_recipientbox_typeahead = function (matches) {
+exports.sort_streams = function (matches, query) {
+    var name_results = prefix_sort(query, matches, function (x) { return x.name; });
+    var desc_results
+        = prefix_sort(query, name_results.rest, function (x) { return x.description; });
+
+    // Streams that start with the query.
+    name_results.matches = name_results.matches.sort(exports.compare_by_activity);
+    // Streams with descriptions that start with the query.
+    desc_results.matches = desc_results.matches.sort(exports.compare_by_activity);
+    // Streams with names and descriptions that don't start with the query.
+    desc_results.rest = desc_results.rest.sort(exports.compare_by_activity);
+
+    return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
+};
+
+exports.sort_recipientbox_typeahead = function (query, matches, current_stream) {
     // input_text may be one or more pm recipients
-    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
-    var query = cleaned[cleaned.length - 1];
-    return exports.sort_recipients(matches, query);};
+    var cleaned = exports.get_cleaned_pm_recipients(query);
+    query = cleaned[cleaned.length - 1];
+    return exports.sort_recipients(matches, query, current_stream);
+};
 
 return exports;
 

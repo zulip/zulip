@@ -18,7 +18,7 @@ There are two main methods for creating realms.
     ./manage.py generate_realm_creation_link
 ```
 
-The above command will ouput a URL which can be used for creating a
+The above command will output a URL which can be used for creating a
 new realm and an administrator user for that realm. The link expires
 after the creation of the realm.  The link also expires if not used
 within 7 days. The expiration period can be changed by modifying
@@ -51,7 +51,7 @@ Converting a production Zulip server from not using subdomains to
 using subdomains requires some setup work; contact the Zulip
 development community for help with this.
 
-### Working With Subdomains In Development Evironment
+### Working With Subdomains In Development Environment
 
 By default, Linux does not provide a convenient way to use subdomains
 in your local development environment.  To solve this problem, we use

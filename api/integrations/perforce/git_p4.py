@@ -39,9 +39,11 @@ except ImportError:
         """This exception is raised when a process run by check_call() returns
         a non-zero exit status.  The exit status will be stored in the
         returncode attribute."""
+
         def __init__(self, returncode, cmd):
             self.returncode = returncode
             self.cmd = cmd
+
         def __str__(self):
             return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
 
@@ -152,7 +154,7 @@ def p4_has_command(cmd):
        command does not exist in this version of p4."""
     real_cmd = p4_build_cmd(["help", cmd])
     p = subprocess.Popen(real_cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE)
     p.communicate()
     return p.returncode == 0
 
@@ -532,7 +534,7 @@ def parseRevision(ref):
 
 def branchExists(ref):
     rev = read_pipe(["git", "rev-parse", "-q", "--verify", ref],
-                     ignore_error=True)
+                    ignore_error=True)
     return len(rev) > 0
 
 def extractLogMessageFromGitCommit(commit):
@@ -871,7 +873,6 @@ class P4UserMap(object):
             self.users[output["User"]] = output["FullName"] + " <" + output["Email"] + ">"
             self.emails[output["Email"]] = output["User"]
 
-
         s = ''
         for (key, val) in self.users.items():
             s += "%s\t%s\n" % (key.expandtabs(1), val.expandtabs(1))
@@ -956,7 +957,6 @@ class P4RollBack(Command):
                     system("git update-ref %s \"%s^\"" % (ref, ref))
                     log = extractLogMessageFromGitCommit(ref)
                     settings =  extractSettingsGitLog(log)
-
 
                     depotPaths = settings['depot-paths']
                     change = settings['change']
@@ -1712,7 +1712,7 @@ class P4Submit(Command, P4UserMap):
                         if self.conflict_behavior == "ask":
                             print("What do you want to do?")
                             response = input("[s]kip this commit but apply"
-                                                 " the rest, or [q]uit? ")
+                                             " the rest, or [q]uit? ")
                             if not response:
                                 continue
                         elif self.conflict_behavior == "skip":
@@ -2299,7 +2299,7 @@ class P4Sync(Command, P4UserMap):
                 print("Change %s is labelled %s" % (change, labelDetails))
 
             files = p4CmdList(["files"] + ["%s...@%s" % (p, change)
-                                                for p in self.branchPrefixes])
+                                           for p in self.branchPrefixes])
 
             if len(files) == len(labelRevisions):
 
@@ -2337,8 +2337,8 @@ class P4Sync(Command, P4UserMap):
             if self.verbose:
                 print("Querying files for label %s" % label)
             for file in p4CmdList(["files"] +
-                                      ["%s...@%s" % (p, label)
-                                          for p in self.depotPaths]):
+                                  ["%s...@%s" % (p, label)
+                                   for p in self.depotPaths]):
                 revisions[file["depotFile"]] = file["rev"]
                 change = int(file["change"])
                 if change > newestChange:
@@ -2477,7 +2477,6 @@ class P4Sync(Command, P4UserMap):
 
                 if source not in self.knownBranches:
                     lostAndFoundBranches.add(source)
-
 
         for branch in lostAndFoundBranches:
             self.knownBranches[branch] = branch
@@ -2696,7 +2695,6 @@ class P4Sync(Command, P4UserMap):
                 sys.stderr.write("p4 exitcode: %s\n" % info['p4ExitCode'])
                 sys.exit(1)
 
-
             change = int(info["change"])
             if change > newestRevision:
                 newestRevision = change
@@ -2724,7 +2722,6 @@ class P4Sync(Command, P4UserMap):
         except IOError:
             print("IO error with git fast-import. Is your git version recent enough?")
             print(self.gitError.read())
-
 
     def run(self, args):
         self.depotPaths = []

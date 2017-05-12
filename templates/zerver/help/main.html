@@ -1,0 +1,26 @@
+{% extends "zerver/portico.html" %}
+
+{# Zulip User Documentation. #}
+
+{% block portico_content %}
+
+<div class="app terms-page inline-block">
+    <div class="app-main markdown">
+    {% if not_index_page %}
+        <div class="back-to-home">
+            <a href="/help/"><div class="icon-vector-chevron-left"></div>Home</a>
+        </div>
+    {% endif %}
+    {{ article|render_markdown_path }}
+        <div id="footer" class="documentation-footer">
+        <hr />
+        <p>
+          <a href="/help/">Documentation home</a>.
+          The Zulip software, including this documentation, is open source! Learn how
+          you can contribute <a href="https://zulip.readthedocs.io/en/latest/user-docs.html">here</a>.
+        </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

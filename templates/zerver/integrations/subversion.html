@@ -1,0 +1,63 @@
+<p>
+    It is easy to send Zulips on SVN commits, by configuring a post-commit
+    hook. To do this:
+</p>
+
+<p>
+    First, create the stream you'd like to use for SVN commit
+    notifications, and subscribe all interested parties to this stream. The
+    integration will use the default stream <code>commits</code> if no stream
+    is supplied in the hook; you still need to create the stream even if you
+    are using this default.
+</p>
+
+<p>Then:</p>
+
+<ol>
+    <li>
+        Download and install our <a href="/api">Python bindings</a> on the
+        server where the SVN repository lives.
+    </li>
+    <li>
+        Install <code>pysvn</code>. On Linux, you can install
+        the <code>python-svn</code> package. On other platforms, you can install
+        a binary or from source following the
+        <a href="http://pysvn.tigris.org/project_downloads.html">
+            instructions on the pysvn website
+        </a>.
+    </li>
+    <li>
+        Copy <code>integrations/svn/zulip_svn_config.py</code>
+        and <code>integrations/svn/post-commit</code> from the API bindings
+        directory to the <code>hooks</code> subdirectory of your SVN
+        repository.
+    </li>
+
+    <li>
+        <p>
+            Next, open <code>integrations/git/zulip_svn_config.py</code>
+            in your favorite editor, and change the following lines to
+            configure your SVN integration:
+        </p>
+
+        <div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"svn-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
+        </div>
+    </li>
+
+    <li>
+        The default stream used by this post-commit hook
+        is <code>commits</code>; if you'd prefer a different stream, change it
+        now in <code>zulip_svn_config.py</code>. Make sure that everyone
+        interested in getting these post-commit Zulips is subscribed to that
+        stream!
+    </li>
+</ol>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When you commit to this SVN
+    repository, the team can see these updates in real time in Zulip:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/svn/001.png"/>

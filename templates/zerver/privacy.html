@@ -1,0 +1,22 @@
+{% extends "zerver/portico.html" %}
+
+{# Privacy policy. #}
+
+{% block portico_content %}
+
+<div class="app terms-page inline-block">
+    <div class="app-main terms-page-container">
+
+        {% if privacy_policy %}
+            {{ privacy_policy|render_markdown_path }}
+        {% else %}
+            {% trans %}
+            This installation of Zulip does not have a configured privacy policy.
+            Contact this <a href="mailto:{{ support_email }}">server's administrator</a>
+            if you have any questions.
+            {% endtrans %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -14,8 +14,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('--domain',
-                            dest='domain',
+        parser.add_argument('--realm',
+                            dest='string_id',
                             type=str,
                             help='The realm in which to generate the invites (use for open realms).')
         parser.add_argument('--force',
@@ -42,11 +42,11 @@ class Command(BaseCommand):
             return
 
         realm = None
-        domain = options["domain"]
-        if domain:
-            realm = get_realm(domain)
+        string_id = options["string_id"]
+        if string_id:
+            realm = get_realm(string_id)
         if not realm:
-            print("The realm %s doesn't exist yet, please create it first." % (domain,))
+            print("The realm %s doesn't exist yet, please create it first." % (string_id,))
             print("Don't forget default streams!")
             exit(1)
 
@@ -54,7 +54,7 @@ class Command(BaseCommand):
             if realm:
                 if not email_allowed_for_realm(email, realm) and not options["force"]:
                     print("You've asked to add an external user (%s) to a closed realm (%s)." % (
-                        email, domain))
+                        email, string_id))
                     print("Are you sure? To do this, pass --force.")
                     exit(1)
                 else:
@@ -62,4 +62,4 @@ class Command(BaseCommand):
             else:
                 prereg_user = PreregistrationUser(email=email)
             prereg_user.save()
-            print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user))
+            print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user, host=realm.host))

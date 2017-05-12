@@ -4,12 +4,13 @@ import re
 from collections import defaultdict
 import os
 import sys
+from typing import Dict
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from zerver.lib.user_agent import parse_user_agent
 
-user_agents_parsed = defaultdict(int) # type: Dict[str, int]
+user_agents_parsed = defaultdict(int)  # type: Dict[str, int]
 user_agents_path = os.path.join(os.path.dirname(__file__), "user_agents_unique")
 parse_errors = 0
 for line in open(user_agents_path).readlines():

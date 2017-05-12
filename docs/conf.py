@@ -15,7 +15,8 @@
 import sys
 import os
 import shlex
-if False: from typing import Any, Dict, List, Optional
+if False:
+    from typing import Any, Dict, List, Optional
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -30,7 +31,7 @@ if False: from typing import Any, Dict, List, Optional
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [] # type: List[str]
+extensions = []  # type: List[str]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -60,7 +61,7 @@ release = '1.4.0'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None # type: Optional[str]
+language = None  # type: Optional[str]
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -209,30 +210,30 @@ def setup(app):
     # type: (Any) -> None
 
     # overrides for wide tables in RTD theme
-    app.add_stylesheet('theme_overrides.css')   # path relative to _static
+    app.add_stylesheet('theme_overrides.css')  # path relative to _static
 
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 
-# Latex figure (float) alignment
-#'figure_align': 'htbp',
-} # type: Dict[str, str]
+    # Latex figure (float) alignment
+    #'figure_align': 'htbp',
+}  # type: Dict[str, str]
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'zulip-contributor-docs.tex', u'Zulip Documentation',
-   u'The Zulip Team', 'manual'),
+    (master_doc, 'zulip-contributor-docs.tex', u'Zulip Documentation',
+     u'The Zulip Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -275,9 +276,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'zulip-contributor-docs', u'Zulip Documentation',
-   author, 'zulip-contributor-docs', 'Documentation for contributing to Zulip.',
-   'Miscellaneous'),
+    (master_doc, 'zulip-contributor-docs', u'Zulip Documentation',
+     author, 'zulip-contributor-docs', 'Documentation for contributing to Zulip.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -295,8 +296,8 @@ texinfo_documents = [
 from recommonmark.parser import CommonMarkParser
 
 source_parsers = {
-        '.md': CommonMarkParser,
-        }
+    '.md': CommonMarkParser,
+}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

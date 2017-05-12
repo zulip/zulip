@@ -6,33 +6,19 @@ from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, FileRe
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, zulip_login_required
+from zerver.decorator import authenticated_json_post_view
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, get_realm_for_filename
+    get_signed_upload_url, get_realm_for_filename, within_upload_quota
 from zerver.lib.validator import check_bool
-from zerver.models import UserProfile
+from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 
-def serve_s3(request, user_profile, realm_id_str, filename):
-    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
-    url_path = "%s/%s" % (realm_id_str, filename)
-
-    if realm_id_str == "unk":
-        realm_id = get_realm_for_filename(url_path)
-        if realm_id is None:
-            # File does not exist
-            return HttpResponseNotFound('<p>File not found</p>')
-    else:
-        realm_id = int(realm_id_str)
-
-    # Internal users can access all uploads so we can receive attachments in cross-realm messages
-    if user_profile.realm.id == realm_id or user_profile.realm.domain == 'zulip.com':
-        uri = get_signed_upload_url(url_path)
-        return redirect(uri)
-    else:
-        return HttpResponseForbidden()
+def serve_s3(request, url_path):
+    # type: (HttpRequest, str) -> HttpResponse
+    uri = get_signed_upload_url(url_path)
+    return redirect(uri)
 
 # TODO: Rewrite this once we have django-sendfile
 def serve_local(request, path_id):
@@ -44,17 +30,23 @@ def serve_local(request, path_id):
         return HttpResponseNotFound('<p>File not found</p>')
     filename = os.path.basename(local_path)
     response = FileResponse(open(local_path, 'rb'),
-                            content_type = mimetypes.guess_type(filename))  # type: ignore # https://github.com/python/typeshed/issues/559
+                            content_type = mimetypes.guess_type(filename))
     return response
 
 @has_request_variables
 def serve_file_backend(request, user_profile, realm_id_str, filename):
     # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
     path_id = "%s/%s" % (realm_id_str, filename)
+    is_authorized = validate_attachment_request(user_profile, path_id)
+
+    if is_authorized is None:
+        return HttpResponseNotFound(_("<p>File not found.</p>"))
+    if not is_authorized:
+        return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id)
 
-    return serve_s3(request, user_profile, realm_id_str, filename)
+    return serve_s3(request, path_id)
 
 @authenticated_json_post_view
 def json_upload_file(request, user_profile):
@@ -69,8 +61,12 @@ def upload_file_backend(request, user_profile):
         return json_error(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
-    if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
-        return json_error(_("File Upload is larger than allowed limit"))
+    file_size = user_file._get_size()
+    if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
+        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+            settings.MAX_FILE_UPLOAD_SIZE))
+    if not within_upload_quota(user_profile, file_size):
+        return json_error(_("Upload would exceed your maximum quota."))
 
     if not isinstance(user_file.name, str):
         # It seems that in Python 2 unicode strings containing bytes are

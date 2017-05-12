@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any
+from typing import Any, Dict
 
 from optparse import make_option
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import Recipient, Message
 from zerver.lib.timestamp import timestamp_to_datetime
 import datetime
@@ -17,7 +17,7 @@ def compute_stats(log_level):
     logger.setLevel(log_level)
 
     one_week_ago = timestamp_to_datetime(time.time()) - datetime.timedelta(weeks=1)
-    mit_query = Message.objects.filter(sender__realm__domain="mit.edu",
+    mit_query = Message.objects.filter(sender__realm__string_id="zephyr",
                                        recipient__type=Recipient.STREAM,
                                        pub_date__gt=one_week_ago)
     for bot_sender_start in ["imap.", "rcmd.", "sys."]:
@@ -30,15 +30,15 @@ def compute_stats(log_level):
                            "bitcoin@mit.edu", "lp@mit.edu", "clocks@mit.edu",
                            "root@mit.edu", "nagios@mit.edu",
                            "www-data|local-realm@mit.edu"])
-    user_counts = {} # type: Dict[str, Dict[str, int]]
+    user_counts = {}  # type: Dict[str, Dict[str, int]]
     for m in mit_query.select_related("sending_client", "sender"):
         email = m.sender.email
         user_counts.setdefault(email, {})
         user_counts[email].setdefault(m.sending_client.name, 0)
         user_counts[email][m.sending_client.name] += 1
 
-    total_counts = {} # type: Dict[str, int]
-    total_user_counts = {} # type: Dict[str, int]
+    total_counts = {}  # type: Dict[str, int]
+    total_user_counts = {}  # type: Dict[str, int]
     for email, counts in user_counts.items():
         total_user_counts.setdefault(email, 0)
         for client_name, count in counts.items():
@@ -47,13 +47,13 @@ def compute_stats(log_level):
             total_user_counts[email] += count
 
     logging.debug("%40s | %10s | %s" % ("User", "Messages", "Percentage Zulip"))
-    top_percents = {} # type: Dict[int, float]
+    top_percents = {}  # type: Dict[int, float]
     for size in [10, 25, 50, 100, 200, len(total_user_counts.keys())]:
         top_percents[size] = 0.0
     for i, email in enumerate(sorted(total_user_counts.keys(),
                                      key=lambda x: -total_user_counts[x])):
         percent_zulip = round(100 - (user_counts[email].get("zephyr_mirror", 0)) * 100. /
-                               total_user_counts[email], 1)
+                              total_user_counts[email], 1)
         for size in top_percents.keys():
             top_percents.setdefault(size, 0)
             if i < size:
@@ -73,10 +73,11 @@ def compute_stats(log_level):
         logging.info("%15s | %s%%" % (client, round(100. * total_counts[client] / grand_total, 1)))
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + \
-        (make_option('--verbose', default=False, action='store_true'),)
-
     help = "Compute statistics on MIT Zephyr usage."
+
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--verbose', default=False, action='store_true')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

@@ -33,8 +33,8 @@ Omit both <email> and <full name> for interactive user creation.
                             action="store_true",
                             default=False,
                             help='Acknowledgement that the user has already accepted the ToS.')
-        parser.add_argument('--domain',
-                            dest='domain',
+        parser.add_argument('--realm',
+                            dest='string_id',
                             type=str,
                             help='The name of the existing realm to which to add the user.')
         parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
@@ -48,11 +48,11 @@ Omit both <email> and <full name> for interactive user creation.
             raise CommandError("""You must confirm that this user has accepted the
 Terms of Service by passing --this-user-has-accepted-the-tos.""")
 
-        if not options["domain"]:
-            raise CommandError("""Please specify a realm by passing --domain.""")
+        if not options["string_id"]:
+            raise CommandError("""Please specify a realm by passing --realm.""")
 
         try:
-            realm = get_realm(options["domain"])
+            realm = get_realm(options["string_id"])
         except Realm.DoesNotExist:
             raise CommandError("Realm does not exist.")
 
@@ -79,7 +79,7 @@ parameters, or specify no parameters for interactive user creation.""")
 
         try:
             notify_new_user(do_create_user(email, initial_password(email),
-                realm, full_name, email_to_username(email)),
-                internal=True)
+                                           realm, full_name, email_to_username(email)),
+                            internal=True)
         except IntegrityError:
             raise CommandError("User already exists.")

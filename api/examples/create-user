@@ -31,7 +31,7 @@ usage = """create-user --new-email=<email address> --new-password=<password> --n
 Create a user. You must be a realm admin to use this API, and the user
 will be created in your realm.
 
-Example: create-user --site=http://localhost:9991 --user=rwbarton@zulip.com --new-email=jarthur@zulip.com --new-password=random17 --new-full-name 'J. Arthur Random' --new-short-name='jarthur'
+Example: create-user --site=http://localhost:9991 --user=rwbarton@example.com --new-email=jarthur@example.com --new-password=random17 --new-full-name 'J. Arthur Random' --new-short-name='jarthur'
 """
 
 sys.path.append(path.join(path.dirname(__file__), '..'))
@@ -48,8 +48,8 @@ parser.add_option('--new-short-name')
 client = zulip.init_from_options(options)
 
 print(client.create_user({
-        'email': options.new_email,
-        'password': options.new_password,
-        'full_name': options.new_full_name,
-        'short_name': options.new_short_name
-        }))
+    'email': options.new_email,
+    'password': options.new_password,
+    'full_name': options.new_full_name,
+    'short_name': options.new_short_name
+}))

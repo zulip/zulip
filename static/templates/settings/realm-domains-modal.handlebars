@@ -1,0 +1,27 @@
+<div id="realm_domains_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="realm_domains_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="realm_domains_modal_label">{{t "Allowed domains" }}</h3>
+    </div>
+    <div class="modal-body">
+        <table class="table table-condensed table-stripped" id="realm_domains_table">
+            <thead>
+                <th>{{t "Domain" }}</th>
+                <th>{{t "Allow subdomains"}}</th>
+                <th>{{t "Action" }}</th>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr id="add-realm-domain-widget">
+                    <td><input type="text" class="new-realm-domain" placeholder="acme.com"></input></td>
+                    <td><input type="checkbox" class="new-realm-domain-allow-subdomains"></input></td>
+                    <td><button type="button" class="btn btn-primary" id="submit-add-realm-domain">{{t "Add" }}</button></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="modal-footer centered-footer">
+        <div class="realm_domains_info"></div>
+    </div>
+</div>

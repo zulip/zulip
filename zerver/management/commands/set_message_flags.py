@@ -7,7 +7,7 @@ from optparse import make_option
 import logging
 import sys
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib import utils
 from zerver.models import UserMessage, get_user_profile_by_email
@@ -18,29 +18,33 @@ class Command(BaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all
     Expects a comma-delimited list of user message ids via stdin, and an EOF to terminate."""
 
-    option_list = BaseCommand.option_list + (
-        make_option('-r', '--for-real',
-                    dest='for_real',
-                    action='store_true',
-                    default=False,
-                    help="Actually change message flags. Default is a dry run."),
-        make_option('-f', '--flag',
-                    dest='flag',
-                    type='string',
-                    help="The flag to add of remove"),
-        make_option('-o', '--op',
-                    dest='op',
-                    type='string',
-                    help="The operation to do: 'add' or 'remove'"),
-        make_option('-u', '--until',
-                    dest='all_until',
-                    type='string',
-                    help="Mark all messages <= specific usermessage id"),
-        make_option('-m', '--email',
-                    dest='email',
-                    type='string',
-                    help="Email to set messages for"),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-r', '--for-real',
+                            dest='for_real',
+                            action='store_true',
+                            default=False,
+                            help="Actually change message flags. Default is a dry run.")
+
+        parser.add_argument('-f', '--flag',
+                            dest='flag',
+                            type=str,
+                            help="The flag to add of remove")
+
+        parser.add_argument('-o', '--op',
+                            dest='op',
+                            type=str,
+                            help="The operation to do: 'add' or 'remove'")
+
+        parser.add_argument('-u', '--until',
+                            dest='all_until',
+                            type=str,
+                            help="Mark all messages <= specific usermessage id")
+
+        parser.add_argument('-m', '--email',
+                            dest='email',
+                            type=str,
+                            help="Email to set messages for")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -60,7 +64,7 @@ class Command(BaseCommand):
         else:
             filt = models.Q(message__id__in=[mid.strip() for mid in sys.stdin.read().split(',')])
         mids = [m.id for m in
-                    UserMessage.objects.filter(filt, user_profile=user_profile).order_by('-id')]
+                UserMessage.objects.filter(filt, user_profile=user_profile).order_by('-id')]
 
         if options["for_real"]:
             sys.stdin.close()

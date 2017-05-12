@@ -5,6 +5,8 @@ class zulip_ops::postgres_common {
                                  "lzop",
                                  "pv",
                                  "python-pip",
+                                 # Postgres Nagios check plugin
+                                 "check-postgres",
                                  ]
   package { $internal_postgres_packages: ensure => "installed" }
 

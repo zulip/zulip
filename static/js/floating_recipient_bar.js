@@ -14,7 +14,9 @@ function show_floating_recipient_bar() {
 
 var old_label;
 function replace_floating_recipient_bar(desired_label) {
-    var new_label, other_label, header;
+    var new_label;
+    var other_label;
+    var header;
     if (desired_label !== old_label) {
         if (desired_label.children(".message_header_stream").length !== 0) {
             new_label = $("#current_label_stream");
@@ -30,7 +32,7 @@ function replace_floating_recipient_bar(desired_label) {
         new_label.css('display', 'block');
         new_label.attr("zid", rows.id(rows.first_message_in_group(desired_label)));
 
-        new_label.toggleClass('faded', desired_label.hasClass('faded'));
+        new_label.toggleClass('message-fade', desired_label.hasClass('message-fade'));
         old_label = desired_label;
     }
     show_floating_recipient_bar();
@@ -46,7 +48,8 @@ exports.hide = function () {
 exports.update = function () {
     var floating_recipient_bar = $("#floating_recipient_bar");
     var floating_recipient_bar_top = floating_recipient_bar.offset().top;
-    var floating_recipient_bar_bottom = floating_recipient_bar_top + floating_recipient_bar.outerHeight();
+    var floating_recipient_bar_bottom =
+        floating_recipient_bar_top + floating_recipient_bar.outerHeight();
 
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.
@@ -95,3 +98,7 @@ exports.update = function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = floating_recipient_bar;
+}

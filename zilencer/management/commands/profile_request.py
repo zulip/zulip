@@ -3,9 +3,9 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 from optparse import make_option
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import get_user_profile_by_email, UserMessage
-from zerver.views.messages import get_old_messages_backend
+from zerver.views.messages import get_messages_backend
 import cProfile
 import logging
 from zerver.middleware import LogRequests
@@ -29,7 +29,7 @@ class MockRequest(HttpRequest):
             "num_before": 1200,
             "num_after": 200
         }
-        self.GET = {} # type: Dict[Any, Any]
+        self.GET = {}  # type: Dict[Any, Any]
         self.session = MockSession()
 
     def get_full_path(self):
@@ -41,8 +41,8 @@ def profile_request(request):
     request_logger.process_request(request)
     prof = cProfile.Profile()
     prof.enable()
-    ret = get_old_messages_backend(request, request.user,
-                                   apply_markdown=True)
+    ret = get_messages_backend(request, request.user,
+                               apply_markdown=True)
     prof.disable()
     prof.dump_stats("/tmp/profile.data")
     request_logger.process_response(request, ret)
@@ -50,9 +50,9 @@ def profile_request(request):
     return ret
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--email', action='store'),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--email', action='store')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

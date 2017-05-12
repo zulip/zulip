@@ -18,13 +18,17 @@ itself for static content).
 In development, `tools/run-dev.py` fills the role of nginx. Static files
 are in your git checkout under `static`, and are served unminified.
 
-## Nginx secures traffic with [SSL](https://zulip.readthedocs.io/en/latest/prod-install.html)
+## Nginx secures traffic with [SSL](prod-install.html)
 
 If you visit your Zulip server in your browser and discover that your
-traffic isn't being properly encrypted, an [nginx misconfiguration](https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/sites-available/zulip-enterprise) is the
+traffic isn't being properly encrypted, an [nginx misconfiguration][nginx-config] is the
 likely culprit.
 
-## Static files are [served directly](https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app) by Nginx
+[nginx-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/sites-available/zulip-enterprise
+
+## Static files are [served directly][served-directly] by Nginx
+
+[served-directly]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
 
 Static files include JavaScript, css, static assets (like emoji, avatars),
 and user uploads (if stored locally and not on S3).
@@ -36,21 +40,25 @@ location /static/ {
 }
 ```
 
-## Nginx routes other requests [between tornado and django](http://zulip.readthedocs.io/en/latest/architecture-overview.html?highlight=tornado#tornado-and-django)
+## Nginx routes other requests [between django and tornado][tornado-django]
+
+[tornado-django]: architecture-overview.html?highlight=tornado#django-and-tornado
 
 All our connected clients hold open long-polling connections so that
-they can recieve events (messages, presence notifications, and so on) in
+they can receive events (messages, presence notifications, and so on) in
 real-time. Events are served by Zulip's `tornado` application.
 
 Nearly every other kind of request is served by the `zerver` Django
 application.
 
-[Here is the relevant nginx routing configuration.](https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app)
+[Here is the relevant nginx routing configuration.][nginx-config-link]
+
+[nginx-config-link]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
 
 ## Django routes the request to a view in urls.py files
 
 There are various [urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/) files throughout the server codebase, which are
-covered in more detail in [the directory structure doc](http://zulip.readthedocs.io/en/latest/directory-structure.html).
+covered in more detail in [the directory structure doc](directory-structure.html).
 
 The main Zulip Django app is `zerver`. The routes are found in
 ```
@@ -101,7 +109,9 @@ show my message multiple times. PATCH is special--it can be
 idempotent, and we like to write API endpoints in an idempotent fashion,
 as much as possible.
 
-This [cookbook](http://restcookbook.com/) and [tutorial](http://www.restapitutorial.com/) can be helpful if you are new to REST web applications.
+This [cookbook](http://restcookbook.com/) and
+[tutorial](http://www.restapitutorial.com/) can be helpful if you are
+new to REST web applications.
 
 ### PUT is only for creating new things
 
@@ -120,7 +130,7 @@ identifier, the user's email.
 The OPTIONS method will yield the allowed methods.
 
 This request:
-`OPTIONS https://zulip.tabbott.net/api/v1/users`
+`OPTIONS https://chat.zulip.org/api/v1/users`
 yields a response with this HTTP header:
 `Allow: PUT, GET`
 
@@ -137,7 +147,8 @@ In this way, the API is partially self-documenting.
 The endpoints from the legacy JSON API are written without REST in
 mind. They are used extensively by the web client, and use POST.
 
-You can see them in [zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/master/zproject/legacy_urls.py).
+You can see them in
+[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/master/zproject/legacy_urls.py).
 
 ### Webhook integrations may not be RESTful
 
@@ -147,27 +158,33 @@ only POST.
 
 ## Django calls rest_dispatch for REST endpoints, and authenticates
 
-For requests that correspond to a REST url pattern, Zulip configures its
-url patterns (see [zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py)) so that the action called is
-`rest_dispatch`. This method will authenticate the user, either through
-a session token from a cookie, or from an `email:api-key` string given
-via HTTP Basic Auth for API clients.
+For requests that correspond to a REST url pattern, Zulip configures
+its url patterns (see
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py))
+so that the action called is `rest_dispatch`. This method will
+authenticate the user, either through a session token from a cookie,
+or from an `email:api-key` string given via HTTP Basic Auth for API
+clients.
 
 It will then look up what HTTP verb was used (GET, POST, etc) to make
 the request, and then figure out which view to show from that.
 
 In our example,
+
 ```
 {'GET': 'zerver.views.users.get_members_backend',
  'PUT': 'zerver.views.users.create_user_backend'}
 ```
-is supplied as an argument to `rest_dispatch`, along with the [HTTPRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/).
+
+is supplied as an argument to `rest_dispatch`, along with the
+[HTTPRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/).
 The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
-find the correct view to show: `zerver.views.users.create_user_backend`.
+find the correct view to show:
+`zerver.views.users.create_user_backend`.
 
 ## The view will authorize the user, extract request variables, and validate them
 
-This is covered in good detail in the [writing views doc](https://zulip.readthedocs.io/en/latest/writing-views.html)
+This is covered in good detail in the [writing views doc](writing-views.html).
 
 ## Results are given as JSON
 
@@ -176,7 +193,9 @@ return `json_error` in the case of an error, which gives a JSON string:
 
 `{'result': 'error', 'msg': <some error message>}`
 
-in a [HTTP Response](https://docs.djangoproject.com/en/1.8/ref/request-response/) with a content type of 'application/json'.
+in a
+[HTTP Response](https://docs.djangoproject.com/en/1.8/ref/request-response/)
+with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
 a successfully handled request, we use `json_success(data=<some python object which can be converted to a JSON string>`.

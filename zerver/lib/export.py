@@ -6,7 +6,10 @@ from boto.s3.connection import S3Connection
 from django.conf import settings
 from django.db import connection
 from django.forms.models import model_to_dict
-from django.utils import timezone
+from django.utils.timezone import make_aware as timezone_make_aware
+from django.utils.timezone import utc as timezone_utc
+from django.utils.timezone import is_naive as timezone_is_naive
+from django.db.models.query import QuerySet
 import glob
 import logging
 import os
@@ -18,13 +21,13 @@ from zerver.lib.avatar_hash import user_avatar_hash
 from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
-    RealmAlias, Recipient, DefaultStream, get_user_profile_by_id, \
+    RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, get_user_profile_by_email, \
     get_display_recipient, Attachment
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p
 from six.moves import range
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Set, Tuple
 
 # Custom mypy types follow:
 Record = Dict[str, Any]
@@ -53,7 +56,7 @@ MessageOutput = Dict[str, Any]
 
 realm_tables = [("zerver_defaultstream", DefaultStream),
                 ("zerver_realmemoji", RealmEmoji),
-                ("zerver_realmalias", RealmAlias),
+                ("zerver_realmdomain", RealmDomain),
                 ("zerver_realmfilter", RealmFilter)] # List[Tuple[TableName, Any]]
 
 
@@ -69,7 +72,7 @@ ALL_ZERVER_TABLES = [
     'zerver_preregistrationuser_streams',
     'zerver_pushdevicetoken',
     'zerver_realm',
-    'zerver_realmalias',
+    'zerver_realmdomain',
     'zerver_realmemoji',
     'zerver_realmfilter',
     'zerver_recipient',
@@ -151,7 +154,23 @@ def make_raw(query, exclude=None):
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
     '''
-    return [model_to_dict(x, exclude=exclude) for x in query]
+    rows = []
+    for instance in query:
+        data = model_to_dict(instance, exclude=exclude)
+        """
+        In Django 1.10, model_to_dict resolves ManyToManyField as a QuerySet.
+        Previously, we used to get primary keys. Following code converts the
+        QuerySet into primary keys.
+        For reference: https://www.mail-archive.com/django-updates@googlegroups.com/msg163020.html
+        """
+        for field in instance._meta.many_to_many:
+            value = data[field.name]
+            if isinstance(value, QuerySet):
+                data[field.name] = [row.pk for row in value]
+
+        rows.append(data)
+
+    return rows
 
 def floatify_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
@@ -160,9 +179,9 @@ def floatify_datetime_fields(data, table):
             orig_dt = item[field]
             if orig_dt is None:
                 continue
-            if timezone.is_naive(orig_dt):
+            if timezone_is_naive(orig_dt):
                 logging.warning("Naive datetime:", item)
-                dt = timezone.make_aware(orig_dt)
+                dt = timezone_make_aware(orig_dt)
             else:
                 dt = orig_dt
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
@@ -182,14 +201,14 @@ class Config(object):
     append itself to the parent's list of children.
 
     '''
-    def __init__(self, table=None, model=None,
-                normal_parent=None, virtual_parent=None,
-                filter_args=None, custom_fetch=None, custom_tables=None,
-                post_process_data=None,
-                concat_and_destroy=None, id_source=None, source_filter=None,
-                parent_key=None, use_all=False, is_seeded=False, exclude=None):
-        # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
+    def __init__(self, table=None, model=None,
+                 normal_parent=None, virtual_parent=None,
+                 filter_args=None, custom_fetch=None, custom_tables=None,
+                 post_process_data=None,
+                 concat_and_destroy=None, id_source=None, source_filter=None,
+                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
+        # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
         assert table or custom_tables
         self.table = table
@@ -206,7 +225,7 @@ class Config(object):
         self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
-        self.source_filter= source_filter
+        self.source_filter = source_filter
         self.children = [] # type: List[Config]
 
         if normal_parent:
@@ -240,10 +259,9 @@ class Config(object):
                     the ordering correctly.  You may simply
                     need to assign a virtual_parent, or there
                     may be deeper issues going on.''' % (
-                        self.table,
-                        self.id_source[0],
-                        self.virtual_parent.table,
-                    ))
+                    self.table,
+                    self.id_source[0],
+                    self.virtual_parent.table))
 
 
 def export_from_config(response, config, seed_object=None, context=None):
@@ -254,7 +272,6 @@ def export_from_config(response, config, seed_object=None, context=None):
 
     if context is None:
         context = {}
-
 
     if table:
         exported_tables = [table]
@@ -371,8 +388,8 @@ def get_realm_config():
     )
 
     Config(
-        table='zerver_realmalias',
-        model=RealmAlias,
+        table='zerver_realmdomain',
+        model=RealmDomain,
         normal_parent=realm_config,
         parent_key='realm_id__in',
     )
@@ -475,7 +492,6 @@ def get_realm_config():
         post_process_data=sanity_check_stream_data
     )
 
-
     #
 
     Config(
@@ -539,7 +555,7 @@ def fetch_user_profile(response, config, context):
     exportable_user_ids = context['exportable_user_ids']
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude=['password', 'api_key']
+    exclude = ['password', 'api_key']
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows = [] # type: List[Record]
@@ -567,14 +583,14 @@ def fetch_user_profile_cross_realm(response, config, context):
     # type: (TableData, Config, Context) -> None
     realm = context['realm']
 
-    if realm.domain == "zulip.com":
+    if realm.string_id == "zulip":
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
-        get_user_profile_by_email(settings.NOTIFICATION_BOT),
-        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
-        get_user_profile_by_email(settings.WELCOME_BOT),
-    ]]
+            get_user_profile_by_email(settings.NOTIFICATION_BOT),
+            get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
+            get_user_profile_by_email(settings.WELCOME_BOT),
+        ]]
 
 def fetch_attachment_data(response, realm_id, message_ids):
     # type: (TableData, int, Set[int]) -> None
@@ -915,7 +931,7 @@ def export_uploads_from_local(realm, local_dir, output_dir):
         mkdir_p(os.path.dirname(output_path))
         subprocess.check_call(["cp", "-a", local_path, output_path])
         stat = os.stat(local_path)
-        record = dict(realm_id=attachment.realm.id,
+        record = dict(realm_id=attachment.realm_id,
                       user_profile_id=attachment.owner.id,
                       user_profile_email=attachment.owner.email,
                       s3_path=attachment.path_id,
@@ -988,7 +1004,7 @@ def do_write_stats_file_for_realm_export(output_dir):
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
         for fn in fns:
-            f.write(os.path.basename(fn) +'\n')
+            f.write(os.path.basename(fn) + '\n')
             payload = open(fn).read()
             data = ujson.loads(payload)
             for k in sorted(data):
@@ -1053,7 +1069,7 @@ def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
-    logging.info("Finished exporting %s" % (realm.domain))
+    logging.info("Finished exporting %s" % (realm.string_id))
     create_soft_link(source=output_dir, in_progress=False)
 
 def export_attachment_table(realm, output_dir, message_ids):
@@ -1084,6 +1100,7 @@ def create_soft_link(source, in_progress=True):
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+
     def run_job(shard):
         # type: (str) -> int
         subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
@@ -1216,11 +1233,8 @@ def fix_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
-            if item[field_name] is None:
-                item[field_name] = None
-            else:
-                v = datetime.datetime.utcfromtimestamp(item[field_name])
-                item[field_name] = timezone.make_aware(v, timezone=timezone.utc)
+            if item[field_name] is not None:
+                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
 def convert_to_id_fields(data, table, field_name):
     # type: (TableData, TableName, Field) -> None
@@ -1239,7 +1253,7 @@ def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
     # type: (TableData, TableName, Field, TableName, bool) -> None
     '''
     We occasionally need to assign new ids to rows during the
-    import/export process, to accomodate things like existing rows
+    import/export process, to accommodate things like existing rows
     already being in tables.  See bulk_import_client for more context.
 
     The tricky part is making sure that foreign key references
@@ -1253,9 +1267,9 @@ def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
             new_id = lookup_table[old_id]
             if verbose:
                 logging.info('Remapping %s%s from %s to %s' % (table,
-                                                              field_name + '_id',
-                                                              old_id,
-                                                              new_id))
+                                                               field_name + '_id',
+                                                               old_id,
+                                                               new_id))
         else:
             new_id = old_id
         item[field_name + "_id"] = new_id
@@ -1342,10 +1356,10 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
             user_profile_id = id_maps["user_profile"][user_profile_id]
         user_profile = get_user_profile_by_id(user_profile_id)
         key.set_metadata("user_profile_id", str(user_profile.id))
-        key.set_metadata("realm_id", str(user_profile.realm.id))
+        key.set_metadata("realm_id", str(user_profile.realm_id))
         key.set_metadata("orig_last_modified", record['last_modified'])
 
-        headers = {'Content-Type': record['content_type']}
+        headers = {u'Content-Type': record['content_type']}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
@@ -1572,8 +1586,8 @@ def import_attachments(data):
     with connection.cursor() as cursor:
         sql_template = '''
             insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
-                                                           parent_id,
-                                                           child_id)
+                                                            parent_id,
+                                                            child_id)
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
         cursor.executemany(sql_template, tups)
 

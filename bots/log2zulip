@@ -22,6 +22,7 @@ import ujson
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../api"))
 import zulip
+from typing import List
 
 lock_path = "/var/tmp/log2zulip.lock"
 control_path = "/etc/log2zulip.conf"
@@ -45,7 +46,7 @@ def send_log_zulip(file_name, count, lines, extra=""):
         "to": "logs",
         "subject": "%s on %s" % (file_name, platform.node()),
         "content": content,
-        })
+    })
 
 def process_lines(raw_lines, file_name):
     # type: (List[str], str) -> None

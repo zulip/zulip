@@ -3,7 +3,8 @@ var copy_and_paste = (function () {
 var exports = {}; // we don't actually export anything yet, but that's ok
 
 function find_boundary_tr(initial_tr, iterate_row) {
-    var j, skip_same_td_check = false;
+    var j;
+    var skip_same_td_check = false;
     var tr = initial_tr;
 
     // If the selection boundary is somewhere that does not have a
@@ -19,7 +20,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
-    for (j = 0; (!tr.is('.message_row')) && j < 10; j++) {
+    for (j = 0; (!tr.is('.message_row')) && j < 10; j += 1) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
@@ -35,13 +36,24 @@ function find_boundary_tr(initial_tr, iterate_row) {
 }
 
 
-function copy_handler(e) {
+function copy_handler() {
     var selection = window.getSelection();
-    var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
-    var start_data, end_data;
+    var i;
+    var range;
+    var ranges = [];
+    var startc;
+    var endc;
+    var initial_end_tr;
+    var start_id;
+    var end_id;
+    var row;
+    var message;
+    var start_data;
+    var end_data;
     var skip_same_td_check = false;
-    var div = $('<div>'), content;
-    for (i = 0; i < selection.rangeCount; i++) {
+    var div = $('<div>');
+    var content;
+    for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
 
@@ -82,27 +94,23 @@ function copy_handler(e) {
         if (!skip_same_td_check &&
             startc.parents('.selectable_row>div')[0] === endc.parents('.selectable_row>div')[0]) {
             return;
-        } else {
+        }
 
             // Construct a div for what we want to copy (div)
-            for (row = current_msg_list.get_row(start_id);
-                 rows.id(row) <= end_id;
-                 row = rows.next_visible(row))
-            {
-                if (row.prev().hasClass("message_header")) {
-                    content = $('<div>').text(row.prev().text()
-                                                .replace(/\s+/g, " ")
-                                                .replace(/^\s/, "").replace(/\s$/, ""));
-                    div.append($('<p>').append($('<strong>').text(content.text())));
-                }
-
-                message = current_msg_list.get(rows.id(row));
-
-                var message_firstp = $(message.content).slice(0, 1);
-                message_firstp.prepend(message.sender_full_name + ": ");
-                div.append(message_firstp);
-                div.append($(message.content).slice(1));
+        for (row = current_msg_list.get_row(start_id);
+             rows.id(row) <= end_id;
+             row = rows.next_visible(row)) {
+             if (row.prev().hasClass("message_header")) {
+                content = $('<div>').text(row.prev().text()
+                                            .replace(/\s+/g, " ")
+                                            .replace(/^\s/, "").replace(/\s$/, ""));
+                div.append($('<p>').append($('<strong>').text(content.text())));
             }
+            message = current_msg_list.get(rows.id(row));
+            var message_firstp = $(message.content).slice(0, 1);
+            message_firstp.prepend(message.sender_full_name + ": ");
+            div.append(message_firstp);
+            div.append($(message.content).slice(1));
         }
     }
 
@@ -115,7 +123,7 @@ function copy_handler(e) {
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
-    div.css({position: 'absolute', 'left': '-99999px'})
+    div.css({position: 'absolute', left: '-99999px'})
             .attr('id', 'copytempdiv');
     $('body').append(div);
     selection.selectAllChildren(div[0]);
@@ -139,3 +147,7 @@ $(function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = copy_and_paste;
+}

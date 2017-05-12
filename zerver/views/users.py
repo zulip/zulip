@@ -1,49 +1,61 @@
 from __future__ import absolute_import
+from typing import Callable, Text, Union, Optional, Dict, Any, List, Tuple
+
+import os
+import simplejson as json
 
 from django.http import HttpRequest, HttpResponse
 
 from django.utils.translation import ugettext as _
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.conf import settings
 from six.moves import map
 
 from zerver.decorator import has_request_variables, REQ, JsonableError, \
     require_realm_admin
 from zerver.forms import CreateUserForm
-from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
-    do_create_user, subscribed_to_stream, do_deactivate_user, do_reactivate_user, \
+from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
+    do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_source
+    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
+from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile, Stream, Realm, get_user_profile_by_email, \
-    get_stream, email_allowed_for_realm
+from zerver.lib.users import check_change_full_name, check_full_name
+from zerver.lib.utils import generate_random_token
+from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
+    email_allowed_for_realm, get_user_profile_by_id
 
-from six import text_type
-from typing import Optional, Dict, Any
 
 def deactivate_user_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:
         return json_error(_('No such user'))
+    if check_last_admin(target):
+        return json_error(_('Cannot deactivate the only organization administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    admins = set(user_profile.realm.get_admin_users())
 
-    if user_profile.is_realm_admin and len(admins) == 1:
-        return json_error(_('Cannot deactivate the only admin'))
+    if user_profile.is_realm_admin and check_last_admin(user_profile):
+        return json_error(_('Cannot deactivate the only organization administrator'))
     do_deactivate_user(user_profile)
     return json_success()
 
+def check_last_admin(user_profile):
+    # type: (UserProfile) -> bool
+    admins = set(user_profile.realm.get_admin_users())
+    return user_profile.is_realm_admin and len(admins) == 1
+
 def deactivate_bot_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -61,7 +73,7 @@ def _deactivate_user_profile_backend(request, user_profile, target):
     return json_success()
 
 def reactivate_user_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -77,7 +89,7 @@ def reactivate_user_backend(request, user_profile, email):
 def update_user_backend(request, user_profile, email,
                         full_name=REQ(default="", validator=check_string),
                         is_admin=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[bool]) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -87,27 +99,41 @@ def update_user_backend(request, user_profile, email,
         return json_error(_('Insufficient permission'))
 
     if is_admin is not None:
+        if not is_admin and check_last_admin(user_profile):
+            return json_error(_('Cannot remove the only organization administrator'))
         do_change_is_admin(target, is_admin)
 
     if (full_name is not None and target.full_name != full_name and
             full_name.strip() != ""):
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
-        new_full_name = full_name.strip()
-        if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-            return json_error(_("Name too long!"))
-        do_change_full_name(target, new_full_name)
+        check_change_full_name(target, full_name)
 
     return json_success()
 
-def avatar(request, email):
-    # type: (HttpRequest, str) -> HttpResponse
+# TODO: Since eventually we want to support using the same email with
+# different organizations, we'll eventually want this to be a
+# logged-in endpoint so that we can access the realm_id.
+def avatar(request, email_or_id, medium=False):
+    # type: (HttpRequest, str, bool) -> HttpResponse
+    """Accepts an email address or user ID and returns the avatar"""
     try:
-        user_profile = get_user_profile_by_email(email)
-        avatar_source = user_profile.avatar_source
+        int(email_or_id)
+    except ValueError:
+        get_user_func = get_user_profile_by_email  # type: Callable[..., UserProfile]
+    else:
+        get_user_func = get_user_profile_by_id
+
+    try:
+        # If there is a valid user account passed in, use its avatar
+        user_profile = get_user_func(email_or_id)
+        url = avatar_url(user_profile, medium=medium)
     except UserProfile.DoesNotExist:
+        # If there is no such user, treat it as a new gravatar
+        email = email_or_id
         avatar_source = 'G'
-    url = get_avatar_url(avatar_source, email)
+        avatar_version = 1
+        url = get_avatar_url(avatar_source, email, avatar_version, medium=medium)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to
@@ -118,45 +144,45 @@ def avatar(request, email):
     return redirect(url)
 
 def get_stream_name(stream):
-    # type: (Stream) -> Optional[text_type]
+    # type: (Optional[Stream]) -> Optional[Text]
     if stream:
-        name = stream.name
-    else :
-        name = None
-    return name
-
-def stream_or_none(stream_name, realm):
-    # type: (text_type, Realm) -> Optional[Stream]
-    if stream_name == '':
-        return None
-    else:
-        stream = get_stream(stream_name, realm)
-        if not stream:
-            raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
-        return stream
+        return stream.name
+    return None
 
 @has_request_variables
 def patch_bot_backend(request, user_profile, email,
                       full_name=REQ(default=None),
+                      bot_owner=REQ(default=None),
                       default_sending_stream=REQ(default=None),
                       default_events_register_stream=REQ(default=None),
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[text_type], Optional[text_type], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
-    except:
+    except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
     if not user_profile.can_admin_user(bot):
         return json_error(_('Insufficient permission'))
 
     if full_name is not None:
-        do_change_full_name(bot, full_name)
+        check_change_full_name(bot, full_name)
+    if bot_owner is not None:
+        owner = get_user_profile_by_email(bot_owner)
+        do_change_bot_owner(bot, owner, user_profile)
     if default_sending_stream is not None:
-        stream = stream_or_none(default_sending_stream, bot.realm)
+        if default_sending_stream == "":
+            stream = None  # type: Optional[Stream]
+        else:
+            (stream, recipient, sub) = access_stream_by_name(
+                user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream)
     if default_events_register_stream is not None:
-        stream = stream_or_none(default_events_register_stream, bot.realm)
+        if default_events_register_stream == "":
+            stream = None
+        else:
+            (stream, recipient, sub) = access_stream_by_name(
+                user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream)
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(bot, default_all_public_streams)
@@ -165,9 +191,9 @@ def patch_bot_backend(request, user_profile, email,
         pass
     elif len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
-        upload_avatar_image(user_file, user_profile, bot.email)
+        upload_avatar_image(user_file, user_profile, bot)
         avatar_source = UserProfile.AVATAR_FROM_USER
-        do_change_avatar_source(bot, avatar_source)
+        do_change_avatar_fields(bot, avatar_source)
     else:
         return json_error(_("You may only upload one file at a time"))
 
@@ -178,33 +204,40 @@ def patch_bot_backend(request, user_profile, email,
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,
     )
+
+    # Don't include the bot owner in case it is not set.
+    # Default bots have no owner.
+    if bot.bot_owner is not None:
+        json_result['bot_owner'] = bot.bot_owner.email
+
     return json_success(json_result)
 
 @has_request_variables
 def regenerate_bot_api_key(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
-    except:
+    except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
     if not user_profile.can_admin_user(bot):
         return json_error(_('Insufficient permission'))
 
-    do_regenerate_api_key(bot)
+    do_regenerate_api_key(bot, user_profile)
     json_result = dict(
         api_key = bot.api_key
     )
     return json_success(json_result)
 
 @has_request_variables
-def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
+def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name=REQ(),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, text_type, text_type, Optional[text_type], Optional[text_type], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name += "-bot"
-    email = short_name + "@" + user_profile.realm.domain
+    full_name = check_full_name(full_name_raw)
+    email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         # We validate client-side as well
@@ -221,25 +254,17 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
     elif len(request.FILES) != 1:
         return json_error(_("You may only upload one file at a time"))
     else:
-        user_file = list(request.FILES.values())[0]
-        upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
-        default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
-    if default_sending_stream and not default_sending_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_sending_stream):
-        return json_error(_('Insufficient permission'))
+        (default_sending_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+            user_profile, default_sending_stream_name)
 
     default_events_register_stream = None
     if default_events_register_stream_name is not None:
-        default_events_register_stream = stream_or_none(default_events_register_stream_name,
-                                                        user_profile.realm)
-    if default_events_register_stream and not default_events_register_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_events_register_stream):
-        return json_error(_('Insufficient permission'))
-
+        (default_events_register_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+            user_profile, default_events_register_stream_name)
 
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
@@ -250,12 +275,15 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
                                  default_sending_stream=default_sending_stream,
                                  default_events_register_stream=default_events_register_stream,
                                  default_all_public_streams=default_all_public_streams)
+    if len(request.FILES) == 1:
+        user_file = list(request.FILES.values())[0]
+        upload_avatar_image(user_file, user_profile, bot_profile)
     json_result = dict(
-            api_key=bot_profile.api_key,
-            avatar_url=avatar_url(bot_profile),
-            default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
-            default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
-            default_all_public_streams=bot_profile.default_all_public_streams,
+        api_key=bot_profile.api_key,
+        avatar_url=avatar_url(bot_profile),
+        default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
+        default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
+        default_all_public_streams=bot_profile.default_all_public_streams,
     )
     return json_success(json_result)
 
@@ -289,16 +317,13 @@ def get_members_backend(request, user_profile):
     admins = set(user_profile.realm.get_admin_users())
     members = []
     for profile in UserProfile.objects.select_related().filter(realm=realm):
-        avatar_url = get_avatar_url(
-            profile.avatar_source,
-            profile.email
-        )
         member = {"full_name": profile.full_name,
                   "is_bot": profile.is_bot,
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
                   "email": profile.email,
-                  "avatar_url": avatar_url,}
+                  "user_id": profile.id,
+                  "avatar_url": avatar_url(profile)}
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)
@@ -307,8 +332,9 @@ def get_members_backend(request, user_profile):
 @require_realm_admin
 @has_request_variables
 def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
-                        full_name=REQ(), short_name=REQ()):
-    # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type) -> HttpResponse
+                        full_name_raw=REQ("full_name"), short_name=REQ()):
+    # type: (HttpRequest, UserProfile, Text, Text, Text, Text) -> HttpResponse
+    full_name = check_full_name(full_name_raw)
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         return json_error(_('Bad name or username'))
@@ -318,8 +344,8 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
     # invited first.)
     realm = user_profile.realm
     if not email_allowed_for_realm(email, user_profile.realm):
-        return json_error(_("Email '%(email)s' does not belong to domain '%(domain)s'") %
-                          {'email': email, 'domain': realm.domain})
+        return json_error(_("Email '%(email)s' not allowed for realm '%(realm)s'") %
+                          {'email': email, 'realm': realm.string_id})
 
     try:
         get_user_profile_by_email(email)
@@ -329,3 +355,37 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
 
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
+
+def generate_client_id():
+    # type: () -> Text
+    return generate_random_token(32)
+
+def get_profile_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    result = dict(pointer        = user_profile.pointer,
+                  client_id      = generate_client_id(),
+                  max_message_id = -1,
+                  user_id        = user_profile.id,
+                  full_name      = user_profile.full_name,
+                  email          = user_profile.email,
+                  is_bot         = user_profile.is_bot,
+                  is_admin       = user_profile.is_realm_admin,
+                  short_name     = user_profile.short_name)
+
+    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+    if messages:
+        result['max_message_id'] = messages[0].id
+
+    return json_success(result)
+
+def authors_view(request):
+    # type: (HttpRequest) -> HttpResponse
+
+    with open(settings.CONTRIBUTORS_DATA) as f:
+        data = json.load(f)
+
+    return render(
+        request,
+        'zerver/authors.html',
+        context=data,
+    )

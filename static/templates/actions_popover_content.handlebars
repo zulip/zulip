@@ -1,47 +1,68 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover pull-right">
-  <li>
-    <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
-      {{! Can consider http://fontawesome.io/icon/file-code-o/ when we upgrade to font awesome 4.}}
-      <i class="{{#if use_edit_icon}}icon-vector-pencil{{else}}icon-vector-file-text-alt{{/if}}"></i> {{editability_menu_item}}
-    </a>
-  </li>
+    <li>
+        <a href="#" class="popover_edit_message" data-message-id="{{message.id}}">
+            {{! Can consider http://fontawesome.io/icon/file-code-o/ when we upgrade to font awesome 4.}}
+            <i class="{{#if use_edit_icon}}icon-vector-pencil{{else}}icon-vector-file-text-alt{{/if}}"></i> {{editability_menu_item}}
+        </a>
+    </li>
 
-  <li>
-    <a href="#" class="respond_button">
-      <i class="icon-vector-share-alt"></i> {{t "Reply" }}
-    </a>
-  </li>
+    <li>
+        <a href="#" class="respond_button" data-message-id="{{message.id}}">
+            <i class="icon-vector-share-alt"></i> {{t "Quote and reply" }}
+        </a>
+    </li>
 
-  <li>
-    <a href="#" class="popover_toggle_collapse" data-msgid="{{message.id}}">
-      <i class="{{#if message.collapsed}}icon-vector-plus{{else}}icon-vector-minus{{/if}}"></i>
-        {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
-    </a>
-  </li>
+    <li>
+        <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
+            <i class="{{#if message.collapsed}}icon-vector-plus{{else}}icon-vector-minus{{/if}}"></i>
+            {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
+        </a>
+    </li>
 
-  {{#if can_mute_topic}}
-  <li>
-    <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
-      <i class="icon-vector-eye-close"></i>
-      {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}}
-    </a>
-  </li>
-  {{/if}}
+    {{#if should_display_edit_history_option}}
+    <li>
+        <a href="#" class="view_edit_history" data-msgid="{{message.id}}">
+            <i class="icon-vector-time"></i>
+            {{t "View edit history" }}
+        </a>
+    </li>
+    {{/if}}
 
-  {{#if can_unmute_topic}}
-  <li>
-    <a href="#" class="popover_unmute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
-      <i class="icon-vector-eye-open"></i>
-      {{#tr message}}Unmute the topic <b>__subject__</b>{{/tr}}
-    </a>
-  </li>
-  {{/if}}
+    {{#if can_mute_topic}}
+    <li>
+        <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+            <i class="icon-vector-eye-close"></i>
+            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 
-  <li>
-    <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
-      <i class="icon-vector-link"></i> {{t "Link to this conversation" }}
-    </a>
-  </li>
+    {{#if can_unmute_topic}}
+    <li>
+        <a href="#" class="popover_unmute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+            <i class="icon-vector-eye-open"></i>
+            {{#tr message}}Unmute the topic <b>__subject__</b>{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 
+    {{#if should_display_add_reaction_option}}
+    <li>
+        <a href="#" class="reaction_button" data-message-id="{{message.id}}">
+            <i class="icon-vector-smile"></i>
+            {{#tr message}}Add emoji reaction{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+
+    <li>
+        <a href="#" class="copy_link" data-message-id="{{message.id}}" data-clipboard-text="{{ conversation_time_uri }}">
+            <i class="icon-vector-link"></i> {{t "Copy link to conversation" }}
+        </a>
+    </li>
+
+    {{#if message.historical}}
+    <li class="small">({{t "Message sent when you were not subscribed" }})</li>
+    {{/if}}
 </ul>

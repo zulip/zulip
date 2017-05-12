@@ -4,7 +4,7 @@ var exports = {};
 
 function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
-    ui.change_tab_to('#home');
+    ui_util.change_tab_to('#home');
     var operators = Filter.parse(search_string);
     narrow.activate(operators, {trigger: 'search'});
 
@@ -25,7 +25,7 @@ function update_buttons_with_focus(focused) {
     // or we are narrowed.
     if (focused
         || search_query.val()
-        || narrow.active()) {
+        || narrow_state.active()) {
         $('.search_button').removeAttr('disabled');
     } else {
         $('.search_button').attr('disabled', 'disabled');
@@ -53,20 +53,20 @@ exports.initialize = function () {
             return suggestions.strings;
         },
         fixed: true,
-        items: 30,
+        items: 12,
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {
             var obj = search_object[item];
             return obj.description;
         },
-        matcher: function (item) {
+        matcher: function () {
             return true;
         },
         updater: narrow_or_search_for_term,
         sorter: function (items) {
             return items;
-        }
+        },
     });
 
     $("#searchbox_form").keydown(function (e) {
@@ -99,7 +99,7 @@ exports.initialize = function () {
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
-    $('#search_exit' ).on('click', exports.clear_search);
+    $('#search_exit').on('click', exports.clear_search);
 
     var query = $('#search_query');
     query.on('focus', exports.focus_search)
@@ -121,7 +121,7 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            var search_string = narrow.search_string();
+            var search_string = narrow_state.search_string();
             query.val(search_string);
             exports.update_button_visibility();
         }, 100);

@@ -7,6 +7,8 @@ import pytz
 from typing import Any
 
 from django.core.management.base import BaseCommand
+from django.utils.timezone import now as timezone_now
+
 from zerver.models import UserProfile, Realm, Stream, Message, get_realm
 from six.moves import range
 
@@ -20,15 +22,15 @@ class Command(BaseCommand):
 
     def messages_sent_by(self, user, week):
         # type: (UserProfile, int) -> int
-        start = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=(week + 1)*7)
-        end = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=week*7)
+        start = timezone_now() - datetime.timedelta(days=(week + 1)*7)
+        end = timezone_now() - datetime.timedelta(days=week*7)
         return Message.objects.filter(sender=user, pub_date__gt=start, pub_date__lte=end).count()
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         if options['realms']:
             try:
-                realms = [get_realm(domain) for domain in options['realms']]
+                realms = [get_realm(string_id) for string_id in options['realms']]
             except Realm.DoesNotExist as e:
                 print(e)
                 exit(1)
@@ -36,7 +38,7 @@ class Command(BaseCommand):
             realms = Realm.objects.all()
 
         for realm in realms:
-            print(realm.domain)
+            print(realm.string_id)
             user_profiles = UserProfile.objects.filter(realm=realm, is_active=True)
             print("%d users" % (len(user_profiles),))
             print("%d streams" % (len(Stream.objects.filter(realm=realm)),))

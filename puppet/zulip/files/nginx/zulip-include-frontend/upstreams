@@ -1,5 +1,5 @@
 upstream django {
-    server unix:/home/zulip/deployments/fastcgi-socket;
+    server unix:/home/zulip/deployments/uwsgi-socket;
 }
 
 upstream tornado {

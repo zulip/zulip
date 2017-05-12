@@ -1,0 +1,60 @@
+<p>
+    First, download and install our <a href="/api">Python
+    bindings and example scripts</a> on your Git server.
+</p>
+
+<p>
+    Next, create the stream you'd like to use for Git notifications, and
+    subscribe all interested parties to this stream. The integration will use
+    the default stream <code>commits</code> if no stream is supplied in the
+    hook; you still need to create the stream even if you are using this
+    default.
+</p>
+
+<p>
+    Next, open <code>integrations/git/zulip_git_config.py</code>
+    in your favorite editor, and change the following lines to
+    specify the email address and API key for your Git bot:
+</p>
+
+
+<div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"git-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span><span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
+</div>
+
+<p>
+    You can also specify which pushes will result in
+    notifications and to what stream the notifications will be sent
+    by modifying the <code>commit_notice_destination</code> function
+    in <code>zulip_git_config.py</code>. By default, pushes to
+    the <code>master</code> and <code>test-post-receive</code>
+    branches will result in a notification to
+    stream <code>commits</code>.
+</p>
+
+<p>
+    Save <code>integrations/git/zulip_git_config.py</code> to
+    the <code>.git/hooks</code> directory of your git
+    repository.
+</p>
+
+<p>
+    Symlink
+    <code>/usr/local/share/zulip/integrations/git/post-receive</code>
+    into the <code>.git/hooks</code> directory of your git repository.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> Whenever you make
+    a push to the <code>master</code> branch of your git repository
+    (or whatever you configured above), the Zulip git plugin will
+    send an automated notification that looks like this:
+</p>
+<img class="screenshot" src="/static/images/integrations/git/001.png"/>
+
+<p>
+    <b>Testing</b><br/>You can test the plugin without changing
+    your <code>master</code> branch by pushing to
+    the <code>test-post-receive</code> branch.
+</p>

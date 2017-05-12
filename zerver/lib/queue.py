@@ -13,7 +13,7 @@ import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import Any, Callable, Dict, Mapping, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
 
@@ -25,9 +25,9 @@ class SimpleQueueClient(object):
     def __init__(self):
         # type: () -> None
         self.log = logging.getLogger('zulip.queue')
-        self.queues = set() # type: Set[str]
-        self.channel = None # type: Optional[BlockingChannel]
-        self.consumers = defaultdict(set) # type: Dict[str, Set[Consumer]]
+        self.queues = set()  # type: Set[str]
+        self.channel = None  # type: Optional[BlockingChannel]
+        self.consumers = defaultdict(set)  # type: Dict[str, Set[Consumer]]
         # Disable RabbitMQ heartbeats since BlockingConnection can't process them
         self.rabbitmq_heartbeat = 0
         self._connect()
@@ -99,10 +99,10 @@ class SimpleQueueClient(object):
         def do_publish():
             # type: () -> None
             self.channel.basic_publish(
-                            exchange='',
-                            routing_key=queue_name,
-                            properties=pika.BasicProperties(delivery_mode=2),
-                            body=body)
+                exchange='',
+                routing_key=queue_name,
+                properties=pika.BasicProperties(delivery_mode=2),
+                body=body)
 
             statsd.incr("rabbitmq.publish.%s" % (queue_name,))
 
@@ -132,8 +132,8 @@ class SimpleQueueClient(object):
 
         self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(queue_name,
-            lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
-                consumer_tag=self._generate_ctag(queue_name)))
+                          lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
+                                                             consumer_tag=self._generate_ctag(queue_name)))
 
     def register_json_consumer(self, queue_name, callback):
         # type: (str, Callable[[Mapping[str, Any]], None]) -> None
@@ -146,13 +146,14 @@ class SimpleQueueClient(object):
         # type: (str, bool) -> List[Dict[str, Any]]
         "Returns all messages in the desired queue"
         messages = []
+
         def opened():
             # type: () -> None
             while True:
                 (meta, _, message) = self.channel.basic_get(queue_name)
 
                 if not message:
-                    break;
+                    break
 
                 self.channel.basic_ack(meta.delivery_tag)
                 if json:
@@ -193,7 +194,7 @@ class TornadoQueueClient(SimpleQueueClient):
         super(TornadoQueueClient, self).__init__()
         # Enable rabbitmq heartbeat since TornadoConection can process them
         self.rabbitmq_heartbeat = None
-        self._on_open_cbs = [] # type: List[Callable[[], None]]
+        self._on_open_cbs = []  # type: List[Callable[[], None]]
 
     def _connect(self, on_open_cb = None):
         # type: (Optional[Callable[[], None]]) -> None
@@ -233,6 +234,7 @@ class TornadoQueueClient(SimpleQueueClient):
 
         # Try to reconnect in two seconds
         retry_seconds = 2
+
         def on_timeout():
             # type: () -> None
             try:
@@ -274,10 +276,10 @@ class TornadoQueueClient(SimpleQueueClient):
 
         self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(queue_name,
-            lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
-                consumer_tag=self._generate_ctag(queue_name)))
+                          lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
+                                                             consumer_tag=self._generate_ctag(queue_name)))
 
-queue_client = None # type: Optional[SimpleQueueClient]
+queue_client = None  # type: Optional[SimpleQueueClient]
 def get_queue_client():
     # type: () -> SimpleQueueClient
     global queue_client

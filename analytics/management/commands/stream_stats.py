@@ -20,7 +20,7 @@ class Command(BaseCommand):
         # type: (*Any, **str) -> None
         if options['realms']:
             try:
-                realms = [get_realm(domain) for domain in options['realms']]
+                realms = [get_realm(string_id) for string_id in options['realms']]
             except Realm.DoesNotExist as e:
                 print(e)
                 exit(1)
@@ -28,7 +28,7 @@ class Command(BaseCommand):
             realms = Realm.objects.all()
 
         for realm in realms:
-            print(realm.domain)
+            print(realm.string_id)
             print("------------")
             print("%25s %15s %10s" % ("stream", "subscribers", "messages"))
             streams = Stream.objects.filter(realm=realm).exclude(Q(name__istartswith="tutorial-"))

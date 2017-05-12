@@ -1,0 +1,1 @@
+stream=wordpress&topic=WordPress%20Post&hook=publish_post&post_type=post&post_title=New%20Blog%20Post&post_url=http%3A%2F%2Fexample.com

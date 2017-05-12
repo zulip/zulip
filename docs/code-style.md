@@ -13,7 +13,7 @@ question.
 
 You can run them all at once with
 
-    ./tools/lint-all
+    ./tools/lint
 
 You can set this up as a local Git commit hook with
 
@@ -21,14 +21,9 @@ You can set this up as a local Git commit hook with
 
 The Vagrant setup process runs this for you.
 
-`lint-all` runs many lint checks in parallel, including
+`lint` runs many lint checks in parallel, including
 
--   JavaScript ([JSLint](http://www.jslint.com/))
-
-    > `tools/jslint/check-all.js` contains a pretty fine-grained set of
-    > JSLint options, rule exceptions, and allowed global variables. If
-    > you add a new global, you'll need to add it to the list.
-
+-   JavaScript ([ESLint](http://eslint.org/))
 -   Python ([Pyflakes](http://pypi.python.org/pypi/pyflakes))
 -   templates
 -   Puppet configuration
@@ -69,7 +64,7 @@ There are 3 reasons for this:
 1.  It's guaranteed to correctly do a case-inexact lookup
 2.  It fetches the user object from remote cache, which is faster
 3.  It always fetches a UserProfile object which has been queried using
-    .selected\_related(), and thus will perform well when one later
+    .select\_related(), and thus will perform well when one later
     accesses related models like the Realm.
 
 Similarly we have `get_client` and `get_stream` functions to fetch those
@@ -104,6 +99,38 @@ caching, and notifying running browsers via the event system about your
 change. So please check whether such a function exists before writing
 new code to modify a model object, since your new code has a good chance
 of getting at least one of these things wrong.
+
+### Naive datetime objects
+
+Python allows datetime objects to not have an associated timezone, which can
+cause time-related bugs that are hard to catch with a test suite, or bugs
+that only show up during daylight savings time.
+
+Good ways to make timezone-aware datetimes are below. We import `timezone`
+function as `from django.utils.timezone import now as timezone_now` and
+`from django.utils.timezone import utc as timezone_utc`. When Django is not
+available, `timezone_utc` should be replaced with `pytz.utc` below.
+* `timezone_now()` when Django is available, such as in `zerver/`.
+* `datetime.now(tz=pytz.utc)` when Django is not available, such as for bots
+  and scripts.
+* `datetime.fromtimestamp(timestamp, tz=timezone_utc)` if creating a
+  datetime from a timestamp. This is also available as
+  `zerver.lib.timestamp.timestamp_to_datetime`.
+* `datetime.strptime(date_string, format).replace(tzinfo=timezone_utc)` if
+  creating a datetime from a formatted string that is in UTC.
+
+Idioms that result in timezone-naive datetimes, and should be avoided, are
+`datetime.now()` and `datetime.fromtimestamp(timestamp)` without a `tz`
+parameter, `datetime.utcnow()` and `datetime.utcfromtimestamp()`, and
+`datetime.strptime(date_string, format)` without replacing the `tzinfo` at
+the end.
+
+Additional notes:
+* Especially in scripts and puppet configuration where Django is not
+  available, using `time.time()` to get timestamps can be cleaner than
+  dealing with datetimes.
+* All datetimes on the backend should be in UTC, unless there is a good
+  reason to do otherwise.
 
 ### `x.attr('zid')` vs. `rows.id(x)`
 
@@ -157,10 +184,17 @@ settings.
 Instead, switch to the more general `$.ajax`\_ function, which can take
 options like `async`.
 
+### Translation tags
+
+Remember to
+[tag all user-facing strings for translation](translating.html), whether
+they are in HTML templates or JavaScript editing the HTML (e.g. error
+messages).
+
 ### State and logs files
 
 Do not write state and logs files inside the current working directory
-in the production environment. This will not how you expect, because the
+in the production environment. This will not do what you expect, because the
 current working directory for the app changes every time we do a deploy.
 Instead, hardcode a path in settings.py -- see SERVER\_LOG\_PATH in
 settings.py for an example.
@@ -320,10 +354,13 @@ styles (separate lines for each selector):
 
 -   Scripts should start with `#!/usr/bin/env python` and not
     `#/usr/bin/python` (the right Python may not be installed in
-    `/usr/bin`) or `#/usr/bin/env/python2.7` (bad for Python 3
+    `/usr/bin`) or `#/usr/bin/env python2.7` (bad for Python 3
     compatibility).  Don't put a shebang line on a Python file unless
     it's meaningful to run it as a script. (Some libraries can also be
     run as scripts, e.g. to run a test suite.)
+-   Scripts should be executed directly (`./script.py`), so that the
+    interpreter is implicitly found from the shebang line, rather than
+    explicitly overridden (`python script.py`).
 -   The first import in a file should be
     `from __future__ import absolute_import`, per [PEP
     328](http://docs.python.org/2/whatsnew/2.5.html#pep-328-absolute-and-relative-imports)

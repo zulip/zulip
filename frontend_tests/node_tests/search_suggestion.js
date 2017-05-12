@@ -14,16 +14,26 @@ add_dependencies({
     typeahead_helper: 'js/typeahead_helper.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
-    narrow: 'js/narrow.js'
+    narrow_state: 'js/narrow_state.js',
 });
 
 var people = global.people;
 
 var search = require('js/search_suggestion.js');
 
-set_global('page_params', {
-    email: 'bob@zulip.com'
-});
+var bob = {
+    email: 'bob@zulip.com',
+    full_name: 'Bob Roberts',
+    user_id: 42,
+};
+
+
+function init() {
+    people.init();
+    people.add(bob);
+    people.initialize_current_user(bob.user_id);
+}
+init();
 
 set_global('narrow', {});
 
@@ -36,14 +46,14 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return 'office';
     };
 
     var suggestions = search.get_suggestions(query);
 
     var expected = [
-        'fred'
+        'fred',
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());
@@ -55,7 +65,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -64,7 +74,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     var expected = [
         "stream:Denmark topic:Hamlet shakespeare",
         "stream:Denmark topic:Hamlet",
-        "stream:Denmark"
+        "stream:Denmark",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -75,7 +85,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -83,13 +93,14 @@ global.stream_data.populate_stream_topics_for_tests({});
     {
         email: 'ted@zulip.com',
         user_id: 101,
-        full_name: 'Ted Smith'
+        full_name: 'Ted Smith',
     };
 
     var alice =
     {
         email: 'alice@zulip.com',
-        full_name: 'Alice Ignore'
+        user_id: 102,
+        full_name: 'Alice Ignore',
     };
 
     people.add(ted);
@@ -100,7 +111,8 @@ global.stream_data.populate_stream_topics_for_tests({});
     var expected = [
         "is:private",
         "pm-with:alice@zulip.com",
-        "pm-with:ted@zulip.com"
+        "pm-with:bob@zulip.com",
+        "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -109,7 +121,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "is:private al",
         "pm-with:alice@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -118,7 +130,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "pm-with:t",
         "pm-with:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -127,7 +139,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "-pm-with:t",
         "is:private -pm-with:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -135,7 +147,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions(query);
     expected = [
         "pm-with:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -144,7 +156,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "sender:ted",
         "sender:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -153,7 +165,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "sender:te",
         "sender:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -162,7 +174,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "-sender:te",
         "is:private -sender:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -170,9 +182,19 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions(query);
     expected = [
         "sender:ted@zulip.com",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from:ted';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from:ted",
+        "from:ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
 
     // Users can enter bizarre queries, and if they do, we want to
     // be conservative with suggestions.
@@ -180,7 +202,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions(query);
     expected = [
         "is:private near:3",
-        "is:private"
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -188,13 +210,120 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions(query);
     expected = [
         "pm-with:ted@zulip.com near:3",
-        "pm-with:ted@zulip.com"
+        "pm-with:ted@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
+(function test_group_suggestions() {
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow_state.stream = function () {
+        return undefined;
+    };
+
+    var ted =
+    {
+        email: 'ted@zulip.com',
+        user_id: 101,
+        full_name: 'Ted Smith',
+    };
+
+    var alice =
+    {
+        email: 'alice@zulip.com',
+        user_id: 102,
+        full_name: 'Alice Ignore',
+    };
+
+    people.add(ted);
+    people.add(alice);
+
+    // Entering a comma in a pm-with query should immediately generate
+    // suggestions for the next person.
+    var query = 'pm-with:bob@zulip.com,';
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        "pm-with:bob@zulip.com,",
+        "pm-with:bob@zulip.com,alice@zulip.com",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    people.remove(ted);
-    people.remove(alice);
+    // Only the last part of a comma-separated pm-with query should be used to
+    // generate suggestions.
+    query = 'pm-with:bob@zulip.com,t';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,t",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Smit should also generate ted@zulip.com (Ted Smith) as a suggestion.
+    query = 'pm-with:bob@zulip.com,Smit';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,Smit",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // No superfluous suggestions should be generated.
+    query = 'pm-with:bob@zulip.com,red';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,red",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // is:private should be properly prepended to each suggestion if the pm-with
+    // operator is negated.
+
+    query = '-pm-with:bob@zulip.com,';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,",
+        "is:private -pm-with:bob@zulip.com,alice@zulip.com",
+        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-pm-with:bob@zulip.com,t';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,t",
+        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-pm-with:bob@zulip.com,Smit';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,Smit",
+        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-pm-with:bob@zulip.com,red';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,red",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 }());
+
+init();
 
 (function test_empty_query_suggestions() {
     var query = '';
@@ -203,7 +332,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return ['devel', 'office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -218,7 +347,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         "is:alerted",
         "sender:bob@zulip.com",
         "stream:devel",
-        "stream:office"
+        "stream:office",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -235,6 +364,62 @@ global.stream_data.populate_stream_topics_for_tests({});
     assert.equal(describe('stream:devel'), 'Narrow to stream <strong>devel</strong>');
 }());
 
+(function test_sent_by_me_suggestions() {
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow_state.stream = function () {
+        return undefined;
+    };
+
+    var query = '';
+    var suggestions = search.get_suggestions(query);
+    assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
+    assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
+                 'Sent by me');
+
+    query = 'sender';
+    suggestions = search.get_suggestions(query);
+    var expected = [
+        "sender",
+        "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from",
+        "from:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:bob@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:bob@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from:bob@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from:bob@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sent';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sent",
+        "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
 (function test_topic_suggestions() {
     var suggestions;
     var expected;
@@ -243,26 +428,26 @@ global.stream_data.populate_stream_topics_for_tests({});
         return ['office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return 'office';
     };
 
     global.stream_data.populate_stream_topics_for_tests({
-        'devel': [
-            {subject: 'REXX'}
+        devel: [
+            {subject: 'REXX'},
         ],
-        'office': [
+        office: [
             {subject: 'team'},
             {subject: 'ignore'},
-            {subject: 'test'}
-        ]
+            {subject: 'test'},
+        ],
     });
 
     suggestions = search.get_suggestions('te');
     expected = [
         "te",
         "stream:office topic:team",
-        "stream:office topic:test"
+        "stream:office topic:test",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -275,7 +460,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions('topic:staplers stream:office');
     expected = [
         'topic:staplers stream:office',
-        'topic:staplers'
+        'topic:staplers',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -283,7 +468,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         'stream:devel topic:',
         'stream:devel topic:REXX',
-        'stream:devel'
+        'stream:devel',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -291,7 +476,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         'stream:devel -topic:',
         'stream:devel -topic:REXX',
-        'stream:devel'
+        'stream:devel',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -299,7 +484,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         '-topic:te',
         'stream:office -topic:team',
-        'stream:office -topic:test'
+        'stream:office -topic:test',
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());
@@ -311,7 +496,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return ['office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return;
     };
 
@@ -320,7 +505,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     var suggestions = search.get_suggestions(query);
 
     var expected = [
-        "stream:office"
+        "stream:office",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -333,7 +518,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return ['office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return;
     };
 
@@ -343,7 +528,7 @@ global.stream_data.populate_stream_topics_for_tests({});
 
     var expected = [
         "stream:of",
-        "stream:office"
+        "stream:office",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -356,23 +541,26 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return;
     };
 
     var ted = {
         email: 'ted@zulip.com',
-        full_name: 'Ted Smith'
+        user_id: 201,
+        full_name: 'Ted Smith',
     };
 
     var bob = {
         email: 'bob@zulip.com',
-        full_name: 'Bob Terry'
+        user_id: 202,
+        full_name: 'Bob Terry',
     };
 
     var alice = {
         email: 'alice@zulip.com',
-        full_name: 'Alice Ignore'
+        user_id: 203,
+        full_name: 'Alice Ignore',
     };
     people.add(ted);
     people.add(bob);
@@ -383,8 +571,8 @@ global.stream_data.populate_stream_topics_for_tests({});
         office: [
             {subject: 'team'},
             {subject: 'ignore'},
-            {subject: 'test'}
-        ]
+            {subject: 'test'},
+        ],
     });
 
     var suggestions = search.get_suggestions(query);
@@ -394,7 +582,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         "pm-with:bob@zulip.com", // bob TErry
         "pm-with:ted@zulip.com",
         "sender:bob@zulip.com",
-        "sender:ted@zulip.com"
+        "sender:ted@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -411,12 +599,9 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "Ted",
         "pm-with:ted@zulip.com",
-        "sender:ted@zulip.com"
+        "sender:ted@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
 
-    people.remove(ted);
-    people.remove(bob);
-    people.remove(alice);
 }());

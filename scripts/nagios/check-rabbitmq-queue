@@ -50,7 +50,7 @@ for line in output.split("\n"):
         status = max(status, this_status)
         max_count = max(max_count, count)
 
-warn_about =  ", ".join(warn_queues)
+warn_about = ", ".join(warn_queues)
 now = int(time.time())
 now_struct = time.gmtime(now)
 
@@ -60,7 +60,7 @@ if not set(warn_queues) - set(("missedmessage_emails", "digest_emails")) and \
         now_struct.tm_hour == 15 and now_struct.tm_min < 25:
     status = 0
     print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (
-            now, status, states[status]))
+        now, status, states[status]))
     exit(0)
 
 if status > 0:

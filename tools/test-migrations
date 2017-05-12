@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
 echo 'Testing whether migrations are consistent with models'
-if ./manage.py makemigrations -e --dry-run; then
+if ! ./manage.py makemigrations --check --dry-run; then
     echo
-    echo 'ERROR: Migrations are not consistent with models!  Fix with `./manage.py makemigrations`.'
+    echo 'ERROR: Migrations are not consistent with models!  Fix with `./tools/renumber-migrations`.'
+    echo 'See http://zulip.readthedocs.io/en/latest/schema-migrations.html for details.'
     echo
     exit 1
 else

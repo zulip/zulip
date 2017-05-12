@@ -9,7 +9,7 @@ function mkdir_p(path) {
     // This works like mkdir -p in Unix.
     try {
         fs.mkdirSync(path);
-    } catch(e) {
+    } catch (e) {
         if ( e.code !== 'EEXIST' ) {
             throw e;
         }
@@ -38,8 +38,10 @@ function stylesheets() {
     var data = '';
     data += '<link href="../../static/styles/fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/portico.css" rel="stylesheet">\n';
-    data += '<link href="../../static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
+    data += '<link href="../../static/third/thirdparty-fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/settings.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/left-sidebar.css" rel="stylesheet">\n';
     data += '<link href="../../static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
     data += '<link href="../../static/third/bootstrap-notify/css/bootstrap-notify.css" rel="stylesheet">\n';
 

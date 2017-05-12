@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Use this script to provision dependencies for your Zulip installation.
+# This script is idempotent, so it can be restarted at any time, and it
+# will usually run fairly quickly when your dependencies are up to date.
+
+set -e
+if [ "$EUID" -eq 0 ]; then
+    echo "Error: The provision script must not be run as root" >&2
+    exit 1
+fi
+
+#Make the script independent of the location from where it is
+#executed
+PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
+cd "$PARENT_PATH"
+mkdir -p ../var/log
+LOG_PATH="../var/log/provision.log"
+PROVISION_PATH="lib/provision.py"
+
+echo "PROVISIONING STARTING." >> $LOG_PATH
+
+# PYTHONUNBUFFERED is important to ensure that tracebacks don't get
+# lost far above where they should be in the output.
+export PYTHONUNBUFFERED=1
+python "$PROVISION_PATH" $@ 2>&1 | tee -a "$LOG_PATH"
+failed=${PIPESTATUS[0]}
+
+if [ $failed = 1 ]; then
+    echo -e "\033[0;31m"
+    echo "Provisioning failed!"
+    echo
+    echo "* Look at the traceback(s) above to find more about the errors."
+    echo "* Resolve the errors or get help on chat."
+    echo "* If you can fix this yourself, you can re-run tools/provision at any time."
+    echo "* Logs are here: zulip/var/log/provision.log"
+    echo -e "\033[0m"
+    exit 1
+fi
+exit 0

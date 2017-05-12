@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This hook runs the Zulip code linter ./tools/lint-all and returns true
+# This hook runs the Zulip code linter ./tools/lint and returns true
 # regardless of linter results so that your commit may continue.
 
 # Messages from the linter will be printed out to the screen.
@@ -9,11 +9,17 @@
 # contains your provisioned Zulip development environment, the linter
 # will automatically be run through `vagrant ssh`.
 
+changed_files=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$changed_files" ]; then
+    echo "No changed files to lint."
+    exit 0
+fi
+
 if [ -z "$VIRTUAL_ENV" ] && `which vagrant > /dev/null` && [ -e .vagrant ]; then
-    vcmd='/srv/zulip/tools/lint-all $(cd /srv/zulip && git diff --cached --name-only --diff-filter=ACM) || true'
-    echo "Running lint-all using vagrant..."
+    vcmd="/srv/zulip/tools/lint --pep8 --no-gitlint --force $changed_files || true"
+    echo "Running lint using vagrant..."
     vagrant ssh -c "$vcmd"
 else
-    ./tools/lint-all $(git diff --cached --name-only --diff-filter=ACM) || true
+    ./tools/lint --pep8 --no-gitlint --force $changed_files || true
 fi
 exit 0

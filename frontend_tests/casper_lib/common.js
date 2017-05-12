@@ -20,7 +20,7 @@ function log_in(credentials) {
     casper.test.info('Logging in');
     casper.fill('form[action^="/accounts/login"]', {
         username: credentials.username,
-        password: credentials.password
+        password: credentials.password,
     }, true /* submit form */);
 }
 
@@ -29,7 +29,7 @@ exports.init_viewport = function () {
     casper.options.viewportSize = {width: 1280, height: 1024};
 };
 
-exports.initialize_casper = function (viewport) {
+exports.initialize_casper = function () {
     if (casper.zulip_initialized !== undefined) {
         return;
     }
@@ -56,7 +56,7 @@ exports.initialize_casper = function (viewport) {
     casper.test.on('fail', function failure() {
         if (casper_failure_count <= 10) {
             casper.capture("var/casper/casper-failure" + casper_failure_count + ".png");
-            casper_failure_count++;
+            casper_failure_count += 1;
         }
     });
 
@@ -113,7 +113,7 @@ exports.then_log_out = function () {
         });
 
     });
-    casper.waitUntilVisible(".login-page-header", function () {
+    casper.waitUntilVisible(".login-page-container", function () {
         casper.test.assertUrlMatch(/accounts\/login\/$/);
         casper.test.info("Logged out");
     });
@@ -143,7 +143,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
 
             var tah = $(field_selector).data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
+                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
             });
             tah.select();
         }, {field_selector:field_selector, str: str, item: item});
@@ -237,15 +237,18 @@ exports.get_rendered_messages = function (table) {
         var tbl = $('#'+table);
         return {
             headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
-                return elem.innerText;
+                var $clone = $(elem).clone(true);
+                $clone.find(".recipient_row_date").remove();
+
+                return $clone.text();
             }),
 
             bodies: $.map(tbl.find('.message_content'), function (elem) {
                 return elem.innerHTML;
-            })
+            }),
         };
     }, {
-        table: table
+        table: table,
     });
 };
 
@@ -262,7 +265,7 @@ exports.keypress = function (code) {
     casper.evaluate(function (code) {
         $('body').trigger($.Event('keydown', { which: code }));
     }, {
-        code: code
+        code: code,
     });
 };
 
@@ -326,6 +329,10 @@ exports.expected_messages = function (table, headings, bodies) {
 
 exports.un_narrow = function () {
     casper.test.info('Un-narrowing');
+    if (casper.visible('.message_comp')) {
+        // close the compose box
+        common.keypress(27); // Esc
+    }
     common.keypress(27); // Esc
 };
 
@@ -337,4 +344,5 @@ return exports;
 try {
     exports.common = common;
 } catch (e) {
+    // continue regardless of error
 }

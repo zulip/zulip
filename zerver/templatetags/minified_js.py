@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Dict
 
 from django.template import Node, Library, TemplateSyntaxError
 from django.conf import settings
@@ -19,12 +19,18 @@ class MinifiedJSNode(Node):
     def render(self, context):
         # type: (Dict[str, Any]) -> str
         if settings.DEBUG:
-            scripts = settings.JS_SPECS[self.sourcefile]['source_filenames']
+            source_files = settings.JS_SPECS[self.sourcefile]
+            normal_source = source_files['source_filenames']
+            minified_source = source_files.get('minifed_source_filenames', [])
+
+            # Minified source files (most likely libraries) should be loaded
+            # first to prevent any dependency errors.
+            scripts = minified_source + normal_source
         else:
             scripts = [settings.JS_SPECS[self.sourcefile]['output_filename']]
         script_urls = [staticfiles_storage.url(script) for script in scripts]
         script_tags = ['<script type="text/javascript" src="%s" charset="utf-8"></script>'
-                % url for url in script_urls]
+                       % url for url in script_urls]
         return '\n'.join(script_tags)
 
 
@@ -41,5 +47,5 @@ def minified_js(parser, token):
     sourcefile = sourcefile[1:-1]
     if sourcefile not in settings.JS_SPECS:
         raise TemplateSyntaxError("%s tag invalid argument: no JS file %s"
-                % (tag_name, sourcefile))
+                                  % (tag_name, sourcefile))
     return MinifiedJSNode(sourcefile)

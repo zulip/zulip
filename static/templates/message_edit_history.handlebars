@@ -1,0 +1,15 @@
+{{! Client-side Mustache template for viewing message edit history.}}
+
+<div class="date_row"><span id="timerender2">{{t 'Earliest' }}</span></div>
+{{#each edited_messages}}
+<div class="">
+    <div class="messagebox-border">
+        <div class="messagebox-content">
+            <div class="message_top_line"><span class="message_time">{{ timestamp }}</span></div>
+            <div class="message_edit_content">{{{ body_to_render }}}</div>
+            <div class="message_author"><div class="author_details">{{ posted_or_edited }} {{ edited_by }}</div></div>
+        </div>
+    </div>
+</div>
+<hr/>
+{{/each}}

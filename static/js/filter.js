@@ -25,8 +25,7 @@ function zephyr_topic_name_match(message, operand) {
     // instance "personal" to be the same.
     if (base_topic === ''
         || base_topic.toLowerCase() === 'personal'
-        || base_topic.toLowerCase() === '(instance "")')
-    {
+        || base_topic.toLowerCase() === '(instance "")') {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
@@ -80,11 +79,10 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         operand = operand.toLowerCase();
-        if (page_params.is_zephyr_mirror_realm) {
+        if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_stream_name_match(message, operand);
-        } else {
-            return (message.stream.toLowerCase() === operand);
         }
+        return (message.stream.toLowerCase() === operand);
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -92,18 +90,30 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         operand = operand.toLowerCase();
-        if (page_params.is_zephyr_mirror_realm) {
+        if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
-        } else {
-            return (message.subject.toLowerCase() === operand);
         }
+        return (message.subject.toLowerCase() === operand);
+
 
     case 'sender':
-        return (message.sender_email.toLowerCase() === operand.toLowerCase());
+        return people.id_matches_email_operand(message.sender_id, operand);
 
     case 'pm-with':
-        return (message.type === 'private') &&
-            (message.reply_to.toLowerCase() === operand.split(',').sort().join(',').toLowerCase());
+        // TODO: use user_ids, not emails here
+        if (message.type !== 'private') {
+            return false;
+        }
+        var operand_ids = people.pm_with_operand_ids(operand);
+        if (!operand_ids) {
+            return false;
+        }
+        var message_ids = people.pm_with_user_ids(message);
+        if (!message_ids) {
+            return false;
+        }
+
+        return _.isEqual(operand_ids, message_ids);
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -118,15 +128,14 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {"from": "sender", "subject": "topic"};
+var canonical_operators = {from: "sender", subject: "topic"};
 
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
     if (canonical_operators.hasOwnProperty(operator)) {
         return canonical_operators[operator];
-    } else {
-        return operator;
     }
+    return operator;
 };
 
 Filter.canonicalize_term = function (opts) {
@@ -157,7 +166,7 @@ Filter.canonicalize_term = function (opts) {
     case 'pm-with':
         operand = operand.toString().toLowerCase();
         if (operand === 'me') {
-            operand = page_params.email;
+            operand = people.my_current_email();
         }
         break;
     case 'search':
@@ -176,7 +185,7 @@ Filter.canonicalize_term = function (opts) {
     return {
         negated: negated,
         operator: operator,
-        operand: operand
+        operand: operand,
     };
 };
 
@@ -196,7 +205,7 @@ function encodeOperand(operand) {
 }
 
 function decodeOperand(encoded, operator) {
-    if (operator !== 'pm-with' && operator !== 'sender') {
+    if (operator !== 'pm-with' && operator !== 'sender' && operator !== 'from') {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded);
@@ -216,7 +225,8 @@ Filter.parse = function (str) {
         return operators;
     }
     _.each(matches, function (token) {
-        var parts, operator;
+        var parts;
+        var operator;
         parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
@@ -236,8 +246,9 @@ Filter.parse = function (str) {
             // it as a search for the given string (which may contain
             // a `:`), not as a search operator.
             if (Filter.operator_to_prefix(operator, negated) === '') {
-                operator = 'search';
-                operand = token;
+                // Put it as a search term, to not have duplicate operators
+                search_term.push(token);
+                return;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
@@ -269,10 +280,9 @@ Filter.unparse = function (operators) {
             // All tokens that don't start with a known operator and
             // a colon are glued together to form a search term.
             return elem.operand;
-        } else {
-            var sign = elem.negated ? '-' : '';
-            return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
         }
+        var sign = elem.negated ? '-' : '';
+        return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
     });
     return parts.join(' ');
 };
@@ -352,6 +362,21 @@ Filter.prototype = {
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
     },
 
+    update_email: function (user_id, new_email) {
+        _.each(this._operators, function (term) {
+            switch (term.operator) {
+                case 'pm-with':
+                case 'sender':
+                case 'from':
+                    term.operand = people.update_email_in_reply_to(
+                        term.operand,
+                        user_id,
+                        new_email
+                    );
+            }
+        });
+    },
+
     // Build a filter function from a list of operators.
     _build_predicate: function Filter__build_predicate() {
         var operators = this._operators;
@@ -373,7 +398,7 @@ Filter.prototype = {
                 return ok;
             });
         };
-    }
+    },
 };
 
 Filter.operator_to_prefix = function (operator, negated) {
@@ -456,7 +481,8 @@ Filter.describe = function (operators) {
                 return verb + 'alerted messages';
             }
         } else {
-            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
+            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
+                                                                elem.negated);
             if (prefix_for_operator !== '') {
                 return prefix_for_operator + ' ' + operand;
             }

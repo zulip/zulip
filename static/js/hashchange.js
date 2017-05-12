@@ -1,23 +1,10 @@
+// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
 var hashchange = (function () {
 
 var exports = {};
 
 var expected_hash;
 var changing_hash = false;
-
-// Some browsers zealously URI-decode the contents of
-// window.location.hash.  So we hide our URI-encoding
-// by replacing % with . (like MediaWiki).
-
-exports.encodeHashComponent = function (str) {
-    return encodeURIComponent(str)
-        .replace(/\./g, '%2E')
-        .replace(/%/g,  '.');
-};
-
-function decodeHashComponent(str) {
-    return decodeURIComponent(str.replace(/\./g, '%'));
-}
 
 function set_hash(hash) {
     var location = window.location;
@@ -66,8 +53,8 @@ exports.operators_to_hash = function (operators) {
             var operand = elem.operand;
 
             var sign = elem.negated ? '-' : '';
-            hash += '/' + sign + hashchange.encodeHashComponent(operator)
-                  + '/' + hashchange.encodeHashComponent(operand);
+            hash += '/' + sign + hash_util.encodeHashComponent(operator)
+                  + '/' + hash_util.encode_operand(operator, operand);
         });
     }
 
@@ -82,14 +69,15 @@ exports.save_narrow = function (operators) {
     exports.changehash(new_hash);
 };
 
-function parse_narrow(hash) {
-    var i, operators = [];
+exports.parse_narrow = function (hash) {
+    var i;
+    var operators = [];
     for (i=1; i<hash.length; i+=2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
         try {
-            var operator = decodeHashComponent(hash[i]);
-            var operand  = decodeHashComponent(hash[i+1] || '');
+            var operator = hash_util.decodeHashComponent(hash[i]);
+            var operand  = hash_util.decode_operand(operator, hash[i+1] || '');
             var negated = false;
             if (operator[0] === '-') {
                 negated = true;
@@ -101,10 +89,10 @@ function parse_narrow(hash) {
         }
     }
     return operators;
-}
+};
 
 function activate_home_tab() {
-    ui.change_tab_to("#home");
+    ui_util.change_tab_to("#home");
     narrow.deactivate();
     floating_recipient_bar.update();
 }
@@ -133,8 +121,8 @@ function do_hashchange(from_reload) {
     var hash = window.location.hash.split("/");
     switch (hash[0]) {
     case "#narrow":
-        ui.change_tab_to("#home");
-        var operators = parse_narrow(hash);
+        ui_util.change_tab_to("#home");
+        var operators = exports.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
@@ -145,9 +133,9 @@ function do_hashchange(from_reload) {
         var narrow_opts = {
             select_first_unread: true,
             change_hash:    false,  // already set
-            trigger: 'hash change'
+            trigger: 'hash change',
         };
-        if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
+        if (from_reload && page_params.initial_narrow_pointer !== undefined) {
             narrow_opts.from_reload = true;
             narrow_opts.first_unread_from_server = true;
         }
@@ -158,33 +146,159 @@ function do_hashchange(from_reload) {
     case "#":
         activate_home_tab();
         break;
-    case "#subscriptions":
-        ui.change_tab_to("#subscriptions");
+    case "#streams":
+        ui_util.change_tab_to("#streams");
         break;
-    case "#administration":
-        ui.change_tab_to("#administration");
+    case "#drafts":
+        ui_util.change_tab_to("#drafts");
+        break;
+    case "#organization":
+        ui_util.change_tab_to("#organization");
         break;
     case "#settings":
-        ui.change_tab_to("#settings");
+        ui_util.change_tab_to("#settings");
         break;
     }
     return false;
 }
 
-function hashchanged(from_reload) {
-    changing_hash = true;
-    var ret = do_hashchange(from_reload);
-    changing_hash = false;
-    return ret;
+// -- -- -- -- -- -- READ THIS BEFORE TOUCHING ANYTHING BELOW -- -- -- -- -- -- //
+// HOW THE HASH CHANGE MECHANISM WORKS:
+// When going from a normal view (eg. `narrow/is/private`) to a settings panel
+// (eg. `settings/your-bots`) it should trigger the `should_ignore` function and
+// return `true` for the current state -- we want to ignore hash changes from
+// within the settings page. The previous hash however should return `false` as it
+// was outside of the scope of settings.
+// there is then an `exit_modal` function that allows the hash to change exactly
+// once without triggering any events. This allows the hash to reset back from
+// a settings page to the previous view available before the settings page
+// (eg. narrow/is/private). This saves the state, scroll position, and makes the
+// hash change functionally inert.
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
+var ignore = {
+    flag: false,
+    prev: null,
+    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
+    group: null,
+};
+
+function get_main_hash(hash) {
+    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
+}
+
+function get_hash_components() {
+    var hash = window.location.hash.split(/\//);
+
+    return {
+        base: hash.shift(),
+        arguments: hash,
+    };
+}
+
+// different groups require different reloads. The grouped elements don't
+// require a reload or overlay change to run.
+var get_hash_group = (function () {
+    var groups = [
+        ["streams"],
+        ["settings", "organization"],
+        ["invite"],
+    ];
+
+    return function (value) {
+        var idx = null;
+
+        _.find(groups, function (o, i) {
+            if (o.indexOf(value) !== -1) {
+                idx = i;
+                return true;
+            }
+            return false;
+        });
+
+        return idx;
+    };
+}());
+
+function should_ignore(hash) {
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
+    var ignore_list = ["streams", "drafts", "settings", "organization", "invite"];
+    var main_hash = get_main_hash(hash);
+
+    return (ignore_list.indexOf(main_hash) > -1);
+}
+
+function hashchanged(from_reload, e) {
+    var old_hash;
+    if (e) {
+        old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
+        ignore.last = old_hash;
+        ignore.old_hash = window.location.hash;
+    }
+
+    var base = get_main_hash(window.location.hash);
+
+    if (should_ignore(window.location.hash)) {
+        // if the old has was a standard non-ignore hash OR the ignore hash
+        // base has changed, something needs to run again.
+
+        if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(base)) {
+            if (ignore.group !== get_hash_group(base)) {
+                modals.close_for_hash_change();
+            }
+
+            // now only if the previous one should not have been ignored.
+            if (!should_ignore(old_hash || "#")) {
+                ignore.prev = old_hash;
+            }
+
+            if (base === "streams") {
+                subs.launch(get_hash_components());
+            } else if (base === "drafts") {
+                drafts.launch();
+            } else if (/settings|organization/.test(base)) {
+                settings.setup_page();
+                admin.setup_page();
+            } else if (base === "invite") {
+                invite.initialize();
+            }
+
+            ignore.group = get_hash_group(base);
+        } else {
+            subs.change_state(get_hash_components());
+        }
+    } else if (!should_ignore(window.location.hash) && !ignore.flag) {
+        modals.close_for_hash_change();
+        changing_hash = true;
+        var ret = do_hashchange(from_reload);
+        changing_hash = false;
+        return ret;
+    // once we unignore the hash, we have to set the hash back to what it was
+    // originally (eg. '#narrow/stream/Denmark' instead of '#settings'). We
+    // therefore ignore the hash change once more while we change it back for
+    // no iterruptions.
+    } else if (ignore.flag) {
+        ignore.flag = false;
+    }
 }
 
 exports.initialize = function () {
     // jQuery doesn't have a hashchange event, so we manually wrap
     // our event handler
-    window.onhashchange = blueslip.wrap_function(function () {
-        hashchanged(false);
+    window.onhashchange = blueslip.wrap_function(function (e) {
+        hashchanged(false, e);
     });
     hashchanged(true);
+};
+
+exports.exit_modal = function (callback) {
+    if (should_ignore(window.location.hash)) {
+        ui_util.blur_active_element();
+        ignore.flag = true;
+        window.location.hash = ignore.prev || "#";
+        if (typeof callback === "function") {
+            callback();
+        }
+    }
 };
 
 return exports;

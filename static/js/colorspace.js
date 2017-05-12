@@ -10,9 +10,8 @@ exports.sRGB_to_linear = function (v) {
     v = v / 255.0;
     if (v <= 0.04045) {
         return v / 12.92;
-    } else {
-        return Math.pow((v + 0.055) / 1.055, 2.4);
     }
+    return Math.pow((v + 0.055) / 1.055, 2.4);
 };
 
 // Compute luminance (CIE Y stimulus) from linear intensity
@@ -56,3 +55,7 @@ exports.getHexColor = function (rgb) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = colorspace;
+}

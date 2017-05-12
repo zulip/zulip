@@ -1,0 +1,211 @@
+.right-sidebar {
+    -webkit-font-smoothing: antialiased;
+    color: #555;
+    font-size: 0.89rem;
+}
+
+#group-pms li:hover,
+#user_presences li:hover {
+    background-color: #e2e8dd;
+}
+
+#user_presences,
+#group-pms {
+    list-style-position: inside; /* Draw the bullets inside our box */
+    margin-left: 0;
+    overflow: hidden;
+}
+
+#user_presences:hover,
+#group-pms:hover {
+    overflow-y: auto;
+}
+
+#user_presences li {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count {
+    display: none;
+}
+
+#user_presences li,
+#group-pms li {
+    list-style-type: none;
+}
+
+#group-pm-title {
+    margin: 10px 0px 0px 0px;
+    display: inline-block;
+}
+
+.user-status-indicator,
+.group-pm-status-indicator {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid;
+    float: left;
+    position: relative;
+    top: 5px;
+    margin-right: 0.5em;
+}
+
+.user_active .user-status-indicator,
+.group-pm-status-indicator {
+    background-color: #44C21D;
+    border-color: #44C21D;
+}
+
+.user_idle .user-status-indicator {
+    border-color: #EC7E18;
+    background-color: #EC7E18;
+
+    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 50%, rgba(236,126,24,1) 50%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,rgba(255,255,255,0)), color-stop(50%,rgba(236,126,24,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
+}
+
+.user_offline .user-status-indicator {
+    background-color: none;
+    border-color: gray;
+}
+
+#user_presences a,
+#group-pms a {
+    color: inherit;
+}
+
+#invite-user-link i {
+    text-decoration: none;
+    margin-right: 5px;
+}
+
+.group-pms-sidebar-entry .selectable_sidebar_block {
+    width: 235px;
+    display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    width: 218px;
+    display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
+    width: 204px;
+}
+
+.group-pm-link {
+    margin-left: 17px;
+    display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user_sidebar_entry.user-with-count .selectable_sidebar_block {
+    width: 200px;
+}
+
+.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
+    width: 180px;
+}
+
+.user_sidebar_entry.user-with-count .count {
+    display: inherit;
+}
+
+.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
+    width: 170px;
+}
+
+.selectable_sidebar_block {
+    cursor: pointer;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count {
+    position: absolute;
+    right: 25px;
+    top: 4px;
+    padding: 2px 4px 1px 4px;
+    background: #80837f;
+    border-radius: 0px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+
+    border-radius: 4px;
+}
+
+.group-pms-sidebar-entry .count {
+    right: 2px;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count {
+    line-height: 13px;
+    top: 2px;
+}
+
+#userlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    text-align: center;
+    vertical-align: middle;
+    border-left: 2px solid #afbfca;
+}
+
+#userlist-toggle-button {
+    text-decoration: none;
+    background-color: #e4e4e4;
+    color: #858585;
+    display: block;
+    width: 40px;
+    height: 19px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
+#group-pm-list {
+    display: none;
+}
+
+#group-pm-list.show {
+    display: block;
+}
+
+#userlist-header,
+#group-pm-header {
+    margin-right: 10px;
+}
+
+.sidebar-items:first-of-type #userlist-header {
+    border-top: none;
+}
+
+#feedback_section {
+    text-align: left;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e2e2;
+    margin-right: 10px;
+}
+
+.user-list-filter,
+.add-user-list-filter {
+    width: 80%;
+}

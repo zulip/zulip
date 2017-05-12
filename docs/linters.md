@@ -17,9 +17,10 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
-- [jslint](https://github.com/douglascrockford/JSLint)
+- [eslint](http://eslint.org)
 - [mypy](http://mypy-lang.org/)
-- [puppet](https://puppet.com/) (puppet provides its own mechanism for validating manifests)
+- [puppet](https://puppet.com/) (puppet provides its own mechanism for
+  validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -34,18 +35,21 @@ one small exception: it does not run mypy against scripts).
 
 You can also run them individually:
 
-    ./tools/lint-all
+    ./tools/lint
     ./tools/run-mypy
     ./tools/run-mypy --scripts-only
 
 Finally, you can rely on our Travis CI setup to run linters for you, but
 it is good practice to run lint checks locally.
 
+**Note:** The linters only check files that git tracks. Remember to `git add`
+new files before running lint checks.
+
 Our linting tools generally support the ability to lint files
 individually--with some caveats--and those options will be described
 later in this document.
 
-We may eventually bundle `run-mypy` into `lint-all`, but mypy is pretty
+We may eventually bundle `run-mypy` into `lint`, but mypy is pretty
 resource intensive compared to the rest of the linters, because it does
 static code analysis.  So we keep mypy separate to allow folks to quickly run
 the other lint checks.
@@ -55,7 +59,7 @@ the other lint checks.
 Once you have read the [Zulip coding guidelines](code-style.html), you can
 be pretty confident that 99% of the code that you write will pass through
 the linters fine, as long as you are thorough about keeping your code clean.
-And, of course, for minor oversights, `lint-all` is your friend, not your foe.
+And, of course, for minor oversights, `lint` is your friend, not your foe.
 
 Occasionally, our linters will complain about things that are more of
 an artifact of the linter limitations than any actual problem with your
@@ -77,11 +81,11 @@ describes our test system in detail.
 
 ## Lint checks
 
-Most of our lint checks get performed by `./tools/lint-all`.  These include the
+Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
-- Check JavaScript code with jslint.
+- Check JavaScript code with eslint.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
 - Check puppet manifests with the puppet validator.
@@ -95,25 +99,25 @@ code analysis of Python type annotations throughout our Python codebase.
 
 Our [documentation on using mypy](mypy.html) covers mypy in more detail.
 
-The rest of this document pertains to the checks that occur in `./tools/lint-all`.
+The rest of this document pertains to the checks that occur in `./tools/lint`.
 
-## lint-all
+## lint
 
-Zulip has a script called `lint-all` that lives in our "tools" directory.
+Zulip has a script called `lint` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
 dispatches the heavy lifting to other components such as pyflakes,
-jslint, and other home grown tools.
+eslint, and other home grown tools.
 
-You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint-all).
+You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint).
 
-In order for our entire lint suite to run in a timely fashion, the `lint-all`
+In order for our entire lint suite to run in a timely fashion, the `lint`
 script performs several lint checks in parallel by forking out subprocesses.  This mechanism
 is still evolving, but you can look at the method `run_parallel` to get the
 gist of how it works.
 
 ### Special options
 
-You can use the `-h` option for `lint-all` to see its usage.  One particular
+You can use the `-h` option for `lint` to see its usage.  One particular
 flag to take note of is the `--modified` flag, which enables you to only run
 lint checks against files that are modified in your git repo.  Most of the
 "sub-linters" respect this flag, but some will continue to process all the files.
@@ -152,8 +156,8 @@ unused imports--because of the way mypy type annotations work in Python 2,
 it would be inconvenient to enforce this too strictly.)
 
 Zulip also has custom regex-based rules that it applies to Python code.
-Look for `python_rules` in the source code for `lint-all`.  Note that we
-provide a mechanism to excude certain lines of codes from these checks.
+Look for `python_rules` in the source code for `lint`.  Note that we
+provide a mechanism to exclude certain lines of codes from these checks.
 Often, it is simply the case that our regex approach is too crude to
 correctly exonerate certain valid constructs.  In other cases, the code
 that we exempt may be deemed not worthwhile to fix.
@@ -161,7 +165,7 @@ that we exempt may be deemed not worthwhile to fix.
 #### JavaScript code
 
 We check our JavaScript code in a few different ways:
-- We run jslint.
+- We run eslint.
 - We perform custom Zulip regex checks on the code.
 - We verify that all addClass calls, with a few exceptions, explicitly
   contain a CSS class.
@@ -185,7 +189,7 @@ Zulip uses two HTML templating systems:
 - [Django templates](https://docs.djangoproject.com/en/1.10/topics/templates/)
 - [handlebars](http://handlebarsjs.com/)
 
-Zulip has a home grown tool that validates both types of templates for
+Zulip has an internal tool that validates both types of templates for
 correct indentation and matching tags.  You can find the code here:
 
 - driver: [check-templates](https://github.com/zulip/zulip/blob/master/tools/check-templates)

@@ -1,0 +1,127 @@
+.popover {
+    width: auto;
+}
+
+.popover-title {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.popover-title:empty {
+    display: none;
+}
+
+.popover_info {
+    text-align: center;
+}
+
+.popover hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.popover-left,
+.popover-right {
+    max-width: 200px;
+}
+
+.streams_popover .sp-container {
+    background: white;
+    cursor: pointer;
+    border: none;
+}
+
+.sp-container {
+    z-index: 100;
+}
+
+.streams_popover .sp-palette-container {
+    border-right: none;
+}
+
+.streams_popover .colorpicker-container {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.streams_popover .popover_sub_unsub_button {
+    margin-top: 0px;
+    float: none;
+}
+
+ul.sender_info_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+ul.actions_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+.user_popover {
+    top: 100px!important;
+    margin: -14px;
+}
+
+.popover-avatar .popover-inner {
+    width: 240px;
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.message-info-popover {
+    padding: 0;
+}
+
+.message-info-popover .popover-title {
+    padding: 0;
+}
+
+.user_popover {
+    padding: 0;
+}
+
+.user_popover .popover-title {
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .message-info-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0px !important;
+        left: 0px !important;
+        margin: 0 !important;
+        width: 100vw;
+        height: 100vh;
+
+        background-color: rgba(0,0,0,0.7);
+        border-radius: 0px;
+        border: none;
+
+        pointer-events: none;
+    }
+
+    .message-info-popover .popover-inner {
+        background-color: #fff;
+        pointer-events: all;
+    }
+}

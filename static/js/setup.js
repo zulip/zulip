@@ -2,10 +2,20 @@
 
 var csrf_token;
 $(function () {
+    if (util.is_mobile()) {
+        // if the client is mobile, disable websockets for message sending
+        // (it doesn't work on iOS for some reason).
+        page_params.use_websockets = false;
+        // Also disable the tutorial; it's ugly on mobile.
+        page_params.needs_tutorial = false;
+    }
+
+    page_params.page_load_time = new Date().getTime();
+
     // Display loading indicator.  This disappears after the first
     // get_events completes.
     if (page_params.have_initial_messages && !page_params.needs_tutorial) {
-        loading.make_indicator($('#page_loading_indicator'), {text: 'Loading...'});
+        loading.make_indicator($('#page_loading_indicator'), {text: 'Loading...', abs_positioned: true});
     } else if (!page_params.needs_tutorial) {
         $('#first_run_message').show();
     }
@@ -19,7 +29,7 @@ $(function () {
                 // Only send the token to relative URLs i.e. locally.
                 xhr.setRequestHeader("X-CSRFToken", csrf_token);
             }
-        }
+        },
     });
 
     // For some reason, jQuery wants this to be attached to an element.
@@ -38,6 +48,10 @@ $(function () {
                 blueslip.error("Expected one element in jQuery set, " + this.length + " found");
             }
             return this;
+        };
+
+        $.fn.within = function (sel) {
+            return ($(this).is(sel) || $(this).closest(sel).length);
         };
     }
 

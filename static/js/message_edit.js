@@ -12,14 +12,31 @@ var editability_types = {
     // Similar story for messages whose topic you can change only because
     // you are an admin.
     TOPIC_ONLY: 3,
-    FULL: 4
+    FULL: 4,
 };
 exports.editability_types = editability_types;
 
-function get_editability (message, edit_limit_seconds_buffer) {
+function initClipboard(elem) {
+    return new Clipboard(elem);
+}
+
+function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
-    if (!message || !message.sent_by_me || message.local_id !== undefined ||
-        !page_params.realm_allow_message_editing) {
+    if (!(message && message.sent_by_me)) {
+        return editability_types.NO;
+    }
+    // If the server returns the message with an error (e.g. due to
+    // malformed markdown), you can edit the message regardless of the realm
+    // message editing policy, since the message hasn't actually been sent yet
+    if (message.failed_request) {
+        return editability_types.FULL;
+    }
+    // Locally echoed messages are not editable, since the message hasn't
+    // finished being sent yet.
+    if (message.local_id !== undefined) {
+        return editability_types.NO;
+    }
+    if (!page_params.realm_allow_message_editing) {
         return editability_types.NO;
     }
     if (page_params.realm_message_content_edit_limit_seconds === 0) {
@@ -68,6 +85,7 @@ exports.save = function (row, from_topic_edited_only) {
     if (message.local_id !== undefined) {
         if (new_content !== message.raw_content || topic_changed) {
             echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
+            row = current_msg_list.get_row(message_id);
         }
         message_edit.end(row);
         return;
@@ -93,28 +111,29 @@ exports.save = function (row, from_topic_edited_only) {
         message_edit.end(row);
         return;
     }
-    channel.post({
-        url: '/json/update_message',
+    channel.patch({
+        url: '/json/messages/' + message.id,
         data: request,
-        success: function (data) {
+        success: function () {
             if (msg_list === current_msg_list) {
-                row.find(".edit_error").text("Message successfully edited!").removeClass("alert-error").addClass("alert-success").show();
+                row.find(".edit_error").text(i18n.t("Message successfully edited!")).removeClass("alert-error").addClass("alert-success").show();
             }
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             if (msg_list === current_msg_list) {
-                var message = channel.xhr_error_message("Error saving edit", xhr);
+                var message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
                 row.find(".edit_error").text(message).show();
             }
-        }
+        },
     });
     // The message will automatically get replaced via message_list.update_message.
 };
 
 function handle_edit_keydown(from_topic_edited_only, e) {
-    var row, code = e.keyCode || e.which;
+    var row;
+    var code = e.keyCode || e.which;
 
-    if (e.target.id === "message_edit_content" && code === 13 &&
+    if ($(e.target).hasClass("message_edit_content") && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
     } else if (e.target.id === "message_edit_topic" && code === 13) {
@@ -133,14 +152,16 @@ function timer_text(seconds_left) {
     var minutes = Math.floor(seconds_left / 60);
     var seconds = seconds_left % 60;
     if (minutes >= 1) {
-        return i18n.t("__minutes__ min to edit", {'minutes': minutes.toString()});
+        return i18n.t("__minutes__ min to edit", {minutes: minutes.toString()});
     } else if (seconds_left >= 10) {
-        return i18n.t("__seconds__ sec to edit", {'seconds': (seconds - seconds % 5).toString()});
+        return i18n.t("__seconds__ sec to edit", {seconds: (seconds - seconds % 5).toString()});
     }
-    return i18n.t("__seconds__ sec to edit", {'seconds': seconds.toString()});
+    return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
 }
 
-function edit_message (row, raw_content) {
+function edit_message(row, raw_content) {
+    row.find(".message_reactions").hide();
+    condense.hide_message_expander(row);
     var content_top = row.find('.message_content')[0]
         .getBoundingClientRect().top;
 
@@ -162,6 +183,7 @@ function edit_message (row, raw_content) {
     var form = $(templates.render(
         'message_edit_form',
         {is_stream: (message.type === 'stream'),
+         message_id: message.id,
          is_editable: is_editable,
          has_been_editable: (editability !== editability_types.NO),
          topic: message.subject,
@@ -174,22 +196,37 @@ function edit_message (row, raw_content) {
 
     form.keydown(_.partial(handle_edit_keydown, false));
 
+    var message_edit_content = row.find('textarea.message_edit_content');
+    var message_edit_topic = row.find('input.message_edit_topic');
+    var message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
+    var message_edit_countdown_timer = row.find('.message_edit_countdown_timer');
+    var copy_message = row.find('.copy_message');
+
     if (editability === editability_types.NO) {
-        row.find('textarea.message_edit_content').attr("disabled", "disabled");
-        row.find('input.message_edit_topic').attr("disabled", "disabled");
+        message_edit_content.prop("readonly", "readonly");
+        message_edit_topic.prop("readonly", "readonly");
+        initClipboard(copy_message[0]);
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
         // changes (e.g. if we stop allowing topics to be modified forever
         // in streams), then we'll need to disable
         // row.find('input.message_edit_topic') as well.
-        row.find('textarea.message_edit_content').attr("disabled", "disabled");
-        row.find('.message_edit_countdown_timer').text(i18n.t("View source"));
+        message_edit_content.prop("readonly", "readonly");
+        message_edit_countdown_timer.text(i18n.t("View source"));
+        initClipboard(copy_message[0]);
     } else if (editability === editability_types.TOPIC_ONLY) {
-        row.find('textarea.message_edit_content').attr("disabled", "disabled");
+        message_edit_content.prop("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
-        row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
+        message_edit_countdown_timer.text(i18n.t("Topic editing only"));
+        initClipboard(copy_message[0]);
     } else if (editability === editability_types.FULL) {
-        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
+        copy_message.remove();
+        var edit_id = "#message_edit_content_" + rows.id(row);
+        var listeners = resize.watch_manual_resize(edit_id);
+        if (listeners) {
+            currently_editing_messages[rows.id(row)].listeners = listeners;
+        }
+        composebox_typeahead.initialize_compose_typeahead(edit_id, {emoji: true, stream: true});
     }
 
     // Add tooltip
@@ -200,7 +237,7 @@ function edit_message (row, raw_content) {
             animation: false,
             placement: 'left',
             template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
-                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>'
+                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>',
         });
     }
 
@@ -216,64 +253,60 @@ function edit_message (row, raw_content) {
             now.diffSeconds(message.timestamp * 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
-        // I believe these need to be defined outside the countdown_timer, since
+        // I believe this needs to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
         // can change out from under us
-        var timer_row = row.find('.message_edit_countdown_timer');
-        var message_content_row = row.find('textarea.message_edit_content');
-        var message_topic_row, message_topic_propagate_row;
-        if (message.type === 'stream') {
-            message_topic_row = row.find('input.message_edit_topic');
-            message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
-        }
-        var message_save_row = row.find('button.message_edit_save');
+        var message_edit_save = row.find('button.message_edit_save');
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
-        timer_row.text(timer_text(seconds_left));
+        message_edit_countdown_timer.text(timer_text(seconds_left));
         var countdown_timer = setInterval(function () {
-            if (--seconds_left <= 0) {
+            seconds_left -= 1;
+            if (seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                message_content_row.attr("disabled","disabled");
+                message_edit_content.prop("readonly", "readonly");
                 if (message.type === 'stream') {
-                    message_topic_row.attr("disabled","disabled");
-                    message_topic_propagate_row.hide();
+                    message_edit_topic.prop("readonly", "readonly");
+                    message_edit_topic_propagate.hide();
                 }
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
-                message_save_row.addClass("disabled");
-                timer_row.text(i18n.t("Time's up!"));
+                message_edit_save.addClass("disabled");
+                message_edit_countdown_timer.text(i18n.t("Time's up!"));
             } else {
-                timer_row.text(timer_text(seconds_left));
+                message_edit_countdown_timer.text(timer_text(seconds_left));
             }
         }, 1000);
     }
 
-    var edit_row = row.find(".message_edit");
     if (!is_editable) {
-        edit_row.find(".message_edit_close").focus();
+        row.find(".message_edit_close").focus();
     } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
-        edit_row.find(".message_edit_topic").focus();
+        message_edit_topic.val('');
+        message_edit_topic.focus();
     } else if (editability === editability_types.TOPIC_ONLY) {
-        edit_row.find(".message_edit_cancel").focus();
+        row.find(".message_edit_cancel").focus();
     } else {
-        edit_row.find(".message_edit_content").focus();
+        message_edit_content.focus();
+        // Put cursor at end of input.
+        var contents = message_edit_content.val();
+        message_edit_content.val('');
+        message_edit_content.val(contents);
     }
 
     // Scroll to keep the message content in the same place
-    var edit_top = edit_row.find('.message_edit_content')[0]
-        .getBoundingClientRect().top;
+    var edit_top = message_edit_content[0].getBoundingClientRect().top;
     var scroll_by = edit_top - content_top + 5 /* border and padding */;
     edit_obj.scrolled_by = scroll_by;
-    viewport.scrollTop(viewport.scrollTop() + scroll_by);
+    message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
-        var topic_input = edit_row.find(".message_edit_topic");
         var original_topic = message.subject;
-        topic_input.keyup( function () {
-            var new_topic = topic_input.val();
-            row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
+        message_edit_topic.keyup( function () {
+            var new_topic = message_edit_topic.val();
+            message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });
     }
 }
@@ -283,23 +316,25 @@ function start_edit_maintaining_scroll(row, content) {
     var row_bottom = row.height() + row.offset().top;
     var composebox_top = $("#compose").offset().top;
     if (row_bottom > composebox_top) {
-        viewport.scrollTop(viewport.scrollTop() + row_bottom - composebox_top);
+        message_viewport.scrollTop(message_viewport.scrollTop() + row_bottom - composebox_top);
     }
 }
 
-exports.start = function (row) {
+exports.start = function (row, edit_box_open_callback) {
     var message = current_msg_list.get(rows.id(row));
     var msg_list = current_msg_list;
-    channel.post({
-        url: '/json/fetch_raw_message',
+    channel.get({
+        url: '/json/messages/' + message.id,
         idempotent: true,
-        data: {message_id: message.id},
         success: function (data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
                 start_edit_maintaining_scroll(row, data.raw_content);
+                if (edit_box_open_callback) {
+                    edit_box_open_callback();
+                }
             }
-        }
+        },
     });
 };
 
@@ -329,13 +364,25 @@ exports.end = function (row) {
     if (message !== undefined &&
         currently_editing_messages[message.id] !== undefined) {
         var scroll_by = currently_editing_messages[message.id].scrolled_by;
-        viewport.scrollTop(viewport.scrollTop() - scroll_by);
+        message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
+
+        // Clean up resize event listeners
+        var listeners = currently_editing_messages[message.id].listeners;
+        var edit_box = document.querySelector("#message_edit_content_" + message.id);
+        if (listeners !== undefined) {
+            // Event listeners to cleanup are only set in some edit types
+            edit_box.removeEventListener("mousedown", listeners[0]);
+            document.body.removeEventListener("mouseup", listeners[1]);
+        }
+
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
     }
     if (row !== undefined) {
         current_msg_list.hide_edit_topic(row);
     }
+    condense.show_message_expander(row);
+    row.find(".message_reactions").show();
 };
 
 exports.maybe_show_edit = function (row, id) {
@@ -344,7 +391,84 @@ exports.maybe_show_edit = function (row, id) {
     }
 };
 
-$(document).on('narrow_deactivated.zulip', function (event) {
+exports.edit_last_sent_message = function () {
+    var msg = current_msg_list.get_last_message_sent_by_me();
+
+    if (!msg) {
+        return;
+    }
+
+    if (!msg.id) {
+        blueslip.error('Message has invalid id in edit_last_sent_message.');
+        return;
+    }
+
+    var msg_editability_type = exports.get_editability(msg, 5);
+    if (msg_editability_type !== editability_types.FULL) {
+        return;
+    }
+
+    var msg_row = current_msg_list.get_row(msg.id);
+    if (!msg_row) {
+        // This should never happen, since we got the message above
+        // from current_msg_list.
+        blueslip.error('Could not find row for id ' + msg.id);
+        return;
+    }
+
+    current_msg_list.select_id(msg.id, {then_scroll: true, from_scroll: true});
+
+    // Finally do the real work!
+    compose_actions.cancel();
+    message_edit.start(msg_row, function () {
+        ui_util.focus_on('message_edit_content');
+    });
+};
+
+exports.show_history = function (message) {
+    $('#message-history').html('');
+    $('#message-edit-history').modal("show");
+    channel.get({
+        url: "/json/messages/" + message.id + "/history",
+        data: {message_id: JSON.stringify(message.id)},
+        success: function (data) {
+            // For now, we ignore topic edits
+            var content_edit_history = [];
+            _.each(data.message_history, function (msg, index) {
+                if (index !== 0 && !msg.prev_content) {
+                    // Skip topic edits
+                    return;
+                }
+
+                // Format timestamp nicely for display
+                var item = {timestamp: timerender.get_full_time(msg.timestamp)};
+                if (index === 0) {
+                    item.posted_or_edited = "Posted by";
+                    item.body_to_render = msg.rendered_content;
+                } else {
+                    item.posted_or_edited = "Edited by";
+                    item.body_to_render = msg.content_html_diff;
+                }
+                if (msg.user_id) {
+                    var person = people.get_person_from_user_id(msg.user_id);
+                    item.edited_by = person.full_name;
+                }
+
+                content_edit_history.push(item);
+            });
+
+            $('#message-history').html(templates.render('message_edit_history', {
+                edited_messages: content_edit_history,
+            }));
+        },
+        error: function (xhr) {
+            ui_report.error(i18n.t("Error fetching message edit history"), xhr,
+                            $("#message-history-error"));
+        },
+    });
+};
+
+$(document).on('narrow_deactivated.zulip', function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = current_msg_list.get_row(idx);
@@ -355,3 +479,7 @@ $(document).on('narrow_deactivated.zulip', function (event) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = message_edit;
+}

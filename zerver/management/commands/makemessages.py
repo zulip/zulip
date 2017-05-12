@@ -30,14 +30,13 @@ http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja
 """
 from __future__ import absolute_import
 
-from typing import Any, Dict, Iterable, Optional, Mapping, Set, Tuple
+from typing import Any, Dict, Iterable, Optional, Mapping, Set, Tuple, Text
 
 from argparse import ArgumentParser
 import os
 import re
 import glob
 import json
-from six import text_type
 from six.moves import filter
 from six.moves import map
 from six.moves import zip
@@ -47,11 +46,13 @@ from django.utils.translation import trans_real
 from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings
 
+from zerver.lib.str_utils import force_text
+
 strip_whitespace_right = re.compile(u"(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 
-regexes = ['{{#tr .*?}}(.*?){{/tr}}',
+regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            '{{t "(.*?)"\W*}}',
            "{{t '(.*?)'\W*}}",
            "i18n\.t\('([^\']*?)'\)",
@@ -65,7 +66,7 @@ multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
 def strip_whitespaces(src):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     src = strip_whitespace_left.sub(u'\\1', src)
     src = strip_whitespace_right.sub(u'\\1', src)
     return src
@@ -120,7 +121,7 @@ class Command(makemessages.Command):
         trans_real.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
         def my_templatize(src, origin=None):
-            # type: (text_type, Optional[text_type]) -> text_type
+            # type: (Text, Optional[Text]) -> Text
             new_src = strip_whitespaces(src)
             return old_templatize(new_src, origin)
 
@@ -143,6 +144,9 @@ class Command(makemessages.Command):
         translation_strings = {} # type: Dict[str, str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
+                match = match.strip()
+                match = ' '.join(line.strip() for line in match.splitlines())
+                match = match.replace('\n', '\\n')
                 translation_strings[match] = ""
 
         return translation_strings
@@ -151,9 +155,9 @@ class Command(makemessages.Command):
         # type: (str) -> str
 
         # Removes multi line comments.
-        data = re.sub(multiline_js_comment, "", data)
+        data = multiline_js_comment.sub('', data)
         # Removes single line (//) comments.
-        data = re.sub(singleline_js_comment, "", data)
+        data = singleline_js_comment.sub('', data)
         return data
 
     def get_translation_strings(self):
@@ -163,14 +167,15 @@ class Command(makemessages.Command):
 
         for dirpath, dirnames, filenames in os.walk(dirname):
             for filename in [f for f in filenames if f.endswith(".handlebars")]:
+                if filename.startswith('.'):
+                    continue
                 with open(os.path.join(dirpath, filename), 'r') as reader:
                     data = reader.read()
-                    data = data.replace('\n', '\\n')
                     translation_strings.update(self.extract_strings(data))
 
         dirname = os.path.join(settings.DEPLOY_ROOT, 'static/js')
         for filename in os.listdir(dirname):
-            if filename.endswith('.js'):
+            if filename.endswith('.js') and not filename.startswith('.'):
                 with open(os.path.join(dirname, filename)) as reader:
                     data = reader.read()
                     translation_strings.update(self.extract_strings(data))
@@ -180,7 +185,6 @@ class Command(makemessages.Command):
     def get_template_dir(self):
         # type: () -> str
         return self.frontend_source
-
 
     def get_namespace(self):
         # type: () -> str
@@ -246,6 +250,10 @@ class Command(makemessages.Command):
             except (IOError, ValueError):
                 old_strings = {}
 
-            new_strings = self.get_new_strings(old_strings, translation_strings)
+            new_strings = {
+                force_text(k): v
+                for k, v in self.get_new_strings(old_strings,
+                                                 translation_strings).items()
+            }
             with open(output_path, 'w') as writer:
-                json.dump(new_strings, writer, indent=2)
+                json.dump(new_strings, writer, indent=2, sort_keys=True)

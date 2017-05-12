@@ -29,7 +29,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:11",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 2,
@@ -43,11 +43,11 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:11",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 3,
-        content: "<p>Looks good to me! <img alt=':+1:' class='emoji' src='/static/third/gemoji/images/emoji/+1.png' title=':+1:'></p>",
+        content: "<p>Looks good to me! <img alt=':+1:' class='emoji' src='/static/generated/emoji/images/emoji/+1.png' title=':+1:'></p>",
         is_stream: true,
         sender_full_name: "Jeff Arnold",
         sender_email: "jeff@zulip.com",
@@ -57,7 +57,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:16",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 4,
@@ -71,11 +71,11 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:25",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 5,
-        content: "<p>Yay, Twitter integration. <img alt=':heart_eyes:' class='emoji' src='/static/third/gemoji/images/emoji/heart_eyes.png' title=':heart_eyes:'></p>",
+        content: "<p>Yay, Twitter integration. <img alt=':heart_eyes:' class='emoji' src='/static/generated/emoji/images/emoji/heart_eyes.png' title=':heart_eyes:'></p>",
         is_stream: true,
         sender_full_name: "Leo Franchi",
         sender_email: "leo@zulip.com",
@@ -85,7 +85,7 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:25",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 6,
@@ -99,7 +99,7 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:26",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 7,
@@ -113,11 +113,11 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:26",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 8,
-        content: "<p><img alt=':clock1130:' class='emoji' src='/static/third/gemoji/images/emoji/clock1130.png' title=':clock1130:'> Reminder: engineering meeting in 1 hour. <img alt=':clock1130:' class='emoji' src='/static/third/gemoji/images/emoji/clock1130.png' title=':clock1130:'></p>",
+        content: "<p><img alt=':clock1130:' class='emoji' src='/static/generated/emoji/images/emoji/clock1130.png' title=':clock1130:'> Reminder: engineering meeting in 1 hour. <img alt=':clock1130:' class='emoji' src='/static/generated/emoji/images/emoji/clock1130.png' title=':clock1130:'></p>",
         is_stream: true,
         sender_full_name: "Reminder Bot",
         sender_email: "reminder-bot@zulip.com",
@@ -127,7 +127,7 @@ var fake_messages = [
         subject: "weekly meeting",
         timestr: "12:30",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 9,
@@ -141,7 +141,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:32",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 10,
@@ -155,7 +155,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:32",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 11,
@@ -169,11 +169,11 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:16",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 12,
-        content: "<p>No problem, less work for me. <img alt=':smile:' class='emoji' src='/static/third/gemoji/images/emoji/smile.png' title=':smile:'></p>",
+        content: "<p>No problem, less work for me. <img alt=':smile:' class='emoji' src='/static/generated/emoji/images/emoji/smile.png' title=':smile:'></p>",
         is_stream: true,
         sender_full_name: "Abbie Patel",
         sender_email: "abbie@zulip.com",
@@ -183,37 +183,27 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:32",
         timestamp: today,
-        type: "stream"
-    }
+        type: "stream",
+    },
 ];
 
 function send_delayed_stream_message(stream, topic, content, delay) {
-    var data = {'type': JSON.stringify('stream'),
-                'recipient': JSON.stringify(stream),
-                'topic': JSON.stringify(topic),
-                'content': JSON.stringify(content)};
+    var data = {type: JSON.stringify('stream'),
+                recipient: JSON.stringify(stream),
+                topic: JSON.stringify(topic),
+                content: JSON.stringify(content)};
     setTimeout(function () {
         $.ajax({
             dataType: 'json',
             url: '/json/tutorial_send_message',
             type: 'POST',
-            data: data
+            data: data,
         });
     }, delay * 1000); // delay is in seconds.
 }
 
-function hide_app_alert() {
-    $('#alert-bar-container').slideUp(100);
-}
-
-function show_app_alert(contents) {
-    $('#custom-alert-bar-content').html(contents);
-    $('#alert-bar-container').show();
-    $('#alert-bar-container .close-alert-icon').expectOne().click(hide_app_alert);
-}
-
 function disable_event_handlers() {
-    $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
+    $('body').css({overflow: 'hidden'}); // prevents scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
         var existing_events = $._data(document, "events")[event_name];
         if (existing_events === undefined) {
@@ -225,7 +215,7 @@ function disable_event_handlers() {
 }
 
 function enable_event_handlers() {
-    $('body').css({'overflow':'auto'}); // enables scrolling the feed
+    $('body').css({overflow: 'auto'}); // enables scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
         $._data(document, "events")[event_name] = event_handlers[event_name];
     });
@@ -235,7 +225,7 @@ function set_tutorial_status(status, callback) {
     return channel.post({
         url:      '/json/tutorial_status',
         data:     {status: JSON.stringify(status)},
-        success:  callback
+        success:  callback,
     });
 }
 
@@ -264,7 +254,7 @@ function box(x, y, width, height) {
 }
 
 function message_groups_in_viewport() {
-    var vp = viewport.message_viewport_info();
+    var vp = message_viewport.message_viewport_info();
     var top = vp.visible_top;
     var height = vp.visible_height;
     var last_group = rows.get_message_recipient_row(rows.last_visible());
@@ -305,7 +295,7 @@ function create_and_show_popover(target_div, placement, title, content_template)
                                                    placement: placement}),
         content: templates.render(content_template, {placement: placement,
                                                      page_params: page_params}),
-        trigger: "manual"
+        trigger: "manual",
     });
     target_div.popover("show");
 
@@ -354,18 +344,11 @@ function finale(skip) {
     });
     deferred_work = [];
 
-    var alert_contents;
-
-    if (page_params.prompt_for_invites) {
-        alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some users</a>.";
-    } else {
-        alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than " + page_params.product_name + " in your browser? The <a href='/apps' target='_blank'>"+ page_params.product_name + " desktop app</a>!";
-    }
-    show_app_alert(alert_contents);
-
     // We start you in a narrow so it's not overwhelming.
-    if (stream_data.in_home_view(page_params.notifications_stream)) {
-        narrow.activate([{operator: "stream", operand: page_params.notifications_stream}]);
+    var newbie_stream = stream_data.get_newbie_stream();
+
+    if (newbie_stream) {
+        narrow.activate([{operator: "stream", operand: newbie_stream}]);
     }
 
     if (page_params.first_in_realm) {
@@ -383,8 +366,8 @@ function finale(skip) {
 
         if (stream_data.in_home_view(page_params.notifications_stream)) {
             send_delayed_stream_message(page_params.notifications_stream, "welcome", "Practice sending sending some messages here, or starting a new topic.", 15);
-            send_delayed_stream_message(page_params.notifications_stream, page_params.product_name + " tips", "Here's a message on a new topic: `" + page_params.product_name + " tips`.\n\nAs you settle into " + page_params.product_name + ", customize your account and notifications on your [Settings page](#settings).", 30);
-            send_delayed_stream_message(page_params.notifications_stream, page_params.product_name + " tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
+            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "Here's a message on a new topic: `Zulip tips`.\n\nAs you settle into Zulip, customize your account and notifications on your [Settings page](#settings).", 30);
+            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
         }
 
         if (work_stream !== undefined) {
@@ -503,7 +486,7 @@ function welcome() {
     var spotlight_message = rows.first_visible();
     var bar = rows.get_message_recipient_header(spotlight_message);
     box_first_message();
-    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome to " + page_params.product_name,
+    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome to Zulip",
                             "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");
@@ -521,8 +504,8 @@ function welcome() {
 }
 
 exports.start = function () {
-    if (ui.home_tab_obscured()) {
-        ui.change_tab_to('#home');
+    if (modals.is_active()) {
+        ui_util.change_tab_to('#home');
     }
     narrow.deactivate();
 

@@ -6,10 +6,13 @@ set_global('blueslip', {});
 (function test_basic() {
     var d = new Dict();
 
+    assert(d.is_empty());
+
     assert.deepEqual(d.keys(), []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
+    assert(!d.is_empty());
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
@@ -118,7 +121,7 @@ set_global('blueslip', {});
 
     caught = undefined;
     try {
-        Dict.from_array({'bogus': true});
+        Dict.from_array({bogus: true});
     } catch (e2) {
         caught = true;
         assert.equal(e2.toString(), 'TypeError: Argument is not an array');
@@ -162,12 +165,43 @@ set_global('blueslip', {});
 (function test_num_items() {
     var d = new Dict();
     assert.equal(d.num_items(), 0);
+    assert(d.is_empty());
+
     d.set('foo', 1);
     assert.equal(d.num_items(), 1);
+    assert(!d.is_empty());
+
     d.set('foo', 2);
     assert.equal(d.num_items(), 1);
+    assert(!d.is_empty());
+
     d.set('bar', 1);
     assert.equal(d.num_items(), 2);
     d.del('foo');
     assert.equal(d.num_items(), 1);
+}());
+
+(function test_clear() {
+    var d = new Dict();
+
+    function populate() {
+        d.set('foo', 1);
+        assert.equal(d.get('foo'), 1);
+        d.set('bar', 2);
+        assert.equal(d.get('bar'), 2);
+    }
+
+    populate();
+    assert.equal(d.num_items(), 2);
+    assert(!d.is_empty());
+
+    d.clear();
+    assert.equal(d.get('foo'), undefined);
+    assert.equal(d.get('bar'), undefined);
+    assert.equal(d.num_items(), 0);
+    assert(d.is_empty());
+
+    // make sure it still works after clearing
+    populate();
+    assert.equal(d.num_items(), 2);
 }());

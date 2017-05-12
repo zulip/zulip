@@ -1,0 +1,36 @@
+
+<li class="attachment-item" data-attachment='{{attachment.id}}'>
+    <div class="attachment-information-box list-container">
+        <div class="file-icon">
+            <div class="extension {{#if attachment.large_ext_name }}small{{/if}} {{#unless attachment.extension }}no-extension{{/unless}}">
+                {{#if attachment.extension}}
+                {{ attachment.extension }}
+                {{else}}
+                <i class="icon icon-vector-file"></i>
+                {{/if}}
+            </div>
+        </div>
+        <div class="information">
+            <div class="attachment_listing">
+                <strong>{{attachment.name}}</strong>
+            </div>
+            <div class="edit-attachment-buttons">
+                <button type="submit"
+                    class="button small no-style remove-attachment"
+                    title="{{t 'Delete file' }}" data-attachment="{{attachment.id}}">
+                    <i class="icon-vector-trash"></i>
+                </button>
+            </div>
+            {{#if attachment.messages }}
+            <div class="attachment-messages">
+                {{#each attachment.messages}}
+                <a class="ind-message" href="/#narrow/id/{{ this.id }}">
+                    <div class="message-id">#{{ this.id }}</div>
+                    <div class="message-date">{{ this.name }}</div>
+                </a>
+                {{/each}}
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</li>

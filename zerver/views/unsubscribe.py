@@ -2,30 +2,27 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 from typing import Callable
 
 from confirmation.models import Confirmation
 from zerver.lib.actions import do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, clear_followup_emails_queue
 from zerver.models import UserProfile
-from zproject.jinja2 import render_to_response
+from zerver.context_processors import common_context
 
-def process_unsubscribe(token, subscription_type, unsubscribe_function):
-    # type: (HttpRequest, str, Callable[[UserProfile], None]) -> HttpResponse
+def process_unsubscribe(request, token, subscription_type, unsubscribe_function):
+    # type: (HttpRequest, str, str, Callable[[UserProfile], None]) -> HttpResponse
     try:
         confirmation = Confirmation.objects.get(confirmation_key=token)
     except Confirmation.DoesNotExist:
-        return render_to_response('zerver/unsubscribe_link_error.html')
+        return render(request, 'zerver/unsubscribe_link_error.html')
 
     user_profile = confirmation.content_object
     unsubscribe_function(user_profile)
-    return render_to_response('zerver/unsubscribe_success.html',
-                              {"subscription_type": subscription_type,
-                               "external_host": settings.EXTERNAL_HOST,
-                               'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-                               'server_uri': settings.SERVER_URI,
-                               'realm_uri': user_profile.realm.uri,
-                              })
+    context = common_context(user_profile)
+    context.update({"subscription_type": subscription_type})
+    return render(request, 'zerver/unsubscribe_success.html', context=context)
 
 # Email unsubscribe functions. All have the function signature
 # processor(user_profile).
@@ -50,14 +47,13 @@ email_unsubscribers = {
     "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
     "welcome": ("welcome", do_welcome_unsubscribe),
     "digest": ("digest", do_digest_unsubscribe)
-    }
+}
 
 # Login NOT required. These are for one-click unsubscribes.
 def email_unsubscribe(request, type, token):
     # type: (HttpRequest, str, str) -> HttpResponse
     if type in email_unsubscribers:
         display_name, unsubscribe_function = email_unsubscribers[type]
-        return process_unsubscribe(token, display_name, unsubscribe_function)
+        return process_unsubscribe(request, token, display_name, unsubscribe_function)
 
-    return render_to_response('zerver/unsubscribe_link_error.html', {},
-                              request=request)
+    return render(request, 'zerver/unsubscribe_link_error.html')

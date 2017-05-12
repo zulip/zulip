@@ -55,7 +55,8 @@ def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules
     ]
     if copy_modules:
         print("Cached version not found! Copying node modules.")
-        cmds.append(["mv", "node_modules", target_path])
+        cmds.append(["cp", "-rT", "prod-static/serve/node_modules",
+                     os.path.join(target_path, "node_modules")])
     else:
         print("Cached version not found! Installing node modules.")
         cmds.append(['npm', 'install'] + npm_args + ['--prefix', target_path])

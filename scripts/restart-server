@@ -21,12 +21,12 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     sys.exit(1)
 
 # Send a statsd event on restarting the server
-subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
+subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
 logging.info("Filling memcached caches")
-subprocess.check_call(["python", "./manage.py", "fill_memcached_caches"])
+subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
-# Restart the FastCGI and related processes via supervisorctl.
+# Restart the uWSGI and related processes via supervisorctl.
 logging.info("Stopping workers")
 subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
 logging.info("Stopping server core")

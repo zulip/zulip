@@ -15,26 +15,62 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
+# Check for at least ~1.9GB of RAM before starting installation;
+# otherwise users will find out about insufficient RAM via weird
+# errors like a segfault running `pip install`.
+mem_kb=$(cat /proc/meminfo | head -n1 | awk '{print $2}')
+if [ "$mem_kb" -lt 1900000 ]; then
+    echo "Insufficient RAM.  Zulip requires at least 2GB of RAM."
+    exit 1
+fi
+
+if ! [ -e /usr/bin/realpath ]; then
+    # realpath is in coreutils on Xenial, but not in Trusty
+    apt-get install -y realpath
+fi
+ZULIP_PATH="$(realpath $(dirname $0)/../..)"
+
 # setup-apt-repo does an `apt-get update`
-/root/zulip/scripts/lib/setup-apt-repo
+"$ZULIP_PATH"/scripts/lib/setup-apt-repo
 
 apt-get -y dist-upgrade $APT_OPTIONS
-apt-get install -y puppet git python python-six crudini $ADDITIONAL_PACKAGES
+apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
+
+# Handle issues around upstart on Ubuntu Xenial
+"$ZULIP_PATH"/scripts/lib/check-upstart
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
-    /root/zulip/scripts/lib/create-production-venv /root/zulip/zulip-venv
+    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
 fi
+
+"$ZULIP_PATH"/scripts/lib/install-node
 
 # puppet apply
 mkdir -p /etc/zulip
 (
     echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE";
-    if [ -n "$TRAVIS" ]; then
+
+    # Note: there are four dpkg-query outputs to consider:
+    #
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # root@host# apt install rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # install ok installed
+    # root@host# apt remove rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # deinstall ok config-files
+    # root@host# apt purge rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # unknown ok not-installed
+    #
+    # (There are more possibilities in the case of dpkg errors.)  Here
+    # we are checking for either empty or not-installed.
+    if [ -n "$TRAVIS" ] || ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
     fi
 ) > /etc/zulip/zulip.conf
-/root/zulip/scripts/zulip-puppet-apply -f
+"$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
 set +e
@@ -65,9 +101,9 @@ if [ "$has_nginx" = 0 ]; then
 fi
 
 if [ "$has_appserver" = 0 ]; then
-    /root/zulip/scripts/setup/generate_secrets.py --production
-    cp -a /root/zulip/zproject/prod_settings_template.py /etc/zulip/settings.py
-    ln -nsf /etc/zulip/settings.py /root/zulip/zproject/prod_settings.py
+    "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
+    cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+    ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
 fi
 
 # Restart camo since generate_secrets.py likely replaced its secret key
@@ -87,17 +123,17 @@ if [ "$has_rabbit" = 0 ]; then
         set -x
         exit 1
     fi
-    /root/zulip/scripts/setup/configure-rabbitmq
+    "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
 if [ "$has_postgres" = 0 ]; then
-    /root/zulip/scripts/setup/postgres-init-db
+    "$ZULIP_PATH"/scripts/setup/postgres-init-db
 fi
 
 if [ "$has_appserver" = 0 ]; then
-    deploy_path=$(/root/zulip/scripts/lib/zulip_tools.py make_deploy_path)
-    mv /root/zulip "$deploy_path"
-    ln -nsf /home/zulip/deployments/next /root/zulip
+    deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
+    mv "$ZULIP_PATH" "$deploy_path"
+    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
     ln -nsf "$deploy_path" /home/zulip/deployments/next
     ln -nsf "$deploy_path" /home/zulip/deployments/current
     ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py

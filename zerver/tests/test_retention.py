@@ -3,11 +3,12 @@ from __future__ import absolute_import
 import types
 from datetime import datetime, timedelta
 
-from zerver.lib.test_helpers import ZulipTestCase
+from django.utils.timezone import now as timezone_now
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, Recipient, UserProfile
 from zerver.lib.retention import get_expired_messages
 
-from typing import Any
+from typing import Any, List
 
 from six.moves import range
 
@@ -20,13 +21,13 @@ class TestRetentionLib(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         super(TestRetentionLib, self).setUp()
-        self.zulip_realm = self._set_realm_message_retention_value('zulip.com', 30)
-        self.mit_realm = self._set_realm_message_retention_value('mit.edu', 100)
+        self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
+        self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
 
     @staticmethod
-    def _set_realm_message_retention_value(domain, retention_period):
+    def _set_realm_message_retention_value(realm_str, retention_period):
         # type: (str, int) -> Realm
-        realm = Realm.objects.filter(domain=domain).first()
+        realm = Realm.objects.get(string_id=realm_str)
         realm.message_retention_days = retention_period
         realm.save()
         return realm
@@ -63,12 +64,12 @@ class TestRetentionLib(ZulipTestCase):
         # type: () -> None
         # Check result realm messages order and result content
         # when all realm has expired messages.
-        expired_mit_messages = self._make_mit_messages(3, datetime.now() - timedelta(days=101))
-        self._make_mit_messages(4, datetime.now() - timedelta(days=50))
+        expired_mit_messages = self._make_mit_messages(3, timezone_now() - timedelta(days=101))
+        self._make_mit_messages(4, timezone_now() - timedelta(days=50))
         zulip_messages_ids = Message.objects.order_by('id').filter(
             sender__realm=self.zulip_realm).values_list('id', flat=True)[3:10]
         expired_zulip_messages = self._change_messages_pub_date(zulip_messages_ids,
-                                                                datetime.now() - timedelta(days=31))
+                                                                timezone_now() - timedelta(days=31))
         # Iterate by result
         expired_messages_result = [messages_list for messages_list in get_expired_messages()]
         self.assertEqual(len(expired_messages_result), 2)
@@ -92,8 +93,8 @@ class TestRetentionLib(ZulipTestCase):
         # type: () -> None
         # Check realm with expired messages and messages
         # with one day to expiration data.
-        expired_mit_messages = self._make_mit_messages(5, datetime.now() - timedelta(days=101))
-        actual_mit_messages = self._make_mit_messages(3, datetime.now() - timedelta(days=99))
+        expired_mit_messages = self._make_mit_messages(5, timezone_now() - timedelta(days=101))
+        actual_mit_messages = self._make_mit_messages(3, timezone_now() - timedelta(days=99))
         expired_messages_result = list(get_expired_messages())
         expired_mit_messages_ids = [message.id for message in expired_mit_messages]
         expired_mit_messages_result_ids = [message.id for message in

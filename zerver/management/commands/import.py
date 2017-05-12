@@ -4,13 +4,12 @@ from __future__ import print_function
 from optparse import make_option
 
 from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
 from django.conf import settings
 
-from zerver.lib.actions import do_create_stream
 from zerver.models import Realm, Stream, UserProfile, Recipient, Subscription, \
-    Message, UserMessage, Huddle, DefaultStream, RealmAlias, RealmFilter, Client
+    Message, UserMessage, Huddle, DefaultStream, RealmDomain, RealmFilter, Client
 from zerver.lib.export import do_import_realm
 
 import os
@@ -19,7 +18,7 @@ import sys
 import ujson
 
 from typing import Any
-Model = Any # TODO: make this mypy type more specific
+Model = Any  # TODO: make this mypy type more specific
 
 class Command(BaseCommand):
     help = """Import Zulip database dump files into a fresh Zulip instance.
@@ -27,27 +26,28 @@ class Command(BaseCommand):
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files.
 
-Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
+Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
 
-    option_list = BaseCommand.option_list + (
-        make_option('--destroy-rebuild-database',
-                    dest='destroy_rebuild_database',
-                    default=False,
-                    action="store_true",
-                    help='Destroys and rebuilds the databases prior to import.'),
-        make_option('--import-into-nonempty',
-                    dest='import_into_nonempty',
-                    default=False,
-                    action="store_true",
-                    help='Import into an existing nonempty database.'),
-    )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--destroy-rebuild-database',
+                            dest='destroy_rebuild_database',
+                            default=False,
+                            action="store_true",
+                            help='Destroys and rebuilds the databases prior to import.')
+
+        parser.add_argument('--import-into-nonempty',
+                            dest='import_into_nonempty',
+                            default=False,
+                            action="store_true",
+                            help='Import into an existing nonempty database.')
 
     def new_instance_check(self, model):
         # type: (Model) -> None
         count = model.objects.count()
         if count:
-            print("Zulip instance is not empty, found %d rows in %s table. " \
-                % (count, model._meta.db_table))
+            print("Zulip instance is not empty, found %d rows in %s table. "
+                  % (count, model._meta.db_table))
             print("You may use --destroy-rebuild-database to destroy and rebuild the database prior to import.")
             exit(1)
 
@@ -59,8 +59,8 @@ Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-no
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
-            Client, Message, UserMessage, Huddle, DefaultStream, RealmAlias,
-            RealmFilter]
+                            Client, Message, UserMessage, Huddle, DefaultStream, RealmDomain,
+                            RealmFilter]
 
         if len(args) == 0:
             print("Please provide at least one realm dump to import.")

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -e
+
+ZULIP_PATH=$(dirname "$0")
+export NVM_DIR=/usr/local/nvm
+if ! [ -e "$NVM_DIR/nvm.sh" ]; then
+    wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash
+fi
+
+source "$NVM_DIR/nvm.sh"
+node_version=6.6.0
+nvm install "$node_version" && nvm alias default "$node_version"
+export NODE_BIN="$(nvm which default)"
+
+# Fix messed-up uid=500 and group write bits produced by nvm
+n=$(which node)
+n=${n%/bin/node}
+chown -R root:root "$n"
+chmod -R go-w "$n"
+
+# Install node and npm wrappers to /usr/local/bin
+cp "$ZULIP_PATH/../../scripts/setup/node-wrapper" /usr/local/bin/node
+sed -i "s|NODE_PATH|$NODE_BIN|" /usr/local/bin/node
+cp "$ZULIP_PATH/../../scripts/setup/npm-wrapper" /usr/local/bin/npm

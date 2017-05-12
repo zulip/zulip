@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+import six
 import sys
-from typing import Any, Optional, Union
-from six import text_type
+
+from typing import Any, Dict, List, Optional, Union, Text
+if False:
+    from mypy_extensions import NoReturn
 
 import jinja2
-from django.utils import six
 from django.test.signals import template_rendered
 from django.template.backends import jinja2 as django_jinja2
 from django.template import TemplateDoesNotExist, TemplateSyntaxError, Context
@@ -22,6 +24,7 @@ class Jinja2(django_jinja2.Jinja2):
     and add the functionality to pass the context processors to
     the `Template` object.
     """
+
     def __init__(self, params, *args, **kwargs):
         # type: (Dict[str, Any], *Any, **Any) -> None
         # We need to remove `context_processors` from `OPTIONS` because
@@ -51,6 +54,7 @@ class Template(django_jinja2.Template):
         processors to the context before passing it to the `render`
         function.
         """
+
         def __init__(self, template, context_processors, debug, *args, **kwargs):
             # type: (str, List[str], bool, *Any, **Any) -> None
             self.context_processors = context_processors
@@ -58,7 +62,7 @@ class Template(django_jinja2.Template):
             super(Template, self).__init__(template, *args, **kwargs)
 
         def render(self, context=None, request=None):
-            # type: (Optional[Union[Dict[str, Any], Context]], Optional[HttpRequest]) -> text_type
+            # type: (Optional[Union[Dict[str, Any], Context]], Optional[HttpRequest]) -> Text
             if context is None:
                 context = {}
 

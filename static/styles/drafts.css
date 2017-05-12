@@ -1,0 +1,144 @@
+.drafts {
+    -webkit-font-smoothing: antialiased;
+}
+
+.drafts-container {
+    position: relative;
+    height: 95%;
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 0px;
+    width: 60%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+}
+
+.drafts-header {
+    padding-top: 4px;
+    text-align: center;
+    text-transform: uppercase;
+    border-bottom: 1px solid #ddd;
+}
+
+.drafts-header h1 {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.drafts-container .exit {
+    font-weight: 400;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #AAA;
+    cursor: pointer;
+}
+
+.drafts-container .exit-sign {
+    position: relative;
+    top: 3px;
+    margin-left: 3px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.drafts-list {
+    overflow: auto;
+    height: calc(100% - 55px);
+    width: 100%;
+    margin-top: 10px;
+}
+
+.drafts-list .no-drafts {
+    display: block;
+    margin-top: calc(45vh - 30px - 1.5em);
+    text-align: center;
+    font-size: 1.5em;
+    color: #aaa;
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+.draft-row {
+    padding: 5px 10px;
+}
+
+.draft-row.active {
+    background-color: #eee;
+}
+
+.draft-row > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.draft-row .draft-info-box {
+    width: 100%;
+    background: #f1f1f1;
+    border-bottom: 1px solid #e2e2e2;
+    border-top: 1px solid #e2e2e2;
+    margin-bottom: 10px;
+}
+
+.draft-info-box .messagebox {
+    cursor: auto;
+}
+
+.draft-info-box .message_content {
+    line-height: 1;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 0px;
+}
+
+.draft-row .draft-info-box .draft_controls {
+    display: inline-block;
+    position: absolute;
+    top: 9px;
+    right: -80px;
+    font-size: 0.9em;
+}
+
+.draft_controls .restore-draft {
+    cursor: pointer;
+    margin-right: 5px;
+    color: #52c2af;
+    opacity: 0.7;
+}
+
+.draft_controls .restore-draft:hover {
+    opacity: 1;
+}
+
+.draft_controls .delete-draft {
+    cursor: pointer;
+    margin-left: 5px;
+    color: #cc5a60;
+    opacity: 0.7;
+}
+
+.draft_controls .delete-draft:hover {
+    opacity: 1;
+}
+
+@media (max-width: 1130px) {
+    .drafts-container {
+        max-width: 60%;
+    }
+}
+
+@media (max-width: 500px) {
+    .draft-row .draft-info-box .draft_controls {
+        right: 0px;
+    }
+}
+
+@media (max-width: 700px) {
+    #draft_overlay .drafts-container {
+        height: 95%;
+        max-width: none;
+        width: 90%;
+    }
+}

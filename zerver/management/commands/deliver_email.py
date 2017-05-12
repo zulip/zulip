@@ -12,17 +12,18 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.core.mail import EmailMultiAlternatives, get_connection
+from django.utils.timezone import now as timezone_now
 from django.utils.html import format_html
 
 from zerver.models import ScheduledJob
 from zerver.lib.context_managers import lockfile
+from zerver.lib.send_email import send_email
 
 import time
 import logging
 from datetime import datetime
 from ujson import loads
-from typing import Any
+from typing import Any, Dict
 
 ## Setup ##
 log_format = "%(asctime)s: %(message)s"
@@ -36,41 +37,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
-
-def get_recipient_as_string(dictionary):
-    # type: (Dict[str, str]) -> str
-    if not dictionary["recipient_name"]:
-        return dictionary["recipient_email"]
-    return format_html(u"\"{0}\" <{1}>", dictionary["recipient_name"], dictionary["recipient_email"])
-
-def get_sender_as_string(dictionary):
-    # type: (Dict[str, str]) -> str
-    if dictionary["sender_email"]:
-        return dictionary["sender_email"] if not dictionary["sender_name"] else format_html(u"\"{0}\" <{1}>",
-                                                                                            dictionary["sender_name"],
-                                                                                            dictionary["sender_email"])
-    return settings.DEFAULT_FROM_EMAIL
-
-def send_email_job(job):
-    # type: (ScheduledJob) -> bool
-    data = loads(job.data)
-    fields = {'subject': data["email_subject"],
-              'body': data["email_text"],
-              'from_email': get_sender_as_string(data),
-              'to': [get_recipient_as_string(data)]}
-
-    msg = EmailMultiAlternatives(**fields)
-    if data["email_html"]:
-        msg.attach_alternative(data["email_html"], "text/html")
-    return msg.send() > 0
-
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip
 (either for immediate sending or sending at a specified time).
 
-Run this command under supervisor. We use Mandrill for zulip.com; this is for SMTP email delivery.
+Run this command under supervisor. This is for SMTP email delivery.
 
-Usage: python manage.py deliver_email
+Usage: ./manage.py deliver_email
 """
 
     def handle(self, *args, **options):
@@ -85,13 +58,11 @@ Usage: python manage.py deliver_email
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
-                # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(),
-                # and select with now()
                 email_jobs_to_deliver = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                                scheduled_timestamp__lte=datetime.utcnow())
+                                                                    scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
-                        if not send_email_job(job):
+                        if not send_email(**loads(job.data)):
                             logger.warn("No exception raised, but %r sent as 0 bytes" % (job,))
                         else:
                             job.delete()

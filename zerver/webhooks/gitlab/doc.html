@@ -1,0 +1,39 @@
+<p>
+    First, create the stream you'd like to use for GitLab notifications,
+    and subscribe all interested parties to this stream. The integration will
+    use the default stream <code>gitlab</code> if no stream is supplied in
+    the URL; you still need to create the stream even if you are using this
+    default.
+</p>
+
+<p>
+    Next, go to your repository page and click gear icon.
+    From there, select <b>Webhooks</b>:
+</p>
+<p><img src="/static/images/integrations/gitlab/001.png"/></p>
+
+<p>In the URL field, enter a URL constructed like this: </p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/gitlab?api_key=abcdefgh&amp;stream=gitlab</code></p>
+
+<p>
+    where <code>api_key</code> is the API key of your Zulip
+    bot.
+</p>
+<p>
+    You can also limit the notifications you receive to specific
+    branches by specifying them in a comma-separated list at the end
+    of the URL, like so:
+</p>
+<p><code>{{ external_api_uri_subdomain }}/v1/external/gitlab?api_key=abcdefgh&amp;stream=gitlab&amp;branches=master,development</code></p>
+<p>
+    Select the actions that you want to result in a
+    Zulip notification and click <b>Add Webhook</b>.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    Your messages will look like this:
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/gitlab/002.png"/></p>

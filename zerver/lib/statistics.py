@@ -26,8 +26,8 @@ def median(data):
         return (data[before] + data[after]) / 2.0
 
 users_who_sent_query = Message.objects.select_related("sender") \
-        .exclude(sending_client__name__contains="mirror") \
-        .exclude(sending_client__name__contains="API")
+                                      .exclude(sending_client__name__contains="mirror") \
+                                      .exclude(sending_client__name__contains="API")
 
 def active_users():
     # type: () -> Sequence[UserProfile]
@@ -83,7 +83,7 @@ def users_active_nosend_during_day(day):
     active_users = active_users_to_measure()
     today_senders = users_who_sent_between(begin_day, end_day)
 
-    today_users = [] # type: List[UserProfile]
+    today_users = []  # type: List[UserProfile]
     for user_profile in active_users:
         intervals = UserActivityInterval.objects.filter(user_profile=user_profile,
                                                         end__gte=begin_day,

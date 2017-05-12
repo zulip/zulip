@@ -13,7 +13,7 @@ function make_tab(title, hash, data, extra_class, home) {
 
 function make_tab_data() {
     var tabs = [];
-    var filter = narrow.filter();
+    var filter = narrow_state.filter();
 
     // Root breadcrumb item: Either Home or All Messages
     if (filter !== undefined &&
@@ -34,9 +34,9 @@ function make_tab_data() {
         tabs.push(make_tab('Home', "#", "home", "root", true));
     }
 
-    if (narrow.active() && narrow.operators().length > 0) {
-        var stream, ops = narrow.operators();
-        var hash = hashchange.operators_to_hash(ops);
+    if (narrow_state.active() && narrow_state.operators().length > 0) {
+        var stream;
+        var ops = narrow_state.operators();
         // Second breadcrumb item
         var hashed = hashchange.operators_to_hash(ops.slice(0, 1));
         if (filter.has_operator("stream")) {
@@ -149,10 +149,10 @@ function build_tab_bar() {
 }
 
 $(function () {
-    $(document).on('narrow_activated.zulip', function (event) {
+    $(document).on('narrow_activated.zulip', function () {
         build_tab_bar();
     });
-    $(document).on('narrow_deactivated.zulip', function (event) {
+    $(document).on('narrow_deactivated.zulip', function () {
         build_tab_bar();
     });
 
@@ -162,3 +162,7 @@ $(function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = tab_bar;
+}

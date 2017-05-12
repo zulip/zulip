@@ -1,0 +1,45 @@
+<p>
+    In Zulip, create a <code>homeassistant</code> stream which will
+    contain the received notifications. You also need a bot which you
+    can create in the {{ settings_html|safe }}.
+</p>
+
+<p>
+    In Home Assistant, you need to add the <code>notify</code> service
+    to your <code>configuration.yaml</code> file.  This should look
+    something like this:
+</p>
+
+<img src="/static/images/integrations/homeassistant/notify-settings-config-yaml.png"/>
+
+<p>
+    The <code>api-key</code> parameter should correspond to your bot's
+    key. The <code>stream</code> parameter is not necessarily
+    required; if not given, it will default to
+    the <code>homeassistant</code> stream.  And the URL under
+    `resource` should start with
+    <code>{{ external_api_uri_subdomain }}/v1/external/homeassistant</code>.
+</p>
+
+<p>
+    Finally, you need to configure a trigger for the service by adding
+    an automation entry in the
+    HomeAssistant <code>configuration.yaml</code> file.
+</p>
+
+<img src="/static/images/integrations/homeassistant/automation-settings-config-yaml.png"/>
+
+<p>
+    The <code>data</code> object takes at least a <code>message</code>
+    property and an optional <code>title</code> parameter which will
+    be the conversation topic and which defaults
+    to <code>homeassistant</code> if not given.
+</p>
+
+<p>
+    You'll now get notifications like this:
+</p>
+
+<img src="/static/images/integrations/homeassistant/result-message.png"/>
+
+<p>You just got the Home Assistant integration working.  Congratulations!</p>

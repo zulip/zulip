@@ -1,18 +1,17 @@
-<h1><i class="icon-vector-wrench settings-icon"></i>{{t "Settings" }}</h1>
+<div id="settings-change-box" class="new-style">
+    {{ partial "account-settings" }}
 
-<div id="settings-change-box">
+    {{ partial "display-settings" }}
 
-  <div class="alert" id="settings-status"></div>
+    {{ partial "notification-settings" }}
 
-  {{ partial "account-settings" }}
+    {{ partial "bot-settings" }}
 
-  {{ partial "display-settings" }}
+    {{ partial "alert-word-settings" }}
 
-  {{ partial "notification-settings" }}
+    {{ partial "attachments-settings" }}
+
+    {{ partial "muted-topics-settings" }}
+
+    {{ partial "ui-settings" }}
 </div>
-
-{{ partial "bot-settings" }}
-
-{{ partial "alert-word-settings" }}
-
-{{ partial "ui-settings" }}

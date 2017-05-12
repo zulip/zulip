@@ -9,7 +9,7 @@ from optparse import make_option
 
 from django.test import Client
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 
 class Command(BaseCommand):
@@ -22,21 +22,24 @@ Example:
 
 """
 
-    option_list = BaseCommand.option_list + (
-        make_option('-f', '--fixture',
-                    dest='fixture',
-                    type='str',
-                    help='The path to the fixture you\'d like to send into Zulip'),
-        make_option('-u', '--url',
-                    dest='url',
-                    type='str',
-                    help='The url on your Zulip server that you want to post the fixture to'),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-f', '--fixture',
+                            dest='fixture',
+                            type=str,
+                            help='The path to the fixture you\'d like to send '
+                                 'into Zulip')
+
+        parser.add_argument('-u', '--url',
+                            dest='url',
+                            type=str,
+                            help='The url on your Zulip server that you want '
+                                 'to post the fixture to')
 
     def handle(self, **options):
-        # type: (*Any, **str) -> None
+        # type: (**str) -> None
         if options['fixture'] is None or options['url'] is None:
-            self.print_help('python manage.py', 'send_webhook_fixture_message')
+            self.print_help('./manage.py', 'send_webhook_fixture_message')
             exit(1)
 
         full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options['fixture'])
