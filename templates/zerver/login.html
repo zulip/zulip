@@ -129,11 +129,12 @@ autofocus('#id_username');
 
                     <button type="submit" name="button" class="full-width">{{ _("Sign in") }}</button>
                 </form>
-                {% endif %}
 
                 {% if any_oauth_backend_enabled %}
                 <div class="or">or</div>
                 {% endif %}
+
+                {% endif %} <!-- if password_auth_enabled -->
 
                 {% if google_auth_enabled %}
                 <div class="login-google">
