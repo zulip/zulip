@@ -34,7 +34,7 @@ from functools import partial
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
-else:
+else:  # nocoverage  -- Not convenient to add test for this.
     from mock import Mock
     RemotePushDeviceToken = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
@@ -143,11 +143,11 @@ def get_connection(cert_file, key_file):
     connection.gateway_server.register_response_listener(response_listener)
     return connection
 
-if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
+if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):  # nocoverage
     connection = get_connection(settings.APNS_CERT_FILE,
                                 settings.APNS_KEY_FILE)
 
-if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_CERT_FILE):
+if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_CERT_FILE):  # nocoverage
     dbx_connection = get_connection(settings.DBX_APNS_CERT_FILE,
                                     settings.DBX_APNS_KEY_FILE)
 
@@ -231,7 +231,7 @@ def check_apns_feedback():
     logging.info("Finished checking feedback for stale tokens")
 
 
-if settings.ANDROID_GCM_API_KEY:
+if settings.ANDROID_GCM_API_KEY:  # nocoverage
     gcm = GCM(settings.ANDROID_GCM_API_KEY)
 else:
     gcm = None
