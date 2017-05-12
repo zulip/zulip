@@ -125,3 +125,10 @@ ul.actions_popover i {
         pointer-events: all;
     }
 }
+
+.popover_user_presence {
+    display: inline-block;
+    float: initial;
+    position: relative;
+    top: 1px;
+}

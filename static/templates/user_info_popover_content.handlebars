@@ -1,7 +1,11 @@
 {{! Contents of the "message info" popup }}
 <ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{user_id}}">
     <div class="popover_info">
-        <li><b>{{user_full_name}}</b></li>
+        <li class="user_{{presence_status}}">
+            <b>{{user_full_name}}</b>
+            <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+        </li>
+
         <li class='my_email'>{{user_email}}</li>
 
         {{#if user_time}}

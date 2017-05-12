@@ -41,6 +41,18 @@ function load_medium_avatar(user_email) {
     });
 }
 
+function user_last_seen_time_status(user_id) {
+    if (presence.get_status(user_id) === "active") {
+        return i18n.t("Active now");
+    }
+
+    if (people.get_person_from_user_id(user_id).is_bot) {
+        return i18n.t("Bot");
+    }
+
+    return timerender.last_seen_status_from_date(presence.last_active_date(user_id).clone());
+}
+
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
@@ -72,6 +84,8 @@ function show_message_info_popover(element, id) {
             user_email: sender_email,
             user_id: message.sender_id,
             user_time: people.get_user_time(message.sender_id),
+            presence_status: presence.get_status(message.sender_id),
+            user_last_seen_time_status: user_last_seen_time_status(message.sender_id),
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow_state.active(),
@@ -399,6 +413,8 @@ exports.register_click_handlers = function () {
             user_full_name: name,
             user_id: user_id,
             user_time: people.get_user_time(user_id),
+            presence_status: presence.get_status(user_id),
+            user_last_seen_time_status: user_last_seen_time_status(user_id),
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
