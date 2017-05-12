@@ -39,6 +39,16 @@ label {
     min-width: 200px;
 }
 
+.new-style .grid .user-name-section label {
+    min-width: 120px;
+}
+
+.new-style .grid .user-name-section .warning {
+    display: block;
+    width: calc(100% - 20px - 5px);
+    text-align: right;
+}
+
 .new-style .grid .warning {
     display: inline-block;
     vertical-align: top;
@@ -68,6 +78,11 @@ label {
     background-color: #fff;
     margin: 20px 0px;
     padding: 20px;
+}
+
+.realm-icon-section {
+    float: none;
+    display: inline-block;
 }
 
 .user-avatar-section .inline-block,
@@ -123,15 +138,13 @@ td .button {
 
 .settings-section {
     display: none;
-    background-color: #fafafa;
-    border-radius: 2px;
+
+    width: calc(100% - 40px);
     margin: 20px;
-    border: 1px solid #dfdfdf;
-    border-top: 5px solid #dfdfdf;
 }
 
 #organization .settings-section {
-    display: block;
+    display: inline-block;
 }
 
 .settings-wrapper {
@@ -156,7 +169,6 @@ td .button {
 }
 
 .settings-section form {
-    padding: 0px 20px;
     margin: 0;
 }
 
@@ -565,7 +577,7 @@ input[type=checkbox].inline-block {
 .bots_list .bot-information-box {
     position: relative;
     display: inline-block;
-    width: calc(33.3% - 10px);
+    width: calc(50% - 10px);
     max-height: 180px;
     margin: 5px;
 
@@ -696,11 +708,18 @@ input[type=checkbox].inline-block {
     position: inherit;
 }
 
-#alert_words_list,
 #attachments_list {
     list-style-type: none;
     margin: auto;
     background-color: #fff;
+}
+
+#alert_words_list {
+    margin: 0;
+}
+
+#alert_words_list li {
+    list-style-type: none;
 }
 
 #alert_words_list li.alert-word-item:last-child {
@@ -752,7 +771,8 @@ input[type=checkbox].inline-block {
 #settings_page {
     height: 95vh;
     width: 97vw;
-    margin: 2.5vh 1.5vw;
+    max-width: 1024px;
+    margin: 2.5vh auto;
     background-color: #fff;
     overflow: hidden;
     border-radius: 4px;
@@ -800,6 +820,11 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid #ddd;
 }
 
+#settings_page .content-wrapper .settings-header h1 .section {
+    font-weight: 400;
+    color: #666;
+}
+
 #settings_page .settings-header.mobile {
     display: none;
     border-bottom: 1px solid #ddd;
@@ -820,6 +845,8 @@ input[type=checkbox].inline-block {
     float: left;
     overflow-y: auto;
     overflow-x: hidden;
+
+    background-color: #fafafa;
 }
 
 #settings_page .table-striped thead th {
@@ -829,6 +856,7 @@ input[type=checkbox].inline-block {
 
 #settings_page input.search {
     font-size: 0.9rem;
+    margin: 0px 0px 20px 0px;
 }
 
 #settings_page .form-sidebar {
@@ -1036,23 +1064,7 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 /* -- end new settings overlay -- */
-@media (min-width: 1850px) {
-    .bots_list .bot-information-box {
-        width: calc(20% - 10px);
-    }
-}
-
-@media (min-width: 1500px) and (max-width: 1850px) {
-    .bots_list .bot-information-box {
-        width: calc(25% - 10px);
-    }
-}
-
 @media (max-width: 1215px) {
-    .bots_list .bot-information-box {
-        width: calc(50% - 10px);
-    }
-
     .user-avatar-section,
     .realm-icon-section {
         float: none;
@@ -1139,10 +1151,34 @@ input[type=text]#settings_search {
     border-bottom: none;
 }
 
-#admin_users_table .last_active {
-    width: 15%;
+#admin-user-list .last_active {
+    width: 100px;
+}
+
+thead .actions {
+    min-width: 230px;
 }
 
 #settings_page .display-settings-form select {
     width: 245px;
+}
+
+#attachments_list:empty {
+    padding: 10px;
+}
+
+.required-text:empty::after {
+    content: attr(data-empty);
+    display: block;
+
+    font-style: italic;
+    color: #aaa;
+}
+
+/* This is a hack; essentially the issue is that if the ::after element is on
+   a table, then the width of the ::after @ 100% will be the width of the first
+   table column, so we'll just make the ::after 200% to add more space.
+   This is NOT a pattern that should be repeated or built on for other cases. */
+.required-text.thick:empty::after {
+    width: 200%;
 }

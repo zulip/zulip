@@ -624,6 +624,8 @@ $(function () {
         var $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+
+        settings.set_settings_header($(this).attr("data-section"));
     });
 
     $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
