@@ -632,6 +632,17 @@ class TestSendToPushBouncer(PushNotificationTest):
         self.assertEqual(exc.exception.error,
                          'Error received from push notification bouncer')
 
+class TestNumPushDevicesForUser(PushNotificationTest):
+    def test_when_kind_is_none(self):
+        # type: () -> None
+        self.assertEqual(apn.num_push_devices_for_user(self.user_profile), 2)
+
+    def test_when_kind_is_not_none(self):
+        # type: () -> None
+        count = apn.num_push_devices_for_user(self.user_profile,
+                                              kind=PushDeviceToken.APNS)
+        self.assertEqual(count, 2)
+
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
         # type: () -> None
