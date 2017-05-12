@@ -4,6 +4,7 @@ Keyboard shortcuts allow a user to use Zulip easily and efficiently
 for a better user experience.
 
 Zulip keyboard shortcuts are divided into four categories:
+
 * [Navigation](#navigation)
 * [Composing messages](#composing-messages)
 * [Narrowing](#narrowing)
@@ -40,6 +41,7 @@ Zulip keyboard shortcuts are divided into four categories:
   allows the user to scroll to the most recent message in their view.
 
 ## Composing messages
+
 * **Reply to message**: `r` or `Enter` (`Return` on Mac) - This
   shortcut allows the user to begin replying to the selected message
   (outlined in blue).
