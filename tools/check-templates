@@ -217,7 +217,6 @@ def check_handlebar_templates(templates):
         'static/templates/user_sidebar_actions.handlebars',
         'static/templates/settings/default-streams-list-admin.handlebars',
         'static/templates/settings/organization-settings-admin.handlebars',
-        'static/templates/settings/user-list-admin.handlebars',
     ]
     # TODO: Clean these files
     for fn in templates:
