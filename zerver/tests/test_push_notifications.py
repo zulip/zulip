@@ -594,6 +594,44 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
                                      extra_headers={'Content-type':
                                                     'application/json'})
 
+class TestSendToPushBouncer(PushNotificationTest):
+    class Result(object):
+        def __init__(self, status=200, content=ujson.dumps({'msg': 'error'})):
+            # type: (int, str) -> None
+            self.status_code = status
+            self.content = content
+
+    @mock.patch('requests.request', return_value=Result(status=500))
+    def test_500_error(self, mock_request):
+        # type: (mock.MagicMock) -> None
+        with self.assertRaises(apn.JsonableError) as exc:
+            apn.send_to_push_bouncer('register', 'register', {'data': True})
+        self.assertEqual(exc.exception.error,
+                         'Error received from push notification bouncer')
+
+    @mock.patch('requests.request', return_value=Result(status=400))
+    def test_400_error(self, mock_request):
+        # type: (mock.MagicMock) -> None
+        with self.assertRaises(apn.JsonableError) as exc:
+            apn.send_to_push_bouncer('register', 'register', {'msg': True})
+        self.assertEqual(exc.exception.error, 'error')
+
+    @mock.patch('requests.request', return_value=Result(status=400, content='/'))
+    def test_400_error_when_content_is_not_serializable(self, mock_request):
+        # type: (mock.MagicMock) -> None
+        with self.assertRaises(apn.JsonableError) as exc:
+            apn.send_to_push_bouncer('register', 'register', {'msg': True})
+        self.assertEqual(exc.exception.error,
+                         'Error received from push notification bouncer')
+
+    @mock.patch('requests.request', return_value=Result(status=300, content='/'))
+    def test_300_error(self, mock_request):
+        # type: (mock.MagicMock) -> None
+        with self.assertRaises(apn.JsonableError) as exc:
+            apn.send_to_push_bouncer('register', 'register', {'msg': True})
+        self.assertEqual(exc.exception.error,
+                         'Error received from push notification bouncer')
+
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
         # type: () -> None
