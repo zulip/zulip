@@ -329,20 +329,19 @@ class Client(object):
                 else:
                     client_cert = self.client_cert
 
-                res = requests.request(
-                        method,
-                        urllib.parse.urljoin(self.base_url, url),
-                        auth=requests.auth.HTTPBasicAuth(self.email,
-                                                         self.api_key),
-                        verify=self.tls_verification,
-                        cert=client_cert,
-                        timeout=90,
-                        headers={"User-agent": self.get_user_agent()},
-                        **kwargs)
-
+                s = requests.Session()
+                req = requests.Request(method,urllib.parse.urljoin(self.base_url,url),params=**kwargs)
+                prepped = s.prepare_request(req)
+                prepped.hearders.update({"User-agent": self.get_user_agent()})
+                resp = s.send(prepped,
+                              auth=requests.auth.HTTPBasicAuth(self.email,self.api_key),
+                              verify=self.tls_verification,
+                              cert=client_cert,
+                              timeout=90,
+                            )
                 # On 50x errors, try again after a short sleep
-                if str(res.status_code).startswith('5'):
-                    if error_retry(" (server %s)" % (res.status_code,)):
+                if str(resp.status_code).startswith('5'):
+                    if error_retry(" (server %s)" % (resp.status_code,)):
                         continue
                     # Otherwise fall through and process the python-requests error normally
             except (requests.exceptions.Timeout, requests.exceptions.SSLError) as e:
