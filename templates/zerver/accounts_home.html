@@ -44,49 +44,51 @@ $(function () {
                         configure authentication backends.</p>
                     </div>
                     {% else %}
-                    <form class="form-inline" id="send_confirm" name="email_form"
-                        action="{{ current_url() }}" method="post">
-                        {{ csrf_input }}
+                        {% if password_auth_enabled %}
+                            <form class="form-inline" id="send_confirm" name="email_form"
+                                action="{{ current_url() }}" method="post">
+                                {{ csrf_input }}
 
-                        <div class="input-box no-validate">
-                            <input type="email" id="email" class="email" name="email" value="" required />
-                            <label>Email</label>
-                            <div class="required"></div>
-                            <img class="valid" src="/static/images/checkbox-valid.svg" />
+                                <div class="input-box no-validate">
+                                    <input type="email" id="email" class="email" name="email" value="" required />
+                                    <label>Email</label>
+                                    <div class="required"></div>
+                                    <img class="valid" src="/static/images/checkbox-valid.svg" />
+                                </div>
+
+                                <button class="full-width" type="submit" name="">{{ _('Sign up') }}</button>
+                            </form>
+
+                            <div id="errors"></div>
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                <div class="alert alert-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+
+                            {% if any_oauth_backend_enabled %}
+                            <div class="or">or</div>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if google_auth_enabled %}
+                        <div class="register-google">
+                            <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
+                                <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
+                            </a>
                         </div>
+                        {% endif %}
 
-                        <button class="full-width" type="submit" name="">{{ _('Sign up') }}</button>
-                    </form>
-
-                    <div id="errors"></div>
-                    {% if form.email.errors %}
-                        {% for error in form.email.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if any_oauth_backend_enabled %}
-                    <div class="or">or</div>
-                    {% endif %}
-
-                    {% if google_auth_enabled %}
-                    <div class="register-google">
-                        <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
-                            <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
-                        </a>
-                    </div>
-                    {% endif %}
-
-                    {% if github_auth_enabled %}
-                    <div class="login-github">
-                        <a href="{{ url('signup-social', args=('github',)) }}"
-                           class="github-wrapper">
-                            <button class="login-github-button github">
-                                <span>{{ _('Sign up with GitHub') }}</span>
-                            </button>
-                        </a>
-                    </div>
-                    {% endif %}
+                        {% if github_auth_enabled %}
+                        <div class="login-github">
+                            <a href="{{ url('signup-social', args=('github',)) }}"
+                               class="github-wrapper">
+                                <button class="login-github-button github">
+                                    <span>{{ _('Sign up with GitHub') }}</span>
+                                </button>
+                            </a>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
