@@ -1162,3 +1162,23 @@ thead .actions {
 #settings_page .display-settings-form select {
     width: 245px;
 }
+
+#attachments_list:empty {
+    padding: 10px;
+}
+
+.required-text:empty::after {
+    content: attr(data-empty);
+    display: block;
+
+    font-style: italic;
+    color: #aaa;
+}
+
+/* This is a hack; essentially the issue is that if the ::after element is on
+   a table, then the width of the ::after @ 100% will be the width of the first
+   table column, so we'll just make the ::after 200% to add more space.
+   This is NOT a pattern that should be repeated or built on for other cases. */
+.required-text.thick:empty::after {
+    width: 200%;
+}

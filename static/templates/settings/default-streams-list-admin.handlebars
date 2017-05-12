@@ -1,5 +1,5 @@
 <div id="admin-default-streams-list" class="settings-section" data-name="default-streams-list">
-    <input type="text" class="search" placeholder="{{t 'Search streams' }}" />
+    <input type="text" class="search" placeholder="{{t 'Filter streams' }}" />
     <div class="clear-float"></div>
 
     <div class="side-padded-container">
@@ -26,7 +26,8 @@
                     <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
             </thead>
-            <tbody id="admin_default_streams_table" class="admin_default_stream_table"></tbody>
+            <tbody class="required-text" data-empty="{{t 'No default streams match you current filter.' }}"
+                   id="admin_default_streams_table" class="admin_default_stream_table"></tbody>
         </table>
     </div>
 

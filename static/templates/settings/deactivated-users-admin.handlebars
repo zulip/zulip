@@ -1,5 +1,5 @@
 <div id="admin-deactivated-users-list" class="settings-section" data-name="deactivated-users-admin">
-    <input type="text" class="search" placeholder="{{t 'Search deactivated users' }}" />
+    <input type="text" class="search" placeholder="{{t 'Filter deactivated users' }}" />
     <div class="clear-float"></div>
 
     <div class="progressive-table-wrapper">
@@ -9,7 +9,7 @@
                 <th>{{t "Email" }}</th>
                 <th class="actions">{{t "Actions" }}</th>
             </thead>
-            <tbody id="admin_deactivated_users_table" class="admin_user_table"></tbody>
+            <tbody id="admin_deactivated_users_table" class="required-text thick admin_user_table" data-empty="{{t 'No users match your current filter.' }}"></tbody>
         </table>
     </div>
     <div id="admin_page_deactivated_users_loading_indicator"></div>
