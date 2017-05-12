@@ -33,6 +33,15 @@ transifex-client==0.12.4
 # Dependency of transifex-client
 urllib3==1.21.1
 
+# Needed for documentation_crawler
+pathlib2==2.2.1
+#Needed for pathlib2==2.2.1
+scandir==1.5
+
+# Needed for updating the locked pip dependencies
+first==2.0.1
+pip-tools==1.9.0
+
 # Install the Zulip API bindings into the virtualenv; note that this
 # won't be automatically updated for new versions of api/.  This is
 # used in development both for tests and as a convenient for bot
