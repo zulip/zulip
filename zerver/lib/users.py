@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from typing import Text
-
+from re import findall
 from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import do_change_full_name
@@ -9,10 +9,10 @@ from zerver.models import UserProfile
 
 def check_full_name(full_name_raw):
     # type: (Text) -> Text
-    full_name = full_name_raw.strip()
+    full_name = full_name_raw.strip(' \t\n\r')
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
-    if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
+    if findall(UserProfile.INVALID_FULL_NAME_RE, full_name):
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
