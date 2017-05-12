@@ -107,6 +107,11 @@ class ChangeSettingsTest(ZulipTestCase):
                                        dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
 
+        # Now try a too-short name
+        json_result = self.client_post("/json/settings/change",
+                                       dict(full_name='x'))
+        self.assert_json_error(json_result, 'Name too short!')
+
     def test_illegal_characters_in_name_changes(self):
         # type: () -> None
         email = 'hamlet@zulip.com'

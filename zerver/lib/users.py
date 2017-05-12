@@ -12,6 +12,8 @@ def check_full_name(full_name_raw):
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
+    if len(full_name) < UserProfile.MIN_NAME_LENGTH:
+        raise JsonableError(_("Name too short!"))
     if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
         raise JsonableError(_("Invalid characters in name!"))
     return full_name

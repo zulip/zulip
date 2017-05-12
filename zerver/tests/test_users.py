@@ -156,6 +156,14 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Name too long!')
 
+    def test_admin_cannot_set_short_full_name(self):
+        # type: () -> None
+        new_name = 'a'
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Name too short!')
+
     def test_admin_cannot_set_full_name_with_invalid_characters(self):
         # type: () -> None
         new_name = 'Opheli*'
