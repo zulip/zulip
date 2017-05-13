@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -26,6 +27,7 @@ from functools import wraps
 import base64
 import datetime
 import logging
+import json
 import cProfile
 from io import BytesIO
 from six.moves import zip, urllib
@@ -44,6 +46,18 @@ else:
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
+
+## logger setup
+log_format = "%(asctime)s: %(message)s"
+
+formatter = logging.Formatter(log_format)
+file_handler = logging.FileHandler(
+    settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
+file_handler.setFormatter(formatter)
+
+logger = logging.getLogger("zulip.zerver.webhooks")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 
 class _RespondAsynchronously(object):
     pass
@@ -245,7 +259,20 @@ def api_key_only_webhook_view(client_name):
             process_client(request, user_profile, client_name=webhook_client_name)
             if settings.RATE_LIMITING:
                 rate_limit_user(request, user_profile, domain='all')
-            return view_func(request, user_profile, *args, **kwargs)
+            try:
+                return view_func(request, user_profile, *args, **kwargs)
+            except Exception:
+                if request.content_type == 'application/json':
+                    request_body = json.dumps(json.loads(request.body), indent=4)
+                else:
+                    request_body = request.body
+                message = "{client_name}\nrequest.body:\n\n{body}\n\n".format(
+                    client_name=webhook_client_name,
+                    body=request_body
+                )
+                logger.exception(message)
+                raise
+
         return _wrapped_func_arguments
     return _wrapped_view_func
 
