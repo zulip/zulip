@@ -588,6 +588,89 @@ a:not(.no-style):hover:before {
     vertical-align: top;
 }
 
+/* -- compare css -- */
+.compare {
+    background-color: #2d3035;
+    color: #fff;
+}
+
+.compare .text-header .text-content h1 {
+    margin-top: 0px;
+}
+
+.compare table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.compare table thead th.uniform {
+    width: 20%;
+}
+
+.compare table td:not(:first-of-type),
+.compare table th:not(:first-of-type) {
+    text-align: center;
+}
+
+.compare thead {
+    border-bottom: 1px solid #73797d;
+}
+
+.compare thead th {
+    font-weight: 600;
+    padding: 15px 0px;
+}
+
+.compare thead th.normal {
+    font-weight: normal;
+}
+
+.compare tbody tr {
+    border-bottom: 1px solid #393c40;
+}
+
+.compare tbody tr td {
+    padding: 10px 0px;
+}
+
+.compare tbody tr td.no {
+    text-align: center;
+}
+
+.compare tbody tr td.yes::before {
+    content: " ";
+    display: inline-block;
+
+    width: 27px;
+    height: 27px;
+    background-image: url(/static/images/landing-page/checkmark.png);
+    background-size: 100% auto;
+}
+
+.compare tbody tr td.no::before {
+    content: "×";
+
+    position: relative;
+    display: inline-block;
+
+    top: 3px;
+
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 0.9;
+}
+
+.compare tbody tr td a {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.compare p {
+    font-weight: 300;
+}
+
 .screen .line {
     width: 100%;
     height: 6px;
