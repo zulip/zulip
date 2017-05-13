@@ -37,6 +37,7 @@ as an **organization**.
 * [Send a private message](/help/send-a-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
 * [Preview your message before sending](/help/preview-your-message-before-sending)
+* [View and edit your message drafts](/help/view-and-edit-your-message-drafts)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)

@@ -56,6 +56,14 @@ Although they are generally used to show reactions to a message, they can be
 used for various other purposes, such as [voting](/static/images/help/emoji-react-vote.png)
 or [checking off items in a to-do list](/static/images/help/emoji-react-checklist.png).
 
+### draft
+
+Message **drafts** are created when unsent messages are discarded by exiting out
+of the compose box while content has been written in the **Compose your message here...**
+field. Zulip's [Drafts](/#drafts) feature allows users to
+[retrieve and edit](/help/view-and-edit-your-message-drafts) draft contents in
+order to send them as new messages.
+
 ### filter
 
 Also known as a [view](#view), a **filter** is one of the options for viewing
