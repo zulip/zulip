@@ -190,7 +190,7 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
 }
 
 exports.set_in_home_view = function (stream, in_home) {
-    var li = get_filter_li('stream', stream);
+    var li = exports.get_stream_li(stream);
     if (in_home) {
         li.removeClass("out_of_home_view");
     } else {
@@ -282,7 +282,7 @@ function set_count(type, name, count) {
 function rebuild_recent_topics(stream) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
-    var stream_li = get_filter_li('stream', stream);
+    var stream_li = exports.get_stream_li(stream);
     topic_list.rebuild(stream_li, stream);
 }
 
@@ -395,12 +395,13 @@ $(function () {
 
         var op_stream = event.filter.operands('stream');
         if (op_stream.length !== 0 && stream_data.is_subscribed(op_stream[0])) {
-            var stream_li = get_filter_li('stream', op_stream[0]);
+            var stream_name = op_stream[0];
+            var stream_li = exports.get_stream_li(stream_name);
             var op_subject = event.filter.operands('topic');
             if (op_subject.length === 0) {
                 stream_li.addClass('active-filter');
             }
-            rebuild_recent_topics(op_stream[0]);
+            rebuild_recent_topics(stream_name);
             unread_ops.process_visible();
             exports.scroll_to_active_stream(stream_li);
         }
