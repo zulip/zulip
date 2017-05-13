@@ -15,10 +15,22 @@ function make_tab_data() {
     var tabs = [];
     var filter = narrow_state.filter();
 
+    function filtered_to_non_home_view_stream() {
+        if (!filter.has_operator('stream')) {
+            return false;
+        }
+        var stream_name = filter.operands('stream')[0];
+        var stream_id = stream_data.get_stream_id(stream_name);
+        if (!stream_id) {
+            return true;
+        }
+
+        return !stream_data.in_home_view(stream_id);
+    }
+
     // Root breadcrumb item: Either Home or All Messages
     if (filter !== undefined &&
-        ((filter.has_operator("stream") &&
-          !stream_data.in_home_view(filter.operands("stream")[0])) ||
+        (filtered_to_non_home_view_stream() ||
          filter.has_operand("in", "all"))) {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {

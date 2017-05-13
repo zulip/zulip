@@ -180,9 +180,19 @@ exports.get_color = function (stream_name) {
     return sub.color;
 };
 
-exports.in_home_view = function (stream_name) {
+exports.in_home_view = function (stream_id) {
+    var sub = exports.get_sub_by_id(stream_id);
+    return sub !== undefined && sub.in_home_view;
+};
+
+exports.name_in_home_view = function (stream_name) {
     var sub = exports.get_sub(stream_name);
     return sub !== undefined && sub.in_home_view;
+};
+
+exports.notifications_in_home_view = function () {
+    // TODO: add page_params.notifications_stream_id
+    return exports.name_in_home_view(page_params.notifications_stream);
 };
 
 exports.is_subscribed = function (stream_name) {
@@ -454,9 +464,12 @@ exports.get_newbie_stream = function () {
 
     if (exports.is_subscribed("new members")) {
         return "new members";
-    } else if (exports.in_home_view(page_params.notifications_stream)) {
+    }
+
+    if (exports.notifications_in_home_view()) {
         return page_params.notifications_stream;
     }
+
     return undefined;
 };
 

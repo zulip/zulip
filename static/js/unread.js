@@ -86,7 +86,9 @@ exports.unread_topic_counter = (function () {
                     }
                 });
                 res.stream_count.set(stream, stream_count);
-                if (stream_data.in_home_view(stream)) {
+
+                var stream_id = stream_data.get_stream_id(stream);
+                if (stream_data.in_home_view(stream_id)) {
                     res.stream_unread_messages += stream_count;
                 }
             }

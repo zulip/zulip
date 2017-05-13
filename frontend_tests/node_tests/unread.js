@@ -151,6 +151,10 @@ var zero_counts = {
     assert.equal(count, 0);
 }());
 
+stream_data.get_stream_id = function () {
+    return 999;
+};
+
 (function test_muting() {
     stream_data.is_subscribed = function () {
         return true;

@@ -70,8 +70,8 @@ var people = global.people;
     assert.equal(stream_data.get_name('denMARK'), 'Denmark');
     assert.equal(stream_data.get_name('unknown Stream'), 'unknown Stream');
 
-    assert(stream_data.in_home_view('social'));
-    assert(!stream_data.in_home_view('denmark'));
+    assert(stream_data.in_home_view(social.stream_id));
+    assert(!stream_data.in_home_view(denmark.stream_id));
 }());
 
 (function test_renames() {
