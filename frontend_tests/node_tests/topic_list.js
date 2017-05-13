@@ -31,6 +31,8 @@ global.compile_template('topic_list_item');
         return 1;
     };
 
+    global.stream_data.get_stream_id = function () { return 99; };
+
     var parent_elem = $('<div>');
     var widget = topic_list.build_widget(parent_elem, stream, active_topic, max_topics);
     var topic_html = widget.get_dom();

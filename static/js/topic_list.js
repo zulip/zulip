@@ -39,8 +39,8 @@ function update_unread_count(unread_count_elem, count) {
     }
 }
 
-exports.set_count = function (stream_name, topic, count) {
-    if (active_widget && active_widget.is_for_stream(stream_name)) {
+exports.set_count = function (stream_id, topic, count) {
+    if (active_widget && active_widget.is_for_stream(stream_id)) {
         active_widget.set_count(topic, count);
     }
 };
@@ -48,6 +48,14 @@ exports.set_count = function (stream_name, topic, count) {
 exports.build_widget = function (parent_elem, stream, active_topic, max_topics) {
     var self = {};
     self.topic_items = new Dict({fold_case: true});
+
+    var my_stream_id = stream_data.get_stream_id(stream);
+
+    if (!my_stream_id) {
+        blueslip.error('Cannot find stream for ' + stream);
+        return;
+    }
+
 
     function build_list(stream, active_topic, max_topics) {
         var topics = stream_data.get_recent_topics(stream) || [];
@@ -64,7 +72,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
         _.each(topics, function (subject_obj, idx) {
             var show_topic;
             var topic_name = subject_obj.subject;
-            var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
+            var num_unread = unread.num_unread_for_subject(my_stream_id, subject_obj.canon_subject);
 
             if (zoomed) {
                 show_topic = true;
@@ -107,8 +115,8 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
         return parent_elem;
     };
 
-    self.is_for_stream = function (stream_name) {
-        return stream.toLowerCase() === stream_name.toLowerCase();
+    self.is_for_stream = function (stream_id) {
+        return stream_id === my_stream_id;
     };
 
     self.get_stream_name = function () {

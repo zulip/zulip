@@ -163,8 +163,9 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
         return _.map(topics, function (obj) { return obj.subject; });
     }
 
-    function has_unread_messages(stream, topic) {
-        return unread.topic_has_any_unread(stream, topic);
+    function has_unread_messages(stream_name, topic) {
+        var stream_id = stream_data.get_stream_id(stream_name);
+        return unread.topic_has_any_unread(stream_id, topic);
     }
 
     return exports.next_topic(
