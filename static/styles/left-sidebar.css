@@ -124,6 +124,10 @@ li.active-sub-filter {
     text-decoration: none;
 }
 
+.left-sidebar .sidebar-title:hover {
+    color: #555;
+}
+
 li.hidden-filter {
     visibility: hidden;
     display: none;
