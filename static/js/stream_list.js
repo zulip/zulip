@@ -136,9 +136,8 @@ function get_filter_li(type, name) {
     return iterate_to_find("#" + type + "_filters > li", name);
 }
 
-exports.get_stream_li = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    return $("#stream_sidebar_" + sub.stream_id);
+exports.get_stream_li = function (stream_id) {
+    return $("#stream_sidebar_" + stream_id);
 };
 
 function zoom_in() {
@@ -190,8 +189,8 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
     }
 }
 
-exports.set_in_home_view = function (stream, in_home) {
-    var li = exports.get_stream_li(stream);
+exports.set_in_home_view = function (stream_id, in_home) {
+    var li = exports.get_stream_li(stream_id);
     if (in_home) {
         li.removeClass("out_of_home_view");
     } else {
@@ -256,9 +255,9 @@ exports.create_sidebar_row = function (sub) {
 };
 
 exports.redraw_stream_privacy = function (stream_name) {
-    var li = exports.get_stream_li(stream_name);
-    var div = li.find('.stream-privacy');
     var sub = stream_data.get_sub(stream_name);
+    var li = exports.get_stream_li(sub.stream_id);
+    var div = li.find('.stream-privacy');
     var color = stream_data.get_color(stream_name);
     var dark_background = stream_color.get_color_class(color);
 
@@ -277,15 +276,17 @@ function set_count(type, name, count) {
 }
 
 function set_stream_unread_count(stream_name, count) {
-    var unread_count_elem = exports.get_stream_li(stream_name);
+    var stream_id = stream_data.get_stream_id(stream_name);
+    var unread_count_elem = exports.get_stream_li(stream_id);
     update_count_in_dom(unread_count_elem, count);
 }
 
-function rebuild_recent_topics(stream) {
+function rebuild_recent_topics(stream_name) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
-    var stream_li = exports.get_stream_li(stream);
-    topic_list.rebuild(stream_li, stream);
+    var stream_id = stream_data.get_stream_id(stream_name);
+    var stream_li = exports.get_stream_li(stream_id);
+    topic_list.rebuild(stream_li, stream_name);
 }
 
 exports.update_streams_sidebar = function () {
@@ -350,7 +351,7 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // a topic, we may be literally trying to get it out of
     // our sight.
     if (sub.pin_to_top) {
-        var stream_li = exports.get_stream_li(sub.name);
+        var stream_li = exports.get_stream_li(sub.stream_id);
         exports.scroll_to_active_stream(stream_li);
     }
 };
@@ -398,7 +399,8 @@ $(function () {
         var op_stream = event.filter.operands('stream');
         if (op_stream.length !== 0 && stream_data.is_subscribed(op_stream[0])) {
             var stream_name = op_stream[0];
-            var stream_li = exports.get_stream_li(stream_name);
+            var stream_id = stream_data.get_stream_id(stream_name);
+            var stream_li = exports.get_stream_li(stream_id);
             var op_subject = event.filter.operands('topic');
             if (op_subject.length === 0) {
                 stream_li.addClass('active-filter');

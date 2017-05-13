@@ -74,7 +74,7 @@ function clear_filters() {
     var html = $("body").html();
     global.write_test_output("test_create_sidebar_row", html);
 
-    var li = stream_list.get_stream_li('social');
+    var li = stream_list.get_stream_li(social.stream_id);
     assert.equal(li.attr('data-name'), 'social');
     assert.equal(li.find('a.stream-name').text().trim(), 'social');
     assert(li.find('.arrow').find("i").hasClass("icon-vector-chevron-down"));
