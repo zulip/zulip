@@ -153,7 +153,7 @@ for a webhook named 'MyWebHook'.
   integration for use in the user interface. You can add as many images as needed
   to effectively document your webhook integration. See [Documenting your
   integration](#documenting-your-integration) for details.
-* `zerver/webhooks/mywebhook/fixtures/mywebhook_messagetype.json`: Sample json payload data
+* `zerver/webhooks/mywebhook/fixtures/messagetype.json`: Sample json payload data
   used by tests. Add one fixture file per type of message supported by your
   integration. See [Testing and writing tests](testing.html) for details.
 * `zerver/webhooks/mywebhook/__init__.py`: Empty file that is obligatory
@@ -241,7 +241,7 @@ Usually, this involves a few steps:
 
   ```
   ./manage.py send_webhook_fixture_message \
-       --fixture=zerver/webhooks/pingdom/fixtures/pingdom_imap_down_to_up.json \
+       --fixture=zerver/webhooks/pingdom/fixtures/imap_down_to_up.json \
        '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
   ```
 
