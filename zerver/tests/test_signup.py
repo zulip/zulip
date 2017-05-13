@@ -1809,15 +1809,16 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
         invalid_subdomain = False
-        response = login_or_register_remote_user(
+        result = login_or_register_remote_user(
             request,
             email,
             user_profile,
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
-        self.assert_in_response('You attempted to login using new@zulip.com, '
-                                'but new@zulip.com does',
-                                response)
+        self.assert_in_response('You attempted to login using the email account',
+                                result)
+        self.assert_in_response('new@zulip.com, but this email address does not',
+                                result)
 
     def test_invalid_subdomain(self):
         # type: () -> None
