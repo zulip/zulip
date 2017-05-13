@@ -118,8 +118,10 @@ exports.page_down = function () {
 exports.cycle_stream = function (direction) {
     var currentStream;
     var nextStream;
-    if (narrow_state.stream() !== undefined) {
-        currentStream = stream_list.get_stream_li(narrow_state.stream());
+    var stream_name = narrow.stream();
+    if (stream_name !== undefined) {
+        var stream_id = stream_data.get_stream_id(stream_name);
+        currentStream = stream_list.get_stream_li(stream_id);
     }
     switch (direction) {
         case 'forward':
