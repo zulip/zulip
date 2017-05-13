@@ -59,6 +59,7 @@ class TemplateTestCase(ZulipTestCase):
         logged_out = [
             'confirmation/confirm.html',  # seems unused
             'confirmation/confirm_mituser.html',  # seems unused
+            'zerver/compare.html',
             'zerver/landing_nav_blue.html',
             'zerver/footer.html',
         ]
