@@ -279,6 +279,11 @@ function set_count(type, name, count) {
     update_count_in_dom(unread_count_elem, count);
 }
 
+function set_stream_unread_count(stream_name, count) {
+    var unread_count_elem = exports.get_stream_li(stream_name);
+    update_count_in_dom(unread_count_elem, count);
+}
+
 function rebuild_recent_topics(stream) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
@@ -311,7 +316,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // counts.stream_count maps streams to counts
     counts.stream_count.each(function (count, stream) {
-        set_count("stream", stream, count);
+        set_stream_unread_count(stream, count);
     });
 
     // counts.subject_count maps streams to hashes of topics to counts
