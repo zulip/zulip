@@ -270,8 +270,9 @@ function make_sub(name, stream_id) {
     predicate = get_predicate([['in', 'all']]);
     assert(predicate({}));
 
+    var unknown_stream_id = 999;
     predicate = get_predicate([['in', 'home']]);
-    assert(!predicate({stream: 'unsub'}));
+    assert(!predicate({stream_id: unknown_stream_id, stream: 'unknown'}));
     assert(predicate({type: 'private'}));
     global.page_params.narrow_stream = 'kiosk';
     assert(predicate({stream: 'kiosk'}));

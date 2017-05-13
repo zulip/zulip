@@ -417,7 +417,7 @@ function message_is_notifiable(message) {
         return true;
     }
     if ((message.type === "stream") &&
-        !stream_data.in_home_view(message.stream)) {
+        !stream_data.in_home_view(message.stream_id)) {
         return false;
     }
     if ((message.type === "stream") &&
@@ -548,7 +548,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages, loca
         if (row.length === 0) {
             if (message.type === "stream" && muting.is_topic_muted(message.stream, message.subject)) {
                 note = "Sent! Your message was sent to a topic you have muted.";
-            } else if (message.type === "stream" && !stream_data.in_home_view(message.stream)) {
+            } else if (message.type === "stream" && !stream_data.in_home_view(message.stream_id)) {
                 note = "Sent! Your message was sent to a stream you have muted.";
             } else {
                 // offscreen because it is outside narrow

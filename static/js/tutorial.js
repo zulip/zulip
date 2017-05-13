@@ -355,7 +355,7 @@ function finale(skip) {
         // 'engineering' is the best possible stream since we used it in the
         // tutorial, but fall back to something else if we have to.
         var work_stream;
-        if (stream_data.in_home_view("engineering")) {
+        if (stream_data.name_in_home_view("engineering")) {
             work_stream = "engineering";
         } else {
             work_stream = _.find(stream_data.home_view_stream_names(),
@@ -364,7 +364,7 @@ function finale(skip) {
             });
         }
 
-        if (stream_data.in_home_view(page_params.notifications_stream)) {
+        if (stream_data.notifications_in_home_view()) {
             send_delayed_stream_message(page_params.notifications_stream, "welcome", "Practice sending sending some messages here, or starting a new topic.", 15);
             send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "Here's a message on a new topic: `Zulip tips`.\n\nAs you settle into Zulip, customize your account and notifications on your [Settings page](#settings).", 30);
             send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
@@ -375,7 +375,7 @@ function finale(skip) {
             send_delayed_stream_message(work_stream, "projects", "Take a peek at our [integrations](/integrations). Now's a great time to set one up!", 65);
         }
 
-        if (stream_data.in_home_view("social")) {
+        if (stream_data.name_in_home_view("social")) {
             send_delayed_stream_message("social", "cute animals", "This is a message on stream `social` with the topic `cute animals`. Try uploading or pasting in some pictures. Here's a [guinea pig](/static/images/cute/guinea.jpg) to get you started:", 75);
         }
     }
