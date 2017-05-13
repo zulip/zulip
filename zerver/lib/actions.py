@@ -266,7 +266,7 @@ def notify_new_user(user_profile, internal=False):
 
 def add_new_user_history(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> None
-    """Give you the last 100 messages on your public streams, so you have
+    """Give you the last 1000 messages on your public streams, so you have
     something to look at in your home view once you finish the
     tutorial."""
     one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
@@ -275,7 +275,7 @@ def add_new_user_history(user_profile, streams):
                                                        if not stream.invite_only])
     recent_messages = Message.objects.filter(recipient_id__in=recipients,
                                              pub_date__gt=one_week_ago).order_by("-id")
-    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:100]))
+    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))
     if len(message_ids_to_use) == 0:
         return
 
