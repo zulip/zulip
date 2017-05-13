@@ -133,12 +133,13 @@ function iterate_to_find(selector, name_to_find, context) {
 }
 
 function get_filter_li(type, name) {
-    if (type === 'stream') {
-        var sub = stream_data.get_sub(name);
-        return $("#stream_sidebar_" + sub.stream_id);
-    }
     return iterate_to_find("#" + type + "_filters > li", name);
 }
+
+exports.get_stream_li = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    return $("#stream_sidebar_" + sub.stream_id);
+};
 
 function zoom_in() {
     popovers.hide_all();
@@ -268,10 +269,6 @@ exports.redraw_stream_privacy = function (stream_name) {
 
     var html = templates.render('stream_privacy', args);
     div.html(html);
-};
-
-exports.get_stream_li = function (stream_name) {
-    return get_filter_li('stream', stream_name);
 };
 
 function set_count(type, name, count) {
