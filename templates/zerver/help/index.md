@@ -47,7 +47,7 @@ as an **organization**.
 * [Enable or disable Press Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify that your message has been successfully sent](/help/verify-that-your-message-has-been-successfully-sent)
 <!-- What to do if the server returns an error -->
-* [Send a status message](/help/send-a-status-message)
+* [Send a status message](/help/format-your-message-using-markdown#status-messages)
 * [@-mention a team member](/help/at-mention-a-team-member)
 * [Make an announcement](/help/make-an-announcement)
 * [Send a message in a different language](/help/send-a-message-in-a-different-language)
