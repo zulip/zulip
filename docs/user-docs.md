@@ -237,16 +237,16 @@ Usually preceded by the [**Go to the** macro](#go-to-the-go-to-the-md-macro)
 and a link to a particular section on the **Organization settings** page.
 
 * **Contents:**
-    ```.md
+    ```md
     tab of the [Organization settings](/help/edit-administrator-settings) page.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!go-to-the.md!} [Organization settings](/#organization/organization-settings)
     {!admin.md!}
     ```
-    ```.md
+    ```md
     1. Go to the [Organization settings](/#organization/organization-settings) tab of the
     [Organization](/help/edit-administrator-settings) page.
     ```
@@ -258,19 +258,19 @@ only available to organization administrators. It should be placed
 immediately after the title.
 
 * **Contents:**
-    ```.md
+    ```md
     !!! warn ""
         **Note:** This feature can only be controlled by organization administrators.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!admin-only.md!}
 
     {!follow-steps.md!} change who can join your stream by changing the stream's
     accessibility.
     ```
-    ```.md
+    ```md
     !!! warn ""
         **Note:** This feature can only be controlled by organization administrators.
 
@@ -286,20 +286,20 @@ immediately after the title.
 [**Filter streams** macro](#filter-streams-filter-streams-md-macro).
 
 * **Contents:**
-    ```.md
+    ```md
         If you wish to see streams that you aren't subscribed to, click on the
             **All streams** tab; the tab will turn gray upon doing so.
     ```
 
 * **Example usage and rendering:**
 
-    ```.md
+    ```md
     {!subscriptions.md!}
     {!filter-streams.md!}
         !!! tip ""
         {!all-streams.md!}
     ```
-    ```.md
+    ```md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.
@@ -316,16 +316,16 @@ an command, such as the [**Message actions**
 macro](#message-actions-message-actions-md-macro).
 
 * **Contents:**
-    ```.md
+    ```md
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!message-actions.md!}
     {!down-chevron.md!}
     ```
-    ```.md
+    ```md
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
@@ -338,16 +338,16 @@ or the [**Organization settings** macro](#organization-settings-admin-md-macro).
 following content into a step.
 
 * **Contents:**
-    ```.md
+    ```md
     1. Go to the
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!go-to-the.md!} [Notifications](/#settings/notifications)
     {!settings.md!}
     ```
-    ```.md
+    ```md
     1. Go to the [Notifications](/#settings/notifications) tab on the
     [Settings](/help/edit-settings) page.
     ```
@@ -359,17 +359,17 @@ following content into a step.
   the [**Streams** macro](#streams-subscriptions-md-macro).
 
 * **Contents:**
-    ```.md
+    ```md
     You can search for specific streams by entering the name of the stream in
     the **Filter streams** input.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!subscriptions.md!}
     {!filter-streams.md!}
     ```
-    ```.md
+    ```md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.
@@ -380,15 +380,15 @@ following content into a step.
 * **About:** Prepends phrases with instructions to follow the following steps.
 
 * **Contents:**
-    ```.md
+    ```md
     Follow the following steps to
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!follow-steps.md!}  change your mobile notification settings.
     ```
-    ```.md
+    ```md
     Follow the following steps to change your mobile notification
     settings.
     ```
@@ -399,17 +399,17 @@ following content into a step.
 to click a specific icon, such as the [**Down chevron** macro](#down-chevron-down-chevron-md-macro).
 
 * **Contents:**
-    ```.md
+    ```md
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!message-actions.md!}
     {!down-chevron.md!}
     ```
-    ```.md
+    ```md
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
@@ -422,16 +422,16 @@ by pressing the **Save changes** button. Usually followed by a phrase
 describing the settings they modified.
 
 * **Contents:**
-    ```.md
+    ```md
     1. Click on the **Save changes** button to save any changes you made to
     your
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!save-changes.md!} notification settings.
     ```
-    ```.md
+    ```md
     1. Click on the **Save changes** button to save any changes you made to
     your notification settings.
     ```
@@ -443,16 +443,16 @@ the [**Go to the** macro](#go-to-the-go-to-the-md-macro) and a link to a
 particular section on the **Settings** page.
 
 * **Contents:**
-    ```.md
+    ```md
     tab on the [Settings](/help/edit-settings) page.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!go-to-the.md!} [Notifications](/#settings/notifications)
     {!settings.md!}
     ```
-    ```.md
+    ```md
     1. Go to the [Notifications](/#settings/notifications) tab on the
     [Settings](/help/edit-settings) page.
     ```
@@ -463,20 +463,20 @@ particular section on the **Settings** page.
 instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro).
 
 * **Contents:**
-    ```.md
+    ```md
     1. On the left sidebar in the **Streams** section, hover over a stream to reveal
     a down chevron (<i class="fa fa-chevron-down"></i>) icon to the right of
     the stream name.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!stream-actions.md!}
 
     1. Click on the {!down-chevron.md!}
     ```
 
-    ```.md
+    ```md
     1. On the left sidebar in the **Streams** section, hover over a stream to reveal
     a down chevron (<i class="fa fa-chevron-down"></i>) icon to the right of
     the stream name.
@@ -492,16 +492,16 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
   by an instruction.
 
 * **Contents:**
-    ```.md
+    ```md
     the right side of the [Streams](/#streams) page, labeled
     **Stream settings**, will now display the selected stream's settings.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     1. Click on the stream you want to edit; {!stream-settings.md!}
     ```
-    ```.md
+    ```md
     1. Click on the stream you want to edit; the right side of the
     [Streams](/#streams) page, labeled **Stream settings**, will
     now display the selected stream's settings.
@@ -514,18 +514,18 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
 **Streams Settings** section.
 
 * **Contents:**
-    ```.md
+    ```md
     1. After making sure that your cursor is hovering over the **Streams Settings**
     section, scroll down to the
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!stream-settings-scroll.md!} **Stream membership** section. This section
     shows the usernames and emails of all users that are currently subscribed to the
     selected stream.
     ```
-    ```.md
+    ```md
     1. After making sure that your cursor is hovering over the **Streams Settings**
     section, scroll down to the **Stream membership** section. This section
     shows the usernames and emails of all users that are currently subscribed to the
@@ -538,17 +538,17 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
 Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-md-macro).
 
 * **Contents:**
-    ```.md
+    ```md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on
     the [Streams](/#streams) page.
     ```
 
 * **Example usage and rendering:**
-    ```.md
+    ```md
     {!subscriptions.md!}
     {!filter-streams.md!}
     ```
-    ```.md
+    ```md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.

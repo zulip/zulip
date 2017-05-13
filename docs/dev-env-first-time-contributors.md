@@ -384,7 +384,7 @@ navigating to <http://localhost:9991/> in the browser on your main machine.
 
 You should see something like this:
 
-![Image of Zulip development environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
+![Image of Zulip development environment](images/zulip-dev.png)
 
 The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you

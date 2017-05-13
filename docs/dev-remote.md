@@ -51,13 +51,12 @@ you cloned Zulip:
 ./tools/run-dev.py --interface=''
 ```
 
-This will start up the Zulip server on port 9991. You can then navigate to
-http://<REMOTE_IP>:9991 and you should see something like [(this screenshot of
-the Zulip development
-environment)](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png).
+This will start up the Zulip server on port 9991. You can then
+navigate to `http://<REMOTE_IP>:9991` and you should see something like
+this screenshot of the Zulip development environment:
 
 ![Image of Zulip development
-environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
+environment](images/zulip-dev.png)
 
 You can [port
 forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding) using
