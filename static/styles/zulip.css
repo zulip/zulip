@@ -1354,6 +1354,11 @@ div.focused_table {
     max-width: 100%;
 }
 
+#message-edit-history .message_top_line {
+    /* consistent with .recipient_row_date */
+    height: 17px;
+}
+
 #message-edit-history .message_author {
     position: relative;
 }
