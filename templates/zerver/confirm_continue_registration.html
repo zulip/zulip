@@ -2,13 +2,14 @@
 
 {% block portico_content %}
 <div class="app register-page">
-    <div class="app-main register-page-container">
+    <div class="app-main confirm-continue-page-container">
         <div class="center-container">
             <div class="center-block">
-                <div class="register-form">
+                <div class="register-form new-style">
                     <p class="lead">
-                        <div class="register-page-header">{{ _("Account not found!") }}</div>
+                        <div class="register-page-header">{{ _("Zulip account not found.") }}</div>
                     </p>
+                    <br />
                     {% if invalid_email %}
                     {# If the email address is invalid, we can't send the user #}
                     {# to the preregistered user code path. #}
@@ -21,9 +22,13 @@
                     {% else %}
                     <p>
                         {% trans %}
-                        You attempted to login using {{ email }}, but {{ email }} does
-                        not have an account in this organization. If you'd like, you can
-                        try to register a new account with this email address.
+
+                        You attempted to login using the email account
+                        {{ email }}, but this email address does not
+                        have a Zulip account in this organization. If
+                        you'd like, you can try to register a new
+                        Zulip account with this email address.
+
                         {% endtrans %}
                     </p>
                     {# TODO: Ideally, this should use whatever auth #}
@@ -36,9 +41,9 @@
                                id="email"
                                name="email"
                                value="{{ email }}" />
-                        <input type="submit"
-                               class="button btn btn-primary btn-large register-button"
-                               value="{{ _("Continue to registration?") }}"/>
+                        <button class="full-width">
+                            {{ _("Continue to registration?") }}
+                        </button>
                     </form>
                     {% endif %}
                 </div>

@@ -668,9 +668,9 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.backend.do_auth(response=response)
             self.assert_in_response(
                 'action="/register/"', result)
-            self.assert_in_response('You attempted to login using '
-                                    'nonexisting@phantom.com, but '
-                                    'nonexisting@phantom.com does',
+            self.assert_in_response('You attempted to login using the email account',
+                                    result)
+            self.assert_in_response('nonexisting@phantom.com, but this email address does not',
                                     result)
 
     def test_login_url(self):
@@ -978,10 +978,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
             result = self.client_get(result.url)
-            self.assert_in_response(
-                "You attempted to login using newuser@zulip.com, "
-                "but newuser@zulip.com does", result)
-            # Click confirm registraton button.
+            self.assert_in_response('You attempted to login using the email account',
+                                    result)
+            self.assert_in_response('newuser@zulip.com, but this email address does not',
+                                    result)
+            # Click confirm registration button.
             result = self.client_post('/register/',
                                       {'email': email})
             self.assertEqual(result.status_code, 302)
@@ -1024,10 +1025,11 @@ class GoogleLoginTest(GoogleOAuthTest):
                                          value=email)])
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response)
-        self.assert_in_response(
-            "You attempted to login using newuser@zulip.com, "
-            "but newuser@zulip.com does", result)
-        # Click confirm registraton button.
+        self.assert_in_response('You attempted to login using the email account',
+                                result)
+        self.assert_in_response('newuser@zulip.com, but this email address does not',
+                                result)
+        # Click confirm registration button.
         result = self.client_post('/register/',
                                   {'email': email})
         self.assertEqual(result.status_code, 302)

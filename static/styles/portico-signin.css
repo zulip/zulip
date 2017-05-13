@@ -116,6 +116,16 @@ html {
     font-weight: 400;
 }
 
+.app-main.confirm-continue-page-container {
+    width: 600px;
+    font-weight: 400;
+}
+
+.app-main.confirm-continue-page-container .form-inline {
+    width: 320px;
+    margin: auto;
+}
+
 .find-team-page-container h3,
 .forgot-password-container h3 {
     margin-top: 0px;
