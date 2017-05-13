@@ -169,8 +169,18 @@ function is_odd(i) { return i % 2 === 1; }
         }
     };
 
-    global.unread.topic_has_any_unread = function (stream, topic) {
-        return (stream === 'devel' && topic === 'python');
+    var devel_stream_id = 555;
+
+    global.stream_data.get_stream_id = function (stream_name) {
+        if (stream_name === 'devel') {
+            return devel_stream_id;
+        }
+
+        return 999;
+    };
+
+    global.unread.topic_has_any_unread = function (stream_id, topic) {
+        return (stream_id === devel_stream_id && topic === 'python');
     };
 
     var next_item = tg.get_next_topic(curr_stream, curr_topic);

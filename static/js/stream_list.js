@@ -216,7 +216,6 @@ function build_stream_sidebar_li(sub) {
 function build_stream_sidebar_row(sub) {
     var self = {};
     var list_item = build_stream_sidebar_li(sub);
-    var stream_name = sub.name;
 
     self.update_whether_active = function () {
         if (stream_data.is_active(sub)) {
@@ -236,7 +235,7 @@ function build_stream_sidebar_row(sub) {
 
 
     self.update_unread_count = function () {
-        var count = unread.num_unread_for_stream(stream_name);
+        var count = unread.num_unread_for_stream(sub.stream_id);
         update_count_in_dom(list_item, count);
     };
 
@@ -275,8 +274,7 @@ function set_count(type, name, count) {
     update_count_in_dom(unread_count_elem, count);
 }
 
-function set_stream_unread_count(stream_name, count) {
-    var stream_id = stream_data.get_stream_id(stream_name);
+function set_stream_unread_count(stream_id, count) {
     var unread_count_elem = exports.get_stream_li(stream_id);
     update_count_in_dom(unread_count_elem, count);
 }
@@ -313,14 +311,14 @@ exports.update_dom_with_unread_counts = function (counts) {
     // and the buddy lists in the right sidebar.
 
     // counts.stream_count maps streams to counts
-    counts.stream_count.each(function (count, stream) {
-        set_stream_unread_count(stream, count);
+    counts.stream_count.each(function (count, stream_id) {
+        set_stream_unread_count(stream_id, count);
     });
 
     // counts.subject_count maps streams to hashes of topics to counts
-    counts.subject_count.each(function (subject_hash, stream) {
+    counts.subject_count.each(function (subject_hash, stream_id) {
         subject_hash.each(function (count, subject) {
-            topic_list.set_count(stream, subject, count);
+            topic_list.set_count(stream_id, subject, count);
         });
     });
 
