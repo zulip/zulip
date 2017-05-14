@@ -284,7 +284,7 @@ function rebuild_recent_topics(stream_name) {
     // message.
     var stream_id = stream_data.get_stream_id(stream_name);
     var stream_li = exports.get_stream_li(stream_id);
-    topic_list.rebuild(stream_li, stream_name);
+    topic_list.rebuild(stream_li, stream_id);
 }
 
 exports.update_streams_sidebar = function () {
