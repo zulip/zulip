@@ -356,6 +356,25 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     }
 };
 
+exports.maybe_activate_stream_item = function (filter) {
+    var op_stream = filter.operands('stream');
+    if (op_stream.length !== 0) {
+        var stream_name = op_stream[0];
+        var stream_id = stream_data.get_stream_id(stream_name);
+
+        if (stream_id && stream_data.id_is_subscribed(stream_id)) {
+            var stream_li = exports.get_stream_li(stream_id);
+            var op_subject = filter.operands('topic');
+            if (op_subject.length === 0) {
+                stream_li.addClass('active-filter');
+            }
+            rebuild_recent_topics(stream_name);
+
+            return stream_li;
+        }
+    }
+};
+
 function deselect_top_left_corner_items() {
     $("ul.filters li").removeClass('active-filter active-sub-filter');
 }
@@ -396,21 +415,10 @@ $(function () {
             pm_list.close();
         }
 
-        var op_stream = event.filter.operands('stream');
-        if (op_stream.length !== 0) {
-            var stream_name = op_stream[0];
-            var stream_id = stream_data.get_stream_id(stream_name);
-
-            if (stream_id && stream_data.id_is_subscribed(stream_id)) {
-                var stream_li = exports.get_stream_li(stream_id);
-                var op_subject = event.filter.operands('topic');
-                if (op_subject.length === 0) {
-                    stream_li.addClass('active-filter');
-                }
-                rebuild_recent_topics(stream_name);
-                unread_ops.process_visible();
-                exports.scroll_to_active_stream(stream_li);
-            }
+        var stream_li = exports.maybe_activate_stream_item(event.filter);
+        if (stream_li) {
+            unread_ops.process_visible();
+            exports.scroll_to_active_stream(stream_li);
         }
     });
 
