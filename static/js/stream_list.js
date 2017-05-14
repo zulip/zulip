@@ -333,7 +333,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.rename_stream = function (sub) {
     // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
-    exports.build_stream_list(); // big hammer
+    exports.update_streams_sidebar(); // big hammer
 };
 
 exports.refresh_pinned_or_unpinned_stream = function (sub) {
