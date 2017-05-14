@@ -236,6 +236,9 @@ checking that all the calls to `send_event` are covered.  Someday
 we'll add automation that verifies this directly by inspecting the
 coverage data.
 
+In the Zulip webapp, the data returned by the `register` API is
+available via the `page_params` parameter.
+
 ### Messages
 
 One exception to the protocol described in the last section is the

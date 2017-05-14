@@ -48,6 +48,7 @@ class HomeTest(ZulipTestCase):
             "avatar_url_medium",
             "can_create_streams",
             "cross_realm_bots",
+            "custom_profile_fields",
             "debug_mode",
             "default_desktop_notifications",
             "default_language",

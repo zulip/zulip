@@ -191,8 +191,8 @@ initial state. Subsequently, clients subscribe to "events," which can
 (among other things) indicate that settings have changed. For the
 backend piece, we will need our action to make a call to `send_event`
 to send the event to clients that are active. We will also need to
-modify `fetch_initial_state_data` so that future clients see the new
-changes.  See [our event system docs](events-system.html) for all the
+modify `fetch_initial_state_data` so that the new field is passed to
+clients.  See [our event system docs](events-system.html) for all the
 gory details.
 
 Anyway, getting back to implementation details...
@@ -258,9 +258,14 @@ to explicitly update this field and send an event.
 
 ### Update application state
 
-You then need to add code that will handle the event and update the
-application state. The `fetch_initial_state` and `apply_event`
-functions in `zerver/lib/events.py` do this.
+You then need to add code to ensure that your new setting is included
+in the data sent down to clients, both when a new client is loaded,
+and when changes happen. The `fetch_initial_state_data` function is
+responsible for the former (data added to the `state` here will be
+available both in `page_params` in the browser, as well as to API
+clients like the mobile apps).  The `apply_event` function in
+`zerver/lib/events.py` is important for making sure the `state` is
+always correct, even in the event of rare race conditions.
 
     # zerver/lib/events.py
 
@@ -283,11 +288,12 @@ functions in `zerver/lib/events.py` do this.
 
 If you are adding a realm property that fits the `property_types`
 framework, you don't need to change `fetch_initial_state_data` or
-`apply_event` because there is already code to get the initial data and
-the realm update event type. However, if you are adding a property
-that is handled separately, you will need to  explicitly add the property
-to the `state` dictionary in the `fetch_initial_state_data` function.
-Ex, for `authentication_methods`:
+`apply_event` because there is already code to get the initial data
+and handle the realm update event type. However, if you are adding a
+property that is handled separately, you will need to explicitly add
+the property to the `state` dictionary in the
+`fetch_initial_state_data` function.  E.g., for
+`authentication_methods`:
 
     def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
       # ...
@@ -298,8 +304,8 @@ Ex, for `authentication_methods`:
 
 For this setting, one won't need to change `apply_event` since its
 default code for `realm` event types handles this case correctly, but
-for a totally new type of feature, usually a few lines in that
-function are needed.
+for a totally new type of feature, a few lines in that function may be
+needed.
 
 ### Add a new view
 
@@ -310,19 +316,6 @@ application loads and should be accessible via JavaScript. There is
 already a view that does this for related flags: `update_realm` in
 `zerver/views/realm.py`. So in this case, we can add our code to the
 existing view instead of creating a new one.
-
-First, add the new feature to the `page_params_core_fields` list
-in `zerver/views/home.py`.
-
-    def home_real(request):
-      # ...
-      page_params_core_fields = [
-        # ...
-        'realm_icon_url',
-        'realm_invite_by_admins_only',
-        'realm_inline_image_preview',
-        # ...
-      )
 
 Since this feature adds a checkbox to the admin page and a new property
 to the Realm model that can be modified from there, you need to add a
