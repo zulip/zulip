@@ -294,14 +294,9 @@ exports.update_streams_sidebar = function () {
         return;
     }
 
-    var op_stream = narrow_state.filter().operands('stream');
-    if (op_stream.length !== 0) {
-        var stream_name = op_stream[0];
-        var stream_id = stream_data.get_stream_id(stream_name);
-        if (stream_id && stream_data.id_is_subscribed(stream_id)) {
-            rebuild_recent_topics(stream_name);
-        }
-    }
+    var filter = narrow_state.filter();
+
+    exports.maybe_activate_stream_item(filter);
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
