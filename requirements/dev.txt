@@ -1,4 +1,3 @@
--r common.txt
 -r docs.txt
 -r moto.txt
 -r py3k.txt
