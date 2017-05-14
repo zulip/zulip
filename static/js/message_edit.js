@@ -468,6 +468,26 @@ exports.show_history = function (message) {
     });
 };
 
+exports.delete_message = function (msg_id) {
+    $("#delete-message-error").html('');
+    $('#delete_message_modal').modal("show");
+    $('#do_delete_message_button').off().on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        channel.del({
+            url: "/json/messages/" + msg_id,
+            success: function () {
+                $('#delete_message_modal').modal("hide");
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error deleting message."), xhr,
+                    $("#delete-message-error"));
+            },
+        });
+
+    });
+};
+
 $(document).on('narrow_deactivated.zulip', function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {

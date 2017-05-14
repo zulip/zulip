@@ -1963,3 +1963,29 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
         self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)
+
+
+class DeleteMessageTest(ZulipTestCase):
+
+    def test_delete_message_by_owner(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+    def test_delete_message_by_realm_admin(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_success(result)
+
+    def test_delete_message_second_time(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="before edit")
+        self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_error(result, "Invalid message(s)")
