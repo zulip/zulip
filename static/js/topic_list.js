@@ -58,7 +58,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
 
 
     function build_list(stream, active_topic, max_topics) {
-        var topics = stream_data.get_recent_topics(stream) || [];
+        var topics = stream_data.get_recent_topics_for_id(my_stream_id) || [];
 
         if (active_topic) {
             active_topic = active_topic.toLowerCase();
