@@ -432,16 +432,29 @@ init();
         return 'office';
     };
 
-    global.stream_data.populate_stream_topics_for_tests({
-        devel: [
-            {subject: 'REXX'},
-        ],
-        office: [
-            {subject: 'team'},
-            {subject: 'ignore'},
-            {subject: 'test'},
-        ],
-    });
+    var devel_id = 44;
+    var office_id = 77;
+
+    global.stream_data.get_stream_id = function (stream_name) {
+        switch (stream_name) {
+            case 'office': return office_id;
+            case 'devel': return devel_id;
+        }
+    };
+
+    var recent_data = {};
+
+    recent_data[devel_id] = [
+        {subject: 'REXX'},
+    ];
+
+    recent_data[office_id] = [
+        {subject: 'team'},
+        {subject: 'ignore'},
+        {subject: 'test'},
+    ];
+
+    global.stream_data.populate_stream_topics_for_tests(recent_data);
 
     suggestions = search.get_suggestions('te');
     expected = [
