@@ -7,7 +7,7 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
-var recent_topics = new Dict({fold_case: true});
+var recent_topics = new Dict(); // stream_id -> array of objects
 
 var stream_ids_by_name = new Dict({fold_case: true});
 
@@ -21,7 +21,7 @@ exports.clear_subscriptions = function () {
 exports.clear_subscriptions();
 
 exports.is_active = function (sub) {
-    return recent_topics.has(sub.name) || sub.newly_subscribed;
+    return recent_topics.has(sub.stream_id) || sub.newly_subscribed;
 };
 
 exports.rename_sub = function (sub, new_name) {
@@ -367,23 +367,19 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
                                                 message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
-    var stream = message.stream;
+    var stream_id = message.stream_id;
     var canon_subject = exports.canonicalized_name(message.subject);
 
-    if (! recent_topics.has(stream)) {
-        recent_topics.set(stream, []);
-    } else {
-        recent_topics.set(stream, _.filter(recent_topics.get(stream), function (item) {
-            var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
-            if (is_duplicate) {
-                current_timestamp = item.timestamp;
-                count = item.count;
-            }
-            return !is_duplicate;
-        }));
-    }
+    var recents = recent_topics.get(stream_id) || [];
 
-    var recents = recent_topics.get(stream);
+    recents = _.filter(recents, function (item) {
+        var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
+        if (is_duplicate) {
+            current_timestamp = item.timestamp;
+            count = item.count;
+        }
+        return !is_duplicate;
+    });
 
     if (remove_message !== undefined) {
         count = count - 1;
@@ -402,7 +398,7 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
         return b.timestamp - a.timestamp;
     });
 
-    recent_topics.set(stream, recents);
+    recent_topics.set(stream_id, recents);
 };
 
 exports.get_streams_for_settings_page = function () {
@@ -451,12 +447,17 @@ exports.initialize_from_page_params = function () {
 };
 
 exports.get_recent_topics = function (stream_name) {
-    return recent_topics.get(stream_name);
+    var stream_id = exports.get_stream_id(stream_name);
+    if (!stream_id) {
+        return [];
+    }
+
+    return recent_topics.get(stream_id);
 };
 
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
-    recent_topics = Dict.from(stream_map, {fold_case: true});
+    recent_topics = Dict.from(stream_map);
 };
 
 exports.get_newbie_stream = function () {

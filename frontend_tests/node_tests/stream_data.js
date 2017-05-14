@@ -240,8 +240,17 @@ var people = global.people;
 }());
 
 (function test_process_message_for_recent_topics() {
+    var stream_id = 55;
+
+    var rome = {
+        name: 'Rome',
+        stream_id: stream_id,
+    };
+
+    stream_data.add_sub('Rome', rome);
+
     var message = {
-        stream: 'Rome',
+        stream_id: stream_id,
         timestamp: 101,
         subject: 'toPic1',
     };
@@ -258,7 +267,7 @@ var people = global.people;
     ]);
 
     message = {
-        stream: 'Rome',
+        stream_id: stream_id,
         timestamp: 102,
         subject: 'Topic1',
     };
@@ -274,7 +283,7 @@ var people = global.people;
     ]);
 
     message = {
-        stream: 'Rome',
+        stream_id: stream_id,
         timestamp: 103,
         subject: 'topic2',
     };
@@ -321,13 +330,13 @@ var people = global.people;
     stream_data.unsubscribe_myself(sub);
     assert(!stream_data.is_active(sub));
 
-    sub = {name: 'lunch', subscribed: false, stream_id: 1};
+    sub = {name: 'lunch', subscribed: false, stream_id: 222};
     stream_data.add_sub('lunch', sub);
 
     assert(!stream_data.is_active(sub));
 
     var message = {
-        stream: 'lunch',
+        stream_id: 222,
         timestamp: 108,
         subject: 'topic2',
     };
