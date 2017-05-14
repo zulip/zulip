@@ -32,3 +32,10 @@ transifex-client==0.12.4
 
 # Dependency of transifex-client
 urllib3==1.20
+
+# Install the Zulip API bindings into the virtualenv; note that this
+# won't be automatically updated for new versions of api/.  This is
+# used in development both for tests and as a convenient for bot
+# development work.  While also needed in production, we can't move it
+# to common.txt due to limitations in `pip compile`.
+api/
