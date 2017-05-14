@@ -451,7 +451,13 @@ exports.initialize_from_page_params = function () {
     delete page_params.never_subscribed;
 };
 
+exports.get_recent_topics_for_id = function (stream_id) {
+    return recent_topics.get(stream_id);
+};
+
 exports.get_recent_topics = function (stream_name) {
+    // TODO: deprecate this and have callers use
+    //       get_recent_topics_for_id
     var stream_id = exports.get_stream_id(stream_name);
     if (!stream_id) {
         return [];
