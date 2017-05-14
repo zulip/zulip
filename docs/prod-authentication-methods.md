@@ -29,7 +29,7 @@ etc.), you can do this by writing a class similar to
 settings.  Pull requests to add new backends are welcome; they should
 be tested using the framework in `test_auth_backends.py`.
 
-[python-social-auth]: http://psa.matiasaguirre.net/
+[python-social-auth]: https://python-social-auth.readthedocs.io/en/latest/
 
 ## Remote User SSO Authentication
 
