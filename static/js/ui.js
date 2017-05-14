@@ -98,6 +98,18 @@ exports.show_message_failed = function (message_id, failed_msg) {
     });
 };
 
+exports.remove_message = function (message_id) {
+    _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
+        if (list === undefined) {
+            return;
+        }
+        var row = list.get_row(message_id);
+        if (row !== undefined) {
+            list.remove_and_rerender([{id: message_id}]);
+        }
+    });
+};
+
 exports.show_failed_message_success = function (message_id) {
     // Previously failed message succeeded
     update_message_in_all_views(message_id, function update_row(row) {

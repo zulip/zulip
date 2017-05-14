@@ -412,6 +412,13 @@ def apply_event(state, event, user_profile, include_subscribers):
     elif event['type'] == "update_message":
         # The client will get the updated message directly
         pass
+    elif event['type'] == "delete_message":
+        max_message = Message.objects.filter(
+            usermessage__user_profile=user_profile).order_by('-id').first()
+        if max_message:
+            state['max_message_id'] = max_message.id
+        else:
+            state['max_message_id'] = -1
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass

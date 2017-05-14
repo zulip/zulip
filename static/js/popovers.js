@@ -147,7 +147,7 @@ exports.toggle_actions_popover = function (element, id) {
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
             return entry.prev_content !== undefined;
         });
-
+        var should_display_delete_option = page_params.is_admin;
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
@@ -158,6 +158,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
             narrowed: narrow_state.active(),
+            should_display_delete_option: should_display_delete_option,
         };
 
         var ypos = elt.offset().top;
@@ -501,6 +502,14 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
         muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.delete_message', function (e) {
+        var msgid = $(e.currentTarget).data('message-id');
+        popovers.hide_actions_popover();
+        message_edit.delete_message(msgid);
         e.stopPropagation();
         e.preventDefault();
     });

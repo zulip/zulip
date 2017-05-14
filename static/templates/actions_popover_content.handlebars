@@ -28,7 +28,14 @@
         </a>
     </li>
     {{/if}}
-
+    {{#if should_display_delete_option}}
+    <li>
+        <a href="#" class="delete_message" data-message-id="{{message.id}}">
+            <i class="icon-vector-remove"></i>
+            {{t "Delete message" }}
+        </a>
+    </li>
+    {{/if}}
     {{#if can_mute_topic}}
     <li>
         <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
