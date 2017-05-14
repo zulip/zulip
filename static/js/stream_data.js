@@ -200,6 +200,11 @@ exports.is_subscribed = function (stream_name) {
     return sub !== undefined && sub.subscribed;
 };
 
+exports.id_is_subscribed = function (stream_id) {
+    var sub = subs_by_stream_id.get(stream_id);
+    return sub !== undefined && sub.subscribed;
+};
+
 exports.get_invite_only = function (stream_name) {
     var sub = exports.get_sub(stream_name);
     if (sub === undefined) {
