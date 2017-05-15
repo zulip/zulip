@@ -15,7 +15,7 @@ class RemoteZulipServer(models.Model):
 
     hostname = models.CharField(max_length=128, unique=True)  # type: Text
     contact_email = models.EmailField(blank=True, null=False)  # type: Text
-    last_updated = models.DateTimeField('last updated')  # type: datetime.datetime
+    last_updated = models.DateTimeField('last updated', auto_now=True)  # type: datetime.datetime
 
 # Variant of PushDeviceToken for a remote server.
 class RemotePushDeviceToken(zerver.models.AbstractPushDeviceToken):
