@@ -912,7 +912,7 @@ nav ul li.active::after {
 }
 
 .compare tbody tr {
-    border-bottom: 1px solid hsl(163, 22%, 28%);
+    border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 }
 
 .compare tbody tr td {
@@ -942,8 +942,10 @@ nav ul li.active::after {
     top: 3px;
 
     font-size: 2.5rem;
-    font-weight: 300;
+    font-weight: 500;
     line-height: 0.9;
+
+    opacity: 0.4;
 }
 
 .compare tbody tr td a {
@@ -964,6 +966,82 @@ nav ul li.active::after {
     line-height: 1.2;
 
     color: hsla(0, 0%, 100%, 0.8);
+}
+
+/* -- faq css -- */
+.faqs {
+    position: relative;
+    background-color: #fafafa;
+}
+
+.faqs .padded-content {
+    position: relative;
+    z-index: 1;
+}
+
+.faqs header {
+    width: 800px;
+    margin: 0 auto;
+}
+
+.faqs header h1 span {
+    vertical-align: top;
+}
+
+.faqs .faq {
+    margin: 50px auto;
+    width: 800px;
+    font-size: 1.3em;
+}
+
+/* the last faq in the box shouldn't have an extra 50px of margin. */
+.faqs .faq-box div:last-of-type {
+    margin-bottom: 10px;
+}
+
+.faqs .faq .question {
+    font-weight: 600;
+}
+
+.faqs .faq .question::before {
+    content: "?";
+
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+
+    top: -1px;
+    padding: 0px 10px;
+    margin-right: 10px;
+
+    text-shadow:
+        0px 0px 3px rgba(255,255,255,0.5),
+        -0.5px 0.5px 0px rgba(48, 166, 146, 0.02),
+        -1px 1px 0px rgba(48, 166, 146, 0.02),
+        -1.5px 1.5px 0px rgba(48, 166, 146, 0.02),
+        -2px 2px 0px rgba(48, 166, 146, 0.02),
+        -2.5px 2.5px 0px rgba(48, 166, 146, 0.02),
+        -3px 3px 0px rgba(48, 166, 146, 0.02),
+        -3.5px 3.5px 0px rgba(48, 166, 146, 0.02),
+        -4px 4px 0px rgba(48, 166, 146, 0.02),
+        -4.5px 4.5px 0px rgba(48, 166, 146, 0.02),
+        -5px 5px 0px rgba(48, 166, 146, 0.02),
+        -5.5px 5.5px 0px rgba(48, 166, 146, 0.02),
+        -6px 6px 0px rgba(48, 166, 146, 0.02),
+        -6.5px 6.5px 0px rgba(48, 166, 146, 0.02),
+        -7px 7px 0px rgba(48, 166, 146, 0.02),
+        -7.5px 7.5px 0px rgba(48, 166, 146, 0.02),
+        -8px 8px 0px rgba(48, 166, 146, 0.02);
+
+    color: #4fc0ad;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+}
+
+.faqs .faq .answer {
+    margin: 20px 0px 0px 45px;
 }
 
 .screen .line {
@@ -2175,6 +2253,319 @@ nav ul li.active::after {
     background: linear-gradient(0deg, #fff 0%, transparent 40%);
 }
 
+/* -- pricing css -- */
+.portico-landing.plans .main {
+    width: 100%;
+}
+
+.portico-landing.plans .main .padded-content > h1 {
+    text-align: center;
+    font-size: 2.5em;
+    margin: 0px;
+
+    color: #fff;
+}
+
+.portico-landing.plans .main .padded-content > h2 {
+    color: #444;
+    text-align: center;
+
+    font-size: 1.5em;
+
+    margin-bottom: 50px;
+
+    color: #fff;
+}
+
+.pricing-model .pricing-container {
+    text-align: center;
+}
+
+.pricing-model .pricing-container .block {
+    display: inline-block;
+    margin: 0px 20px;
+}
+
+.pricing-model .pricing-container .block .plan-title {
+    padding: 10px;
+    margin-bottom: 3px;
+
+    color: #fff;
+
+    font-size: 2em;
+    font-weight: 300;
+}
+
+.pricing-model .pricing-container .price-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: 0px;
+    width: 300px;
+    height: 500px;
+
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+
+
+    text-align: left;
+    background-color: #fff;
+
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+.pricing-model .pricing-container .block > div:not(.plan-title):hover {
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.2);
+
+    z-index: 2;
+    transform: scale(1.03);
+}
+
+.pricing-model .pricing-container .text-content {
+    margin: 20px;
+}
+
+.pricing-model .padded-content .text-header .text-content h1 {
+    margin-top: 0px;
+}
+
+.pricing-model .pricing-container .text-content h2 {
+    font-size: 1.5em;
+    font-weight: 400;
+    margin-bottom: 0px;
+
+    text-align: left;
+}
+
+.pricing-model .pricing-container hr {
+    border: none;
+    border-bottom: 2px solid #4fc0ad;
+    margin: 15px 0px 15px 0px;
+}
+
+.pricing-model .pricing-container .text-content .description {
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #888;
+}
+
+.pricing-model .pricing-container ul.feature-list {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.pricing-model .pricing-container ul.feature-list li {
+    position: relative;
+    padding: 10px 0px 10px 25px;
+
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.pricing-model .pricing-container ul.feature-list li::before {
+    content: " ";
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 20px;
+    height: 18px;
+
+    background-image: url(/static/images/checkbox-green.png);
+    background-size: 100% auto;
+
+    -webkit-filter: invert(0.3);
+}
+
+.pricing-model .pricing-container .bottom {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    height: 150px;
+
+    background-color: #eee;
+}
+
+.pricing-model .pricing-container .text-content .price::before {
+    content: "$";
+    position: relative;
+    vertical-align: top;
+    top: 3px;
+    left: -3px;
+
+    font-size: 2rem;
+    font-weight: 300;
+    color: #888;
+}
+
+.pricing-model .pricing-container .text-content .price {
+    display: inline-block;
+    margin-right: 15px;
+
+    font-size: 3.5em;
+    font-weight: 600;
+    line-height: 0.8;
+}
+
+.pricing-model .pricing-container .text-content .price .cents {
+    display: inline-block;
+    vertical-align: top;
+    height: 18px;
+
+    font-size: 1.3rem;
+    font-weight: 300;
+    border-bottom: 1px solid #666;
+}
+
+.pricing-model .pricing-container .bottom .details {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 15px;
+    margin-top: 4px;
+
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #888;
+
+    text-align: left;
+}
+
+.pricing-model .pricing-container .bottom button {
+    margin-top: 20px;
+    width: 100%;
+
+    font-size: 0.9em;
+}
+
+
+.pricing-model .pricing-container .price-box:focus {
+    outline: none;
+}
+
+.pricing-model .pricing-container .price-box:focus button {
+    box-shadow: 0px 0px 25px #6acab9;
+    animation: box-shadow-pulse 2s infinite;
+}
+
+/* while the overlay is showing, the transform properties should stay fixed
+   for the container that sits inline in the page. */
+
+.pricing-overlay.pricing-model {
+    position: fixed;
+    top: -140px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+
+    opacity: 0;
+    pointer-events: none;
+
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.portico-landing.plans .pricing-overlay.pricing-model {
+    top: -220px;
+}
+
+
+.pricing-overlay.pricing-model .pricing-container {
+    padding: 50px;
+    text-align: left;
+}
+
+.pricing-overlay.pricing-model.active {
+    opacity: 1;
+    pointer-events: all;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.pricing-overlay.pricing-model .price-box {
+    vertical-align: top;
+}
+
+.pricing-overlay.pricing-model .info-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 50px;
+    margin-top: -2px;
+    width: calc(100% - 300px - 50px);
+
+    background: #fff;
+    opacity: 0;
+    transform: translateY(300px);
+
+    transition: all 0.3s ease;
+}
+
+.pricing-overlay.pricing-model .info-box.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pricing-overlay.pricing-model .info-box .text-content {
+    position: relative;
+    display: inline-block;
+    height: calc(100% - 40px);
+    width: calc(100% - 300px - 40px);
+}
+
+.pricing-overlay.pricing-model .info-box .text-content h1 {
+    margin-top: 0px;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content p {
+    color: #888;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
+    position: absolute;
+    width: 100%;
+    bottom: 0px;
+    text-align: center;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box .feature {
+    display: inline-block;
+    width: calc(33% - 21px);
+    height: 200px;
+    background-color: #eee;
+    margin: 10px;
+}
+
+.text-content .pricing-details {
+    padding: 15px 0px 15px 0px;
+    height: 17px;
+
+    font-weight: 400;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}
+
+.pricing-overlay.pricing-model .info-box .image {
+    width: 300px;
+    height: 100%;
+
+    float: right;
+
+    background-color: #3ca08d;
+}
+
+@keyframes box-shadow-pulse {
+    0% {
+        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+    }
+    50% {
+        box-shadow: 0px 0px 25px rgba(106, 201, 185, 0.8);
+    }
+    100% {
+        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+    }
+}
+
 /* -- media queries -- */
 @media (max-width: 1426px) {
     .portico-landing.hello .integrations .integration-icons .hide-1 {
@@ -2190,7 +2581,12 @@ nav ul li.active::after {
     }
 }
 
-@media (max-width: 1368px) {
+@media (max-width: 1376px) {
+    .portico-landing.plans .price-box {
+        height: 500px !important;
+        margin: 20px;
+    }
+
     .portico-landing.apps .main .details-container {
         height: auto;
     }
