@@ -168,7 +168,11 @@ exports.set_up = function () {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
+                if (page_params.avatar_url_medium) {
+                    page_params.avatar_url_medium = data.avatar_url;
+                } else {
+                    page_params.avatar_url = data.avatar_url;
+                }
                 $("#user_avatar_delete_button").show();
             },
         });
