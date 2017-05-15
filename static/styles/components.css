@@ -183,6 +183,12 @@
     border: 1px solid #eea236;
 }
 
+.new-style .button[disabled="disabled"]:hover {
+    background-color: #eee;
+    color: #5bb792;
+    border-color: #addcc9;
+}
+
 /* -- tab switcher -- */
 
 .new-style .tab-switcher {
