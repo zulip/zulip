@@ -71,3 +71,22 @@ def remote_server_unregister_push(request, entity, token=REQ(),
         return json_error(_("Token does not exist"))
 
     return json_success()
+
+@has_request_variables
+def remote_server_push_message(request, entity, user_id=REQ(), data=REQ()):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], int, Text) -> HttpResponse
+    if not isinstance(entity, RemoteZulipServer):
+        return json_error(_("Must validate with valid Zulip server API key"))
+    server = cast(RemoteZulipServer, entity)
+
+    tokens = list(RemotePushDeviceToken.objects.filter(server=server, user_id=user_id))
+    if len(tokens) == 0:
+        return json_error(_("No valid push devices for this user ID"))
+    apple_tokens = [token for token in tokens if token.kind == PushDeviceToken.APNS]
+    android_tokens = [token for token in tokens if token.kind == PushDeviceToken.GCM]
+    if len(android_tokens) != 0:
+        send_android_push_notification(android_tokens, data)
+    if len(apple_tokens) != 0:
+        send_apple_push_notification(apple_tokens, data)
+
+    return json_success()
