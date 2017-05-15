@@ -269,6 +269,10 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
+    if (exports.is_subs) {
+        return false;
+    }
+
     if (exports.processing_text()) {
         if (activity.searching()) {
             activity.blur_search();
