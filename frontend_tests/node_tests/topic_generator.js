@@ -166,16 +166,39 @@ function is_odd(i) { return i % 2 === 1; }
                 {subject: 'javascript'},
                 {subject: 'python'},
             ];
+        } else if (stream === 'test here') {
+            return [
+                {subject: 'testing'},
+                {subject: 'tested'},
+            ];
+        } else if (stream === 'announce') {
+            return [
+                {subject: 'launch'},
+                {subject: 'release'},
+            ];
         }
     };
 
     global.unread.topic_has_any_unread = function (stream, topic) {
-        return (stream === 'devel' && topic === 'python');
+        return (stream === 'devel' && topic === 'python') || (stream === 'test here');
+    };
+    var muted = ['None'];
+    global.stream_data.in_home_view = function (stream) {
+        if (stream === muted[0]) {
+            return false;
+        }
+        return true;
     };
 
     var next_item = tg.get_next_topic(curr_stream, curr_topic);
     assert.deepEqual(next_item, {
         stream: 'devel',
         topic: 'python',
+    });
+    muted = ['devel'];
+    next_item = tg.get_next_topic(curr_stream, curr_topic);
+    assert.deepEqual(next_item, {
+        stream: 'test here',
+        topic: 'testing',
     });
 }());
