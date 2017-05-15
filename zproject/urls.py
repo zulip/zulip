@@ -144,6 +144,7 @@ i18n_urls = [
         name="zerver.views.integrations.integration_doc"),
     url(r'^about/$', TemplateView.as_view(template_name='zerver/about.html')),
     url(r'^apps/$', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
+    url(r'^plans/$', TemplateView.as_view(template_name='zerver/plans.html'), name='landing-page'),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt', permanent=True)),
 

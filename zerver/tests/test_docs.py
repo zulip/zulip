@@ -39,6 +39,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/hello/', 'productive group chat')
         self._test('/why-zulip/', 'all stakeholders can see and')
         self._test('/for/open-source/', 'for open source projects')
+        self._test('/plans/', 'Three ways to use Zulip')
         self._test('/integrations/',
                    'Over 60 native integrations.',
                    extra_strings=[

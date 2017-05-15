@@ -423,6 +423,10 @@ var events = function () {
                 .addClass('icon-vector-angle-down');
         }
     });
+
+    if (/\/plans\/*/.test(window.location.pathname)) {
+        // events for the plans page when it is required.
+    }
 };
 
 

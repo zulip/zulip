@@ -359,6 +359,12 @@ nav ul li.active::after {
     opacity: 1;
 }
 
+.portico-landing.plans.show {
+    z-index: 101;
+
+    margin-top: 0px;
+}
+
 .main {
     width: calc(100% - 200px - 20px);
     margin: 0 auto;
@@ -696,7 +702,7 @@ nav ul li.active::after {
 }
 
 .compare tbody tr {
-    border-bottom: 1px solid hsl(163, 22%, 28%);
+    border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 }
 
 .compare tbody tr td {
@@ -726,8 +732,10 @@ nav ul li.active::after {
     top: 3px;
 
     font-size: 2.5rem;
-    font-weight: 300;
+    font-weight: 500;
     line-height: 0.9;
+
+    opacity: 0.4;
 }
 
 .compare tbody tr td a {
@@ -1853,6 +1861,346 @@ nav ul li.active::after {
     background: linear-gradient(0deg, #fff 0%, transparent 40%);
 }
 
+/* -- pricing css -- */
+.portico-landing.plans .main {
+    background-color: #fff;
+    margin: -80px auto 0 auto;
+    width: 100%;
+}
+
+.portico-landing.plans .main h1 {
+    text-align: center;
+    font-size: 2.5em;
+    margin: 0px;
+}
+
+.portico-landing.plans .main h2 {
+    color: #444;
+    text-align: center;
+
+    font-size: 1.5em;
+
+    margin-bottom: 50px;
+}
+
+.pricing-model .pricing-container {
+    text-align: center;
+}
+
+.pricing-model .pricing-container .block {
+    display: inline-block;
+    margin: 0px 20px;
+}
+
+.pricing-model .pricing-container .block .plan-title {
+    padding: 10px;
+    margin-bottom: 3px;
+
+    color: #fff;
+
+    font-size: 2em;
+    font-weight: 300;
+}
+
+.pricing-model .pricing-container .price-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: 0px;
+    width: 300px;
+    height: 500px;
+
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+
+
+    text-align: left;
+    background-color: #fff;
+
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+.pricing-model .pricing-container .block > div:not(.plan-title):hover {
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.2);
+
+    z-index: 2;
+    transform: scale(1.03);
+}
+
+.pricing-model .pricing-container .text-content {
+    margin: 20px;
+}
+
+.pricing-model .padded-content .text-header .text-content h1 {
+    margin-top: 0px;
+}
+
+.pricing-model .pricing-container .text-content h2 {
+    font-size: 1.5em;
+    font-weight: 400;
+    margin-bottom: 0px;
+
+    text-align: left;
+}
+
+.pricing-model .pricing-container hr {
+    border: none;
+    border-bottom: 2px solid #4fc0ad;
+    margin: 15px 0px 0px 0px;
+}
+
+.pricing-model .pricing-container .text-content .description {
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #aaa;
+}
+
+.pricing-model .pricing-container ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.pricing-model .pricing-container ul li {
+    position: relative;
+    padding: 15px 0px 15px 25px;
+
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.pricing-model .pricing-container ul li::before {
+    content: " ";
+    position: absolute;
+    top: 15px;
+    left: 0;
+    width: 20px;
+    height: 20px;
+
+    background-image: url(/static/images/landing-page/checkmark.png);
+    background-size: 100% auto;
+
+    -webkit-filter: invert(0.3);
+}
+
+.pricing-model .pricing-container .bottom {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    height: 150px;
+
+    background-color: #eee;
+}
+
+.pricing-model .pricing-container .text-content .price::before {
+    content: "$";
+    position: relative;
+    vertical-align: top;
+    top: 3px;
+    left: -3px;
+
+    font-size: 2rem;
+    font-weight: 300;
+    color: #aaa;
+}
+
+.pricing-model .pricing-container .text-content .price {
+    display: inline-block;
+    margin-right: 15px;
+
+    font-size: 3.5em;
+    font-weight: 600;
+    line-height: 0.8;
+}
+
+.pricing-model .pricing-container .text-content .price .cents {
+    display: inline-block;
+    vertical-align: top;
+    height: 18px;
+
+    font-size: 1.3rem;
+    font-weight: 300;
+    border-bottom: 1px solid #666;
+}
+
+.pricing-model .pricing-container .bottom .details {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 15px;
+    margin-top: 4px;
+
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #aaa;
+
+    text-align: left;
+}
+
+.pricing-model .pricing-container .bottom button {
+    margin-top: 20px;
+    width: 100%;
+
+    font-size: 0.9em;
+}
+
+
+.pricing-model .pricing-container .price-box:focus {
+    outline: none;
+}
+
+.pricing-model .pricing-container .price-box:focus button {
+    box-shadow: 0px 0px 25px #6acab9;
+    animation: box-shadow-pulse 2s infinite;
+}
+
+/* while the overlay is showing, the transform properties should stay fixed
+   for the container that sits inline in the page. */
+/*
+.pricing-model.stick .price-box.low,
+.pricing-model:not(.pricing-overlay):hover .price-box.low {
+    transform: translateX(-30px);
+}
+
+.pricing-model.stick .price-box.high,
+.pricing-model:not(.pricing-overlay):hover .price-box.high {
+    transform: translateX(30px);
+}
+
+.pricing-model:not(.pricing-overlay) .price-box.low:focus {
+    transform: translateX(-30px) scale(1.1);
+}
+
+.pricing-model .price-box:focus {
+    transform: scale(1.1);
+}
+
+.pricing-model:not(.pricing-overlay) .price-box.high:focus {
+    transform: translateX(30px) scale(1.1);
+}
+
+.pricing-model .price-box:focus {
+    outline: 10000px solid rgba(0,0,0,0.6);
+    box-shadow: 0px 0px 40px rgba(0,0,0,0.5);
+    z-index: 100;
+}
+*/
+
+.pricing-overlay.pricing-model {
+    position: fixed;
+    top: -140px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+
+    opacity: 0;
+    pointer-events: none;
+
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.portico-landing.plans .pricing-overlay.pricing-model {
+    top: -220px;
+}
+
+
+.pricing-overlay.pricing-model .pricing-container {
+    padding: 50px;
+    text-align: left;
+}
+
+.pricing-overlay.pricing-model.active {
+    opacity: 1;
+    pointer-events: all;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.pricing-overlay.pricing-model .price-box {
+    vertical-align: top;
+}
+
+.pricing-overlay.pricing-model .info-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 50px;
+    margin-top: -2px;
+    width: calc(100% - 300px - 50px);
+
+    background: #fff;
+    opacity: 0;
+    transform: translateY(300px);
+
+    transition: all 0.3s ease;
+}
+
+.pricing-overlay.pricing-model .info-box.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pricing-overlay.pricing-model .info-box .text-content {
+    position: relative;
+    display: inline-block;
+    height: calc(100% - 40px);
+    width: calc(100% - 300px - 40px);
+}
+
+.pricing-overlay.pricing-model .info-box .text-content h1 {
+    margin-top: 0px;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content p {
+    color: #aaa;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
+    position: absolute;
+    width: 100%;
+    bottom: 0px;
+    text-align: center;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box .feature {
+    display: inline-block;
+    width: calc(33% - 21px);
+    height: 200px;
+    background-color: #eee;
+    margin: 10px;
+}
+
+.text-content .foss {
+    padding: 15px 0px 15px 0px;
+    height: 17px;
+
+    font-weight: 400;
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+}
+
+.pricing-overlay.pricing-model .info-box .image {
+    width: 300px;
+    height: 100%;
+
+    float: right;
+
+    background-color: #3ca08d;
+}
+
+@keyframes box-shadow-pulse {
+    0% {
+        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+    }
+    50% {
+        box-shadow: 0px 0px 25px rgba(106, 201, 185, 0.8);
+    }
+    100% {
+        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+    }
+}
+
 /* -- media queries -- */
 @media (max-width: 1426px) {
     .portico-landing.hello .integrations .integration-icons .hide-1 {
@@ -1868,7 +2216,12 @@ nav ul li.active::after {
     }
 }
 
-@media (max-width: 1368px) {
+@media (max-width: 1376px) {
+    .portico-landing.plans .price-box {
+        height: 500px !important;
+        margin: 20px;
+    }
+
     .portico-landing.apps .main .details-container {
         height: auto;
     }
