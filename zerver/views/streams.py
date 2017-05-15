@@ -243,17 +243,28 @@ def add_subscriptions_backend(request, user_profile,
     private_streams = dict((stream.name, stream.invite_only) for stream in streams)
     bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
 
+    newly_created_stream_names = {stream.name for stream in created_streams}
+
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
     if len(principals) > 0 and result["subscribed"]:
-        for email, subscriptions in six.iteritems(result["subscribed"]):
+        for email, subscribed_stream_names in six.iteritems(result["subscribed"]):
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
                 continue
             if bots[email]:
                 # Don't send invitation Zulips to bots
                 continue
+
+            # For each user, we notify them about newly subscribed streams, except for
+            # streams that were newly created.
+            notify_stream_names = set(subscribed_stream_names) - newly_created_stream_names
+
+            if not notify_stream_names:
+                continue
+
+            subscriptions = sorted(list(notify_stream_names))
 
             if len(subscriptions) == 1:
                 msg = ("Hi there!  We thought you'd like to know that %s just "

@@ -1573,28 +1573,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.sender.email, settings.WELCOME_BOT)
         self.assertIn('Welcome to #**', msg.content)
 
-        # verify that the user was sent a message informing them about the subscription
-        msg = self.get_second_to_last_message()
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
-        self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = ("Hi there!  We thought you'd like to know that %s just "
-                        "subscribed you to the %sstream #**%s**."
-                        % (self.user_profile.full_name,
-                           '**invite-only** ' if invite_only else '',
-                           streams[0]))
-
-        if not get_stream(streams[0], other_profile.realm).invite_only:
-            expected_msg += ("\nYou can see historical content on a "
-                             "non-invite-only stream by narrowing to it.")
-        self.assertEqual(msg.content, expected_msg)
-        recipients = get_display_recipient(msg.recipient)
-        self.assertEqual(len(recipients), 1)
-        assert isinstance(recipients, Sequence)
-        assert isinstance(recipients[0], Mapping)
-        # The 2 assert statements above are required to make the mypy check pass.
-        # They inform mypy that in the line below, recipients is a Sequence of Mappings.
-        self.assertEqual(recipients[0]['email'], invitee)
-
     def test_multi_user_subscription(self):
         # type: () -> None
         email1 = 'cordelia@zulip.com'
@@ -1609,9 +1587,9 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
                 )
-        self.assert_length(queries, 67)
+        self.assert_length(queries, 37)
 
-        self.assert_length(events, 9)
+        self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
             if isinstance(ev['event']['subscriptions'][0], dict):
                 self.assertEqual(ev['event']['op'], 'add')
@@ -2332,6 +2310,19 @@ class GetSubscribersTest(ZulipTestCase):
         self.email = self.user_profile.email
         self.login(self.email)
 
+    def assert_user_got_subscription_notification(self, expected_msg):
+        # type: (Text) -> None
+        # verify that the user was sent a message informing them about the subscription
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.sender_id, self.notification_bot().id)
+
+        def non_ws(s):
+            # type: (Text) -> Text
+            return s.replace('\n', '').replace(' ', '')
+
+        self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
+
     def check_well_formed_result(self, result, stream_name, realm):
         # type: (Dict[str, Any], Text, Realm) -> None
         """
@@ -2376,6 +2367,9 @@ class GetSubscribersTest(ZulipTestCase):
         # type: () -> None
         """
         gather_subscriptions returns correct results with only 3 queries
+
+        (We also use this test to verify subscription notifications to
+        folks who get subscribed to streams.)
         """
         streams = ["stream_%s" % i for i in range(10)]
         for stream_name in streams:
@@ -2386,13 +2380,52 @@ class GetSubscribersTest(ZulipTestCase):
             self.email,
             streams,
             dict(principals=ujson.dumps(users_to_subscribe)))
+
         self.assert_json_success(ret)
+
+        msg = '''
+            Hi there!  We thought you'd like to know that King Hamlet
+            just subscribed you to the following streams:
+
+            * #**stream_0**
+            * #**stream_1**
+            * #**stream_2**
+            * #**stream_3**
+            * #**stream_4**
+            * #**stream_5**
+            * #**stream_6**
+            * #**stream_7**
+            * #**stream_8**
+            * #**stream_9**
+
+            You can see historical content on a non-invite-only stream by narrowing to it.
+            '''
+
+        self.assert_user_got_subscription_notification(msg)
+
+        # Subscribe ourself first.
+        ret = self.common_subscribe_to_streams(
+            self.email,
+            ["stream_invite_only_1"],
+            dict(principals=ujson.dumps([self.email])),
+            invite_only=True)
+        self.assert_json_success(ret)
+
+        # Now add in other users, and this should trigger messages
+        # to notify the user.
         ret = self.common_subscribe_to_streams(
             self.email,
             ["stream_invite_only_1"],
             dict(principals=ujson.dumps(users_to_subscribe)),
             invite_only=True)
         self.assert_json_success(ret)
+
+        msg = '''
+            Hi there!  We thought you'd like to know that King Hamlet
+            just subscribed you to the **invite-only** stream
+            #**stream_invite_only_1**.
+            '''
+        self.assert_user_got_subscription_notification(msg)
 
         with queries_captured() as queries:
             subscriptions = gather_subscriptions(self.user_profile)
