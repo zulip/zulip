@@ -289,9 +289,27 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "miscellaneous_symbols_and_pictographs",
+      "input": "Merry Christmas!!\ud83c\udf84",
+      "expected_output":"<p>Merry Christmas!!<img alt=\"\ud83c\udf84\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f384.png\" title=\"\ud83c\udf84\"><\/p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "miscellaneous_and_dingbats_emoji",
       "input": "\u2693\u2797",
       "expected_output":"<p><img alt=\"\u2693\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/2693.png\" title=\"\u2693\"><img alt=\"\u2797\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/2797.png\" title=\"\u2797\"><\/p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "supplemental_symbols_and_pictographs",
+      "input": "I am a robot \ud83e\udd16.",
+      "expected_output":"<p>I am a robot <img alt=\"\ud83e\udd16\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f916.png\" title=\"\ud83e\udd16\">.<\/p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "miscellaneous_symbols_and_arrows",
+      "input": "Black upward arrow \u2b06",
+      "expected_output":"<p>Black upward arrow <img alt=\"\u2b06\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/2b06.png\" title=\"\u2b06\"><\/p>",
       "bugdown_matches_marked": true
     },
     {

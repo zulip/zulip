@@ -537,7 +537,10 @@ inline.breaks = merge({}, inline.gfm, {
 
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
-  unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])/,
+  unicodeemoji: RegExp('^(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
+                       '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
+                       '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
+                       '[\u3000-\u303F]|[\u3200-\u32FF])'),
   usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/m, // Match multi-word string between @** ** or match any one-word
   stream: /^#\*\*([^\*]+)\*\*/m,
   avatar: /^!avatar\(([^)]+)\)/,
@@ -545,7 +548,10 @@ inline.zulip = merge({}, inline.breaks, {
   tex: /^(\$\$([^ _$](\\\$|[^$])*)(?! )\$\$)\B/,
   realm_filters: [],
   text: replace(inline.breaks.text)
-    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])|')
+    ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
+          '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
+          '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
+          '[\u3000-\u303F]|[\u3200-\u32FF])|')
     (']|', '#@:]|')
     ()
 });

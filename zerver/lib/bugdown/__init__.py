@@ -1223,15 +1223,52 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
         md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
-        md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
-            u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),
-            '_end')
-        # The equalent JS regex is \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
-        # [\u2600-\u26FF]|[\u2700-\u27BF]. See below comments for explanation. The JS regex is used
-        # by marked.js for frontend unicode emoji processing.
-        # The JS regex \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001F300-\U0001F64F
-        # The JS regex \ud83d[\ude80-\udeff] represents \U0001F680-\U0001F6FF
-        # Similiarly [\u2600-\u26FF]|[\u2700-\u27BF] represents \u2600-\u26FF\u2700-\u27BF
+
+        # All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
+        # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
+        # \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
+        # \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
+        # \U0001f600-\U0001f64f - Emoticons (Emoji)
+        # \U0001f680-\U0001f6ff - Transport and Map Symbols
+        # \U0001f900-\U0001f9ff - Supplemental Symbols and Pictographs
+        # \u2000-\u206f         - General Punctuation
+        # \u2300-\u23ff         - Miscellaneous Technical
+        # \u2400-\u243f         - Control Pictures
+        # \u2440-\u245f         - Optical Character Recognition
+        # \u2460-\u24ff         - Enclosed Alphanumerics
+        # \u2500-\u257f         - Box Drawing
+        # \u2580-\u259f         - Block Elements
+        # \u25a0-\u25ff         - Geometric Shapes
+        # \u2600-\u26ff         - Miscellaneous Symbols
+        # \u2700-\u27bf         - Dingbats
+        # \u2900-\u297f         - Supplemental Arrows-B
+        # \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
+        # \u3000-\u303f         - CJK Symbols and Punctuation
+        # \u3200-\u32ff         - Enclosed CJK Letters and Months
+        unicode_emoji_regex = u'(?P<syntax>['\
+            u'\U0001F100-\U0001F64F'    \
+            u'\U0001F680-\U0001F6FF'    \
+            u'\U0001F900-\U0001F9FF'    \
+            u'\u2000-\u206F'            \
+            u'\u2300-\u27BF'            \
+            u'\u2900-\u297F'            \
+            u'\u2B00-\u2BFF'            \
+            u'\u3000-\u303F'            \
+            u'\u3200-\u32FF'            \
+            u'])'
+        md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
+        # The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
+        # \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
+        # [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
+        # frontend unicode emoji processing.
+        # The JS regex \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001f100-\U0001f64f
+        # The JS regex \ud83d[\ude80-\udeff] represents \U0001f680-\U0001f6ff
+        # The JS regex \ud83e[\udd00-\uddff] represents \U0001f900-\U0001f9ff
+        # The JS regex [\u2000-\u206f] represents \u2000-\u206f
+        # The JS regex [\u2300-\u27bf] represents \u2300-\u27bf
+        # Similarly other JS regexes can be mapped to the respective unicode blocks.
+        # For more information, please refer to the following article:
+        # http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
