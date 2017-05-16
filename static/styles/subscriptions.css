@@ -591,6 +591,10 @@ form#add_new_subscription {
     margin-right: 11px;
 }
 
+#announce-new-stream {
+    margin-top: 5px;
+}
+
 .stream-creation-body #announce-new-stream div[class^="icon"] {
     margin-left: 3px;
     margin-right: 8px;
