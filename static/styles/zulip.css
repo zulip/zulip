@@ -84,7 +84,7 @@ p.n-margin {
 .top-messages-logo {
     position: absolute;
     left: calc(50% - 12px);
-    top: 67px;
+    top: 57px;
     width: 24px;
     height: 24px;
 }
@@ -518,7 +518,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 100px;
+    margin-top: 93px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
@@ -1653,7 +1653,7 @@ blockquote p {
     position: absolute;
     width: 100%;
     top: 40px;
-    height: 20px;
+    height: 10px;
     z-index: 99;
 }
 
@@ -2102,7 +2102,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: -40px;
+    top: -43px;
     z-index: 1;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
@@ -2121,7 +2121,7 @@ div.floating_recipient {
 #page_loading_indicator_box {
     position: relative;
     left: -50%;
-    top: -40px;
+    top: -43px;
     z-index: 1;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
