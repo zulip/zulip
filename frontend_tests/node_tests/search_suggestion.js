@@ -349,7 +349,6 @@ init();
         "stream:devel",
         "stream:office",
     ];
-
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
