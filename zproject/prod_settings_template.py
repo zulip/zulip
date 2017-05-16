@@ -133,6 +133,13 @@ SSO_APPEND_DOMAIN = None # type: str
 
 ### OPTIONAL SETTINGS
 
+# Support for mobile push notifications.  Setting controls whether
+# push notifications will be forwarded through a Zulip push
+# notification bouncer server to the mobile apps.  See
+# https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
+# for information on how to sign up for and configure this.
+#PUSH_NOTIFICATION_BOUNCER_URL = https://push.zulipchat.com
+
 # Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 

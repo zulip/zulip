@@ -53,6 +53,7 @@ Contents:
    Installing a production server <prod-install>
    prod-troubleshooting
    prod-customize
+   prod-mobile-push-notifications
    prod-maintain-secure-upgrade
    security-model
    prod-authentication-methods
