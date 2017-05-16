@@ -28,7 +28,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmDomain, \
+from zerver.models import Realm, RealmEmoji, Stream, StreamAlias, UserProfile, UserActivity, RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, UserHotspot, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
@@ -1023,6 +1023,7 @@ def create_stream_if_needed(realm, stream_name, invite_only=False, stream_descri
                   'description': stream_description,
                   'invite_only': invite_only})
     if created:
+        StreamAlias.objects.filter(old_name=stream.name).delete()
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if not invite_only:
             event = dict(type="stream", op="create",
@@ -2098,6 +2099,8 @@ def do_change_stream_invite_only(stream, invite_only):
 def do_rename_stream(stream, new_name, log=True):
     # type: (Stream, Text, bool) -> Dict[str, Text]
     old_name = stream.name
+    StreamAlias.objects.filter(old_name=new_name).delete()
+    StreamAlias(old_name=old_name, stream=stream).save()
     stream.name = new_name
     stream.save(update_fields=["name"])
 
@@ -2946,6 +2949,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
+        "id",
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
         "audible_notifications", "active", "pin_to_top")
 
@@ -2953,6 +2957,19 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
                         "email_token", "description")
+
+    renames = StreamAlias.objects.all()
+    rename_map = {} # type: Dict[str, List[Any]]
+    for r in renames:
+        if r.stream.id not in rename_map:
+            rename_map[r.stream.id] = []
+        rename_map[r.stream.id].append(r.old_name)
+
+    for s in all_streams:
+        if s['id'] in rename_map:
+            s['old_names'] = rename_map[s['id']]
+        else:
+            s['old_names'] = []
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -3004,6 +3021,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
+                       'old_names': stream["old_names"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
@@ -3024,6 +3042,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     for stream in never_subscribed_streams:
         if not stream['invite_only']:
             stream_dict = {'name': stream['name'],
+                           'old_names': stream['old_names'],
                            'invite_only': stream['invite_only'],
                            'stream_id': stream['id'],
                            'description': stream['description']}

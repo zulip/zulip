@@ -6,7 +6,7 @@ var exports = {};
 var expected_hash;
 var changing_hash = false;
 
-function set_hash(hash) {
+function set_hash(hash, replace_state) {
     var location = window.location;
 
     if (history.pushState) {
@@ -24,18 +24,22 @@ function set_hash(hash) {
 
         // Build a full URL to not have same origin problems
         var url =  location.protocol + '//' + location.host + pathname + hash;
-        history.pushState(null, null, url);
+        if (replace_state) {
+            history.replaceState(null, null, url);
+        } else {
+            history.pushState(null, null, url);
+        }
     } else {
         location.hash = hash;
     }
 }
 
-exports.changehash = function (newhash) {
+exports.changehash = function (newhash, replace_state) {
     if (changing_hash) {
         return;
     }
     $(document).trigger($.Event('zuliphashchange.zulip'));
-    set_hash(newhash);
+    set_hash(newhash, replace_state);
     favicon.reset();
 };
 
@@ -61,12 +65,12 @@ exports.operators_to_hash = function (operators) {
     return hash;
 };
 
-exports.save_narrow = function (operators) {
+exports.save_narrow = function (operators, replace_state) {
     if (changing_hash) {
         return;
     }
     var new_hash = exports.operators_to_hash(operators);
-    exports.changehash(new_hash);
+    exports.changehash(new_hash, replace_state);
 };
 
 exports.parse_narrow = function (hash) {

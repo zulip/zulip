@@ -358,15 +358,23 @@ Filter.prototype = {
         });
     },
 
-    filter_with_new_topic: function Filter_filter_with_new_topic(new_topic) {
+    filter_with_new: function Filter_filter_with_new(field, new_value) {
         var terms = _.map(this._operators, function (term) {
             var new_term = _.clone(term);
-            if (new_term.operator === 'topic' && !new_term.negated) {
-                new_term.operand = new_topic;
+            if (new_term.operator === field && !new_term.negated) {
+                new_term.operand = new_value;
             }
             return new_term;
         });
         return new Filter(terms);
+    },
+
+    filter_with_new_topic: function Filter_filter_with_new_topic(new_topic) {
+        return this.filter_with_new('topic', new_topic);
+    },
+
+    filter_with_new_stream: function Filter_filter_with_new_stream(new_stream) {
+        return this.filter_with_new('stream', new_stream);
     },
 
     has_topic: function Filter_has_topic(stream_name, topic) {

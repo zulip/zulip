@@ -294,7 +294,10 @@ def apply_event(state, event, user_profile, include_subscribers):
             # the state var here, for the benefit of the JS code.
             for obj in state['subscriptions']:
                 if obj['name'].lower() == event['name'].lower():
+                    if event['property'] == 'name':
+                        obj['old_names'].append(obj['name'])
                     obj[event['property']] = event['value']
+
             # Also update the pure streams data
             for stream in state['streams']:
                 if stream['name'].lower() == event['name'].lower():
@@ -346,6 +349,8 @@ def apply_event(state, event, user_profile, include_subscribers):
 
         if event['op'] == "add":
             added_names = set(map(name, event["subscriptions"]))
+            for e in event['subscriptions']:
+                e['old_names'] = []
             was_added = lambda s: name(s) in added_names
 
             # add the new subscriptions
