@@ -109,6 +109,13 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
 
 // Within the new stream modal...
 function update_announce_stream_state() {
+
+    // If there is no notifications_stream, we simply hide the widget.
+    if (!page_params.notifications_stream) {
+        $('#announce-new-stream').hide();
+        return;
+    }
+
     // If the stream is invite only, or everyone's added, disable
     // the "Announce stream" option. Otherwise enable it.
     var announce_stream_checkbox = $('#announce-new-stream input');
@@ -124,6 +131,7 @@ function update_announce_stream_state() {
     }
 
     announce_stream_checkbox.prop('disabled', disable_it);
+    $('#announce-new-stream').show();
 }
 
 exports.new_stream_clicked = function (stream) {
@@ -170,8 +178,14 @@ exports.show_new_stream_modal = function () {
     // Make the options default to the same each time:
     // public, "announce stream" on.
     $('#make-invite-only input:radio[value=public]').prop('checked', true);
-    $('#announce-new-stream input').prop('disabled', false);
-    $('#announce-new-stream input').prop('checked', true);
+
+    if (page_params.notifications_stream) {
+        $('#announce-new-stream').show();
+        $('#announce-new-stream input').prop('disabled', false);
+        $('#announce-new-stream input').prop('checked', true);
+    } else {
+        $('#announce-new-stream').hide();
+    }
 
     stream_name_error.clear_errors();
 
@@ -289,11 +303,14 @@ $(function () {
 
         created_stream = stream;
 
+        var announce = (!!page_params.notifications_stream &&
+            $('#announce-new-stream input').prop('checked'));
+
         ajaxSubscribeForCreation(stream,
             description,
             principals,
             $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
-            $('#announce-new-stream input').prop('checked')
+            announce
         );
     });
 
