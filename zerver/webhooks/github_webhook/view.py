@@ -190,7 +190,8 @@ def get_push_commits_body(payload):
         get_sender_name(payload),
         payload['compare'],
         get_branch_name_from_ref(payload['ref']),
-        commits_data
+        commits_data,
+        deleted=payload['deleted']
     )
 
 def get_public_body(payload):

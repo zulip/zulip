@@ -20,6 +20,7 @@ PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = u"""{user_name} {pushed_text}
 
 {commits_data}
 """
+PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} [deleted]({compare_url}) the branch {branch_name}."
 PUSH_COMMITS_MESSAGE_EXTENSION = u"Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
 
@@ -43,8 +44,15 @@ TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 
 
-def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False):
-    # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool]) -> Text
+def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False, deleted=False):
+    # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool], Optional[bool]) -> Text
+    if not commits_data and deleted:
+        return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
+            user_name=user_name,
+            compare_url=compare_url,
+            branch_name=branch_name
+        )
+
     pushed_message_template = PUSH_PUSHED_TEXT_WITH_URL if compare_url else PUSH_PUSHED_TEXT_WITHOUT_URL
 
     pushed_text_message = pushed_message_template.format(

@@ -23,6 +23,11 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"GitHub webhook has been successfully configured by TomaszKolek"
         self.send_and_test_stream_message('ping', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='ping')
 
+    def test_push_delete_branch(self):
+        # type: () -> None
+        expected_message = u"eeshangarg [deleted](https://github.com/eeshangarg/public-repo/compare/2e8cf535fb38...000000000000) the branch feature."
+        self.send_and_test_stream_message('push_delete_branch', u"public-repo / feature", expected_message, HTTP_X_GITHUB_EVENT='push')
+
     def test_push_1_commit(self):
         # type: () -> None
         expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
