@@ -682,6 +682,10 @@ td.pointer {
     margin-bottom: 10px;
 }
 
+.floating_recipient {
+    border-top: 1px solid #e2e2e2;
+}
+
 .stream_label {
     display: inline-block;
     padding: 3px 4px 2px 4px;
