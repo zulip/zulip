@@ -172,7 +172,8 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
                                                      payload['compare'],
                                                      payload['pusher']['name'],
                                                      forced=payload['forced'],
-                                                     created=payload['created'])
+                                                     created=payload['created'],
+                                                     deleted=payload['deleted'])
     elif event == 'commit_comment':
         subject = topic_focus
 
@@ -279,8 +280,8 @@ def api_github_landing(request, user_profile, event=REQ(),
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
-def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
-    # type: (UserProfile, Text, Text, List[Dict[str, str]], Text, Text, Text, Text, Optional[Text], Optional[Text]) -> Tuple[Text, Text]
+def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None, deleted=False):
+    # type: (UserProfile, Text, Text, List[Dict[str, str]], Text, Text, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> Tuple[Text, Text]
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
@@ -291,7 +292,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
         content = get_force_push_commits_event_message(pusher, url, short_ref, after[:7])
     else:
         commits = _transform_commits_list_to_common_format(commits)
-        content = get_push_commits_event_message(pusher, url, short_ref, commits)
+        content = get_push_commits_event_message(pusher, url, short_ref, commits, deleted=deleted)
 
     return subject, content
 
