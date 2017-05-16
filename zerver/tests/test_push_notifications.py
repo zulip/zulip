@@ -57,20 +57,21 @@ class MockRedis(object):
         # type: (*Any, **Any) -> None
         pass
 
-class PushBouncerNotificationTest(ZulipTestCase):
-    server_uuid = "1234-abcd"
-
+class BouncerTestCase(ZulipTestCase):
     def setUp(self):
         # type: () -> None
+        self.server_uuid = "1234-abcd"
         server = RemoteZulipServer(uuid=self.server_uuid,
                                    api_key="magic_secret_api_key",
                                    hostname="demo.example.com",
                                    last_updated=now())
         server.save()
+        super(BouncerTestCase, self).setUp()
 
     def tearDown(self):
         # type: () -> None
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
+        super(BouncerTestCase, self).tearDown()
 
     def bounce_request(self, *args, **kwargs):
         # type: (*Any, **Any) -> HttpResponse
@@ -81,12 +82,28 @@ class PushBouncerNotificationTest(ZulipTestCase):
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
             result = self.client_post(local_url,
-                                      ujson.loads(kwargs['data']),
+                                      kwargs['data'],
                                       **self.get_auth())
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
 
+    def get_generic_payload(self, method='register'):
+        # type: (Text) -> Dict[str, Any]
+        user_id = 10
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        return {'user_id': user_id,
+                'token': token,
+                'token_kind': token_kind}
+
+    def get_auth(self):
+        # type: () -> Dict[str, Text]
+        # Auth on this user
+        return self.api_auth(self.server_uuid)
+
+class PushBouncerNotificationTest(BouncerTestCase):
     def test_unregister_remote_push_user_params(self):
         # type: () -> None
         token = "111222"
@@ -207,21 +224,6 @@ class PushBouncerNotificationTest(ZulipTestCase):
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
             self.assertEqual(len(tokens), 0)
-
-    def get_generic_payload(self, method='register'):
-        # type: (Text) -> Dict[str, Any]
-        user_id = 10
-        token = "111222"
-        token_kind = PushDeviceToken.GCM
-
-        return {'user_id': user_id,
-                'token': token,
-                'token_kind': token_kind}
-
-    def get_auth(self):
-        # type: () -> Dict[str, Text]
-        # Auth on this user
-        return self.api_auth(self.server_uuid)
 
 class PushNotificationTest(ZulipTestCase):
     def setUp(self):
