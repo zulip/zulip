@@ -265,6 +265,16 @@ def dump_emojis(cache_path):
                 'pos_x': (emoji["sheet_x"] * 100) / 40,
                 'pos_y': (emoji["sheet_y"] * 100) / 40,
             }
+            # Remove the code below once the migration to iamcal's dataset is complete.
+            emoji_name = emoji['short_name']
+            codepoint = emoji['unified'].lower()
+            if emoji_name in emoji_map and codepoint != emoji_map[emoji_name]:
+                emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
+                    'codepoint': emoji_map[emoji_name],
+                    'pos_x': (emoji["sheet_x"] * 100) / 40,
+                    'pos_y': (emoji["sheet_y"] * 100) / 40,
+                }
+
     for emojiset in EMOJISETS:
         sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'sheet_%s_32.png' % (emojiset,))
         run(['cp', sprite_sheet, cache_path], shell=True)
