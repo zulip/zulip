@@ -330,26 +330,6 @@ def add_subscriptions_backend(request, user_profile,
                     topic=topic,
                     content=msg))
 
-        else:
-            msg = ("Hi there!  %s just created a new stream #**%s**."
-                   % (user_profile.full_name, created_streams[0].name))
-
-            sender = get_user_profile_by_email(settings.NOTIFICATION_BOT)
-            for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
-                # Don't announce to yourself or to people you explicitly added
-                # (who will get the notification above instead).
-                if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
-                    continue
-
-                recipient_email = realm_user_dict['email']
-
-                notifications.append(
-                    internal_prep_private_message(
-                        realm=user_profile.realm,
-                        sender=sender,
-                        recipient_email=recipient_email,
-                        content=msg))
-
     if not user_profile.realm.is_zephyr_mirror_realm:
         for stream in created_streams:
             notifications.append(prep_stream_welcome_message(stream))

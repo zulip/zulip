@@ -1364,7 +1364,6 @@ class SubscriptionAPITest(ZulipTestCase):
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
         invitee = "iago@zulip.com"
-        invitee_full_name = 'Iago'
 
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names([current_stream])[:1]
@@ -1377,13 +1376,6 @@ class SubscriptionAPITest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-
-        msg = self.get_second_to_last_message()
-        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
-        self.assertEqual(msg.sender_id, self.notification_bot().id)
-
-        expected_msg = "Hi there!  %s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
-        self.assertEqual(msg.content, expected_msg)
 
     def test_successful_subscriptions_notifies_stream(self):
         # type: () -> None
