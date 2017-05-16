@@ -25,10 +25,6 @@ function open_reactions() {
     return true;
 }
 
-exports.is_subs = function () {
-    return subs.is_open;
-};
-
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -269,7 +265,7 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
-    if (exports.is_subs) {
+    if (modals.streams_open()) {
         return false;
     }
 
@@ -438,7 +434,7 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
+    if ((event_name === 'up_arrow' || event_name === 'down_arrow') && modals.streams_open()) {
         return subs.switch_rows(event_name);
     }
 
@@ -507,7 +503,7 @@ exports.process_hotkey = function (e, hotkey) {
         if (modals.lightbox_open()) {
             lightbox.prev();
             return true;
-        } else if (exports.is_subs()) {
+        } else if (modals.streams_open()) {
             subs.toggle_view(event_name);
             return true;
         }
@@ -520,7 +516,7 @@ exports.process_hotkey = function (e, hotkey) {
         if (modals.lightbox_open()) {
             lightbox.next();
             return true;
-        } else if (exports.is_subs()) {
+        } else if (modals.streams_open()) {
             subs.toggle_view(event_name);
             return true;
         }
@@ -560,17 +556,17 @@ exports.process_hotkey = function (e, hotkey) {
             navigate.cycle_stream('forward');
             return true;
         case 'keyboard_sub':
-            if (exports.is_subs()) {
+            if (modals.streams_open()) {
                 subs.keyboard_sub();
             }
             return true;
         case 'view_selected_stream':
-            if (exports.is_subs()) {
+            if (modals.streams_open()) {
                 subs.view_stream();
             }
             return true;
         case 'n_key':
-            if (exports.is_subs()) {
+            if (modals.streams_open()) {
                 subs.new_stream_clicked();
             } else {
                 narrow.narrow_to_next_topic();

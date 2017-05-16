@@ -24,6 +24,10 @@ exports.settings_open = function () {
     return open_modal_name === 'settings';
 };
 
+exports.streams_open = function () {
+    return open_modal_name === 'subscriptions';
+};
+
 exports.lightbox_open = function () {
     return open_modal_name === 'lightbox';
 };

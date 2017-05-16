@@ -196,11 +196,11 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.processing_text = return_false;
     modals.settings_open = return_false;
 
-    hotkey.is_subs = return_true;
+    modals.streams_open = return_true;
     assert_mapping('U', 'subs.keyboard_sub');
     assert_mapping('V', 'subs.view_stream');
     assert_mapping('n', 'subs.new_stream_clicked');
-    hotkey.is_subs = return_false;
+    modals.streams_open = return_false;
 
     assert_mapping('?', 'ui.show_info_overlay');
     assert_mapping('/', 'search.initiate_search');
@@ -306,7 +306,7 @@ function stubbing(func_name_to_stub, test_function) {
     global.current_msg_list.empty = return_true;
     global.drafts.drafts_overlay_open = return_false;
     modals.settings_open = return_false;
-    hotkey.is_subs = return_false;
+    modals.streams_open = return_false;
     modals.lightbox_open = return_false;
 
     assert_unmapped('down_arrow');
@@ -337,10 +337,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('up_arrow');
     modals.info_overlay_open = return_false;
 
-    hotkey.is_subs = return_true;
+    modals.streams_open = return_true;
     assert_mapping('up_arrow', 'subs.switch_rows');
     assert_mapping('down_arrow', 'subs.switch_rows');
-    hotkey.is_subs = return_false;
+    modals.streams_open = return_false;
 
     modals.lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');

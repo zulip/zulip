@@ -2,7 +2,6 @@ var subs = (function () {
 
 var meta = {
     callbacks: {},
-    is_open: false,
 };
 var exports = {};
 
@@ -449,7 +448,6 @@ exports.change_state = (function () {
 }());
 
 exports.launch = function (hash) {
-    meta.is_open = true;
     exports.setup_page(function () {
         modals.open_overlay({
             name: 'subscriptions',
@@ -461,16 +459,8 @@ exports.launch = function (hash) {
     });
 };
 
-Object.defineProperty(exports, "is_open", {
-    get: function () {
-        return meta.is_open;
-    },
-    enumerable: false,
-});
-
 exports.close = function () {
     hashchange.exit_modal();
-    meta.is_open = false;
     subs.remove_miscategorized_streams();
 };
 
@@ -544,7 +534,7 @@ function ajaxSubscribe(stream) {
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream}]) },
         success: function (resp, statusText, xhr) {
-            if (subs.is_open) {
+            if (modals.streams_open()) {
                 $("#create_stream_name").val("");
 
                 actually_filter_streams();
