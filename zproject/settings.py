@@ -1204,7 +1204,6 @@ POLL_TIMEOUT = 90 * 1000
 
 # iOS App IDs
 ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
-DBX_IOS_APP_ID = 'com.dropbox.Zulip'
 
 ########################################################################
 # SSO AND LDAP SETTINGS

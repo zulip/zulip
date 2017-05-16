@@ -233,7 +233,6 @@ class PushNotificationTest(BouncerTestCase):
         self.user_profile = self.example_user('hamlet')
         apn.connection = apn.get_connection('fake-cert', 'fake-key')
         self.redis_client = apn.redis_client = MockRedis()  # type: ignore
-        apn.dbx_connection = apn.get_connection('fake-cert', 'fake-key')
         self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
@@ -306,8 +305,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications._do_push_to_apns_service'), \
-                mock.patch('logging.info') as mock_info, \
-                mock.patch('logging.warn') as mock_warn:
+                mock.patch('logging.info') as mock_info:
             apn.handle_push_notification(self.user_profile.id, missed_message)
             devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
@@ -315,10 +313,6 @@ class HandlePushNotificationTest(PushNotificationTest):
             ]
             mock_info.assert_called_with("APNS: Sending apple push "
                                          "notification to devices: %s" % (devices,))
-            mock_warn.assert_called_with("APNS: Not sending "
-                                         "notification because tokens "
-                                         "didn't match devices: "
-                                         "['com.dropbox.Zulip']")
 
     def test_disabled_notifications(self):
         # type: () -> None
@@ -723,17 +717,9 @@ class SendNotificationTest(PushNotificationTest):
     @mock.patch('logging.warn')
     @mock.patch('logging.info')
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
-    def test_connection_single_none(self, mock_push, mock_info, mock_warn):
+    def test_connection_none(self, mock_push, mock_info, mock_warn):
         # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
-        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
-
-    @mock.patch('logging.error')
-    @mock.patch('apns.GatewayConnection.send_notification_multiple')
-    def test_connection_both_none(self, mock_push, mock_error):
-        # type: (mock.MagicMock, mock.MagicMock) -> None
-        apn.connection = None
-        apn.dbx_connection = None
         apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
 
 class APNsFeedbackTest(PushNotificationTest):

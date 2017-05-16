@@ -61,10 +61,6 @@ redis_client = get_redis_client()
 # for each request
 connection = None
 
-# We maintain an additional APNS connection for pushing to Zulip apps that have been signed
-# by the Dropbox certs (and have an app id of com.dropbox.zulip)
-dbx_connection = None
-
 # `APNS_SANDBOX` should be a bool
 assert isinstance(settings.APNS_SANDBOX, bool)
 
@@ -147,10 +143,6 @@ if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FIL
     connection = get_connection(settings.APNS_CERT_FILE,
                                 settings.APNS_KEY_FILE)
 
-if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_CERT_FILE):  # nocoverage
-    dbx_connection = get_connection(settings.DBX_APNS_CERT_FILE,
-                                    settings.DBX_APNS_KEY_FILE)
-
 def num_push_devices_for_user(user_profile, kind = None):
     # type: (UserProfile, Optional[int]) -> PushDeviceToken
     if kind is None:
@@ -169,7 +161,7 @@ def hex_to_b64(data):
 
 def _do_push_to_apns_service(user_id, message, apns_connection):
     # type: (int, APNsMessage, APNs) -> None
-    if not apns_connection:
+    if not apns_connection:  # nocoverage
         logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user_id))
         return
 
@@ -188,7 +180,7 @@ def send_apple_push_notification_to_user(user, alert, **extra_data):
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, **extra_data):
     # type: (int, List[DeviceToken], **Any) -> None
-    if not connection and not dbx_connection:
+    if not connection:
         logging.warning("Attempting to send push notification, but no connection was found. "
                         "This may be because we could not find the APNS Certificate file.")
         return
@@ -197,22 +189,18 @@ def send_apple_push_notification(user_id, devices, **extra_data):
     tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
               for device in devices]
 
-    for conn, app_ids in [
-            (connection, [settings.ZULIP_IOS_APP_ID, None]),
-            (dbx_connection, [settings.DBX_IOS_APP_ID])]:
-
-        valid_devices = [device for device in tokens if device[1] in app_ids]
-        valid_tokens = [device[0] for device in valid_devices]
-        if valid_tokens:
-            logging.info("APNS: Sending apple push notification "
-                         "to devices: %s" % (valid_devices,))
-            zulip_message = APNsMessage(user_id, valid_tokens,
-                                        alert=extra_data['zulip']['alert'],
-                                        **extra_data)
-            _do_push_to_apns_service(user_id, zulip_message, conn)
-        else:
-            logging.warn("APNS: Not sending notification because "
-                         "tokens didn't match devices: %s" % (app_ids,))
+    valid_devices = [device for device in tokens if device[1] in [settings.ZULIP_IOS_APP_ID, None]]
+    valid_tokens = [device[0] for device in valid_devices]
+    if valid_tokens:
+        logging.info("APNS: Sending apple push notification "
+                     "to devices: %s" % (valid_devices,))
+        zulip_message = APNsMessage(user_id, valid_tokens,
+                                    alert=extra_data['zulip']['alert'],
+                                    **extra_data)
+        _do_push_to_apns_service(user_id, zulip_message, connection)
+    else:  # nocoverage
+        logging.warn("APNS: Not sending notification because "
+                     "tokens didn't match devices: %s/%s" % (tokens, settings.ZULIP_IOS_APP_ID,))
 
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
