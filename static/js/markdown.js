@@ -117,27 +117,26 @@ function escape(html, encode) {
 function handleUnicodeEmoji(unicode_emoji) {
     var hex_value = unicode_emoji.codePointAt(0).toString(16);
     if (emoji.emojis_by_unicode.hasOwnProperty(hex_value)) {
-        var emoji_url = emoji.emojis_by_unicode[hex_value];
-        return '<img alt="' + unicode_emoji + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + unicode_emoji + '">';
+        var codepoint = emoji.emojis_by_unicode[hex_value];
+        return '<span class="emoji emoji-' + codepoint + '"' +
+               ' title="' + unicode_emoji + '">' + unicode_emoji +
+               '</span>';
     }
     return unicode_emoji;
 }
 
 function handleEmoji(emoji_name) {
     var input_emoji = ':' + emoji_name + ":";
-    var emoji_url;
     if (emoji.realm_emojis.hasOwnProperty(emoji_name)) {
-        emoji_url = emoji.realm_emojis[emoji_name].emoji_url;
+        var emoji_url = emoji.realm_emojis[emoji_name].emoji_url;
         return '<img alt="' + input_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + input_emoji + '">';
     } else if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
-        emoji_url = emoji.emojis_by_name[emoji_name];
-        return '<img alt="' + input_emoji + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + input_emoji + '">';
+        var codepoint = emoji.emojis_by_name[emoji_name];
+        return '<span class="emoji emoji-' + codepoint + '"' +
+               ' title="' + input_emoji + '">' + input_emoji +
+               '</span>';
     }
     return input_emoji;
 }
