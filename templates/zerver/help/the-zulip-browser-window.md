@@ -62,7 +62,7 @@ you have received.
 private messages that you have received.
 * Clicking on the **Starred messages** filter narrows your view to show all
 messages that you have [starred](/help/star-a-message).
-* Clicking on the **@-mentions** filter narrows your view to show all messages
+* Clicking on the **Mentions** filter narrows your view to show all messages
 in which you were [mentioned](/help/at-mention-a-team-member).
 
 ### Streams section

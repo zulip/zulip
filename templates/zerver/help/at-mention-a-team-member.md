@@ -9,7 +9,7 @@ they may have already read the message.
 
 !!! tip ""
     You can view any messages calling your attention by clicking on the
-    **@-mentions** filters in the left sidebar.
+    **Mentions** filters in the left sidebar.
 
 1. Compose a [new message or reply](/help/reply-to-a-message).
 2. In the **Compose your message here...** field, type `@` followed by the
