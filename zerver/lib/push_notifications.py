@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import random
 import requests
-from typing import Any, Dict, List, Optional, SupportsInt, Text
+from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
 
 from version import ZULIP_VERSION
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
@@ -31,6 +31,15 @@ import os
 import time
 import ujson
 from functools import partial
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemotePushDeviceToken
+else:  # nocoverage  -- Not convenient to add test for this.
+    from mock import Mock
+    RemotePushDeviceToken = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+
+DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
+DeviceTokenType = Union[Type[PushDeviceToken], Type[RemotePushDeviceToken]]
 
 # APNS error codes
 ERROR_CODES = {
@@ -112,8 +121,18 @@ def response_listener(error_response):
         logging.warn("APNS: Removing token from database due to above failure")
         try:
             PushDeviceToken.objects.get(user=user, token=b64_token).delete()
+            return  # No need to check RemotePushDeviceToken
         except PushDeviceToken.DoesNotExist:
             pass
+
+        if settings.ZILENCER_ENABLED:
+            # Trying to delete from both models is a bit inefficient than
+            # deleting from only one model but this method is very simple.
+            try:
+                RemotePushDeviceToken.objects.get(user_id=user.id,
+                                                  token=b64_token).delete()
+            except RemotePushDeviceToken.DoesNotExist:
+                pass
 
 def get_connection(cert_file, key_file):
     # type: (str, str) -> APNs
@@ -124,11 +143,11 @@ def get_connection(cert_file, key_file):
     connection.gateway_server.register_response_listener(response_listener)
     return connection
 
-if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
+if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):  # nocoverage
     connection = get_connection(settings.APNS_CERT_FILE,
                                 settings.APNS_KEY_FILE)
 
-if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_CERT_FILE):
+if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_CERT_FILE):  # nocoverage
     dbx_connection = get_connection(settings.DBX_APNS_CERT_FILE,
                                     settings.DBX_APNS_KEY_FILE)
 
@@ -168,7 +187,7 @@ def send_apple_push_notification_to_user(user, alert, **extra_data):
 # mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, **extra_data):
-    # type: (int, List[PushDeviceToken], **Any) -> None
+    # type: (int, List[DeviceToken], **Any) -> None
     if not connection and not dbx_connection:
         logging.warning("Attempting to send push notification, but no connection was found. "
                         "This may be because we could not find the APNS Certificate file.")
@@ -212,7 +231,7 @@ def check_apns_feedback():
     logging.info("Finished checking feedback for stale tokens")
 
 
-if settings.ANDROID_GCM_API_KEY:
+if settings.ANDROID_GCM_API_KEY:  # nocoverage
     gcm = GCM(settings.ANDROID_GCM_API_KEY)
 else:
     gcm = None
@@ -225,11 +244,17 @@ def send_android_push_notification_to_user(user_profile, data):
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices, data):
-    # type: (List[PushDeviceToken], Dict[str, Any]) -> None
+    # type: (List[DeviceToken], Dict[str, Any]) -> None
     if not gcm:
         logging.warning("Attempting to send a GCM push notification, but no API key was configured")
         return
     reg_ids = [device.token for device in devices]
+
+    # If we are on notification bouncer, we will get RemotePushDeviceToken
+    # devices otherwise we will get PushDeviceToken devices. We save the type
+    # of devices in DeviceTokenClass so that we can delete the tokens from
+    # their respective DB tables.
+    DeviceTokenClass = type(devices[0])  # type: DeviceTokenType
 
     res = gcm.json_request(registration_ids=reg_ids, data=data)
 
@@ -245,7 +270,8 @@ def send_android_push_notification(devices, data):
             if reg_id == new_reg_id:
                 # I'm not sure if this should happen. In any case, not really actionable.
                 logging.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
-            elif not PushDeviceToken.objects.filter(token=new_reg_id, kind=PushDeviceToken.GCM).count():
+            elif not DeviceTokenClass.objects.filter(token=new_reg_id,
+                                                     kind=DeviceTokenClass.GCM).count():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
                 # previously registered in our system.
                 #
@@ -253,13 +279,13 @@ def send_android_push_notification(devices, data):
                 logging.warning(
                     "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
                     (new_reg_id, reg_id))
-                PushDeviceToken.objects.filter(
-                    token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
+                DeviceTokenClass.objects.filter(
+                    token=reg_id, kind=DeviceTokenClass.GCM).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
                 logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
 
-                PushDeviceToken.objects.filter(token=reg_id, kind=PushDeviceToken.GCM).delete()
+                DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
 
     if 'errors' in res:
         for error, reg_ids in res['errors'].items():
@@ -267,7 +293,7 @@ def send_android_push_notification(devices, data):
                 for reg_id in reg_ids:
                     logging.info("GCM: Removing %s" % (reg_id,))
 
-                    device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
+                    device = DeviceTokenClass.objects.get(token=reg_id, kind=DeviceTokenClass.GCM)
                     device.delete()
             else:
                 for reg_id in reg_ids:
@@ -341,26 +367,40 @@ def handle_push_notification(user_profile_id, missed_message):
         if umessage.flags.read:
             return
 
-        android_devices = [device for device in
-                           PushDeviceToken.objects.filter(user=user_profile,
-                                                          kind=PushDeviceToken.GCM)]
-        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                            kind=PushDeviceToken.APNS))
-
         apns_payload = get_apns_payload(message)
         gcm_payload = get_gcm_payload(user_profile, message)
 
-        if apple_devices or android_devices:
-            # TODO: set badge count in a better way
-            if apple_devices:
-                send_apple_push_notification(user_profile.id, apple_devices,
-                                             badge=1, zulip=apns_payload)
+        if uses_notification_bouncer():
+            send_notifications_to_bouncer(user_profile_id,
+                                          apns_payload,
+                                          gcm_payload)
+            return
 
-            if android_devices:
-                send_android_push_notification(android_devices, gcm_payload)
+        android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                              kind=PushDeviceToken.GCM))
+
+        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                            kind=PushDeviceToken.APNS))
+
+        # TODO: set badge count in a better way
+        if apple_devices:
+            send_apple_push_notification(user_profile.id, apple_devices,
+                                         badge=1, zulip=apns_payload)
+
+        if android_devices:
+            send_android_push_notification(android_devices, gcm_payload)
 
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
+
+def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
+    # type: (int, Dict[str, Any], Dict[str, Any]) -> None
+    post_data = {
+        'user_id': user_profile_id,
+        'apns_payload': apns_payload,
+        'gcm_payload': gcm_payload,
+    }
+    send_json_to_push_bouncer('POST', 'notify', post_data)
 
 def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
     # type: (UserProfile, str, int, Optional[str]) -> None
@@ -417,21 +457,33 @@ def remove_push_device_token(user_profile, token_str, kind):
     except PushDeviceToken.DoesNotExist:
         raise JsonableError(_("Token does not exist"))
 
-
-def send_to_push_bouncer(method, endpoint, post_data):
+def send_json_to_push_bouncer(method, endpoint, post_data):
     # type: (str, str, Dict[str, Any]) -> None
+    send_to_push_bouncer(
+        method,
+        endpoint,
+        ujson.dumps(post_data),
+        extra_headers={"Content-type": "application/json"},
+    )
+
+def send_to_push_bouncer(method, endpoint, post_data, extra_headers=None):
+    # type: (str, str, Union[Text, Dict[str, Any]], Optional[Dict[str, Any]]) -> None
     url = urllib.parse.urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL,
                                '/api/v1/remotes/push/' + endpoint)
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
                                            settings.ZULIP_ORG_KEY)
 
+    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
+    if extra_headers is not None:
+        headers.update(extra_headers)
+
     res = requests.request(method,
                            url,
-                           data=ujson.dumps(post_data),
+                           data=post_data,
                            auth=api_auth,
                            timeout=30,
                            verify=True,
-                           headers={"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)})
+                           headers=headers)
 
     # TODO: Think more carefully about how this error hanlding should work.
     if res.status_code >= 500:

@@ -71,3 +71,38 @@ def remote_server_unregister_push(request, entity, token=REQ(),
         return json_error(_("Token does not exist"))
 
     return json_success()
+
+@has_request_variables
+def remote_server_notify_push(request,  # type: HttpRequest
+                              entity,  # type: Union[UserProfile, RemoteZulipServer]
+                              payload=REQ(argument_type='body')  # type: Dict[str, Any]
+                              ):
+    # type: (...) -> HttpResponse
+    validate_entity(entity)
+    server = cast(RemoteZulipServer, entity)
+
+    user_id = payload['user_id']
+    gcm_payload = payload['gcm_payload']
+    apns_payload = payload['apns_payload']
+
+    android_devices = list(RemotePushDeviceToken.objects.filter(
+        user_id=user_id,
+        kind=RemotePushDeviceToken.GCM,
+        server=server
+    ))
+
+    apple_devices = list(RemotePushDeviceToken.objects.filter(
+        user_id=user_id,
+        kind=RemotePushDeviceToken.APNS,
+        server=server
+    ))
+
+    if android_devices:
+        send_android_push_notification(android_devices, gcm_payload)
+
+    # TODO: set badge count in a better way
+    if apple_devices:
+        send_apple_push_notification(user_id, apple_devices,
+                                     badge=1, zulip=apns_payload)
+
+    return json_success()

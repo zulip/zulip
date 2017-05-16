@@ -455,14 +455,15 @@ def authenticated_rest_api_view(is_webhook=False):
             except JsonableError as e:
                 return json_unauthorized(e.error)
             request.user = profile
-            if isinstance(profile, UserProfile):
-                request._email = profile.email
-                process_client(request, profile)
-            else:
+            if is_remote_server(role):
                 assert isinstance(profile, RemoteZulipServer)  # type: ignore # https://github.com/python/mypy/issues/2957
                 request._email = "zulip-server:" + role
                 profile.rate_limits = ""
                 process_client(request, profile, remote_server_request=True)
+            else:
+                assert isinstance(profile, UserProfile)  # type: ignore # https://github.com/python/mypy/issues/2957
+                request._email = profile.email
+                process_client(request, profile)
             # Apply rate limiting
             return rate_limit()(view_func)(request, profile, *args, **kwargs)
         return _wrapped_func_arguments
