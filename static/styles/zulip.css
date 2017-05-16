@@ -677,8 +677,8 @@ td.pointer {
 
 .message_list .recipient_row {
     background: #f1f1f1;
-    border-bottom: 1px solid #e2e2e2;
-    border-top: 1px solid #e2e2e2;
+    border: 1px solid #e2e2e2;
+    border-left: none;
     margin-bottom: 10px;
 }
 
@@ -991,10 +991,6 @@ td.pointer {
     background-color: #f0f4f5;
 }
 
-.floating_recipient .message-header-contents {
-    border-right: 1px solid #e2e2e2;
-}
-
 .mention .messagebox-content {
     background-color: #ffe4e0;
 }
@@ -1269,7 +1265,6 @@ div.message_table {
 .message_row {
     position: relative;
     border-left: 1px solid #e2e2e2;
-    border-right: 1px solid #e2e2e2;
 }
 
 .message_row.selected_message {
