@@ -991,7 +991,7 @@ td.pointer {
     background-color: #f0f4f5;
 }
 
-.floating_recipient .message-header-contents {
+.message-header-contents {
     border-right: 1px solid #e2e2e2;
 }
 
