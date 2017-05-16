@@ -39,7 +39,6 @@ else:  # nocoverage  -- Not convenient to add test for this.
     RemotePushDeviceToken = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
-DeviceTokenType = Union[Type[PushDeviceToken], Type[RemotePushDeviceToken]]
 
 # APNS error codes
 ERROR_CODES = {
@@ -231,18 +230,17 @@ def send_android_push_notification_to_user(user_profile, data):
     send_android_push_notification(devices, data)
 
 @statsd_increment("android_push_notification")
-def send_android_push_notification(devices, data):
-    # type: (List[DeviceToken], Dict[str, Any]) -> None
+def send_android_push_notification(devices, data, remote=False):
+    # type: (List[DeviceToken], Dict[str, Any], bool) -> None
     if not gcm:
         logging.warning("Attempting to send a GCM push notification, but no API key was configured")
         return
     reg_ids = [device.token for device in devices]
 
-    # If we are on notification bouncer, we will get RemotePushDeviceToken
-    # devices otherwise we will get PushDeviceToken devices. We save the type
-    # of devices in DeviceTokenClass so that we can delete the tokens from
-    # their respective DB tables.
-    DeviceTokenClass = type(devices[0])  # type: DeviceTokenType
+    if remote:
+        DeviceTokenClass = RemotePushDeviceToken  # nocoverage # TODO: Test this code path
+    else:
+        DeviceTokenClass = PushDeviceToken
 
     res = gcm.json_request(registration_ids=reg_ids, data=data)
 
