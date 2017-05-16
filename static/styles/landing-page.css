@@ -590,7 +590,7 @@ a:not(.no-style):hover:before {
 
 /* -- compare css -- */
 .compare {
-    background-color: #2d3035;
+    background-color: #3e6157;
     color: #fff;
 }
 
@@ -598,10 +598,23 @@ a:not(.no-style):hover:before {
     margin-top: 0px;
 }
 
+.compare .padded-content {
+    width: 900px;
+    margin: 0 auto;
+}
+
 .compare table {
     width: 100%;
     text-align: left;
     border-collapse: collapse;
+
+    font-weight: 400;
+
+    color: rgba(255,255,255,0.8);
+}
+
+.compare table thead th:last-of-type {
+    width: 120px;
 }
 
 .compare table thead th.uniform {
@@ -614,20 +627,23 @@ a:not(.no-style):hover:before {
 }
 
 .compare thead {
-    border-bottom: 1px solid #73797d;
+    border-bottom: 5px solid rgba(0,0,0,0.1);
 }
 
 .compare thead th {
     font-weight: 600;
     padding: 15px 0px;
+
+    color: #fff;
 }
 
 .compare thead th.normal {
     font-weight: normal;
+    color: inherit;
 }
 
 .compare tbody tr {
-    border-bottom: 1px solid #393c40;
+    border-bottom: 1px solid rgb(56, 88, 79);
 }
 
 .compare tbody tr td {
@@ -669,6 +685,16 @@ a:not(.no-style):hover:before {
 
 .compare p {
     font-weight: 300;
+}
+
+.compare .terms {
+    margin-top: 30px;
+    font-weight: 400;
+    font-size: 0.7em;
+
+    line-height: 1.2;
+
+    color: rgba(255,255,255,0.8);
 }
 
 .screen .line {
