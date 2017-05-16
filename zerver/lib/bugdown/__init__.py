@@ -724,6 +724,10 @@ def make_realm_emoji(src, display_string):
 def unicode_emoji_to_codepoint(unicode_emoji):
     # type: (Text) -> Text
     codepoint = hex(ord(unicode_emoji))[2:]
+    # Unicode codepoints are minimum of length 4, padded
+    # with zeroes if the length is less than zero.
+    while len(codepoint) < 4:
+        codepoint = '0' + codepoint
     return codepoint
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
