@@ -673,7 +673,7 @@ a:not(.no-style):hover:before {
     top: 3px;
 
     font-size: 2.5rem;
-    font-weight: 600;
+    font-weight: 300;
     line-height: 0.9;
 }
 
