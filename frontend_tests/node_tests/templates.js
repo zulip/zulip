@@ -649,6 +649,7 @@ function render(template_name, args) {
             message_ids: [1, 2],
             message_containers: messages,
             show_date: '"<span id="timerender82">Jan&nbsp;07</span>"',
+            show_date_separator: true,
             subject: 'two messages',
             match_subject: '<span class="highlight">two</span> messages',
         },

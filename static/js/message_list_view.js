@@ -71,8 +71,11 @@ function add_display_time(group, message_container, prev) {
         if (time.toDateString() !== prev_time.toDateString()) {
             // NB: show_date is HTML, inserted into the document without escaping.
             group.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
+            group.show_date_separator = true;
         }
     } else {
+        // Show the date in the recipient bar, but not a date separator bar.
+        group.show_date_separator = false;
         group.show_date = (timerender.render_date(time))[0].outerHTML;
     }
 
@@ -360,7 +363,8 @@ MessageListView.prototype = {
 
                 if (same_day(last_msg_container, first_msg_container)) {
                     // Clear the date if it is the same as the last group
-                    second_group.show_date = undefined;
+                    delete second_group.show_date;
+                    delete second_group.show_date_separator;
                 }
             }
             message_actions.append_groups = new_message_groups;
