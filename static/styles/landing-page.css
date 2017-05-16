@@ -2056,35 +2056,6 @@ nav ul li.active::after {
 
 /* while the overlay is showing, the transform properties should stay fixed
    for the container that sits inline in the page. */
-/*
-.pricing-model.stick .price-box.low,
-.pricing-model:not(.pricing-overlay):hover .price-box.low {
-    transform: translateX(-30px);
-}
-
-.pricing-model.stick .price-box.high,
-.pricing-model:not(.pricing-overlay):hover .price-box.high {
-    transform: translateX(30px);
-}
-
-.pricing-model:not(.pricing-overlay) .price-box.low:focus {
-    transform: translateX(-30px) scale(1.1);
-}
-
-.pricing-model .price-box:focus {
-    transform: scale(1.1);
-}
-
-.pricing-model:not(.pricing-overlay) .price-box.high:focus {
-    transform: translateX(30px) scale(1.1);
-}
-
-.pricing-model .price-box:focus {
-    outline: 10000px solid rgba(0,0,0,0.6);
-    box-shadow: 0px 0px 40px rgba(0,0,0,0.5);
-    z-index: 100;
-}
-*/
 
 .pricing-overlay.pricing-model {
     position: fixed;
