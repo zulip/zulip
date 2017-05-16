@@ -104,9 +104,15 @@ def color_font(name, code_point, code_point_to_fname_map):
     try:
         if name in white_emojis:
             white_emoji_image = Image.open(in_name).convert('RGBA')
-            # Paste blue onto the image using the number as a mask
-            white_emoji_image.paste('#40C0E7', white_emoji_image)
-            white_emoji_image.save(in_name)
+            # Reduced image size for having a 4-pixel dark yellow background
+            # on right and bottom of the image.
+            light_yellow_background = Image.new('RGBA', (124, 124), '#FCC21B')
+            dark_yellow_background = Image.new('RGBA', SIZE, '#F79329')
+            # Paste the image on a light yellow background and the resulting
+            # image on a dark yellow background.
+            light_yellow_background.paste(white_emoji_image, mask=white_emoji_image)
+            dark_yellow_background.paste(light_yellow_background, mask=light_yellow_background)
+            dark_yellow_background.save(in_name)
         shutil.copyfile(in_name, out_name)
     except IOError:
         raise MissingGlyphError('code_point: %r' % (code_point))
