@@ -163,8 +163,9 @@ def get_client_name(request, is_json_view):
         else:
             return "Unspecified"
 
-def process_client(request, user_profile, is_json_view=False, client_name=None):
-    # type: (HttpRequest, UserProfile, bool, Optional[Text]) -> None
+def process_client(request, user_profile, is_json_view=False, client_name=None,
+                   remote_server_request=False):
+    # type: (HttpRequest, UserProfile, bool, Optional[Text], bool) -> None
     if client_name is None:
         client_name = get_client_name(request, is_json_view)
 
@@ -174,7 +175,8 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
         client_name = 'ZulipiOS'
 
     request.client = get_client(client_name)
-    update_user_activity(request, user_profile)
+    if not remote_server_request:
+        update_user_activity(request, user_profile)
 
 def validate_api_key(request, role, api_key, is_webhook=False):
     # type: (HttpRequest, Text, Text, bool) -> Union[UserProfile, RemoteZulipServer]
@@ -453,13 +455,14 @@ def authenticated_rest_api_view(is_webhook=False):
             except JsonableError as e:
                 return json_unauthorized(e.error)
             request.user = profile
-            process_client(request, profile)
             if isinstance(profile, UserProfile):
                 request._email = profile.email
+                process_client(request, profile)
             else:
                 assert isinstance(profile, RemoteZulipServer)  # type: ignore # https://github.com/python/mypy/issues/2957
                 request._email = "zulip-server:" + role
                 profile.rate_limits = ""
+                process_client(request, profile, remote_server_request=True)
             # Apply rate limiting
             return rate_limit()(view_func)(request, profile, *args, **kwargs)
         return _wrapped_func_arguments
