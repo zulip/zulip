@@ -25,12 +25,24 @@
             <li on-page="help">
                 <a class="no-style" href="/help/">Help Center</a>
             </li>
+            {% if register_link_disabled %}
+            {% else %}
             <li>
                 <a class="no-style" href="/login/">Login</a>
             </li>
+            {% endif %}
+            {% if register_link_disabled %}
+            {% else %}
             <li>
                 <a class="no-style" href="/register/">Register</a>
             </li>
+            {% endif %}
+            {% if find_team_link_disabled %}
+            {% else %}
+            <li>
+                <a class="no-style" href="/find_my_team/">Find Accounts</a>
+            </li>
+            {% endif %}
         </ul>
         <div class="clear-float"></div>
     </div>
