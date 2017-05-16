@@ -1,6 +1,6 @@
 -r ipython.txt
 # Django itself; we use a slightly patched version
-Django==1.10.5
+Django==1.10.7
 
 # Needed for rendering backend templates
 Jinja2==2.9.6
