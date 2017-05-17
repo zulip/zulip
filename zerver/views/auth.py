@@ -180,7 +180,7 @@ def remote_user_jwt(request):
         # We do all the authentication we need here (otherwise we'd have to
         # duplicate work), but we need to call authenticate with some backend so
         # that the request.backend attribute gets set.
-        return_data = {} # type: Dict[str, bool]
+        return_data = {}  # type: Dict[str, bool]
         user_profile = authenticate(username=email,
                                     realm_subdomain=subdomain,
                                     return_data=return_data,
@@ -357,7 +357,7 @@ def finish_google_oauth2(request):
 
 def authenticate_remote_user(request, email_address, subdomain=None):
     # type: (HttpRequest, str, Optional[Text]) -> Tuple[UserProfile, Dict[str, Any]]
-    return_data = {} # type: Dict[str, bool]
+    return_data = {}  # type: Dict[str, bool]
     if email_address is None:
         # No need to authenticate if email address is None. We already
         # know that user_profile would be None as well. In fact, if we
@@ -491,7 +491,7 @@ def api_dev_fetch_api_key(request, username=REQ()):
     # enabled.
     validate_login_email(username)
 
-    return_data = {} # type: Dict[str, bool]
+    return_data = {}  # type: Dict[str, bool]
     user_profile = authenticate(username=username,
                                 realm_subdomain=get_subdomain(request),
                                 return_data=return_data)
@@ -518,7 +518,7 @@ def api_dev_get_emails(request):
 @has_request_variables
 def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # type: (HttpRequest, str, str) -> HttpResponse
-    return_data = {} # type: Dict[str, bool]
+    return_data = {}  # type: Dict[str, bool]
     if username == "google-oauth2-token":
         user_profile = authenticate(google_oauth2_token=password,
                                     realm_subdomain=get_subdomain(request),
