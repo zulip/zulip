@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     sys.path.insert(0, root_dir)
 
-    loader = unittest.TestLoader() # type: ignore # https://github.com/python/typeshed/issues/372
+    loader = unittest.TestLoader()  # type: ignore # https://github.com/python/typeshed/issues/372
 
     if args.coverage:
         import coverage
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     suite = loader.discover(start_dir=tools_test_dir, top_level_dir=root_dir)
     runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite) # type: ignore # https://github.com/python/typeshed/issues/372
+    result = runner.run(suite)  # type: ignore # https://github.com/python/typeshed/issues/372
     if result.errors or result.failures:
         raise Exception('Test failed!')
 
