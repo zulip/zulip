@@ -241,7 +241,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['zerver/lib/bugdown/codehilite.py',
                          'tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
-    ] # type: RuleList
+    ]  # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
         # Two spaces trailing a line with other content is okay--it's a markdown line break.
         # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -252,7 +252,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '^#+[A-Za-z0-9]',
          'strip': '\n',
          'description': 'Missing space after # in heading'},
-    ] # type: RuleList
+    ]  # type: RuleList
     js_rules = cast(RuleList, [
         {'pattern': '[^_]function\(',
          'description': 'The keyword "function" should be followed by a space'},
@@ -449,7 +449,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
-    ] + whitespace_rules[0:1] # type: RuleList
+    ] + whitespace_rules[0:1]  # type: RuleList
     css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},
@@ -469,17 +469,17 @@ def build_custom_checkers(by_lang):
          'description': "medium CSS attribute is under-specified, please use pixels."},
         {'pattern': ' thick[; ]',
          'description': "thick CSS attribute is under-specified, please use pixels."},
-    ]) + whitespace_rules # type: RuleList
+    ]) + whitespace_rules  # type: RuleList
     prose_style_rules = [
-        {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs
+        {'pattern': '[^\/\#\-\"]([jJ]avascript)',  # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
-        {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]', # exclude usage in hrefs/divs
+        {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]',  # exclude usage in hrefs/divs
          'description': "github should be spelled GitHub"},
-        {'pattern': '[oO]rganisation', # exclude usage in hrefs/divs
+        {'pattern': '[oO]rganisation',  # exclude usage in hrefs/divs
          'description': "Organization is spelled with a z"},
         {'pattern': '!!! warning',
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
-    ] # type: RuleList
+    ]  # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
@@ -503,7 +503,7 @@ def build_custom_checkers(by_lang):
          ]),
          'exclude': set(["templates/zerver/emails"]),
          'description': "`title` value should be translatable."},
-    ] # type: RuleList
+    ]  # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
@@ -520,7 +520,7 @@ def build_custom_checkers(by_lang):
         {'pattern': "{{ _(.+) }}[\.\?!]",
          'description': "Period should be part of the translatable string."},
     ]
-    json_rules = [] # type: RuleList # fix newlines at ends of files
+    json_rules = []  # type: RuleList # fix newlines at ends of files
     # It is okay that json_rules is empty, because the empty list
     # ensures we'll still check JSON files for whitespace.
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
@@ -666,7 +666,7 @@ def run():
 
     check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)
 
-    lint_functions = {} # type: Dict[str, Callable[[], int]]
+    lint_functions = {}  # type: Dict[str, Callable[[], int]]
 
     def lint(func):
         # type: (Callable[[], int]) -> Callable[[], int]
