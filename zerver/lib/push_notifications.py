@@ -242,7 +242,11 @@ def send_android_push_notification(devices, data, remote=False):
     else:
         DeviceTokenClass = PushDeviceToken
 
-    res = gcm.json_request(registration_ids=reg_ids, data=data)
+    try:
+        res = gcm.json_request(registration_ids=reg_ids, data=data)
+    except IOError as e:
+        logging.warning(str(e))
+        return
 
     if res and 'success' in res:
         for reg_id, msg_id in res['success'].items():
