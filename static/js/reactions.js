@@ -238,7 +238,7 @@ function generate_title(emoji_name, user_ids) {
 }
 
 exports.add_reaction = function (event) {
-    event.emoji_name_css_class = emoji.emoji_name_to_css_class(event.emoji_name);
+    event.emoji_name_css_class = emoji.emojis_name_to_css_class[event.emoji_name];
     event.user.id = event.user.user_id;
     var message = message_store.get(event.message_id);
     if (message === undefined) {
@@ -343,7 +343,7 @@ exports.get_message_reactions = function (message) {
         var user_ids = item[1];
         var reaction = {
             emoji_name: emoji_name,
-            emoji_name_css_class: emoji.emoji_name_to_css_class(emoji_name),
+            emoji_name_css_class: emoji.emojis_name_to_css_class[emoji_name],
             count: user_ids.length,
             title: generate_title(emoji_name, user_ids),
             emoji_alt_code: page_params.emoji_alt_code,
