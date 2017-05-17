@@ -82,9 +82,9 @@ class MockLDAP(fakeldap.MockLDAP):
 def simulated_queue_client(client):
     # type: (type) -> Iterator[None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+    queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+    queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
 
 @contextmanager
 def tornado_redirected_to_list(lst):
@@ -102,7 +102,7 @@ def tornado_redirected_to_list(lst):
 @contextmanager
 def simulated_empty_cache():
     # type: () -> Generator[List[Tuple[str, Union[Text, List[Text]], Text]], None, None]
-    cache_queries = [] # type: List[Tuple[str, Union[Text, List[Text]], Text]]
+    cache_queries = []  # type: List[Tuple[str, Union[Text, List[Text]], Text]]
 
     def my_cache_get(key, cache_name=None):
         # type: (Text, Optional[str]) -> Optional[Dict[Text, Any]]
@@ -130,7 +130,7 @@ def queries_captured(include_savepoints=False):
     the with statement.
     '''
 
-    queries = [] # type: List[Dict[str, Union[str, binary_type]]]
+    queries = []  # type: List[Dict[str, Union[str, binary_type]]]
 
     def wrapper_execute(self, action, sql, params=()):
         # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
@@ -153,18 +153,18 @@ def queries_captured(include_savepoints=False):
 
     def cursor_execute(self, sql, params=()):
         # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.execute = cursor_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self, sql, params=()):
         # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
-    TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
+    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
 
-    TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = old_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = old_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
 @contextmanager
 def stdout_suppressed():
@@ -225,7 +225,7 @@ def most_recent_usermessage(user_profile):
         select_related("message"). \
         filter(user_profile=user_profile). \
         order_by('-message')
-    return query[0] # Django does LIMIT here
+    return query[0]  # Django does LIMIT here
 
 def most_recent_message(user_profile):
     # type: (UserProfile) -> Message
@@ -261,7 +261,7 @@ class POSTRequestMock(object):
         self.POST = post_data
         self.user = user_profile
         self._tornado_handler = DummyHandler()
-        self._log_data = {} # type: Dict[str, Any]
+        self._log_data = {}  # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
 class HostRequestMock(object):
@@ -288,9 +288,9 @@ class MockPythonResponse(object):
         return self.status_code == 200
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
-INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
+INSTRUMENTED_CALLS = []  # type: List[Dict[str, Any]]
 
-UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
+UrlFuncT = Callable[..., HttpResponse]  # TODO: make more specific
 
 def append_instrumentation_data(data):
     # type: (Dict[str, Any]) -> None
@@ -332,7 +332,7 @@ def write_instrumentation_reports(full_suite):
         from zproject.urls import urlpatterns, v1_api_and_json_patterns
 
         # Find our untested urls.
-        pattern_cnt = collections.defaultdict(int) # type: Dict[str, int]
+        pattern_cnt = collections.defaultdict(int)  # type: Dict[str, int]
 
         def re_strip(r):
             # type: (Any) -> str
@@ -400,7 +400,7 @@ def write_instrumentation_reports(full_suite):
 
         untested_patterns -= exempt_patterns
 
-        var_dir = 'var' # TODO make sure path is robust here
+        var_dir = 'var'  # TODO make sure path is robust here
         fn = os.path.join(var_dir, 'url_coverage.txt')
         with open(fn, 'w') as f:
             for call in calls:
