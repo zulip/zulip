@@ -47,6 +47,8 @@ exports.name_to_codepoint = %(name_to_codepoint)s;
 
 exports.emoji_catalog = %(emoji_catalog)s;
 
+exports.patched_css_classes = %(patched_css_classes)s;
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
@@ -294,11 +296,20 @@ def dump_emojis(cache_path):
     up_index = names.index('thumbs_up')
     names[down_index], names[up_index] = ('thumbs_up', 'thumbs_down')
 
+    # Patch CSS classes of flag emojis.
+    patched_css_classes = {}
+    for emoji in emoji_data:
+        if emoji['category'] == 'Flags':
+            for name in emoji['short_names']:
+                if name in emoji_map:
+                    patched_css_classes[str(name)] = str(emoji['unified'].lower())
+
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
         'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map},
-        'emoji_catalog': emoji_catalog
+        'emoji_catalog': emoji_catalog,
+        'patched_css_classes': patched_css_classes
     })
     emoji_codes_file.close()
 

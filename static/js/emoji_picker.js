@@ -69,7 +69,7 @@ function generate_emoji_picker_content(id) {
             emojis[emoji_name] = {
                 name: emoji_name,
                 has_reacted: true,
-                css_class: emoji.emoji_name_to_css_class(emoji_name),
+                css_class: emoji.emojis_name_to_css_class[emoji_name],
                 is_realm_emoji: emojis[emoji_name].is_realm_emoji,
                 url: emojis[emoji_name].url,
             };
@@ -83,7 +83,7 @@ function generate_emoji_picker_content(id) {
 
         return {
             name: emoji_name,
-            css_class: emoji.emoji_name_to_css_class(emoji_name),
+            css_class: emoji.emojis_name_to_css_class[emoji_name],
             has_reacted: false,
             is_realm_emoji: false,
         };
