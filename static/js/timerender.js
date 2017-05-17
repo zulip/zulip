@@ -8,16 +8,23 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
-// Given an XDate object 'time', return a three-element list containing
-//   - a string for the current human-formatted version
-//   - a string for the current formally formatted version
-//         e.g. "Monday, April 15, 2017"
-//   - a boolean for if it will need to be updated when the day changes
+// Given an XDate object 'time', returns an object:
+// {
+//      time_str:        a string for the current human-formatted version
+//      formal_time_str: a string for the current formally formatted version
+//                          e.g. "Monday, April 15, 2017"
+//      needs_update:    a boolean for if it will need to be updated when the
+//                       day changes
+// }
 exports.render_now = function (time) {
     var start_of_today = set_to_start_of_day(new XDate());
     var start_of_other_day = set_to_start_of_day(time.clone());
 
+    var time_str = '';
+    var needs_update = false;
     // render formal time to be used as title attr tooltip
+    // "\xa0" is U+00A0 NO-BREAK SPACE.
+    // Can't use &nbsp; as that represents the literal string "&nbsp;".
     var formal_time_str = time.toString('dddd,\xa0MMMM\xa0d,\xa0yyyy');
 
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
@@ -29,20 +36,27 @@ exports.render_now = function (time) {
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
     if (days_old === 0) {
-        return [i18n.t("Today"), formal_time_str, true];
+        time_str = i18n.t("Today");
+        needs_update = true;
     } else if (days_old === 1) {
-        return [i18n.t("Yesterday"), formal_time_str, true];
+        time_str = i18n.t("Yesterday");
+        needs_update = true;
     } else if (days_old >= 365) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is over a year old.
-        return [time.toString("MMM\xa0dd,\xa0yyyy"), formal_time_str, false];
+        time_str = time.toString("MMM\xa0dd,\xa0yyyy");
+        needs_update = false;
+    } else {
+        // For now, if we get a message from tomorrow, we don't bother
+        // rewriting the timestamp when it gets to be tomorrow.
+        time_str = time.toString("MMM\xa0dd");
+        needs_update = false;
     }
-    // For now, if we get a message from tomorrow, we don't bother
-    // rewriting the timestamp when it gets to be tomorrow.
-
-    // "\xa0" is U+00A0 NO-BREAK SPACE.
-    // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    return [time.toString("MMM\xa0dd"), formal_time_str, false];
+    return {
+        time_str: time_str,
+        formal_time_str: formal_time_str,
+        needs_update: needs_update,
+    };
 };
 
 // List of the dates that need to be updated when the day changes.
@@ -69,14 +83,15 @@ function maybe_add_update_list_entry(needs_update, id, time, time_above) {
     }
 }
 
-function render_date_span(elem, time_str, time_above_str, time_formal_str) {
+function render_date_span(elem, rendered_time, rendered_time_above) {
     elem.text("");
-    if (time_above_str !== undefined) {
+    if (rendered_time_above !== undefined) {
         return elem.append('<i class="date-direction icon-vector-caret-up"></i>' +
-                           time_above_str).append($('<hr class="date-line">')).append('<i class="date-direction icon-vector-caret-down"></i>'
-                           + time_str);
+                           rendered_time_above.time_str).append($('<hr class="date-line">')).append(
+                               '<i class="date-direction icon-vector-caret-down"></i>'
+                                   + rendered_time.time_str);
     }
-    return elem.append(time_str).attr('title', time_formal_str);
+    return elem.append(rendered_time.time_str).attr('title', rendered_time.formal_time_str);
 }
 
 // Given an XDate object 'time', return a DOM node that initially
@@ -95,11 +110,11 @@ exports.render_date = function (time, time_above) {
     var node = $("<span />").attr('id', id);
     if (time_above !== undefined) {
         var rendered_time_above = exports.render_now(time_above);
-        node = render_date_span(node, rendered_time[0], rendered_time_above[0], rendered_time[1]);
+        node = render_date_span(node, rendered_time, rendered_time_above);
     } else {
-        node = render_date_span(node, rendered_time[0], undefined, rendered_time[1]);
+        node = render_date_span(node, rendered_time);
     }
-    maybe_add_update_list_entry(rendered_time[2], id, time, time_above);
+    maybe_add_update_list_entry(rendered_time.needs_update, id, time, time_above);
     return node;
 };
 
@@ -124,12 +139,11 @@ exports.update_timestamps = function () {
                 if (elem.length === 3) {
                     time_above = elem[2];
                     var rendered_time_above = exports.render_now(time_above);
-                    render_date_span($(element), rendered_time[0], rendered_time_above[0],
-                        rendered_time[1]);
+                    render_date_span($(element), rendered_time, rendered_time_above);
                 } else {
-                    render_date_span($(element), rendered_time[0], undefined, rendered_time[1]);
+                    render_date_span($(element), rendered_time);
                 }
-                maybe_add_update_list_entry(rendered_time[2], id, time, time_above);
+                maybe_add_update_list_entry(rendered_time.needs_update, id, time, time_above);
             }
         });
 
