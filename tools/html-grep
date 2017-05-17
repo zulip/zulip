@@ -64,7 +64,7 @@ def check_our_files():
     (options, args) = parser.parse_args()
 
     if options.show_all:
-        keywords = [] # type: List[str]
+        keywords = []  # type: List[str]
     else:
         if not args:
             print('No keywords specified...try --help or --no-filter')
