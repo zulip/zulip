@@ -40,7 +40,7 @@ class TimeTrackingConnection(connection):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.queries = [] # type: List[Dict[str, str]]
+        self.queries = []  # type: List[Dict[str, str]]
         super(TimeTrackingConnection, self).__init__(*args, **kwargs)
 
     def cursor(self, *args, **kwargs):
