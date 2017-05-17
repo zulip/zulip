@@ -30,10 +30,6 @@ _.each(emoji_codes.codepoints, function (value) {
                                  emoji_url: "/static/generated/emoji/images/emoji/unicode/" + value + ".png"});
 });
 
-exports.emoji_name_to_css_class = function (emoji_name) {
-    return emoji_codes.name_to_codepoint[emoji_name];
-};
-
 exports.update_emojis = function update_emojis(realm_emojis) {
     // exports.realm_emojis is emptied before adding the realm-specific emoji to it.
     // This makes sure that in case of deletion, the deleted realm_emojis don't
@@ -52,7 +48,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.emojis_by_name = {};
     exports.emojis_name_to_css_class = {};
     _.each(default_emojis, function (emoji) {
-        var css_class = exports.emoji_name_to_css_class(emoji.emoji_name);
+        var css_class = emoji_codes.name_to_codepoint[emoji.emoji_name];
         exports.emojis_name_to_css_class[emoji.emoji_name] = css_class;
         exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
     });

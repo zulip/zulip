@@ -8,8 +8,10 @@ add_dependencies({
 var reactions = require("js/reactions.js");
 
 set_global('emoji', {
-    emoji_name_to_css_class: function (name) {
-        return name + '-css'; // only to make testing easy
+    emojis_name_to_css_class: {
+        frown: 'frown-css',
+        octopus: 'octopus-css',
+        smile: 'smile-css',
     },
     realm_emojis: {},
 });
