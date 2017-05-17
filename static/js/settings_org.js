@@ -176,7 +176,7 @@ exports.set_up = function () {
         e.stopPropagation();
 
         var new_name = $("#id_realm_name").val();
-        var new_description = $("#id_realm_description").val();
+        var new_description = $("#id_realm_description").val().trim();
         var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
