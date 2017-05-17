@@ -97,6 +97,10 @@ exports.populate_auth_methods = function (auth_methods) {
         }));
     });
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
+    if (!page_params.is_admin) {
+        $(".organization-box [data-name='auth-methods']")
+            .find("input, button, select, checked").attr("disabled", true);
+    }
 };
 
 exports.set_up = function () {
@@ -109,7 +113,6 @@ exports.set_up = function () {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
-
 
     $("#id_realm_invite_required").change(function () {
         if (this.checked) {
