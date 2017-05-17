@@ -196,8 +196,8 @@ def get_topic_history_for_stream(user_profile, recipient):
     rows = cursor.fetchall()
     cursor.close()
 
-    topic_names = dict() # type: Dict[str, str]
-    topic_counts = dict() # type: Dict[str, int]
+    topic_names = dict()  # type: Dict[str, str]
+    topic_counts = dict()  # type: Dict[str, int]
     topics = []
     for row in rows:
         topic_name, read, count = row
@@ -722,8 +722,8 @@ def do_send_messages(messages_maybe_none):
     messages = [message for message in messages_maybe_none if message is not None]
 
     # Filter out zephyr mirror anomalies where the message was already sent
-    already_sent_ids = [] # type: List[int]
-    new_messages = [] # type: List[MutableMapping[str, Any]]
+    already_sent_ids = []  # type: List[int]
+    new_messages = []  # type: List[MutableMapping[str, Any]]
     for message in messages:
         if isinstance(message['message'], int):
             already_sent_ids.append(message['message'])
@@ -747,7 +747,7 @@ def do_send_messages(messages_maybe_none):
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
 
-    links_for_embed = set() # type: Set[Text]
+    links_for_embed = set()  # type: Set[Text]
     # Render our messages.
     for message in messages:
         assert message['message'].rendered_content is None
@@ -764,10 +764,10 @@ def do_send_messages(messages_maybe_none):
         message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
-    user_message_flags = defaultdict(dict) # type: Dict[int, Dict[int, List[str]]]
+    user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
-        ums = [] # type: List[UserMessage]
+        ums = []  # type: List[UserMessage]
         for message in messages:
             # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
             ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
@@ -913,7 +913,7 @@ def notify_reaction_update(user_profile, message, emoji_name, op):
              'op': op,
              'user': user_dict,
              'message_id': message.id,
-             'emoji_name': emoji_name} # type: Dict[str, Any]
+             'emoji_name': emoji_name}  # type: Dict[str, Any]
 
     # Update the cached message since new reaction is added.
     update_to_dict_cache([message])
@@ -1034,8 +1034,8 @@ def create_streams_if_needed(realm, stream_dicts):
     # type: (Realm, List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
-    added_streams = [] # type: List[Stream]
-    existing_streams = [] # type: List[Stream]
+    added_streams = []  # type: List[Stream]
+    existing_streams = []  # type: List[Stream]
     for stream_dict in stream_dicts:
         stream, created = create_stream_if_needed(realm,
                                                   stream_dict["name"],
@@ -1123,12 +1123,12 @@ def extract_recipients(s):
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
-        data = ujson.loads(s) # type: ignore # This function has a super weird union argument.
+        data = ujson.loads(s)  # type: ignore # This function has a super weird union argument.
     except ValueError:
         data = s
 
     if isinstance(data, six.string_types):
-        data = data.split(',') # type: ignore # https://github.com/python/typeshed/pull/138
+        data = data.split(',')  # type: ignore # https://github.com/python/typeshed/pull/138
 
     if not isinstance(data, list):
         raise ValueError("Invalid data type for recipients")
@@ -1473,7 +1473,7 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
         user_profile__is_active=True,
         active=True).values("user_profile_id", "recipient__type_id")
 
-    result = dict((stream["id"], []) for stream in stream_dicts) # type: Dict[int, List[int]]
+    result = dict((stream["id"], []) for stream in stream_dicts)  # type: Dict[int, List[int]]
     for sub in subscriptions:
         result[sub["recipient__type_id"]].append(sub["user_profile_id"])
 
@@ -1578,31 +1578,31 @@ def query_all_subs_by_stream(streams):
                                            user_profile__is_active=True,
                                            active=True).select_related('recipient', 'user_profile')
 
-    all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
+    all_subs_by_stream = defaultdict(list)  # type: Dict[int, List[UserProfile]]
     for sub in all_subs:
         all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
     return all_subs_by_stream
 
 def bulk_add_subscriptions(streams, users, from_creation=False):
     # type: (Iterable[Stream], Iterable[UserProfile], bool) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
-    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams]) # type: Mapping[int, Recipient]
-    recipients = [recipient.id for recipient in recipients_map.values()] # type: List[int]
+    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])  # type: Mapping[int, Recipient]
+    recipients = [recipient.id for recipient in recipients_map.values()]  # type: List[int]
 
-    stream_map = {} # type: Dict[int, Stream]
+    stream_map = {}  # type: Dict[int, Stream]
     for stream in streams:
         stream_map[recipients_map[stream.id].id] = stream
 
-    subs_by_user = defaultdict(list) # type: Dict[int, List[Subscription]]
+    subs_by_user = defaultdict(list)  # type: Dict[int, List[Subscription]]
     all_subs_query = Subscription.objects.select_related("user_profile")
     for sub in all_subs_query.filter(user_profile__in=users,
                                      recipient__type=Recipient.STREAM):
         subs_by_user[sub.user_profile_id].append(sub)
 
-    already_subscribed = [] # type: List[Tuple[UserProfile, Stream]]
-    subs_to_activate = [] # type: List[Tuple[Subscription, Stream]]
-    new_subs = [] # type: List[Tuple[UserProfile, int, Stream]]
+    already_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
+    subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
+    new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
     for user_profile in users:
-        needs_new_sub = set(recipients) # type: Set[int]
+        needs_new_sub = set(recipients)  # type: Set[int]
         for sub in subs_by_user[user_profile.id]:
             if sub.recipient_id in needs_new_sub:
                 needs_new_sub.remove(sub.recipient_id)
@@ -1617,7 +1617,7 @@ def bulk_add_subscriptions(streams, users, from_creation=False):
         for recipient_id in needs_new_sub:
             new_subs.append((user_profile, recipient_id, stream_map[recipient_id]))
 
-    subs_to_add = [] # type: List[Tuple[Subscription, Stream]]
+    subs_to_add = []  # type: List[Tuple[Subscription, Stream]]
     for (user_profile, recipient_id, stream) in new_subs:
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
         sub_to_add = Subscription(user_profile=user_profile, active=True,
@@ -1658,8 +1658,8 @@ def bulk_add_subscriptions(streams, users, from_creation=False):
         users = all_subs_by_stream[stream.id]
         return [u.email for u in users]
 
-    sub_tuples_by_user = defaultdict(list) # type: Dict[int, List[Tuple[Subscription, Stream]]]
-    new_streams = set() # type: Set[Tuple[int, int]]
+    sub_tuples_by_user = defaultdict(list)  # type: Dict[int, List[Tuple[Subscription, Stream]]]
+    new_streams = set()  # type: Set[Tuple[int, int]]
     for (sub, stream) in subs_to_add + subs_to_activate:
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
         new_streams.add((sub.user_profile.id, stream.id))
@@ -1729,19 +1729,19 @@ def bulk_remove_subscriptions(users, streams):
     # type: (Iterable[UserProfile], Iterable[Stream]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 
     recipients_map = bulk_get_recipients(Recipient.STREAM,
-                                         [stream.id for stream in streams]) # type: Mapping[int, Recipient]
-    stream_map = {} # type: Dict[int, Stream]
+                                         [stream.id for stream in streams])  # type: Mapping[int, Recipient]
+    stream_map = {}  # type: Dict[int, Stream]
     for stream in streams:
         stream_map[recipients_map[stream.id].id] = stream
 
-    subs_by_user = dict((user_profile.id, []) for user_profile in users) # type: Dict[int, List[Subscription]]
+    subs_by_user = dict((user_profile.id, []) for user_profile in users)  # type: Dict[int, List[Subscription]]
     for sub in Subscription.objects.select_related("user_profile").filter(user_profile__in=users,
                                                                           recipient__in=list(recipients_map.values()),
                                                                           active=True):
         subs_by_user[sub.user_profile_id].append(sub)
 
-    subs_to_deactivate = [] # type: List[Tuple[Subscription, Stream]]
-    not_subscribed = [] # type: List[Tuple[UserProfile, Stream]]
+    subs_to_deactivate = []  # type: List[Tuple[Subscription, Stream]]
+    not_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
     for user_profile in users:
         recipients_to_unsub = set([recipient.id for recipient in recipients_map.values()])
         for sub in subs_by_user[user_profile.id]:
@@ -1767,8 +1767,8 @@ def bulk_remove_subscriptions(users, streams):
                               for stream in new_vacant_streams])
         send_event(event, active_user_ids(user_profile.realm))
 
-    altered_user_dict = defaultdict(list) # type: Dict[int, List[UserProfile]]
-    streams_by_user = defaultdict(list) # type: Dict[int, List[Stream]]
+    altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
+    streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
         altered_user_dict[stream.id].append(sub.user_profile)
@@ -2175,7 +2175,7 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
     realm = get_realm(string_id)
     created = not realm
     if created:
-        kwargs = {} # type: Dict[str, Any]
+        kwargs = {}  # type: Dict[str, Any]
         if restricted_to_domain is not None:
             kwargs['restricted_to_domain'] = restricted_to_domain
         if invite_required is not None:
@@ -2697,7 +2697,7 @@ def update_user_message_flags(message, ums):
     wildcard = message.mentions_wildcard
     mentioned_ids = message.mentions_user_ids
     ids_with_alert_words = message.user_ids_with_alert_words
-    changed_ums = set() # type: Set[UserMessage]
+    changed_ums = set()  # type: Set[UserMessage]
 
     def update_flag(um, should_set, flag):
         # type: (UserMessage, bool, int) -> None
@@ -2781,10 +2781,10 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
              # after confirming it isn't used by any consumers.
              'sender': user_profile.email,
              'user_id': user_profile.id,
-             'message_id': message.id} # type: Dict[str, Any]
+             'message_id': message.id}  # type: Dict[str, Any]
     edit_history_event = {
         'user_id': user_profile.id,
-    } # type: Dict[str, Any]
+    }  # type: Dict[str, Any]
     changed_messages = [message]
 
     # Set first_rendered_content to be the oldest version of the
@@ -3015,7 +3015,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     all_streams_id_set = set(all_streams_id)
     # Listing public streams are disabled for Zephyr mirroring realms.
     if user_profile.realm.is_zephyr_mirror_realm:
-        never_subscribed_stream_ids = set() # type: Set[int]
+        never_subscribed_stream_ids = set()  # type: Set[int]
     else:
         never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
     never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
@@ -3138,12 +3138,12 @@ def validate_email(user_profile, email):
 
 def do_invite_users(user_profile, invitee_emails, streams, body=None):
     # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
-    validated_emails = [] # type: List[Text]
-    errors = [] # type: List[Tuple[Text, str]]
-    skipped = [] # type: List[Tuple[Text, str]]
+    validated_emails = []  # type: List[Text]
+    errors = []  # type: List[Tuple[Text, str]]
+    skipped = []  # type: List[Tuple[Text, str]]
 
-    ret_error = None # type: Optional[str]
-    ret_error_data = {} # type: Dict[str, Union[List[Tuple[Text, str]], bool]]
+    ret_error = None  # type: Optional[str]
+    ret_error_data = {}  # type: Dict[str, Union[List[Tuple[Text, str]], bool]]
 
     for email in invitee_emails:
         if email == '':
