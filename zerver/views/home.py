@@ -116,7 +116,7 @@ def home_real(request):
        int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version():
         return accounts_accept_terms(request)
 
-    narrow = [] # type: List[List[Text]]
+    narrow = []  # type: List[List[Text]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
@@ -201,7 +201,7 @@ def home_real(request):
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,
-        initial_servertime    = time.time(), # Used for calculating relative presence age
+        initial_servertime    = time.time(),  # Used for calculating relative presence age
         default_language_name = get_language_name(register_ret['default_language']),
         language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
         language_list         = get_language_list(),
