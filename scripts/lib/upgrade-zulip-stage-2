@@ -66,6 +66,11 @@ subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-produ
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"),
                        deploy_path])
 
+# Generate any new secrets that were added in the new version required.
+# TODO: Do caching to only run this when it has changed.
+subprocess.check_call([os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"),
+                       "--production"])
+
 # And then, building/installing the static assets.
 if args.from_git:
     # Note: The fact that this is before we apply puppet changes means
