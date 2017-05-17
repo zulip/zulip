@@ -59,7 +59,7 @@ def get_changed_source_files(other_checkout):
               % (other_checkout,))
         return None
 
-    changed = set() # type: Set[str]
+    changed = set()  # type: Set[str]
     for filename in git_diff.split('\n'):
         if filename in ["package.json", "zproject/settings.py", "tools/minify-js",
                         "tools/tools/webpack.production.config.js"]:
@@ -76,7 +76,7 @@ def get_changed_source_files(other_checkout):
     return changed
 
 
-changed_files = set() # type: Set[str]
+changed_files = set()  # type: Set[str]
 if prev_deploy:
     changed_files = get_changed_source_files(prev_deploy)
     if changed_files is None:
