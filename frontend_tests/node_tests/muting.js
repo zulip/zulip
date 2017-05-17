@@ -1,23 +1,9 @@
 set_global('page_params', {});
 add_dependencies({
-    stream_data: 'js/stream_data',
-    unread: 'js/unread',
-});
-
-set_global('blueslip', {
-    warn: function () {},
+    unread: 'js/unread.js',
 });
 
 var muting = require('js/muting.js');
-
-function make_sub(name, stream_id) {
-    global.stream_data.add_sub(name, {stream_id: stream_id, name: name});
-}
-
-make_sub('devel', 1);
-make_sub('office', 2);
-make_sub('social', 3);
-make_sub('design', 4);
 
 (function test_edge_cases() {
     // private messages
