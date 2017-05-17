@@ -292,6 +292,7 @@
     color: #ccc;
 
     border-radius: 4px;
+    -webkit-filter: grayscale(1) brightness(0.7);
 
     cursor: pointer;
 }
@@ -303,7 +304,6 @@
     background-size: 85%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
-    -webkit-filter: grayscale(1);
 }
 
 .new-style label.checkbox input[type=checkbox]:disabled ~ span {
