@@ -23,6 +23,8 @@ Highlights:
 * Apps documentation now recommends Electron and React Native mobile apps.
 * Added support for users changing their own email address.
 * Added a new saved drafts feature, backed by local storage.
+* Added support for mobile push notifications to be forwarded to the
+  app store mobile apps through zulipchat.com.
 
 Full feature Changelog:
 
@@ -49,9 +51,14 @@ Full feature Changelog:
 * Added new PRIVACY_POLICY setting to provide a Markdown privacy policy.
 * Added an icon to distinguish bot users as message senders.
 * Added a command-line Slack importer tool using the API.
+* Added new announcement notifications on stream creation.
+* Added support for some newer unicode emoji code points.
+* Extended data available to mobile apps to cover the entire API.
 * Redesigned bots UI.  Now can changing owners and reactivate bots.
 * Redesigned the visuals of code blocks to be prettier.
-* Changed right sidebar presence UI to only show recently active users.
+* Changed right sidebar presence UI to only show recently active users
+  in large organizations.  This has a huge performance benefit.
+* Changed color for private messages to look better.
 * Converted realm emoji to be uploaded, not links, for better robustness.
 * Switched the default password hasher for new passwords to Argon2.
 * Increased the paragraph spacing, making multi-paragraph.
@@ -63,10 +70,12 @@ Full feature Changelog:
 * Improved markdown support for bulleted lists.
 * Improved copy-to-clipboard support in various places.
 * Improved subject lines of missed message emails.
-* Significantly improved UI of off-the-Internet errors.
+* Improved handling of users trying to login with Oauth without an account.
+* Improved UI of off-the-Internet errors to not be hidden in narrow windows.
 * Parallelized the backend test suite; now runs 1600 tests in <30s.
-* Fixed various bugs and performance issues with stream management.
+* Fixed numerous bugs and performance issues with stream management.
 * Fixed an issue with the fake emails assigned to bot users.
+* Fixed a major performance issue in stream creation.
 * Fixed a subtle interaction between click-to-reply and copy-paste.
 * Fixed various formatting issues with /me messages.
 * Fixed numerous real-time sync issues involving users changing their
@@ -92,9 +101,11 @@ Full feature Changelog:
   log files names have changed for all the queue workers.
 * Refactored various endpoints to use a single code path for security
   hardening.
-* Removed support for the MANDRILL_CLIENT setting.  It hadn't been
+* Removed support for the `MANDRILL_CLIENT` setting.  It hadn't been
   used in years.
-* Changed NOREPLY_EMAIL_ADDRESS setting to `Name <user@example.com>` format.
+* Changed `NOREPLY_EMAIL_ADDRESS` setting to `Name <user@example.com>`
+  format.
+* Disabled the web tutorial on mobile.
 * Backend test coverage is now 92%, with 100% in views code.
 
 ### 1.5.1 -- 2017-02-07
