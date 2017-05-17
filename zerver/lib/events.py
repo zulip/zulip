@@ -55,7 +55,7 @@ def get_realm_user_dicts(user_profile):
 def fetch_initial_state_data(user_profile, event_types, queue_id,
                              include_subscribers=True):
     # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
-    state = {'queue_id': queue_id} # type: Dict[str, Any]
+    state = {'queue_id': queue_id}  # type: Dict[str, Any]
 
     if event_types is None:
         want = lambda msg_type: True
