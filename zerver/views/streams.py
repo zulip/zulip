@@ -38,8 +38,8 @@ from typing import Text
 class PrincipalError(JsonableError):
     def __init__(self, principal, status_code=403):
         # type: (Text, int) -> None
-        self.principal = principal # type: Text
-        self.status_code = status_code # type: int
+        self.principal = principal  # type: Text
+        self.status_code = status_code  # type: int
 
     def to_json_error_msg(self):
         # type: () -> Text
@@ -128,7 +128,7 @@ def update_subscriptions_backend(request, user_profile,
     method_kwarg_pairs = [
         (add_subscriptions_backend, dict(streams_raw=add)),
         (remove_subscriptions_backend, dict(streams_raw=delete))
-    ] # type: List[FuncKwargPair]
+    ]  # type: List[FuncKwargPair]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
 def compose_views(request, user_profile, method_kwarg_pairs):
@@ -143,7 +143,7 @@ def compose_views(request, user_profile, method_kwarg_pairs):
     TODO: Move this a utils-like module if we end up using it more widely.
     '''
 
-    json_dict = {} # type: Dict[str, Any]
+    json_dict = {}  # type: Dict[str, Any]
     with transaction.atomic():
         for method, kwargs in method_kwarg_pairs:
             response = method(request, user_profile, **kwargs)
@@ -184,7 +184,7 @@ def remove_subscriptions_backend(request, user_profile,
     else:
         people_to_unsub = set([user_profile])
 
-    result = dict(removed=[], not_subscribed=[]) # type: Dict[str, List[Text]]
+    result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[Text]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
 
     for (subscriber, stream) in removed:
@@ -236,7 +236,7 @@ def add_subscriptions_backend(request, user_profile,
     # type: (HttpRequest, UserProfile, Iterable[Mapping[str, Text]], bool, bool, List[Text], bool) -> HttpResponse
     stream_dicts = []
     for stream_dict in streams_raw:
-        stream_dict_copy = {} # type: Dict[str, Any]
+        stream_dict_copy = {}  # type: Dict[str, Any]
         for field in stream_dict:
             stream_dict_copy[field] = stream_dict[field]
         # Strip the stream name here.
@@ -265,7 +265,7 @@ def add_subscriptions_backend(request, user_profile,
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
 
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list)) # type: Dict[str, Any]
+    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))  # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
         result["subscribed"][subscriber.email].append(stream.name)
     for (subscriber, stream) in already_subscribed:
@@ -409,7 +409,7 @@ def json_stream_exists(request, user_profile, stream_name=REQ("stream"),
         bulk_add_subscriptions([stream], [user_profile])
         result["subscribed"] = True
 
-    return json_success(result) # results are ignored for HEAD requests
+    return json_success(result)  # results are ignored for HEAD requests
 
 @has_request_variables
 def json_get_stream_id(request, user_profile, stream_name=REQ('stream')):
