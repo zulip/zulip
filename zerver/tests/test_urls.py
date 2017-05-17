@@ -59,7 +59,7 @@ class PublicURLTest(ZulipTestCase):
             if doc.startswith(".") or '~' in doc or '#' in doc:
                 continue  # nocoverage -- just here for convenience
             if doc not in {'main.html', 'index.md', 'include'}:
-                get_urls[200].append('/help/' + os.path.splitext(doc)[0]) # Strip the extension.
+                get_urls[200].append('/help/' + os.path.splitext(doc)[0])  # Strip the extension.
 
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
