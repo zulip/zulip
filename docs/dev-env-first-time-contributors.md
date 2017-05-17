@@ -48,6 +48,7 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 - **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended), Git,
   [VirtualBox][vbox-dl], [Vagrant][vagrant-dl-macos].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
+  - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-X or AMD-V), administrator access,
   [Git for Windows][git-bash] (which installs Git BASH), [VirtualBox][vbox-dl],
@@ -62,6 +63,7 @@ Jump to:
 
 * [macOS](#macos)
 * [Ubuntu](#ubuntu)
+* [Debian](#debian)
 * [Windows](#windows-10)
 
 #### macOS
@@ -151,6 +153,32 @@ If you encounter an error running `vagrant lxc sudoers`, [see
 this](#permissions-errors).
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
+
+#### Debian
+
+The setup for Debian 9.0 "stretch" is just like [for Ubuntu 16.04](#ubuntu),
+with one difference.
+
+If you're in a hurry, you can copy and paste the following into your terminal
+after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
+
+```
+sudo apt-get -y purge vagrant && \
+wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb && \
+sudo dpkg -i vagrant*.deb && \
+sudo apt-get -y install build-essential git ruby lxc redir && \
+vagrant plugin install vagrant-lxc && \
+vagrant lxc sudoers
+```
+
+For a step-by-step explanation, follow the [Ubuntu instructions above](#ubuntu),
+with the following difference: in "2. Install remaining dependencies", the
+command is
+
+```
+sudo apt-get install build-essential git ruby lxc redir
+```
+
 
 #### Windows 10
 
