@@ -682,7 +682,7 @@ td.pointer {
     margin-bottom: 10px;
 }
 
-.floating_recipient {
+.floating_recipient .recipient_row {
     border-top: 1px solid #e2e2e2;
 }
 
