@@ -89,7 +89,6 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
-            "notifications_stream",
             "pm_content_in_desktop_notifications",
             "pointer",
             "poll_timeout",
@@ -121,6 +120,7 @@ class HomeTest(ZulipTestCase):
             "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
+            "realm_notifications_stream_id",
             "realm_password_auth_enabled",
             "realm_presence_disabled",
             "realm_restricted_to_domain",
@@ -309,7 +309,7 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params['notifications_stream'], 'Denmark')
+        self.assertEqual(page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id)
 
     def test_people(self):
         # type: () -> None

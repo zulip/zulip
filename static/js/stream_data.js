@@ -445,6 +445,15 @@ exports.initialize_from_page_params = function () {
     populate_subscriptions(page_params.unsubscribed, false);
     populate_subscriptions(page_params.never_subscribed, false);
 
+    // Migrate the notifications stream from the new API structure to
+    // what the frontend expects.
+    if (page_params.realm_notifications_stream_id !== -1) {
+        page_params.notifications_stream =
+            exports.get_sub_by_id(page_params.realm_notifications_stream_id).name;
+    } else {
+        page_params.notifications_stream = "";
+    }
+
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subscriptions;
     delete page_params.unsubscribed;

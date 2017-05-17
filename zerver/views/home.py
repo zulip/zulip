@@ -172,11 +172,6 @@ def home_real(request):
             logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
             latest_read = None
 
-    if user_profile.realm.notifications_stream:
-        notifications_stream = user_profile.realm.notifications_stream.name
-    else:
-        notifications_stream = ""
-
     # Set default language and make it persist
     default_language = register_ret['default_language']
     url_lang = '/{}'.format(request.LANGUAGE_CODE)
@@ -213,7 +208,6 @@ def home_real(request):
         needs_tutorial        = needs_tutorial,
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
-        notifications_stream  = notifications_stream,
         cross_realm_bots      = list(get_cross_realm_dicts()),
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
