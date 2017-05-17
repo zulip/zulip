@@ -24,7 +24,7 @@ def validate_order(order, length):
 
 def renumber_migration(conflicts, order, last_correct_migration):
     # type: (List[str], List[int], str) -> None
-    stack = [] # type: List[str]
+    stack = []  # type: List[str]
     for i in order:
         if conflicts[i-1][0:4] not in stack:
             stack.append(conflicts[i-1][0:4])
@@ -61,8 +61,8 @@ def resolve_conflicts(conflicts, files_list):
 if __name__ == '__main__':
 
     while True:
-        conflicts = [] # type: list[str]
-        stack = [] # type: list[str]
+        conflicts = []  # type: list[str]
+        stack = []  # type: list[str]
         files_list = [os.path.basename(path) for path in glob.glob("zerver/migrations/????_*.py")]
         file_index = [file[0:4] for file in files_list]
 
