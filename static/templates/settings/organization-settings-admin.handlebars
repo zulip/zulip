@@ -1,5 +1,7 @@
 <div id="organization-settings" data-name="organization-settings" class="settings-section">
     <form class="form-horizontal admin-realm-form">
+        <h3 class="light">{{t "Organization settings" }}</h3>
+
         <div class="alert" id="admin-realm-name-status"></div>
         <div class="alert" id="admin-realm-description-status"></div>
         <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
@@ -192,7 +194,10 @@
             </div>
             {{/if}}
         </div>
-        <div class="realm-icon-section box-shadow border-radius">
+
+        <h3 class="light">{{t "Organization avatar" }}</h3>
+
+        <div class="realm-icon-section">
             <div class="inline-block">
                 <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
                 <div id="realm_icon_file_input_error" class="text-error"></div>
@@ -200,8 +205,8 @@
                        id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
                 <div id="upload_icon_spinner"></div>
             </div>
-            <div class="inline-block">
-                <button class="button white rounded sea-green w-200 m-t-10 block input-size"
+            <div class="inline-block avatar-controls">
+                <button class="button white rounded sea-green w-200 block input-size"
                         id="realm_icon_upload_button">{{t 'Upload new icon' }}</button>
                 <button class="button white rounded btn-danger w-200 m-t-10 block input-size"
                         id="realm_icon_delete_button">{{t 'Delete icon' }}</button>

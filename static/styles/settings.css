@@ -74,10 +74,16 @@ label {
 
 .user-avatar-section,
 .realm-icon-section {
-    float: right;
+    position: relative;
+
+    overflow: hidden;
+}
+
+.user-avatar-section .avatar-controls,
+.realm-icon-section .avatar-controls {
     background-color: #fff;
-    margin: 20px 0px;
-    padding: 20px;
+    padding: 10px;
+    margin-left: 10px;
 }
 
 .realm-icon-section {
@@ -87,7 +93,11 @@ label {
 
 .user-avatar-section .inline-block,
 .realm-icon-section .inline-block {
-    display: block;
+    margin: 10px 20px 0px 0px;
+    vertical-align: top;
+
+    border-radius: 4px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
 .admin-realm-description {
@@ -262,6 +272,14 @@ td .button {
 .admin-restricted-to-domain input[type=checkbox] + .inline,
 input[type=checkbox] + .inline-block {
     margin-left: 10px;
+}
+
+.admin-realm-form h3 {
+    margin-bottom: 0px;
+}
+
+.organization-settings-parent div:first-of-type {
+    margin-top: 10px;
 }
 
 #user-settings-avatar,
@@ -754,6 +772,12 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
     width: 200px;
     height: 200px;
+
+    transition: all 0.3s ease;
+}
+
+#user-settings-avatar:hover {
+    -webkit-filter: brightness(0.5);
 }
 
 #realm-settings-icon {
@@ -761,7 +785,6 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
     width: 100px;
     height: 100px;
-    margin-left: 25%;
 }
 /* -- new settings overlay -- */
 #settings_page {
@@ -1070,27 +1093,12 @@ input[type=text]#settings_search {
         float: none;
         display: inline-block;
     }
-
-    .user-avatar-section .inline-block,
-    .realm-icon-section .inline-block {
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    .user-avatar-section .inline-block {
-        margin: 0px 10px;
-    }
-
-    .realm-icon-section .inline-block {
-        margin: 0px 25px;
-    }
 }
 
-@media (max-width: 856px) {
-    .user-avatar-section .inline-block,
-    .realm-icon-section .inline-block {
-        display: block;
-        margin: 0;
+@media (max-width: 786px) {
+    #user-settings-avatar {
+        width: 220px;
+        height: 220px;
     }
 }
 
