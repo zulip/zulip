@@ -66,7 +66,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
                              status_val, new_user_input)
 
     if ping_only:
-        ret = {} # type: Dict[str, Any]
+        ret = {}  # type: Dict[str, Any]
     else:
         ret = get_status_list(user_profile)
 
