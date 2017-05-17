@@ -158,6 +158,10 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
 exports.get_next_topic = function (curr_stream, curr_topic) {
     var my_streams = stream_sort.get_streams();
 
+    my_streams = _.filter(my_streams, function (stream_name) {
+        return stream_data.name_in_home_view(stream_name);
+    });
+
     function get_unmuted_topics(stream_name) {
         var topic_objs = stream_data.get_recent_topics(stream_name) || [];
         var topics = _.map(topic_objs, function (obj) { return obj.subject; });
