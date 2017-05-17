@@ -121,7 +121,7 @@ class IntegrationView(ApiURLView):
 
 def api_endpoint_docs(request):
     # type: (HttpRequest) -> HttpResponse
-    context = {} # type: Dict[str, Any]
+    context = {}  # type: Dict[str, Any]
     add_api_uri_context(context, request)
 
     raw_calls = open('templates/zerver/api_content.json', 'r').read()
