@@ -1027,6 +1027,12 @@ class AbstractMessage(ModelReprMixin, models.Model):
     class Meta(object):
         abstract = True
 
+    def __unicode__(self):
+        # type: () -> Text
+        display_recipient = get_display_recipient(self.recipient)
+        return u"<%s: %s / %s / %r>" % (self.__class__.__name__, display_recipient,
+                                        self.subject, self.sender)
+
 
 class ArchivedMessage(AbstractMessage):
     archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
@@ -1041,11 +1047,6 @@ class Message(AbstractMessage):
         eventual switch over to a separate topic table.
         """
         return self.subject
-
-    def __unicode__(self):
-        # type: () -> Text
-        display_recipient = get_display_recipient(self.recipient)
-        return u"<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)
 
     def get_realm(self):
         # type: () -> Realm
@@ -1226,6 +1227,12 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
         # type: () -> List[str]
         return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
 
+    def __unicode__(self):
+        # type: () -> Text
+        display_recipient = get_display_recipient(self.message.recipient)
+        return u"<%s: %s / %s (%s)>" % (self.__class__.__name__, display_recipient,
+                                        self.user_profile.email, self.flags_list())
+
 
 class ArchivedUserMessage(AbstractUserMessage):
     message = models.ForeignKey(ArchivedMessage)  # type: Message
@@ -1234,11 +1241,6 @@ class ArchivedUserMessage(AbstractUserMessage):
 
 class UserMessage(AbstractUserMessage):
     message = models.ForeignKey(Message)  # type: Message
-
-    def __unicode__(self):
-        # type: () -> Text
-        display_recipient = get_display_recipient(self.message.recipient)
-        return u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_list())
 
 
 def parse_usermessage_flags(val):
@@ -1268,6 +1270,10 @@ class AbstractAttachment(ModelReprMixin, models.Model):
     class Meta(object):
         abstract = True
 
+    def __unicode__(self):
+        # type: () -> Text
+        return u"<%s: %s>" % (self.__class__.__name__, self.file_name,)
+
 
 class ArchivedAttachment(AbstractAttachment):
     archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
@@ -1276,10 +1282,6 @@ class ArchivedAttachment(AbstractAttachment):
 
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)  # type: Manager
-
-    def __unicode__(self):
-        # type: () -> Text
-        return u"<Attachment: %s>" % (self.file_name,)
 
     def is_claimed(self):
         # type: () -> bool
