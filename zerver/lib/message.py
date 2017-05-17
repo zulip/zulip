@@ -300,7 +300,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
     """
 
     if message_users is None:
-        message_user_ids = set() # type: Set[int]
+        message_user_ids = set()  # type: Set[int]
     else:
         message_user_ids = {u.id for u in message_users}
 
@@ -315,7 +315,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
         if realm is None:
             realm = message.get_realm()
 
-    possible_words = set() # type: Set[Text]
+    possible_words = set()  # type: Set[Text]
     if realm_alert_words is not None:
         for user_id, words in realm_alert_words.items():
             if user_id in message_user_ids:
