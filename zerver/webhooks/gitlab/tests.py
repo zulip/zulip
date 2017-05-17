@@ -16,6 +16,12 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = u"Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.send_and_test_stream_message('push', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
 
+    def test_push_local_branch_without_commits(self):
+        # type: () -> None
+        expected_subject = u"my-awesome-project / changes"
+        expected_message = u"Eeshan Garg [pushed](https://gitlab.com/eeshangarg/my-awesome-project/compare/0000000000000000000000000000000000000000...68d7a5528cf423dfaac37dd62a56ac9cc8a884e3) the branch changes."
+        self.send_and_test_stream_message('push_local_branch_without_commits', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
+
     def test_push_event_message_filtered_by_branches(self):
         # type: () -> None
         self.url = self.build_webhook_url(branches='master,tomek')
