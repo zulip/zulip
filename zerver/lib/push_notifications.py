@@ -243,7 +243,7 @@ def send_android_push_notification(devices, data, remote=False):
         DeviceTokenClass = PushDeviceToken
 
     try:
-        res = gcm.json_request(registration_ids=reg_ids, data=data)
+        res = gcm.json_request(registration_ids=reg_ids, data=data, retries=10)
     except IOError as e:
         logging.warning(str(e))
         return
