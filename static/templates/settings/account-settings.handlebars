@@ -2,6 +2,7 @@
     <div class="alert" id="account-settings-status"></div>
     <div class="account-settings-form">
         <form class="email-change-form">
+            <h3 class="light">{{t "User settings" }}</h3>
             <p for="change_email" class="inline-block title">
                 {{t "Email" }}: <span id='email_value'>{{page_params.email}}</span>
                 <a id="change_email" href="#change_email" {{#if page_params.realm_email_changes_disabled}}style="display:none" {{/if}}title="{{t 'Change email' }}">[{{t "Change" }}]</a>
@@ -93,15 +94,17 @@
                 </div>
             </div>
 
-            <div class="user-avatar-section box-shadow border-radius">
+            <h3 class="light">{{t "User avatar" }}</h3>
+
+            <div class="user-avatar-section">
                 <div class="inline-block">
                     <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
                     <div id="user_avatar_file_input_error" class="text-error"></div>
                     <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
                     <div id="upload_avatar_spinner"></div>
                 </div>
-                <div class="inline-block">
-                    <button class="button white rounded sea-green w-200 m-t-20 block" id="user_avatar_upload_button">
+                <div class="inline-block avatar-controls">
+                    <button class="button white rounded sea-green w-200 block" id="user_avatar_upload_button">
                         {{t 'Upload new avatar' }}
                     </button>
                     <button class="button white rounded btn-danger w-200 m-t-20 block" id="user_avatar_delete_button">
