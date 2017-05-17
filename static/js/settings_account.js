@@ -11,16 +11,10 @@ exports.update_email = function (new_email) {
 };
 
 function settings_change_error(message, xhr) {
-    // Scroll to the top so the error message is visible.
-    // We would scroll anyway if we end up submitting the form.
-    message_viewport.scrollTop(0);
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
 
 function settings_change_success(message) {
-    // Scroll to the top so the error message is visible.
-    // We would scroll anyway if we end up submitting the form.
-    message_viewport.scrollTop(0);
     ui_report.success(message, $('#account-settings-status').expectOne());
 }
 
