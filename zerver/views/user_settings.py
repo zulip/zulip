@@ -171,7 +171,7 @@ def update_display_settings_backend(request, user_profile,
             emojiset not in UserProfile.emojiset_choices()):
         raise JsonableError(_("Invalid emojiset '%s'" % (emojiset,)))
 
-    result = {} # type: Dict[str, Any]
+    result = {}  # type: Dict[str, Any]
     if (default_language is not None and
             user_profile.default_language != default_language):
         do_set_user_display_setting(user_profile, "default_language", default_language)
