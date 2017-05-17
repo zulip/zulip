@@ -59,9 +59,9 @@ def get_old_conf(output_filename):
         return {}
 
     secrets_file = six.moves.configparser.RawConfigParser()
-    secrets_file.read(output_filename)  # type: ignore
+    secrets_file.read(output_filename)
 
-    return dict(secrets_file.items("secrets"))
+    return dict(secrets_file.items("secrets"))  # type: ignore
 
 def generate_secrets(development=False):
     # type: (bool) -> None
