@@ -29,16 +29,19 @@ class Jinja2(django_jinja2.Jinja2):
         # type: (Dict[str, Any], *Any, **Any) -> None
         # We need to remove `context_processors` from `OPTIONS` because
         # `Environment` doesn't expect it
-        self.context_processors = params['OPTIONS'].pop('context_processors', [])
-        self.debug = params['OPTIONS'].pop('debug', False)
+        context_processors = params['OPTIONS'].pop('context_processors', [])
+        debug = params['OPTIONS'].pop('debug', False)
         super(Jinja2, self).__init__(params, *args, **kwargs)
+
+        # We need to create these two properties after calling the __init__
+        # of base class so that they are not overridden.
+        self.context_processors = context_processors
+        self.debug = debug
 
     def get_template(self, template_name):
         # type: (str) -> Template
         try:
-            return Template(self.env.get_template(template_name),
-                            self.context_processors,
-                            self.debug)
+            return Template(self.env.get_template(template_name), self)
         except jinja2.TemplateNotFound as exc:
             six.reraise(TemplateDoesNotExist, TemplateDoesNotExist(exc.args),
                         sys.exc_info()[2])
@@ -48,9 +51,7 @@ class Jinja2(django_jinja2.Jinja2):
 
     def from_string(self, template_code):
         # type: (str) -> Template
-        return Template(self.env.from_string(template_code),
-                        self.context_processors,
-                        self.debug)
+        return Template(self.env.from_string(template_code), self)
 
 
 class Template(django_jinja2.Template):
@@ -60,12 +61,15 @@ class Template(django_jinja2.Template):
         processors to the context before passing it to the `render`
         function.
         """
-
-        def __init__(self, template, context_processors, debug, *args, **kwargs):
-            # type: (str, List[str], bool, *Any, **Any) -> None
-            self.context_processors = context_processors
-            self.debug = debug
-            super(Template, self).__init__(template, *args, **kwargs)
+        def __init__(self, template, backend):
+            # type: (django_jinja2.Template, django_jinja2.BaseEngine) -> None
+            # TODO: Remove this function once we shift to Django 1.11 completely.
+            # This is only intended for backward compatibility.
+            self.template = template
+            self.backend = backend
+            self.origin = django_jinja2.Origin(
+                name=template.filename, template_name=template.name,
+            )
 
         def render(self, context=None, request=None):
             # type: (Optional[Union[Dict[str, Any], Context]], Optional[HttpRequest]) -> Text
@@ -86,11 +90,11 @@ class Template(django_jinja2.Template):
                 context['csrf_input'] = csrf_input_lazy(request)
                 context['csrf_token'] = csrf_token_lazy(request)
 
-                for context_processor in self.context_processors:
+                for context_processor in self.backend.context_processors:
                     cp = import_string(context_processor)
                     context.update(cp(request))
 
-            if self.debug:
+            if self.backend.debug:
                 template_rendered.send(sender=self, template=self,
                                        context=context)
 
