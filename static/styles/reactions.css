@@ -151,12 +151,15 @@
 }
 
 .emoji-popover-emoji {
-    float: left;
-    margin: 0.1em;
-    padding: 0.3em;
+    display: inline-block;
+    margin: 0;
+    padding: 6px;
     cursor: pointer;
-    border: 1px solid white;
     border-radius: 0.5em;
+}
+
+.emoji-popover-emoji.hide {
+    display: none;
 }
 
 .emoji-popover .reacted {
