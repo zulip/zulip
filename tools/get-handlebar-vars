@@ -19,9 +19,9 @@ def parse_file(fn):
     # type: (str) -> Dict[str, Any]
     text = open(fn).read()
     tags = re.findall('{+\s*(.*?)\s*}+', text)
-    root = {} # type: Dict[str, Any]
+    root = {}  # type: Dict[str, Any]
     context = root
-    stack = [] # type: List[Dict[str, Any]]
+    stack = []  # type: List[Dict[str, Any]]
 
     def set_var(var, val):
         # type: (str, Any) -> None
@@ -58,7 +58,7 @@ def parse_file(fn):
 
         if tag.startswith('#with '):
             var = tag.split()[1]
-            new_context = {} # type: Dict[str, Any]
+            new_context = {}  # type: Dict[str, Any]
             context[var] = new_context
             stack.append(context)
             context = new_context
