@@ -279,7 +279,7 @@ opportunity to give you comments and suggestions on your work.
 
 ## License
 
-Copyright 2011-2016 Dropbox, Inc. and contributors
+Copyright 2011-2017 Dropbox, Inc., Kandra Labs, Inc., and contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
