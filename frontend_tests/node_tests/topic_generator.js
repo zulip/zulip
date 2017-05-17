@@ -158,10 +158,15 @@ function is_odd(i) { return i % 2 === 1; }
     var curr_topic = 'whatever';
 
     global.stream_sort.get_streams = function () {
-        return ['announce', 'devel', 'test here'];
+        return ['announce', 'muted', 'devel', 'test here'];
     };
 
     global.stream_data.get_recent_topics = function (stream) {
+        if (stream === 'muted') {
+            return [
+                {subject: 'red herring'},
+            ];
+        }
         if (stream === 'devel') {
             return [
                 {subject: 'muted'},
@@ -178,6 +183,10 @@ function is_odd(i) { return i % 2 === 1; }
         }
 
         return 999;
+    };
+
+    global.stream_data.name_in_home_view = function (stream_name) {
+        return (stream_name !== 'muted');
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
