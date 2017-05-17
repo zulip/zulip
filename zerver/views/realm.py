@@ -57,7 +57,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     # further by some more advanced usage of the
     # `REQ/has_request_variables` extraction.
     req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
-    data = {} # type: Dict[str, Any]
+    data = {}  # type: Dict[str, Any]
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:
