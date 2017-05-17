@@ -53,7 +53,7 @@ def run_forever():
     # Keep polling for file changes, similar to how Django does it in
     # django/utils/autoreload.py.  If any of our templates change, rebuild
     # compiled.js
-    mtimes = {} # type: Dict[str, float]
+    mtimes = {}  # type: Dict[str, float]
     error_file_path = os.path.join(settings.DEPLOY_ROOT,
                                    'var/handlebars-templates/compile.error')
     while True:
