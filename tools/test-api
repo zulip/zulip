@@ -29,7 +29,7 @@ from zerver.models import get_user_profile_by_email
 
 
 with test_server_running():
-    email = 'iago@zulip.com' # Iago is an admin
+    email = 'iago@zulip.com'  # Iago is an admin
     api_key = get_user_profile_by_email(email).api_key
     site = 'http://127.0.0.1:9981'
 
