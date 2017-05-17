@@ -30,7 +30,7 @@ def chunkize(text, in_tag):
     # type: (Text, bool) -> Tuple[List[Tuple[Text, Text]], bool]
     start = 0
     idx = 0
-    chunks = [] # type: List[Tuple[Text, Text]]
+    chunks = []  # type: List[Tuple[Text, Text]]
     for c in text:
         if c == '<':
             in_tag = True
