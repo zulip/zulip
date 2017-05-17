@@ -45,8 +45,8 @@ SourceFilter = Callable[[Record], bool]
 # with keyword arguments is not perceived as a common use case."
 # CustomFetch = Callable[[TableData, Config, Context], None]
 # PostProcessData = Callable[[TableData, Config, Context], None]
-CustomFetch = Any # TODO: make more specific, see above
-PostProcessData = Any # TODO: make more specific
+CustomFetch = Any  # TODO: make more specific, see above
+PostProcessData = Any  # TODO: make more specific
 
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
@@ -57,7 +57,7 @@ MessageOutput = Dict[str, Any]
 realm_tables = [("zerver_defaultstream", DefaultStream),
                 ("zerver_realmemoji", RealmEmoji),
                 ("zerver_realmdomain", RealmDomain),
-                ("zerver_realmfilter", RealmFilter)] # List[Tuple[TableName, Any]]
+                ("zerver_realmfilter", RealmFilter)]  # List[Tuple[TableName, Any]]
 
 
 ALL_ZERVER_TABLES = [
@@ -129,7 +129,7 @@ DATE_FIELDS = {
     'zerver_useractivityinterval': ['start', 'end'],
     'zerver_userpresence': ['timestamp'],
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
-} # type: Dict[TableName, List[Field]]
+}  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data):
     # type: (TableData) -> None
@@ -226,7 +226,7 @@ class Config(object):
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter = source_filter
-        self.children = [] # type: List[Config]
+        self.children = []  # type: List[Config]
 
         if normal_parent:
             self.parent = normal_parent
@@ -300,7 +300,7 @@ def export_from_config(response, config, seed_object=None, context=None):
         # When we concat_and_destroy, we are working with
         # temporary "tables" that are lists of records that
         # should already be ready to export.
-        data = [] # type: List[Record]
+        data = []  # type: List[Record]
         for t in config.concat_and_destroy:
             data += response[t]
             del response[t]
@@ -558,8 +558,8 @@ def fetch_user_profile(response, config, context):
     exclude = ['password', 'api_key']
     rows = make_raw(list(query), exclude=exclude)
 
-    normal_rows = [] # type: List[Record]
-    dummy_rows = [] # type: List[Record]
+    normal_rows = []  # type: List[Record]
+    dummy_rows = []  # type: List[Record]
 
     for row in rows:
         if exportable_user_ids is not None:
@@ -754,7 +754,7 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         messages_we_sent_to_them
     ]
 
-    all_message_ids = set() # type: Set[int]
+    all_message_ids = set()  # type: Set[int]
     dump_file_id = 1
 
     for message_query in message_queries:
@@ -793,14 +793,14 @@ def write_message_partial_for_query(realm, message_query, dump_file_id,
         logging.info("Fetched Messages for %s" % (message_filename,))
 
         # Clean up our messages.
-        table_data = {} # type: TableData
+        table_data = {}  # type: TableData
         table_data['zerver_message'] = message_chunk
         floatify_datetime_fields(table_data, 'zerver_message')
 
         # Build up our output for the .partial file, which needs
         # a list of user_profile_ids to search for (as well as
         # the realm id).
-        output = {} # type: MessageOutput
+        output = {}  # type: MessageOutput
         output['zerver_message'] = table_data['zerver_message']
         output['zerver_userprofile_ids'] = list(user_profile_ids)
         output['realm_id'] = realm.id
@@ -1023,7 +1023,7 @@ def do_write_stats_file_for_realm_export(output_dir):
 
 def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
     # type: (Realm, Path, int, Set[int]) -> None
-    response = {} # type: TableData
+    response = {}  # type: TableData
 
     # We need at least one thread running to export
     # UserMessage rows.  The management command should
@@ -1074,7 +1074,7 @@ def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
 
 def export_attachment_table(realm, output_dir, message_ids):
     # type: (Realm, Path, Set[int]) -> None
-    response = {} # type: TableData
+    response = {}  # type: TableData
     fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
     output_file = os.path.join(output_dir, "attachment.json")
     logging.info('Writing attachment table data to %s' % (output_file,))
@@ -1114,7 +1114,7 @@ def launch_user_message_subprocesses(threads, output_dir):
 
 def do_export_user(user_profile, output_dir):
     # type: (UserProfile, Path) -> None
-    response = {} # type: TableData
+    response = {}  # type: TableData
 
     export_single_user(user_profile, response)
     export_file = os.path.join(output_dir, "user.json")
@@ -1217,7 +1217,7 @@ def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
 id_maps = {
     'client': {},
     'user_profile': {},
-} # type: Dict[str, Dict[int, int]]
+}  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table, old_id, new_id):
     # type: (TableName, int, int) -> None
@@ -1559,16 +1559,16 @@ def import_attachments(data):
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
 
-    m2m_rows = [] # type: List[Record]
+    m2m_rows = []  # type: List[Record]
     for parent_row in data[parent_db_table_name]:
         for fk_id in parent_row[child_plural]:
-            m2m_row = {} # type: Record
+            m2m_row = {}  # type: Record
             m2m_row[parent_singular] = parent_row['id']
             m2m_row[child_singular] = fk_id
             m2m_rows.append(m2m_row)
 
     # Create our table data for insert.
-    m2m_data = {m2m_table_name: m2m_rows} # type: TableData
+    m2m_data = {m2m_table_name: m2m_rows}  # type: TableData
     convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
     convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
     m2m_rows = m2m_data[m2m_table_name]
