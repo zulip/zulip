@@ -2058,8 +2058,12 @@ div.floating_recipient {
 }
 
 .katex-html {
-    line-height: initial;
+    line-height: 3em;
     white-space: initial;
+}
+
+.katex-display {
+    margin: 0em 0;
 }
 
 .tex-error {
