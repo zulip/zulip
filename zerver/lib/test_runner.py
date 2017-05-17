@@ -70,7 +70,7 @@ def get_test_method(test):
     return getattr(test, test._testMethodName)
 
 # Each tuple is delay, test_name, slowness_reason
-TEST_TIMINGS = [] # type: List[Tuple[float, str, str]]
+TEST_TIMINGS = []  # type: List[Tuple[float, str, str]]
 
 
 def report_slow_tests():
@@ -94,9 +94,9 @@ def report_slow_tests():
 def enforce_timely_test_completion(test_method, test_name, delay, result):
     # type: (Any, str, float, TestResult) -> None
     if hasattr(test_method, 'slowness_reason'):
-        max_delay = 1.1 # seconds
+        max_delay = 1.1  # seconds
     else:
-        max_delay = 0.4 # seconds
+        max_delay = 0.4  # seconds
 
     if delay > max_delay:
         msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
