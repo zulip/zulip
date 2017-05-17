@@ -7,7 +7,7 @@ import os
 import os.path
 from os.path import dirname, abspath
 if False:
-    from typing import Dict, Optional, Text
+    from typing import Dict, List, Optional, Text
 
 BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -58,8 +58,8 @@ def get_old_conf(output_filename):
     if not os.path.exists(output_filename):
         return {}
 
-    secrets_file = six.moves.configparser.RawConfigParser() # type: ignore # https://github.com/python/typeshed/issues/307
-    secrets_file.read(output_filename)
+    secrets_file = six.moves.configparser.RawConfigParser()
+    secrets_file.read(output_filename)  # type: ignore
 
     return dict(secrets_file.items("secrets"))
 
@@ -71,16 +71,16 @@ def generate_secrets(development=False):
         OUTPUT_SETTINGS_FILENAME = "/etc/zulip/zulip-secrets.conf"
     current_conf = get_old_conf(OUTPUT_SETTINGS_FILENAME)
 
-    lines = []
+    lines = []  # type: List[Text]
     if len(current_conf) == 0:
         lines = [u'[secrets]\n']
 
     def need_secret(name):
-        # type: (Text) -> bool
+        # type: (str) -> bool
         return name not in current_conf
 
     def add_secret(name, value):
-        # type: (Text, Text) -> None
+        # type: (str, Text) -> None
         lines.append("%s = %s\n" % (name, value))
         current_conf[name] = value
 
