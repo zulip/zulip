@@ -64,7 +64,7 @@ from zerver.lib.str_utils import NonBinaryStr
 from contextlib import contextmanager
 import six
 
-API_KEYS = {} # type: Dict[Text, Text]
+API_KEYS = {}  # type: Dict[Text, Text]
 
 def flush_caches_for_testing():
     # type: () -> None
@@ -123,7 +123,7 @@ class ZulipTestCase(TestCase):
         We need to urlencode, since Django's function won't do it for us.
         """
         encoded = urllib.parse.urlencode(info)
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.patch(url, encoded, **kwargs)
 
     @instrument_url
@@ -138,7 +138,7 @@ class ZulipTestCase(TestCase):
         automatically, but not patch.)
         """
         encoded = encode_multipart(BOUNDARY, info)
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.patch(
             url,
             encoded,
@@ -149,7 +149,7 @@ class ZulipTestCase(TestCase):
     def client_put(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.put(url, encoded, **kwargs)
 
     @instrument_url
@@ -164,27 +164,27 @@ class ZulipTestCase(TestCase):
         automatically, but not put.)
         """
         encoded = encode_multipart(BOUNDARY, info)
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.put(url, encoded, content_type=MULTIPART_CONTENT, **kwargs)
 
     @instrument_url
     def client_delete(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.delete(url, encoded, **kwargs)
 
     @instrument_url
     def client_options(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.options(url, encoded, **kwargs)
 
     @instrument_url
     def client_post(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.post(url, info, **kwargs)
 
     @instrument_url
@@ -205,7 +205,7 @@ class ZulipTestCase(TestCase):
     @instrument_url
     def client_get(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
-        django_client = self.client # see WRAPPER_COMMENT
+        django_client = self.client  # see WRAPPER_COMMENT
         return django_client.get(url, info, **kwargs)
 
     example_user_map = dict(
@@ -529,10 +529,10 @@ class WebhookTestCase(ZulipTestCase):
     If you create your url in uncommon way you can override build_webhook_url method
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
-    STREAM_NAME = None # type: Optional[Text]
+    STREAM_NAME = None  # type: Optional[Text]
     TEST_USER_EMAIL = 'webhook-bot@zulip.com'
-    URL_TEMPLATE = None # type: Optional[Text]
-    FIXTURE_DIR_NAME = None # type: Optional[Text]
+    URL_TEMPLATE = None  # type: Optional[Text]
+    FIXTURE_DIR_NAME = None  # type: Optional[Text]
 
     def setUp(self):
         # type: () -> None
