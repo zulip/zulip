@@ -238,7 +238,7 @@ def send_android_push_notification(devices, data, remote=False):
     reg_ids = [device.token for device in devices]
 
     if remote:
-        DeviceTokenClass = RemotePushDeviceToken  # nocoverage # TODO: Test this code path
+        DeviceTokenClass = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
 
