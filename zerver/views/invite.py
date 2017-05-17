@@ -40,7 +40,7 @@ def json_invite_users(request, user_profile,
     if notifications_stream and not notifications_stream.invite_only:
         stream_names.append(notifications_stream.name)
 
-    streams = [] # type: List[Stream]
+    streams = []  # type: List[Stream]
     for stream_name in stream_names:
         try:
             (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
