@@ -790,6 +790,15 @@ class GCMNotSetTest(GCMTest):
                                         "notification, but no API key was "
                                         "configured")
 
+class GCMIOErrorTest(GCMTest):
+    @mock.patch('zerver.lib.push_notifications.gcm.json_request')
+    @mock.patch('logging.warning')
+    def test_json_request_raises_ioerror(self, mock_warn, mock_json_request):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
+        mock_json_request.side_effect = IOError('error')
+        apn.send_android_push_notification_to_user(self.user_profile, {})
+        mock_warn.assert_called_with('error')
+
 class GCMSuccessTest(GCMTest):
     @mock.patch('logging.warning')
     @mock.patch('logging.info')
