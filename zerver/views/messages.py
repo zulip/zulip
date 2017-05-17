@@ -70,8 +70,8 @@ class BadNarrowOperator(JsonableError):
         # type: () -> str
         return _('Invalid narrow operator: {}').format(self.desc)
 
-Query = Any # TODO: Should be Select, but sqlalchemy stubs are busted
-ConditionTransform = Any # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
+Query = Any  # TODO: Should be Select, but sqlalchemy stubs are busted
+ConditionTransform = Any  # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
@@ -579,7 +579,7 @@ def get_messages_backend(request, user_profile,
         # Build the query for the narrow
         num_extra_messages = 0
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
-        search_term = None # type: Optional[Dict[str, Any]]
+        search_term = None  # type: Optional[Dict[str, Any]]
         for term in narrow:
             if term['operator'] == 'search':
                 if not is_search:
@@ -676,9 +676,9 @@ def get_messages_backend(request, user_profile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    search_fields = dict() # type: Dict[int, Dict[str, Text]]
-    message_ids = [] # type: List[int]
-    user_message_flags = {} # type: Dict[int, List[str]]
+    search_fields = dict()  # type: Dict[int, Dict[str, Text]]
+    message_ids = []  # type: List[int]
+    user_message_flags = {}  # type: Dict[int, List[str]]
     if include_history:
         message_ids = [row[0] for row in query_result]
 
