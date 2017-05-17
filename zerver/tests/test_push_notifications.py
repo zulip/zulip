@@ -294,6 +294,15 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_end_to_end(self):
         # type: () -> None
+        remote_gcm_tokens = [u'dddd']
+        for token in remote_gcm_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user_id=self.user_profile.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -305,14 +314,27 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications._do_push_to_apns_service'), \
+                mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
                 mock.patch('logging.info') as mock_info:
-            apn.handle_push_notification(self.user_profile.id, missed_message)
-            devices = [
+            apns_devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.all()
+                for device in RemotePushDeviceToken.objects.filter(
+                    kind=PushDeviceToken.APNS)
             ]
-            mock_info.assert_called_with("APNS: Sending apple push "
-                                         "notification to devices: %s" % (devices,))
+            gcm_devices = [
+                (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
+                for device in RemotePushDeviceToken.objects.filter(
+                    kind=PushDeviceToken.GCM)
+            ]
+            mock_gcm.json_request.return_value = {
+                'success': {gcm_devices[0][2]: message.id}}
+            apn.handle_push_notification(self.user_profile.id, missed_message)
+            mock_info.assert_called_with(
+                "APNS: Sending apple push "
+                "notification to devices: %s" % (apns_devices,))
+            for _, _, token in gcm_devices:
+                mock_info.assert_any_call(
+                    "GCM: Sent %s as %s" % (token, message.id))
 
     def test_disabled_notifications(self):
         # type: () -> None
