@@ -97,7 +97,7 @@ var reaction_show_list = []; // local reaction_show_list
 exports.render_reaction_show_list = function () {
     var reaction_list = $(".emoji-popover-emoji");
     reaction_show_list = reaction_list.filter(function () {
-        return this.style.display === "block" || this.style.display === "";
+        return $(this).css('display') === "inline-block";
     }).toArray();
 };
 
@@ -106,14 +106,15 @@ function filter_emojis() {
     var search_term = elt.val().trim().toLowerCase();
     var reaction_list = $(".emoji-popover-emoji");
     if (search_term !== '') {
-        reaction_list.filter(function () {
-            return this.title.indexOf(search_term) === -1;
-        }).css("display", "none");
-        reaction_list.filter(function () {
-            return this.title.indexOf(search_term) !== -1;
-        }).css("display", "block");
+        reaction_list.each(function () {
+            if (this.title.indexOf(search_term) === -1) {
+                this.classList.add("hide");
+            } else {
+                this.classList.remove("hide");
+            }
+        });
     } else {
-        reaction_list.css("display", "block");
+        reaction_list.removeClass("hide");
     }
     exports.render_reaction_show_list();
 }
