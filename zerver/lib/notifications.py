@@ -80,7 +80,7 @@ def build_message_list(user_profile, messages):
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
-    messages_to_render = [] # type: List[Dict[str, Any]]
+    messages_to_render = []  # type: List[Dict[str, Any]]
 
     def sender_string(message):
         # type: (Message) -> Text
@@ -352,7 +352,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if not messages:
         return
 
-    messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, Text], List[Message]]
+    messages_by_recipient_subject = defaultdict(list)  # type: Dict[Tuple[int, Text], List[Message]]
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
 
