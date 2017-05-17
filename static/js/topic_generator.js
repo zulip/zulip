@@ -158,9 +158,13 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
 exports.get_next_topic = function (curr_stream, curr_topic) {
     var my_streams = stream_sort.get_streams();
 
-    function get_topics(stream) {
-        var topics = stream_data.get_recent_topics(stream) || [];
-        return _.map(topics, function (obj) { return obj.subject; });
+    function get_unmuted_topics(stream_name) {
+        var topic_objs = stream_data.get_recent_topics(stream_name) || [];
+        var topics = _.map(topic_objs, function (obj) { return obj.subject; });
+        topics = _.reject(topics, function (topic) {
+            return muting.is_topic_muted(stream_name, topic);
+        });
+        return topics;
     }
 
     function has_unread_messages(stream_name, topic) {
@@ -170,7 +174,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
 
     return exports.next_topic(
         my_streams,
-        get_topics,
+        get_unmuted_topics,
         has_unread_messages,
         curr_stream,
         curr_topic

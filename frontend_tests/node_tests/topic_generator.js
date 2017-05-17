@@ -1,4 +1,5 @@
 add_dependencies({
+    muting: 'js/muting',
     stream_data: 'js/stream_data',
     stream_sort: 'js/stream_sort',
     unread: 'js/unread',
@@ -163,7 +164,7 @@ function is_odd(i) { return i % 2 === 1; }
     global.stream_data.get_recent_topics = function (stream) {
         if (stream === 'devel') {
             return [
-                {subject: 'javascript'},
+                {subject: 'muted'},
                 {subject: 'python'},
             ];
         }
@@ -179,8 +180,12 @@ function is_odd(i) { return i % 2 === 1; }
         return 999;
     };
 
-    global.unread.topic_has_any_unread = function (stream_id, topic) {
-        return (stream_id === devel_stream_id && topic === 'python');
+    global.unread.topic_has_any_unread = function (stream_id) {
+        return (stream_id === devel_stream_id);
+    };
+
+    global.muting.is_topic_muted = function (stream_name, topic) {
+        return (topic === 'muted');
     };
 
     var next_item = tg.get_next_topic(curr_stream, curr_topic);
