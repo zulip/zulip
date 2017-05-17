@@ -300,7 +300,11 @@ exports.narrow_to_next_topic = function () {
         {operator: 'topic', operand: next_narrow.topic},
     ];
 
-    narrow.activate(filter_expr);
+    var opts = {
+        select_first_unread: true,
+    };
+
+    narrow.activate(filter_expr, opts);
 };
 
 
