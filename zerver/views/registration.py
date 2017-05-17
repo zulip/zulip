@@ -230,7 +230,7 @@ def accounts_register(request):
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
-        return_data = {} # type: Dict[str, bool]
+        return_data = {}  # type: Dict[str, bool]
         auth_result = authenticate(username=user_profile.email,
                                    realm_subdomain=realm.subdomain,
                                    return_data=return_data,
