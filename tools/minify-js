@@ -61,6 +61,10 @@ def get_changed_source_files(other_checkout):
 
     changed = set() # type: Set[str]
     for filename in git_diff.split('\n'):
+        if filename in ["package.json", "zproject/settings.py", "tools/minify-js",
+                        "tools/tools/webpack.production.config.js"]:
+            print("Changed a core JS pipeline file; not reusing cached minification results")
+            return None
         if not filename.startswith(STATIC_PATH):
             continue  # Ignore non-static files.
 
