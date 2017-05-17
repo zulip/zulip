@@ -550,7 +550,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
-    upload_backend = LocalUploadBackend() # type: ZulipUploadBackend
+    upload_backend = LocalUploadBackend()  # type: ZulipUploadBackend
 else:
     upload_backend = S3UploadBackend()
 
