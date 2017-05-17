@@ -26,7 +26,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     do_get_streams, get_default_streams_for_realm, \
-    gather_subscriptions_helper, \
+    gather_subscriptions_helper, get_cross_realm_dicts, \
     get_status_dict, streams_to_dicts_sorted
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
@@ -131,6 +131,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
         state['avatar_url'] = avatar_url(user_profile)
         state['can_create_streams'] = user_profile.can_create_streams()
+        state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
         state['user_id'] = user_profile.id
         state['enter_sends'] = user_profile.enter_sends

@@ -19,7 +19,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_realm_domains
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
-    do_update_pointer, get_cross_realm_dicts, realm_user_count
+    do_update_pointer, realm_user_count
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
@@ -208,7 +208,6 @@ def home_real(request):
         needs_tutorial        = needs_tutorial,
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
-        cross_realm_bots      = list(get_cross_realm_dicts()),
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
