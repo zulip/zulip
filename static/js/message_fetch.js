@@ -178,7 +178,7 @@ util.execute_early(function () {
                 exports.load_old_messages({
                     anchor: latest_id.toFixed(),
                     num_before: 0,
-                    num_after: 400,
+                    num_after: 1000,
                     msg_list: home_msg_list,
                     cont: load_more,
                 });
