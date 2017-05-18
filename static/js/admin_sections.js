@@ -9,6 +9,7 @@ exports.load_admin_section = function (name) {
 
     switch (name) {
         case 'organization-settings':
+        case 'organization-permissions':
         case 'auth-methods':
             section = 'org';
             break;

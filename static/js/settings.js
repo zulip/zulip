@@ -59,6 +59,7 @@ function _setup_page() {
             "muted-topics": i18n.t("Muted topics"),
             "zulip-labs": i18n.t("Zulip labs"),
             "organization-settings": i18n.t("Organization settings"),
+            "organization-permissions": i18n.t("Organization permissions"),
             "emoji-settings": i18n.t("Emoji settings"),
             "auth-methods": i18n.t("Authorization methods"),
             "user-list-admin": i18n.t("Active users"),
