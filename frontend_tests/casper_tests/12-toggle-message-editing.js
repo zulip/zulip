@@ -79,6 +79,15 @@ casper.then(function () {
     casper.click('a[href^="#organization"]');
 });
 
+casper.waitForSelector('#settings_overlay_container.show', function () {
+    casper.test.info('Organization page is active');
+    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
+});
+
+casper.then(function () {
+    casper.click("li[data-section='organization-permissions']");
+});
+
 // deactivate "allow message editing"
 casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');

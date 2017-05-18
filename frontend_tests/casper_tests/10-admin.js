@@ -19,6 +19,11 @@ casper.waitForSelector('#settings_overlay_container.show', function () {
     casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
 });
 
+// Test permissions setting
+casper.then(function () {
+    casper.click("li[data-section='organization-permissions']");
+});
+
 // Test setting limiting stream creation to administrators
 casper.then(function () {
     casper.click('#id_realm_create_stream_by_admins_only + span');
