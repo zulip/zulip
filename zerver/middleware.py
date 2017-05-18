@@ -6,6 +6,7 @@ from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
+from django.utils.deprecation import MiddlewareMixin
 
 from zerver.lib.response import json_error
 from zerver.lib.request import JsonableError
@@ -228,7 +229,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
             error_data = u"[content more than 100 characters]"
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
 
-class LogRequests(object):
+class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
     # method here too
@@ -281,7 +282,7 @@ class LogRequests(object):
                        error_content=content, error_content_iter=content_iter)
         return response
 
-class JsonErrorHandler(object):
+class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request, exception):
         # type: (HttpRequest, Any) -> Optional[HttpResponse]
         if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
@@ -296,7 +297,7 @@ class JsonErrorHandler(object):
             return json_error(_("Internal server error"), status=500)
         return None
 
-class TagRequests(object):
+class TagRequests(MiddlewareMixin):
     def process_view(self, request, view_func, args, kwargs):
         # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         self.process_request(request)
@@ -315,7 +316,7 @@ def csrf_failure(request, reason=""):
     else:
         return html_csrf_failure(request, reason)
 
-class RateLimitMiddleware(object):
+class RateLimitMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
         if not settings.RATE_LIMITING:
@@ -342,7 +343,7 @@ class RateLimitMiddleware(object):
             resp['Retry-After'] = request._ratelimit_secs_to_freedom
             return resp
 
-class FlushDisplayRecipientCache(object):
+class FlushDisplayRecipientCache(MiddlewareMixin):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
         # We flush the per-request caches after every request, so they
@@ -416,7 +417,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                                         httponly=settings.SESSION_COOKIE_HTTPONLY or None)
         return response
 
-class SetRemoteAddrFromForwardedFor(object):
+class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     """
     Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
 

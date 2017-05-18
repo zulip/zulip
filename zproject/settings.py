@@ -344,7 +344,7 @@ TEMPLATES = [
     non_html_template_engine_settings,
 ]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
     'zerver.middleware.TagRequests',
