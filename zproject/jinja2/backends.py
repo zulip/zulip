@@ -46,6 +46,12 @@ class Jinja2(django_jinja2.Jinja2):
             six.reraise(TemplateSyntaxError, TemplateSyntaxError(exc.args),
                         sys.exc_info()[2])
 
+    def from_string(self, template_code):
+        # type: (str) -> Template
+        return Template(self.env.from_string(template_code),
+                        self.context_processors,
+                        self.debug)
+
 
 class Template(django_jinja2.Template):
         """Context processors aware Template.
