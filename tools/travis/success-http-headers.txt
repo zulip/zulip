@@ -4,7 +4,7 @@ WARNING: no certificate subject alternative name matches
   HTTP/1.1 302 Found
   Server: nginx/1.4.6 (Ubuntu)
   Content-Type: text/html; charset=utf-8
-  Transfer-Encoding: chunked
+  Content-Length: 0
   Connection: keep-alive
   Location: /login
   Strict-Transport-Security: max-age=15768000
@@ -13,7 +13,7 @@ Reusing existing connection to localhost:443.
   HTTP/1.1 301 Moved Permanently
   Server: nginx/1.4.6 (Ubuntu)
   Content-Type: text/html; charset=utf-8
-  Transfer-Encoding: chunked
+  Content-Length: 0
   Connection: keep-alive
   Location: /login/
   Strict-Transport-Security: max-age=15768000
@@ -22,10 +22,10 @@ Reusing existing connection to localhost:443.
   HTTP/1.1 200 OK
   Server: nginx/1.4.6 (Ubuntu)
   Content-Type: text/html; charset=utf-8
-  Transfer-Encoding: chunked
+  Content-Length: 6187
   Connection: keep-alive
   Strict-Transport-Security: max-age=15768000
-Length: unspecified [text/html]
+Length: 6187 (6.0K) [text/html]
 Saving to: ‘/tmp/index.html’
 
 
