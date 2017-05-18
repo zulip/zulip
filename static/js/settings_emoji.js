@@ -6,6 +6,16 @@ var meta = {
     loaded: false,
 };
 
+function can_admin_emoji(emoji) {
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (!page_params.realm_add_emoji_by_admins_only && people.is_current_user(emoji.author.email)) {
+        return true;
+    }
+    return false;
+}
+
 exports.reset = function () {
     meta.loaded = false;
 };
@@ -23,7 +33,7 @@ exports.populate_emoji = function (emoji_data) {
                 name: name, source_url: data.source_url,
                 display_url: data.source_url,
                 author: data.author,
-                is_admin: page_params.is_admin,
+                can_admin_emoji: can_admin_emoji(data),
             },
         }));
     });
