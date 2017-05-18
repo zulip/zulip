@@ -4,14 +4,18 @@ from __future__ import print_function
 import sys
 import tornado.web
 import logging
+import six
 from django import http
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
 from django.core.handlers import base
+from django.core.handlers.exception import convert_exception_to_response
 from django.core.urlresolvers import set_script_prefix
 from django.core import signals
 from django.core import exceptions, urlresolvers
+from django.core.exceptions import MiddlewareNotUsed
 from django.http import HttpRequest, HttpResponse
+from django.utils.module_loading import import_string
 from threading import Lock
 from tornado.wsgi import WSGIContainer
 from six.moves import urllib
@@ -21,7 +25,7 @@ from zerver.lib.response import json_response
 from zerver.middleware import async_request_stop, async_request_restart
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 current_handler_id = 0
 handlers = {}  # type: Dict[int, AsyncDjangoHandler]
@@ -85,7 +89,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Set up middleware if needed. We couldn't do this earlier, because
         # settings weren't available.
-        self._request_middleware = None  # type: ignore # See self._request_middleware block below
+        self._request_middleware = None  # type: Optional[List[Callable]]
         self.initLock.acquire()
         # Check that middleware is still uninitialised.
         if self._request_middleware is None:
@@ -100,6 +104,53 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # type: () -> str
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, descriptor)
+
+    def load_middleware(self):
+        # type: () -> None
+        """
+        Populate middleware lists from settings.MIDDLEWARE. This is copied
+        from Django. This uses settings.MIDDLEWARE setting with the old
+        business logic. The middleware architecture is not compatible
+        with our asynchronous handlers. The problem occurs when we return
+        None from our handler. The Django middlewares throw exception
+        because they can't handler None, so we can either upgrade the Django
+        middlewares or just override this method to use the new setting with
+        the old logic. The added advantage is that due to this our event
+        system code doesn't change.
+        """
+        self._request_middleware = []  # type: Optional[List[Callable]]
+        self._view_middleware = []  # type: List[Callable]
+        self._template_response_middleware = []  # type: List[Callable]
+        self._response_middleware = []  # type: List[Callable]
+        self._exception_middleware = []  # type: List[Callable]
+
+        handler = convert_exception_to_response(self._legacy_get_response)
+        for middleware_path in settings.MIDDLEWARE:
+            mw_class = import_string(middleware_path)
+            try:
+                mw_instance = mw_class()
+            except MiddlewareNotUsed as exc:
+                if settings.DEBUG:
+                    if six.text_type(exc):
+                        base.logger.debug('MiddlewareNotUsed(%r): %s', middleware_path, exc)
+                    else:
+                        base.logger.debug('MiddlewareNotUsed: %r', middleware_path)
+                continue
+
+            if hasattr(mw_instance, 'process_request'):
+                self._request_middleware.append(mw_instance.process_request)
+            if hasattr(mw_instance, 'process_view'):
+                self._view_middleware.append(mw_instance.process_view)
+            if hasattr(mw_instance, 'process_template_response'):
+                self._template_response_middleware.insert(0, mw_instance.process_template_response)
+            if hasattr(mw_instance, 'process_response'):
+                self._response_middleware.insert(0, mw_instance.process_response)
+            if hasattr(mw_instance, 'process_exception'):
+                self._exception_middleware.insert(0, mw_instance.process_exception)
+
+        # We only assign to this when initialization is complete as it is used
+        # as a flag for initialization being complete.
+        self._middleware_chain = handler
 
     def get(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
