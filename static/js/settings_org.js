@@ -135,11 +135,8 @@ exports.set_up = function () {
     });
 
     $(".organization").on("submit", "form.admin-realm-form", function (e) {
-        // TODO: We actually have two forms named admin-realm-form.  We really
-        //       should break out a separate endpoint to update the realm's
-        //       auth backends, and then we can make our code more modular by
-        //       having two different form classes, two different click handlers,
-        //       and a separate JS module for handling auth backends.
+        // TODO: We actually have three forms named admin-realm-form.  We really
+        //       should break out three separate forms.
 
         var name_status = $("#admin-realm-name-status").expectOne();
         var description_status = $("#admin-realm-description-status").expectOne();
