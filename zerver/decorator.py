@@ -337,7 +337,7 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
 
 def logged_in_and_active(request):
     # type: (HttpRequest) -> bool
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return False
     if not request.user.is_active:
         return False
@@ -503,7 +503,7 @@ def process_as_post(view_func):
 
 def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     # type: (HttpRequest, Callable[..., HttpResponse], *Any, **Any) -> HttpResponse
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return json_error(_("Not logged in"), status=401)
     user_profile = request.user
     if not user_profile.is_active:
