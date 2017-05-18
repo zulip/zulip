@@ -424,7 +424,7 @@ def get_dev_users(extra_users_count=10):
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return HttpResponseRedirect("/")
     if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
         redirect_url = reverse('zerver.views.registration.find_my_team')

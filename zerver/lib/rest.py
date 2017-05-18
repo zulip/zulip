@@ -89,7 +89,7 @@ def rest_dispatch(request, **kwargs):
             # This request  API based authentication.
             target_function = authenticated_rest_api_view()(target_function)
         # /json views (web client) validate with a session token (cookie)
-        elif not request.path.startswith("/api") and request.user.is_authenticated():
+        elif not request.path.startswith("/api") and request.user.is_authenticated:
             # Authenticated via sessions framework, only CSRF check needed
             target_function = csrf_protect(authenticated_json_view(target_function))
 
