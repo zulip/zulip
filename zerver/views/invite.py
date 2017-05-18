@@ -22,6 +22,8 @@ import re
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails")):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
+        return json_error(_("Must be a realm administrator"))
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
 

@@ -407,6 +407,29 @@ class InviteUserTest(ZulipTestCase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
 
+    def test_require_realm_admin(self):
+        # type: () -> None
+        """
+        The invite_by_admins_only realm setting works properly.
+        """
+        realm = get_realm('zulip')
+        realm.invite_by_admins_only = True
+        realm.save()
+
+        self.login("hamlet@zulip.com")
+        email = "alice-test@zulip.com"
+        email2 = "bob-test@zulip.com"
+        invitee = "Alice Test <{}>, {}".format(email, email2)
+        self.assert_json_error(self.invite(invitee, ["Denmark"]),
+                               "Must be a realm administrator")
+
+        # Now verify an administrator can do it
+        self.login("iago@zulip.com")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+        self.check_sent_emails([email, email2])
+
     def test_invite_user_signup_initial_history(self):
         # type: () -> None
         """
