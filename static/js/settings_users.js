@@ -130,12 +130,14 @@ function populate_users(realm_people_data) {
         name: "users_table_list",
         modifier: function (item) {
             var activity_rendered;
+            var today = new XDate();
             if (people.is_current_user(item.email)) {
-                activity_rendered = timerender.render_date(new XDate());
+                activity_rendered = timerender.render_date(today, undefined, today);
             } else if (presence.presence_info[item.user_id]) {
                 // XDate takes number of milliseconds since UTC epoch.
                 var last_active = presence.presence_info[item.user_id].last_active * 1000;
-                activity_rendered = timerender.render_date(new XDate(last_active));
+                var last_active_date = new XDate(last_active);
+                activity_rendered = timerender.render_date(last_active_date, undefined, today);
             } else {
                 activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
