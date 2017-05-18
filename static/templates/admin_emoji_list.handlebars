@@ -13,12 +13,10 @@
         <span class="emoji_author">Unknown Author</span>
         {{/if}}
     </td>
-    {{#if is_admin}}
     <td>
-        <button class="button white rounded small delete btn-danger" data-emoji-name="{{name}}">
+        <button class="button white rounded small delete btn-danger" {{#unless can_admin_emoji}}disabled="disabled"{{/unless}} data-emoji-name="{{name}}">
             <i class="icon-vector-trash" aria-hidden="true"></i>
         </button>
     </td>
-    {{/if}}
 </tr>
 {{/with}}
