@@ -369,30 +369,6 @@ class InviteUserTest(ZulipTestCase):
             self.assertIn("Message from ", outbox[0].body)
             self.assertIn(custom_body, outbox[0].body)
 
-    def test_bulk_invite_users(self):
-        # type: () -> None
-        """The bulk_invite_users code path is for the first user in a realm."""
-        self.login('hamlet@zulip.com')
-        invitees = ['alice@zulip.com', 'bob@zulip.com']
-        params = {
-            'invitee_emails': ujson.dumps(invitees),
-        }
-        result = self.client_post('/json/invite/bulk', params)
-        self.assert_json_success(result)
-        self.check_sent_emails(invitees)
-
-    def test_bulk_invite_users_invalid_emails(self):
-        # type: () -> None
-        self.login('hamlet@zulip.com')
-        invitees = ['alice@zulip.com', 'bobnoatzulip.com']
-        params = {
-            'invitee_emails': ujson.dumps(invitees),
-        }
-        self.assert_json_error(
-            self.client_post('/json/invite/bulk', params),
-            'Some emails did not validate, so we didn\'t send any invitations.')
-        self.check_sent_emails([])
-
     def test_successful_invite_user(self):
         # type: () -> None
         """
