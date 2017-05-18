@@ -54,7 +54,7 @@ Full feature Changelog:
 * Added new announcement notifications on stream creation.
 * Added support for some newer unicode emoji code points.
 * Extended data available to mobile apps to cover the entire API.
-* Redesigned bots UI.  Now can changing owners and reactivate bots.
+* Redesigned bots UI.  Now can change owners and reactivate bots.
 * Redesigned the visuals of code blocks to be prettier.
 * Changed right sidebar presence UI to only show recently active users
   in large organizations.  This has a huge performance benefit.
@@ -98,7 +98,7 @@ Full feature Changelog:
   email available for backwards-compatibility.  In the future, we may
   remove email support.
 * Cleaned up Zulip's supervisord configuration.  A side effect is the
-  log files names have changed for all the queue workers.
+  names of the log files have changed for all the queue workers.
 * Refactored various endpoints to use a single code path for security
   hardening.
 * Removed support for the `MANDRILL_CLIENT` setting.  It hadn't been
