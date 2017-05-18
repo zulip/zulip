@@ -298,6 +298,7 @@ if PRODUCTION:
 
 TEMPLATES = [
     {
+        'NAME': 'Jinja2',
         'BACKEND': 'zproject.jinja2.backends.Jinja2',
         'DIRS': [
             os.path.join(DEPLOY_ROOT, 'templates'),
