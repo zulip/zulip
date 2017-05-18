@@ -4,11 +4,11 @@ import os
 import re
 
 from django.utils.translation import ugettext as _
-from typing import Text
+from typing import Optional, Text
 from zerver.lib.bugdown import name_to_codepoint
 from zerver.lib.request import JsonableError
 from zerver.lib.upload import upload_backend
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, RealmEmoji, UserProfile
 
 def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None
@@ -20,10 +20,17 @@ def check_valid_emoji(realm, emoji_name):
         return
     raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
 
-def check_emoji_admin(user_profile):
-    # type: (UserProfile) -> None
-    if user_profile.realm.add_emoji_by_admins_only and not user_profile.is_realm_admin:
-        raise JsonableError(_("Must be a realm administrator"))
+def check_emoji_admin(user_profile, emoji_name=None):
+    # type: (UserProfile, Optional[Text]) -> None
+    if user_profile.realm.add_emoji_by_admins_only:
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Must be a realm administrator"))
+    else:
+        if emoji_name is not None:
+            emoji = RealmEmoji.objects.filter(name=emoji_name).first()
+            current_user_is_author = emoji is not None and emoji.author is not None and emoji.author.id == user_profile.id
+            if not user_profile.is_realm_admin and not current_user_is_author:
+                    raise JsonableError(_("Must be a realm administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name):
     # type: (Text) -> None

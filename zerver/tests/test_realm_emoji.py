@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from zerver.lib.actions import get_realm, check_add_realm_emoji
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.test_helpers import get_test_image_file, get_user_profile_by_email
 from zerver.models import RealmEmoji
 import ujson
 
@@ -119,6 +119,31 @@ class RealmEmojiTest(ZulipTestCase):
         check_add_realm_emoji(realm, "my_emoji", "my_emoji.png")
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_error(result, 'Must be a realm administrator')
+
+    def test_delete_admin_or_author(self):
+        # type: () -> None
+        # If any user in a realm can upload the emoji then the user who
+        # uploaded it as well as the admin should be able to delete it.
+        author = get_user_profile_by_email('othello@zulip.com')
+        realm = get_realm('zulip')
+        realm.add_emoji_by_admins_only = False
+        realm.save()
+        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png", author)
+        self.login('othello@zulip.com')
+        result = self.client_delete("/json/realm/emoji/my_emoji")
+        self.assert_json_success(result)
+        self.logout()
+
+        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png", author)
+        self.login('iago@zulip.com')
+        result = self.client_delete("/json/realm/emoji/my_emoji")
+        self.assert_json_success(result)
+        self.logout()
+
+        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png", author)
+        self.login('cordelia@zulip.com')
+        result = self.client_delete("/json/realm/emoji/my_emoji")
+        self.assert_json_error(result, 'Must be a realm administrator or emoji author')
 
     def test_delete_exception(self):
         # type: () -> None
