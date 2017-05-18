@@ -65,18 +65,19 @@ function same_recipient(a, b) {
 
 function add_display_time(group, message_container, prev) {
     var time = new XDate(message_container.msg.timestamp * 1000);
+    var today = new XDate();
 
     if (prev !== undefined) {
         var prev_time = new XDate(prev.msg.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
             // NB: show_date is HTML, inserted into the document without escaping.
-            group.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
+            group.show_date = (timerender.render_date(time, prev_time, today))[0].outerHTML;
             group.show_date_separator = true;
         }
     } else {
         // Show the date in the recipient bar, but not a date separator bar.
         group.show_date_separator = false;
-        group.show_date = (timerender.render_date(time))[0].outerHTML;
+        group.show_date = (timerender.render_date(time, undefined, today))[0].outerHTML;
     }
 
     if (message_container.timestr === undefined) {
@@ -116,7 +117,8 @@ function populate_group_from_message_container(group, message_container) {
     group.subject_links = message_container.msg.subject_links;
 
     var time = new XDate(message_container.msg.timestamp * 1000);
-    var date_element = timerender.render_date(time)[0];
+    var today = new XDate();
+    var date_element = timerender.render_date(time, undefined, today)[0];
 
     group.date = date_element.outerHTML;
 }
@@ -132,8 +134,9 @@ MessageListView.prototype = {
         if (message_container.msg.last_edit_timestamp !== undefined) {
             // Add or update the last_edit_timestr
             var last_edit_time = new XDate(message_container.msg.last_edit_timestamp * 1000);
+            var today = new XDate();
             message_container.last_edit_timestr =
-                (timerender.render_date(last_edit_time))[0].textContent
+                (timerender.render_date(last_edit_time, undefined, today))[0].textContent
                 + " at " + stringify_time(last_edit_time);
         }
     },

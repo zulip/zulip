@@ -16,8 +16,8 @@ var set_to_start_of_day = function (time) {
 //      needs_update:    a boolean for if it will need to be updated when the
 //                       day changes
 // }
-exports.render_now = function (time) {
-    var start_of_today = set_to_start_of_day(new XDate());
+exports.render_now = function (time, today) {
+    var start_of_today = set_to_start_of_day(today || new XDate());
     var start_of_other_day = set_to_start_of_day(time.clone());
 
     var time_str = '';
@@ -103,13 +103,13 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-exports.render_date = function (time, time_above) {
+exports.render_date = function (time, time_above, today) {
     var id = "timerender" + next_timerender_id;
     next_timerender_id += 1;
-    var rendered_time = exports.render_now(time);
+    var rendered_time = exports.render_now(time, today);
     var node = $("<span />").attr('id', id);
     if (time_above !== undefined) {
-        var rendered_time_above = exports.render_now(time_above);
+        var rendered_time_above = exports.render_now(time_above, today);
         node = render_date_span(node, rendered_time, rendered_time_above);
     } else {
         node = render_date_span(node, rendered_time);
