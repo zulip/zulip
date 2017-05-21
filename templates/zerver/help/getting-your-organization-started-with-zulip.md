@@ -70,6 +70,11 @@ effectively.
 - Topics really shine for asynchronous communication.
 - When starting a new conversation, use a new topic, just like you
   would when starting an email thread.
+- In the left sidebar, Zulip will by default show the 5 most recent
+  topics in a stream as well as any topics with unread messages.  You
+  don't need to do anything to "archive" old topics -- they will
+  naturally disappear from recent topics when other topics replace
+  them as the most recent.
 
 ## Familiarize yourself with Zulip’s featureset
 
