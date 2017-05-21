@@ -1,28 +1,22 @@
-# Writing bots
-**This feature is still experimental.**
+# Zulip bot system
 
-The contrib_bots system is a new part of Zulip that allows bot
-developers to write a large class of interactive bots that react to
-messages.
+Zulip's features can be extended by the means of bots and integrations.
 
-With the contrib_bots API, you *can* easily
+* **Integrations** are used to connect Zulip with different chat, scheduling and workflow software.
+  If this is what you are looking for, please check out the [integrations guide](
+  http://zulip.readthedocs.io/en/latest/integration-guide.html?highlight=integrations).
+* **Bots**, as a more general concept, intercept and react to messages.
+  If this is what you are looking for, read on!
 
-* intercept, view, and process messages sent by users on Zulip
-* send out new messages as replies to the processed messages
-
-With this API, you *cannot*
-
-* modify an intercepted message (you have to send a new message)
-* send messages on behalf of or impersonate other users
-* intercept private messages (except for PMs that with the bot as an
-explicit recipient)
+The purpose of this documentation is to provide you with information about Zulip's
+bot system.
 
 On this page you'll find:
 
-* A step-by-step [tutorial](#how-to-deploy-a-bot) on how to deploy a bot.
+* A step-by-step [tutorial](#how-to-run-a-bot) on how to run a bot.
 * A step-by-step [tutorial](#how-to-develop-a-bot) on how to develop a bot.
 * A [documentation](#bot-api) of the bot API.
-* Common [problems](#common-problems) when developing/deploying bots and their solutions.
+* Common [problems](#common-problems) when developing/running bots and their solutions.
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
@@ -31,9 +25,41 @@ that help with writing bots, please visit
 [Zulip development community server](https://chat.zulip.org), open an
 issue, or submit a pull request to share your ideas!
 
-## How to deploy a bot
+# The contrib_bot system
 
-This guide will show you how to deploy a bot on a running Zulip
+Zulip's bot system resides in the `contrib_bots` directory.
+
+ **Note: There exists an additional directory called `bots`. This directory does *not* contain normal bots,
+ but rather unpolished integrations.**
+
+The `contrib_bots` directory structure looks like the following:
+
+```
+contrib_bots
+│   bot_lib.py
+│   run.py
+│
+└───bots
+    └───bot1
+    └───bot2
+        │
+        └───readme.md
+        └───bot2.py
+        └───bot2.config
+        └───libraries
+        |   |
+        |   └───lib1.py
+        └───assets
+           |
+           └───pic.png
+```
+
+Each subdirectory in `bots` contains a bot. When developing bots, try to use the structure outlined
+above as an orientation.
+
+## How to run a bot
+
+This guide will show you how to run a bot on a running Zulip
 server.  It assumes you want to use one of the existing `contrib_bots`
 bots in your Zulip organization.  If you want to write a new one, you
 just need to write the `<my-bot>.py` script.
@@ -141,15 +167,26 @@ handler_class = MyBotHandler
 
 ## Bot API
 
-This section documents the functions every bot needs to implement and
-the structure of the bot's config file.
+This section documents functions every bot needs to implement and the structure of the bot's config file.
+
+With this API, you *can*
+
+* intercept, view, and process messages sent by users on Zulip.
+* send out new messages as replies to the processed messages.
+
+With this API, you *cannot*
+
+* modify an intercepted message (you have to send a new message).
+* send messages on behalf of or impersonate other users.
+* intercept private messages (except for PMs with the bot as an
+explicit recipient).
 
 ### usage
 *usage(self)*
 
 is called to retrieve information about the bot.
 
-#### Arguments
+##### Arguments
 * self - the instance the method is called on.
 
 #### Return values
@@ -234,7 +271,7 @@ None.
       the Vagrant environment.
 
 * My bot works only on some streams.
-    * Subscribe your bot to other streams, as described [here](#how-to-deploy-a-bot).
+    * Subscribe your bot to other streams, as described [here](#how-to-run-a-bot).
 
 ## Future direction
 
