@@ -25,7 +25,7 @@ Contents:
 
 * :ref:`overview`
 * :ref:`zulip-in-production`
-* :ref:`dev-install-docs`
+* :ref:`development-environment`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
 * :ref:`code-testing`
@@ -59,7 +59,7 @@ Contents:
    prod-authentication-methods
    prod-postgres
 
-.. _dev-install-docs:
+.. _development-environment:
 
 .. toctree::
    :maxdepth: 2
