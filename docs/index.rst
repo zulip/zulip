@@ -24,7 +24,7 @@ This set of documents covers installation and contribution instructions.
 Contents:
 
 * :ref:`overview`
-* :ref:`prod-install-docs`
+* :ref:`zulip-in-production`
 * :ref:`dev-install-docs`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
@@ -43,7 +43,7 @@ Contents:
    roadmap
    changelog
 
-.. _prod-install-docs:
+.. _zulip-in-production:
 
 .. toctree::
    :maxdepth: 2
