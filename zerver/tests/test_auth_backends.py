@@ -1295,6 +1295,13 @@ class DevFetchAPIKeyTest(ZulipTestCase):
                                   dict(username=email))
         self.assert_json_error_contains(result, "Enter a valid email address.", 400)
 
+    def test_unregistered_user(self):
+        # type: () -> None
+        email = 'foo@zulip.com'
+        result = self.client_post("/api/v1/dev_fetch_api_key",
+                                  dict(username=email))
+        self.assert_json_error_contains(result, "This user is not registered.", 403)
+
     def test_inactive_user(self):
         # type: () -> None
         do_deactivate_user(self.user_profile)
