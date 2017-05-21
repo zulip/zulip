@@ -76,6 +76,7 @@ def do_rest_call(rest_operation, event, timeout=None):
     request_kwargs['timeout'] = timeout
 
     try:
+        # TODO: Add comment describing structure of data being sent to third party URL.
         response = requests.request(http_method, final_url, data=json.dumps(event), **request_kwargs)
         if str(response.status_code).startswith('2'):
             succeed_with_message(event, "received response: `" + str(response.content) + "`.")
