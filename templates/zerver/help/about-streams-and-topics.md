@@ -64,3 +64,9 @@ threaded together, allowing for better reception for users.
 Users can easily [change the topics](/help/change-the-topic-of-a-message) of
 the messages that they sent if they sent the message to the wrong topic or
 if some messages in a topic have gone off-topic.
+
+5 topics per stream are displayed by default, unless the user has more topics
+with unread messages.  Older topics aren't displayed unless the user has
+unread messages in them, this generally works well, as older topics organically
+drop off the sidebar as their messages become less recent.  A method to view
+and search old topics may be added in future development.
