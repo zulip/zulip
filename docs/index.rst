@@ -26,7 +26,7 @@ Contents:
 * :ref:`overview`
 * :ref:`zulip-in-production`
 * :ref:`development-environment`
-* :ref:`tutorial-docs`
+* :ref:`developer-tutorials`
 * :ref:`code-docs`
 * :ref:`code-testing`
 * :ref:`system-docs`
@@ -71,7 +71,7 @@ Contents:
    Using the development environment <using-dev-environment>
    Developing remotely <dev-remote>
 
-.. _tutorial-docs:
+.. _developer-tutorials:
 
 .. toctree::
    :maxdepth: 2
