@@ -32,5 +32,5 @@ cached_venv_path = setup_virtualenv(
     virtualenv_args=['-p', 'python{}'.format(python_version)])
 
 current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
-run(['ln', '-s', venv_name, current_venv_path])
+run(['ln', '-nsf', venv_name, current_venv_path])
 # Now the virtualenv has been activated
