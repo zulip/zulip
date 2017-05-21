@@ -29,7 +29,7 @@ Contents:
 * :ref:`developer-tutorials`
 * :ref:`code-contribution-guide`
 * :ref:`code-testing`
-* :ref:`system-docs`
+* :ref:`subsystem-documentation`
 
 .. _overview:
 
@@ -111,7 +111,7 @@ Contents:
    testing-with-casper
    manual-testing
 
-.. _system-docs:
+.. _subsystem-documentation:
 
 .. toctree::
    :maxdepth: 2
