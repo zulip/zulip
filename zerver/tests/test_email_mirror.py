@@ -160,7 +160,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": ujson.dumps(["othello@zulip.com"])})
         self.assert_json_success(result)
 
         user_profile = self.example_user('othello')
@@ -267,7 +267,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": ujson.dumps(["othello@zulip.com"])})
         self.assert_json_success(result)
 
         user_profile = self.example_user('othello')

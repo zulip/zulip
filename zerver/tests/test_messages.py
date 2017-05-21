@@ -508,7 +508,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         do_change_is_admin(user_profile, True, 'api_super_user')
         result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "to": "Verona",
+                                                       "to": ujson.dumps(["Verona"]),
                                                        "sender": "cordelia@zulip.com",
                                                        "client": "test suite",
                                                        "subject": "announcement",
@@ -518,7 +518,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assert_json_success(result)
         do_change_is_admin(user_profile, False, 'api_super_user')
         result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "to": "Verona",
+                                                       "to": ujson.dumps(["Verona"]),
                                                        "sender": "cordelia@zulip.com",
                                                        "client": "test suite",
                                                        "subject": "announcement",
@@ -745,7 +745,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": "Verona",
+                                                     "to": ujson.dumps(["Verona"]),
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject"})
@@ -758,7 +758,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         email = "hamlet@zulip.com"
         result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "to": "Verona",
+                                                       "to": ujson.dumps(["Verona"]),
                                                        "client": "test suite",
                                                        "content": "Test message",
                                                        "subject": "Test subject"},
@@ -793,7 +793,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
         result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": "nonexistent_stream",
+                                                     "to": ujson.dumps(["nonexistent_stream"]),
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject"})
@@ -807,7 +807,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         self.assertFalse(Stream.objects.filter(name="""&<"'><non-existent>"""))
         result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": """&<"'><non-existent>""",
+                                                     "to": ujson.dumps(["""&<"'><non-existent>"""]),
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject"})
@@ -822,7 +822,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": ujson.dumps(["othello@zulip.com"])})
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
@@ -834,7 +834,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "nonexistent"})
+                                                     "to": ujson.dumps(["nonexistent"])})
         self.assert_json_error(result, "Invalid email 'nonexistent'")
 
     def test_invalid_type(self):
@@ -846,7 +846,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "invalid type",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": ujson.dumps(["othello@zulip.com"])})
         self.assert_json_error(result, "Invalid message type")
 
     def test_empty_message(self):
@@ -858,7 +858,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": " ",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": ujson.dumps(["othello@zulip.com"])})
         self.assert_json_error(result, "Message must not be empty")
 
     def test_mirrored_huddle(self):
@@ -885,7 +885,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": "sipbtest@mit.edu",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": "starnine@mit.edu"})
+                                                     "to": ujson.dumps(["starnine@mit.edu"])})
         self.assert_json_success(result)
 
     def test_duplicated_mirrored_huddle(self):
@@ -931,7 +931,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
-        post_data = {"type": "stream", "to": "Verona", "client": "test suite",
+        post_data = {"type": "stream", "to": ujson.dumps(["Verona"]), "client": "test suite",
                      "content": long_message, "subject": "Test subject"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
@@ -948,7 +948,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         long_topic = "A" * (MAX_SUBJECT_LENGTH + 1)
-        post_data = {"type": "stream", "to": "Verona", "client": "test suite",
+        post_data = {"type": "stream", "to": ujson.dumps(["Verona"]), "client": "test suite",
                      "content": "test content", "subject": long_topic}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
@@ -961,7 +961,7 @@ class MessagePOSTTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": "Verona",
+                                                     "to": ujson.dumps(["Verona"]),
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
@@ -972,7 +972,7 @@ class MessagePOSTTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": "Verona",
+                                                     "to": ujson.dumps(["Verona"]),
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
@@ -989,7 +989,7 @@ class MessagePOSTTest(ZulipTestCase):
         user.save()
         self.login(email, password)
         result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": "Verona",
+                                                     "to": ujson.dumps(["Verona"]),
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
@@ -1004,7 +1004,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": "starnine@mit.edu"})
+                                                     "to": ujson.dumps(["starnine@mit.edu"])})
         self.assert_json_error(result, "Missing sender")
 
     def test_send_message_as_not_superuser_when_type_is_not_private(self):
@@ -1014,7 +1014,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": "sipbtest@mit.edu",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": "starnine@mit.edu"})
+                                                     "to": ujson.dumps(["starnine@mit.edu"])})
         self.assert_json_error(result, "User not authorized for this query")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -1026,7 +1026,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": "sipbtest@mit.edu",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": "starnine@mit.edu"})
+                                                     "to": ujson.dumps(["starnine@mit.edu"])})
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -1042,7 +1042,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": "sipbtest@mit.edu",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": "starnine@mit.edu"}, name='gownooo')
+                                                     "to": ujson.dumps(["starnine@mit.edu"])}, name='gownooo')
         self.assert_json_error(result, "Invalid mirrored realm")
 
     def test_send_message_irc_mirror(self):

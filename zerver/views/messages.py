@@ -865,7 +865,7 @@ def same_realm_jabber_user(user_profile, email):
 @has_request_variables
 def send_message_backend(request, user_profile,
                          message_type_name = REQ('type'),
-                         message_to = REQ('to', converter=extract_recipients, default=[]),
+                         message_to = REQ('to', validator=check_list(check_string), default=[]),
                          forged = REQ(default=False),
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
@@ -921,6 +921,10 @@ def send_message_backend(request, user_profile,
         sender = mirror_sender
     else:
         sender = user_profile
+
+    # Strip recipients, and then remove any duplicates and any that
+    # are the empty string after being stripped.
+    message_to = [recipient.strip() for recipient in message_to]
 
     ret = check_send_message(sender, client, message_type_name, message_to,
                              subject_name, message_content, forged=forged,
