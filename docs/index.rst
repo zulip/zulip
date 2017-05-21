@@ -27,7 +27,7 @@ Contents:
 * :ref:`zulip-in-production`
 * :ref:`development-environment`
 * :ref:`developer-tutorials`
-* :ref:`code-docs`
+* :ref:`code-contribution-guide`
 * :ref:`code-testing`
 * :ref:`system-docs`
 
@@ -84,7 +84,7 @@ Contents:
    life-of-a-request
    reading-list
 
-.. _code-docs:
+.. _code-contribution-guide:
 
 .. toctree::
    :maxdepth: 2
