@@ -111,7 +111,7 @@ topic over a message.
 
 You can search your organization for specific messages by using [search operators](/help/search-for-messages).
 
-1. Tap the search (![search](/static/images/help/android-magnifying-icon.png))
+1. Tap the search (<i class="icon-vector-search"></i>)
 icon at the top of the screen.
 2. Enter the [search operators](/help/search-for-messages#search-operators)
 that you want to use to narrow your messages.
