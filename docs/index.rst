@@ -23,7 +23,7 @@ This set of documents covers installation and contribution instructions.
 
 Contents:
 
-* :ref:`user-docs`
+* :ref:`overview`
 * :ref:`prod-install-docs`
 * :ref:`dev-install-docs`
 * :ref:`tutorial-docs`
@@ -31,7 +31,7 @@ Contents:
 * :ref:`code-testing`
 * :ref:`system-docs`
 
-.. _user-docs:
+.. _overview:
 
 .. toctree::
    :maxdepth: 2
