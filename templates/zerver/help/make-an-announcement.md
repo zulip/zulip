@@ -2,7 +2,22 @@
 
 An announcement on Zulip is a message which will reach
 all users in an organization.
-Announcements on Zulip are sent using the `#announce` stream.
+
+## The #announce stream
+
+The #announce stream is just like other streams in most ways, but it's
+conventionally used for organization-wide announcements.
+
+![Example message](/static/images/help/announce-message.png)
+
+By default, everybody is subscribed to this stream. For this reason,
+you'll want to keep the traffic on it low, so that people don't mute
+it and miss an important announcement.
+
+Additionally, Zulip's notification bot uses this stream for its
+messages.
+
+## Send an announcement
 
 1. To send an announcement, click the **New stream message**
  button located at the bottom of your screen.
@@ -28,10 +43,6 @@ Announcements on Zulip are sent using the `#announce` stream.
     You can always cancel your message by clicking the x (<i
     class="icon-vector-remove"></i>) icon located at the top-right corner of
     your compose box or pressing the `Esc` key.
-
-Your announcement will look similar to the below image.
-
-![Example announcement](/static/images/help/announcement.png)
 
 
 !!! warn ""
