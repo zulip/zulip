@@ -90,9 +90,7 @@ def json_change_ui_settings(request, user_profile,
             user_profile.default_desktop_notifications != default_desktop_notifications:
         do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
         result['default_desktop_notifications'] = default_desktop_notifications
-
     return json_success(result)
-
 @authenticated_json_post_view
 @has_request_variables
 def json_change_settings(request, user_profile,
@@ -126,7 +124,7 @@ def json_change_settings(request, user_profile,
         # by Django,
         request.session.save()
 
-    result = {}
+    result = {}  # type: Dict[str, Any]
     new_email = email.strip()
     if user_profile.email != email and new_email != '':
         if user_profile.realm.email_changes_disabled:
@@ -171,35 +169,12 @@ def update_display_settings_backend(request, user_profile,
             emojiset not in UserProfile.emojiset_choices()):
         raise JsonableError(_("Invalid emojiset '%s'" % (emojiset,)))
 
+    request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result = {}  # type: Dict[str, Any]
-    if (default_language is not None and
-            user_profile.default_language != default_language):
-        do_set_user_display_setting(user_profile, "default_language", default_language)
-        result['default_language'] = default_language
-
-    elif (twenty_four_hour_time is not None and
-            user_profile.twenty_four_hour_time != twenty_four_hour_time):
-        do_set_user_display_setting(user_profile, "twenty_four_hour_time", twenty_four_hour_time)
-        result['twenty_four_hour_time'] = twenty_four_hour_time
-
-    elif (left_side_userlist is not None and
-            user_profile.left_side_userlist != left_side_userlist):
-        do_set_user_display_setting(user_profile, "left_side_userlist", left_side_userlist)
-        result['left_side_userlist'] = left_side_userlist
-
-    elif (emoji_alt_code is not None and
-            user_profile.emoji_alt_code != emoji_alt_code):
-        do_set_user_display_setting(user_profile, "emoji_alt_code", emoji_alt_code)
-        result['emoji_alt_code'] = emoji_alt_code
-
-    elif (emojiset is not None and user_profile.emojiset != emojiset):
-        do_set_user_display_setting(user_profile, "emojiset", emojiset)
-        result['emojiset'] = emojiset
-
-    elif (timezone is not None and
-            user_profile.timezone != timezone):
-        do_set_user_display_setting(user_profile, "timezone", timezone)
-        result['timezone'] = timezone
+    for k, v in list(request_settings.items()):
+        if v is not None and getattr(user_profile, k) != v:
+            do_set_user_display_setting(user_profile, k, v)
+            result[k] = v
 
     return json_success(result)
 
@@ -225,8 +200,7 @@ def json_change_notify_settings(request, user_profile,
                                 pm_content_in_desktop_notifications=REQ(validator=check_bool,
                                                                         default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
-    result = {}
-
+    result = {}  # type: Dict[str, Any]
     # Stream notification settings.
 
     if enable_stream_desktop_notifications is not None and \
