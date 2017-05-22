@@ -99,7 +99,7 @@ You need:
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
       (the address you assigned in step 3).
-    * Now, the bot do its job on the streams you subscribed it to.
+    * Now, the bot will do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
 4. Run the bot.
@@ -110,6 +110,8 @@ You need:
       python run.py ~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
       ```
       (using the path to the `.zuliprc` file from step 2).
+      A good test to run is the help/help.py bot for <my-bot>/<my-bot>.py. 
+      It's a simple bot that returns the Zulip github.
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
       to this:
@@ -120,6 +122,13 @@ You need:
       ```
 
     * Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
+    
+5. Talk to the bot.
+
+    * Go to the stream that your bot is subscribed to. Type "@\<your bot email\> \<some string\>"
+      and your bot should write back to the stream with some response. 
+    * If the bot is the help bot, it should return with the following response:
+      "Info on Zulip can be found here: https://github.com/zulip/zulip"
 
 ### Test the `followup.py` bot
 
