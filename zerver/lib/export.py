@@ -22,8 +22,9 @@ from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, get_user_profile_by_email, \
-    get_display_recipient, Attachment
+    UserPresence, UserActivity, UserActivityInterval, \
+    get_user_profile_by_email, \
+    get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p
 from six.moves import range
@@ -587,9 +588,9 @@ def fetch_user_profile_cross_realm(response, config, context):
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
-            get_user_profile_by_email(settings.NOTIFICATION_BOT),
-            get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
-            get_user_profile_by_email(settings.WELCOME_BOT),
+            get_system_bot(settings.NOTIFICATION_BOT),
+            get_system_bot(settings.EMAIL_GATEWAY_BOT),
+            get_system_bot(settings.WELCOME_BOT),
         ]]
 
 def fetch_attachment_data(response, realm_id, message_ids):
@@ -860,7 +861,7 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
 
     if settings.EMAIL_GATEWAY_BOT is not None:
-        email_gateway_bot = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
     else:
         email_gateway_bot = None
 
@@ -956,9 +957,9 @@ def export_avatars_from_local(realm, local_dir, output_dir):
 
     users = list(UserProfile.objects.filter(realm=realm))
     users += [
-        get_user_profile_by_email(settings.NOTIFICATION_BOT),
-        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
-        get_user_profile_by_email(settings.WELCOME_BOT),
+        get_system_bot(settings.NOTIFICATION_BOT),
+        get_system_bot(settings.EMAIL_GATEWAY_BOT),
+        get_system_bot(settings.WELCOME_BOT),
     ]
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:

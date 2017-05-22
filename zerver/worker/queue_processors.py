@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, List, Mapping, Optional
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
-from zerver.models import get_user_profile_by_email, \
+from zerver.models import \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
-    UserMessage, Message, Realm
+    UserMessage, Message, Realm, get_system_bot
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
@@ -298,7 +298,7 @@ class SlowQueryWorker(QueueProcessingWorker):
             for query in slow_queries:
                 content += "    %s\n" % (query,)
 
-            error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
                                   "stream", "logs", topic, content)
 

@@ -313,6 +313,10 @@ def user_profile_cache_key(email, realm):
     # type: (Text, Realm) -> Text
     return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm.id,)
 
+def bot_profile_cache_key(email):
+    # type: (Text) -> Text
+    return u"bot_profile:%s" % (make_safe_digest(email.strip()))
+
 def user_profile_by_id_cache_key(user_profile_id):
     # type: (int) -> Text
     return u"user_profile_by_id:%s" % (user_profile_id,)

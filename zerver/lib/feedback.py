@@ -6,7 +6,7 @@ from typing import Any, Mapping, Optional, Text
 
 from zerver.lib.actions import internal_send_message
 from zerver.lib.redis_utils import get_redis_client
-from zerver.models import get_realm, get_user_profile_by_email, \
+from zerver.models import get_realm, get_system_bot, \
     UserProfile, Realm
 
 import time
@@ -63,7 +63,7 @@ def deliver_feedback_by_zulip(message):
 
     content += message['content']
 
-    user_profile = get_user_profile_by_email(settings.FEEDBACK_BOT)
+    user_profile = get_system_bot(settings.FEEDBACK_BOT)
     internal_send_message(user_profile.realm, settings.FEEDBACK_BOT,
                           "stream", settings.FEEDBACK_STREAM, subject, content)
 

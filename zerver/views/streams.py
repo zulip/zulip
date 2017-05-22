@@ -26,7 +26,8 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
-    Recipient, get_recipient, get_stream, get_active_user_dicts_in_realm
+    Recipient, get_recipient, get_stream, get_active_user_dicts_in_realm, \
+    get_system_bot
 
 from collections import defaultdict
 import ujson
@@ -301,7 +302,7 @@ def add_subscriptions_backend(request, user_profile,
                 private_stream_names=private_stream_names
             )
 
-            sender = get_user_profile_by_email(settings.NOTIFICATION_BOT)
+            sender = get_system_bot(settings.NOTIFICATION_BOT)
             notifications.append(
                 internal_prep_private_message(
                     realm=user_profile.realm,
@@ -318,7 +319,7 @@ def add_subscriptions_backend(request, user_profile,
                 stream_msg = "a new stream #**%s**." % created_streams[0].name
             msg = ("%s just created %s" % (user_profile.full_name, stream_msg))
 
-            sender = get_user_profile_by_email(settings.NOTIFICATION_BOT)
+            sender = get_system_bot(settings.NOTIFICATION_BOT)
             stream_name = notifications_stream.name
             topic = 'Streams'
 

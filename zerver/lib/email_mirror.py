@@ -17,9 +17,9 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
 from zerver.lib.str_utils import force_text
-from zerver.models import Stream, Recipient, get_user_profile_by_email, \
+from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_recipient, \
-    Message, Realm, UserProfile
+    Message, Realm, UserProfile, get_system_bot
 from six import binary_type
 import six
 import talon
@@ -42,7 +42,7 @@ def report_to_zulip(error_message):
     # type: (Text) -> None
     if settings.ERROR_BOT is None:
         return
-    error_bot = get_user_profile_by_email(settings.ERROR_BOT)
+    error_bot = get_system_bot(settings.ERROR_BOT)
     error_stream = Stream.objects.get(name="errors", realm=error_bot.realm)
     send_zulip(settings.ERROR_BOT, error_stream, u"email mirror error",
                u"""~~~\n%s\n~~~""" % (error_message,))
@@ -247,7 +247,7 @@ def filter_footer(text):
 
 def extract_and_upload_attachments(message, realm):
     # type: (message.Message, Realm) -> Text
-    user_profile = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
+    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
     attachment_links = []
 
     payload = message.get_payload()

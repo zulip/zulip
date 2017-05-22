@@ -37,7 +37,7 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm, UserProfile, get_user_profile_by_email
+from zerver.models import Message, Realm, UserProfile
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
@@ -1510,7 +1510,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         return timeout(5, _md_engine.convert, content)
     except Exception:
         from zerver.lib.actions import internal_send_message
-        from zerver.models import get_user_profile_by_email
+        from zerver.models import get_system_bot
 
         cleaned = _sanitize_for_log(content)
 
@@ -1519,7 +1519,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
                           % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
-            error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT, "stream",
                                   "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(
