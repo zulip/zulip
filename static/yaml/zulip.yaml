@@ -318,6 +318,83 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+  /messages/{message_id}/:
+    get:
+      description: Retrieve message content
+      produces:
+        - application/json
+      parameters:
+        - name: message_id
+          in: path
+          description: message id to be retrieved
+          type: integer
+          required: true
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - raw_content
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              raw_content:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    patch:
+      description: edit message
+      produces:
+        - application/json
+      parameters:
+        - name: message_id
+          in: path
+          description: message id to be retrieved
+          type: integer
+          required: true
+        - name: subject
+          in: query
+          description: subject string
+          type: string
+          required: true
+        - name: propagate_mode
+          in: query
+          description: propagation mode
+          type: string
+          default: "change_one"
+        - name: content
+          in: query
+          description: content text
+          type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
 ####################
 # Shared definitions
 definitions:
