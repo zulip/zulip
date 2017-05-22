@@ -67,4 +67,14 @@ var common = require("js/common.js");
     assert(accepted);
     assert.equal(bar.w, '10.390277164940581%');
     assert.equal(bar.added_class, 'bar-success');
+
+    password = 'aaaaaaaa';
+    accepted = common.password_quality(password, bar, password_field(6, 1000));
+    assert(!accepted);
+    assert.equal(bar.added_class, 'bar-danger');
+
+    delete global.zxcvbn;
+    password = 'aaaaaaaa';
+    accepted = common.password_quality(password, bar, password_field(6, 1000));
+    assert(accepted === undefined);
 }());
