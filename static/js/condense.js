@@ -26,6 +26,16 @@ function uncondense_row(row) {
     show_condense_link(row);
 }
 
+exports.toggle_condense = function (row) {
+    if (current_msg_list.get(rows.id(row)).condensed == true) {
+        current_msg_list.get(rows.id(row)).condensed = false;
+        uncondense_row(row);
+    } else {
+        current_msg_list.get(rows.id(row)).condensed = true;
+        condense_row(row);
+    }
+};
+
 exports.uncollapse = function (row) {
     // Uncollapse a message, restoring the condensed message [More] or
     // [Condense] link if necessary.

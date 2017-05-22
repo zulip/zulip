@@ -92,6 +92,7 @@ var keypress_mappings = {
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
+    79: {name: 'condense_show_more', message_view_only: true}, // 'O'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
@@ -611,6 +612,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     var msg = current_msg_list.selected_message();
+    var row = current_msg_list.selected_row();
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':
@@ -643,6 +645,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'toggle_mute':
             muting_ui.toggle_mute(msg);
+            return true;
+        case 'condense_show_more':
+            condense.toggle_condense(row)
             return true;
     }
 
