@@ -17,7 +17,7 @@ from django.core.validators import URLValidator, MinLengthValidator, \
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    generic_bulk_cached_fetch, cache_set, flush_stream, \
+    user_profile_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     bot_dicts_in_realm_cache_key, active_user_dict_fields, \
@@ -1362,6 +1362,11 @@ def get_user_profile_by_id(uid):
 def get_user_profile_by_email(email):
     # type: (Text) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
+
+@cache_with_key(user_profile_cache_key, timeout=3600*24*7)
+def get_user(email, realm):
+    # type: (Text, Realm) -> UserProfile
+    return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
 @cache_with_key(active_user_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_active_user_dicts_in_realm(realm):
