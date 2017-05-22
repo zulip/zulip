@@ -316,6 +316,43 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+  /user_uploads:
+    post:
+      description: Upload a file, and print the corresponding URI.
+      operationId: userUploads
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: file
+          in: formData
+          description: File to be uploaded
+          type: file
+          required: true
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - uri
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              uri:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
 ####################
 # Shared definitions
 definitions:
