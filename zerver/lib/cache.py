@@ -309,6 +309,10 @@ def user_profile_by_email_cache_key(email):
     # with high likelihood be ASCII-only for the foreseeable future.
     return u'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
+def user_profile_cache_key(email, realm):
+    # type: (Text, Realm) -> Text
+    return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm.id,)
+
 def user_profile_by_id_cache_key(user_profile_id):
     # type: (int) -> Text
     return u"user_profile_by_id:%s" % (user_profile_id,)
@@ -353,6 +357,7 @@ def delete_user_profile_caches(user_profiles):
     for user_profile in user_profiles:
         keys.append(user_profile_by_email_cache_key(user_profile.email))
         keys.append(user_profile_by_id_cache_key(user_profile.id))
+        keys.append(user_profile_cache_key(user_profile.email, user_profile.realm))
 
     cache_delete_many(keys)
 
