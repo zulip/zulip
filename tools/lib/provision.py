@@ -214,10 +214,6 @@ def main(options):
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    if not os.path.isdir(EMOJI_CACHE_PATH):
-        run(["sudo", "mkdir", EMOJI_CACHE_PATH])
-    run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
-    run(["tools/setup/emoji/download-emoji-data"])
     run(["tools/setup/emoji/build_emoji"])
     run(["tools/setup/build_pygments_data.py"])
     run(["scripts/setup/generate_secrets.py", "--development"])
