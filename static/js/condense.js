@@ -27,7 +27,7 @@ function uncondense_row(row) {
 }
 
 exports.toggle_condense = function (row) {
-    if (current_msg_list.get(rows.id(row)).condensed == true) {
+    if (current_msg_list.get(rows.id(row)).condensed === true) {
         current_msg_list.get(rows.id(row)).condensed = false;
         uncondense_row(row);
     } else {
