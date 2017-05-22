@@ -51,6 +51,16 @@ exports.open = function () {
     $("#gear-menu").find("li:not(.invisible) a").eq(0).focus();
 };
 
+exports.is_open = function () {
+    return $(".dropdown").hasClass("open");
+};
+
+exports.close = function () {
+    if (exports.is_open()) {
+        $(".dropdown").removeClass("open");
+    }
+};
+
 return exports;
 }());
 
