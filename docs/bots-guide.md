@@ -99,7 +99,7 @@ You need:
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
       (the address you assigned in step 3).
-    * Now, the bot do its job on the streams you subscribed it to.
+    * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
 4. Run the bot.
@@ -107,7 +107,7 @@ You need:
     * In your Zulip repository, navigate to `~/zulip/contrib_bots/`
     * Run
       ```
-      python run.py ~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
+      python run.py bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
       ```
       (using the path to the `.zuliprc` file from step 2).
     * Check the output of the command. It should start with the text
