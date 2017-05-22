@@ -30,21 +30,21 @@ class TestVirtualFsBot(BotTestCase):
         )
         self.assert_bot_output(
             {'content': "help", 'type': "stream", 'display_recipient': "foo", 'subject': "foo", 'sender_email': "foo_sender@zulip.com"},
-            ('foo_sender@zulip.com:\n\nThe "fs" commands implement a virtual file system for a stream.\n'
+            ('foo_sender@zulip.com:\n\nThis bot implements a virtual file system for a stream.\n'
              'The locations of text are persisted for the lifetime of the bot\n'
              'running, and if you rename a stream, you will lose the info.\n'
              'Example commands:\n\n```\n'
-             'fs sample_conversation: sample conversation with the bot\n'
-             'fs mkdir: create a directory\n'
-             'fs ls: list a directory\n'
-             'fs cd: change directory\n'
-             'fs pwd: show current path\n'
-             'fs write: write text\n'
-             'fs read: read text\n'
-             'fs rm: remove a file\n'
-             'fs rmdir: remove a directory\n'
+             '@mention-bot sample_conversation: sample conversation with the bot\n'
+             '@mention-bot mkdir: create a directory\n'
+             '@mention-bot ls: list a directory\n'
+             '@mention-bot cd: change directory\n'
+             '@mention-bot pwd: show current path\n'
+             '@mention-bot write: write text\n'
+             '@mention-bot read: read text\n'
+             '@mention-bot rm: remove a file\n'
+             '@mention-bot rmdir: remove a directory\n'
              '```\n'
-             'Use commands like `fs help write` for more details on specific\ncommands.\n'),
+             'Use commands like `@mention-bot help write` for more details on specific\ncommands.\n'),
         )
         self.assert_bot_output(
             {'content': "help ls", 'type': "stream", 'display_recipient': "foo", 'subject': "foo", 'sender_email': "foo_sender@zulip.com"},
@@ -52,19 +52,19 @@ class TestVirtualFsBot(BotTestCase):
         )
         self.assert_bot_output(
             {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo", 'sender_email': "foo_sender@zulip.com"},
-            ('foo_sender@zulip.com:\n\nThe "fs" commands implement a virtual file system for a stream.\n'
+            ('foo_sender@zulip.com:\n\nThis bot implements a virtual file system for a stream.\n'
              'The locations of text are persisted for the lifetime of the bot\n'
              'running, and if you rename a stream, you will lose the info.\n'
              'Example commands:\n\n```\n'
-             'fs sample_conversation: sample conversation with the bot\n'
-             'fs mkdir: create a directory\n'
-             'fs ls: list a directory\n'
-             'fs cd: change directory\n'
-             'fs pwd: show current path\n'
-             'fs write: write text\n'
-             'fs read: read text\n'
-             'fs rm: remove a file\n'
-             'fs rmdir: remove a directory\n'
+             '@mention-bot sample_conversation: sample conversation with the bot\n'
+             '@mention-bot mkdir: create a directory\n'
+             '@mention-bot ls: list a directory\n'
+             '@mention-bot cd: change directory\n'
+             '@mention-bot pwd: show current path\n'
+             '@mention-bot write: write text\n'
+             '@mention-bot read: read text\n'
+             '@mention-bot rm: remove a file\n'
+             '@mention-bot rmdir: remove a directory\n'
              '```\n'
-             'Use commands like `fs help write` for more details on specific\ncommands.\n'),
+             'Use commands like `@mention-bot help write` for more details on specific\ncommands.\n'),
         )
