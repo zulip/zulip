@@ -61,8 +61,8 @@ def resolve_conflicts(conflicts, files_list):
 if __name__ == '__main__':
 
     while True:
-        conflicts = []  # type: list[str]
-        stack = []  # type: list[str]
+        conflicts = []  # type: List[str]
+        stack = []  # type: List[str]
         files_list = [os.path.basename(path) for path in glob.glob("zerver/migrations/????_*.py")]
         file_index = [file[0:4] for file in files_list]
 
