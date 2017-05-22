@@ -67,7 +67,7 @@ you can subscribe to a stream by navigating to the
 2. {!all-streams.md!}
 
 3. Click on the area to the left of the stream that you would like to
-subscribe to (highlighted in red).
+subscribe to.
 
     ![Subscribe before](/static/images/help/subscribe-before.png)
 
