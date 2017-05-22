@@ -403,6 +403,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))]) # type: Text
     file_name = models.TextField(db_index=True, null=True) # type: Optional[Text]
+    deactivated = models.BooleanField(default=False) # type: bool
 
     PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
 
