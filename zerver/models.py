@@ -427,6 +427,7 @@ def get_realm_emoji_uncached(realm):
         else:
             author = None
         d[row.name] = dict(source_url=get_emoji_url(row.file_name, row.realm_id),
+                           deactivated=row.deactivated,
                            author=author)
     return d
 
