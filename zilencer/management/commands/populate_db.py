@@ -8,7 +8,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, get_huddle, Realm, UserMessage, RealmDomain, \
     clear_database, get_client, get_user_profile_by_id, \
-    email_to_username
+    email_to_username, Service, get_user_profile_by_email
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
@@ -255,7 +255,20 @@ class Command(BaseCommand):
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
-            create_users(zulip_realm, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+            create_users(zulip_realm, zulip_webhook_bots,
+                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+            zulip_outgoing_bots = [
+                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
+            ]
+            create_users(zulip_realm, zulip_outgoing_bots,
+                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+            # TODO: Clean up this initial bot creation code
+            Service.objects.create(
+                name="test",
+                user_profile=get_user_profile_by_email("outgoing-webhook@zulip.com"),
+                base_url="http://127.0.0.1:5002/bots/followup",
+                token="abcd1234",
+                interface=1)
 
             create_simple_community_realm()
 
