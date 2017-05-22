@@ -91,14 +91,14 @@ You need:
 
     * In the *Your bots* panel, click on the green icon to download
       its configuration file *.zuliprc* (the structure of this file is
-      explained [here](#configuration-file).
+      explained [here](#configuration-file).)
     * Copy the file to a destination of your choice, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
 
 3. Subscribe the bot to the streams that the bot needs to interact with.
 
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
-      (the address you assigned in step 3).
+      (the address you assigned in step 1).
     * Now, the bot do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
