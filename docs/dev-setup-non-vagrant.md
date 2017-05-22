@@ -51,6 +51,8 @@ Install the following non-Python dependencies:
  * rabbitmq-server
  * libldap2-dev
  * python-dev
+ * python3-dev
+ * python-virtualenv
  * redis-server — rate limiting
  * tsearch-extras — better text search
  * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
@@ -66,16 +68,18 @@ https://github.com/zulip/zulip.git`
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python-dev \
-    hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
-    puppet gettext postgresql
+    python3-dev python-virtualenv hunspell-en-us nodejs \
+    nodejs-legacy npm git yui-compressor puppet gettext postgresql
 
-# Next, install PGroonga from its PPA
+# If using Ubuntu, install PGroonga from its PPA
 sudo add-apt-repository -ys ppa:groonga/ppa
 sudo apt-get update
 # On 14.04
 sudo apt-get install postgresql-9.3-pgroonga
 # On 16.04
 sudo apt-get install postgresql-9.5-pgroonga
+
+# If using Debian, follow the instructions here: http://pgroonga.github.io/install/debian.html
 
 # Next, install Zulip's tsearch-extras postgresql extension
 # If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
