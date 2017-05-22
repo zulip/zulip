@@ -4,6 +4,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from typing import Any, Callable, Dict, List, Optional, Union, Text, Tuple
+import os
+import shutil
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -101,9 +103,26 @@ from six.moves import range
 
 
 class LogEventsTest(ZulipTestCase):
-    def test_log_events(self):
+    def test_with_missing_event_log_dir_setting(self):
+        # type: () -> None
         with self.settings(EVENT_LOG_DIR=None):
             log_event(None)
+
+    def test_log_event_mkdir(self):
+        # type: () -> None
+        dir_name = 'var/test-log-dir'
+
+        try:
+            shutil.rmtree(dir_name)
+        except OSError:
+            # assume it doesn't exist already
+            pass
+
+        self.assertFalse(os.path.exists(dir_name))
+        with self.settings(EVENT_LOG_DIR=dir_name):
+            event = {} # type: dict[str, int]
+            log_event(event)
+        self.assertTrue(os.path.exists(dir_name))
 
 
 class EventsEndpointTest(ZulipTestCase):
