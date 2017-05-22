@@ -38,22 +38,22 @@ class VirtualFsHandler(object):
 
 def get_help():
     return '''
-The "fs" commands implement a virtual file system for a stream.
+This bot implements a virtual file system for a stream.
 The locations of text are persisted for the lifetime of the bot
 running, and if you rename a stream, you will lose the info.
 Example commands:
 
 ```
-fs mkdir: create a directory
-fs ls: list a directory
-fs cd: change directory
-fs pwd: show current path
-fs write: write text
-fs read: read text
-fs rm: remove a file
-fs rmdir: remove a directory
+@mention-bot mkdir: create a directory
+@mention-bot ls: list a directory
+@mention-bot cd: change directory
+@mention-bot pwd: show current path
+@mention-bot write: write text
+@mention-bot read: read text
+@mention-bot rm: remove a file
+@mention-bot rmdir: remove a directory
 ```
-Use commands like `fs help write` for more details on specific
+Use commands like `@mention-bot help write` for more details on specific
 commands.
 '''
 
