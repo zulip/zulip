@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+from __future__ import absolute_import
+from __future__ import print_function
+
+import os
+import sys
+import unittest
+
+from unittest.mock import MagicMock, patch
+from unittest import TestCase
+
+from run import get_lib_module
+from bot_lib import BotHandlerApi, StateHandler
+
+class BotTestCase(TestCase):
+
+    def mock_test(self, messages, message_handler):
+        # type: (List[Dict[str, str]], Function) -> None
+        # Mocking BotHandlerApi
+        with patch('__main__.BotHandlerApi') as MockClass:
+            instance = MockClass.return_value
+
+            for message in messages:
+                # Send message to the concerned bot
+                message_handler.handle_message(message, MockClass(), StateHandler())
+
+                # Check if BotHandlerApi is sending a reply message.
+                # This can later be modified to assert the contents of BotHandlerApi.send_message
+                assert instance.send_message.called is True
+
+    # Messages to be sent to bot for testing.
+    # Eventually more test messages can be added.
+    def messages(self):
+        # type: None -> List[Dict[str, str]]
+        messages = []
+        message1 = {'content': "foo", 'type': "private", 'sender_email': "foo"}
+        message2 = {'content': "foo", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"}
+        messages.append(message1)
+        messages.append(message2)
+        return messages
+
+    def bot_to_run(self, bot_module):
+        # type: None -> Function
+        lib_module = get_lib_module(bot_module)
+        message_handler = lib_module.handler_class()
+        return message_handler
+
+    def test(self):
+        # type: None -> None
+        # Edit bot_module to test different bots, the below code can be looped for all the bots.
+        bot_module = "./bots/define/define.py"
+
+        messages = self.test_messages()
+        message_handler = self.bot_to_run(bot_module)
+
+        self.mock_test(messages=messages, message_handler=message_handler)
+
+if __name__ == '__main__':
+    unittest.main()
