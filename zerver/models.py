@@ -407,7 +407,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
         return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.file_name)
 
 def get_realm_emoji_uncached(realm):
-    # type: (Realm) -> Dict[Text, Optional[Dict[str, Iterable[Text]]]]
+    # type: (Realm) -> Dict[Text, Dict[str, Any]]
     d = {}
     from zerver.lib.emoji import get_emoji_url
     for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
