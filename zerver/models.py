@@ -21,7 +21,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    bot_dict_fields, flush_message
+    bot_dict_fields, flush_message, bot_profile_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -1367,6 +1367,11 @@ def get_user_profile_by_email(email):
 def get_user(email, realm):
     # type: (Text, Realm) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
+
+@cache_with_key(bot_profile_cache_key, timeout=3600*24*7)
+def get_system_bot(email):
+    # type: (Text) -> UserProfile
+    return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
 @cache_with_key(active_user_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_active_user_dicts_in_realm(realm):

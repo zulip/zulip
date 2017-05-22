@@ -28,9 +28,12 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmDomain, \
-    Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, UserHotspot, \
-    Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
+from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
+    RealmDomain, \
+    Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
+    UserHotspot, \
+    Client, DefaultStream, UserPresence, Referral, PushDeviceToken, \
+    MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, \
@@ -40,8 +43,9 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
     ScheduledJob, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
-    Reaction, EmailChangeStatus, CustomProfileField, custom_profile_fields_for_realm, \
-    CustomProfileFieldValue, validate_attachment_request
+    Reaction, EmailChangeStatus, CustomProfileField, \
+    custom_profile_fields_for_realm, \
+    CustomProfileFieldValue, validate_attachment_request, get_system_bot
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -1009,7 +1013,7 @@ def stream_welcome_message(stream):
 def prep_stream_welcome_message(stream):
     # type: (Stream) -> Optional[Dict[str, Any]]
     realm = stream.realm
-    sender = get_user_profile_by_email(settings.WELCOME_BOT)
+    sender = get_system_bot(settings.WELCOME_BOT)
     topic = _('hello')
     content = stream_welcome_message(stream)
 
@@ -1212,7 +1216,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                (sender.full_name, stream_name, error_msg))
     message = internal_prep_private_message(
         realm=realm,
-        sender=get_user_profile_by_email(settings.NOTIFICATION_BOT),
+        sender=get_system_bot(settings.NOTIFICATION_BOT),
         recipient_email=sender.bot_owner.email,
         content=content)
 
@@ -2199,7 +2203,7 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
 
         # Include a welcome message in this notifications stream
         stream_name = notifications_stream.name
-        sender = get_user_profile_by_email(settings.WELCOME_BOT)
+        sender = get_system_bot(settings.WELCOME_BOT)
         topic = "welcome"
         content = """Hello, and welcome to Zulip!
 
@@ -2224,7 +2228,7 @@ system-generated notifications.""" % (stream_name,)
         # Send a notification to the admin realm (if configured)
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"
-            admin_realm = get_user_profile_by_email(settings.NEW_USER_BOT).realm
+            admin_realm = get_system_bot(settings.NEW_USER_BOT).realm
             internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
                                   "signups", string_id, signup_message)
     return (realm, created)
