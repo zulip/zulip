@@ -32,6 +32,7 @@ npm-debug.log
 /prod-static
 /staticfiles.json
 /webpack-stats-production.json
+/yarn-error.log
 
 # Test / analysis tools
 .coverage
