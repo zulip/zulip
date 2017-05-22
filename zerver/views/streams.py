@@ -26,7 +26,8 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
-    Recipient, get_recipient, get_stream, get_active_user_dicts_in_realm
+    Recipient, get_recipient, get_stream, get_active_user_dicts_in_realm, \
+    get_user
 
 from collections import defaultdict
 import ujson
@@ -48,21 +49,14 @@ class PrincipalError(JsonableError):
 
 def principal_to_user_profile(agent, principal):
     # type: (UserProfile, Text) -> UserProfile
-    principal_doesnt_exist = False
     try:
-        principal_user_profile = get_user_profile_by_email(principal)
+        return get_user(principal, agent.realm)
     except UserProfile.DoesNotExist:
-        principal_doesnt_exist = True
-
-    if (principal_doesnt_exist or
-            agent.realm != principal_user_profile.realm):
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do
         # something a little more clever and check the domain part of the
         # principal to maybe give a better error message
         raise PrincipalError(principal)
-
-    return principal_user_profile
 
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_id):
