@@ -69,6 +69,9 @@ in which you were [mentioned](/help/at-mention-a-team-member).
 Located below the preset filters, the **Streams** section shows all the streams
 that you are subscribed to.
 
+* Public streams are represented by a hashtag (<span style="font-size: 1.3rem;
+font-weight: 800">#</span>) icon, and private streams are represented by a lock
+(<i class="icon-vector-lock"></i>) icon.
 * There are two icons located next to the **Streams** section header:
     * Clicking the magnifying glass (<i class="icon-vector-search"></i>) icon
     reveals an input that allows you to search for streams.
