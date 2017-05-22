@@ -172,6 +172,11 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
+    if (gear_menu.is_open()) {
+        gear_menu.close();
+        return true;
+    }
+
     if (exports.processing_text()) {
         if ($(".message_edit_content").filter(":focus").length > 0) {
             row = $(".message_edit_content").filter(":focus").closest(".message_row");
