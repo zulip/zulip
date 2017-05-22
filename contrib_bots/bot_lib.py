@@ -56,6 +56,16 @@ class BotHandlerApi(object):
                           ' its own messages?')
             sys.exit(1)
 
+class StateHandler(object):
+    def __init__(self):
+        self.state = None
+
+    def set_state(self, state):
+        self.state = state
+
+    def get_state(self):
+        return self.state
+
 def run_message_handler_for_bot(lib_module, quiet, config_file):
     # Make sure you set up your ~/.zuliprc
     client = Client(config_file=config_file)
@@ -63,15 +73,15 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
 
     message_handler = lib_module.handler_class()
 
-    class StateHandler(object):
-        def __init__(self):
-            self.state = None
+#    class StateHandler(object):
+#        def __init__(self):
+#            self.state = None
 
-        def set_state(self, state):
-            self.state = state
+#        def set_state(self, state):
+#            self.state = state
 
-        def get_state(self):
-            return self.state
+#        def get_state(self):
+#            return self.state
 
     state_handler = StateHandler()
 
@@ -79,7 +89,8 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         print(message_handler.usage())
 
     def extract_message_if_mentioned(message, client):
-        bot_mention = r'^@(\*\*{0}\*\*\s|{0}\s)(?=.*)'.format(client.full_name)
+        #bot_mention = r'^@(\*\*{0}\*\*\s|{0}\s)(?=.*)'.format(client.full_name)
+        bot_mention = r'^@\*\*{0}\*\*'.format(client.full_name)
         start_with_mention = re.compile(bot_mention).match(message['content'])
         if start_with_mention:
             query = message['content'][len(start_with_mention.group()):]
