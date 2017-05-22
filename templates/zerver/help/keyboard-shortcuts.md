@@ -88,8 +88,9 @@ Zulip keyboard shortcuts are divided into four categories:
 
 * **Edit your last message**: `⇽` — This shortcut opens the last editable
   message that the user sent in the current view (if any) in the compose box.
-* **Show images in message**: `v` — This shortcut opens any images or videos
-  (if any) embedded in a message in the lightbox viewer.
+* **Show images in thread**: `v` — This shortcut opens any images or videos
+  (if any) embedded in a message or previous messages within the thread
+  using the lightbox viewer.
 * **Edit selected message**: `i` then `Enter` (`Return` on Mac) —
   This shortcut allows the user to edit the selected message (outlined
   in blue) if the user authored the selected message. If the selected
