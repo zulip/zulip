@@ -647,7 +647,7 @@ exports.process_hotkey = function (e, hotkey) {
             muting_ui.toggle_mute(msg);
             return true;
         case 'condense_show_more':
-            condense.toggle_condense(row)
+            condense.toggle_condense(row);
             return true;
     }
 
