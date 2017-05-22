@@ -53,7 +53,6 @@ as an **organization**.
 * [Reply to a message](/help/reply-to-a-message)
 ### Reading
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
-* [View information about a message](/help/view-information-about-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View an image at full size](/help/view-an-image-at-full-size)
 * [Collapse a message](/help/collapse-a-message)
