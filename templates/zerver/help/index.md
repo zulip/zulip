@@ -41,7 +41,6 @@ as an **organization**.
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
-* [Restore the last unsent message](/help/restore-the-last-unsent-message)
 <!-- Automatically link to an external issue tracker (improve wording) -->
 <!-- Add a link preview -->
 * [Enable or disable Press Enter to send](/help/enable-or-disable-pressing-enter-to-send)
