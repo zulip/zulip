@@ -30,7 +30,7 @@ def pretty_print_html(html, num_spaces=4):
         line=-1,
         token_kind='html_start',
         tag='html',
-        extra_indent=0)
+        extra_indent=0) # type: Dict[str, Any]
     stack.append(info)
 
     # Our main job is to figure out offsets that we use to nudge lines
