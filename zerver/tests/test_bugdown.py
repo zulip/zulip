@@ -917,7 +917,7 @@ class BugdownTest(ZulipTestCase):
         realm = get_realm("zephyr")
         client = get_client("zephyr_mirror")
         message = Message(sending_client=client,
-                          sender=get_user_profile_by_email("sipbtest@mit.edu"))
+                          sender=self.mit_user("sipbtest"))
         converted = bugdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,

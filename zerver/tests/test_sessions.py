@@ -51,12 +51,12 @@ class TestSessions(ZulipTestCase):
         # type: () -> None
         realm = get_realm('zulip')
         self.do_test_session('hamlet@zulip.com', lambda: delete_realm_user_sessions(realm), True)
-        self.do_test_session('sipbtest@mit.edu', lambda: delete_realm_user_sessions(realm), False)
+        self.do_test_session(str(self.mit_user("sipbtest").email), lambda: delete_realm_user_sessions(realm), False)
 
     def test_delete_all_user_sessions(self):
         # type: () -> None
         self.do_test_session('hamlet@zulip.com', lambda: delete_all_user_sessions(), True)
-        self.do_test_session('sipbtest@mit.edu', lambda: delete_all_user_sessions(), True)
+        self.do_test_session(str(self.mit_user("sipbtest").email), lambda: delete_all_user_sessions(), True)
 
     def test_delete_all_deactivated_user_sessions(self):
         # type: () -> None
