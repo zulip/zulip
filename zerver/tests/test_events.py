@@ -72,6 +72,7 @@ from zerver.lib.actions import (
     do_change_realm_domain,
     do_remove_realm_domain,
     do_change_icon_source,
+    log_event,
 )
 from zerver.lib.events import (
     apply_events,
@@ -97,6 +98,13 @@ import mock
 import time
 import ujson
 from six.moves import range
+
+
+class LogEventsTest(ZulipTestCase):
+    def test_log_events(self):
+        with self.settings(EVENT_LOG_DIR=None):
+            log_event(None)
+
 
 class EventsEndpointTest(ZulipTestCase):
     def test_events_register_endpoint(self):
