@@ -3,6 +3,7 @@
 import os
 import sys
 import unittest
+import importlib
 
 from unittest.mock import MagicMock, patch
 from unittest import TestCase
@@ -30,7 +31,7 @@ class BotTestCase(TestCase):
 
     # Messages to be sent to bot for testing.
     # Eventually more test messages can be added.
-    def test_messages(self):
+    def messages(self):
         # type: None -> List[Dict[str, str]]
         messages = []
         message1 = {'content': "foo", 'type': "private", 'sender_email': "foo"}
@@ -51,10 +52,20 @@ class BotTestCase(TestCase):
 
         #bot_module = "./bots/help/help.py"
 
-        messages = self.test_messages()
+        messages = self.messages()
         message_handler = self.bot_to_run()
 
         self.mock_test(messages=messages, message_handler=message_handler)
+
+    #def test_import(self):
+    def import_test(self): 
+        '''
+            Import test to see if there are any syntactical errors
+
+            Doesn't actually work yet; resolving possible module
+            naming issues
+        '''
+        test_bot_import = importlib.import_module(self.bot_module)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
