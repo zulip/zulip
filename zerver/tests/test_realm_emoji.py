@@ -114,8 +114,12 @@ class RealmEmojiTest(ZulipTestCase):
 
         result = self.client_get("/json/realm/emoji")
         content = ujson.loads(result.content)
+        emojis = content["emoji"]
         self.assert_json_success(result)
-        self.assertEqual(len(content["emoji"]), 0)
+        # We only mark an emoji as deactivated instead of
+        # removing it from the database.
+        self.assertEqual(len(emojis), 1)
+        self.assertEqual(emojis["my_emoji"]["deactivated"], True)
 
     def test_delete_admins_only(self):
         # type: () -> None
@@ -136,21 +140,21 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = False
         realm.save()
-        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png", author)
+        check_add_realm_emoji(realm, "my_emoji_1", "my_emoji.png", author)
         self.login('othello@zulip.com')
-        result = self.client_delete("/json/realm/emoji/my_emoji")
+        result = self.client_delete("/json/realm/emoji/my_emoji_1")
         self.assert_json_success(result)
         self.logout()
 
-        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png", author)
+        check_add_realm_emoji(realm, "my_emoji_2", "my_emoji.png", author)
         self.login('iago@zulip.com')
-        result = self.client_delete("/json/realm/emoji/my_emoji")
+        result = self.client_delete("/json/realm/emoji/my_emoji_2")
         self.assert_json_success(result)
         self.logout()
 
-        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png", author)
+        check_add_realm_emoji(realm, "my_emoji_3", "my_emoji.png", author)
         self.login('cordelia@zulip.com')
-        result = self.client_delete("/json/realm/emoji/my_emoji")
+        result = self.client_delete("/json/realm/emoji/my_emoji_3")
         self.assert_json_error(result, 'Must be a realm administrator or emoji author')
 
     def test_delete_exception(self):
