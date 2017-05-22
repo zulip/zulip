@@ -26,13 +26,13 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    email_allowed_for_realm, get_user_profile_by_id
+    email_allowed_for_realm, get_user_profile_by_id, get_user
 
 
 def deactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
-        target = get_user_profile_by_email(email)
+        target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:
@@ -57,7 +57,7 @@ def check_last_admin(user_profile):
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
-        target = get_user_profile_by_email(email)
+        target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such bot'))
     if not target.is_bot:
@@ -75,7 +75,7 @@ def _deactivate_user_profile_backend(request, user_profile, target):
 def reactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
-        target = get_user_profile_by_email(email)
+        target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
@@ -91,7 +91,7 @@ def update_user_backend(request, user_profile, email,
                         is_admin=REQ(default=None, validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[bool]) -> HttpResponse
     try:
-        target = get_user_profile_by_email(email)
+        target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
@@ -158,7 +158,7 @@ def patch_bot_backend(request, user_profile, email,
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
-        bot = get_user_profile_by_email(email)
+        bot = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
@@ -216,7 +216,7 @@ def patch_bot_backend(request, user_profile, email,
 def regenerate_bot_api_key(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
-        bot = get_user_profile_by_email(email)
+        bot = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
@@ -244,7 +244,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
         return json_error(_('Bad name or username'))
 
     try:
-        get_user_profile_by_email(email)
+        get_user(email, user_profile.realm)
         return json_error(_("Username already in use"))
     except UserProfile.DoesNotExist:
         pass
@@ -348,7 +348,7 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
                           {'email': email, 'realm': realm.string_id})
 
     try:
-        get_user_profile_by_email(email)
+        get_user(email, user_profile.realm)
         return json_error(_("Email '%s' already in use") % (email,))
     except UserProfile.DoesNotExist:
         pass
