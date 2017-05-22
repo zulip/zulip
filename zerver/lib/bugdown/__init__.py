@@ -886,13 +886,17 @@ def sanitize_url(url):
 def url_to_a(url, text = None):
     # type: (Text, Optional[Text]) -> Union[Element, Text]
     a = markdown.util.etree.Element('a')
-
     href = sanitize_url(url)
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
     if text is None:
         text = markdown.util.AtomicString(url)
+
+    # Unlinks special foo.md files of Zulip; render it as plain text.
+    for mdLink in list_of_special_md_links():
+        if re.search(url, mdLink.lower()):
+            return url
 
     a.set('href', href)
     a.text = text
@@ -1320,6 +1324,7 @@ class Bugdown(markdown.Extension):
             )
             """ % (tlds, nested_paren_chunk,
                    r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r"")
+
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
@@ -1561,3 +1566,10 @@ def convert(content, message=None, message_realm=None, possible_words=None, sent
     ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
     bugdown_stats_finish()
     return ret
+def list_of_special_md_links():
+    # type: () -> List[Text]
+    # List of all the links of .md files of zulip stored in special-md-links.txt
+    md_links_file = os.path.join(os.path.dirname(__file__), 'special-md-links.txt')
+    md_links = [force_text(mdLink).strip() for mdLink in open(md_links_file, 'r')]
+
+    return md_links
