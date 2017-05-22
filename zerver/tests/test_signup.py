@@ -1486,9 +1486,8 @@ class UserSignUpTest(ZulipTestCase):
     @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
     def test_registration_email_for_mirror_dummy_user(self, ignored):
         # type: (Any) -> None
-        email = 'sipbtest@mit.edu'
-
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.mit_user("sipbtest")
+        email = user_profile.email
         user_profile.is_mirror_dummy = True
         user_profile.is_active = False
         user_profile.save()
@@ -1514,11 +1513,10 @@ class UserSignUpTest(ZulipTestCase):
     def test_registration_of_mirror_dummy_user(self, ignored):
         # type: (Any) -> None
         password = "test"
-        email = "sipbtest@mit.edu"
         subdomain = "sipb"
         realm_name = "MIT"
-
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.mit_user("sipbtest")
+        email = user_profile.email
         user_profile.is_mirror_dummy = True
         user_profile.is_active = False
         user_profile.save()
@@ -1583,9 +1581,8 @@ class UserSignUpTest(ZulipTestCase):
         Trying to activate an already-active mirror dummy user should just
         redirect to a login page.
         """
-        email = "sipbtest@mit.edu"
-
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.mit_user("sipbtest")
+        email = user_profile.email
         user_profile.is_mirror_dummy = True
         user_profile.is_active = True
         user_profile.save()

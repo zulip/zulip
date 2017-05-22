@@ -868,7 +868,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": "sipbtest@mit.edu",
+                                                     "sender": self.mit_user("sipbtest").email,
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": ujson.dumps(["starnine@mit.edu",
@@ -882,7 +882,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": "sipbtest@mit.edu",
+                                                     "sender": self.mit_user("sipbtest").email,
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": "starnine@mit.edu"})
@@ -894,7 +894,7 @@ class MessagePOSTTest(ZulipTestCase):
         Sending two mirrored huddles in the row return the same ID
         """
         msg = {"type": "private",
-               "sender": "sipbtest@mit.edu",
+               "sender": self.mit_user("sipbtest").email,
                "content": "Test message",
                "client": "zephyr_mirror",
                "to": ujson.dumps(["espuser@mit.edu",
@@ -1011,7 +1011,7 @@ class MessagePOSTTest(ZulipTestCase):
         # type: () -> None
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "not-private",
-                                                     "sender": "sipbtest@mit.edu",
+                                                     "sender": self.mit_user("sipbtest").email,
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": "starnine@mit.edu"})
@@ -1023,7 +1023,7 @@ class MessagePOSTTest(ZulipTestCase):
         create_mirrored_message_users_mock.return_value = (False, True)
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": "sipbtest@mit.edu",
+                                                     "sender": self.mit_user("sipbtest").email,
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": "starnine@mit.edu"})
@@ -1039,7 +1039,7 @@ class MessagePOSTTest(ZulipTestCase):
         user.realm.save()
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": "sipbtest@mit.edu",
+                                                     "sender": self.mit_user("sipbtest").email,
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": "starnine@mit.edu"}, name='gownooo')
@@ -1149,7 +1149,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
 
-        self.login("sipbtest@mit.edu")
+        self.login(self.mit_user("sipbtest").email)
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -1547,7 +1547,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         client = get_client(name='zephyr_mirror')
 
         user = get_user_profile_by_email('starnine@mit.edu')
-        sender = get_user_profile_by_email('sipbtest@mit.edu')
+        sender = self.mit_user('sipbtest')
         new_user_email = 'bob_the_new_user@mit.edu'
 
         recipients = [user.email, new_user_email]
@@ -1750,7 +1750,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # But it still doesn't work if you're in another realm
-        self.login("sipbtest@mit.edu")
+        self.login(self.mit_user("sipbtest").email)
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
 

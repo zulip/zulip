@@ -2617,7 +2617,7 @@ class AccessStreamTest(ZulipTestCase):
         # Nobody can access a public stream in another realm
         mit_realm = get_realm("zephyr")
         mit_stream, _ = create_stream_if_needed(mit_realm, "mit_stream", invite_only=False)
-        sipbtest = get_user_profile_by_email("sipbtest@mit.edu")
+        sipbtest = self.mit_user("sipbtest")
         with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
             access_stream_by_id(hamlet, mit_stream.id)
         with self.assertRaisesRegex(JsonableError, "Invalid stream name 'mit_stream'"):
