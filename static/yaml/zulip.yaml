@@ -281,6 +281,41 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+  /users/{user}/presence:
+    get:
+      description: Get presence data for another user.
+      operationId: getPresence
+      produces:
+        - application/json
+      parameters:
+        - name: user
+          in: path
+          description: Enter email address
+          required: true
+          type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - presence
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              presence:
+                type: array
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
 ####################
 # Shared definitions
 definitions:
