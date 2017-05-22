@@ -39,6 +39,7 @@ run ./tools/test-js-with-node
 run ./tools/run-mypy
 run ./tools/test-backend $FORCEARG
 run ./tools/test-js-with-casper $FORCEARG
+run ./tools/optimize-svg
 # Not running queue worker reload tests since it's low-churn code
 # run ./tools/test-queue-worker-reload
 # Not running documentation tests since it takes 20s and only tests documentation
