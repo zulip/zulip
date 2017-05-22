@@ -360,7 +360,7 @@ option does not affect login credentials.'''.replace("\n", " "))
                       const=logging.DEBUG,
                       default=logging.INFO)
 
-    jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
+    jabber_group = optparse.OptionGroup(parser, "Jabber configuration") # type: ignore # https://github.com/python/typeshed/pull/1248
     jabber_group.add_option(
         '--jid',
         default=None,
