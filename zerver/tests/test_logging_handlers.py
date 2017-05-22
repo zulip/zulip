@@ -107,7 +107,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,  # type: ignore # https://github.com/python/typeshed/pull/1100
                                             'message\nmoremesssage\nmore', None,
                                             None)
-            record.request = captured_request
+            record.request = captured_request # type: ignore # this field is dynamically added
 
             report = self.run_handler(record)
             self.assertIn("user_email", report)
@@ -129,7 +129,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             global captured_request
             global captured_exc_info
             record = self.logger.makeRecord('name', logging.ERROR, 'function', 15, 'message', None, captured_exc_info)  # type: ignore # https://github.com/python/typeshed/pull/1100
-            record.request = captured_request
+            record.request = captured_request # type: ignore # this field is dynamically added
 
             report = self.run_handler(record)
             self.assertIn("user_email", report)
@@ -146,7 +146,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertEqual(report["stack_trace"], "See /var/log/zulip/errors.log")
 
             # Check anonymous user is handled correctly
-            record.request.user = AnonymousUser()
+            record.request.user = AnonymousUser() # type: ignore # this field is dynamically added
             report = self.run_handler(record)
             self.assertIn("host", report)
             self.assertIn("user_email", report)
@@ -157,10 +157,10 @@ class AdminZulipHandlerTest(ZulipTestCase):
             def get_host_error():
                 # type: () -> None
                 raise Exception("Get Host Failure!")
-            orig_get_host = record.request.get_host
-            record.request.get_host = get_host_error
+            orig_get_host = record.request.get_host # type: ignore # this field is dynamically added
+            record.request.get_host = get_host_error # type: ignore # this field is dynamically added
             report = self.run_handler(record)
-            record.request.get_host = orig_get_host
+            record.request.get_host = orig_get_host # type: ignore # this field is dynamically added
             self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
@@ -169,9 +169,9 @@ class AdminZulipHandlerTest(ZulipTestCase):
             # Test an exception_filter exception
             with patch("zerver.logging_handlers.get_exception_reporter_filter",
                        return_value=15):
-                record.request.method = "POST"
+                record.request.method = "POST" # type: ignore # this field is dynamically added
                 report = self.run_handler(record)
-                record.request.method = "GET"
+                record.request.method = "GET" # type: ignore # this field is dynamically added
             self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
@@ -197,7 +197,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertEqual(report["stack_trace"], None)
 
             # Test arbitrary exceptions from request.user
-            record.request.user = None
+            record.request.user = None # type: ignore # this field is dynamically added
             with patch("zerver.logging_handlers.traceback.print_exc"):
                 report = self.run_handler(record)
             self.assertIn("host", report)
