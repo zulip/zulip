@@ -3197,7 +3197,9 @@ def check_add_realm_emoji(realm, name, file_name, author=None):
 
 def do_remove_realm_emoji(realm, name):
     # type: (Realm, Text) -> None
-    RealmEmoji.objects.get(realm=realm, name=name).delete()
+    emoji = RealmEmoji.objects.get(realm=realm, name=name)
+    emoji.deactivated = True
+    emoji.save(update_fields=['deactivated'])
     notify_realm_emoji(realm)
 
 def notify_alert_words(user_profile, words):
