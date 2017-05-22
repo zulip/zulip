@@ -232,7 +232,7 @@ def compute_full_event_type(event):
 class EventQueue(object):
     def __init__(self, id):
         # type: (str) -> None
-        self.queue = deque() # type: deque[Dict[str, Any]]
+        self.queue = deque() # type: ignore # type signature should Deque[Dict[str, Any]] but we need https://github.com/python/mypy/pull/2845 to be merged
         self.next_event_id = 0 # type: int
         self.id = id # type: str
         self.virtual_events = {} # type: Dict[str, Dict[str, Any]]
