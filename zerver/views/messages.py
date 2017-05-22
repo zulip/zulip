@@ -41,8 +41,8 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
-    get_user_profile_by_email, get_stream, \
+    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, \
+    get_recipient, get_stream, get_user, \
     parse_usermessage_flags, \
     email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams, get_user_profile_by_id
@@ -237,7 +237,7 @@ class NarrowBuilder(object):
     def by_sender(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         try:
-            sender = get_user_profile_by_email(operand)
+            sender = get_user(operand, self.user_profile.realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
@@ -276,7 +276,7 @@ class NarrowBuilder(object):
 
             # Personals with other user; include both directions.
             try:
-                narrow_profile = get_user_profile_by_email(operand)
+                narrow_profile = get_user(operand, self.user_profile.realm)
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
@@ -290,7 +290,7 @@ class NarrowBuilder(object):
     def by_group_pm_with(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         try:
-            narrow_profile = get_user_profile_by_email(operand)
+            narrow_profile = get_user(operand, self.user_profile.realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
@@ -804,7 +804,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     for email in referenced_users:
         create_mirror_user_if_needed(user_profile.realm, email, fullname_function)
 
-    sender = get_user_profile_by_email(sender_email)
+    sender = get_user(sender_email, user_profile.realm)
     return (True, sender)
 
 def same_realm_zephyr_user(user_profile, email):
