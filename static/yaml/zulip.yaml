@@ -502,11 +502,10 @@ definitions:
   ErrorModel:
     type: object
     required:
-      - code
-      - message
+      - msg
+      - result
     properties:
-      code:
-        type: integer
-        format: int32
-      message:
+      msg:
+        type: string
+      result:
         type: string
