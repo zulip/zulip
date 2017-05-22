@@ -62,7 +62,7 @@ above as an orientation.
 This guide will show you how to run a bot on a running Zulip
 server.  It assumes you want to use one of the existing `contrib_bots`
 bots in your Zulip organization.  If you want to write a new one, you
-just need to write the `<my-bot>.py` script.
+just need to write the `<my-bot>.py` script and put it into `/contrib_bots/bots/<my-bot>` directory.
 
 You need:
 
@@ -73,7 +73,7 @@ You need:
   your bot.
 * A computer where you're running the bot from, with a clone of the
   [Zulip repository](https://github.com/zulip/zulip), which contains
-  the bot library code in its `contrib_bots` subdirectory. This is
+  the bot library code in its `contrib_bots/<my-bot>` subdirectory. This is
   required to run your bot. The following instructions assume this
   repository to be located in `~/zulip/`.
 
@@ -266,7 +266,7 @@ None.
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that you bot script is located in zulip/contrib_bots/bots/<my-bot>/
+    * Ensure that your bot script is located in zulip/contrib_bots/bots/<my-bot>/
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
 
