@@ -25,9 +25,9 @@ that you have received will be hidden from the message table.
 
 ### Compose box
 The **Compose box** is located under the message table. By default, the compose
-box consists of two buttons: **New stream message** and **New private message**.
+box consists of two buttons: **New topic** and **New private message**.
 
-However, when either the **New stream message** or **New private message**
+However, when either the **New topic** or **New private message**
 button is clicked or when you are in the middle of composing a message, the
 compose box transforms to include:
 
