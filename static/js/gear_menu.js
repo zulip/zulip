@@ -47,7 +47,7 @@ exports.initialize = function () {
 
 exports.open = function () {
     $("#settings-dropdown").click();
-    // there are invisible li tabs, which should not be clicked.f
+    // there are invisible li tabs, which should not be clicked.
     $("#gear-menu").find("li:not(.invisible) a").eq(0).focus();
 };
 
