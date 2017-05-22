@@ -112,9 +112,9 @@ class RateLimitTests(ZulipTestCase):
         self.assertEqual(result.status_code, 429)
         json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "error")
-        self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
+        self.assertIn("API usage exceeded rate limit", json.get("msg"))
+        self.assertEqual(json.get('retry-after'), 0.5)
         self.assertTrue('Retry-After' in result)
-        self.assertIn(result['Retry-After'], json.get("msg"))
         self.assertEqual(result['Retry-After'], '0.5')
 
         # We actually wait a second here, rather than force-clearing our history,
