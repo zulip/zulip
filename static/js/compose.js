@@ -947,6 +947,38 @@ $(function () {
                 _.extend({}, exports.send_times_data[event.old_id], value);
         }
     });
+
+    // Selectize Dropdown
+    $('#private_message_recipient').selectize({
+        persist: false,
+        maxItems: null,
+        valueField: 'email',
+        labelField: 'name',
+        searchField: ['name', 'email'],
+        options: [
+            {email: 'brian@thirdroute.com', name: 'Brian Reavis'},
+            {email: 'nikola@tesla.com', name: 'Nikola Tesla'},
+            {email: 'someone@gmail.com'}
+        ],
+        render: {
+            item: function(item, escape) {
+                return '<div>' +
+                    '<span class="name label">' +
+                        (item.name ? escape(item.name) : '') +
+                        (item.email ? escape('<' + item.email + '>') : '') +
+                    '</span>' +
+                '</div>';
+            },
+            option: function(item, escape) {
+                var label = item.name || item.email;
+                var caption = item.name ? item.email : null;
+                return '<div>' +
+                    '<span class="label">' + escape(label) + '</span>' +
+                    (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
+                '</div>';
+            }
+        }
+    });
 });
 
 return exports;
@@ -955,3 +987,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose;
 }
+
+

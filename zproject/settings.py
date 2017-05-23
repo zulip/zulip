@@ -745,6 +745,8 @@ PIPELINE = {
                 'styles/fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
+                'node_modules/selectize/dist/css/selectize.css',
+
             ),
             'output_filename': 'min/app.css'
         },
@@ -848,6 +850,7 @@ JS_SPECS = {
             'node_modules/string.prototype.codepointat/codepointat.js',
             'node_modules/winchan/winchan.js',
             'node_modules/handlebars/dist/handlebars.runtime.js',
+            'node_modules/selectize/dist/js/standalone/selectize.js',
             'third/marked/lib/marked.js',
             'generated/emoji/emoji_codes.js',
             'generated/pygments_data.js',

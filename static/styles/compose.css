@@ -70,7 +70,7 @@
 .compose_table .pm_recipient {
     position: relative;
     margin-right: 30px;
-    height: 25px;
+    min-height: 26px;
 }
 
 .compose_table #private-message .you_text {
