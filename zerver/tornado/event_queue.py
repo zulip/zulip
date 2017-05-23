@@ -2,7 +2,8 @@
 # high-level documentation on how this system works.
 from __future__ import absolute_import
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
-    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union, \
+    Deque
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -232,7 +233,7 @@ def compute_full_event_type(event):
 class EventQueue(object):
     def __init__(self, id):
         # type: (str) -> None
-        self.queue = deque() # type: deque[Dict[str, Any]]
+        self.queue = deque() # type: Deque[Dict[str, Any]]
         self.next_event_id = 0 # type: int
         self.id = id # type: str
         self.virtual_events = {} # type: Dict[str, Dict[str, Any]]
