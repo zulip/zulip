@@ -56,78 +56,76 @@ class BotHandlerApi(object):
                           ' its own messages?')
             sys.exit(1)
 
-def run_message_handler_for_bot(lib_module, quiet, config_file):
-    # Make sure you set up your ~/.zuliprc
-    client = Client(config_file=config_file)
-    restricted_client = BotHandlerApi(client)
+    def run_message_handler_for_bot(self, lib_module, quiet, client):
+        # Make sure you set up your ~/.zuliprc
 
-    message_handler = lib_module.handler_class()
+        message_handler = lib_module.handler_class()
 
-    class StateHandler(object):
-        def __init__(self):
-            self.state = None
+        class StateHandler(object):
+            def __init__(self):
+                self.state = None
 
-        def set_state(self, state):
-            self.state = state
+            def set_state(self, state):
+                self.state = state
 
-        def get_state(self):
-            return self.state
+            def get_state(self):
+                return self.state
 
-    state_handler = StateHandler()
+        state_handler = StateHandler()
 
-    if not quiet:
-        print(message_handler.usage())
+        if not quiet:
+            print(message_handler.usage())
 
-    def extract_message_if_mentioned(message, client):
-        bot_mention = r'^@(\*\*{0}\*\*\s|{0}\s)(?=.*)'.format(client.full_name)
-        start_with_mention = re.compile(bot_mention).match(message['content'])
-        if start_with_mention:
-            query = message['content'][len(start_with_mention.group()):]
-            return query
-        else:
-            bot_response = 'Please mention me first, then type the query.'
-            if message['type'] == 'private':
-                client.send_message(dict(
-                    type='private',
-                    to=message['sender_email'],
-                    content=bot_response,
-                ))
+        def extract_message_if_mentioned(message, client):
+            bot_mention = r'^@(\*\*{0}\*\*\s|{0}\s)(?=.*)'.format(client.full_name)
+            start_with_mention = re.compile(bot_mention).match(message['content'])
+            if start_with_mention:
+                query = message['content'][len(start_with_mention.group()):]
+                return query
             else:
-                client.send_message(dict(
-                    type='stream',
-                    to=message['display_recipient'],
-                    subject=message['subject'],
-                    content=bot_response,
-                ))
-            return None
+                bot_response = 'Please mention me first, then type the query.'
+                if message['type'] == 'private':
+                    client.send_message(dict(
+                        type='private',
+                        to=message['sender_email'],
+                        content=bot_response,
+                    ))
+                else:
+                    client.send_message(dict(
+                        type='stream',
+                        to=message['display_recipient'],
+                        subject=message['subject'],
+                        content=bot_response,
+                    ))
+                return None
 
-    def is_private(message, client):
-        # bot will not reply if the sender name is the same as the bot name
-        # to prevent infinite loop
-        if message['type'] == 'private':
-            return client.full_name != message['sender_full_name']
-        return False
+        def is_private(message, client):
+            # bot will not reply if the sender name is the same as the bot name
+            # to prevent infinite loop
+            if message['type'] == 'private':
+                return client.full_name != message['sender_full_name']
+            return False
 
-    def handle_message(message):
-        logging.info('waiting for next message')
+        def handle_message(message):
+            logging.info('waiting for next message')
 
-        is_mentioned = message['is_mentioned']
-        is_private_message = is_private(message, restricted_client)
+            is_mentioned = message['is_mentioned']
+            is_private_message = is_private(message, self)
 
-        # Strip at-mention botname from the message
-        if is_mentioned:
-            message['content'] = extract_message_if_mentioned(message=message, client=restricted_client)
-            if message['content'] is None:
-                return
+            # Strip at-mention botname from the message
+            if is_mentioned:
+                message['content'] = extract_message_if_mentioned(message=message, client=self)
+                if message['content'] is None:
+                    return
 
-        if is_private_message or is_mentioned:
-            message_handler.handle_message(
-                message=message,
-                client=restricted_client,
-                state_handler=state_handler
-            )
+            if is_private_message or is_mentioned:
+                message_handler.handle_message(
+                    message=message,
+                    client=self,
+                    state_handler=state_handler
+                )
 
-    signal.signal(signal.SIGINT, exit_gracefully)
+        signal.signal(signal.SIGINT, exit_gracefully)
 
-    logging.info('starting message handling...')
-    client.call_on_each_message(handle_message)
+        logging.info('starting message handling...')
+        client.call_on_each_message(handle_message)

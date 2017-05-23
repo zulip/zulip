@@ -10,7 +10,12 @@ import sys
 our_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, our_dir)
 
-from bot_lib import run_message_handler_for_bot
+from bot_lib import BotHandlerApi
+# For dev setups, we can find the API in the repo itself.
+if os.path.exists(os.path.join(our_dir, '../api/zulip')):
+    sys.path.insert(0, '../api')
+
+from zulip import Client
 
 def get_lib_module(bots_fn):
     bots_fn = os.path.realpath(bots_fn)
@@ -58,9 +63,12 @@ def run():
     if not options.quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    run_message_handler_for_bot(
+    client = Client(config_file=options.config_file)
+
+    restricted_client = BotHandlerApi(client)
+    restricted_client.run_message_handler_for_bot(
         lib_module=lib_module,
-        config_file=options.config_file,
+        client=client,
         quiet=options.quiet
     )
 
