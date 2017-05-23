@@ -9,7 +9,6 @@ from mock import mock
 from typing import Any, Dict
 from zerver.lib.actions import do_deactivate_user
 from zerver.lib.test_helpers import (
-    get_user_profile_by_email,
     make_client,
     queries_captured,
 )
