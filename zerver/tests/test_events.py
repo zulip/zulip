@@ -1006,23 +1006,23 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(lambda: do_set_user_display_setting(
                 self.user_profile, setting_name, value), num_events=num_events)"""
         
-        	"""schema_checker = self.check_events_dict([
-               ('type', equals('update_display_settings')),
-               ('setting_name', equals(setting_name)),
-               ('user', check_string),
-               ('setting', validator),
-           ])"""
+        	#schema_checker = self.check_events_dict([
+             #  ('type', equals('update_display_settings')),
+              # ('setting_name', equals(setting_name)),
+               #('user', check_string),
+               #('setting', validator),
+           #])
         changes = test_changes.get(setting_name)
-        	if (changes is None):
-            	raise AssertionError('No test created for %s' % (setting_name))
-            do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
-            for change in changes[1:]:
-                events = self.do_test(
-                    lambda: do_set_user_display_setting(self.user_profile.UserProfile, setting_name, change))
+        if (changes is None):
+            raise AssertionError('No test created for %s' % (setting_name))
+        do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
+        for change in changes[1:]:
+          	events = self.do_test(
+				lambda: do_set_user_display_setting(self.user_profile.UserProfile, setting_name, change))
                 error = schema_checker('events[0]', events[0])
                 self.assert_on_error(error)
 
-            timezone_schema_checker = self.check_events_dict([
+            """timezone_schema_checker = self.check_events_dict([
                 ('type', equals('realm_user')),
                 ('op', equals('update')),
                 ('person', check_dict_only([
@@ -1030,7 +1030,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('user_id', check_int),
                     ('timezone', check_string),
                 ])),
-            ])
+            ])"""
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
 
