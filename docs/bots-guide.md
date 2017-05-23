@@ -1,28 +1,22 @@
-# Writing bots
-**This feature is still experimental.**
+# Zulip bot system
 
-The contrib_bots system is a new part of Zulip that allows bot
-developers to write a large class of interactive bots that react to
-messages.
+Zulip's features can be extended by the means of bots and integrations.
 
-With the contrib_bots API, you *can* easily
+* **Integrations** are used to connect Zulip with different chat, scheduling and workflow software.
+  If this is what you are looking for, please check out the [integrations guide](
+  http://zulip.readthedocs.io/en/latest/integration-guide.html?highlight=integrations).
+* **Bots**, as a more general concept, intercept and react to messages.
+  If this is what you are looking for, read on!
 
-* intercept, view, and process messages sent by users on Zulip
-* send out new messages as replies to the processed messages
-
-With this API, you *cannot*
-
-* modify an intercepted message (you have to send a new message)
-* send messages on behalf of or impersonate other users
-* intercept private messages (except for PMs that with the bot as an
-explicit recipient)
+The purpose of this documentation is to provide you with information about Zulip's
+bot system.
 
 On this page you'll find:
 
-* A step-by-step [tutorial](#how-to-deploy-a-bot) on how to deploy a bot.
+* A step-by-step [tutorial](#how-to-run-a-bot) on how to run a bot.
 * A step-by-step [tutorial](#how-to-develop-a-bot) on how to develop a bot.
 * A [documentation](#bot-api) of the bot API.
-* Common [problems](#common-problems) when developing/deploying bots and their solutions.
+* Common [problems](#common-problems) when developing/running bots and their solutions.
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
@@ -31,9 +25,41 @@ that help with writing bots, please visit
 [Zulip development community server](https://chat.zulip.org), open an
 issue, or submit a pull request to share your ideas!
 
-## How to deploy a bot
+# The contrib_bot system
 
-This guide will show you how to deploy a bot on a running Zulip
+Zulip's bot system resides in the `contrib_bots` directory.
+
+ **Note: There exists an additional directory called `bots`. This directory does *not* contain normal bots,
+ but rather unpolished integrations.**
+
+The `contrib_bots` directory structure looks like the following:
+
+```
+contrib_bots
+│   bot_lib.py
+│   run.py
+│
+└───bots
+    └───bot1
+    └───bot2
+        │
+        └───readme.md
+        └───bot2.py
+        └───bot2.config
+        └───libraries
+        |   |
+        |   └───lib1.py
+        └───assets
+           |
+           └───pic.png
+```
+
+Each subdirectory in `bots` contains a bot. When developing bots, try to use the structure outlined
+above as an orientation.
+
+## How to run a bot
+
+This guide will show you how to run a bot on a running Zulip
 server.  It assumes you want to use one of the existing `contrib_bots`
 bots in your Zulip organization.  If you want to write a new one, you
 just need to write the `<my-bot>.py` script.
@@ -61,19 +87,21 @@ You need:
       out the form and click on *Create bot*.
     * A new bot user should appear in the *Your bots* panel.
 
-2. Download the bot's `.zuliprc` configuration file to your computer.
+2. Download the bot's `zuliprc` configuration file to your computer.
 
     * In the *Your bots* panel, click on the green icon to download
-      its configuration file *.zuliprc* (the structure of this file is
+      its configuration file *zuliprc* (the structure of this file is
       explained [here](#configuration-file).
-    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
+    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`
+      or `~/zuliprc-test`. Note that the destination should be accessible
+      from your Zulip dev environment (e.g. Vagrant or Digital Ocean).
 
 3. Subscribe the bot to the streams that the bot needs to interact with.
 
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
       (the address you assigned in step 3).
-    * Now, the bot do its job on the streams you subscribed it to.
+    * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
 4. Run the bot.
@@ -81,9 +109,11 @@ You need:
     * In your Zulip repository, navigate to `~/zulip/contrib_bots/`
     * Run
       ```
-      python run.py ~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
+      python run.py bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
       ```
       (using the path to the `.zuliprc` file from step 2).
+      A good test to run is the help/help.py bot for <my-bot>/<my-bot>.py
+      It's a simple bot that returns the Zulip github.
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
       to this:
@@ -94,6 +124,13 @@ You need:
       ```
 
     * Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
+
+5. Talk to the bot
+
+    * Go to the stream that your bot is subscribed to. Type "@\<your bot email\>
+      \<some string\>" and your bot should write back to the stream with 
+      some response.
+    * If the bot is the help bot, it should return with the following response:      "Info on Zulip can be found here: https://github.com/zulip/zulip"
 
 ### Test the `followup.py` bot
 
@@ -141,15 +178,26 @@ handler_class = MyBotHandler
 
 ## Bot API
 
-This section documents the functions every bot needs to implement and
-the structure of the bot's config file.
+This section documents functions every bot needs to implement and the structure of the bot's config file.
+
+With this API, you *can*
+
+* intercept, view, and process messages sent by users on Zulip.
+* send out new messages as replies to the processed messages.
+
+With this API, you *cannot*
+
+* modify an intercepted message (you have to send a new message).
+* send messages on behalf of or impersonate other users.
+* intercept private messages (except for PMs with the bot as an
+explicit recipient).
 
 ### usage
 *usage(self)*
 
 is called to retrieve information about the bot.
 
-#### Arguments
+##### Arguments
 * self - the instance the method is called on.
 
 #### Return values
@@ -232,9 +280,18 @@ None.
     * Ensure that you bot script is located in zulip/contrib_bots/bots/<my-bot>/
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
+    * Some bots require Python 3. Try switching to a Python 3 environment before running
+      your bot:
+      ```
+      source /srv/zulip-py3-venv/bin/activate
+      ```
+      Note that you can switch back to a Python 2 environment as follows:
+      ```
+      source /srv/zulip-venv/bin/activate
+      ```
 
 * My bot works only on some streams.
-    * Subscribe your bot to other streams, as described [here](#how-to-deploy-a-bot).
+    * Subscribe your bot to other streams, as described [here](#how-to-run-a-bot).
 
 ## Future direction
 
