@@ -990,7 +990,7 @@ class EventsRegisterTest(ZulipTestCase):
         elif property_type is Text:
             validator = check_string
         elif property_type is int:
-          	validator = check_int:
+          	validator = check_int
         elif property_type == (int, type(None)):
           	validator = check_int
         else:
