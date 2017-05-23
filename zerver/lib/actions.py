@@ -47,7 +47,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
-    CustomProfileFieldValue, validate_attachment_request, get_system_bot
+    CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
+    get_display_recipient_by_id
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
