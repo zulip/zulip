@@ -1014,6 +1014,22 @@ class EventsRegisterTest(ZulipTestCase):
                 error = timezone_schema_checker('events[1]', events[1])
 
             """test_change = dict(change_twenty_four_hour_time="twenty_four_hour_time", [True, False], change_left_side_userlist="left_side_userlist", [True, False], change_emoji_alt_code="emoji_alt_code", [True, False], change_emojiset="emojiset", [u'apple', u'twitter'], change_default_language="default_language", [u'de', u'es', u'en'], change_timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])  # type: Dict[str, Any]"""
+            test_changes = dict(
+            add_emoji_by_admins_only=bool_tests,
+            create_stream_by_admins_only=bool_tests,
+            default_language=[u'es', u'de', u'en'],
+            description=[u'Realm description', u'New description'],
+            email_changes_disabled=bool_tests,
+            invite_required=bool_tests,
+            invite_by_admins_only=bool_tests,
+            inline_image_preview=bool_tests,
+            inline_url_embed_preview=bool_tests,
+            message_retention_days=[10, 20],
+            name=[u'Zulip', u'New Name'],
+            name_changes_disabled=bool_tests,
+            restricted_to_domain=bool_tests,
+            waiting_period_threshold=[10, 20],
+        )  # type: Dict[str, Any]
     """def test_change_twenty_four_hour_time(self):
         # type: () -> None
         self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
