@@ -974,14 +974,14 @@ class EventsRegisterTest(ZulipTestCase):
 
     def do_set_user_display_settings_test(self, setting_name, values_list):
         # type: (str, List[Union[bool, Text]]) -> None
-            bool_change = [True, False]  # type: List[bool]
-            test_changes = dict(
-                change_twenty_four_hour_time=["twenty_four_hour_time", bool_change],
-                change_side_userlist=["left_side_userlist", bool_change],
-                change_emoji_alt_code=["emoji_alt_code", bool_change],
-                change_emojiset=["emojiset", [u'apple', u'twitter']],
-                default_language=["default_language", [u'es', u'de', u'en']],
-                change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
+        bool_change = [True, False]  # type: List[bool]
+        test_changes = dict(
+            change_twenty_four_hour_time=["twenty_four_hour_time", bool_change],
+            change_side_userlist=["left_side_userlist", bool_change],
+            change_emoji_alt_code=["emoji_alt_code", bool_change],
+            change_emojiset=["emojiset", [u'apple', u'twitter']],
+            default_language=["default_language", [u'es', u'de', u'en']],
+            change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
             )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
@@ -1040,7 +1040,6 @@ class EventsRegisterTest(ZulipTestCase):
                 default_language=["default_language", [u'es', u'de', u'en']],
                 change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
             )  # type: Dict[str, Any]
-            
             property_type = Realm.property_types[name]
         if property_type is bool:
             validator = check_bool
