@@ -18,7 +18,7 @@ are not members of a private stream cannot subscribe to the stream, and
 they also cannot read or send messages to the stream.
 
 Users are subscribed to specific streams in the organization by default,
-such as the [#announce](the-announce-stream) stream. Users can easily
+such as the [#announce](/help/make-an-announcement) stream. Users can easily
 [view messages](/help/view-messages-from-a-stream) from a specific stream;
 in addition, they can
 [browse](/help/browse-and-subscribe-to-streams#browse-streams) their stream

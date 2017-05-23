@@ -1,7 +1,7 @@
 from typing import Dict, Optional, Any
 
 from django.conf import settings
-from django.template import Library, loader
+from django.template import Library, loader, engines
 from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
 
@@ -82,7 +82,8 @@ def render_markdown_path(markdown_file_path, context=None):
     if context is None:
         context = {}
 
-    template = loader.get_template(markdown_file_path)
-    markdown_string = template.render(context)
+    jinja = engines['Jinja2']
+    markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
     html = md_engine.convert(markdown_string)
-    return mark_safe(html)
+    html_template = jinja.from_string(html)
+    return mark_safe(html_template.render(context))

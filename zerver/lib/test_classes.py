@@ -218,9 +218,20 @@ class ZulipTestCase(TestCase):
         ZOE='ZOE@zulip.com',
     )
 
+    mit_user_map = dict(
+        sipbtest="sipbtest@mit.edu",
+        starnine="starnine@mit.edu",
+        espuser="espuser@mit.edu",
+    )
+
     def example_user(self, name):
         # type: (str) -> UserProfile
         email = self.example_user_map[name]
+        return get_user_profile_by_email(email)
+
+    def mit_user(self, name):
+        # type: (str) -> UserProfile
+        email = self.mit_user_map[name]
         return get_user_profile_by_email(email)
 
     def notification_bot(self):

@@ -902,13 +902,13 @@ def valid_stream_name(name):
     return name != ""
 
 def parse_zephyr_subs(verbose=False):
-    # type: (bool) -> Union[List, Tuple, Set[Tuple[str, str, str]]]
-    zephyr_subscriptions = set()
+    # type: (bool) -> Set[Tuple[str, str, str]]
+    zephyr_subscriptions = set() # type: Set[Tuple[str, str, str]]
     subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
     if not os.path.exists(subs_file):
         if verbose:
             logger.error("Couldn't find ~/.zephyr.subs!")
-        return []
+        return zephyr_subscriptions
 
     for line in open(subs_file, "r").readlines():
         line = line.strip()

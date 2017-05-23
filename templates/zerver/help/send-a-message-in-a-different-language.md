@@ -54,7 +54,7 @@ and then click **OK**.
     pointer over this bar, a tooltip appears that describes the active
     keyboard layout.
 
-## Change keyboard language on Mac OSX
+## Change keyboard language on MacOS
 
 1. Choose **Apple menu**.
 

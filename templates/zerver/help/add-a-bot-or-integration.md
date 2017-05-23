@@ -19,21 +19,12 @@ the creation of your bot.
 
 4. You now have access to your bot's API key and API
 configuration file (`.zuliprc`) which you will need for integrations that you would like
-to use with this bot. You can click on the download icon
-(![Download icon](/static/images/help/download_button.png)) to download your `.zuliprc` file.
+to use with this bot. You can click on the download
+(<i class="icon-vector-download-alt"></i>) icon to download your `.zuliprc` file.
 
 ## Add an integration
 
-There is a full list of integrations and the directions to add them on the Integrations page.
-You can access this page by following the given instructions.
-
-1. Click the cog (<i class="icon-vector-cog"></i>) in the upper right corner
-of the right sidebar.
-
-2. Next, select **Integrations** from the dropdown that appears.
-
-    ![Integrations dropdown](/static/images/help/cog_dropdown_integrations.png)
-
-3. This will open up the Integrations page which contains a full list of all
-the integrations currently supported by Zulip. Click on the integration you
-would like to use and follow the instructions on the page that you are redirected to.
+The [Integrations page](/integrations) offers a complete list of all the
+integrations currently supported by Zulip. To add an integration to your
+organization, select the integration that you would like to use from the list
+and follow the installation instructions accordingly.

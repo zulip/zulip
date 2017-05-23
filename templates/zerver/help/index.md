@@ -41,20 +41,18 @@ as an **organization**.
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
-* [Restore the last unsent message](/help/restore-the-last-unsent-message)
 <!-- Automatically link to an external issue tracker (improve wording) -->
 <!-- Add a link preview -->
 * [Enable or disable Press Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify that your message has been successfully sent](/help/verify-that-your-message-has-been-successfully-sent)
 <!-- What to do if the server returns an error -->
-* [Send a status message](/help/send-a-status-message)
+* [Send a status message](/help/format-your-message-using-markdown#status-messages)
 * [@-mention a team member](/help/at-mention-a-team-member)
 * [Make an announcement](/help/make-an-announcement)
 * [Send a message in a different language](/help/send-a-message-in-a-different-language)
 * [Reply to a message](/help/reply-to-a-message)
 ### Reading
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
-* [View information about a message](/help/view-information-about-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View an image at full size](/help/view-an-image-at-full-size)
 * [Collapse a message](/help/collapse-a-message)
@@ -82,7 +80,6 @@ as an **organization**.
 * [View messages from a topic](/help/view-messages-from-a-topic)
 * [View messages from a user](/help/view-messages-from-a-user)
 * [View messages containing files or links](/help/view-messages-containing-files-or-links)
-* [The #announce stream](/help/the-announce-stream)
 * [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)

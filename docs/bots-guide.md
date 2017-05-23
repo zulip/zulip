@@ -87,19 +87,21 @@ You need:
       out the form and click on *Create bot*.
     * A new bot user should appear in the *Your bots* panel.
 
-2. Download the bot's `.zuliprc` configuration file to your computer.
+2. Download the bot's `zuliprc` configuration file to your computer.
 
     * In the *Your bots* panel, click on the green icon to download
-      its configuration file *.zuliprc* (the structure of this file is
+      its configuration file *zuliprc* (the structure of this file is
       explained [here](#configuration-file).
-    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
+    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`
+      or `~/zuliprc-test`. Note that the destination should be accessible
+      from your Zulip dev environment (e.g. Vagrant or Digital Ocean).
 
 3. Subscribe the bot to the streams that the bot needs to interact with.
 
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
       (the address you assigned in step 3).
-    * Now, the bot will do its job on the streams you subscribed it to.
+    * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
 4. Run the bot.
@@ -107,7 +109,7 @@ You need:
     * In your Zulip repository, navigate to `~/zulip/contrib_bots/`
     * Run
       ```
-      python run.py ~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
+      python run.py bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
       ```
       (using the path to the `.zuliprc` file from step 2).
       A good test to run is the help/help.py bot for <my-bot>/<my-bot>.py. 
@@ -278,6 +280,15 @@ None.
     * Ensure that you bot script is located in zulip/contrib_bots/bots/<my-bot>/
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
+    * Some bots require Python 3. Try switching to a Python 3 environment before running
+      your bot:
+      ```
+      source /srv/zulip-py3-venv/bin/activate
+      ```
+      Note that you can switch back to a Python 2 environment as follows:
+      ```
+      source /srv/zulip-venv/bin/activate
+      ```
 
 * My bot works only on some streams.
     * Subscribe your bot to other streams, as described [here](#how-to-run-a-bot).

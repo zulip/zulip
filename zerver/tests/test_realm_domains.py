@@ -59,8 +59,9 @@ class RealmDomainTest(ZulipTestCase):
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'The domain acme.com is already a part of your organization.')
 
-        self.login("sipbtest@mit.edu")
-        mit_user_profile = get_user_profile_by_email("sipbtest@mit.edu")
+        mit_user_profile = self.mit_user("sipbtest")
+        self.login(mit_user_profile.email)
+
         do_change_is_admin(mit_user_profile, True)
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'The domain acme.com belongs to another organization.')

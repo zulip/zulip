@@ -281,6 +281,78 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+  /users/{user}/presence:
+    get:
+      description: Get presence data for another user.
+      operationId: getPresence
+      produces:
+        - application/json
+      parameters:
+        - name: user
+          in: path
+          description: Enter email address
+          required: true
+          type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - presence
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              presence:
+                type: array
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /user_uploads:
+    post:
+      description: Upload a file, and print the corresponding URI.
+      operationId: userUploads
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: file
+          in: formData
+          description: File to be uploaded
+          type: file
+          required: true
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - uri
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              uri:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
 ####################
 # Shared definitions
 definitions:
@@ -502,11 +574,10 @@ definitions:
   ErrorModel:
     type: object
     required:
-      - code
-      - message
+      - msg
+      - result
     properties:
-      code:
-        type: integer
-        format: int32
-      message:
+      msg:
+        type: string
+      result:
         type: string
