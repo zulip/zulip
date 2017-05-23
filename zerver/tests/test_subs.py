@@ -2470,7 +2470,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Subscribe only ourself because invites are disabled on mit.edu
         mit_user_profile = self.mit_user('starnine')
         email = mit_user_profile.email
-        users_to_subscribe = [email, "espuser@mit.edu"]
+        users_to_subscribe = [email, self.mit_user("espuser").email]
         for email in users_to_subscribe:
             self.subscribe_to_stream(email, "mit_stream")
 
