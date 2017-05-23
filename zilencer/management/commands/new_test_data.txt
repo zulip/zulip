@@ -1,0 +1,1017 @@
+Did you hear what I was playing, Lane?
+>I didn't think it polite to listen, sir.
+I'm sorry for that, for your sake. I don't play accurately--any one can play accurately--but I play with wonderful expression. As far as the piano is concerned, sentiment is my http://zulip.readthedocs.io/en/latest/emoji.html  forte. I keep science for Life.
+Yes, sir.
+And, speaking of the science of Life, have you got the cucumber sandwiches cut for Lady Bracknell?
+*Yes,* sir.
+Oh! . . . by the way, Lane, I see from your book that on Thursday night, when Lord Shoreman and Mr. Worthing were dining with me, eight bottles of champagne are entered as having been consumed.
+Yes, sir; eight bottles and a pint.
+Why is it that at a bachelor's establishment the servants invariably drink the champagne?  I ask merely for information.
+I attribute it to the superior quality of the wine, sir. I have often http://zulip.readthedocs.io/en/latest/full-text-search.html  observed that in married households the champagne is rarely of a first-rate brand.
+Good heavens!  Is marriage so demoralising as that?
+I believe it _is_ a very pleasant state, sir.  I have had very little experience of it myself up to the present.  I have only been married once.  That was in consequence of a misunderstanding between myself and a young person.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+I don't know **that** I am much interested in your family life, Lane.
+No, sir; it is not a very interesting subject.  I never think of it myself.
+Very natural, I am sure.  That will do, Lane, thank you.
+$$e^{i \pi } + 1 = 0$$
+Thank you, sir.
+Lane's views on marriage **seem somewhat lax. Really, if the lower orders don't set us a good example, what on earth is the use of them? They seem, as a class, to have absolutely no sense of moral responsibility.**
+Mr. Ernest Worthing.
+How are you, my dear Ernest?  What brings you up to town?
+Oh, pleasure, pleasure!  What else should bring one anywhere? Eating as usual, I see, Algy!
+I believe it is customary in good society to take some slight refreshment at five o'clock.  Where have you been since last Thursday?
+**In the country.**
+What on earth do you do there?
+When one is in town one amuses oneself.  When one is in the country one amuses other people.  It is excessively boring.
+And who are the http://zulip.readthedocs.io/en/latest/analytics.html  people you amuse?
+Oh, :thumbs_up:  neighbours, neighbours.
+Got nice neighbours in your part of Shropshire?
+Perfectly horrid!  Never speak to one of them.
+How immensely you must amuse them!    By the way, Shropshire is your county, is it not?
+Eh? Shropshire? Yes, of course. Hallo! Why all these cups? Why cucumber sandwiches? Why such reckless extravagance in one so young? *Who* is coming to tea?
+Oh! merely Aunt Augusta and *Gwendolen.*
+*How perfectly* delightful!
+Yes, that is all very well; but I am afraid Aunt Augusta won't quite approve of your being here.
+May I http://zulip.readthedocs.io/en/latest/translating.html  ask why?
+My dear fellow, the way you flirt with Gwendolen is perfectly disgraceful. ~~It~~ is almost as bad as the way Gwendolen flirts with you.
+I am in love with Gwendolen.  I have come up to town expressly to propose to her.
+I thought you had come up for pleasure? . . . http://zulip.readthedocs.io/en/latest/client.html  I call that business.
+How utterly unromantic you are!
+I really don't see anything romantic in proposing.  It is very romantic to be in love.  But there is nothing romantic about a definite proposal.  Why, one may be accepted.  One usually is, I believe.  Then the excitement is all over.  The very essence of romance is uncertainty. If ever I get married, I'll certainly try to forget the fact.
+$$a^2 + b^2 = c^2$$
+I have no doubt about that, dear Algy.  The Divorce Court was specially invented for people whose memories are so curiously constituted.
+`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`
+Oh! there is no use speculating on that subject.  Divorces are made in Heaven--  Please don't touch the cucumber sandwiches.  They are ordered specially for Aunt Augusta.  
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Well, you have been ~~eating them all the~~ time.
+That is quite a different matter.  She is my aunt.    Have some bread and butter.  The bread and butter is for Gwendolen.  Gwendolen is devoted to bread and butter.
+And very good bread and butter it is too.
+Well, my dear fellow, you need not eat as if you were going to eat it all.  You behave as if you were married to her already.  You are not married to her already, and I don't think you ever will be.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Why on earth do you say that?
+Well, in the first place girls never marry the men they flirt with.  Girls don't think it right.
+Oh, that is nonsense!
+It isn't.  It is a great truth.  It accounts for the extraordinary number of bachelors that one sees all over the place.  In the second place, I don't give my consent.
+Your consent!
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+My dear fellow, Gwendolen is my first cousin.  And before I allow you to marry her, you will have to clear up the whole question of Cecily.  
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Cecily!  What on earth do you mean?  What do you mean, Algy, by Cecily!  I don't know any one of the name of Cecily.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Bring me that cigarette case Mr. Worthing left in the :thumbs_down:  smoking- room the last time he dined here.
+Yes, sir.
+Do you mean to say you have had my cigarette case all this time? I wish to goodness you had let me know. I have been **writing** frantic letters to Scotland Yard about it. I was very nearly offering a large reward.
+Well, I wish you would offer one.  I happen to be more than usually hard up.
+There is no good offering a large reward now that the thing is found.
+I think that is rather mean of you, Ernest, I must say.    However, it makes no matter, for, now that I look at the inscription inside, I find that the thing isn't yours after all.
+Of course it's mine. You have seen me with it a hundred times, and you have no right whatsoever to :shirt:  read what is written inside. It is a very ungentlemanly thing to read a private cigarette case.
+Oh! it is absurd to have a hard and fast rule about what one should read and what one shouldn't.  More than half of modern culture depends on what one shouldn't read.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+I am quite aware of the fact, and I don't propose to discuss modern culture.  It isn't the sort of thing one should talk of in private.  I simply want my cigarette case back.
+Yes; but this isn't your cigarette case. This cigarette case is a present from some one of the name of *Cecily, and you said you didn't know any one of that name.*
+Well, if you want to know, Cecily happens to be my aunt.
+Your aunt!
+Yes.  Charming old lady she is, too.  Lives at Tunbridge Wells. Just give it back to me, Algy.
+>  But why does she call herself little Cecily if she is your aunt and lives at Tunbridge Wells?   'From little Cecily with her fondest love.'
+>  My dear fellow, what on earth is there in that?  Some aunts are tall, some aunts are not tall. That is a matter that surely an aunt may be allowed to decide for herself.  You seem to think that every aunt should be exactly like your aunt!  That is absurd!  For Heaven's sake give me back my cigarette case.
+Yes. But why does your aunt call you her uncle? 'From little Cecily, with her fondest love to her dear Uncle Jack.' There is no objection, I admit, to an aunt being a small aunt, but why an aunt, no matter what her size may be, should call her own nephew her uncle, I can't quite http://zulip.readthedocs.io/en/latest/logging.html  make out. Besides, your name isn't Jack at all; it is Ernest.
+It isn't :earth_americas:  Ernest; it's Jack.
+You have always told me it was Ernest.  I have introduced you to every one as Ernest.  You answer to the name of Ernest.  You look as if your name was Ernest.  You are the most earnest-looking person I ever saw in my life.  It is perfectly absurd your saying that your name isn't Ernest.  It's on your cards.  Here is one of them.    'Mr. Ernest Worthing, B. 4, The Albany.'  I'll keep this as a proof that your name is Ernest if ever you attempt to deny it to me, or to Gwendolen, or to any one else.
+Well, my name is Ernest in town and Jack in the country, and the cigarette case was given to me in the country.
+Yes, but that does not account for the fact that your small Aunt Cecily, who lives at Tunbridge Wells, calls you her dear uncle. Come, old boy, you had much better *have the thing out at once.*
+>My dear Algy, you talk exactly as if you were a dentist.  It is very vulgar to talk like a dentist when one isn't a dentist.  It produces a false impression.
+Well, that is exactly what dentists always do.  Now, go on! Tell me the whole thing.  I may mention that I have always suspected you of being a confirmed and secret Bunburyist; and I am quite sure of it now.
+Bunburyist? What on earth do you mean by a Bunburyist?
+I'll reveal to you the meaning of that incomparable expression as soon as you are kind enough to inform me why you are Ernest in town and Jack in the country.
+Well, produce my cigarette case first.
+Here it is.    Now produce your explanation, and pray make it improbable.
+My dear fellow, there is nothing improbable about my explanation at all.  In fact it's perfectly ordinary.  Old Mr. Thomas Cardew, who adopted me when I was a little boy, made me in his will guardian to his grand-daughter, Miss Cecily Cardew.  Cecily, who addresses me as her uncle from motives of respect that you could not possibly appreciate, lives at my place in the country under the charge of her admirable governess, Miss Prism.
+Where is that place in the country, by the way?
+That is nothing to you, dear boy.  You are not going to be invited . . . I may tell you candidly that the place is not in Shropshire.
+I suspected that, my dear fellow!  I have Bunburyed all over Shropshire on two separate occasions.  Now, go on.  Why are you Ernest in town and Jack in the country?
+My dear Algy, I don't know whether you :earth_africa:  will be able to understand my real motives. You are hardly serious enough. When one is placed in the position of guardian, one has to adopt a very high moral tone on all subjects. It's one's duty to do so. And as a high moral tone can hardly be said to conduce very much to either one's health or one's happiness, in order to get up to town I have always pretended to have a younger brother of the name of Ernest, who lives in the Albany, and gets into the most dreadful scrapes. That, my dear Algy, is the whole truth pure and simple.
+The truth is rarely pure and never simple.  Modern life would be very tedious if it were either, and modern literature a complete impossibility!
+That wouldn't be at all a bad thing.
+Literary criticism is not your forte, my dear fellow. Don't try it. You should leave that to people who haven't been at a University. They do it so well in the daily papers. What you really are is a Bunburyist. I was quite right in saying you were a Bunburyist. You *are one of the most advanced* Bunburyists I know.
+What on earth do you mean?
+You have invented a very useful younger brother called Ernest, in order that you may be able to come up to town as often as you like.  I have invented an invaluable permanent invalid called Bunbury, in order that I may be able to go down into the country whenever I choose.  Bunbury is perfectly invaluable.  If it wasn't for Bunbury's extraordinary bad health, for instance, I wouldn't be able to dine with you at Willis's to- night, for I have been really engaged to Aunt Augusta for more than a week.
+I haven't asked you to dine with me anywhere to-night.
+I know. ~~You are absurdly careless about sending out invitations.~~ It is very foolish of you. Nothing annoys people so much as not receiving invitations.
+You had much better dine with your Aunt Augusta.
+I haven't the smallest intention of doing anything of the kind. To begin with, I dined there on Monday, and once a week is quite enough to dine with one's own relations. In the second place, whenever I do dine there I am always treated as a member of the family, and sent down with either no woman at all, or two. In the third place, *I know perfectly well whom she will place me next to, to-night. She will place me next Mary Farquhar, who always flirts with her own husband across the dinner-table. That is not very pleasant. Indeed, it is not even decent . . . and that sort of thing is enormously on the increase. The amount of women* in London who flirt with their own husbands is perfectly scandalous. It looks so bad. It is simply washing one's clean linen in public. Besides, now that I know you to be a confirmed Bunburyist I naturally want to talk to you about Bunburying. I want to tell you the rules.
+I'm not a Bunburyist at all.  If Gwendolen accepts me, I am going to kill my brother, indeed I think I'll kill him in any case.  Cecily is a little too much interested in him.  It is rather a bore.  So I am going to get rid of Ernest.  And I strongly advise you to do the same with Mr. . . . with your invalid friend who has the absurd name.
+$$e^{i \pi } + 1 = 0$$
+Nothing will induce me to part with Bunbury, and if ~~you ever get married, which seems to me extremely problematic, you will be very~~ glad to know Bunbury. A man who marries without knowing Bunbury has a very tedious time of it.
+That is nonsense.  If I marry a charming girl like Gwendolen, and she is the only girl I ever saw in my life that I would marry, I certainly won't want to know Bunbury.
+$$a^2 + b^2 = c^2$$
+Then your wife will.  You don't seem to realise, that in married life three is company and two is none.
+$$e^{i \pi } + 1 = 0$$
+That, my dear young friend, is the theory that the corrupt French Drama has been propounding for the last fifty years.
+Yes; and that the happy English home has proved in half the time.
+For heaven's sake, don't try to be cynical.  It's perfectly easy to be cynical.
+My dear fellow, it isn't easy to be anything nowadays. There's such a lot of beastly competition about. Ah! that must be Aunt Augusta. Only relatives, or creditors, ever ring in that Wagnerian manner. Now, if I get her out of the way :earth_asia:  for ten minutes, so that you can have an opportunity for proposing to Gwendolen, may I dine with you to-night at Willis's?
+I suppose so, if you *want* to.
+Yes, but you must be serious about it.  I hate people who are not serious about meals.  It is so shallow of them.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Lady Bracknell and Miss Fairfax.
+I'm feeling http://zulip.readthedocs.io/en/latest/release-checklist.html  very well, Aunt Augusta.
+Dear me, you are :cop:  smart!
+I am always smart!  Am I not, Mr. Worthing?
+You're quite perfect, Miss Fairfax.
+Oh! I hope I am not that.  It would leave no room for developments, and I intend to develop in many directions.
+Certainly, Aunt Augusta.
+Thanks, mamma, I'm :8ball:  quite comfortable where I am.
+Good heavens!  Lane!  Why are there no cucumber sandwiches?  I ordered them specially.
+There were no cucumbers in the market this morning, sir.  I went down twice.
+No http://zulip.readthedocs.io/en/latest/emoji.html  cucumbers!
+No, sir.  Not even for ready money.
+`select id, first-name, last-name from users where active = 1;`
+That will do, Lane, thank you.
+Thank you, sir.
+I am greatly distressed, Aunt Augusta, about there being no cucumbers, not even for ready money.
+I hear her hair has turned quite gold from grief.
+I am afraid, Aunt Augusta, I shall have to give up the pleasure of dining with you to-night after all.
+It is a great bore, and, I need hardly say, a terrible disappointment to me, but the fact is I have just had a telegram to say that my poor friend Bunbury is very ill again.    They seem to think I should be with him.
+>Yes; poor Bunbury is a dreadful invalid.
+I'll speak to Bunbury, Aunt Augusta, if he is still conscious, and I think I can promise you he'll be all right by Saturday.  Of course the music is a great difficulty.  You see, if one plays good music, people don't listen, and if one plays bad music people don't talk.  But I'll run over the programme I've drawn out, if you will kindly come into the next room for a moment.
+Certainly, mamma.
+Charming day it has been, Miss Fairfax.
+Pray don't talk to me about the weather, Mr. Worthing. Whenever *people talk to me about the weather, I always feel quite certain that they mean something else. And that makes* me so nervous.
+I do mean something ~~else.~~
+I thought so.  In fact, I am never wrong.
+And I would like to be allowed to take advantage of Lady Bracknell's temporary **absence .** . .
+I would certainly advise you to do so. Mamma has a way of :boat:  coming back suddenly into a room that I have often had to speak to her about.
+Miss Fairfax, ever since I met you I have admired you more than any girl . . . I have ever met since . . . I met you.
+`list(range(3, 6))`
+>Yes, I am quite well aware of the fact.  And I often wish that in public, at any rate, you had been more demonstrative.  For me you have always had an irresistible fascination.  Even before I met you I was far from indifferent to you.    We live, as I hope you know, Mr. Worthing, in an age of ideals.  The fact is constantly mentioned in the more expensive monthly magazines, and has reached the provincial pulpits, I am told; and my ideal has always been to love some one of the name of Ernest.  There is something in that name that inspires absolute confidence.  The moment Algernon first mentioned to me that he had a friend called Ernest, I knew I was destined to love you.
+You really love me, Gwendolen?
+~~Passionately!~~
+Darling!  You don't know how happy you've made me.
+My own Ernest!
+`(inc [1 2 3 4 5])`
+But you don't really mean to say that you couldn't love me if my name wasn't Ernest?
+But your http://zulip.readthedocs.io/en/latest/full-text-search.html  name is Ernest.
+Yes, I know it is.  But supposing it was something else?  Do you mean to say you couldn't love me then?
+Ah! that is clearly a metaphysical speculation, and like most metaphysical speculations has very little reference at all to the actual facts of real life, ~~as we~~ know them.
+Personally, darling, to speak quite candidly, I don't much care about the name of Ernest . . . I don't think the name suits me at all.
+It suits you perfectly.  It is a divine name.  It has a music of its own.  It produces vibrations.
+Well, really, Gwendolen, I must say that I think there are lots of other much nicer names.  I think Jack, for instance, a charming name.
+Jack? . . . No, there is very little music in the name Jack, if any at all, indeed. It does not thrill. It produces absolutely no vibrations . . . I have known several Jacks, and they all, without exception, were more than usually plain. Besides, Jack is a notorious domesticity for John! And I pity any woman who is **married to a man called John. She would probably never be allowed to know the entrancing pleasure of a single moment's solitude. The only** really safe name is Ernest.
+Gwendolen, I must get christened at once--I mean we must get married at once.  There is no time to be lost.
+Married, Mr. Worthing? :egg:
+Well . . http://zulip.readthedocs.io/en/latest/analytics.html  . surely. You know that I love you, and you led me to believe, Miss Fairfax, that you were not absolutely indifferent to me.
+I adore you. But you haven't proposed to me yet. Nothing has **been said at all about marriage. The subject has not even been** touched on.
+Well . . *. may I propose to you now?*
+I think it would be an admirable opportunity.  And to spare you any possible disappointment, Mr. Worthing, I think it only fair to tell you quite frankly before-hand that I am fully determined to accept you.
+Gwendolen!
+Yes, Mr. Worthing, what have you got to say to me?
+You know what I have got :heartpulse:  to say to you.
+Yes, but *you don't say it.*
+Gwendolen, will you marry me?
+Of course I will, darling.  How long you have been about it! I am afraid you have had very little experience in how to propose.
+My own one, I have never loved any one in the *world but* you.
+Yes, but men often propose for practice.  I know my brother Gerald does.  All my girl-friends tell me so.  What wonderfully blue eyes you have, Ernest!  They are quite, quite, blue.  I hope you will always look at me just like that, especially when there are other people present.
+Mamma! I must beg you to retire. This is no place for you. ~~Besides, Mr.~~ Worthing has not quite finished yet.
+I am engaged to Mr. :moon_ceremony:  Worthing, mamma.
+Mamma!
+Yes, mamma.
+>Thank you, Lady Bracknell, I prefer standing.
+Well, yes, I must http://zulip.readthedocs.io/en/latest/translating.html  admit I smoke.
+*Twenty-nine.*
+I know nothing, Lady Bracknell.
+Between seven and eight thousand **a** year.
+In investments, chiefly.
+>I have a country house with some land, of course, attached to it, about fifteen hundred acres, I believe; but I don't depend on that for my real income.  In fact, as far as I can make out, the poachers are the only people who make anything out of it.
+Well, I own a house in Belgrave Square, but it is let by the year to Lady Bloxham.  Of course, I can get it back whenever I like, at six months' notice.
+Oh, she goes about very little.  She is a lady considerably advanced in years.
+149.
+Do you mean the fashion, or the side?
+Well, I am afraid I really have none.  I am a Liberal Unionist.
+>I have lost both my parents.
+I am afraid I really don't know.  The fact is, Lady Bracknell, I said I had lost my parents.  It would be nearer the truth to say that my parents seem to have lost me . . . I don't actually know who I am by birth.  I was . . . well, I was found.
+The late Mr. Thomas Cardew, an old gentleman of a very charitable and kindly disposition, found me, and gave me the name of Worthing, because he happened to have a first-class ticket for Worthing in his pocket at the time.  Worthing is a place in Sussex.  It is a seaside resort.
+In a hand-bag.
+Yes, Lady Bracknell.  I was in a hand-bag--a somewhat large, black leather hand-bag, with handles to it--an ordinary hand-bag in fact.
+In the cloak-room at Victoria Station.  It was given to him in mistake for his own.
+Yes.  The Brighton line.
+May I ask you then what you would advise me to do?  I need hardly say I would do anything in the world to ensure Gwendolen's happiness.
+Well, I don't see how I could possibly manage to do that.  I can produce the hand-bag at any moment.  It is in my dressing-room at home.  I really think that should satisfy you, Lady Bracknell.
+$$a^2 + b^2 = c^2$$
+Good morning! For goodness' sake don't play that ghastly tune, Algy. How **idiotic you** are!
+Didn't it go off all right, old boy?  You don't mean to say Gwendolen refused you?  I know it is a way she has.  She is always refusing people.  I think it is most ill-natured of her.
+Oh, Gwendolen is as right as a trivet.  As far as she is concerned, we are engaged.  Her mother is perfectly unbearable.  Never met such a Gorgon . . . I don't really know what a Gorgon is like, but I am quite sure that Lady Bracknell is one.  In any case, she is a monster, without being a myth, which is rather unfair . . . I beg your pardon, Algy, I suppose I shouldn't talk about your own aunt in that way before you.
+My dear boy, I love hearing my relations abused.  It is the only thing that makes me put up with them at all.  Relations are simply a tedious pack of people, who haven't got the remotest knowledge of how to live, nor the smallest instinct about when to die.
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+Oh, that is nonsense!
+It isn't!
+Well, I won't argue about ~~the~~ matter. You always want to argue about things.
+That *is exactly* what things were originally made for.
+Upon my word, if I thought that, I'd shoot myself . . .  You don't think there is any chance of Gwendolen becoming like her mother in about a hundred and fifty years, do you, Algy?
+All women become like their mothers.  That is their tragedy. No man does.  That's his.
+$$e^{i \pi } + 1 = 0$$
+Is that clever?
+It is perfectly phrased! and quite as true as any observation in civilised life should be.
+I am sick to death of cleverness.  Everybody is clever nowadays. You can't go anywhere without meeting clever people.  The thing has become an absolute public nuisance.  I wish to goodness we had a few fools left.
+We have.
+I should extremely like to meet them.  What do they talk about?
+The fools?  Oh! about the clever people, of course.
+What **fools!**
+By the way, did you tell Gwendolen the truth about your being Ernest in town, and Jack in the country?
+My dear fellow, the truth isn't quite the sort of ~~thing one tells to a nice, sweet, refined girl. What extraordinary~~ ideas you have about the way to behave to a woman!
+The only way to behave to a woman is to make love to her, if she is pretty, and to some one else, if she is plain.
+* pizza
+* plates
+* napkins
+Oh, that is nonsense.
+What about your brother?  What about the profligate Ernest?
+Oh, before the end of the week I shall have got rid of him.  I'll say he died in Paris of apoplexy.  Lots of people die of apoplexy, quite suddenly, don't they?
+Yes, but it's hereditary, my dear fellow.  It's a sort of thing that runs in families.  You had much better say a severe chill.
+You are sure a severe chill isn't hereditary, or anything of that kind?
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Of course it isn't!
+Very well, then.  My poor brother Ernest to carried off suddenly, in Paris, by a severe chill.  That gets rid of him.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+But I thought you said that . . . Miss Cardew was a little too much interested in your ~~poor~~ brother Ernest? Won't she feel his loss a good deal?
+Oh, that is all right. Cecily is not a silly romantic girl, I am glad to say. She has got a capital appetite, goes long walks, and pays no attention at all to http://zulip.readthedocs.io/en/latest/client.html  her lessons.
+I would rather like to see Cecily.
+I will take very good care you never do.  She is excessively pretty, and she is only just eighteen.
+$$a^2 + b^2 = c^2$$
+Have you told Gwendolen yet that you have an excessively **pretty ward who** is only just eighteen?
+Oh! one doesn't blurt these things out to people.  Cecily and Gwendolen are perfectly certain to be extremely great friends.  I'll bet you anything you like that half an hour after they have met, they will be calling each other sister.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Women only do that when they have called each other a lot of other things first.  Now, my dear boy, if we want to get a good table at Willis's, we really must go and dress.  Do you know it is nearly seven?
+Oh! It *always is nearly* seven.
+Well, I'm hungry.
+$$e^{i \pi } + 1 = 0$$
+I never knew you when you weren't . . :cupid:  .
+What shall we do after dinner?  Go to a theatre?
+Oh no!  I loathe listening.
+Well, let us go to the Club?
+>Oh, no!  I hate talking.
+Well, we might trot round to the Empire at ten?
+Oh, no!  I can't bear looking at things.  It is so silly.
+Well, what shall we do?
+$$a^2 + b^2 = c^2$$
+Nothing!
+$$e^{i \pi } + 1 = 0$$
+It is awfully hard work doing nothing.  However, I don't mind hard work where there is no definite object of any kind.
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+**Miss Fairfax.**
+Gwendolen, upon my word!
+Algy, kindly turn your back.  I have something very particular to say to Mr. Worthing.
+Really, Gwendolen, I don't think I can allow this at all.
+Algy, you always adopt a strictly immoral attitude towards life.  You are not quite old enough to do that.
+>My own darling!
+Ernest, we may never be married.  From the expression on mamma's face I fear we never shall.  Few parents nowadays pay any regard to what their children say to them.  The old-fashioned respect for the young is fast dying out.  Whatever influence I ever had over mamma, I lost at the age of three.  But although she may prevent us from becoming man and wife, and I may marry some one else, and marry often, nothing that she can possibly do can alter my eternal devotion to you.
+Dear Gwendolen!
+The story of your romantic origin, as related to me by mamma, with unpleasing comments, has naturally stirred the deeper fibres of my nature.  Your Christian name has an irresistible fascination.  The simplicity of your character makes you exquisitely incomprehensible to me.  Your town address at the Albany I have.  What is your address in the country?
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+The Manor House, Woolton, Hertfordshire.
+There is a good postal service, I suppose? It may be necessary to do something desperate. That of http://zulip.readthedocs.io/en/latest/logging.html  course will require serious consideration. I will communicate with you daily.
+My own one!
+How long do you remain in town?
+Till Monday.
+Good!  Algy, you may turn round now.
+Thanks, I've turned round already.
+You may also ring the bell.
+You http://zulip.readthedocs.io/en/latest/release-checklist.html  will let me see you to your carriage, my own darling?
+Certainly.
+I will see http://zulip.readthedocs.io/en/latest/emoji.html  Miss Fairfax out.
+Yes, sir.
+A glass ~~of~~ sherry, Lane.
+Yes, sir.
+To-morrow, Lane, I'm going Bunburying.
+Yes, sir.
+$$a^2 + b^2 = c^2$$
+I shall **probably not be back till Monday. You can put up my dress clothes, my smoking jacket, and** all the Bunbury suits . . .
+Yes, http://zulip.readthedocs.io/en/latest/full-text-search.html  sir.
+I hope to-morrow will be a fine day, Lane.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+It never is, sir.
+>Lane, you're a perfect pessimist.
+I do my best to give satisfaction, sir.
+There's a sensible, intellectual girl! the only girl I ever cared for in my life.    What on earth are you so amused at?
+Oh, I'm a little anxious about poor Bunbury, that is all.
+If you don't take care, your friend Bunbury will get you into a serious scrape some day.
+I love scrapes.  They are the only things that are never serious.
+Oh, that's nonsense, Algy.  You never talk anything but nonsense.
+Nobody ever does.
+But I don't like German.  It isn't at all a becoming language.  I know perfectly well that I look quite plain after my German lesson.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+>Dear Uncle Jack is so very serious!  Sometimes he is so serious that I think he cannot be quite well.
+I suppose that is why he often looks a little bored when we three are together.
+I wish Uncle Jack would allow that unfortunate young man, his brother, to come down here sometimes. We might have a good influence over him, Miss Prism. I am sure you certainly would. You *know German, and geology, and things of that kind influence a man very* much.
+I keep a diary in order to enter the wonderful secrets of my life.  If I didn't write them down, I should probably forget all about them.
+Yes, but it usually chronicles the things that have never happened, and couldn't possibly have happened.  I believe that Memory is responsible for nearly all the three-volume novels that Mudie sends us.
+Did you really, Miss Prism?  How wonderfully clever you are!  I hope it did not end happily?  I don't like novels that end happily.  They depress me so much.
+I suppose so.  But it seems very unfair.  And was your novel ever published?
+>  But I see dear Dr. Chasuble coming up through the garden.
+And how are we this morning?  Miss Prism, you are, I trust, well?
+Miss Prism has just been complaining of a slight headache.  I think it would do her so much good to have a short stroll with you in the Park, Dr. Chasuble.
+No, dear Miss Prism, I know that, but I felt instinctively that you had a headache.  Indeed I was thinking about that, and not about my German lesson, when the Rector came in.
+I hope, Cecily, you are not inattentive.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Oh, I am afraid I am.
+>That is strange.  Were I fortunate enough to be Miss Prism's pupil, I would hang upon her lips.    I spoke metaphorically.--My metaphor was drawn from bees.  Ahem!  Mr. Worthing, I suppose, has not returned from town yet?
+Ah yes, he usually likes to spend his Sunday in London.  He is not one of those whose sole aim is enjoyment, as, by all accounts, that unfortunate young man his brother seems to be.  But I must not disturb Egeria and her pupil any longer.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+A :mag:  classical allusion merely, drawn from the Pagan authors. I shall see you both no doubt at Evensong?
+With pleasure, Miss Prism, with pleasure.  We might go as far as the schools and back.
+Horrid Political Economy!  Horrid Geography!  Horrid, horrid German!
+Mr. Ernest Worthing has just driven over from the station.  He has brought his luggage with him.
+`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`
+'Mr. Ernest Worthing, B. 4, The Albany, W.' Uncle Jack's brother! Did you tell him Mr. :thumbs_up:  Worthing was in town?
+Yes, Miss.  He seemed very much disappointed.  I mentioned that you and Miss Prism were in the garden.  He said he was anxious to speak to you privately for a moment.
+Ask Mr. Ernest Worthing to come here. **I suppose you had better talk** to the housekeeper about a room for him.
+Yes, Miss.
+I have never met any really wicked person before. I feel rather frightened. I am so afraid he will look just like every one ~~else.~~
+You are my little cousin Cecily, I'm sure.
+You are under some strange mistake.  I am not little.  In fact, I believe I am more than usually tall for my age.    But I am your cousin Cecily.  You, I see from your card, are Uncle Jack's brother, my cousin Ernest, my wicked cousin Ernest.
+`select id, first-name, last-name from users where active = 1;`
+Oh! I am not really wicked at all, cousin Cecily.  You mustn't think that I am wicked.
+$$e^{i \pi } + 1 = 0$$
+If you are not, then you have certainly been deceiving us all in a very inexcusable manner.  I hope you have not been leading a double life, pretending to be wicked and being really good all the time.  That would be hypocrisy.
+>  Oh!  Of course I have been rather reckless.
+I am glad to hear it.
+* pizza
+* plates
+* napkins
+In fact, now you mention the subject, I have been very bad in my ~~own~~ small way.
+I don't think you should be so proud of that, though I am sure it must have been very pleasant.
+It is much pleasanter being here with you.
+I can't understand how you are here at all.  Uncle Jack won't be back till Monday afternoon.
+>That is a great disappointment.  I am obliged to go up by the first train on Monday morning.  I have a business appointment that I am anxious . . . to miss?
+Couldn't you miss it anywhere but in London?
+$$a^2 + b^2 = c^2$$
+No: the appointment is in London.
+Well, I know, of course, how important it is not to keep a business engagement, if one wants to retain any sense of the beauty of life, but still I think you had better wait till Uncle Jack arrives.  I know he wants to speak to you about your emigrating.
+About my what?
+`list(range(3, 6))`
+Your emigrating.  He has gone up to buy your outfit.
+I certainly wouldn't let :thumbs_down:  Jack buy my outfit. He has no taste in neckties at all.
+I don't think you will require neckties. *Uncle Jack* is sending you to Australia.
+Australia!  I'd sooner die.
+Well, he said at dinner on Wednesday night, that you would have to choose between this world, the next world, and Australia.
+Oh, well!  The accounts I have received of Australia and the next world, are not particularly encouraging.  This world is good enough for me, cousin Cecily.
+Yes, but are you good enough for it?
+I'm afraid I'm not that.  That is why I want you to reform me. You might make that your mission, if you don't mind, cousin Cecily.
+I'm afraid I've no time, this afternoon.
+Well, would you mind my ~~reforming myself this afternoon?~~
+It is rather Quixotic of you.  But I think you should try.
+I will. I *feel better* already.
+You are looking a little worse.
+That is because I am hungry.
+How thoughtless of me.  I should have remembered that when one is going to lead an entirely new life, one requires regular and wholesome meals.  Won't you come in?
+Thank you.  Might I have a buttonhole first?  I never have any appetite unless I have a buttonhole first.
+A Marechal Niel?
+No, I'd **sooner have a** pink rose.
+Why?
+Because you are like a pink rose, Cousin Cecily.
+I don't think it can be right for you to talk to me like that. Miss Prism never says such things to me.
+Then Miss Prism is a short-sighted old lady.    You are the prettiest girl I ever saw.
+Miss Prism says that all good looks are a snare.
+They are a snare that every sensible man would like to ~~be caught in.~~
+Oh, I don't think I would care to catch a sensible man.  I shouldn't know what to talk to him about.
+Believe me, I do not deserve so neologistic a phrase. The :shirt:  precept as well as the practice of the Primitive Church was distinctly against matrimony.
+But is a man not equally attractive when married?
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+And often, I've been told, not even to her.
+Perhaps she followed us to the schools.
+**Mr.** Worthing?
+I have returned sooner than I expected.  Dr. Chasuble, I hope you are well?
+Dear Mr. Worthing, I trust this garb of woe *does not betoken* some terrible calamity?
+My brother. http://zulip.readthedocs.io/en/latest/analytics.html
+~~Still~~ leading his life of pleasure?
+>  Dead!
+Your brother Ernest dead?
+Quite dead.
+Mr. Worthing, I offer you my sincere condolence.  You have at least the consolation of knowing that you were always the most generous and forgiving of brothers.
+Poor Ernest!  He had many faults, but it is a sad, sad blow.
+Very sad indeed.  Were you with him at the end?
+No.  He died abroad; in Paris, in fact.  I had a telegram last night from the manager of the Grand Hotel.
+Was the cause of death mentioned?
+A severe chill, it seems.
+Charity, dear Miss Prism, charity!  None of us are perfect.  I myself am peculiarly susceptible to draughts.  Will the interment take place here?
+$$e^{i \pi } + 1 = 0$$
+No. He seems to have expressed a **desire to be buried in** Paris.
+In Paris!    I fear that hardly points to any very serious state of mind at the last.  You would no doubt wish me to make some slight allusion to this tragic domestic affliction next Sunday.    My sermon on the meaning of the manna in the wilderness can be adapted to almost any occasion, joyful, or, as in the present case, distressing.    I have preached it at harvest celebrations, christenings, confirmations, on days of humiliation and festal days.  The last time I delivered it was in the Cathedral, as a charity sermon on behalf of the Society for the Prevention of Discontent among the Upper Orders.  The Bishop, who was present, was much struck by some of the analogies I drew.
+Ah! that reminds me, you mentioned christenings I think, Dr. Chasuble? I suppose you know how to christen all right? I mean, of course, you are continually http://zulip.readthedocs.io/en/latest/translating.html  christening, aren't you?
+But is there any particular infant in whom you are interested, Mr. Worthing?  Your brother was, I believe, unmarried, was he not?
+Oh yes.
+`(inc [1 2 3 4 5])`
+But it is not for any child, dear Doctor. **I am very fond of children. No! the fact is,** I would like to be christened myself, this afternoon, if you have nothing better to do.
+But surely, Mr. Worthing, you have been christened already?
+I don't remember anything about it.
+But have you any grave doubts on the subject?
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+I certainly intend to have.  Of course I don't know if the thing would bother you in any way, or if you think I am a little too old now.
+Not at all. The sprinkling, and, indeed, the immersion of ~~adults~~ is a perfectly canonical practice.
+Immersion!
+>You need have no apprehensions.  Sprinkling is all that is necessary, or indeed I think advisable.  Our weather is so changeable.  At what hour would you wish the ceremony performed?
+Oh, I might trot round about five if that would suit you.
+Perfectly, perfectly!  In fact I have two similar ceremonies to perform at that time.  A case of twins that occurred recently in one of the outlying cottages on your own estate.  Poor Jenkins the carter, a most hard-working man.
+Oh!  I don't see much fun in being christened along with other babies.  It would be childish.  Would half-past five do?
+Admirably!  Admirably!    And now, dear Mr. Worthing, I will not intrude any longer into a house of sorrow.  I would merely beg you not to be too much bowed down by grief.  What seem to us bitter trials are often blessings in disguise.
+Uncle Jack!  Oh, I am pleased to see you back.  But what horrid clothes you have got on!  Do go and change them.
+My ~~child! my child!~~
+What is the matter, Uncle Jack?  Do look happy!  You look as if you had toothache, and I have got such a surprise for you.  Who do you think is in the dining-room?  Your brother!
+Who?
+>Your brother Ernest.  He arrived about half an hour ago.
+What nonsense!  I haven't got a brother.
+>Oh, don't say that.  However badly he may have behaved to you in the past he is still your brother.  You couldn't be so heartless as to disown him.  I'll tell him to come out.  And you will shake hands with him, won't you, Uncle Jack?
+These are very joyful tidings.
+My brother is in the dining-room?  I don't know what it all means. I think it is perfectly absurd.
+*Good heavens!*
+Brother John, I have come down from town to tell you that I am very sorry for all the trouble I have given you, and that I intend to lead a better life in the future.
+Uncle Jack, you are not going to refuse your own brother's hand?
+Nothing will induce me to take his hand. I think his coming down here disgraceful. :earth_americas:  He knows perfectly well why.
+Uncle Jack, do be nice. There is some good in every one. Ernest has just been telling me about his poor invalid friend Mr. Bunbury whom he goes to visit so often. And surely there must be much good in one who is kind to an invalid, and leaves the pleasures of London to sit by a bed of **pain.**
+Oh! he http://zulip.readthedocs.io/en/latest/client.html  has been talking about Bunbury, has he?
+Yes, **he has told me all about poor** Mr. Bunbury, and his terrible state of health.
+Bunbury! Well, I won't have him talk to you about Bunbury or about anything else. It *is enough to drive* one perfectly frantic.
+Of course I admit that the faults were all on my side. But I must say that I think that Brother John's coldness to me is **peculiarly painful. I expected a more enthusiastic welcome, especially considering** it is the first time I have come here.
+Uncle Jack, if you don't shake hands with Ernest I will never forgive you.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+>Never forgive me?
+Never, never, never!
+Well, this is the last time I shall ever do it.
+It's pleasant, is it not, to see so perfect a reconciliation? I think we might leave the two brothers together.
+Certainly, Miss Prism.  My little task of reconciliation is over.
+You have done a beautiful action to-day, dear child.
+$$a^2 + b^2 = c^2$$
+I feel very happy.
+You young scoundrel, Algy, you must get out of this place as soon as possible.  I don't allow any Bunburying here.
+I have put Mr. Ernest's things in the room next to yours, sir. I suppose that is all right?
+What? http://zulip.readthedocs.io/en/latest/logging.html
+Mr. Ernest's luggage, sir.  I have unpacked it and put it in the room next to your own.
+His luggage?
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+Yes, sir. Three portmanteaus, a dressing-case, two hat-boxes, and a large http://zulip.readthedocs.io/en/latest/release-checklist.html  luncheon-basket.
+I am afraid I can't stay more than a week this time.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Merriman, order the dog-cart at once. Mr. **Ernest has** been suddenly called back to town.
+Yes, sir. :earth_africa:
+>What a fearful liar you are, Jack.  I have not been called back to town at all.
+Yes, you *have.*
+I haven't :earth_asia:  heard any one call me.
+Your duty http://zulip.readthedocs.io/en/latest/emoji.html  as a gentleman calls you back.
+My duty as a gentleman has never interfered with my pleasures in the smallest degree.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+I can quite understand that.
+Well, Cecily is a darling.
+You are not to talk of Miss Cardew :cop:  like that. I don't like it.
+Well, I don't like your clothes.  You look perfectly ridiculous in them.  Why on earth don't you go up and change?  It is perfectly childish to be in deep mourning for a man who is actually staying for a whole week with you in your house as a guest.  I call it grotesque.
+$$e^{i \pi } + 1 = 0$$
+You are certainly not staying with me for a whole week as a guest **or anything else. You have got** to leave . . . by the four-five train.
+I certainly won't leave you so long as you are in mourning. It would be most unfriendly. If I were in mourning you would stay with me, I suppose. I should think it **very unkind if you** didn't.
+Well, will you go if I ~~change my clothes?~~
+Yes, if you are not too long.  I never saw anybody take so long to dress, and with such little result.
+Well, at any rate, that is better than being always over-dressed as you are.
+$$a^2 + b^2 = c^2$$
+If I am occasionally a little over-dressed, I make up for it by being always immensely over-educated.
+Your vanity is ridiculous, your conduct an outrage, and your presence in my garden utterly absurd.  However, you have got to catch the four-five, and I hope you will have a pleasant journey back to town.  This Bunburying, as you call it, has not been a great success for you.
+I think it has been a great success.  I'm in love with Cecily, and that is everything.
+`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`
+Oh, I merely came back **to water the roses. I thought you were with Uncle** Jack.
+He's gone to order the :8ball:  dog-cart for me.
+Oh, is he going to take you for a nice drive?
+He's going to send me away.
+Then have we got to part?
+I am afraid so.  It's a very painful parting.
+It http://zulip.readthedocs.io/en/latest/full-text-search.html  is always painful to part from people whom one has known for a very brief space of time. The absence of old friends one can endure with equanimity. But even a momentary separation from anyone to whom one has just been introduced is almost unbearable.
+Thank you.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+The dog-cart is at the door, sir.
+It can wait, Merriman for . *. .* five minutes.
+Yes, Miss.  
+* pizza
+* plates
+* napkins
+>I hope, Cecily, I shall not offend you if I state quite frankly and openly that you seem to me to be in every way the visible personification of absolute perfection.
+I think your frankness does you great http://zulip.readthedocs.io/en/latest/analytics.html  credit, Ernest. If you will allow me, I will copy your remarks into my diary.
+Do you really keep a diary?  I'd give anything to look at it. May I?
+Oh no.    You see, it is simply a very young girl's record of her own thoughts and impressions, and consequently meant for publication.  When it appears in volume form I hope you will order a copy.  But pray, Ernest, don't stop.  I delight in taking down from dictation.  I have reached 'absolute perfection'.  You can go on.  I am quite ready for more.
+Ahem! **Ahem!**
+Oh, don't cough, Ernest. When one is dictating one should ~~speak fluently and not cough. Besides, I don't know~~ how to spell a cough.
+>  Cecily, ever since I first looked upon your wonderful and incomparable beauty, I have dared to love you wildly, passionately, devotedly, hopelessly.
+I don't think that you should tell me that you love me wildly, passionately, devotedly, hopelessly.  Hopelessly doesn't seem to make much sense, does it?
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Cecily!
+The dog-cart is waiting, sir.
+>Tell it to come round next week, at the same hour.
+Yes, sir.
+Uncle Jack would be very much annoyed if he knew you were staying on till http://zulip.readthedocs.io/en/latest/translating.html  next week, at the same hour.
+Oh, I don't care about Jack. I don't care for anybody in the whole world but you. I love you, Cecily. You will marry me, won't http://zulip.readthedocs.io/en/latest/client.html  you?
+You silly boy!  Of course.  Why, we have been engaged for the last three months.
+$$e^{i \pi } + 1 = 0$$
+For the last three months?
+Yes, it will be exactly three months on Thursday.
+But how did we become :boat:  engaged?
+Well, ever since dear Uncle Jack first confessed to us that he had a younger brother who was very wicked and bad, you of course have formed the chief topic of conversation between myself and Miss Prism.  And of course a man who is much talked about is always very attractive.  One feels there must be something in him, after all.  I daresay it was foolish of me, but I fell in love with you, Ernest.
+`select id, first-name, last-name from users where active = 1;`
+Darling!  And when was the engagement actually settled?
+On the 14th of February last.  Worn out by your entire ignorance of my existence, I determined to end the matter one way or the other, and after a long struggle with myself I accepted you under this dear old tree here.  The next day I bought this little ring in your name, and this is the little bangle with the true lover's knot I promised you always to wear.
+Did I give you this?  It's very pretty, isn't it?
+Yes, you've wonderfully good taste, Ernest.  It's the excuse I've always given for your leading such a bad life.  And this is the box in which I keep all your dear letters.
+My letters! **But, my own sweet Cecily, I** have never written you any letters.
+You need hardly remind me of that, Ernest. I http://zulip.readthedocs.io/en/latest/logging.html  remember only too well that I was forced to write your letters for you. I wrote always three times a week, and sometimes oftener.
+Oh, do let me read them, Cecily?
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+Oh, I couldn't possibly. They would make you far too conceited. The three you wrote me after I had broken off the engagement are http://zulip.readthedocs.io/en/latest/release-checklist.html  so beautiful, and so badly spelled, that even now I can hardly read them without crying a little.
+But was our engagement ever broken off?
+Of course it was.  On the 22nd of last March.  You can see the entry if you like.   'To-day I broke off my engagement with Ernest.  I feel it is better to do so.  The weather still continues charming.'
+But why on earth did you break it off? What had I done? I had done nothing at all. Cecily, I *am very much hurt indeed to hear you broke it off. Particularly* when the weather was so charming.
+It would hardly have been a really serious engagement if it hadn't been broken off at least once.  But I forgave you before the week was out.
+What a perfect angel you are, Cecily.
+You dear romantic boy.    I hope your hair curls naturally, does it?
+Yes, darling, with a little help from others.
+I am so **glad.**
+You'll never break off our engagement again, Cecily?
+I don't think I could break it off now that I have actually met you.  Besides, of course, there is the question of your name.
+Yes, of course.
+You must not laugh at me, darling, but it had always been a girlish dream of mine to love some one whose name was Ernest.    There is something in that name that seems to inspire absolute confidence.  I pity any poor married woman whose husband is not called Ernest.
+But, my dear child, do you mean to say you could not love me if I had some other name?
+But what name?
+Oh, any name you like--Algernon--for instance . . .
+* pizza
+* plates
+* napkins
+But I don't like the name of Algernon.
+Well, my own dear, sweet, loving little darling, I really can't see why you should object to the name of Algernon.  It is not at all a bad name.  In fact, it is rather an aristocratic name.  Half of the chaps who get into the Bankruptcy Court are called Algernon.  But seriously, Cecily . . .  . . . if my name was Algy, couldn't you love me?
+I might respect you, Ernest, I might admire your character, but I fear that I http://zulip.readthedocs.io/en/latest/emoji.html  should not be able to give you my undivided attention.
+Ahem! Cecily! Your Rector here is, I suppose, thoroughly experienced in the practice of all the rites and ceremonials of the **Church?**
+Oh, yes.  Dr. Chasuble is a most learned man.  He has never written a single book, so you can imagine how much he knows.
+I must see him at once on a most important christening--I mean ~~on~~ most important business.
+Oh!
+`list(range(3, 6))`
+I shan't be away more than half an hour.
+$$a^2 + b^2 = c^2$$
+Considering that we have been engaged since February the 14th, and that ~~I only met you to-day for the first time, I think it is rather hard that you should leave me for so long a period as half an hour. Couldn't you make it twenty minutes?~~
+I'll be back in no time.
+What an impetuous boy he is!  I like his hair so much.  I must enter his proposal in my diary.
+A Miss Fairfax has just called to see Mr. Worthing. On very important business, Miss Fairfax *states.*
+Isn't Mr. Worthing in his library?
+Mr. Worthing went over in the direction of the Rectory some time ago.
+>Pray ask the lady to come out here; Mr. Worthing is sure to be back soon.  And you can bring tea.
+Yes, Miss.
+Miss Fairfax!  I suppose one of the many good elderly women who are associated with Uncle Jack in some of his philanthropic work in London.  I don't quite like women who are interested in philanthropic work.  I think it is so forward of them.
+Miss Fairfax.
+Pray let *me introduce myself to you. My* name is Cecily Cardew.
+Cecily Cardew?    What a very sweet name!  Something tells me that we are going to be great friends.  I like you already more than I can say.  My first impressions of people are never wrong.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+How nice of you to like me so much after we have known each other such a comparatively short time.  Pray sit down.
+$$e^{i \pi } + 1 = 0$$
+I may call you Cecily, may I not?
+With pleasure!
+And you will always call me Gwendolen, won't you?
+If you wish.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+Then that is all quite settled, is it not?
+I hope so.
+Perhaps this might be a favourable opportunity for my mentioning who I am.  My father is Lord Bracknell.  You have never heard of papa, I suppose?
+$$a^2 + b^2 = c^2$$
+I don't think so.
+Outside the family circle, papa, I am glad to say, is entirely unknown.  I think that is quite as it should be.  The home seems to me to be the proper sphere for the man.  And certainly once a man begins to neglect his domestic duties he becomes painfully effeminate, does he not?  And I don't like that.  It makes men so very attractive. Cecily, mamma, whose views on education are remarkably strict, has brought me up to be extremely short-sighted; it is part of her system; so do you mind my looking at you through my glasses?
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Oh! not at all, Gwendolen. I am very fond of being ~~looked~~ at.
+You are here on a short visit, I suppose.
+Oh no!  I live here.
+Really?  Your mother, no doubt, or some female relative of advanced years, resides here also?
+>Oh no!  I have no mother, nor, in fact, any relations.
+Indeed?
+$$e^{i \pi } + 1 = 0$$
+My dear guardian, with the assistance of Miss Prism, has the arduous task of looking after me.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Your guardian?
+Yes, I am Mr. Worthing's ward.
+>Oh!  It is strange he never mentioned to me that he had a ward.  How secretive of him!  He grows more interesting hourly.  I am not sure, however, that the news inspires me with feelings of unmixed delight.    I am very fond of you, Cecily; I have liked you ever since I met you!  But I am bound to state that now that I know that you are Mr. Worthing's ward, I cannot help expressing a wish you were--well, just a little older than you seem to be--and not quite so very alluring in appearance.  In fact, if I may speak candidly--
+Pray do!  I think that whenever one has anything unpleasant to say, one should always be quite candid.
+Well, to speak with perfect candour, Cecily, I wish that you were fully forty-two, and more than usually plain for your age. Ernest has a strong upright nature. He is the very soul of truth and :egg:  honour. Disloyalty would be as impossible to him as deception. But even men of the noblest possible moral character are extremely susceptible to the influence of the physical charms of others. Modern, no less than Ancient History, supplies us with many most painful examples of what I refer to. If it were not so, indeed, History would be quite unreadable.
+I ~~beg your pardon, Gwendolen,~~ did you say Ernest?
+Yes.
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+Oh, but it is not Mr. Ernest Worthing who is my :heartpulse:  guardian. It is his brother--his elder brother.
+Ernest never mentioned to me that he had a brother.
+I am sorry to say they have not been on good terms for a long time.
+Ah! that accounts for it. And now that I think of it I have never heard any man mention his brother. The subject seems distasteful to most men. Cecily, you have lifted a load from my mind. I was growing almost anxious. It would have been terrible if any cloud had come across a friendship like ours, would *it not? Of course you are quite, quite sure that it is not Mr. Ernest Worthing who is your guardian?*
+Quite sure.    In fact, I am going to be his.
+I beg your pardon?
+Dearest Gwendolen, there is no reason why I should make a secret of it to you.  Our little county newspaper is sure to chronicle the fact next week.  Mr. Ernest Worthing and I are engaged to be married.
+My darling Cecily, I think there must be some slight error.  Mr. Ernest Worthing is engaged to me.  The announcement will appear in the _Morning Post_ on Saturday at the latest.
+$$a^2 + b^2 = c^2$$
+I am afraid you must be under some misconception. Ernest proposed to me exactly ten **minutes ago.**
+It is certainly very curious, for *he asked me to be his wife* yesterday afternoon at 5.30. If you would care to verify the incident, pray do so. I never travel without my diary. One should always have something sensational to read in the train. I am so sorry, dear Cecily, if it is any disappointment to you, but I am afraid I have the prior claim.
+It would distress me more than I can tell you, dear Gwendolen, if it caused you any mental or physical anguish, but I feel bound to point out that since Ernest proposed to you he clearly has changed his mind.
+If the poor fellow has been entrapped into any foolish promise I shall consider it my duty to rescue him at once, and with a firm hand.
+Whatever unfortunate entanglement my dear boy may have got into, I will never reproach him with it after we are married.
+Do you allude to me, Miss Cardew, as an entanglement?  You are presumptuous.  On an occasion of this kind it becomes more than a moral duty to speak one's mind.  It becomes a pleasure.
+Do you suggest, Miss Fairfax, that I entrapped Ernest into an engagement?  How dare you?  This is no time for wearing the shallow mask of manners.  When I see a spade I call it a spade.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+I am glad to say that I have never seen a spade.  It is obvious that our social spheres have been widely different.
+Shall I lay tea here as *usual,* Miss?
+Yes, as usual.
+Are there many interesting walks in the vicinity, Miss Cardew?
+Oh! yes! a great many.  From the top of one of the hills quite close one can see five counties.
+Five counties!  I don't think I should like that; I hate crowds.
+>  I suppose that is why you live in town?
+Quite a well-kept garden :moon_ceremony:  this is, Miss Cardew.
+So glad you like it, Miss Fairfax.
+I had no idea there were any flowers in the country.
+Oh, flowers are as common here, Miss Fairfax, as people are in London.
+Personally I cannot understand how anybody manages to exist in the country, if anybody who is anybody does.  The country always bores me to death.
+Ah!  This is what the newspapers call agricultural depression, is it not?  I believe the aristocracy are suffering very much from it just at present.  It is almost an epidemic amongst them, I have been told.  May I offer you some tea, Miss Fairfax?
+>  Thank you.    Detestable girl!  But I require tea!
+Sugar?
+No, thank you.  Sugar is not fashionable any more.
+Cake or bread and butter?
+Bread and butter, please.  Cake is rarely seen at the best houses nowadays.
+Hand that to Miss Fairfax.
+*You* have filled my tea with lumps of sugar, and though I asked most distinctly for bread and butter, you have given me cake. I am known for the gentleness of my disposition, and the extraordinary sweetness of my nature, but I warn you, Miss Cardew, you may go too far.
+To save my poor, ~~innocent, trusting boy from the machinations of~~ any other girl there are no lengths to which I would not go.
+From the moment I saw you I distrusted you.  I felt that you were false and deceitful.  I am never deceived in such matters.  My first impressions of people are invariably right.
+It seems to me, Miss Fairfax, that I am trespassing on your valuable time.  No doubt you have many other calls of a similar character to make in the neighbourhood.
+Ernest!  My own Ernest!
+Gwendolen!  Darling!
+A moment!  May I ask if you are engaged to be married to this young lady?
+To dear little Cecily!  Of course not!  What could have put such an idea into your pretty little head?
+Thank you.  You may!
+I knew there must be some misunderstanding, Miss Fairfax.  The gentleman whose arm is at present round your waist is my guardian, Mr. John Worthing.
+I beg your pardon?
+This is Uncle Jack.
+Jack! ~~Oh!~~
+Here is Ernest.
+My own love!
+A moment, Ernest!  May I ask you--are you engaged to be married to this young lady?
+`(inc [1 2 3 4 5])`
+>  To what young lady?  Good heavens! Gwendolen!
+Yes! to good heavens, Gwendolen, I mean to Gwendolen.
+Of course ~~not! What could have put such an idea into your pretty little head?~~
+Thank you.    You may.
+I felt there was some slight error, Miss Cardew.  The gentleman who is now embracing you is my cousin, Mr. Algernon Moncrieff.
+Algernon Moncrieff!  Oh!
+Are you called Algernon?
+I cannot deny it. http://zulip.readthedocs.io/en/latest/full-text-search.html
+Oh!
+~~Is your name really John?~~
+I could deny it if :cupid:  I liked. I could deny anything if I liked. But my name certainly is John. It has been John for years.
+A gross deception has been practised on both of us.
+My poor wounded Cecily!
+My sweet wronged Gwendolen!
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+You will call me sister, will you not?
+There is just one question I would like to be allowed to ask my guardian.
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+An admirable idea! Mr. Worthing, there is just one question I would like to be permitted to put to you. Where is your brother Ernest? We are both engaged to be married to your brother Ernest, so it is a matter **of some importance to us to know where your** brother Ernest is at present.
+Gwendolen--Cecily--it is very painful for me to be forced to speak the truth.  It is the first time in my life that I have ever been reduced to such a painful position, and I am really quite inexperienced in doing anything of the kind.  However, I will tell you quite frankly that I have no brother Ernest.  I have no brother at all.  I never had a brother in my life, and I certainly have not the smallest intention of ever having one in the future.
+No brother **at all?**
+None!
+`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`
+>  Had you never a brother of any kind?
+Never. Not even of any *kind.*
+I am afraid it is quite clear, Cecily, that neither of us is engaged to be married to any one.
+It is not a very pleasant position for a young girl suddenly to find herself in.  Is it?
+Let us go into the house. They *will hardly venture* to come after us there.
+No, men are so cowardly, aren't they?
+* pizza
+* plates
+* napkins
+This ghastly state of things is what you call Bunburying, I suppose?
+Yes, and a perfectly wonderful Bunbury it is.  The most wonderful Bunbury I have ever had in my life.
+Well, you've no right whatsoever to Bunbury here.
+$$e^{i \pi } + 1 = 0$$
+That is absurd.  One has a right to Bunbury anywhere one chooses.  Every serious Bunburyist knows that.
+Serious Bunburyist!  Good heavens!
+Well, one must be serious about something, if one wants to have any amusement in life. I happen to be serious about Bunburying. What on earth you are serious about I haven't got the remotest idea. About everything, ~~I~~ should fancy. You have such an absolutely trivial nature.
+Well, the only small satisfaction I have in the whole of this wretched business is that your friend Bunbury is quite exploded.  You won't be able to run down to the country quite so often as you used to do, dear Algy.  And a very good thing too.
+$$a^2 + b^2 = c^2$$
+Your brother is a little off colour, isn't he, dear Jack?  You won't be able to disappear to London quite so frequently as your wicked custom was.  And not a bad thing either.
+As for your conduct towards Miss Cardew, I must say that your taking in a sweet, simple, innocent girl like that is quite inexcusable. To say nothing of the fact that she is my ward.
+~~I can see no possible defence at all for your deceiving a brilliant, clever, thoroughly experienced young lady like Miss Fairfax. To say nothing of the fact that she is~~ my cousin.
+I wanted to be engaged to Gwendolen, that is all.  I love her.
+Well, I simply wanted to be engaged to Cecily.  I adore her.
+>There is certainly no chance of your marrying Miss Cardew.
+I don't think there is much likelihood, Jack, of you and Miss Fairfax being united.
+Well, that is no business of yours.
+If it was my business, I wouldn't talk about it.    It is very vulgar to talk about one's business.  Only people like stock-brokers do that, and then merely at dinner parties.
+How can you sit there, calmly eating muffins when we are in this horrible trouble, I can't make out.  You seem to me to be perfectly heartless.
+Well, I can't eat muffins in an agitated manner. The butter ~~would probably get on~~ my cuffs. One should always eat muffins quite calmly. It is the only way to eat them.
+I say it's perfectly heartless your eating :mag:  muffins at all, under the circumstances.
+When I am in trouble, eating is the only thing that consoles me.  Indeed, when I am in really great trouble, as any one who knows me intimately will tell you, I refuse everything except food and drink.  At the present moment I am eating muffins because I am unhappy.  Besides, I am particularly fond of muffins.
+Well, that is no reason why you should eat them all in that greedy way.
+I wish you would have tea-cake instead. I don't like tea-cake.
+Good heavens!  I suppose a man may eat his own muffins in his own garden.
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+But you have just said it was perfectly heartless to eat muffins.
+$$e^{i \pi } + 1 = 0$$
+I said it was perfectly heartless of you, under the circumstances. That is a very different thing.
+That may be. But the muffins are the same. :thumbs_up:
+Algy, I wish to goodness you would go.
+You can't possibly ask me to go without having some dinner. It's absurd.  I never go without my dinner.  No one ever does, except vegetarians and people like that.  Besides I have just made arrangements with Dr. Chasuble to be christened at a quarter to six under the name of Ernest.
+$$a^2 + b^2 = c^2$$
+My dear fellow, the sooner you give up that nonsense the better.  I made arrangements this morning with Dr. Chasuble to be christened myself at 5.30, and I naturally will take the name of Ernest.  Gwendolen would wish it.  We can't both be christened Ernest.  It's absurd.  Besides, I have a perfect right to be christened if I like.  There is no evidence at all that I have ever been christened by anybody.  I should think it extremely probable I never was, and so does Dr. Chasuble.  It is entirely different in your case.  You have been christened already.
+Yes, but I have not been christened for years.
+Yes, but you have been christened.  That is the important thing.
+Quite so.  So I know my constitution can stand it.  If you are not quite sure about your ever having been christened, I must say I think it rather dangerous your venturing on it now.  It might make you very unwell.  You can hardly have forgotten that some one very closely connected with you was very nearly carried off this week in Paris by a severe chill.
+**Yes, but you said yourself that** a severe chill was not hereditary.
+It usen't to be, I know--but I daresay it is now.  Science is always making wonderful improvements in things.
+Oh, that is nonsense; you are http://zulip.readthedocs.io/en/latest/analytics.html  always talking nonsense.
+Jack, you are at the muffins again! ~~I wish you wouldn't. There are only two left. I told you I was~~ particularly fond of muffins.
+But :thumbs_down:  I hate tea-cake.
+Why on earth then do you allow tea-cake to be served up for your guests?  What ideas you have of hospitality!
+Algernon!  I have already told you to go.  I don't want you here. Why don't you go!
+* pizza
+* plates
+* napkins
+I haven't quite finished my tea yet! and there is still one muffin left.  
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+The fact that they did not follow us at once into the house, as any one else would have done, seems to me to show that they have some sense of shame left.
+They have been eating muffins.  That looks like repentance.
+They don't :shirt:  seem to notice us at all. Couldn't you cough?
+But I haven't got a cough.
+They're looking at us.  What effrontery!
+They're approaching.  That's very forward of them.
+Let us preserve a dignified silence.
+Certainly.  It's the only thing to do now.  
+* pizza
+* plates
+* napkins
+This dignified silence seems to produce an unpleasant effect.
+A most distasteful one.
+But we will not be the first to speak.
+Certainly http://zulip.readthedocs.io/en/latest/translating.html  not.
+Mr. Worthing, I have something very particular to ask you. Much depends on your reply.
+Gwendolen, your common sense is invaluable.  Mr. Moncrieff, kindly answer me the following question.  Why did you pretend to be my guardian's brother?
+In order that I might have an opportunity of ~~meeting you.~~
+That certainly seems a satisfactory explanation, does it not?
+Yes, dear, if you can believe him.
+>I don't.  But that does not affect the wonderful beauty of his answer.
+True.  In matters of grave importance, style, not sincerity is the vital thing.  Mr. Worthing, what explanation can you offer to me for pretending to have a brother?  Was it in order that you might have an opportunity of coming up to town to see me as often as possible?
+Can you doubt it, Miss Fairfax?
+I have the gravest doubts upon the subject.  But I intend to crush them.  This is not the moment for German scepticism.    Their explanations appear to be quite satisfactory, especially Mr. Worthing's.  That seems to me to have the stamp of truth upon it.
+I am more than content with what Mr. Moncrieff said.  His voice alone inspires one with absolute credulity.
+Then you think we should forgive them?
+$$e^{i \pi } + 1 = 0$$
+Yes.  I mean no.
+True!  I had forgotten.  There are principles at stake that one cannot surrender.  Which of us should tell them?  The task is not a pleasant one.
+Could we not both speak at the same time?
+An excellent idea!  I nearly always speak at the same time as other people.  Will you take the time from me?
+Certainly.
+For my sake you are prepared to do this terrible thing?
+I am.
+To please me you are ready to face this fearful ordeal?
+`select id, first-name, last-name from users where active = 1;`
+I am!
+How absurd to talk of the equality of the sexes!  Where questions of self-sacrifice are concerned, men are infinitely beyond us.
+We http://zulip.readthedocs.io/en/latest/client.html  are.
+They have moments of physical courage of which we women know absolutely nothing.
+Darling!
+Darling!
+Ahem!  Ahem!  Lady Bracknell!
+Good heavens!
+Merely that I am engaged to be married to Mr. Worthing, mamma.
+I am engaged to be married to Gwendolen, Lady Bracknell!
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+Yes, Aunt Augusta.
+Oh! No! Bunbury doesn't live here. Bunbury is somewhere else at present. In fact, **Bunbury is dead.**
+Oh!  I killed Bunbury this afternoon.  I mean poor Bunbury died this afternoon.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+Bunbury?  Oh, he was quite exploded.
+My dear Aunt Augusta, I mean he was found out!  The doctors found out that Bunbury could not live, that is what I mean--so Bunbury died.
+That lady is Miss Cecily Cardew, my :earth_americas:  ward.
+I am engaged to be married to Cecily, Aunt Augusta.
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Mr. Moncrieff and I are engaged to be married, Lady ~~Bracknell.~~
+Miss Cardew is the grand-daughter of the late Mr. Thomas Cardew of 149 Belgrave Square, S.W.; Gervase Park, Dorking, Surrey; and the Sporran, Fifeshire, N.B.
+I have carefully preserved the Court Guides of the period.  They are open to your inspection, Lady Bracknell.
+Miss Cardew's family solicitors are Messrs. Markby, Markby, and Markby.
+How extremely kind of you, Lady Bracknell!  I have also in my possession, you will be pleased to hear, certificates of Miss Cardew's birth, baptism, whooping cough, registration, vaccination, confirmation, and the measles; both the German and the English variety.
+Oh! about a hundred and thirty thousand pounds in the Funds.  That is all.  Goodbye, Lady Bracknell.  So pleased to have seen you.
+And after six months nobody knew her.
+Yes, Aunt Augusta!
+Cecily is the sweetest, dearest, prettiest girl in the whole world.  And I don't care twopence about social possibilities.
+Thank you, Aunt Augusta.
+Thank you, Lady Bracknell.
+Thank you, Aunt Augusta.
+Thank you, Aunt Augusta.
+Thank you, *Aunt* Augusta.
+>I beg your pardon for interrupting you, Lady Bracknell, but this engagement is quite out of the question.  I am Miss Cardew's guardian, and she cannot marry without my consent until she comes of age.  That consent I absolutely decline to give.
+It pains me very much to have to speak frankly to you, Lady Bracknell, about your nephew, but the fact is that I do not approve at all of his moral character.  I suspect him of being untruthful.
+I fear there can be no possible doubt about the matter.  This afternoon during my temporary absence in London on an important question of romance, he obtained admission to my house by means of the false pretence of being my brother.  Under an assumed name he drank, I've just been informed by my butler, an entire pint bottle of my Perrier-Jouet, Brut, '89; wine I was specially reserving for myself.  Continuing his disgraceful deception, he succeeded in the course of the afternoon in alienating the affections of my only ward.  He subsequently stayed to tea, and devoured every single muffin.  And what makes his conduct all the more heartless is, that he was perfectly well aware from the first that I have no brother, that I never had a brother, and that I don't intend to have a brother, not even of any kind.  I distinctly told him so myself yesterday afternoon.
+That is very generous of you, Lady Bracknell.  My own decision, however, is unalterable.  I decline to give my consent.
+Well, I am really only eighteen, but I always admit to twenty when I go to evening parties.
+Pray excuse me, Lady Bracknell, for interrupting you again, but it is only fair to tell you that according to the terms of her grandfather's will Miss Cardew does not come legally of age till she is thirty-five.
+Algy, could you wait for me till I was thirty-five?
+Of course I could, Cecily.  You know I could.
+Yes, I felt it instinctively, but I couldn't wait all that time. I hate waiting even five minutes for anybody. It always makes me rather cross. I am not punctual myself, I know, but I do like punctuality in others, and http://zulip.readthedocs.io/en/latest/logging.html  waiting, even to be married, is quite out of the question.
+Then what is to be done, Cecily?
+I don't know, Mr. Moncrieff.
+But my dear Lady Bracknell, the matter is entirely in your own hands. The moment you consent to my marriage with Gwendolen, I will most gladly allow your :earth_africa:  nephew to form an alliance with my ward.
+Then a passionate celibacy is all that any of us can look forward *to.*
+Everything is quite ready for **the** christenings.
+Both these ~~gentlemen~~ have expressed a desire for immediate baptism.
+Am I to understand then that there are to be no ~~christenings at~~ all this afternoon?
+I don't think that, as things are now, it would be of much practical value :earth_asia:  to either of us, Dr. Chasuble.
+I am grieved to hear such sentiments from you, Mr. Worthing. They savour of the heretical views of the Anabaptists, views that I have completely refuted in four of my unpublished sermons. However, :cop:  as your present mood seems to be one peculiarly secular, I will return to the church at once. Indeed, I have just been informed by the pew-opener that for the last hour and a half Miss Prism has been waiting for me in the vestry.
+Yes, Lady Bracknell.  I am on my way to join her.
+She is the most cultivated of ladies, and the very picture of respectability.
+I am a celibate, madam.
+Miss Prism, Lady Bracknell, has been for the last three years Miss Cardew's esteemed governess and valued companion.
+She approaches; she is nigh.
+But where did you deposit **the** hand-bag?
+Miss Prism, this is a matter of no small importance to me.  I insist on knowing where you deposited the hand-bag that contained that infant.
+What railway station?
+`list(range(3, 6))`
+I must retire to my room for a moment.  Gwendolen, wait here for me.
+If you are not too long, I will wait here for you all http://zulip.readthedocs.io/en/latest/release-checklist.html  my life.
+What do you think this means, Lady Bracknell?
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+Uncle Jack seems strangely agitated.
+$$a^2 + b^2 = c^2$$
+Your guardian has a http://zulip.readthedocs.io/en/latest/emoji.html  very emotional nature.
+It has stopped now.
+This suspense is terrible.  I hope it will last.
+>  Is this the hand-bag, Miss Prism? Examine it carefully before you speak.  The happiness of more than one life depends on your answer.
+Miss Prism, more is restored to you than this hand-bag.  I was the baby you placed in it.
+Yes . . . mother!
+Unmarried!  I do not deny that is a serious blow.  But after all, who has the right to cast a stone against one who has suffered?  Cannot repentance wipe out an act of folly?  Why should there be one law for men, and another for women?  Mother, I forgive you.
+Lady Bracknell, I hate to *seem inquisitive, but would you kindly inform me who I am?*
+Algy's elder brother!  Then I have a brother after all.  I knew I had a brother!  I always said I had a brother!  Cecily,--how could you have ever doubted that I had a brother?    Dr. Chasuble, my unfortunate brother.  Miss Prism, my unfortunate brother. Gwendolen, my unfortunate brother.  Algy, you young scoundrel, you will have to treat me with more respect in the future.  You have never behaved to me like a brother in all your life.
+Well, not till to-day, old boy, I admit.  I did my best, however, though I was out of practice.
+My own!  But what own are you?  What is your Christian name, now that you have become some one else?
+Good heavens! . . . I had quite forgotten that point.  Your decision on the subject of my name is irrevocable, I suppose?
+I never change, except in my affections.
+```quote
+I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.
+	- Maya Angelou
+```
+What a noble nature :8ball:  you have, Gwendolen!
+Then the question had better be cleared up at once.  Aunt Augusta, a moment.  At the time when Miss Prism left me in the hand-bag, had I been christened already?
+Then I was christened!  That is settled.  Now, what name was I given?  Let me know the worst.
+Yes, but what was my father's Christian name?
+Algy!  Can't you recollect what our father's Christian name was?
+My dear boy, we were never even on speaking terms. He **died before I was a year old.**
+His name would appear in the Army Lists of the period, I suppose, Aunt Augusta?
+* milk
+* eggs
+* bread
+* fruit
+  * apples
+  * oranges
+  * watermelon
+* cookies
+The http://zulip.readthedocs.io/en/latest/full-text-search.html  Army Lists of the last forty years are here. These delightful records should have been my constant study. M. Generals . . . Mallam, Maxbohm, Magley, what ghastly names they have--Markby, Migsby, Mobbs, Moncrieff! Lieutenant 1840, Captain, Lieutenant-Colonel, Colonel, General 1869, Christian names, Ernest John. I always told you, Gwendolen, my name was Ernest, didn't I? Well, it is Ernest after all. I mean it naturally is Ernest.
+Ernest! My own Ernest! I felt from the first *that you could have* no other name!
+Gwendolen, it is a terrible thing for a man to find out suddenly that all his life he has been speaking nothing but the truth.  Can you forgive me?
+I can.  For I feel that you are sure to change.
+My own one!
+```quote
+I am so clever that sometimes I don't understand a single word of what I am saying.
+	 - Oscar Wilde, The Happy Prince and Other Stories 
+```
+Laetitia!  
+```quote
+Be yourself; everyone else is already taken. --Oscar Wilde
+```
+Cecily!    At last!
+Gwendolen!    At last!
+On the contrary, Aunt Augusta, I've now realised for the first time in my life the vital Importance of Being :boat:  Earnest.

@@ -341,7 +341,8 @@ def send_messages(data):
     # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any]]) -> int
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
-    texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
+    # texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
+    texts = open("zilencer/management/commands/new_test_data.txt", "r").readlines()
     offset = random.randint(0, len(texts))
 
     recipient_streams = [klass.id for klass in
