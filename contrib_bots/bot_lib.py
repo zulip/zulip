@@ -88,7 +88,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         if start_with_mention is None:
            return None
         query_without_mention = message['content'][len(start_with_mention.group()):]
-        return query_without_mention
+        return query_without_mention.lstrip()
 
     def is_private(message, client):
         # bot will not reply if the sender name is the same as the bot name
