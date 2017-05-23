@@ -798,8 +798,14 @@ def do_send_messages(messages_maybe_none):
             ums.extend(ums_to_create)
 
             # Now prepare the outgoing webhook events
-
             message['message'].outgoing_webhook_bot_triggers = []
+
+            # Avoid infinite loops by preventing messages sent by bots
+            # from triggering outgoing webhooks.
+            sender = message['message'].sender
+            if sender.is_bot:
+                continue
+
             # TODO: Right now, outgoing webhook bots need to be a
             # subscribed to a stream in order to receive messages when
             # mentioned; we will want to change that structure.
