@@ -30,7 +30,7 @@ class Deployment(models.Model):
 
     # TODO: This should really become the public portion of a keypair, and
     # it should be settable only with an initial bearer "activation key"
-    api_key = models.CharField(max_length=32, null=True)  # type: Text
+    api_key = models.CharField(max_length=32, null=True)  # type: Optional[Text]
 
     base_api_url = models.CharField(max_length=128)  # type: Text
     base_site_url = models.CharField(max_length=128)  # type: Text
