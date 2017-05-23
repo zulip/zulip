@@ -1358,7 +1358,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
     """
     See _internal_prep_message for details of how this works.
     """
-    sender = get_user(sender_email, realm)
+    sender = get_user_profile_by_email(sender_email)
     parsed_recipients = extract_recipients(recipients)
 
     return _internal_prep_message(
