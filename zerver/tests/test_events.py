@@ -982,7 +982,7 @@ class EventsRegisterTest(ZulipTestCase):
             change_emojiset=["emojiset", [u'apple', u'twitter']],
             default_language=["default_language", [u'es', u'de', u'en']],
             change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
-            )  # type: Dict[str, Any]
+        )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
@@ -1009,7 +1009,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])
             changes = test_changes.get(setting_name)
             if (changes is None:
-                raise AssertionError('No test created for %s'% (setting_name))
+                raise AssertionError('No test created for %s' % (setting_name))
             do_set_user_display_settings_test(self.user_profile.UserProfile, setting_name, changes[0])
             for change in changes[1:]:
                 events=self.do_test(
@@ -1206,7 +1206,7 @@ class EventsRegisterTest(ZulipTestCase):
                 lambda: do_change_pm_content_in_desktop_notifications(self.user_profile,
                                                                       setting_value,
                                                                       log=False),
-            )
+        )
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -1549,7 +1549,7 @@ class EventsRegisterTest(ZulipTestCase):
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
             check_dict(subscription_fields),        # TODO: Can this be converted to check_dict_only?
-        )
+            )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
             ('op', equals('create')),
