@@ -7,7 +7,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.lib.actions import do_change_enable_digest_emails
+from zerver.lib.actions import do_change_notification_settings
 from zerver.models import Realm, UserProfile, get_realm, get_user_profile_by_email
 
 class Command(BaseCommand):
@@ -45,7 +45,7 @@ class Command(BaseCommand):
         for user_profile in user_profiles:
             already_disabled_prefix = ""
             if user_profile.enable_digest_emails:
-                do_change_enable_digest_emails(user_profile, False)
+                do_change_notification_settings(user_profile, 'enable_digest_emails', False)
             else:
                 already_disabled_prefix = "(already off) "
             print("%s%s <%s>" % (already_disabled_prefix, user_profile.full_name,

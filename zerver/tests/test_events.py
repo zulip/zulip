@@ -59,15 +59,7 @@ from zerver.lib.actions import (
     do_update_pointer,
     do_update_user_presence,
     do_set_user_display_setting,
-    do_change_enable_stream_desktop_notifications,
-    do_change_enable_stream_sounds,
-    do_change_enable_desktop_notifications,
-    do_change_enable_sounds,
-    do_change_enable_offline_email_notifications,
-    do_change_enable_offline_push_notifications,
-    do_change_enable_online_push_notifications,
-    do_change_pm_content_in_desktop_notifications,
-    do_change_enable_digest_emails,
+    do_change_notification_settings,
     do_add_realm_domain,
     do_change_realm_domain,
     do_remove_realm_domain,
@@ -1037,136 +1029,21 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])
 
-    def test_change_enable_stream_desktop_notifications(self):
+    def test_change_notification_settings(self):
         # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_stream_desktop_notifications')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_stream_desktop_notifications(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_stream_desktop_notifications(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_stream_sounds(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_stream_sounds')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_stream_sounds(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_stream_sounds(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_desktop_notifications(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_desktop_notifications')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_desktop_notifications(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_desktop_notifications(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_sounds(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_sounds')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_sounds(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_sounds(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_offline_email_notifications(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_offline_email_notifications')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_offline_email_notifications(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_offline_email_notifications(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_offline_push_notifications(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_offline_push_notifications')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_offline_push_notifications(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_offline_push_notifications(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_online_push_notifications(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_online_push_notifications')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-
-        do_change_enable_online_push_notifications(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_online_push_notifications(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_pm_content_in_desktop_notifications(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('pm_content_in_desktop_notifications')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_pm_content_in_desktop_notifications(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(
-                lambda: do_change_pm_content_in_desktop_notifications(self.user_profile,
-                                                                      setting_value,
-                                                                      log=False),
-            )
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_enable_digest_emails(self):
-        # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals('enable_digest_emails')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_enable_digest_emails(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_enable_digest_emails(self.user_profile, setting_value, log=False))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        for notification_setting, v in self.user_profile.notification_setting_types.items():
+            schema_checker = self.check_events_dict([
+                ('type', equals('update_global_notifications')),
+                ('notification_name', equals(notification_setting)),
+                ('user', check_string),
+                ('setting', check_bool),
+            ])
+            do_change_notification_settings(self.user_profile, notification_setting, False)
+            for setting_value in [True, False]:
+                events = self.do_test(lambda: do_change_notification_settings(
+                    self.user_profile, notification_setting, setting_value, log=False))
+                error = schema_checker('events[0]', events[0])
+                self.assert_on_error(error)
 
     def test_realm_emoji_events(self):
         # type: () -> None

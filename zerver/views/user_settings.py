@@ -12,15 +12,10 @@ from django.urls import reverse
 from zerver.decorator import authenticated_json_post_view, has_request_variables, \
     zulip_login_required, REQ, human_users_only
 from zerver.lib.actions import do_change_password, \
-    do_change_enable_desktop_notifications, \
-    do_change_enter_sends, do_change_enable_sounds, \
-    do_change_enable_offline_email_notifications, do_change_enable_digest_emails, \
-    do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
+    do_change_enter_sends, do_change_notification_settings, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
-    do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_regenerate_api_key, do_change_avatar_fields, do_set_user_display_setting, \
-    do_change_pm_content_in_desktop_notifications, validate_email, \
-    do_change_user_email, do_start_email_change_process
+    validate_email, do_change_user_email, do_start_email_change_process
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, display_email
 from zerver.lib.i18n import get_available_language_codes
@@ -206,53 +201,12 @@ def json_change_notify_settings(request, user_profile,
 
     # Stream notification settings.
 
-    if enable_stream_desktop_notifications is not None and \
-            user_profile.enable_stream_desktop_notifications != enable_stream_desktop_notifications:
-        do_change_enable_stream_desktop_notifications(
-            user_profile, enable_stream_desktop_notifications)
-        result['enable_stream_desktop_notifications'] = enable_stream_desktop_notifications
+    req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
 
-    if enable_stream_sounds is not None and \
-            user_profile.enable_stream_sounds != enable_stream_sounds:
-        do_change_enable_stream_sounds(user_profile, enable_stream_sounds)
-        result['enable_stream_sounds'] = enable_stream_sounds
-
-    # PM and @-mention settings.
-
-    if enable_desktop_notifications is not None and \
-            user_profile.enable_desktop_notifications != enable_desktop_notifications:
-        do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
-        result['enable_desktop_notifications'] = enable_desktop_notifications
-
-    if enable_sounds is not None and \
-            user_profile.enable_sounds != enable_sounds:
-        do_change_enable_sounds(user_profile, enable_sounds)
-        result['enable_sounds'] = enable_sounds
-
-    if enable_offline_email_notifications is not None and \
-            user_profile.enable_offline_email_notifications != enable_offline_email_notifications:
-        do_change_enable_offline_email_notifications(user_profile, enable_offline_email_notifications)
-        result['enable_offline_email_notifications'] = enable_offline_email_notifications
-
-    if enable_offline_push_notifications is not None and \
-            user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
-        do_change_enable_offline_push_notifications(user_profile, enable_offline_push_notifications)
-        result['enable_offline_push_notifications'] = enable_offline_push_notifications
-
-    if enable_online_push_notifications is not None and \
-            user_profile.enable_online_push_notifications != enable_online_push_notifications:
-        do_change_enable_online_push_notifications(user_profile, enable_online_push_notifications)
-        result['enable_online_push_notifications'] = enable_online_push_notifications
-
-    if enable_digest_emails is not None and \
-            user_profile.enable_digest_emails != enable_digest_emails:
-        do_change_enable_digest_emails(user_profile, enable_digest_emails)
-        result['enable_digest_emails'] = enable_digest_emails
-
-    if pm_content_in_desktop_notifications is not None and \
-            user_profile.pm_content_in_desktop_notifications != pm_content_in_desktop_notifications:
-        do_change_pm_content_in_desktop_notifications(user_profile, pm_content_in_desktop_notifications)
-        result['pm_content_in_desktop_notifications'] = pm_content_in_desktop_notifications
+    for k, v in list(req_vars.items()):
+        if v is not None and getattr(user_profile, k) != v:
+            do_change_notification_settings(user_profile, k, v)
+            result[k] = v
 
     return json_success(result)
 
