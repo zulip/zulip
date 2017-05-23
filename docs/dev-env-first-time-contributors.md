@@ -675,6 +675,23 @@ $ cp /usr/bin/curl.exe /cygdrive/c/HashiCorp/Vagrant/embedded/bin/
 Now re-run `vagrant up` and vagrant should be able to fetch the required
 box file.
 
+#### Vagrant was unable to mount VirtualBox shared folders
+
+Error is of the following format:
+```
+Vagrant was unable to mount VirtualBox shared folders. This is usually because the filesystem "vboxsf" is not available. This filesystem is made available via the VirtualBox Guest Additions and kernel module. Please verify that these guest additions are properly installed in the guest. This is not a bug in Vagrant and is usually caused by a faulty Vagrant box. For context, the command attempted was:
+
+ mount -t vboxsf -o uid=1000,gid=1000 keys /keys
+ ```
+
+If this error came up suddenly without any change in Virtual Box then just run,
+```
+vagrant reload
+```
+This is equivalent of running a halt followed by an up.
+After this you can do `vagrant provision` and `vagrant ssh`.
+
+
 #### os.symlink error
 
 If you receive the following error while running `vagrant up`:
