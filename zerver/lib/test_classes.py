@@ -234,6 +234,14 @@ class ZulipTestCase(TestCase):
         email = self.mit_user_map[name]
         return get_user_profile_by_email(email)
 
+    def example_email(self, name):
+        # type: (str) -> str
+        return self.example_user_map[name]
+
+    def mit_email(self, name):
+        # type: (str) -> str
+        return self.mit_user_map[name]
+
     def notification_bot(self):
         # type: () -> UserProfile
         return get_user_profile_by_email('notification-bot@zulip.com')

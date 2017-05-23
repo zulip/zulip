@@ -38,7 +38,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user_profile_by_email, get_stream_cache_key, \
+    get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
     ScheduledJob, get_owned_bot_dicts, \
@@ -666,7 +666,7 @@ def compute_mit_user_fullname(email):
 def create_mirror_user_if_needed(realm, email, email_to_fullname):
     # type: (Realm, Text, Callable[[Text], Text]) -> UserProfile
     try:
-        return get_user_profile_by_email(email)
+        return get_user(email, realm)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
@@ -674,7 +674,7 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
                                email_to_fullname(email), email_to_username(email),
                                active=False, is_mirror_dummy=True)
         except IntegrityError:
-            return get_user_profile_by_email(email)
+            return get_user(email, realm)
 
 def render_incoming_message(message, content, message_users, realm):
     # type: (Message, Text, Set[UserProfile], Realm) -> Text

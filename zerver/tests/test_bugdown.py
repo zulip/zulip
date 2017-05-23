@@ -28,7 +28,6 @@ from zerver.models import (
     flush_realm_filter,
     get_client,
     get_realm,
-    get_user_profile_by_email,
     get_stream,
     realm_filters_for_realm,
     Message,
