@@ -31,7 +31,7 @@ class WikipediaHandler(object):
         if message['type'] == 'private':
             client.send_message(dict(
                 type='private',
-                to=message['sender_email'],
+                to=[x['email'] for x in message['display_recipient'] if client.email != x['email']],
                 content=bot_response,
             ))
         else:
