@@ -5,7 +5,6 @@ from __future__ import print_function
 import mock
 from typing import Any, Union, Mapping, Callable
 
-from zerver.lib.test_helpers import get_user_profile_by_email
 from zerver.lib.test_classes import ZulipTestCase
 
 from zerver.models import (
@@ -96,7 +95,7 @@ class TestMentionMessageTrigger(ZulipTestCase):
     @mock.patch('zerver.lib.actions.queue_json_publish')
     def test_mention_message_event_flow(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
-        self.user_profile = get_user_profile_by_email("othello@zulip.com")
+        self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="foo-bot@zulip.com",
                                           password="test",
                                           realm=get_realm_by_email_domain("zulip.com"),
