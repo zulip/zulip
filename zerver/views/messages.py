@@ -772,7 +772,7 @@ def update_message_flags(request, user_profile,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):
-    # type: (HttpResponse, UserProfile, Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]
+    # type: (HttpRequest, UserProfile, Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]
     if "sender" not in request.POST:
         return (False, None)
 
