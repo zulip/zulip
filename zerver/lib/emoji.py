@@ -12,7 +12,8 @@ from zerver.models import Realm, RealmEmoji, UserProfile
 
 def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None
-    if emoji_name in set(realm.get_emoji().keys()):
+    realm_emojis = realm.get_emoji()
+    if emoji_name in realm_emojis and not realm_emojis[emoji_name]['deactivated']:
         return
     if emoji_name in name_to_codepoint:
         return

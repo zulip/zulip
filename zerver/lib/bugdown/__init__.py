@@ -750,7 +750,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if db_data is not None:
             realm_emoji = db_data['emoji']
 
-        if current_message and name in realm_emoji:
+        if current_message and name in realm_emoji and not realm_emoji[name]['deactivated']:
             return make_realm_emoji(realm_emoji[name]['source_url'], orig_syntax)
         elif name == 'zulip':
             return make_realm_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)

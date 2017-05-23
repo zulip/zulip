@@ -8,7 +8,7 @@ from six import string_types
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient, \
     get_test_image_file
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, Recipient, UserMessage
+from zerver.models import get_realm, RealmEmoji, Recipient, UserMessage
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self):
@@ -40,6 +40,25 @@ class ReactionEmojiTest(ZulipTestCase):
         result = self.client_delete('/api/v1/messages/1/emoji_reactions/foo',
                                     **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'foo' does not exist")
+
+    def test_add_deactivated_realm_emoji(self):
+        # type: () -> None
+        """
+        Sending deactivated realm emoji fails.
+        """
+        email = "iago@zulip.com"
+        self.login(email)
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
+        self.assert_json_success(result)
+        emoji = RealmEmoji.objects.get(name="my_emoji")
+        emoji.deactivated = True
+        emoji.save(update_fields=['deactivated'])
+        sender = 'hamlet@zulip.com'
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/my_emoji',
+                                 **self.api_auth(sender))
+        self.assert_json_error(result, "Emoji 'my_emoji' does not exist")
 
     def test_valid_emoji(self):
         # type: () -> None

@@ -33,6 +33,7 @@ from zerver.models import (
     Message,
     Stream,
     Realm,
+    RealmEmoji,
     RealmFilter,
     Recipient,
 )
@@ -502,6 +503,18 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', 'test.png', realm.id)))
 
         do_remove_realm_emoji(realm, 'test')
+        converted = bugdown.convert(":test:", message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>:test:</p>')
+
+    def test_deactivated_realm_emoji(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        check_add_realm_emoji(realm, "test", 'test.png')
+        emoji = RealmEmoji.objects.get(realm=realm, name='test')
+        emoji.deactivated = True
+        emoji.save(update_fields=['deactivated'])
+
+        msg = Message(sender=self.example_user('hamlet'))
         converted = bugdown.convert(":test:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:test:</p>')
 
