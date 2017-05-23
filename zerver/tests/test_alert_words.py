@@ -21,7 +21,6 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     Recipient,
     UserProfile,
-    get_user,
 )
 
 from typing import Text
@@ -33,7 +32,8 @@ class AlertWordTests(ZulipTestCase):
 
     def test_internal_endpoint(self):
         # type: () -> None
-        email = self.example_email("cordelia")
+        user_name = "cordelia"
+        email = self.example_email(user_name)
         self.login(email)
 
         params = {
@@ -41,7 +41,7 @@ class AlertWordTests(ZulipTestCase):
         }
         result = self.client_post('/json/users/me/alert_words', params)
         self.assert_json_success(result)
-        user = self.example_user("cordelia")
+        user = self.example_user(user_name)
         words = user_alert_words(user)
         self.assertEqual(words, ['milk', 'cookies'])
 

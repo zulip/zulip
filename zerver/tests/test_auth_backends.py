@@ -34,8 +34,8 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import \
-    get_realm, get_user_profile_by_email, email_to_username, UserProfile, \
-    PreregistrationUser, Realm
+    get_realm, email_to_username, UserProfile, \
+    PreregistrationUser, Realm, get_user
 
 from confirmation.models import Confirmation
 
@@ -61,20 +61,18 @@ import ujson
 from zerver.lib.test_helpers import MockLDAP, unsign_subdomain_cookie
 
 class AuthBackendTest(ZulipTestCase):
-    email = u"hamlet@zulip.com"
-
     def get_username(self, email_to_username=None):
         # type: (Optional[Callable[[Text], Text]]) -> Text
-        username = self.email
+        username = self.example_email('hamlet')
         if email_to_username is not None:
-            username = email_to_username(self.email)
+            username = email_to_username(self.example_email('hamlet'))
 
         return username
 
     def verify_backend(self, backend, good_kwargs=None, bad_kwargs=None):
         # type: (Any, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> None
 
-        user_profile = get_user_profile_by_email(self.email)
+        user_profile = self.example_user('hamlet')
 
         if good_kwargs is None:
             good_kwargs = {}
@@ -143,9 +141,8 @@ class AuthBackendTest(ZulipTestCase):
 
     def test_email_auth_backend(self):
         # type: () -> None
-        email = self.email
         username = self.get_username()
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         password = "testpassword"
         user_profile.set_password(password)
         user_profile.save()
@@ -162,7 +159,7 @@ class AuthBackendTest(ZulipTestCase):
                 mock.patch('zproject.backends.password_auth_enabled',
                            return_value=True):
             return_data = {}  # type: Dict[str, bool]
-            user = EmailAuthBackend().authenticate(email,
+            user = EmailAuthBackend().authenticate(self.example_email('hamlet'),
                                                    password=password,
                                                    return_data=return_data)
             self.assertEqual(user, None)
@@ -197,14 +194,13 @@ class AuthBackendTest(ZulipTestCase):
 
     def test_email_auth_backend_disabled_password_auth(self):
         # type: () -> None
-        email = u"hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         password = "testpassword"
         user_profile.set_password(password)
         user_profile.save()
         # Verify if a realm has password auth disabled, correct password is rejected
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
-            self.assertIsNone(EmailAuthBackend().authenticate(email, password))
+            self.assertIsNone(EmailAuthBackend().authenticate(self.example_email('hamlet'), password))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',))
     def test_no_backend_enabled(self):
@@ -346,7 +342,7 @@ class AuthBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend(self):
         # type: () -> None
-        self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
+        self.setup_subdomain(self.example_user('hamlet'))
         username = self.get_username()
         self.verify_backend(ZulipRemoteUserBackend(),
                             good_kwargs=dict(remote_user=username,
@@ -364,7 +360,7 @@ class AuthBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend_sso_append_domain(self):
         # type: () -> None
-        self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
+        self.setup_subdomain(self.example_user('hamlet'))
         username = self.get_username(email_to_username)
         with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
             self.verify_backend(ZulipRemoteUserBackend(),
@@ -963,6 +959,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 mock.patch('zerver.views.registration.get_subdomain', return_value='zulip')):
 
             email = "newuser@zulip.com"
+            realm = get_realm("zulip")
             token_response = ResponseMock(200, {'access_token': "unique_token"})
             account_data = dict(name=dict(formatted="Full Name"),
                                 emails=[dict(type="account",
@@ -1002,7 +999,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                        'terms': True})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
-            user_profile = get_user_profile_by_email(email)
+            user_profile = get_user(email, realm)
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
 class GoogleLoginTest(GoogleOAuthTest):
@@ -1612,10 +1609,11 @@ class TestJWTLogin(ZulipTestCase):
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(JWT_AUTH_KEYS={'': 'key'}):
             email = 'hamlet@zulip.com'
+            realm = get_realm('zulip')
             auth_key = settings.JWT_AUTH_KEYS['']
             web_token = jwt.encode(payload, auth_key).decode('utf8')
 
-            user_profile = get_user_profile_by_email(email)
+            user_profile = get_user(email, realm)
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
             self.assertEqual(result.status_code, 302)
@@ -1713,14 +1711,13 @@ class TestJWTLogin(ZulipTestCase):
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(REALMS_HAVE_SUBDOMAINS=True, JWT_AUTH_KEYS={'zulip': 'key'}):
             with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
-                email = 'hamlet@zulip.com'
                 auth_key = settings.JWT_AUTH_KEYS['zulip']
                 web_token = jwt.encode(payload, auth_key).decode('utf8')
 
                 data = {'json_web_token': web_token}
                 result = self.client_post('/accounts/login/jwt/', data)
                 self.assertEqual(result.status_code, 302)
-                user_profile = get_user_profile_by_email(email)
+                user_profile = self.example_user('hamlet')
                 self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
 class TestLDAP(ZulipTestCase):
@@ -2112,14 +2109,13 @@ class LoginEmailValidatorTestCase(TestCase):
 class LoginOrRegisterRemoteUserTestCase(ZulipTestCase):
     def test_invalid_subdomain(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
         full_name = 'Hamlet'
         invalid_subdomain = True
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         request = POSTRequestMock({}, user_profile)
         response = login_or_register_remote_user(
             request,
-            email,
+            self.example_email('hamlet'),
             user_profile,
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
