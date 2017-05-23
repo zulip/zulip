@@ -13,7 +13,7 @@ from typing import Any, Dict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
-from zerver.models import get_realm, get_stream, get_user_profile_by_email
+from zerver.models import get_realm, get_stream, get_user
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
 class HomeTest(ZulipTestCase):
@@ -313,7 +313,8 @@ class HomeTest(ZulipTestCase):
 
     def test_people(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
+        realm = get_realm('zulip')
         self.login(email)
         result = self._get_home_page()
         page_params = self._get_page_params(result)
@@ -322,7 +323,7 @@ class HomeTest(ZulipTestCase):
             self.assertTrue(len(users) >= 3)
             for user in users:
                 self.assertEqual(user['user_id'],
-                                 get_user_profile_by_email(user['email']).id)
+                                 get_user(user['email'], realm).id)
 
         cross_bots = page_params['cross_realm_bots']
         self.assertEqual(len(cross_bots), 2)
@@ -332,7 +333,7 @@ class HomeTest(ZulipTestCase):
 
         self.assertEqual(cross_bots, [
             dict(
-                user_id=get_user_profile_by_email('feedback@zulip.com').id,
+                user_id=get_user('feedback@zulip.com', get_realm('zulip')).id,
                 is_admin=False,
                 email='feedback@zulip.com',
                 full_name='Zulip Feedback Bot',

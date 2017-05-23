@@ -34,7 +34,7 @@ from zerver.lib.validator import (
     check_variable_type, equals, check_none_or,
 )
 from zerver.models import \
-    get_realm, get_user_profile_by_email, UserProfile, Client
+    get_realm, get_user, UserProfile, Client
 
 import ujson
 
@@ -219,7 +219,8 @@ class DecoratorTestCase(TestCase):
             META = {'PATH_INFO': ''}
 
         webhook_bot_email = 'webhook-bot@zulip.com'
-        webhook_bot = get_user_profile_by_email(webhook_bot_email)
+        webhook_bot_realm = get_realm('zulip')
+        webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
         webhook_bot_api_key = webhook_bot.api_key
 
         request = Request()  # type: Any
@@ -765,8 +766,9 @@ class InactiveUserTest(ZulipTestCase):
 class TestValidateApiKey(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.webhook_bot = get_user_profile_by_email('webhook-bot@zulip.com')
-        self.default_bot = get_user_profile_by_email('default-bot@zulip.com')
+        zulip_realm = get_realm('zulip')
+        self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
+        self.default_bot = get_user('default-bot@zulip.com', zulip_realm)
 
     def test_validate_api_key_if_profile_does_not_exist(self):
         # type: () -> None
@@ -921,15 +923,17 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
-        self._login(user_email)
+        user_email = self.example_email('hamlet')
+        user_realm = get_realm('zulip')
+        self._login(user_email, user_realm)
         response = self._do_test(user_email)
         self.assertEqual(response.status_code, 200)
 
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
-        self._login(user_email)
+        user_email = self.example_email('hamlet')
+        user_realm = get_realm('zulip')
+        self._login(user_email, user_realm)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning, \
                     mock.patch('zerver.decorator.get_subdomain', return_value=''):
@@ -952,15 +956,17 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self):
         # type: () -> None
         user_email = 'webhook-bot@zulip.com'
-        self._login(user_email, password="test")  # we set a password because user is a bot
+        user_realm = get_realm('zulip')
+        self._login(user_email, user_realm, password="test")  # we set a password because user is a bot
         self.assert_json_error_contains(self._do_test(user_email), "Webhook bots can only access webhooks")
 
     def test_authenticated_json_post_view_if_user_is_not_active(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
-        self._login(user_email, password="test")
+        user_email = self.example_email('hamlet')
+        user_realm = get_realm('zulip')
+        self._login(user_email, user_realm, password="test")
         # Get user_profile after _login so that we have the latest data.
-        user_profile = get_user_profile_by_email(user_email)
+        user_profile = get_user(user_email, user_realm)
         # we deactivate user manually because do_deactivate_user removes user session
         user_profile.is_active = False
         user_profile.save()
@@ -969,9 +975,10 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(user_email)
-        self._login(user_email)
+        user_email = self.example_email('hamlet')
+        user_realm = get_realm('zulip')
+        user_profile = get_user(user_email, user_realm)
+        self._login(user_email, user_realm)
         # we deactivate user's realm manually because do_deactivate_user removes user session
         user_profile.realm.deactivated = True
         user_profile.realm.save()
@@ -983,10 +990,10 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         data = {"status": '"started"'}
         return self.client_post(r'/json/tutorial_status', data)
 
-    def _login(self, user_email, password=None):
+    def _login(self, user_email, user_realm, password=None):
         # type: (str, str) -> None
         if password:
-            user_profile = get_user_profile_by_email(user_email)
+            user_profile = get_user(user_email, user_realm)
             user_profile.set_password(password)
             user_profile.save()
         self.login(user_email, password)
@@ -1042,13 +1049,14 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
 class TestRequireServerAdminDecorator(ZulipTestCase):
     def test_require_server_admin_decorator(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
+        user_email = self.example_email('hamlet')
+        user_realm = get_realm('zulip')
         self.login(user_email)
 
         result = self.client_get('/activity')
         self.assertEqual(result.status_code, 302)
 
-        user_profile = get_user_profile_by_email(user_email)
+        user_profile = get_user(user_email, user_realm)
         user_profile.is_staff = True
         user_profile.save()
 
