@@ -1012,7 +1012,7 @@ class EventsRegisterTest(ZulipTestCase):
                 raise AssertionError('No test created for %s' % (setting_name))
             do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
             for change in changes[1:]:
-                events=self.do_test(
+                events = self.do_test(
                     lambda: do_set_user_display_setting(self.user_profile.UserProfile, setting_name, change))
                 error = schema_checker('events[0]', events[0])
                 self.assert_on_error(error)
@@ -1028,7 +1028,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
-                
+
     """def test_change_twenty_four_hour_time(self):
         # type: () -> None
         self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
@@ -1166,7 +1166,7 @@ class EventsRegisterTest(ZulipTestCase):
                 lambda: do_change_pm_content_in_desktop_notifications(self.user_profile,
                                                                       setting_value,
                                                                       log=False),
-        )
+            )
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -1210,7 +1210,7 @@ class EventsRegisterTest(ZulipTestCase):
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
-        
+
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip"), "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -1509,7 +1509,7 @@ class EventsRegisterTest(ZulipTestCase):
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
             check_dict(subscription_fields),        # TODO: Can this be converted to check_dict_only?
-            )
+                         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
             ('op', equals('create')),
