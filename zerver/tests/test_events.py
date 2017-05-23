@@ -1014,7 +1014,7 @@ class EventsRegisterTest(ZulipTestCase):
                 error = timezone_schema_checker('events[1]', events[1])
 
     	test_change = dict(
-            change_twenty_four_hour_time="twenty_four_hour_time", [True, False],
+			change_twenty_four_hour_time="twenty_four_hour_time", [True, False],
             change_left_side_userlist="left_side_userlist", [True, False],
             change_emoji_alt_code="emoji_alt_code", [True, False],
             change_emojiset="emojiset", [u'apple', u'twitter'],
