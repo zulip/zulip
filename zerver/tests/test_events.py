@@ -1001,12 +1001,12 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(lambda: do_set_user_display_setting(
                 self.user_profile, setting_name, value), num_events=num_events)"""
 
-            schema_checker = self.check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
+           schema_checker = self.check_events_dict([
+               ('type', equals('update_display_settings')),
+               ('setting_name', equals(setting_name)),
+               ('user', check_string),
+               ('setting', validator),
+           ])
             changes = test_changes.get(setting_name)
             if (changes is None):
                 raise AssertionError('No test created for %s' % (setting_name))
