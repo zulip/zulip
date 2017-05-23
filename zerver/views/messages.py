@@ -991,7 +991,7 @@ def update_message_backend(request, user_profile,
                            content=REQ(default=None)):
     # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[str], Optional[Text]) -> HttpResponse
     if not user_profile.realm.allow_message_editing:
-        return json_error(_("Your organization has turned off message editing."))
+        return json_error(_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
 
