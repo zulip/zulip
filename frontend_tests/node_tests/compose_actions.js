@@ -10,8 +10,7 @@ set_global('page_params', {
     use_websockets: false,
 });
 
-set_global('$', function () {
-});
+set_global('$', global.zjquery);
 
 add_dependencies({
     compose: 'js/compose',
@@ -60,90 +59,6 @@ set_global('unread_ops', {
 });
 
 set_global('status_classes', 'status_classes');
-
-var fake_jquery = function () {
-    var elems = {};
-
-    function new_elem(selector) {
-        var value;
-        var shown = false;
-        var self = {
-            val: function () {
-                if (arguments.length === 0) {
-                    return value || '';
-                }
-                value = arguments[0];
-            },
-            css: noop,
-            data: noop,
-            empty: noop,
-            height: noop,
-            removeAttr: noop,
-            removeData: noop,
-            trigger: noop,
-            show: function () {
-                shown = true;
-            },
-            hide: function () {
-                shown = false;
-            },
-            addClass: function (class_name) {
-                assert.equal(class_name, 'active');
-                shown = true;
-            },
-            removeClass: function (class_name) {
-                if (class_name === 'status_classes') {
-                    return self;
-                }
-                assert.equal(class_name, 'active');
-                shown = false;
-            },
-            debug: function () {
-                return {
-                    value: value,
-                    shown: shown,
-                    selector: selector,
-                };
-            },
-            visible: function () {
-                return shown;
-            },
-        };
-        return self;
-    }
-
-    var $ = function (selector) {
-        if (elems[selector] === undefined) {
-            var elem = new_elem(selector);
-            elems[selector] = elem;
-        }
-        return elems[selector];
-    };
-
-    $.trim = function (s) { return s; };
-
-    $.state = function () {
-        // useful for debugging
-        var res =  _.map(elems, function (v) {
-            return v.debug();
-        });
-
-        res = _.map(res, function (v) {
-            return [v.selector, v.value, v.shown];
-        });
-
-        res.sort();
-
-        return res;
-    };
-
-    $.Event = noop;
-
-    return $;
-};
-
-set_global('$', fake_jquery());
-var $ = global.$;
 
 function stub_selected_message(msg) {
     set_global('current_msg_list', {
