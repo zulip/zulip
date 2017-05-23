@@ -161,7 +161,7 @@ if __name__ == "__main__":
                       type="int",
                       callback=allow_positive_int,
                       action='callback',
-                      default=4,
+                      default=None,
                       help='Specify the number of processes to run the '
                            'tests in. Default is 4.')
     parser.add_option('--profile', dest='profile',
@@ -210,6 +210,7 @@ if __name__ == "__main__":
     # --nonfatal-errors, so that we don't end up removing tests from
     # the list that weren't run.
     if options.rerun:
+        options.processes = 1
         options.fatal_errors = False
         failed_tests = get_failed_tests()
         if failed_tests:
@@ -297,6 +298,9 @@ if __name__ == "__main__":
         generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
         generate_fixtures_command.append('--force')
         subprocess.call(generate_fixtures_command)
+
+    if options.processes is None:
+        options.processes = 4
 
     TestRunner = get_runner(settings)
     parallel = options.processes
