@@ -128,7 +128,7 @@ class RealmTest(ZulipTestCase):
         # Since the setting fails silently, no message is returned
         self.assert_in_response("", result)
 
-    def test_do_deactivate_realm(self):
+    def test_do_deactivate_realm_clears_user_realm_cache(self):
         # type: () -> None
         """The main complicated thing about deactivating realm names is
         updating the cache, and we start by populating the cache for
@@ -140,6 +140,18 @@ class RealmTest(ZulipTestCase):
         do_deactivate_realm(realm)
         user = self.example_user('hamlet')
         self.assertTrue(user.realm.deactivated)
+
+    def test_do_deactivate_realm_on_deactived_realm(self):
+        # type: () -> None
+        """Ensure early exit is working in realm deactivation"""
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+        do_deactivate_realm(realm)
+        self.assertTrue(realm.deactivated)
+
+        do_deactivate_realm(realm)
+        self.assertTrue(realm.deactivated)
 
     def test_change_realm_default_language(self):
         # type: () -> None
