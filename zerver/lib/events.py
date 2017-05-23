@@ -12,7 +12,7 @@ from django.conf import settings
 from importlib import import_module
 from six.moves import filter, map
 from typing import (
-    Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple
+    Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
@@ -27,7 +27,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     do_get_streams, get_default_streams_for_realm, \
     gather_subscriptions_helper, get_cross_realm_dicts, \
-    get_status_dict, streams_to_dicts_sorted
+    get_status_dict, streams_to_dicts_sorted, get_unread_message_ids_per_recipient
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
@@ -152,10 +152,12 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
 
-    if want('update_message_flags'):
-        # There's no initial data for message flag updates, client will
-        # get any updates during a session from get_events()
-        pass
+    if want('update_message_flags') and want('message'):
+        # Keeping unread_msgs updated requires both message flag updates and
+        # message updates. This is due to the fact that new messages will not
+        # generate a flag update so we need to use the flags field in the
+        # message event.
+        state['unread_msgs'] = get_unread_message_ids_per_recipient(user_profile)
 
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
@@ -205,10 +207,24 @@ def apply_events(state, events, user_profile, include_subscribers=True,
             continue
         apply_event(state, event, user_profile, include_subscribers)
 
+
 def apply_event(state, event, user_profile, include_subscribers):
     # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
+        if 'unread_msgs' in state and 'read' not in event['flags']:
+            for recipient_subject, msg_ids in state['unread_msgs']:
+                if event['message']['recipient_id'] == recipient_subject['recipient_id']:
+                    msg_ids.append(event['message']['id'])
+                    return
+            unread_msgs_key = {
+                'display_recipient': event['message']['display_recipient'],
+                'recipient_id': event['message']['recipient_id'],
+                'subject': event['message']['subject'],
+            }
+            if 'stream_id' in event['message']:
+                unread_msgs_key['stream_id'] = event['message']['stream_id']
+            state['unread_msgs'].append((unread_msgs_key, [event['message']['id']]))
     elif event['type'] == "hotspots":
         state['hotspots'] = event['hotspots']
     elif event['type'] == "custom_profile_fields":
@@ -410,8 +426,12 @@ def apply_event(state, event, user_profile, include_subscribers):
         presence_user_profile = get_user(event['email'], user_profile.realm)
         state['presences'][event['email']] = UserPresence.get_status_dict_by_user(presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
-        # The client will get the updated message directly
-        pass
+        # The client will get the updated message directly but we need to
+        # update the subjects of out unread message ids
+        if 'subject' in event and 'unread_msgs' in state:
+            for recipient_subject, msg_ids in state['unread_msgs']:
+                if event['message_id'] in msg_ids:
+                    recipient_subject['subject'] = event['subject']
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass
@@ -421,8 +441,20 @@ def apply_event(state, event, user_profile, include_subscribers):
         # Typing notification events are transient and thus ignored
         pass
     elif event['type'] == "update_message_flags":
-        # The client will get the message with the updated flags directly
-        pass
+        # The client will get the message with the updated flags directly but
+        # we need to keep the unread_msgs updated.
+        # TODO: we can not remove the read flag yet because the flag events do
+        # not include a display_recipient. So we are also not handling that
+        # event here.
+        if event['flag'] == 'read' and event['operation'] == 'add':
+            for display_recipient, msg_ids in state['unread_msgs']:
+                for remove_id in event['messages']:
+                    msg_ids.remove(remove_id)
+            state['unread_msgs'] = [
+                (display_recipient, msg_ids)
+                for display_recipient, msg_ids in state['unread_msgs']
+                if msg_ids
+            ]
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])
@@ -509,6 +541,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     events = get_user_events(user_profile, queue_id, -1)
     apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
                  fetch_event_types=fetch_event_types)
+
     if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']
     else:

@@ -45,7 +45,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
-    CustomProfileFieldValue, validate_attachment_request, get_system_bot
+    CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
+    get_display_recipient_by_id
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -3417,3 +3418,41 @@ def do_update_user_custom_profile_data(user_profile, data):
             update_or_create(user_profile=user_profile,
                              field_id=field['id'],
                              defaults={'value': field['value']})
+
+def get_unread_message_ids_per_recipient(user_profile):
+    # type: (UserProfile) -> List[Tuple[Dict[str, Union[Text, List[Dict[str, Any]]]], List[int]]]
+    user_msgs = UserMessage.objects.filter(
+        user_profile=user_profile,
+        flags=~UserMessage.flags.read,
+    ).order_by(
+        'message__recipient__id',
+        'message__subject',
+    ).values(
+        'message__id',
+        'message__subject',
+        'message__recipient__id',
+        'message__recipient__type',
+        'message__recipient__type_id',
+    )
+    user_msgs_by_recip = itertools.groupby(
+        user_msgs,
+        lambda x: (x['message__recipient__id'], x['message__subject']),
+    )
+    user_msgs_by_display_recipient = []
+    for (recipient_id, subject), msgs in user_msgs_by_recip:
+        first_msg = next(msgs)
+        display_recipient = get_display_recipient_by_id(
+            first_msg['message__recipient__id'],
+            first_msg['message__recipient__type'],
+            first_msg['message__recipient__type_id'],
+        )
+        msg_ids = [first_msg['message__id']] + [msg['message__id'] for msg in msgs]
+        key = {
+            'display_recipient': display_recipient,
+            'recipient_id': recipient_id,
+            'subject': subject,
+        }
+        if first_msg['message__recipient__type'] == Recipient.STREAM:
+            key['stream_id'] = first_msg['message__recipient__type_id']
+        user_msgs_by_display_recipient.append((key, msg_ids,))
+    return user_msgs_by_display_recipient
