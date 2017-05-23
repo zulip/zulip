@@ -8,8 +8,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
-    authenticated_json_view, \
-    get_user_profile_by_email, require_realm_admin, to_non_negative_int
+    authenticated_json_view, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_private_message, \
     internal_prep_stream_message, \
