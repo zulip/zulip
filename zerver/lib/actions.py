@@ -2247,7 +2247,7 @@ def do_change_notification_settings(user_profile, name, value, log=True):
     setattr(user_profile, name, value)
 
     # Disabling digest emails should clear a user's email queue
-    if name == 'enable_digest_emails' and value == False:
+    if name == 'enable_digest_emails' and not value is False:
         clear_followup_emails_queue(user_profile.email)
 
     user_profile.save(update_fields=[name])
