@@ -997,17 +997,16 @@ class EventsRegisterTest(ZulipTestCase):
             num_events = 2
         if property_type == bool:
             do_set_user_display_setting(self.user_profile, setting_name, False)
-        """for value in values_list:
-            events = self.do_test(lambda: do_set_user_display_setting(
-                self.user_profile, setting_name, value), num_events=num_events)"""
-
-           schema_checker = self.check_events_dict([
-               ('type', equals('update_display_settings')),
-               ('setting_name', equals(setting_name)),
-               ('user', check_string),
-               ('setting', validator),
-           ])
-           changes = test_changes.get(setting_name)
+        #for value in values_list:
+         #   events = self.do_test(lambda: do_set_user_display_setting(
+          #      self.user_profile, setting_name, value), num_events=num_events)
+            schema_checker = self.check_events_dict([
+                ('type', equals('update_display_settings')),
+                ('setting_name', equals(setting_name)),
+                ('user', check_string),
+                ('setting', validator),
+            ])
+            changes = test_changes.get(setting_name)
             if (changes is None):
                 raise AssertionError('No test created for %s' % (setting_name))
             do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
@@ -1034,7 +1033,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
-    
+
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
