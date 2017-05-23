@@ -36,9 +36,38 @@ produces:
 paths:
 
   /messages:
+    get:
+      description: |
+                   Retrieve a specific amount of messages, previous and
+                   posterior to the specified `anchor`.
+      operationId: zerver.views.messages.get_messages_backend
+      parameters:
+        - name: anchor
+          in: query
+          description: A message ID.
+          required: true
+          type: integer
+        - name: num_before
+          in: query
+          description: The number of messages to retrieve before the anchor value.
+          required: true
+          type: integer
+        - name: num_after
+          in: query
+          description: The number of messages to retrieve after the anchor value.
+          required: true
+          type: integer
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/MessagesResponse'
+
     post:
       description: Send a message
-      operationId: addMessage
+      operationId: zerver.views.messages.send_message_backend
       parameters:
       - name: type
         in: formData
@@ -61,7 +90,7 @@ paths:
       - name: subject
         in: formData
         description: |
-                     The topic for the message (Only required if type is `stream`).
+                     The topic for the message (only required if type is `stream`).
                      Maximum length of 60 characters.
         required: false
         type: string
@@ -490,22 +519,6 @@ definitions:
           type: string
           default: error
 
-  # /messages
-  MessageResponse:
-    type: object
-    required:
-    - msg
-    - result
-    - id
-    properties:
-      msg:
-        type: string
-      result:
-        type: string
-      id:
-        type: integer
-        format: int64
-
   # /register
   RegisterResponse:
     type: object
@@ -615,6 +628,56 @@ definitions:
       unsubscribed:
         type: string
 
+  # /messages GET
+  MessagesResponse:
+    type: object
+    required:
+      - msg
+      - result
+      - messages
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      messages:
+        type: array
+        items:
+          $ref: '#/definitions/message'
+
+  # /messages POST
+  MessageResponse:
+    type: object
+    required:
+    - msg
+    - result
+    - id
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      id:
+        type: integer
+        format: int64
+
+  # /events
+  EventsResponse:
+    type: object
+    required:
+    - msg
+    - result
+    - events
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      events:
+        type: array
+        items:
+          $ref: "#/definitions/event"
+
   #####
   # definitions used by /register
   #
@@ -631,6 +694,80 @@ definitions:
   #referrals
   #subscriptions
   #unsubscribed
+
+  message:
+    type: object
+    required:
+      - reactions
+      - recipient_id
+      - content_type
+      - timestamp
+      - display_recipient
+      - sender_id
+      - sender_full_name
+      - client
+      - content
+      - stream_id
+      - avatar_url
+      - flags
+      - sender_email
+      - subject_links
+      - sender_realm_str
+      - subject
+      - type
+      - id
+      - sender_short_name
+    properties:
+      reactions:
+        # TODO: Create a full definition for reactions
+        type: object
+      recipient_id:
+        type: integer
+      content_type:
+        type: string
+      timestamp:
+        type: integer
+      display_recipient:
+        type: array
+        description: |
+                     If the recipient is a stream, this will be a `string`
+                     (not an `array`), with the stream's name.
+        items:
+          type: object
+          # TODO: Create a definition for this type of user (doesn't match
+          # the already existing ones)
+      sender_id:
+        type: integer
+      sender_full_name:
+        type: string
+      client:
+        type: string
+      content:
+        type: string
+      stream_id:
+        type: integer
+      avatar_url:
+        type: string
+      flags:
+        type: array
+        items:
+          type: string
+      sender_email:
+        type: string
+      subject_links:
+        type: array
+        items:
+          type: string
+      sender_realm_str:
+        type: string
+      subject:
+        type: string
+      type:
+        type: string
+      id:
+        type: integer
+      sender_short_name:
+        type: string
 
   stream:
     type: object
@@ -670,23 +807,6 @@ definitions:
         type: string
       is_bot:
         type: boolean
-
-  # /events
-  EventsResponse:
-    type: object
-    required:
-    - msg
-    - result
-    - events
-    properties:
-      msg:
-        type: string
-      result:
-        type: string
-      events:
-        type: array
-        items:
-          $ref: "#/definitions/event"
 
   #####
   # definitions used by /events
