@@ -1,9 +1,3 @@
-var path = require('path');
+var config = require('./webpack.config.js');
 
-module.exports = {
-    entry: './static/js/src/main.js',
-    output: {
-        path: path.resolve(__dirname, '../static/js'),
-        filename: 'bundle.js',
-    },
-};
+module.exports = config;
