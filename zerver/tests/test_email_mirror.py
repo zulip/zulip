@@ -238,7 +238,6 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
 class TestEmptyGatewaySetting(ZulipTestCase):
-
     def test_missed_message(self):
         # type: () -> None
         email = self.example_email('othello')
@@ -256,6 +255,13 @@ class TestEmptyGatewaySetting(ZulipTestCase):
             mm_address = create_missed_message_address(user_profile, usermessage.message)
             self.assertEqual(mm_address, settings.NOREPLY_EMAIL_ADDRESS)
 
+    def test_encode_email_addr(self):
+        # type: () -> None
+        stream = get_stream("Denmark", get_realm("zulip"))
+
+        with self.settings(EMAIL_GATEWAY_PATTERN=''):
+            test_address = encode_email_address(stream)
+            self.assertEqual(test_address, '')
 
 class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.enough_traffic')
