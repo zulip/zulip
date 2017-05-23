@@ -3,11 +3,13 @@ from __future__ import print_function
 from functools import partial
 import random
 
+import types
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
-    Text, Type
+    Text, Type, cast
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
+import coverage
 from django.conf import settings
 from django.db import connections, ProgrammingError
 from django.urls.resolvers import RegexURLPattern
@@ -15,6 +17,7 @@ from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
+import six
 
 from zerver.lib import test_classes, test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -239,8 +242,11 @@ def process_instrumented_calls(func):
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
-def run_subsuite(args):
-    # type: (Tuple[int, Tuple[Type[Iterable[TestCase]], List[str]], bool]) -> Tuple[int, Any]
+def run_subsuite(collect_coverage, args):
+    # type: (bool, Tuple[int, Tuple[Type[Iterable[TestCase]], List[str]], bool]) -> Tuple[int, Any]
+    if collect_coverage:
+        cov = coverage.Coverage(config_file="tools/coveragerc", data_suffix=True)
+        cov.start()
     # Reset the accumulated INSTRUMENTED_CALLS before running this subsuite.
     test_helpers.INSTRUMENTED_CALLS = []
     subsuite_index, subsuite, failfast = args
@@ -252,6 +258,10 @@ def run_subsuite(args):
     # TestResult are passed TestCase as the first argument but
     # addInstrumentation does not need it.
     process_instrumented_calls(partial(result.addInstrumentation, None))  # type: ignore
+
+    if collect_coverage:
+        cov.stop()
+        cov.save()
     return subsuite_index, result.events
 
 # Monkey-patch database creation to fix unnecessary sleep(1)
@@ -349,6 +359,8 @@ def init_worker(counter):
         print("*** Upload directory not found.")
 
 class TestSuite(unittest.TestSuite):
+    collect_coverage = False
+
     def run(self, result, debug=False):
         # type: (TestResult, Optional[bool]) -> TestResult
         """
@@ -387,25 +399,34 @@ class TestSuite(unittest.TestSuite):
             result._testRunEntered = False
         return result
 
+class CoverageTestSuite(TestSuite):
+    collect_coverage = True
+
 class TestLoader(loader.TestLoader):
     suiteClass = TestSuite
 
+class CoverageTestLoader(TestLoader):
+    suiteClass = CoverageTestSuite
+
 class ParallelTestSuite(django_runner.ParallelTestSuite):
-    run_subsuite = run_subsuite
     init_worker = init_worker
 
     def __init__(self, suite, processes, failfast):
         # type: (TestSuite, int, bool) -> None
         super(ParallelTestSuite, self).__init__(suite, processes, failfast)
         self.subsuites = SubSuiteList(self.subsuites)  # type: SubSuiteList
+        # ParallelTestSuite expects this to be a bound method so it can access
+        # __func__ when passing it to multiprocessing.
+        method = partial(run_subsuite, suite.collect_coverage)
+        self.run_subsuite = six.create_bound_method(cast(types.FunctionType, method), self)
 
 class Runner(DiscoverRunner):
     test_suite = TestSuite
     test_loader = TestLoader()
     parallel_test_suite = ParallelTestSuite
 
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def __init__(self, coverage=False, *args, **kwargs):
+        # type: (bool, *Any, **Any) -> None
         DiscoverRunner.__init__(self, *args, **kwargs)
 
         # `templates_rendered` holds templates which were rendered
@@ -491,6 +512,10 @@ class Runner(DiscoverRunner):
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
         return failed, result.failed_tests
+
+class CoverageRunner(Runner):
+    test_suite = CoverageTestSuite
+    test_loader = CoverageTestLoader()
 
 def get_test_names(suite):
     # type: (TestSuite) -> List[str]
