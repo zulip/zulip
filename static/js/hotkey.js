@@ -106,6 +106,7 @@ var keypress_mappings = {
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
+    117: {name: 'show_sender_info', message_view_only: true}, // 'u'
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_streams', message_view_only: false}, // 'w'
 };
@@ -651,6 +652,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'show_lightbox':
             lightbox.show_from_selected_message();
+            return true;
+        case 'show_sender_info':
+            popovers.show_sender_info();
             return true;
         case 'open_reactions': // ':': open reactions to message
             open_reactions();

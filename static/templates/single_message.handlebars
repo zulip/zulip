@@ -6,32 +6,32 @@
         <div class="messagebox-border">
             <div class="messagebox-content">
                 <div class="message_top_line">
-                    {{#include_sender}}
                     <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
-                        {{! See ../js/notifications.js for another user of avatar_url. }}
-                        <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
-                             style="background-image: url('{{small_avatar_url}}');"/>
-                        {{#if status_message}}
-                            <span class="sender-status">
-                                <span class="sender_name-in-status sender_info_hover">{{msg/sender_full_name}}</span>
+                        {{#include_sender}}
+                            {{! See ../js/notifications.js for another user of avatar_url. }}
+                            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
+                                 style="background-image: url('{{small_avatar_url}}');"/>
+                            {{#if status_message}}
+                                <span class="sender-status">
+                                    <span class="sender_name-in-status sender_info_hover">{{msg/sender_full_name}}</span>
+                                    {{#if sender_is_bot}}
+                                    <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+                                    {{/if}}
+                                    <span class="status-message">
+                                        {{{ status_message }}}
+                                    </span>
+                                    {{#if_and last_edit_timestr include_sender}}
+                                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                                    {{/if_and}}
+                                </span>
+                            {{else}}
+                                <span class="sender_name">{{msg/sender_full_name}}</span>
                                 {{#if sender_is_bot}}
                                 <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
                                 {{/if}}
-                                <span class="status-message">
-                                    {{{ status_message }}}
-                                </span>
-                                {{#if_and last_edit_timestr include_sender}}
-                                <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
-                                {{/if_and}}
-                            </span>
-                        {{else}}
-                            <span class="sender_name">{{msg/sender_full_name}}</span>
-                            {{#if sender_is_bot}}
-                            <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
                             {{/if}}
-                        {{/if}}
+                        {{/include_sender}}
                     </span>
-                    {{/include_sender}}
                     <span class="alert-copied pull-right">{{t 'Copied!' }}</span>
                     <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
                     {{#if_and last_edit_timestr include_sender}}

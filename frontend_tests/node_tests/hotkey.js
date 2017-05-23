@@ -148,7 +148,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abefhlmoptuxyz');
+    assert_unmapped('abefhlmoptxyz');
     assert_unmapped('BEFHILNOQTUWXYZ');
 
     // We have to skip some checks due to the way the code is
@@ -215,7 +215,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('d', 'drafts.toggle');
 
     // Next, test keys that only work on a selected message.
-    var message_view_only_keys = '@*+rRjJkKsSvi:GM';
+    var message_view_only_keys = '@*+rRjJkKsSuvi:GM';
 
     // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
@@ -225,7 +225,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Check that they do nothing while in the settings overlay
     overlays.settings_open = return_true;
-    assert_unmapped('@*+rRjJkKsSvi:GM');
+    assert_unmapped('@*+rRjJkKsSuvi:GM');
     overlays.settings_open = return_false;
 
     // TODO: Similar check for being in the subs page
@@ -241,6 +241,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('K', 'navigate.page_up');
     assert_mapping('s', 'narrow.by_recipient');
     assert_mapping('S', 'narrow.by_subject');
+    assert_mapping('u', 'popovers.show_sender_info');
     assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'emoji_picker.toggle_emoji_popover', true);
