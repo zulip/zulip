@@ -196,6 +196,10 @@ if __name__ == "__main__":
                       default=False,
                       help=("Run the tests which failed the last time "
                             "test-backend was run.  Implies --nonfatal-errors."))
+    parser.add_option('--no-webpack', dest='no_webpack',
+                      action="store_true",
+                      default=False,
+                      help="Do not run webpack in tests.")
 
     (options, args) = parser.parse_args()
     zerver_test_dir = 'zerver/tests/'
@@ -300,6 +304,10 @@ if __name__ == "__main__":
         generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
         generate_fixtures_command.append('--force')
         subprocess.call(generate_fixtures_command)
+
+    if not options.no_webpack:
+        print("Running Webpack with webpack.dev.config.js")
+        subprocess.check_call('tools/webpack')
 
     if options.processes is None:
         options.processes = 4
