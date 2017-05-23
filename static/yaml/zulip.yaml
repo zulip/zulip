@@ -36,6 +36,40 @@ produces:
 paths:
 
   /messages:
+    get:
+      description: Get messages
+      operationId: getMessages
+      produces:
+        - application/json
+      parameters:
+        - name: anchor
+          in: query
+          description: A message ID.
+          required: true
+          type: integer
+        - name: num_before
+          in: query
+          description: The number of messages to retrieve before the anchor value.
+          required: true
+          type: integer
+        - name: num_after
+          in: query
+          description: The number of messages to retrieve after the anchor value.
+          required: true
+          type: integer
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: |
+                       * `msg`:
+
+                       * `result`:
+
+                       * `messages`: A JSON-encoded list of messages.
+          schema:
+            $ref: '#/definitions/MessagesResponse'
+
     post:
       description: Send a message
       operationId: addMessage
@@ -640,6 +674,23 @@ definitions:
         type: string
       is_bot:
         type: boolean
+
+  # /messages
+  MessagesResponse:
+    type: object
+    required:
+      - msg
+      - result
+      - messages
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      messages:
+        type: array
+        items:
+          $ref: "#/defintions/message"
 
   # /events
   EventsResponse:
