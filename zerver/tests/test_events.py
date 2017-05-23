@@ -1029,30 +1029,6 @@ class EventsRegisterTest(ZulipTestCase):
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
 
-    """def test_change_twenty_four_hour_time(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
-
-    def test_change_left_side_userlist(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("left_side_userlist", [True, False])
-
-    def test_change_emoji_alt_code(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("emoji_alt_code", [True, False])
-
-    def test_change_emojiset(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("emojiset", [u'apple', u'twitter'])
-
-    def test_change_default_language(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("default_language", [u'de', u'es', u'en'])
-
-    def test_change_timezone(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])"""
-
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
