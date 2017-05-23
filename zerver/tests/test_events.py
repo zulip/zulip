@@ -972,7 +972,7 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-    def do_set_user_display_settings_test(self, setting_name, values_list):
+    def do_set_user_display_settings_test(self, setting_name):
         # type: (str, List[Union[bool, Text]]) -> None
         bool_change = [True, False]  # type: List[bool]
         test_changes = dict(
@@ -997,9 +997,9 @@ class EventsRegisterTest(ZulipTestCase):
             num_events = 2
         if property_type == bool:
             do_set_user_display_setting(self.user_profile, setting_name, False)
-        for value in values_list:
+        """for value in values_list:
             events = self.do_test(lambda: do_set_user_display_setting(
-                self.user_profile, setting_name, value), num_events=num_events)
+                self.user_profile, setting_name, value), num_events=num_events)"""
 
             schema_checker = self.check_events_dict([
                 ('type', equals('update_display_settings')),
@@ -1029,6 +1029,12 @@ class EventsRegisterTest(ZulipTestCase):
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
 
+    def test_user_display_settings(self):
+        # type: () -> None
+
+        for prop in UserProfile.property_types:
+            self.do_set_user_display_settings_test(prop)
+    
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
@@ -1484,7 +1490,7 @@ class EventsRegisterTest(ZulipTestCase):
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
-            check_dict(subscription_fields),  # TODO: Can this be converted to check_dict_only?
+            check_dict(subscription_fields),        # TODO: Can this be converted to check_dict_only?
         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
