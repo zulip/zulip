@@ -992,10 +992,10 @@ class EventsRegisterTest(ZulipTestCase):
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
         schema_checker = self.check_events_dict([
-             ('type', equals('update_display_settings')),
-             ('setting_name', equals(setting_name)),
-             ('user', check_string),
-             ('setting', validator),
+            ('type', equals('update_display_settings')),
+            ('setting_name', equals(setting_name)),
+            ('user', check_string),
+            ('setting', validator),
         ])
 
         changes = test_changes.get(setting_name)
