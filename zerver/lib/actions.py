@@ -798,30 +798,32 @@ def do_send_messages(messages_maybe_none):
             ums.extend(ums_to_create)
 
             # Now prepare the outgoing webhook events
-
             message['message'].outgoing_webhook_bot_triggers = []
-            # TODO: Right now, outgoing webhook bots need to be a
-            # subscribed to a stream in order to receive messages when
-            # mentioned; we will want to change that structure.
-            for user_profile in message['active_recipients']:
-                trigger = None
-                if not user_profile.is_bot:
-                    continue
-                if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
-                    continue
+            # Avoid infinite loops by preventing messages sent by bots from triggering outgoing webhooks.
+            sender = message['message'].sender
+            if not sender.is_bot:
+                # TODO: Right now, outgoing webhook bots need to be a
+                # subscribed to a stream in order to receive messages when
+                # mentioned; we will want to change that structure.
+                for user_profile in message['active_recipients']:
+                    trigger = None
+                    if not user_profile.is_bot:
+                        continue
+                    if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+                        continue
 
-                # Currently, we only support mentions as triggers, but
-                # this code structure should make it easy to add more.
+                    # Currently, we only support mentions as triggers, but
+                    # this code structure should make it easy to add more.
 
-                if user_profile.id in mentioned_ids:
-                    trigger = "mention"
+                    if user_profile.id in mentioned_ids:
+                        trigger = "mention"
 
-                if trigger is None:
-                    continue
-                message['message'].outgoing_webhook_bot_triggers.append({
-                    'trigger': trigger,
-                    'user_profile': user_profile,
-                })
+                    if trigger is None:
+                        continue
+                    message['message'].outgoing_webhook_bot_triggers.append({
+                        'trigger': trigger,
+                        'user_profile': user_profile,
+                    })
         UserMessage.objects.bulk_create(ums)
 
         # Claim attachments in message
@@ -893,6 +895,7 @@ def do_send_messages(messages_maybe_none):
                     "message": message_to_dict(message['message'], apply_markdown=False),
                     "trigger": outgoing_webhook_event['trigger'],
                     "user_profile_id": outgoing_webhook_event["user_profile"].id,
+                    "failed_tries": 0,
                 },
                 lambda x: None
             )
