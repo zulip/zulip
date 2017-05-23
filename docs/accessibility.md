@@ -32,7 +32,7 @@ as it is not possible for some content.)
 There are tools available to automatically audit a web page for compliance
 with many of the WCAG guidelines.  Here are some of the more useful ones:
 
-* [Accessibility Developer Tools](https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb)
+* [Accessibility Developer Tools][chrome-webstory]
   This open source Chrome extension from Google adds an accessibility audit to
   the "Audits" tab of the Chrome Developer Tools.  The audit is performed
   against the page's DOM via JavaScript, allowing it to identify some issues
@@ -63,7 +63,7 @@ comment on the issue:
     @zulipbot label "accessibility"
 
 If you want to help make Zulip more accessible, here is a list of the
-[currently open accessibility issues](https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3Aaccessibility).
+[currently open accessibility issues][accessibility-issues].
 
 ## Additional Resources
 
@@ -75,5 +75,9 @@ possible, the following resources may be useful.
   Accessible Rich Internet Application Suite
 * [WebAIM](http://webaim.org/) - Web Accessibility in Mind
 * The [MDN page on accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
-* The [Open edX Accessibility Guidelines](http://edx.readthedocs.io/projects/edx-developer-guide/en/latest/conventions/accessibility.html)
-  for developers
+* The [Open edX Accessibility Guidelines][openedx-guidelines] for developers
+
+
+[chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb
+[openedx-guidelines]: http://edx.readthedocs.io/projects/edx-developer-guide/en/latest/conventions/accessibility.html
+[accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3Aaccessibility
