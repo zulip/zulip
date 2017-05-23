@@ -432,6 +432,9 @@ html {
 .new-style button:hover {
     background-color: #354c69;
 }
+.new-style button:focus {
+    background-color: #354c69;
+}
 
 .new-style button:active {
     background-color: #1d2734;
