@@ -728,7 +728,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             # medium size avatars from the original if needed
             os.remove(medium_avatar_disk_path)
             self.assertFalse(os.path.exists(medium_avatar_disk_path))
-            zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile.email)
+            zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
             # Verify whether the avatar_version gets incremented with every new upload

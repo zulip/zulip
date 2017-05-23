@@ -20,7 +20,7 @@ from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
 from zerver.lib.str_utils import force_bytes, force_str
-from zerver.models import get_user_profile_by_email, get_user_profile_by_id, RealmEmoji
+from zerver.models import get_user_profile_by_id, RealmEmoji
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
@@ -140,8 +140,8 @@ class ZulipUploadBackend(object):
         # type: (Text, bool) -> Text
         raise NotImplementedError()
 
-    def ensure_medium_avatar_image(self, email):
-        # type: (Text) -> None
+    def ensure_medium_avatar_image(self, user_profile):
+        # type: (UserProfile) -> None
         raise NotImplementedError()
 
     def upload_realm_icon_image(self, icon_file, user_profile):
@@ -367,9 +367,8 @@ class S3UploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         return u"https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (bucket, realm_id, version)
 
-    def ensure_medium_avatar_image(self, email):
-        # type: (Text) -> None
-        user_profile = get_user_profile_by_email(email)
+    def ensure_medium_avatar_image(self, user_profile):
+        # type: (UserProfile) -> None
         file_path = user_avatar_path(user_profile)
         s3_file_name = file_path
 
@@ -510,9 +509,8 @@ class LocalUploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         return u"/user_avatars/%s/realm/icon.png?version=%s" % (realm_id, version)
 
-    def ensure_medium_avatar_image(self, email):
-        # type: (Text) -> None
-        user_profile = get_user_profile_by_email(email)
+    def ensure_medium_avatar_image(self, user_profile):
+        # type: (UserProfile) -> None
         file_path = user_avatar_path(user_profile)
 
         output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
