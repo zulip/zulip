@@ -103,7 +103,11 @@ exports.populate_auth_methods = function (auth_methods) {
     }
 };
 
-exports.set_up = function () {
+function property_type_status_element(element) {
+    return $("#admin-realm-" + element.split('_').join('-') + "-status").expectOne();
+}
+
+function _set_up() {
     meta.loaded = true;
 
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
@@ -113,6 +117,67 @@ exports.set_up = function () {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
+
+    // create property_types object
+    var property_types = {
+            add_emoji_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("Only administrators may now add new emoji!"),
+                unchecked_msg: i18n.t("Any user may now add new emoji!"),
+            },
+            create_stream_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("Only administrators may now create new streams!"),
+                unchecked_msg: i18n.t("Any user may now create new streams!"),
+            },
+            default_language: {
+                type: 'Text',
+                msg: i18n.t("Default language changed!"),
+            },
+            description: {
+                type: 'Text',
+                msg: i18n.t("Description changed!"),
+            },
+            email_changes_disabled: {
+                type: 'bool',
+                checked_msg: i18n.t("Users cannot change their email!"),
+                unchecked_msg: i18n.t("Users may now change their email!"),
+            },
+            invite_required: {
+                type: 'bool',
+                checked_msg: i18n.t("New users must be invited by e-mail!"),
+                unchecked_msg: i18n.t("New users may sign up online!"),
+            },
+            invite_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("New users must be invited by an admin!"),
+                unchecked_msg: i18n.t("Any user may now invite new users!"),
+            },
+            inline_image_preview: {
+                type: 'bool',
+                checked_msg: i18n.t("Previews of uploaded and linked images will be shown!"),
+                unchecked_msg: i18n.t("Previews of uploaded and linked images will not be shown!"),
+            },
+            inline_url_embed_preview: {
+                type: 'bool',
+                checked_msg: i18n.t("Previews for linked websites will be shown!"),
+                unchecked_msg: i18n.t("Previews for linked websites will not be shown!"),
+            },
+            name: {
+                type: 'Text',
+                msg: i18n.t("Name changed!"),
+            },
+            name_changes_disabled: {
+                type: 'bool',
+                checked_msg: i18n.t("Users cannot change their name!"),
+                unchecked_msg: i18n.t("Users may now change their name!"),
+            },
+            restricted_to_domain: {
+                type: 'bool',
+                checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
+                unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
+            },
+        };
 
     $("#id_realm_invite_required").change(function () {
         if (this.checked) {
@@ -138,55 +203,26 @@ exports.set_up = function () {
         // TODO: We actually have three forms named admin-realm-form.  We really
         //       should break out three separate forms.
 
+        for (var k1 in property_types) {
+            if (property_types.hasOwnProperty(k1)) {
+                property_type_status_element(k1).hide();
+            }
+        }
+
         var name_status = $("#admin-realm-name-status").expectOne();
-        var description_status = $("#admin-realm-description-status").expectOne();
-        var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
-        var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
-        var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
-        var inline_image_preview_status = $("#admin-realm-inline-image-preview-status").expectOne();
-        var inline_url_embed_preview_status = $("#admin-realm-inline-url-embed-preview-status").expectOne();
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
-        var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
-        var name_changes_disabled_status = $("#admin-realm-name-changes-disabled-status").expectOne();
-        var email_changes_disabled_status = $("#admin-realm-email-changes-disabled-status").expectOne();
-        var add_emoji_by_admins_only_status = $("#admin-realm-add-emoji-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
-        var default_language_status = $("#admin-realm-default-language-status").expectOne();
-        var waiting_period_threshold_status = $("#admin-realm-waiting_period_threshold_status").expectOne();
+        var waiting_period_threshold_status = $("#admin-realm-waiting-period-threshold-status").expectOne();
         name_status.hide();
-        description_status.hide();
-        restricted_to_domain_status.hide();
-        invite_required_status.hide();
-        invite_by_admins_only_status.hide();
-        inline_image_preview_status.hide();
-        inline_url_embed_preview_status.hide();
         authentication_methods_status.hide();
-        create_stream_by_admins_only_status.hide();
-        name_changes_disabled_status.hide();
-        email_changes_disabled_status.hide();
-        add_emoji_by_admins_only_status.hide();
         message_editing_status.hide();
-        default_language_status.hide();
         waiting_period_threshold_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
-
-        var new_name = $("#id_realm_name").val();
-        var new_description = $("#id_realm_description").val().trim();
-        var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
-        var new_invite = $("#id_realm_invite_required").prop("checked");
-        var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
-        var new_inline_image_preview = $("#id_realm_inline_image_preview").prop("checked");
-        var new_inline_url_embed_preview = $("#id_realm_inline_url_embed_preview").prop("checked");
-        var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
-        var new_name_changes_disabled = $("#id_realm_name_changes_disabled").prop("checked");
-        var new_email_changes_disabled = $("#id_realm_email_changes_disabled").prop("checked");
-        var new_add_emoji_by_admins_only = $("#id_realm_add_emoji_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_message_retention_days = $("#id_realm_message_retention_days").val();
-        var new_default_language = $("#id_realm_default_language").val();
         var new_waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
         var new_auth_methods = {};
         _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
@@ -211,97 +247,43 @@ exports.set_up = function () {
 
         var url = "/json/realm";
         var data = {
-            name: JSON.stringify(new_name),
-            description: JSON.stringify(new_description),
-            restricted_to_domain: JSON.stringify(new_restricted),
-            invite_required: JSON.stringify(new_invite),
-            invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
-            inline_image_preview: JSON.stringify(new_inline_image_preview),
-            inline_url_embed_preview: JSON.stringify(new_inline_url_embed_preview),
             authentication_methods: JSON.stringify(new_auth_methods),
-            create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
-            name_changes_disabled: JSON.stringify(new_name_changes_disabled),
-            email_changes_disabled: JSON.stringify(new_email_changes_disabled),
-            add_emoji_by_admins_only: JSON.stringify(new_add_emoji_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
             message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
-            default_language: JSON.stringify(new_default_language),
             waiting_period_threshold: JSON.stringify(parseInt(new_waiting_period_threshold, 10)),
         };
+        for (var k2 in property_types) {
+            if (property_types.hasOwnProperty(k2)) {
+                if (property_types[k2].type === 'bool') {
+                    data[k2] = JSON.stringify($('#id_realm_'+k2).prop('checked'));
+                } else if (property_types[k2].type === 'Text') {
+                    data[k2] = JSON.stringify($('#id_realm_'+k2).val());
+                }
+            }
+        }
 
         channel.patch({
             url: url,
             data: data,
             success: function (response_data) {
-                if (response_data.name !== undefined) {
-                    ui_report.success(i18n.t("Name changed!"), name_status);
-                }
-                if (response_data.description !== undefined) {
-                    ui_report.success(i18n.t("Description changed!"), description_status);
-                }
-                if (response_data.restricted_to_domain !== undefined) {
-                    if (response_data.restricted_to_domain) {
-                        ui_report.success(i18n.t("New user e-mails now restricted to certain domains!"), restricted_to_domain_status);
-                    } else {
-                        ui_report.success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
-                    }
-                }
-                if (response_data.invite_required !== undefined) {
-                    if (response_data.invite_required) {
-                        ui_report.success(i18n.t("New users must be invited by e-mail!"), invite_required_status);
-                    } else {
-                        ui_report.success(i18n.t("New users may sign up online!"), invite_required_status);
-                    }
-                }
-                if (response_data.invite_by_admins_only !== undefined) {
-                    if (response_data.invite_by_admins_only) {
-                        ui_report.success(i18n.t("New users must be invited by an admin!"), invite_by_admins_only_status);
-                    } else {
-                        ui_report.success(i18n.t("Any user may now invite new users!"), invite_by_admins_only_status);
-                    }
-                }
-                if (response_data.inline_image_preview !== undefined) {
-                    if (response_data.inline_image_preview) {
-                        ui_report.success(i18n.t("Previews of uploaded and linked images will be shown!"), inline_image_preview_status);
-                    } else {
-                        ui_report.success(i18n.t("Previews of uploaded and linked images will not be shown!"), inline_image_preview_status);
-                    }
-                }
-                if (response_data.inline_url_embed_preview !== undefined) {
-                    if (response_data.inline_url_embed_preview) {
-                        ui_report.success(i18n.t("Previews for linked websites will be shown!"), inline_url_embed_preview_status);
-                    } else {
-                        ui_report.success(i18n.t("Previews for linked websites will not be shown!"), inline_url_embed_preview_status);
-                    }
-                }
-                if (response_data.create_stream_by_admins_only !== undefined) {
-                    if (response_data.create_stream_by_admins_only) {
-                        ui_report.success(i18n.t("Only administrators may now create new streams!"), create_stream_by_admins_only_status);
-                    } else {
-                        ui_report.success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
-                    }
-                }
-                if (response_data.name_changes_disabled !== undefined) {
-                    if (response_data.name_changes_disabled) {
-                        ui_report.success(i18n.t("Users cannot change their name!"), name_changes_disabled_status);
-                    } else {
-                        ui_report.success(i18n.t("Users may now change their name!"), name_changes_disabled_status);
-                    }
-                }
-                if (response_data.email_changes_disabled !== undefined) {
-                    if (response_data.email_changes_disabled) {
-                        ui_report.success(i18n.t("Users cannot change their email!"), email_changes_disabled_status);
-                    } else {
-                        ui_report.success(i18n.t("Users may now change their email!"), email_changes_disabled_status);
-                    }
-                }
-                if (response_data.add_emoji_by_admins_only !== undefined) {
-                    if (response_data.add_emoji_by_admins_only) {
-                        ui_report.success(i18n.t("Only administrators may now add new emoji!"), add_emoji_by_admins_only_status);
-                    } else {
-                        ui_report.success(i18n.t("Any user may now add new emoji!"), add_emoji_by_admins_only_status);
+                for (var k3 in response_data) {
+                    if (response_data.hasOwnProperty(k3)) {
+                        if (k3 in property_types && response_data[k3] !== undefined) {
+                            if (property_types[k3].type === 'bool') {
+                                if (response_data[k3]) {
+                                    ui_report.success(property_types[k3].checked_msg,
+                                        property_type_status_element(k3));
+                                } else {
+                                    ui_report.success(property_types[k3].unchecked_msg,
+                                        property_type_status_element(k3));
+                                }
+                            } else if (property_types[k3].type === 'Text') {
+                                ui_report.success(property_types[k3].msg,
+                                   property_type_status_element(k3));
+                            }
+                        }
                     }
                 }
                 if (response_data.authentication_methods !== undefined) {
@@ -331,13 +313,8 @@ exports.set_up = function () {
                     // in this function, so update the field just in case
                     $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
                 }
-                if (response_data.default_language !== undefined) {
-                    if (response_data.default_language) {
-                        ui_report.success(i18n.t("Default language changed!"), default_language_status);
-                    }
-                }
                 if (response_data.waiting_period_threshold !== undefined) {
-                    if (response_data.waiting_period_threshold > 0) {
+                    if (response_data.waiting_period_threshold >= 0) {
                         ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
                     }
                 }
@@ -469,6 +446,9 @@ exports.set_up = function () {
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
 
+}
+exports.set_up = function () {
+    i18n.ensure_i18n(_set_up);
 };
 
 return exports;
