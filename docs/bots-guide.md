@@ -123,15 +123,15 @@ You need:
 
     * Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
 
-### Test the `followup.py` bot
+### Testing the helloworld bot
 
-1. Do the previous steps for the `followup.py` bot.
-2. Create the *followup* stream.
-3. Subscribe the bot to the newly created *followup* stream and a
-   stream you want to use it from, e.g. *social*.
-4. Send a message mentioning your new bot to the stream you've
-   subscribed the bot to (other than *followup*). If everything works,
-   a copy of the message should now pop up in the *followup* stream.
+    * The `helloworld` bot is a simple bot that responds with a 'beep boop'
+      when queried. It can be used as a template to build more complex
+      bots.
+    * Go to a stream your bot is subscribed to. Talk to the bot by
+      typing `@<your bot name>` followed by some commands. If the bot is
+      the `helloworld` bot, you should expect the bot to respond with
+      "beep boop".
 
 ## How to develop a bot
 
