@@ -661,6 +661,18 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         twenty_four_hour_time=bool,
     )
 
+    notification_setting_types = dict(
+        enable_desktop_notifications=bool,
+        enable_digest_emails=bool,
+        enable_offline_email_notifications=bool,
+        enable_offline_push_notifications=bool,
+        enable_online_push_notifications=bool,
+        enable_sounds=bool,
+        enable_stream_desktop_notifications=bool,
+        enable_stream_sounds=bool,
+        pm_content_in_desktop_notifications=bool,
+    )
+
     @property
     def profile_data(self):
         # type: () -> List[Dict[str, Union[int, float, Text]]]
