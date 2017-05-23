@@ -1508,7 +1508,7 @@ class EventsRegisterTest(ZulipTestCase):
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
-            check_dict(subscription_fields), # TODO: Can this be converted to check_dict_only?
+            check_dict(subscription_fields),  # TODO: Can this be converted to check_dict_only?
         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
