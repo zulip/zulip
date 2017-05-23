@@ -1015,7 +1015,7 @@ class EventsRegisterTest(ZulipTestCase):
 
             """test_change = dict(change_twenty_four_hour_time="twenty_four_hour_time", [True, False], change_left_side_userlist="left_side_userlist", [True, False], change_emoji_alt_code="emoji_alt_code", [True, False], change_emojiset="emojiset", [u'apple', u'twitter'], change_default_language="default_language", [u'de', u'es', u'en'], change_timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])  # type: Dict[str, Any]"""
             test_change = dict(change_twenty_four_hour_time="twenty_four_hour_time", "True", change_left_side_userlist="left_side_userlist", "True", change_emoji_alt_code="emoji_alt_code", "True", change_emojiset="emojiset", """[u'apple', u'twitter'],""" change_default_language="default_language", """[u'de', u'es', u'en'],""" change_timezone="timezone"""", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u'']""")  # type: Dict[str, Any]
-    """def test_change_twenty_four_hour_time(self):
+    def test_change_twenty_four_hour_time(self):
         # type: () -> None
         self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
 
