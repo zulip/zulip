@@ -1004,17 +1004,15 @@ class EventsRegisterTest(ZulipTestCase):
         do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
         for change in changes[1:]:
             events = self.do_test(
-               lambda: do_set_user_display_setting(self.user_profile.UserProfile, setting_name, change))
+                lambda: do_set_user_display_setting(self.user_profile.UserProfile, setting_name, change))
                 error = schema_checker('events[0]', events[0])
                 self.assert_on_error(error)
 
 
     def test_user_display_settings(self):
         # type: () -> None
-
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
-
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
