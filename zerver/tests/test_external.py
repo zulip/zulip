@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.test import TestCase
 
 from zerver.forms import email_is_not_mit_mailing_list
 
@@ -27,7 +26,7 @@ from six.moves import urllib
 from six.moves import range
 from typing import Text
 
-class MITNameTest(TestCase):
+class MITNameTest(ZulipTestCase):
     def test_valid_hesiod(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
