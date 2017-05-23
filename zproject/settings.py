@@ -858,6 +858,7 @@ JS_SPECS = {
             'js/loading.js',
             'js/util.js',
             'js/dynamic_text.js',
+            'js/canvas_favicon.js',
             'js/rtl.js',
             'js/dict.js',
             'js/components.js',

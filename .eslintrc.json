@@ -17,6 +17,7 @@
         "moment": false,
         "i18n": false,
         "DynamicText": false,
+        "CanvasFavicon": false,
         "bridge": false,
         "page_params": false,
         "status_classes": false,
