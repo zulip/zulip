@@ -237,8 +237,9 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
-class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
-    def test_address_with_empty_gateway(self):
+class TestEmptyGatewaySetting(ZulipTestCase):
+
+    def test_missed_message(self):
         # type: () -> None
         email = self.example_email('othello')
         self.login(email)
