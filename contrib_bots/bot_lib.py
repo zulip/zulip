@@ -86,7 +86,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         bot_mention = r'^@(\*\*{0}\*\*)'.format(client.full_name)
         start_with_mention = re.compile(bot_mention).match(message['content'])
         if start_with_mention is None:
-           return None
+            return None
         query_without_mention = message['content'][len(start_with_mention.group()):]
         return query_without_mention.lstrip()
 
