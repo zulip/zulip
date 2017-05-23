@@ -128,7 +128,7 @@ You need:
 5. Talk to the bot
 
     * Go to the stream that your bot is subscribed to. Type "@\<your bot email\>
-      \<some string\>" and your bot should write back to the stream with 
+      \<some string\>" and your bot should write back to the stream with
       some response.
     * If the bot is the help bot, it should return with the following response:      "Info on Zulip can be found here: https://github.com/zulip/zulip"
 
