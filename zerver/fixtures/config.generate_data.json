@@ -1,0 +1,75 @@
+{
+  "gen_fodder":
+  {
+    "nouns":["server", "laptop", "router", "bridge",
+      "cat5", "nas", "file server", "wifi", "printer",
+      "plotter", "desktop", "database", "keurig"],
+
+    "adjectives": ["new", "old", "first", "last", "big", "little",
+      "leased", "owned", "red", "blue", "green"],
+
+     "verbs": ["running", "skipping", "loading", "linking",
+      "over-heating", "de-duping", "compiling"],
+
+      "adverbs": ["quickly", "slowly", "erratically"],
+
+      "connectors": ["is", "isn't", "was", "wasn't", "has been"] ,
+
+      "emoji": [":thumbs_up:", ":thumbs_down:", ":shirt:", ":zulip:", ":tada:", ":earth_asia:",
+        ":cop:", ":8ball:", ":boat:", ":egg:", ":heartpulse:", ":moon_ceremony:", ":cupid:", ":mag:"],
+      "links":
+       ["http://zulip.readthedocs.io/en/latest/emoji.html",
+         "http://zulip.readthedocs.io/en/latest/full-text-search.html",
+         "http://zulip.readthedocs.io/en/latest/analytics.html",
+         "http://zulip.readthedocs.io/en/latest/translating.html",
+         "http://zulip.readthedocs.io/en/latest/client.html",
+         "http://zulip.readthedocs.io/en/latest/logging.html",
+         "http://zulip.readthedocs.io/en/latest/release-checklist.html"],
+      "inline-code": [
+        "`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`" ,
+        "`select id, first-name, last-name from users where active = 1;`",
+        "`list(range(3, 6))`",
+        "`(inc [1 2 3 4 5])`" ],
+      "code-blocks": [
+        "\n```\ndef write_multiple_items(file, separator, *args):\n    file.write(separator.join(args))\n```",
+        "\n```python\ndef concat(*args, sep='/'):\n    return sep.join(args)```",
+        "\n```\n(map + [1 2 3] [4 5 6])\n ;;=> (5 7 9)\n```"
+      ],
+
+      "quote-blocks": [
+        "```quote\nBe yourself; everyone else is already taken. --Oscar Wilde\n```",
+        "```quote\nI've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.\n    - Maya Angelou\n```",
+        "```quote\nI am so clever that sometimes I don't understand a single word of what I am saying.\n    - Oscar Wilde, The Happy Prince and Other Stories\n```"
+      ],
+
+      "maths": [
+        "$$e^{i \\pi } + 1 = 0$$",
+        "$$\\frac{1}{\\Gamma(k)\\theta^k x^{k-1} e^{-\\frac{x}{\\theta}}$$"
+      ],
+
+      "lists": [
+        "* milk\n* eggs\n* bread\n* fruit\n  * apples\n  * oranges\n  * watermelon\n* cookies",
+        "* Myrmica ruginodis\n* Myrmica kotokui\n* Crematogaster pilosa"
+      ]
+  },
+  "dist_percentages":
+  {
+    "bold": 5,
+    "italic": 3,
+    "emoji" : 8,
+    "strike-thru": 2,
+    "quoted": 5,
+    "quote-block": 5,
+    "inline-code": 5,
+    "code-block": 3,
+    "math": 1,
+    "link" : 8,
+    "lists": 5,
+    "picture" : 0
+  },
+  "corpus":
+  {
+    "filename": "zerver/lib/test_data.source.txt"
+  }
+}
+

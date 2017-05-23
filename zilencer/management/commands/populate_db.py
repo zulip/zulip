@@ -16,10 +16,14 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
+
 
 import random
 import os
+import ujson
+import itertools
 from six.moves import range
 from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
@@ -48,7 +52,7 @@ class Command(BaseCommand):
         parser.add_argument('-n', '--num-messages',
                             dest='num_messages',
                             type=int,
-                            default=600,
+                            default=500,
                             help='The number of messages to create.')
 
         parser.add_argument('--extra-users',
@@ -401,8 +405,13 @@ def send_messages(data):
     # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any]]) -> int
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
-    texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
-    offset = random.randint(0, len(texts))
+
+    # Generate a new set of test data.
+    create_test_data()
+
+    with open("var/test_messages.json", "r") as infile:
+        dialog = ujson.load(infile)
+    texts = itertools.cycle(dialog)
 
     recipient_streams = [klass.id for klass in
                          Recipient.objects.filter(type=Recipient.STREAM)]  # type: List[int]
@@ -420,11 +429,8 @@ def send_messages(data):
         saved_data = {}  # type: Dict[str, Any]
         message = Message()
         message.sending_client = get_client('populate_db')
-        length = random.randint(1, 5)
-        lines = (t.strip() for t in texts[offset: offset + length])
-        message.content = '\n'.join(lines)
-        offset += length
-        offset = offset % len(texts)
+
+        message.content = next(texts)
 
         randkey = random.randint(1, random_max)
         if (num_messages > 0 and
