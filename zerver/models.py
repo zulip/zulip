@@ -395,7 +395,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))]) # type: Text
-    file_name = models.TextField(db_index=True, null=True) # type: Text
+    file_name = models.TextField(db_index=True, null=True) # type: Optional[Text]
 
     PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
 
@@ -548,7 +548,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     last_pointer_updater = models.CharField(max_length=64) # type: Text
     realm = models.ForeignKey(Realm) # type: Realm
     api_key = models.CharField(max_length=API_KEY_LENGTH) # type: Text
-    tos_version = models.CharField(null=True, max_length=10) # type: Text
+    tos_version = models.CharField(null=True, max_length=10) # type: Optional[Text]
 
     ### Notifications settings. ###
 
@@ -1261,11 +1261,11 @@ class AbstractAttachment(ModelReprMixin, models.Model):
     # then its path_id will be a/b/abc/temp_file.py.
     path_id = models.TextField(db_index=True, unique=True)  # type: Text
     owner = models.ForeignKey(UserProfile)  # type: UserProfile
-    realm = models.ForeignKey(Realm, blank=True, null=True)  # type: Realm
+    realm = models.ForeignKey(Realm, blank=True, null=True)  # type: Optional[Realm]
     is_realm_public = models.BooleanField(default=False)  # type: bool
     create_time = models.DateTimeField(default=timezone_now,
                                        db_index=True)  # type: datetime.datetime
-    size = models.IntegerField(null=True)  # type: int
+    size = models.IntegerField(null=True)  # type: Optional[int]
 
     class Meta(object):
         abstract = True
@@ -1653,7 +1653,7 @@ class RealmAuditLog(models.Model):
     # If True, event_time is an overestimate of the true time. Can be used
     # by migrations when introducing a new event_type.
     backfilled = models.BooleanField(default=False) # type: bool
-    extra_data = models.TextField(null=True) # type: Text
+    extra_data = models.TextField(null=True) # type: Optional[Text]
 
 class UserHotspot(models.Model):
     user = models.ForeignKey(UserProfile) # type: UserProfile
