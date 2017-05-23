@@ -12,7 +12,7 @@ def verify_medium_avatar_image(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None
     user_profile_model = apps.get_model('zerver', 'UserProfile')
     for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
-        upload_backend.ensure_medium_avatar_image(user_profile.email)
+        upload_backend.ensure_medium_avatar_image(user_profile)
 
 
 class Migration(migrations.Migration):
