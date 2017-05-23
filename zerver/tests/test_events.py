@@ -372,6 +372,7 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
+
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -972,70 +973,61 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-    def do_set_user_display_settings_test(self, setting_name, values_list):
-        # type: (str, List[Union[bool, Text]]) -> None
+    def do_set_user_display_settings_test(self, setting_name):
+        # type: (str)-> None
+        bool_change = [True, False]  # type: List[bool]
+        test_changes = dict(
+            #twenty_four_hour_time="twenty_four_hour_time", [bool_change],
+            #left_side_userlist="left_side_userlist", [bool_change],
+            #emoji_alt_code= "emoji_alt_code", [bool_change],
+            #emojiset="emojiset", [u'apple', u'twitter'],
+            #default_language="default_language", [u'es', u'de', u'en'],
+            #timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']            twenty_four_hour_time = [bool_change],
+            twenty_four_hour_time =bool_change,
+            left_side_userlist = bool_change,
+            emoji_alt_code = bool_change,
+            emojiset = [u'apple', u'twitter'],
+            default_language = [u'es', u'de', u'en'],
+            timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
+        )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
             validator = check_bool
         elif property_type is Text:
             validator = check_string
+        elif property_type is int:
+            validator = check_int
+        elif property_type == (int, type(None)):
+            validator = check_int
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
+        schema_checker = self.check_events_dict([
+            ('type', equals('update_display_settings')),
+            ('setting_name', equals(setting_name)),
+            ('user', check_string),
+            ('setting', validator),
+        ])
 
-        num_events = 1
-        if setting_name == "timezone":
-            num_events = 2
-        if property_type == bool:
-            do_set_user_display_setting(self.user_profile, setting_name, False)
-        for value in values_list:
-            events = self.do_test(lambda: do_set_user_display_setting(
-                self.user_profile, setting_name, value), num_events=num_events)
-
-            schema_checker = self.check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
+        changes = test_changes.get(setting_name)
+        if (changes is None):
+            raise AssertionError('No test created for %s' % (setting_name))
+        #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
+        do_set_user_display_setting(self.user_profile, setting_name, changes[0])
+        for change in changes[1:]:
+            if setting_name == 'timezone':
+		events = self.do_test(lambda: do_set_user_display_setting(self.user_profile, setting_name, change), num_events=2)
+	    else:
+		events = self.do_test(
+              		lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-            timezone_schema_checker = self.check_events_dict([
-                ('type', equals('realm_user')),
-                ('op', equals('update')),
-                ('person', check_dict_only([
-                    ('email', check_string),
-                    ('user_id', check_int),
-                    ('timezone', check_string),
-                ])),
-            ])
-            if setting_name == "timezone":
-                error = timezone_schema_checker('events[1]', events[1])
-
-    def test_change_twenty_four_hour_time(self):
+    def test_user_display_settings(self):
         # type: () -> None
-        self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
 
-    def test_change_left_side_userlist(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("left_side_userlist", [True, False])
-
-    def test_change_emoji_alt_code(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("emoji_alt_code", [True, False])
-
-    def test_change_emojiset(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("emojiset", [u'apple', u'twitter'])
-
-    def test_change_default_language(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("default_language", [u'de', u'es', u'en'])
-
-    def test_change_timezone(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])
+        for prop in UserProfile.property_types:
+            self.do_set_user_display_settings_test(prop)
 
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
