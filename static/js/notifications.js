@@ -11,11 +11,6 @@ var window_has_focus = document.hasFocus && document.hasFocus();
 var asked_permission_already = false;
 var supports_sound;
 
-var unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
-var current_favicon;
-var previous_favicon;
-var flashing = false;
-
 var notifications_api;
 if (window.webkitNotifications) {
     notifications_api = window.webkitNotifications;
@@ -167,12 +162,13 @@ exports.redraw_title = function () {
             if (n > 99) {
                 n = 'infinite';
             }
-
-            current_favicon = previous_favicon = '/static/images/favicon/favicon-'+n+'.png';
-        } else {
-            current_favicon = previous_favicon = '/static/favicon.ico?v=2';
         }
-        favicon.set(current_favicon);
+
+        favicon.canvas.default({
+            unread_count: n,
+            has_pm: unread.get_counts().private_message_count > 0,
+        });
+        favicon.set();
     }
 
     if (window.bridge !== undefined) {
@@ -182,39 +178,33 @@ exports.redraw_title = function () {
     }
 };
 
-function flash_pms() {
-    // When you have unread PMs, toggle the favicon between the unread count and
-    // a special icon indicating that you have unread PMs.
-    if (unread.get_counts().private_message_count > 0) {
-        if (current_favicon === unread_pms_favicon) {
-            favicon.set(previous_favicon);
-            current_favicon = previous_favicon;
-            previous_favicon = unread_pms_favicon;
+(function flash_pms() {
+    var counter = 0;
+    setInterval(function () {
+        var private_message_count = unread.get_counts().private_message_count;
+
+        if (private_message_count > 0 && (counter + 1) % 2) {
+            favicon.canvas.pm({
+                unread_count: private_message_count,
+            });
         } else {
-            favicon.set(unread_pms_favicon);
-            previous_favicon = current_favicon;
-            current_favicon = unread_pms_favicon;
+            favicon.canvas.default({
+                unread_count: unread.get_counts().home_unread_messages,
+                has_pm: private_message_count > 0,
+            });
         }
-        // Toggle every 2 seconds.
-        setTimeout(flash_pms, 2000);
-    } else {
-        flashing = false;
-        // You have no more unread PMs, so back to only showing the unread
-        // count.
-        favicon.set(current_favicon);
-    }
-}
+        favicon.set();
+
+        counter += 1;
+    }, 2000);
+}());
+
 
 exports.update_pm_count = function (new_pm_count) {
     if (window.bridge !== undefined && window.bridge.updatePMCount !== undefined) {
         window.bridge.updatePMCount(new_pm_count);
     }
-    if (!flashing) {
-        flashing = true;
-        flash_pms();
-    }
 };
-
 exports.window_has_focus = function () {
     return window_has_focus;
 };

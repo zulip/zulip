@@ -89,6 +89,10 @@ p.n-margin {
     height: 24px;
 }
 
+#favicon {
+    display: none;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;
