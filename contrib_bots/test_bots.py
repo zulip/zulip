@@ -57,15 +57,18 @@ class BotTestCase(TestCase):
 
         self.mock_test(messages=messages, message_handler=message_handler)
 
-    #def test_import(self):
-    def import_test(self): 
+    def test_import(self):
+    #def import_test(self): 
         '''
             Import test to see if there are any syntactical errors
-
-            Doesn't actually work yet; resolving possible module
-            naming issues
         '''
-        test_bot_import = importlib.import_module(self.bot_module)
+        bot_module = self.bot_module
+        if bot_module.startswith('./'):
+            bot_module = bot_module[2:]
+        if bot_module.endswith('.py'):
+            bot_module = bot_module[:-3]
+        bot_module = bot_module.replace('/','.')
+        importlib.import_module(bot_module)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
