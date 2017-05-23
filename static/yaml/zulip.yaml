@@ -94,7 +94,7 @@ paths:
         - name: event_types
           in: formData
           description: |
-                       (optional) A JSON-encoded array indicating which types of
+                       A JSON-encoded array indicating which types of
                        events you're interested in. Values that you might find
                        useful include:
 
@@ -117,7 +117,7 @@ paths:
         - name: apply_markdown
           in: formData
           description: |
-                       (Optional) Set to `true` if you would like the content to
+                       Set to `true` if you would like the content to
                        be rendered in HTML format (by default, the API returns the
                        raw text that the user entered.)
           required: false
@@ -253,7 +253,7 @@ paths:
         - name: dont_block
           in: query
           description: |
-                       (Optional) Set to `true` if the client is requesting a
+                       Set to `true` if the client is requesting a
                        nonblocking reply. If not specified, the request will block
                        until either a new event is available or a few minutes have
                        passed, in which case the server will send the client a
