@@ -14,6 +14,7 @@ import ujson
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
+import coverage
 import django
 from django.conf import settings
 from django.test.utils import get_runner
@@ -196,12 +197,6 @@ if __name__ == "__main__":
                             "test-backend was run.  Implies --nonfatal-errors."))
 
     (options, args) = parser.parse_args()
-    if options.coverage:
-        # Currently coverage doesn't work with parallel mode, so when
-        # coverage parameter is supplied we enfore serial mode.
-        print("Disabling parallel mode because coverage isn't supported.")
-        options.processes = 1
-
     zerver_test_dir = 'zerver/tests/'
 
     # While running --rerun, we read var/last_test_failure.json to get
@@ -276,9 +271,15 @@ if __name__ == "__main__":
             sys.exit(1)
 
     if options.coverage:
-        import coverage
-        cov = coverage.Coverage(config_file="tools/coveragerc")
+        settings.TEST_RUNNER = 'zerver.lib.test_runner.CoverageRunner'
+        cov = coverage.Coverage(config_file="tools/coveragerc", data_suffix=True)
+        cov.erase()
+        # We run coverage here in the main process to get covrage over imports
+        # but we also collect coverage in test_runner.run_subsuite. Each
+        # coverage instance writes its own stats to disk and we merge them at
+        # the end of the test run.
         cov.start()
+
     if options.profile:
         import cProfile
         prof = cProfile.Profile()
@@ -326,6 +327,7 @@ if __name__ == "__main__":
     if options.coverage:
         cov.stop()
         cov.save()
+        cov.combine()
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
