@@ -29,10 +29,6 @@ consumes:
   - application/x-www-form-urlencoded
 produces:
   - application/json
-securityDefinitions:
-  basicAuth:
-    type: basic
-    description: HTTP Basic Auth using your Zulip bot's username and API Key
 
 ######################
 # Endpoint definitions
@@ -352,6 +348,18 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorModel'
+
+#######################
+# Security definitions
+#######################
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: |
+                 Basic authentication, with the user's email as the
+                 username, and the API key as the password.
+                 The API key can be fetched using the `/fetch_api_key` or
+                 `/dev_fetch_api_key` endpoints.
 
 ####################
 # Shared definitions
