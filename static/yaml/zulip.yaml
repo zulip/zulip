@@ -79,10 +79,6 @@ paths:
                        * `id`: The ID of the newly created message.
           schema:
             $ref: '#/definitions/MessageResponse'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /register:
     post:
@@ -224,10 +220,6 @@ paths:
 
           schema:
             $ref: '#/definitions/RegisterResponse'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /events:
     get:
@@ -272,10 +264,6 @@ paths:
                        guaranteed to be consecutive.
           schema:
             $ref: '#/definitions/EventsResponse'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /users/{user}/presence:
     get:
@@ -307,11 +295,6 @@ paths:
                 type: string
               presence:
                 type: array
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
-
   /user_uploads:
     post:
       description: Upload a file, and print the corresponding URI.
@@ -344,10 +327,6 @@ paths:
                 type: string
               uri:
                 type: string
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /messages/{message_id}/:
     get:
@@ -379,10 +358,6 @@ paths:
               raw_content:
                 type: string
                 description: Body of the queried message.
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
     patch:
       description: Edit a message that has already been sent.
       produces:
@@ -428,10 +403,6 @@ paths:
                   - Topic can't be empty
               result:
                 type: string
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
 #######################
 # Security definitions
@@ -684,15 +655,4 @@ definitions:
       id:
         type: integer
         format: int64
-
-  # Unexpected error
-  ErrorModel:
-    type: object
-    required:
-      - msg
-      - result
-    properties:
-      msg:
-        type: string
-      result:
-        type: string
+        required: true
