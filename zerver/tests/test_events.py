@@ -974,6 +974,15 @@ class EventsRegisterTest(ZulipTestCase):
 
     def do_set_user_display_settings_test(self, setting_name, values_list):
         # type: (str, List[Union[bool, Text]]) -> None
+        bool_change = [True, False]  # type: List[bool]
+        test_changes = dict(
+            change_twenty_four_hour_time=["twenty_four_hour_time", bool_change],
+            change_side_userlist=["left_side_userlist", bool_change],
+            change_emoji_alt_code=["emoji_alt_code", bool_change],
+            change_emojiset=["emojiset", [u'apple', u'twitter']],
+            default_language=["default_language", [u'es', u'de', u'en']],
+            change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
+        )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
@@ -998,8 +1007,15 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user', check_string),
                 ('setting', validator),
             ])
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+            changes = test_changes.get(setting_name)
+            if (changes is None):
+                raise AssertionError('No test created for %s' % (setting_name))
+            do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
+            for change in changes[1:]:
+                events = self.do_test(
+                    lambda: do_set_user_display_setting(self.user_profile.UserProfile, setting_name, change))
+                error = schema_checker('events[0]', events[0])
+                self.assert_on_error(error)
 
             timezone_schema_checker = self.check_events_dict([
                 ('type', equals('realm_user')),
@@ -1013,7 +1029,7 @@ class EventsRegisterTest(ZulipTestCase):
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
 
-    def test_change_twenty_four_hour_time(self):
+    """def test_change_twenty_four_hour_time(self):
         # type: () -> None
         self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
 
@@ -1035,7 +1051,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_timezone(self):
         # type: () -> None
-        self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])
+        self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])"""
 
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
@@ -1492,7 +1508,7 @@ class EventsRegisterTest(ZulipTestCase):
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
-            check_dict(subscription_fields),        # TODO: Can this be converted to check_dict_only?
+            check_dict(subscription_fields),  # TODO: Can this be converted to check_dict_only?
         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
