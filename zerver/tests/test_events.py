@@ -1008,7 +1008,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('setting', validator),
             ])
             changes = test_changes.get(setting_name)
-            if (changes is None:
+            if (changes is None):
                 raise AssertionError('No test created for %s' % (setting_name))
             do_set_user_display_settings_test(self.user_profile.UserProfile, setting_name, changes[0])
             for change in changes[1:]:
@@ -1028,47 +1028,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
-
-            """test_change = dict(change_twenty_four_hour_time="twenty_four_hour_time", [True, False], change_left_side_userlist="left_side_userlist", [True, False], change_emoji_alt_code="emoji_alt_code", [True, False], change_emojiset="emojiset", [u'apple', u'twitter'], change_default_language="default_language", [u'de', u'es', u'en'], change_timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])  # type: Dict[str, Any]"""
-            # type: (str) -> None
-            """bool_change = [True, False]  # type: List[bool]
-            test_changes = dict(
-                change_twenty_four_hour_time=["twenty_four_hour_time", bool_change],
-                change_side_userlist=["left_side_userlist", bool_change],
-                change_emoji_alt_code=["emoji_alt_code", bool_change],
-                change_emojiset=["emojiset", [u'apple', u'twitter']],
-                default_language=["default_language", [u'es', u'de', u'en']],
-                change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
-            )  # type: Dict[str, Any]
-            property_type = Realm.property_types[name]
-        if property_type is bool:
-            validator = check_bool
-        elif property_type is Text:
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        elif property_type == (int, type(None)):
-            validator = check_int
-        else:
-            raise AssertionError("Unexpected property type %s" % (property_type,))
-        schema_checker = self.check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals(name)),
-            ('value', validator),
-        ])
-
-        vals = test_values.get(name)
-        if vals is None:
-            raise AssertionError('No test created for %s' % (name))
-        do_set_realm_property(self.user_profile.realm, name, vals[0])
-        for val in vals[1:]:
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, name, val))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)"""
-
-
+                
     """def test_change_twenty_four_hour_time(self):
         # type: () -> None
         self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
@@ -1250,7 +1210,7 @@ class EventsRegisterTest(ZulipTestCase):
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
-
+        
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip"), "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
