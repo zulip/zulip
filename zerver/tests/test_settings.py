@@ -10,7 +10,7 @@ from typing import Any, Dict
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_realm, get_user
 
 class ChangeSettingsTest(ZulipTestCase):
 
@@ -87,6 +87,7 @@ class ChangeSettingsTest(ZulipTestCase):
         # type: () -> None
         user = self.example_user('hamlet')
         email = user.email
+        realm = user.realm
         self.login(email)
         full_name = user.full_name
 
@@ -99,7 +100,7 @@ class ChangeSettingsTest(ZulipTestCase):
         # give them the courtesy of an error reason.
         self.assert_json_success(json_result)
 
-        user = get_user_profile_by_email(email)
+        user = get_user(email, realm)
         self.assertEqual(user.full_name, full_name)
 
         # Now try a too-long name
@@ -204,12 +205,13 @@ class ChangeSettingsTest(ZulipTestCase):
         Test changing the default language of the user.
         """
         email = "hamlet@zulip.com"
+        realm = get_realm('zulip')
         self.login(email)
         german = "de"
         data = dict(default_language=ujson.dumps(german))
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         self.assertEqual(user_profile.default_language, german)
 
         # Test to make sure invalid languages are not accepted
@@ -218,7 +220,7 @@ class ChangeSettingsTest(ZulipTestCase):
         data = dict(default_language=ujson.dumps(invalid_lang))
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         self.assertNotEqual(user_profile.default_language, invalid_lang)
 
     def test_change_timezone(self):
@@ -227,12 +229,13 @@ class ChangeSettingsTest(ZulipTestCase):
         Test changing the timezone of the user.
         """
         email = "hamlet@zulip.com"
+        realm = get_realm('zulip')
         self.login(email)
         usa_pacific = 'US/Pacific'
         data = dict(timezone=ujson.dumps(usa_pacific))
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         self.assertEqual(user_profile.timezone, usa_pacific)
 
         # Test to make sure invalid timezones are not accepted
@@ -241,7 +244,7 @@ class ChangeSettingsTest(ZulipTestCase):
         data = dict(timezone=ujson.dumps(invalid_timezone))
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_error(result, "Invalid timezone '%s'" % (invalid_timezone,))
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         self.assertNotEqual(user_profile.timezone, invalid_timezone)
 
     def test_change_emojiset(self):
@@ -250,12 +253,13 @@ class ChangeSettingsTest(ZulipTestCase):
         Test changing the emojiset.
         """
         email = "hamlet@zulip.com"
+        realm = get_realm('zulip')
         self.login(email)
         emojiset = 'apple'
         data = dict(emojiset=ujson.dumps(emojiset))
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         self.assertEqual(user_profile.emojiset, emojiset)
 
         # Test to make sure invalid emojisets are not accepted
@@ -264,7 +268,7 @@ class ChangeSettingsTest(ZulipTestCase):
         data = dict(emojiset=ujson.dumps(invalid_emojiset))
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_error(result, "Invalid emojiset '%s'" % (invalid_emojiset,))
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         self.assertNotEqual(user_profile.emojiset, invalid_emojiset)
 
 class UserChangesTest(ZulipTestCase):
@@ -272,11 +276,12 @@ class UserChangesTest(ZulipTestCase):
         # type: () -> None
         user = self.example_user('hamlet')
         email = user.email
+        realm = user.realm
         self.login(email)
         old_api_key = user.api_key
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = ujson.loads(result.content)['api_key']
         self.assertNotEqual(old_api_key, new_api_key)
-        user = get_user_profile_by_email(email)
+        user = get_user(email, realm)
         self.assertEqual(new_api_key, user.api_key)

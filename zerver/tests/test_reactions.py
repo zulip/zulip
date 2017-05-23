@@ -8,7 +8,7 @@ from six import string_types
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient, \
     get_test_image_file
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, get_user_profile_by_email, Recipient, UserMessage
+from zerver.models import get_realm, get_user, Recipient, UserMessage
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self):
@@ -216,6 +216,7 @@ class ReactionEventTest(ZulipTestCase):
         Recipients of the message receive the reaction event
         and event contains relevant data
         """
+        # Both sender and recipient belong to zulip realm
         pm_sender = 'hamlet@zulip.com'
         pm_recipient = 'othello@zulip.com'
         reaction_sender = pm_recipient
@@ -229,7 +230,7 @@ class ReactionEventTest(ZulipTestCase):
         pm_id = content['id']
 
         expected_recipient_emails = set([pm_sender, pm_recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([get_user(email, get_realm('zulip')).id for email in expected_recipient_emails])
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -254,6 +255,7 @@ class ReactionEventTest(ZulipTestCase):
         Recipients of the message receive the reaction event
         and event contains relevant data
         """
+        # Both sender and recipient belong to zulip realm
         pm_sender = 'hamlet@zulip.com'
         pm_recipient = 'othello@zulip.com'
         reaction_sender = pm_recipient
@@ -267,7 +269,7 @@ class ReactionEventTest(ZulipTestCase):
         pm_id = content['id']
 
         expected_recipient_emails = set([pm_sender, pm_recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([get_user(email, get_realm('zulip')).id for email in expected_recipient_emails])
 
         add = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                               **self.api_auth(reaction_sender))

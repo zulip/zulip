@@ -21,7 +21,7 @@ from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
-    get_user_profile_by_email, get_realm, get_client, get_stream, \
+    get_user, get_realm, get_client, get_stream, \
     Message, get_context_for_message
 
 from zerver.lib.avatar import avatar_url
@@ -236,7 +236,7 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 
-        new_user = get_user_profile_by_email('romeo@zulip.net')
+        new_user = get_user('romeo@zulip.net', get_realm('zulip'))
         self.assertEqual(new_user.full_name, 'Romeo Montague')
         self.assertEqual(new_user.short_name, 'Romeo')
 
@@ -292,12 +292,12 @@ class ActivateTest(ZulipTestCase):
 
         result = self.client_delete('/json/users/me@zulip.com')
         self.assert_json_success(result)
-        user = get_user_profile_by_email('me@zulip.com')
+        user = get_user('me@zulip.com', get_realm('zulip'))
         self.assertFalse(user.is_active)
 
         result = self.client_post('/json/users/me@zulip.com/reactivate')
         self.assert_json_success(result)
-        user = get_user_profile_by_email('me@zulip.com')
+        user = get_user('me@zulip.com', get_realm('zulip'))
         self.assertTrue(user.is_active)
 
     def test_api_with_nonexistent_user(self):
@@ -346,9 +346,9 @@ class GetProfileTest(ZulipTestCase):
         result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
-    def common_get_profile(self, email):
-        # type: (str) -> Dict[Text, Any]
-        user_profile = get_user_profile_by_email(email)
+    def common_get_profile(self, email, realm_id):
+        # type: (str, str) -> Dict[Text, Any]
+        user_profile = get_user(email, get_realm(realm_id))
         self.send_message(email, "Verona", Recipient.STREAM, "hello")
 
         result = self.client_get("/api/v1/users/me", **self.api_auth(email))
@@ -407,7 +407,7 @@ class GetProfileTest(ZulipTestCase):
         """
         Ensure GET /users/me returns a max message id and returns successfully
         """
-        json = self.common_get_profile("othello@zulip.com")
+        json = self.common_get_profile("othello@zulip.com", "zulip")
         self.assertEqual(json["pointer"], -1)
 
     def test_profile_with_pointer(self):
@@ -419,14 +419,14 @@ class GetProfileTest(ZulipTestCase):
         id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
         id2 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
 
-        json = self.common_get_profile("hamlet@zulip.com")
+        json = self.common_get_profile("hamlet@zulip.com", "zulip")
 
         self.common_update_pointer("hamlet@zulip.com", id2)
-        json = self.common_get_profile("hamlet@zulip.com")
+        json = self.common_get_profile("hamlet@zulip.com", "zulip")
         self.assertEqual(json["pointer"], id2)
 
         self.common_update_pointer("hamlet@zulip.com", id1)
-        json = self.common_get_profile("hamlet@zulip.com")
+        json = self.common_get_profile("hamlet@zulip.com", "zulip")
         self.assertEqual(json["pointer"], id2)  # pointer does not move backwards
 
         result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})

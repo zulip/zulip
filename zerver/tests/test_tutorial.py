@@ -5,7 +5,7 @@ from __future__ import print_function
 from typing import Any, Dict
 
 from zerver.lib.test_helpers import (
-    get_user_profile_by_email,
+    get_user,
     most_recent_message,
 )
 
@@ -14,7 +14,8 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    UserProfile,
+    get_realm,
+    UserProfile
 )
 
 import ujson
@@ -32,7 +33,7 @@ class TutorialTests(ZulipTestCase):
         email = user.email
         self.login(email)
 
-        welcome_bot = get_user_profile_by_email("welcome-bot@zulip.com")
+        welcome_bot = get_user("welcome-bot@zulip.com", get_realm('zulip'))
 
         raw_params = dict(
             type='stream',
@@ -81,5 +82,5 @@ class TutorialTests(ZulipTestCase):
             params = fix_params(raw_params)
             result = self.client_post('/json/tutorial_status', params)
             self.assert_json_success(result)
-            user = get_user_profile_by_email(email)
+            user = get_user(email, get_realm('zulip'))
             self.assertEqual(user.tutorial_status, expected_db_status)
