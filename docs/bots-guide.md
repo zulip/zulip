@@ -91,7 +91,7 @@ You need:
 
     * In the *Your bots* panel, click on the green icon to download
       its configuration file *zuliprc* (the structure of this file is
-      explained [here](#configuration-file).
+      explained [here](#configuration-file).)
     * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`
       or `~/zuliprc-test`. Note that the destination should be accessible
       from your Zulip dev environment (e.g. Vagrant or Digital Ocean).
@@ -100,7 +100,7 @@ You need:
 
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
-      (the address you assigned in step 3).
+      (the address you assigned in step 1).
     * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
