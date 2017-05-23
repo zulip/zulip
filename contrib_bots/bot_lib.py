@@ -56,22 +56,22 @@ class BotHandlerApi(object):
                           ' its own messages?')
             sys.exit(1)
 
+class StateHandler(object):
+    def __init__(self):
+        self.state = None
+
+    def set_state(self, state):
+        self.state = state
+
+    def get_state(self):
+        return self.state
+ 
 def run_message_handler_for_bot(lib_module, quiet, config_file):
     # Make sure you set up your ~/.zuliprc
     client = Client(config_file=config_file)
     restricted_client = BotHandlerApi(client)
 
     message_handler = lib_module.handler_class()
-
-    class StateHandler(object):
-        def __init__(self):
-            self.state = None
-
-        def set_state(self, state):
-            self.state = state
-
-        def get_state(self):
-            return self.state
 
     state_handler = StateHandler()
 
