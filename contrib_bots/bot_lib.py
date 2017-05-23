@@ -56,6 +56,21 @@ class BotHandlerApi(object):
                           ' its own messages?')
             sys.exit(1)
 
+    def send_reply(self, message, response):
+        if message['type'] == 'private':
+            self.send_message(dict(
+                type='private',
+                to=[x['email'] for x in message['display_recipient'] if self.email != x['email']],
+                content=response,
+            ))
+        else:
+            self.send_message(dict(
+                type='stream',
+                to=message['display_recipient'],
+                subject=message['subject'],
+                content=response,
+            ))
+
 def run_message_handler_for_bot(lib_module, quiet, config_file):
     # Make sure you set up your ~/.zuliprc
     client = Client(config_file=config_file)

@@ -28,19 +28,7 @@ class WikipediaHandler(object):
 
     def handle_message(self, message, client, state_handler):
         bot_response = self.get_bot_wiki_response(message, client)
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=[x['email'] for x in message['display_recipient'] if client.email != x['email']],
-                content=bot_response,
-            ))
-        else:
-            client.send_message(dict(
-                type='stream',
-                to=message['display_recipient'],
-                subject=message['subject'],
-                content=bot_response,
-            ))
+        client.send_reply(message, bot_response)
 
     def get_bot_wiki_response(self, message, client):
         query = message['content']
