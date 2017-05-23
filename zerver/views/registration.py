@@ -15,7 +15,7 @@ from django.core import validators
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain
+    get_realm, get_realm_by_email_domain, get_user
 from zerver.lib.send_email import send_email_to_user
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -27,7 +27,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, get_user_profile_by_email, REQ
+    JsonableError, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
 from zerver.lib.timezone import get_all_timezones
@@ -71,10 +71,6 @@ def accounts_register(request):
     prereg_user = confirmation.content_object
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
-    try:
-        existing_user_profile = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        existing_user_profile = None
 
     validators.validate_email(email)
     # If OPEN_REALM_CREATION is enabled all user sign ups should go through the
@@ -97,6 +93,14 @@ def accounts_register(request):
         realm = get_realm(get_subdomain(request))
     else:
         realm = get_realm_by_email_domain(email)
+
+    if realm:
+        try:
+            existing_user_profile = get_user(email, realm)
+        except UserProfile.DoesNotExist:
+            existing_user_profile = None
+    else:
+        existing_user_profile = None
 
     if realm and not email_allowed_for_realm(email, realm):
         return render(request, "zerver/closed_realm.html",
