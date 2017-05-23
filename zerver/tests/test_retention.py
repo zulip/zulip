@@ -42,7 +42,7 @@ class TestRetentionLib(ZulipTestCase):
     def _make_mit_messages(self, message_quantity, pub_date):
         # type: (int, datetime) -> Any
         # send messages from mit.edu realm and change messages pub date
-        sender = UserProfile.objects.filter(email='espuser@mit.edu').first()
+        sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
         msgs_ids = [self.send_message(sender.email, recipient.email, Recipient.PERSONAL) for i in
                     range(message_quantity)]

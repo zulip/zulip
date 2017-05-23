@@ -872,7 +872,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": ujson.dumps([self.mit_user("starnine").email,
-                                                                        "espuser@mit.edu"])})
+                                                                        self.mit_user("espuser").email])})
         self.assert_json_success(result)
 
     def test_mirrored_personal(self):
@@ -897,14 +897,14 @@ class MessagePOSTTest(ZulipTestCase):
                "sender": self.mit_user("sipbtest").email,
                "content": "Test message",
                "client": "zephyr_mirror",
-               "to": ujson.dumps(["espuser@mit.edu",
+               "to": ujson.dumps([self.mit_user("espuser").email,
                                   self.mit_user("starnine").email])}
 
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
             self.login(self.mit_user("starnine").email)
             result1 = self.client_post("/json/messages", msg)
         with mock.patch('DNS.dnslookup', return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']]):
-            self.login("espuser@mit.edu")
+            self.login(self.mit_user("espuser").email)
             result2 = self.client_post("/json/messages", msg)
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
