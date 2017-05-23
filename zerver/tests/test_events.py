@@ -973,8 +973,8 @@ class EventsRegisterTest(ZulipTestCase):
             self.assert_on_error(error)
 
     def do_set_user_display_settings_test(self, setting_name):
-        # type: (str, List[Union[bool, Text]]) -> None
-        bool_change = [True, False]  # type: List[bool]
+        # type: (str)-> None
+        bool_change = [True, False, True]  # type: List[bool]
         test_changes = dict(
             change_twenty_four_hour_time=["twenty_four_hour_time", bool_change],
             change_side_userlist=["left_side_userlist", bool_change],
@@ -989,6 +989,10 @@ class EventsRegisterTest(ZulipTestCase):
             validator = check_bool
         elif property_type is Text:
             validator = check_string
+        elif property_type is int:
+          	validator = check_int:
+        elif property_type == (int, type(None)):
+          	validator = check_int
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
         schema_checker = self.check_events_dict([
