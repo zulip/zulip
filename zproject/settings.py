@@ -312,6 +312,7 @@ TEMPLATES = [
                 'jinja2.ext.i18n',
                 'jinja2.ext.autoescape',
                 'pipeline.jinja2.PipelineExtension',
+                'webpack_loader.contrib.jinja2ext.WebpackExtension',
             ],
             'context_processors': [
                 'zerver.context_processors.zulip_default_context',
@@ -360,6 +361,7 @@ INSTALLED_APPS = [
     'confirmation',
     'guardian',
     'pipeline',
+    'webpack_loader',
     'zerver',
     'social_django',
 ]
@@ -976,7 +978,6 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
-            # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
     },
@@ -1008,11 +1009,15 @@ JS_SPECS = {
     }
 }
 
-if PIPELINE_ENABLED:
-    # This is also done in test_settings.py, see comment there..
-    JS_SPECS['app']['source_filenames'].append('js/bundle.js')
-
 app_srcs = JS_SPECS['app']['source_filenames']
+
+WEBPACK_STATS_FILE = 'webpack-stats-dev.json' if DEVELOPMENT else 'webpack-stats-production.json'
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'webpack-bundles/',
+        'STATS_FILE': os.path.join(STATIC_ROOT, 'webpack-bundles', WEBPACK_STATS_FILE),
+    }
+}
 
 ########################################################################
 # LOGGING SETTINGS

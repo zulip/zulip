@@ -21,7 +21,7 @@ def run():
     # type: () -> None
     """Builds for production, writing the output to disk"""
     subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
-                          ['--config', 'tools/webpack.production.config.js'])
+                          ['--config', 'tools/webpack.production.config.js', '-p'])
 
 def run_watch(port):
     # type: (str) -> None

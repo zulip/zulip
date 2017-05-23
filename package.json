@@ -21,6 +21,7 @@
     "string.prototype.codepointat": "0.2.0",
     "underscore": "1.8.3",
     "webpack": "2.5.1",
+    "webpack-bundle-tracker": "0.2.0",
     "winchan": "0.2.0",
     "xdate": "0.8.0",
     "zxcvbn": "4.4.1"
