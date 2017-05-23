@@ -25,19 +25,7 @@ class DefineHandler(object):
         original_content = message['content'].strip()
         bot_response = self.get_bot_define_response(original_content)
 
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=message['sender_email'],
-                content=bot_response,
-            ))
-        else:
-            client.send_message(dict(
-                type='stream',
-                to=message['display_recipient'],
-                subject=message['subject'],
-                content=bot_response,
-            ))
+        client.send_reply(message, bot_response)
 
     def get_bot_define_response(self, original_content):
         split_content = original_content.split(' ')
