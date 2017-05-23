@@ -410,7 +410,7 @@ def do_create_user(email, password, realm, full_name, short_name,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
                    newsletter_data=None):
-    # type: (Text, Text, Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                active=active, bot_type=bot_type, bot_owner=bot_owner,
