@@ -92,8 +92,7 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser",
-              "--ignore-missing-imports",
+extra_args = ["--ignore-missing-imports",
               "--follow-imports=silent",
               "--check-untyped-defs",
               "--scripts-are-modules",
