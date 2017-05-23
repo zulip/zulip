@@ -407,13 +407,14 @@ securityDefinitions:
 definitions:
   JsonResponse:
     type: object
+    required:
+      - msg
+      - result
     properties:
       msg:
         type: string
-        required: true
       result:
         type: string
-        required: true
 
   JsonSuccess:
     allOf:
@@ -641,4 +642,3 @@ definitions:
       id:
         type: integer
         format: int64
-        required: true
