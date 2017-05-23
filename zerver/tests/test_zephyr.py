@@ -27,7 +27,7 @@ class ZephyrTest(ZulipTestCase):
         result = post(cred='whatever')
         self.assert_json_error(result, 'Webathena login not enabled')
 
-        email = 'starnine@mit.edu'
+        email = str(self.mit_user("starnine").email)
         self.login(email)
 
         def ccache_mock(**kwargs):
