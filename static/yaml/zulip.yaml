@@ -412,22 +412,11 @@ paths:
         '200':
           description: Success
           schema:
-            type: object
-            required:
-              - msg
-              - result
-            properties:
-              msg:
-                type: string
-              result:
-                type: string
+            $ref: '#/definitions/JsonSuccess'
         '400':
           description: Bad request.
           schema:
-            type: object
-            required:
-              - msg
-              - result
+            $ref: '#/definitions/JsonError'
             properties:
               msg:
                 type: string
@@ -459,6 +448,29 @@ securityDefinitions:
 ####################
 # Shared definitions
 definitions:
+  JsonResponse:
+    type: object
+    properties:
+      msg:
+        type: string
+        required: true
+      result:
+        type: string
+        required: true
+
+  JsonSuccess:
+    allOf:
+      - $ref: '#/definitions/JsonResponse'
+      properties:
+        msg:
+          default: success
+
+  JsonError:
+    allOf:
+      - $ref: '#/definitions/JsonResponse'
+      properties:
+        msg:
+          default: error
 
   # /messages
   MessageResponse:
