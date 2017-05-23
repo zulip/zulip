@@ -207,7 +207,7 @@ def is_subdomain_root_or_alias(request):
     return not subdomain or subdomain in settings.ROOT_SUBDOMAIN_ALIASES
 
 def check_subdomain(realm_subdomain, user_subdomain):
-    # type: (Text, Text) -> bool
+    # type: (Optional[Text], Optional[Text]) -> bool
     if settings.REALMS_HAVE_SUBDOMAINS and realm_subdomain is not None:
         if (realm_subdomain == "" and user_subdomain is None):
             return True
