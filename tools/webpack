@@ -27,7 +27,7 @@ def run_watch(port):
     # type: (str) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
     subprocess.Popen(['node', 'node_modules/.bin/webpack-dev-server'] +
-                     ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
+                     ['--config', 'tools/webpack.dev.config.js', '--watch-poll', '--port', port])
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--watch',
