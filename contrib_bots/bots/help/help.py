@@ -29,11 +29,6 @@ class HelpHandler(object):
             https://github.com/zulip/zulip
             '''.strip()
 
-        client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['subject'],
-            content=help_content,
-        ))
+        client.send_reply(message, help_content)
 
 handler_class = HelpHandler
