@@ -14,7 +14,7 @@ import zulip
 from typing import Set
 
 def fetch_public_streams():
-    # type: () -> Set[str]
+    # type: () -> Set[bytes]
     public_streams = set()
 
     try:
@@ -33,9 +33,9 @@ def fetch_public_streams():
         # Zephyr class names are canonicalized by first applying NFKC
         # normalization and then lower-casing server-side
         canonical_cls = unicodedata.normalize("NFKC", stream_name).lower().encode("utf-8")
-        if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate',
-                             'mit', 'moof', 'wsmonitor', 'wg_ctl', 'winlogger',
-                             'hm_ctl', 'hm_stat', 'zephyr_admin', 'zephyr_ctl']:
+        if canonical_cls in [b'security', b'login', b'network', b'ops', b'user_locate',
+                             b'mit', b'moof', b'wsmonitor', b'wg_ctl', b'winlogger',
+                             b'hm_ctl', b'hm_stat', b'zephyr_admin', b'zephyr_ctl']:
             # These zephyr classes cannot be subscribed to by us, due
             # to MIT's Zephyr access control settings
             continue

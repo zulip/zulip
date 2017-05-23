@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader, TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, ScheduledJob, get_user_profile_by_email
+from zerver.models import UserProfile, ScheduledJob
 
 import datetime
 from email.utils import parseaddr

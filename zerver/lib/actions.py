@@ -38,7 +38,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user_profile_by_email, get_stream_cache_key, \
+    get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
     ScheduledJob, get_owned_bot_dicts, \
@@ -666,7 +666,7 @@ def compute_mit_user_fullname(email):
 def create_mirror_user_if_needed(realm, email, email_to_fullname):
     # type: (Realm, Text, Callable[[Text], Text]) -> UserProfile
     try:
-        return get_user_profile_by_email(email)
+        return get_user(email, realm)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
@@ -674,7 +674,7 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
                                email_to_fullname(email), email_to_username(email),
                                active=False, is_mirror_dummy=True)
         except IntegrityError:
-            return get_user_profile_by_email(email)
+            return get_user(email, realm)
 
 def render_incoming_message(message, content, message_users, realm):
     # type: (Message, Text, Set[UserProfile], Realm) -> Text
@@ -2233,120 +2233,28 @@ system-generated notifications.""" % (stream_name,)
                                   "signups", string_id, signup_message)
     return (realm, created)
 
-def do_change_enable_stream_desktop_notifications(user_profile,
-                                                  enable_stream_desktop_notifications,
-                                                  log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_stream_desktop_notifications = enable_stream_desktop_notifications
-    user_profile.save(update_fields=["enable_stream_desktop_notifications"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_stream_desktop_notifications',
-             'setting': enable_stream_desktop_notifications}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
+def do_change_notification_settings(user_profile, name, value, log=True):
+    # type: (UserProfile, str, bool, bool) -> None
+    """Takes in a UserProfile object, the name of a global notification
+    preference to update, and the value to update to
+    """
 
-def do_change_enable_stream_sounds(user_profile, enable_stream_sounds, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_stream_sounds = enable_stream_sounds
-    user_profile.save(update_fields=["enable_stream_sounds"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_stream_sounds',
-             'setting': enable_stream_sounds}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
+    notification_setting_type = UserProfile.notification_setting_types[name]
+    assert isinstance(value, notification_setting_type), (
+        'Cannot update %s: %s is not an instance of %s' % (
+            name, value, notification_setting_type,))
 
-def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_desktop_notifications = enable_desktop_notifications
-    user_profile.save(update_fields=["enable_desktop_notifications"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_desktop_notifications',
-             'setting': enable_desktop_notifications}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
+    setattr(user_profile, name, value)
 
-def do_change_pm_content_in_desktop_notifications(user_profile,
-                                                  pm_content_in_desktop_notifications, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.pm_content_in_desktop_notifications \
-        = pm_content_in_desktop_notifications
-    user_profile.save(update_fields=["pm_content_in_desktop_notifications"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'pm_content_in_desktop_notifications',
-             'setting': pm_content_in_desktop_notifications}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-
-def do_change_enable_sounds(user_profile, enable_sounds, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_sounds = enable_sounds
-    user_profile.save(update_fields=["enable_sounds"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_sounds',
-             'setting': enable_sounds}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_enable_offline_email_notifications(user_profile, offline_email_notifications, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_offline_email_notifications = offline_email_notifications
-    user_profile.save(update_fields=["enable_offline_email_notifications"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_offline_email_notifications',
-             'setting': offline_email_notifications}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_enable_offline_push_notifications(user_profile, offline_push_notifications, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_offline_push_notifications = offline_push_notifications
-    user_profile.save(update_fields=["enable_offline_push_notifications"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_offline_push_notifications',
-             'setting': offline_push_notifications}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_enable_online_push_notifications(user_profile, enable_online_push_notifications, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_online_push_notifications = enable_online_push_notifications
-    user_profile.save(update_fields=["enable_online_push_notifications"])
-    event = {'type': 'update_global_notifications',
-             'user': user_profile.email,
-             'notification_name': 'enable_online_push_notifications',
-             'setting': enable_online_push_notifications}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_enable_digest_emails(user_profile, enable_digest_emails, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_digest_emails = enable_digest_emails
-    user_profile.save(update_fields=["enable_digest_emails"])
-
-    if not enable_digest_emails:
-        # Remove any digest emails that have been enqueued.
+    # Disabling digest emails should clear a user's email queue
+    if name == 'enable_digest_emails' and value == False:
         clear_followup_emails_queue(user_profile.email)
 
+    user_profile.save(update_fields=[name])
     event = {'type': 'update_global_notifications',
              'user': user_profile.email,
-             'notification_name': 'enable_digest_emails',
-             'setting': enable_digest_emails}
+             'notification_name': name,
+             'setting': value}
     if log:
         log_event(event)
     send_event(event, [user_profile.id])

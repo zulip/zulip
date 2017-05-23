@@ -53,6 +53,12 @@ parser.add_argument('--no-disallow-untyped-defs', dest='disallow_untyped_defs', 
                     help="""Don't throw errors when functions are not annotated""")
 parser.add_argument('--scripts-only', dest='scripts_only', action='store_true', default=False,
                     help="""Only type check extensionless python scripts""")
+parser.add_argument('--strict-optional', dest='strict_optional', action='store_true', default=False,
+                    help="""Use the --strict-optional flag with mypy""")
+parser.add_argument('--no-ignore-missing-imports', dest='ignore_missing_imports', action='store_false', default=True,
+                    help="""Don't use the --ignore-missing-imports flag with mypy""")
+parser.add_argument('--quick', action='store_true', default=False,
+                    help="""Use the --quick flag with mypy""")
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--py2', default=False, action='store_true', help="Use Python 2 mode")
@@ -92,10 +98,8 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser",
-              "--ignore-missing-imports",
+extra_args = ["--check-untyped-defs",
               "--follow-imports=silent",
-              "--check-untyped-defs",
               "--scripts-are-modules",
               "-i", "--cache-dir=var/mypy-cache"]
 if py_version == 2:
@@ -105,6 +109,12 @@ if args.linecoverage_report:
     extra_args.append("var/linecoverage-report")
 if args.disallow_untyped_defs:
     extra_args.append("--disallow-untyped-defs")
+if args.strict_optional:
+    extra_args.append("--strict-optional")
+if args.ignore_missing_imports:
+    extra_args.append("--ignore-missing-imports")
+if args.quick:
+    extra_args.append("--quick")
 
 
 # run mypy

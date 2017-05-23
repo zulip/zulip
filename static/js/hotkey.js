@@ -177,6 +177,11 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
+    if (message_edit.is_editing(current_msg_list.selected_id())) {
+        message_edit.end(current_msg_list.selected_row());
+        return true;
+    }
+
     if (exports.processing_text()) {
         if ($(".message_edit_content").filter(":focus").length > 0) {
             row = $(".message_edit_content").filter(":focus").closest(".message_row");
