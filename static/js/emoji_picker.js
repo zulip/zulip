@@ -56,7 +56,7 @@ function compute_placement(elt) {
 function generate_emoji_picker_content(id) {
     var emojis = _.clone(emoji.emojis_name_to_css_class);
 
-    var realm_emojis = emoji.realm_emojis;
+    var realm_emojis = emoji.active_realm_emojis;
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
         emojis[realm_emoji_name] = {
             name: realm_emoji_name,
@@ -69,13 +69,18 @@ function generate_emoji_picker_content(id) {
     if (id !== undefined) {
         var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
         _.each(emojis_used, function (emoji_name) {
-            emojis[emoji_name] = {
-                name: emoji_name,
-                has_reacted: true,
-                css_class: emoji.emojis_name_to_css_class[emoji_name],
-                is_realm_emoji: emojis[emoji_name].is_realm_emoji,
-                url: emojis[emoji_name].url,
-            };
+            // Note: We exclude from this set any deactivated realm
+            // emoji by checking whether the emoji is in the current
+            // list of valid active emoji.
+            if (emojis.hasOwnProperty(emoji_name)) {
+                emojis[emoji_name] = {
+                    name: emoji_name,
+                    has_reacted: true,
+                    css_class: emoji.emojis_name_to_css_class[emoji_name],
+                    is_realm_emoji: emojis[emoji_name].is_realm_emoji,
+                    url: emojis[emoji_name].url,
+                };
+            }
         });
     }
 
