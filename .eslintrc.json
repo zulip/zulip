@@ -10,6 +10,7 @@
     },
     "globals": {
         "$": false,
+        "CanvasFavicon": false,
         "ClipboardJS": false,
         "Dict": false,
         "FetchStatus": false,

@@ -27,6 +27,7 @@ import "../feature_flags.js";
 import "../loading.js";
 import "../schema.js";
 import "../util.js";
+import "../canvas_favicon.js";
 import "../search_util.js";
 import "../keydown_util.js";
 import "../lightbox_canvas.js";

@@ -1,5 +1,11 @@
 const favicon_selector = 'link[rel="shortcut icon"]';
 
+exports.canvas = CanvasFavicon();
+
+$(function () {
+    exports.canvas = exports.canvas.init("#favicon").default({});
+});
+
 // We need to reset the favicon after changing the
 // window.location.hash or Firefox will drop the favicon.  See
 // https://bugzilla.mozilla.org/show_bug.cgi?id=519028
