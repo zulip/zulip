@@ -97,6 +97,7 @@ Contents:
    code-reviewing
    chat-zulip-org
    zulipbot-usage
+   accessibility
 
 .. _code-testing:
 

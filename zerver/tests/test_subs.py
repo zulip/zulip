@@ -1816,9 +1816,9 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
-                    'starnine@mit.edu',
+                    self.mit_user('starnine').email,
                     streams,
-                    dict(principals=ujson.dumps(['starnine@mit.edu'])),
+                    dict(principals=ujson.dumps([self.mit_user('starnine').email])),
                 )
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
@@ -1895,8 +1895,8 @@ class SubscriptionAPITest(ZulipTestCase):
         Calling subscribe on behalf of a principal in another realm
         should return a JSON error.
         """
-        principal = "starnine@mit.edu"
-        profile = get_user_profile_by_email(principal)
+        profile = self.mit_user('starnine')
+        principal = profile.email
         # verify that principal exists (thus, the reason for the error is the cross-realming)
         self.assertIsInstance(profile, UserProfile)
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
@@ -2468,19 +2468,21 @@ class GetSubscribersTest(ZulipTestCase):
         gather_subscriptions returns correct results with only 3 queries
         """
         # Subscribe only ourself because invites are disabled on mit.edu
-        users_to_subscribe = ["starnine@mit.edu", "espuser@mit.edu"]
+        mit_user_profile = self.mit_user('starnine')
+        email = mit_user_profile.email
+        users_to_subscribe = [email, self.mit_user("espuser").email]
         for email in users_to_subscribe:
             self.subscribe_to_stream(email, "mit_stream")
 
         ret = self.common_subscribe_to_streams(
-            "starnine@mit.edu",
+            email,
             ["mit_invite_only"],
             dict(principals=ujson.dumps(users_to_subscribe)),
             invite_only=True)
         self.assert_json_success(ret)
 
         with queries_captured() as queries:
-            subscriptions = gather_subscriptions(get_user_profile_by_email("starnine@mit.edu"))
+            subscriptions = gather_subscriptions(mit_user_profile)
 
         self.assertTrue(len(subscriptions[0]) >= 2)
         for sub in subscriptions[0]:
@@ -2617,7 +2619,7 @@ class AccessStreamTest(ZulipTestCase):
         # Nobody can access a public stream in another realm
         mit_realm = get_realm("zephyr")
         mit_stream, _ = create_stream_if_needed(mit_realm, "mit_stream", invite_only=False)
-        sipbtest = get_user_profile_by_email("sipbtest@mit.edu")
+        sipbtest = self.mit_user("sipbtest")
         with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
             access_stream_by_id(hamlet, mit_stream.id)
         with self.assertRaisesRegex(JsonableError, "Invalid stream name 'mit_stream'"):

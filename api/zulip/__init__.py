@@ -105,7 +105,7 @@ def _default_client():
 
 def generate_option_group(parser, prefix=''):
     # type: (optparse.OptionParser, str) ->  optparse.OptionGroup
-    group = optparse.OptionGroup(parser, 'Zulip API configuration')
+    group = optparse.OptionGroup(parser, 'Zulip API configuration') # type: ignore # https://github.com/python/typeshed/pull/1248
     group.add_option('--%ssite' % (prefix,),
                      dest="zulip_site",
                      help="Zulip server URI",

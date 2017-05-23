@@ -30,8 +30,8 @@ from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     get_status_dict, streams_to_dicts_sorted
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
-    get_user_profile_by_email, get_user_profile_by_id, \
-    get_active_user_dicts_in_realm, realm_filters_for_realm, \
+    get_user_profile_by_id, \
+    get_active_user_dicts_in_realm, realm_filters_for_realm, get_user,\
     get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains
 from zproject.backends import password_auth_enabled
 from version import ZULIP_VERSION
@@ -339,7 +339,10 @@ def apply_event(state, event, user_profile, include_subscribers):
                 # Convert the emails to user_profile IDs since that's what register() returns
                 # TODO: Clean up this situation by making the event also have IDs
                 for item in event["subscriptions"]:
-                    item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
+                    item["subscribers"] = [
+                        get_user(email, user_profile.realm).id
+                        for email in item["subscribers"]
+                    ]
             else:
                 # Avoid letting 'subscribers' entries end up in the list
                 for i, sub in enumerate(event['subscriptions']):
@@ -404,7 +407,7 @@ def apply_event(state, event, user_profile, include_subscribers):
                     sub['subscribers'].remove(user_id)
     elif event['type'] == "presence":
         # TODO: Add user_id to presence update events / state format!
-        presence_user_profile = get_user_profile_by_email(event['email'])
+        presence_user_profile = get_user(event['email'], user_profile.realm)
         state['presences'][event['email']] = UserPresence.get_status_dict_by_user(presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
         # The client will get the updated message directly

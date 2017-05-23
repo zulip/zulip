@@ -559,24 +559,24 @@ class GetOldMessagesTest(ZulipTestCase):
         A request for old messages for a user in the mit.edu relam with unicode
         stream name should be correctly escaped in the database query.
         """
-        self.login("starnine@mit.edu")
+        self.login(self.mit_user("starnine").email)
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         lambda_stream_name = u"\u03bb-stream"
-        self.subscribe_to_stream("starnine@mit.edu", lambda_stream_name)
+        self.subscribe_to_stream(self.mit_user("starnine").email, lambda_stream_name)
 
         lambda_stream_d_name = u"\u03bb-stream.d"
-        self.subscribe_to_stream("starnine@mit.edu", lambda_stream_d_name)
+        self.subscribe_to_stream(self.mit_user("starnine").email, lambda_stream_d_name)
 
-        self.send_message("starnine@mit.edu", u"\u03bb-stream", Recipient.STREAM)
-        self.send_message("starnine@mit.edu", u"\u03bb-stream.d", Recipient.STREAM)
+        self.send_message(self.mit_user("starnine").email, u"\u03bb-stream", Recipient.STREAM)
+        self.send_message(self.mit_user("starnine").email, u"\u03bb-stream.d", Recipient.STREAM)
 
         narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
                                                   narrow=ujson.dumps(narrow)))
 
-        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        messages = get_user_messages(get_user_profile_by_email(self.mit_user("starnine").email))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
 
         self.assertEqual(len(result["messages"]), 2)
@@ -591,21 +591,23 @@ class GetOldMessagesTest(ZulipTestCase):
         A request for old messages for a user in the mit.edu realm with unicode
         topic name should be correctly escaped in the database query.
         """
-        self.login("starnine@mit.edu")
+        mit_user_profile = self.mit_user("starnine")
+        email = mit_user_profile.email
+        self.login(email)
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        self.subscribe_to_stream("starnine@mit.edu", "Scotland")
+        self.subscribe_to_stream(email, "Scotland")
 
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d.d")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d.d.d")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
@@ -613,7 +615,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=100,
             narrow=ujson.dumps(narrow)))
 
-        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        messages = get_user_messages(mit_user_profile)
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
         self.assertEqual(len(result["messages"]), 5)
         for i, message in enumerate(result["messages"]):
@@ -626,25 +628,26 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         We handle .d grouping for MIT realm personal messages correctly.
         """
-        self.login("starnine@mit.edu")
-        # We need to susbcribe to a stream and then send a message to
+        mit_user_profile = self.mit_user("starnine")
+        email = mit_user_profile.email
+        self.login(email)        # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        self.subscribe_to_stream("starnine@mit.edu", "Scotland")
+        self.subscribe_to_stream(email, "Scotland")
 
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u".d.d")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"PERSONAL")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u'(instance "").d')
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u".d.d.d")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"personal.d")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u'(instance "")')
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+        self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u".d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'personal.d.d')]
@@ -653,7 +656,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=50,
             narrow=ujson.dumps(narrow)))
 
-        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        messages = get_user_messages(mit_user_profile)
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
         self.assertEqual(len(result["messages"]), 7)
         for i, message in enumerate(result["messages"]):

@@ -57,7 +57,7 @@ path, rev = sys.argv[1:]  # type: Tuple[Text, Text]
 # since its a local path, prepend "file://"
 path = "file://" + path
 
-entry = svn.log(path, revision_end=pysvn.Revision(pysvn.opt_revision_kind.number, rev))[0]  # type: Dict[Text, Union[Text, pysvn.Revision, List[Dict[Text, pysvn.Revision]]]]
+entry = svn.log(path, revision_end=pysvn.Revision(pysvn.opt_revision_kind.number, rev))[0]  # type: Dict[Text, Any]
 message = "**{0}** committed revision r{1} to `{2}`.\n\n> {3}".format(
     entry['author'],
     rev,

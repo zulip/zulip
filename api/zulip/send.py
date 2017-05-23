@@ -78,7 +78,7 @@ def main(argv=None):
     parser.add_option('-m', '--message',
                       help='Specifies the message to send, prevents interactive prompting.')
 
-    group = optparse.OptionGroup(parser, 'Stream parameters')
+    group = optparse.OptionGroup(parser, 'Stream parameters') # type: ignore # https://github.com/python/typeshed/pull/1248
     group.add_option('-s', '--stream',
                      dest='stream',
                      action='store',

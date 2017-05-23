@@ -16,15 +16,14 @@ emojis to your organization for other members to use.
         Users will use the designated emoji phrase surrounded by
         colons to insert your emoji into their messages.
 
-    * In the **Emoji URL** field, insert the link to your custom
-    emoji's image. The link must start with **http://** or
-    **https://**.
+    * Click the **Upload emoji** button to upload and specify the image of your
+    custom emoji.
 
         Please note that the image will be scaled down to 25x25 pixels
         in users' messages.
 
-6. After filling out the **Emoji name** and **Emoji URL** fields,
-click the blue **Add emoji** button to add your custom emoji to your
+6. After filling out the **Emoji name** field and uploading the emoji image,
+click the **Add emoji** button to add your custom emoji to your
 Zulip organization.
 
 7. Upon clicking the **Add emoji** button, you will receive a notification
@@ -34,9 +33,11 @@ the success of the addition of your custom emoji to your organization.
     ![Custom emoji success](/static/images/help/custom-emoji-success.png)
 
     The emoji's information and settings will also be displayed above the
-    **Add a new emoji** section. You can choose to delete any custom emojis in
-    your organization through this panel.
+    **Add a new emoji** section. You can also delete a custom emoji in
+    your organization through this panel by clicking the trash (<i
+    class="icon-vector-trash"></i>) icon to the right of the icon you wish to
+    delete.
 
-8. Users in your organization can now use your emoji in their messages.
+Users in your organization can now use your emoji in their messages.
 
-    ![Custom emoji demo](/static/images/help/custom-emoji-demo.png)
+![Custom emoji demo](/static/images/help/custom-emoji-demo.png)

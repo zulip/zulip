@@ -122,9 +122,19 @@ exports.open = function (image) {
 };
 
 exports.show_from_selected_message = function () {
-    var selected_msg = $(".selected_message").find("img");
-    if (selected_msg.length !== 0) {
-      exports.open(selected_msg);
+    var $message = $(".selected_message");
+    var $image = $message.find("img");
+
+    while ($image.length === 0) {
+        $message = $message.prev();
+        if ($message.length === 0) {
+            break;
+        }
+        $image = $message.find("img");
+    }
+
+    if ($image.length !== 0) {
+        exports.open($image);
     }
 };
 
