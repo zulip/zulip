@@ -14,7 +14,7 @@ def api_sentry_webhook(request, user_profile,
                        stream=REQ(default='sentry')):
     # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
     subject = "{}".format(payload.get('project_name'))
-    body = "New {} [issue]({}): {}.".format(payload.get('level').upper(),
+    body = "New {} [issue]({}): {}.".format(payload['level'].upper(),
                                             payload.get('url'),
                                             payload.get('message'))
     check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
