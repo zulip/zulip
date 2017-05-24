@@ -42,7 +42,7 @@ class TestDefineBot(TestCase):
         messages.append(message2)
         return messages
 
-    def test_define(self):
+    def runTest(self):
         # type: None -> None
         # Edit bot_module to test different bots, the below code can be looped for all the bots.
         bot_module = os.path.join(our_dir, "define.py")
