@@ -297,7 +297,7 @@ function _set_up() {
                     var data_message_content_edit_limit_minutes =
                         Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
-                        if (response_data.message_content_edit_limit_seconds >= 0) {
+                        if (response_data.message_content_edit_limit_seconds > 0) {
                             ui_report.success(i18n.t("Users can now edit topics for all their messages,"
                                                       +" and the content of messages which are less than __num_minutes__ minutes old.",
                                                      {num_minutes :
