@@ -256,14 +256,14 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     });
 };
 
-$(function () {
+exports.initialize = function () {
     $(document).on('peer_subscribe.zulip', function () {
         exports.update_faded_users();
     });
     $(document).on('peer_unsubscribe.zulip', function () {
         exports.update_faded_users();
     });
-});
+};
 
 
 return exports;

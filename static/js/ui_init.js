@@ -255,6 +255,7 @@ $(function () {
     activity.initialize();
     emoji.initialize();
     hotspots.initialize();
+    compose_fade.initialize();
 });
 
 
