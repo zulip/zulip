@@ -75,13 +75,14 @@
 
 .compose_table #private-message .you_text {
     position: absolute;
-    height: 25px;
+    height: calc(100% - 12px);
+    left: -10px;
     line-height: 25px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    width: 4em;
+    padding: 6px 10px 0;
+    width: 3.8em;
     background: #444444;
     color: #ffffff;
+    border-radius: 3px;
 }
 
 .compose_table .pm_recipient #private_message_recipient {
@@ -459,3 +460,24 @@ a#undo_markdown_preview {
 #markdown_preview_spinner {
     margin: auto;
 }
+
+.pm_recipient .selectize-dropdown-content {
+    max-height: 100px;
+}
+
+.pm_recipient .selectize-dropdown .label {
+    background-color: #52c2af;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.pm_recipient .selectize-control {
+    left: 56px;
+}
+
+.pm_recipient .selectize-control.multi .selectize-input > div {
+    background-color: #52c2af;
+    color: #fff;
+    border-radius: 3px;
+}
+

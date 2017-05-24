@@ -950,31 +950,40 @@ $(function () {
 
     // Selectize Dropdown
     $('#private_message_recipient').selectize({
+        plugins: ['restore_on_backspace', 'remove_button'],
         persist: false,
         maxItems: null,
+        selectOnTab: true,
         valueField: 'email',
         labelField: 'name',
         searchField: ['name', 'email'],
-        options: [
-            {email: 'brian@thirdroute.com', name: 'Brian Reavis'},
-            {email: 'nikola@tesla.com', name: 'Nikola Tesla'},
-            {email: 'someone@gmail.com'}
-        ],
+        options: people.get_all_persons().map(function (person) {
+            return {
+                name: person.full_name,
+                email: person.email
+            };
+        }),
+        onDropdownOpen: function ($dropdown) {
+            // Manually prevent dropdown from opening when there is no search term
+            if (!this.lastQuery.length) {
+                this.close();
+            }
+        },
         render: {
-            item: function(item, escape) {
+            item: function (item, escape) {
                 return '<div>' +
-                    '<span class="name label">' +
+                    '<span class="name">' +
                         (item.name ? escape(item.name) : '') +
-                        (item.email ? escape('<' + item.email + '>') : '') +
+                        (item.email ? escape(' <' + item.email + '>') : '') +
                     '</span>' +
                 '</div>';
             },
-            option: function(item, escape) {
+            option: function (item, escape) {
                 var label = item.name || item.email;
                 var caption = item.name ? item.email : null;
                 return '<div>' +
                     '<span class="label">' + escape(label) + '</span>' +
-                    (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
+                    (caption ? '<span class="caption"> ' + escape(caption) + '</span>' : '') +
                 '</div>';
             }
         }
