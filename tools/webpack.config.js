@@ -30,6 +30,13 @@ module.exports =  {
                 test: /(min|zxcvbn)\.js/,
                 use: [ 'script-loader' ],
             },
+            // Expose Global variables to webpack
+            {
+                test: require.resolve('../static/js/debug.js'),
+                use: [
+                    {loader: 'expose-loader', options: 'debug'},
+                ],
+            },
 
         ],
     },
