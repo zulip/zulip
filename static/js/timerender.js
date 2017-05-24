@@ -35,15 +35,18 @@ exports.render_now = function (time, today) {
     // constants.
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
+    var is_older_year =
+        (start_of_today.getFullYear() - start_of_other_day.getFullYear()) > 0;
+
     if (days_old === 0) {
         time_str = i18n.t("Today");
         needs_update = true;
     } else if (days_old === 1) {
         time_str = i18n.t("Yesterday");
         needs_update = true;
-    } else if (days_old >= 365) {
+    } else if (is_older_year) {
         // For long running servers, searching backlog can get ambiguous
-        // without a year stamp. Only show year if message is over a year old.
+        // without a year stamp. Only show year if message is from an older year
         time_str = time.toString("MMM\xa0dd,\xa0yyyy");
         needs_update = false;
     } else {
