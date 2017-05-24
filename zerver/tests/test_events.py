@@ -341,6 +341,7 @@ class GetEventsTest(ZulipTestCase):
 
 class EventsRegisterTest(ZulipTestCase):
     def setUp(self):
+        # type: () -> None
         super(EventsRegisterTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
         self.maxDiff = None # type: Optional[int]
