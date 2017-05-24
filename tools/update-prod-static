@@ -104,6 +104,6 @@ if os.environ.get("TRAVIS"):
     authors_cmd.append("--use-fixture")
 if args.authors_not_required:
     authors_cmd.append("--not-required")
-subprocess.check_call(authors_cmd, stdout=fp)
+subprocess.check_call(authors_cmd, stdout=fp, stderr=fp)
 
 fp.close()
