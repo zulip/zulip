@@ -21,7 +21,7 @@ class PointerTest(ZulipTestCase):
         Posting a pointer to /update (in the form {"pointer": pointer}) changes
         the pointer we store for your UserProfile.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
         result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
@@ -48,7 +48,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
@@ -60,7 +60,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer with an invalid pointer returns a 400 and error
         message.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
@@ -72,7 +72,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
@@ -85,7 +85,7 @@ class PointerTest(ZulipTestCase):
         return an unread message older than the current pointer, when there's
         no narrow set.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         # Ensure the pointer is not set (-1)
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         # Mark all existing messages as read
@@ -164,26 +164,26 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.unread_msg_ids = [
             self.send_message(
-                "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello"),
+                "iago@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL, "hello"),
             self.send_message(
-                "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")]
+                "iago@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL, "hello2")]
 
     # Sending a new message results in unread UserMessages being created
     def test_new_message(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         content = "Test message for unset read bit"
-        last_msg = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, content)
+        last_msg = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
         self.assertEqual(len(user_messages) > 0, True)
         for um in user_messages:
             self.assertEqual(um.message.content, content)
-            if um.user_profile.email != "hamlet@zulip.com":
+            if um.user_profile.email != self.example_email("hamlet"):
                 self.assertFalse(um.flags.read)
 
     def test_update_flags(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
 
         result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(self.unread_msg_ids),
@@ -213,11 +213,11 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_update_all_flags(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
 
-        message_ids = [self.send_message("hamlet@zulip.com", "iago@zulip.com",
+        message_ids = [self.send_message(self.example_email("hamlet"), "iago@zulip.com",
                                          Recipient.PERSONAL, "test"),
-                       self.send_message("hamlet@zulip.com", "cordelia@zulip.com",
+                       self.send_message(self.example_email("hamlet"), "cordelia@zulip.com",
                                          Recipient.PERSONAL, "test2")]
 
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
@@ -236,13 +236,13 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_mark_all_in_stream_read(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
         self.subscribe_to_stream("cordelia@zulip.com", "test_stream", user_profile.realm)
 
-        message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello")
-        unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello")
+        message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello")
+        unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello")
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -266,19 +266,19 @@ class UnreadCountTests(ZulipTestCase):
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile.email == "hamlet@zulip.com":
+            if msg.user_profile.email == self.example_email("hamlet"):
                 self.assertTrue(msg.flags.read)
             else:
                 self.assertFalse(msg.flags.read)
 
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile.email == "hamlet@zulip.com":
+            if msg.user_profile.email == self.example_email("hamlet"):
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_stream_read(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         invalid_stream_name = ""
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                            "op": "add",
@@ -288,12 +288,12 @@ class UnreadCountTests(ZulipTestCase):
 
     def test_mark_all_in_stream_topic_read(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
 
-        message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello", "test_topic")
-        unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello", "Denmark2")
+        message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello", "test_topic")
+        unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello", "Denmark2")
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
@@ -317,17 +317,17 @@ class UnreadCountTests(ZulipTestCase):
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile.email == "hamlet@zulip.com":
+            if msg.user_profile.email == self.example_email("hamlet"):
                 self.assertTrue(msg.flags.read)
 
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile.email == "hamlet@zulip.com":
+            if msg.user_profile.email == self.example_email("hamlet"):
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_topic_read(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         invalid_topic_name = "abc"
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                            "op": "add",

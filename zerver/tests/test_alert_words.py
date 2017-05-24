@@ -109,7 +109,7 @@ class AlertWordTests(ZulipTestCase):
 
     def test_json_list_default(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
@@ -119,7 +119,7 @@ class AlertWordTests(ZulipTestCase):
 
     def test_json_list_add(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
         self.assert_json_success(result)
@@ -131,7 +131,7 @@ class AlertWordTests(ZulipTestCase):
 
     def test_json_list_remove(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
@@ -146,7 +146,7 @@ class AlertWordTests(ZulipTestCase):
 
     def test_json_list_set(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
@@ -168,7 +168,7 @@ class AlertWordTests(ZulipTestCase):
 
     def test_alert_flags(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         user_profile_hamlet = self.example_user('hamlet')
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})

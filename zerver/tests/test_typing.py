@@ -17,7 +17,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         """
         Sending typing notification without op parameter fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         recipient = 'othello@zulip.com'
         result = self.client_post('/api/v1/typing', {'to': recipient},
                                   **self.api_auth(sender))
@@ -28,7 +28,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         """
         Sending typing notification with invalid value for op parameter fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         recipient = 'othello@zulip.com'
         result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'foo'},
                                   **self.api_auth(sender))
@@ -40,7 +40,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         """
         Sending typing notification without recipient fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_post('/api/v1/typing', {'op': 'start'},
                                   **self.api_auth(sender))
         self.assert_json_error(result, 'Missing parameter: \'to\' (recipient)')
@@ -50,7 +50,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         """
         Sending typing notification to invalid recipient fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         invalid = 'invalid email'
         result = self.client_post('/api/v1/typing', {'op': 'start', 'to': invalid},
                                   **self.api_auth(sender))

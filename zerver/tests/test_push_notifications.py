@@ -117,7 +117,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                   **self.get_auth())
         self.assert_json_error(result, "Missing 'token_kind' argument")
         result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
-                                  **self.api_auth("hamlet@zulip.com"))
+                                  **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self):
@@ -139,7 +139,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_json_error(result, "Missing 'user_id' argument")
         result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
                                              'token': token},
-                                  **self.api_auth("hamlet@zulip.com"))
+                                  **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_remote_push_user_endpoints(self):
@@ -562,7 +562,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "time": apn.datetime_to_timestamp(message.pub_date),
             "content": 'a' * 200 + '...',
             "content_truncated": True,
-            "sender_email": "hamlet@zulip.com",
+            "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.avatar_url(message.sender),
             "recipient_type": "stream",
@@ -584,7 +584,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "time": apn.datetime_to_timestamp(message.pub_date),
             "content": message.content,
             "content_truncated": False,
-            "sender_email": "hamlet@zulip.com",
+            "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.avatar_url(message.sender),
             "recipient_type": "private",

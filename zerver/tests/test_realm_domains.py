@@ -33,7 +33,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_not_realm_admin(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/domains")
         self.assert_json_error(result, 'Must be a realm administrator')
         result = self.client_patch("/json/realm/domains/15")

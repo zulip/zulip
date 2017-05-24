@@ -61,7 +61,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_updating_non_existent_user(self):
         # type: () -> None
-        self.login('hamlet@zulip.com')
+        self.login(self.example_email("hamlet"))
         admin = self.example_user('hamlet')
         do_change_is_admin(admin, True)
 
@@ -70,7 +70,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_admin_api(self):
         # type: () -> None
-        self.login('hamlet@zulip.com')
+        self.login(self.example_email("hamlet"))
         admin = self.example_user('hamlet')
         user = self.example_user('othello')
         realm = admin.realm
@@ -80,7 +80,7 @@ class PermissionTest(ZulipTestCase):
         result = self.client_get('/json/users')
         self.assert_json_success(result)
         members = ujson.loads(result.content)['members']
-        hamlet = find_dict(members, 'email', 'hamlet@zulip.com')
+        hamlet = find_dict(members, 'email', self.example_email("hamlet"))
         self.assertTrue(hamlet['is_admin'])
         othello = find_dict(members, 'email', 'othello@zulip.com')
         self.assertFalse(othello['is_admin'])
@@ -120,7 +120,7 @@ class PermissionTest(ZulipTestCase):
         admin_users = realm.get_admin_users()
         self.assertFalse(admin in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], 'hamlet@zulip.com')
+        self.assertEqual(person['email'], self.example_email("hamlet"))
         self.assertEqual(person['is_admin'], False)
         with tornado_redirected_to_list([]):
             result = self.client_patch('/json/users/iago@zulip.com', req)
@@ -143,7 +143,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_non_admin_cannot_change_full_name(self):
         # type: () -> None
-        self.login('hamlet@zulip.com')
+        self.login(self.example_email("hamlet"))
         req = dict(full_name=ujson.dumps('new name'))
         result = self.client_patch('/json/users/othello@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
@@ -253,7 +253,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
         dct = get_emails_from_user_ids([hamlet.id, othello.id])
-        self.assertEqual(dct[hamlet.id], 'hamlet@zulip.com')
+        self.assertEqual(dct[hamlet.id], self.example_email("hamlet"))
         self.assertEqual(dct[othello.id], 'othello@zulip.com')
 
 class ActivateTest(ZulipTestCase):
@@ -369,7 +369,7 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_pointer(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        email = self.example_email("hamlet")
         self.login(email)
         result = self.client_get("/json/users/me/pointer")
         self.assert_json_success(result)
@@ -384,14 +384,14 @@ class GetProfileTest(ZulipTestCase):
 
         self.assert_length(queries, 1)
         self.assert_length(cache_queries, 1)
-        self.assertEqual(user_profile.email, 'hamlet@zulip.com')
+        self.assertEqual(user_profile.email, self.example_email("hamlet"))
 
     def test_get_user_profile(self):
         # type: () -> None
-        self.login('hamlet@zulip.com')
+        self.login(self.example_email("hamlet"))
         result = ujson.loads(self.client_get('/json/users/me').content)
         self.assertEqual(result['short_name'], 'hamlet')
-        self.assertEqual(result['email'], 'hamlet@zulip.com')
+        self.assertEqual(result['email'], self.example_email("hamlet"))
         self.assertEqual(result['full_name'], 'King Hamlet')
         self.assertIn("user_id", result)
         self.assertFalse(result['is_bot'])
@@ -437,12 +437,12 @@ class GetProfileTest(ZulipTestCase):
     def test_get_all_profiles_avatar_urls(self):
         # type: () -> None
         user_profile = self.example_user('hamlet')
-        result = self.client_get("/api/v1/users", **self.api_auth('hamlet@zulip.com'))
+        result = self.client_get("/api/v1/users", **self.api_auth(self.example_email("hamlet")))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
         for user in json['members']:
-            if user['email'] == 'hamlet@zulip.com':
+            if user['email'] == self.example_email("hamlet"):
                 self.assertEqual(
                     user['avatar_url'],
                     avatar_url(user_profile),
