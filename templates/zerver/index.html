@@ -40,7 +40,7 @@ var page_params = {{ page_params }};
 {{ render_bundle('translations') }}
 
 {% if debug %}
-{{ minified_js('app_debug')|safe }}
+{{ render_bundle('app_debug') }}
 {% endif %}
 
 {% include "zerver/topic_is_muted.html" %}

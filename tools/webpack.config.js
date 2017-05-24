@@ -5,6 +5,7 @@ module.exports =  {
     entry: {
         activity: './static/third/sorttable/sorttable.js',
         api: './static/js/portico/api.js',
+        app_debug: './static/js/debug.js',
         // katex should be an array, to inject webpack dependencies in dev config
         // better to be moved to common.js
         katex: ['./node_modules/katex/dist/katex.js'],
