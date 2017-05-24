@@ -8,6 +8,8 @@ var exports = {};
 function new_elem(selector) {
     var value;
     var shown = false;
+    var focused = false;
+
     var self = {
         val: function () {
             if (arguments.length === 0) {
@@ -22,6 +24,12 @@ function new_elem(selector) {
         removeAttr: noop,
         removeData: noop,
         trigger: noop,
+        blur: function () {
+            focused = false;
+        },
+        focus: function () {
+            focused = true;
+        },
         show: function () {
             shown = true;
         },
@@ -48,6 +56,11 @@ function new_elem(selector) {
         },
         visible: function () {
             return shown;
+        },
+        is_focused: function () {
+            // is_focused is not a jQuery thing; this is
+            // for our testing
+            return focused;
         },
     };
     return self;
