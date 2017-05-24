@@ -218,6 +218,20 @@ exports.sort_recipients = function (matches, query, current_stream) {
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
     var results = prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    var thumbsup = results.matches.findIndex(function (emoji) { return emoji.emoji_name === "thumbsup"; });
+    var thumbs_up = results.matches.findIndex(function (emoji) { return emoji.emoji_name === "thumbs_up"; });
+    var thumbsdown = results.matches.findIndex(function (emoji) { return emoji.emoji_name === "thumbsdown"; });
+    var thumbs_down = results.matches.findIndex(function (emoji) { return  emoji.emoji_name === "thumbs_down"; });
+    if (thumbsup !== -1 && thumbsdown !== -1) {
+        var thumbsup_temp = results.matches[thumbsup];
+        results.matches[thumbsup] = results.matches[thumbsdown];
+        results.matches[thumbsdown] = thumbsup_temp;
+    }
+    if (thumbs_up !== -1 && thumbs_down !== -1) {
+        var thumbs_up_temp = results.matches[thumbs_up];
+        results.matches[thumbs_up] = results.matches[thumbs_down];
+        results.matches[thumbs_down] = thumbs_up_temp;
+    }
     return results.matches.concat(results.rest);
 };
 
