@@ -977,8 +977,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (str)-> None
         bool_change = [True, False]  # type: List[bool]
         test_changes = dict(
-            twenty_four_hour_time = [bool_change],
-            twenty_four_hour_time =bool_change,
+            twenty_four_hour_time = bool_change,
             left_side_userlist = bool_change,
             emoji_alt_code = bool_change,
             emojiset = [u'apple', u'twitter'],
@@ -1013,9 +1012,9 @@ class EventsRegisterTest(ZulipTestCase):
                 events = self.do_test(lambda: do_set_user_display_setting(self.user_profile, setting_name, change), num_events=2)
             else:
                 events = self.do_test(
-              		lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+                    lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
+                error = schema_checker('events[0]', events[0])
+                self.assert_on_error(error)
 
     def test_user_display_settings(self):
         # type: () -> None
