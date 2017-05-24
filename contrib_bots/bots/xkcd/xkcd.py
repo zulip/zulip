@@ -29,13 +29,7 @@ class XkcdHandler(object):
 
     def handle_message(self, message, client, state_handler):
         xkcd_bot_response = get_xkcd_bot_response(message)
-
-        client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['subject'],
-            content=xkcd_bot_response,
-        ))
+        client.send_reply(message, xkcd_bot_response)
 
 class XkcdBotCommand(object):
     LATEST = 0
