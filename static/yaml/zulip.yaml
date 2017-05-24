@@ -496,9 +496,6 @@ securityDefinitions:
 definitions:
   JsonResponse:
     type: object
-    required:
-    - msg
-    - result
     properties:
       result:
         type: string
@@ -506,6 +503,9 @@ definitions:
   JsonSuccess:
     allOf:
     - $ref: '#/definitions/JsonResponse'
+    - required:
+      - result
+      - msg
     - properties:
         msg:
           type: string
@@ -514,6 +514,9 @@ definitions:
   JsonError:
     allOf:
     - $ref: '#/definitions/JsonResponse'
+    - required:
+      - result
+      - msg
     - properties:
         msg:
           type: string
