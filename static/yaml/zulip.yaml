@@ -312,6 +312,199 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+  /users/me/subscriptions:
+    get:
+      description: List streams subscription data for the current user.
+      operationId: listSubscriptionsBackend
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - subscriptions
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              subscriptions:
+                type: array
+                items:
+                  $ref: '#/definitions/stream'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    post:
+      description: Bulk adds streams subscription data for the current user.
+      operationId: addSubscriptionsBackend
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptions
+          in: formData
+          description: |
+                       JSON-looking string
+
+                           [{
+                             "name":string,      (required)
+                             "invite-only":bool  (optional)
+                           }]
+
+          required: true
+          type: array
+          items:
+            type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+              - msg
+              - already_subscribed
+              - result
+              - subscribed
+            properties:
+              msg:
+                type: string
+              already_subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              result:
+                type: string
+              subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    patch:
+      description: Bulk modifies (add or delete) streams subscription data for the current user.
+      operationId: updateSubscriptionsBackend
+      produces:
+        - application/json
+      parameters:
+        - name: delete
+          in: formData
+          description: List of items to delete
+          required: false
+          type: array
+          items:
+            type: string
+        - name: add
+          in: formData
+          description: List of items to add
+          required: false
+          type: array
+          items:
+            type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+              - subscribed
+              - not_subscribed
+              - result
+              - msg
+              - already_subscribed
+              - removed
+            properties:
+              subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              not_subscribed:
+                type: array
+                items:
+                  type: string
+              result:
+                type: string
+              msg:
+                type: string
+              already_subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              removed:
+                type: array
+                items:
+                  type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    delete:
+      description: Bulk deletes streams subscription data for the current user.
+      operationId: removeSubscriptionsBackend
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptions
+          in: formData
+          description: Array of stream names to un-subscribe from
+          required: true
+          type: array
+          items:
+            type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+              - msg
+              - removed
+              - not_subscribed
+              - result
+            properties:
+              msg:
+                type: string
+              removed:
+                type: array
+                items:
+                  type: string
+              not_subscribed:
+                type: array
+                items:
+                  type: string
+              result:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
   /user_uploads:
     post:
       description: Upload a file, and print the corresponding URI.
