@@ -8,14 +8,13 @@ import sys
 import unittest
 
 from mock import MagicMock, patch
-from unittest import TestCase
 
 from run import get_lib_module
 from bot_lib import StateHandler
 from contrib_bots import bot_lib
 from six.moves import zip
 
-class BotTestCase(TestCase):
+class BotTestCase():
 
     def mock_test(self, messages, message_handler, bot_response):
         # type: (List[Dict[str, str]], Function) -> None
