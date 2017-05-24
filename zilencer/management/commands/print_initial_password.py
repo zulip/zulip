@@ -6,7 +6,7 @@ from typing import Any
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from zerver.lib.initial_password import initial_password
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_realm, get_user
 
 class Command(BaseCommand):
     help = "Print the initial password and API key for accounts as created by populate_db"
@@ -17,6 +17,7 @@ class Command(BaseCommand):
         # type: (ArgumentParser) -> None
         parser.add_argument('emails', metavar='<email>', type=str, nargs='*',
                             help="email of user to show password and API key for")
+        parser.add_argument('realm', metavar='<realm>', type=str, nargs='*', help="realm of user to show password and API key for")
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
@@ -25,4 +26,5 @@ class Command(BaseCommand):
             if '@' not in email:
                 print('ERROR: %s does not look like an email address' % (email,))
                 continue
-            print(self.fmt % (email, initial_password(email), get_user_profile_by_email(email).api_key))
+            realm = get_realm(options['realm'])
+            print(self.fmt % (email, initial_password(email), get_user(email, realm).api_key))

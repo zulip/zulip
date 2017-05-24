@@ -5,7 +5,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, \
     datetime_to_timestamp
 from zerver.models import Realm, UserProfile, Client, get_realm, \
-    get_user_profile_by_email
+    get_user
 
 from analytics.lib.counts import CountStat, COUNT_STATS
 from analytics.lib.time_utils import time_range
@@ -24,7 +24,8 @@ from typing import List, Dict
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self):
         # type: () -> None
-        self.user = get_user_profile_by_email('hamlet@zulip.com')
+        self.realm = get_realm('zulip')
+        self.user = get_user('hamlet@zulip.com', self.realm)
         self.login(self.user.email)
         result = self.client_get('/stats')
         self.assertEqual(result.status_code, 200)
@@ -35,7 +36,7 @@ class TestGetChartData(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.realm = get_realm('zulip')
-        self.user = get_user_profile_by_email('hamlet@zulip.com')
+        self.user = get_user('hamlet@zulip.com', self.realm)
         self.login(self.user.email)
         self.end_times_hour = [ceiling_to_hour(self.realm.date_created) + timedelta(hours=i)
                                for i in range(4)]
