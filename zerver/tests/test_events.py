@@ -974,7 +974,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def do_set_user_display_settings_test(self, setting_name):
         # type: (str)-> None
-        bool_change = [True, False, True]  # type: List[bool]
+        bool_change = [True, False]  # type: List[bool]
         test_changes = dict(
             #twenty_four_hour_time="twenty_four_hour_time", [bool_change],
             #left_side_userlist="left_side_userlist", [bool_change],
@@ -1015,7 +1015,7 @@ class EventsRegisterTest(ZulipTestCase):
         if (changes is None):
             raise AssertionError('No test created for %s' % (setting_name))
         #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
-        print (self.user_profile)
+        print (user_profile)
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
         for change in changes[1:]:
             events = self.do_test(
