@@ -4,7 +4,7 @@
 
 {% stylesheet 'portico' %}
 {% stylesheet 'landing-page' %}
-{{ minified_js('landing-page')|safe }}
+{{ render_bundle('landing-page') }}
 
 {% endblock %}
 

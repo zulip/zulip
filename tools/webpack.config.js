@@ -6,6 +6,7 @@ module.exports =  {
         activity: './static/third/sorttable/sorttable.js',
         api: './static/js/portico/api.js',
         katex: ['./node_modules/katex/dist/katex.js'],
+        'landing-page': './static/js/portico/landing-page.js',
         translations: './static/js/translations.js',
     },
     output: {
