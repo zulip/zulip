@@ -1,5 +1,3 @@
-global.stub_out_jquery();
-
 set_global('page_params', {
     is_admin: false,
     realm_users: [],

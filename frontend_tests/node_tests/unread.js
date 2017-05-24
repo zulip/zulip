@@ -7,8 +7,6 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies (except _).
 
-global.stub_out_jquery();
-
 add_dependencies({
     muting: 'js/muting.js',
     people: 'js/people.js',

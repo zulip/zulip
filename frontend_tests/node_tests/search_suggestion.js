@@ -5,8 +5,6 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies.
 
-global.stub_out_jquery();
-
 add_dependencies({
     util: 'js/util.js',
     Handlebars: 'handlebars',

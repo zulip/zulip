@@ -2,8 +2,6 @@ add_dependencies({
     util: 'js/util.js',
 });
 
-global.stub_out_jquery();
-
 var people = require("js/people.js");
 set_global('blueslip', {});
 

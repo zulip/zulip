@@ -2,8 +2,6 @@
 var path = require('path');
 var fs = require('fs');
 
-global.stub_out_jquery();
-
 set_global('window', {
     location: {
         origin: 'http://zulip.zulipdev.com',

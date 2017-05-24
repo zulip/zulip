@@ -12,7 +12,6 @@ set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
 });
 
-global.stub_out_jquery();
 add_dependencies({
     people: 'js/people.js',
 });

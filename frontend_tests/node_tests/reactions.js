@@ -1,5 +1,4 @@
 set_global('document', {});
-global.stub_out_jquery();
 
 add_dependencies({
     people: 'js/people.js',
