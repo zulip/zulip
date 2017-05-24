@@ -27,9 +27,10 @@ module.exports =  {
             // Uses script-loader on minified files so we don't change global variables in them.
             // Also has the effect of making processing these files fast
             {
-                test: /(min)\.js/,
+                test: /(min|zxcvbn)\.js/,
                 use: [ 'script-loader' ],
             },
+
         ],
     },
     output: {
