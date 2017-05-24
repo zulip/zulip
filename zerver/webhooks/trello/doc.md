@@ -2,14 +2,9 @@ This webhook integration for Trello is the recommended way to
 integrate with Trello, and should support all the features of
 the [legacy Trello cron-based integration](#trello-plugin).
 
-First, create the stream you'd like to use for Trello notifications,
-and subscribe all interested parties to this stream. We recommend the
-name `trello`.
+{!create-stream.md!}
 
-Your webhook URL is:
-`{{ external_api_uri_subdomain }}/v1/external/trello?api_key=abcdefgh&stream=trello`
-where `api_key` is the API key of your Zulip bot,
-and `stream` is the stream name you want the notifications sent to.
+{!create-bot-construct-url.md!}
 
 Trello doesn't support creating webhooks on their website; you
 have to do it using their API.  So before you create a webhook,
