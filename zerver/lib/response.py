@@ -28,7 +28,7 @@ def json_unauthorized(message, www_authenticate=None):
     return resp
 
 def json_method_not_allowed(methods):
-    # type: (List[Text]) -> Text
+    # type: (List[Text]) -> HttpResponseNotAllowed
     resp = HttpResponseNotAllowed(methods)
     resp.content = force_bytes(ujson.dumps({"result": "error",
                                             "msg": "Method Not Allowed",
