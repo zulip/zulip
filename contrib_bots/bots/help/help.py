@@ -11,18 +11,6 @@ class HelpHandler(object):
             your Zulip instance.
             '''
 
-    def triage_message(self, message, client):
-        # return True if we think the message may be of interest
-        original_content = message['content']
-
-        if message['type'] != 'stream':
-            return True
-
-        if original_content.lower().strip() != 'help':
-            return False
-
-        return True
-
     def handle_message(self, message, client, state_handler):
         help_content = '''
             Info on Zulip can be found here:
