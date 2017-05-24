@@ -53,7 +53,17 @@ function new_elem(selector) {
     return self;
 }
 
-exports.zjquery = function (selector) {
+exports.zjquery = function (arg) {
+    if (typeof arg === "function") {
+        // If somebody is passing us a function, we emulate
+        // jQuery's behavior of running this function after
+        // page load time.  But there are no pages to load,
+        // so we just call it right away.
+        arg();
+        return;
+    }
+
+    var selector = arg;
     if (elems[selector] === undefined) {
         var elem = new_elem(selector);
         elems[selector] = elem;
