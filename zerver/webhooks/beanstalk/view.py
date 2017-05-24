@@ -68,7 +68,7 @@ def api_beanstalk_webhook(request, user_profile,
         author = payload.get('author_full_name')
         url = payload.get('changeset_url')
         revision = payload.get('revision')
-        (short_commit_msg, _, _) = payload.get('message').partition("\n")
+        (short_commit_msg, _, _) = payload['message'].partition("\n")
 
         subject = "svn r%s" % (revision,)
         content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)

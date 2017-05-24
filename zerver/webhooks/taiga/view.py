@@ -165,7 +165,7 @@ def parse_create_or_delete(message):
 
 
 def parse_change_event(change_type, message):
-    # type: (str, Mapping[str, Any]) -> Dict[str, Any]
+    # type: (str, Mapping[str, Any]) -> Optional[Dict[str, Any]]
     """ Parses change event. """
     evt = {}  # type: Dict[str, Any]
     values = {

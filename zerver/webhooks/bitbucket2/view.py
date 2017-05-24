@@ -89,20 +89,21 @@ def get_push_subjects(payload):
 
 def get_subject(payload):
     # type: (Dict[str, Any]) -> str
+    assert(payload['repository'] is not None)
     return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
 
 def get_subject_based_on_type(payload, type):
     # type: (Dict[str, Any], str) -> Text
     if type.startswith('pull_request'):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=get_repository_name(payload.get('repository')),
+            repo=get_repository_name(payload['repository']),
             type='PR',
             id=payload['pullrequest']['id'],
             title=payload['pullrequest']['title']
         )
     if type.startswith('issue'):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=get_repository_name(payload.get('repository')),
+            repo=get_repository_name(payload['repository']),
             type='Issue',
             id=payload['issue']['id'],
             title=payload['issue']['title']
@@ -172,9 +173,9 @@ def get_force_push_body(payload, change):
 
 def get_commit_author_name(commit):
     # type: (Dict[str, Any]) -> Text
-    if commit.get('author').get('user'):
-        return commit.get('author').get('user').get('username')
-    return commit.get('author').get('raw').split()[0]
+    if commit['author'].get('user'):
+        return commit['author']['user'].get('username')
+    return commit['author']['raw'].split()[0]
 
 def get_normal_push_body(payload, change):
     # type: (Dict[str, Any], Dict[str, Any]) -> Text
@@ -204,7 +205,7 @@ def get_fork_body(payload):
 
 def get_commit_comment_body(payload):
     # type: (Dict[str, Any]) -> Text
-    comment = payload.get('comment')
+    comment = payload['comment']
     action = u'[commented]({})'.format(comment['links']['html']['href'])
     return get_commits_comment_action_message(
         get_user_username(payload),
@@ -305,18 +306,18 @@ def get_pull_request_comment_action_body(payload, action):
 def get_push_tag_body(payload, change):
     # type: (Dict[str, Any], Dict[str, Any]) -> Text
     if change.get('created'):
-        tag = change.get('new')
-        action = 'pushed'
+        tag = change['new']
+        action = 'pushed' # type: Optional[Text]
     elif change.get('closed'):
-        tag = change.get('old')
+        tag = change['old']
         action = 'removed'
     else:
-        tag = change.get('new')
+        tag = change['new']
         action = None
     return get_push_tag_event_message(
         get_user_username(payload),
         tag.get('name'),
-        tag_url=tag.get('links').get('html').get('href'),
+        tag_url=tag['links']['html'].get('href'),
         action=action
     )
 

@@ -38,7 +38,7 @@ def get_normal_push_event_body(payload):
             'message': commit.get('message'),
             'url': commit.get('url')
         }
-        for commit in payload.get('commits')
+        for commit in payload['commits']
     ]
 
     return get_push_commits_event_message(
@@ -69,8 +69,8 @@ def get_issue_created_event_body(payload):
         get_issue_user_name(payload),
         'created',
         get_object_url(payload),
-        payload.get('object_attributes').get('iid'),
-        payload.get('object_attributes').get('description'),
+        payload['object_attributes'].get('iid'),
+        payload['object_attributes'].get('description'),
         get_objects_assignee(payload)
     )
 
@@ -80,18 +80,18 @@ def get_issue_event_body(payload, action):
         get_issue_user_name(payload),
         action,
         get_object_url(payload),
-        payload.get('object_attributes').get('iid'),
+        payload['object_attributes'].get('iid'),
     )
 
 def get_merge_request_updated_event_body(payload):
     # type: (Dict[str, Any]) -> Text
-    if payload.get('object_attributes').get('oldrev'):
+    if payload['object_attributes'].get('oldrev'):
         return get_merge_request_event_body(payload, "added commit(s) to")
     return get_merge_request_open_or_updated_body(payload, "updated")
 
 def get_merge_request_event_body(payload, action):
     # type: (Dict[str, Any], Text) -> Text
-    pull_request = payload.get('object_attributes')
+    pull_request = payload['object_attributes']
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
@@ -102,7 +102,7 @@ def get_merge_request_event_body(payload, action):
 
 def get_merge_request_open_or_updated_body(payload, action):
     # type: (Dict[str, Any], Text) -> Text
-    pull_request = payload.get('object_attributes')
+    pull_request = payload['object_attributes']
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
@@ -124,63 +124,63 @@ def get_objects_assignee(payload):
 
 def get_commented_commit_event_body(payload):
     # type: (Dict[str, Any]) -> Text
-    comment = payload.get('object_attributes')
+    comment = payload['object_attributes']
     action = u'[commented]({})'.format(comment['url'])
     return get_commits_comment_action_message(
         get_issue_user_name(payload),
         action,
-        payload.get('commit').get('url'),
-        payload.get('commit').get('id'),
+        payload['commit'].get('url'),
+        payload['commit'].get('id'),
         comment['note'],
     )
 
 def get_commented_merge_request_event_body(payload):
     # type: (Dict[str, Any]) -> Text
-    comment = payload.get('object_attributes')
+    comment = payload['object_attributes']
     action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/merge_requests/{}'.format(
-        payload.get('project').get('web_url'),
-        payload.get('merge_request').get('iid')
+        payload['project'].get('web_url'),
+        payload['merge_request'].get('iid')
     )
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         url,
-        payload.get('merge_request').get('iid'),
+        payload['merge_request'].get('iid'),
         message=comment['note'],
         type='MR'
     )
 
 def get_commented_issue_event_body(payload):
     # type: (Dict[str, Any]) -> Text
-    comment = payload.get('object_attributes')
+    comment = payload['object_attributes']
     action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/issues/{}'.format(
-        payload.get('project').get('web_url'),
-        payload.get('issue').get('iid')
+        payload['project'].get('web_url'),
+        payload['issue'].get('iid')
     )
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         url,
-        payload.get('issue').get('iid'),
+        payload['issue'].get('iid'),
         message=comment['note'],
         type='Issue'
     )
 
 def get_commented_snippet_event_body(payload):
     # type: (Dict[str, Any]) -> Text
-    comment = payload.get('object_attributes')
+    comment = payload['object_attributes']
     action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/snippets/{}'.format(
-        payload.get('project').get('web_url'),
-        payload.get('snippet').get('id')
+        payload['project'].get('web_url'),
+        payload['snippet'].get('id')
     )
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         url,
-        payload.get('snippet').get('id'),
+        payload['snippet'].get('id'),
         message=comment['note'],
         type='Snippet'
     )
@@ -190,8 +190,8 @@ def get_wiki_page_event_body(payload, action):
     return u"{} {} [Wiki Page \"{}\"]({}).".format(
         get_issue_user_name(payload),
         action,
-        payload.get('object_attributes').get('title'),
-        payload.get('object_attributes').get('url'),
+        payload['object_attributes'].get('title'),
+        payload['object_attributes'].get('url'),
     )
 
 def get_build_hook_event_body(payload):
@@ -211,7 +211,7 @@ def get_build_hook_event_body(payload):
 
 def get_pipeline_event_body(payload):
     # type: (Dict[str, Any]) -> Text
-    pipeline_status = payload.get('object_attributes').get('status')
+    pipeline_status = payload['object_attributes'].get('status')
     if pipeline_status == 'pending':
         action = 'was created'
     elif pipeline_status == 'running':
@@ -220,7 +220,7 @@ def get_pipeline_event_body(payload):
         action = 'changed status to {}'.format(pipeline_status)
 
     builds_status = u""
-    for build in payload.get('builds'):
+    for build in payload['builds']:
         builds_status += u"* {} - {}\n".format(build.get('name'), build.get('status'))
     return u"Pipeline {} with build(s):\n{}.".format(action, builds_status[:-1])
 
@@ -300,63 +300,63 @@ def get_subject_based_on_event(event, payload):
     if event == 'Push Hook':
         return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
     elif event == 'Build Hook':
-        return u"{} / {}".format(payload.get('repository').get('name'), get_branch_name(payload))
+        return u"{} / {}".format(payload['repository'].get('name'), get_branch_name(payload))
     elif event == 'Pipeline Hook':
         return u"{} / {}".format(
             get_repo_name(payload),
-            payload.get('object_attributes').get('ref').replace('refs/heads/', ''))
+            payload['object_attributes'].get('ref').replace('refs/heads/', ''))
     elif event.startswith('Merge Request Hook'):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
-            id=payload.get('object_attributes').get('iid'),
-            title=payload.get('object_attributes').get('title')
+            id=payload['object_attributes'].get('iid'),
+            title=payload['object_attributes'].get('title')
         )
     elif event.startswith('Issue Hook'):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
-            id=payload.get('object_attributes').get('iid'),
-            title=payload.get('object_attributes').get('title')
+            id=payload['object_attributes'].get('iid'),
+            title=payload['object_attributes'].get('title')
         )
     elif event == 'Note Hook Issue':
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
-            id=payload.get('issue').get('iid'),
-            title=payload.get('issue').get('title')
+            id=payload['issue'].get('iid'),
+            title=payload['issue'].get('title')
         )
     elif event == 'Note Hook MergeRequest':
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
-            id=payload.get('merge_request').get('iid'),
-            title=payload.get('merge_request').get('title')
+            id=payload['merge_request'].get('iid'),
+            title=payload['merge_request'].get('title')
         )
 
     elif event == 'Note Hook Snippet':
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Snippet',
-            id=payload.get('snippet').get('id'),
-            title=payload.get('snippet').get('title')
+            id=payload['snippet'].get('id'),
+            title=payload['snippet'].get('title')
         )
     return get_repo_name(payload)
 
 def get_event(request, payload, branches):
-    # type: (HttpRequest,  Dict[str, Any], Text) -> Optional[str]
+    # type: (HttpRequest,  Dict[str, Any], Optional[Text]) -> Optional[str]
     event = request.META['HTTP_X_GITLAB_EVENT']
     if event == 'Issue Hook':
-        action = payload.get('object_attributes').get('action')
+        action = payload['object_attributes'].get('action')
         event = "{} {}".format(event, action)
     elif event == 'Note Hook':
-        action = payload.get('object_attributes').get('noteable_type')
+        action = payload['object_attributes'].get('noteable_type')
         event = "{} {}".format(event, action)
     elif event == 'Merge Request Hook':
-        action = payload.get('object_attributes').get('action')
+        action = payload['object_attributes'].get('action')
         event = "{} {}".format(event, action)
     elif event == 'Wiki Page Hook':
-        action = payload.get('object_attributes').get('action')
+        action = payload['object_attributes'].get('action')
         event = "{} {}".format(event, action)
     elif event == 'Push Hook':
         if branches is not None:

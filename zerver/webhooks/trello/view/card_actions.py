@@ -64,20 +64,23 @@ def get_proper_action(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     if action_type == 'updateCard':
         data = get_action_data(payload)
+        old_data = data['old']
+        card_data = data['card']
         if data.get('listBefore'):
             return CHANGE_LIST
-        if data.get('old').get('name'):
+        if old_data.get('name'):
             return CHANGE_NAME
-        if data.get('old').get('due', False) is None:
+        if old_data.get('due', False) is None:
             return SET_DUE_DATE
-        if data.get('old').get('due'):
-            if data.get('card').get('due', False) is None:
+        if old_data.get('due'):
+            if card_data.get('due', False) is None:
                 return REMOVE_DUE_DATE
+
             else:
                 return CHANGE_DUE_DATE
-        if data.get('old').get('closed') is False and data.get('card').get('closed'):
+        if old_data.get('closed') is False and card_data.get('closed'):
             return ARCHIVE
-        if data.get('old').get('closed') and data.get('card').get('closed') is False:
+        if old_data.get('closed') and card_data.get('closed') is False:
             return REOPEN
         raise UnknownUpdateCardAction()
 
@@ -86,28 +89,28 @@ def get_proper_action(payload, action_type):
 def get_subject(payload):
     # type: (Mapping[str, Any]) -> Text
     data = {
-        'board_name': get_action_data(payload).get('board').get('name')
+        'board_name': get_action_data(payload)['board'].get('name')
     }
     return TRELLO_SUBJECT_TEMPLATE.format(**data)
 
 def get_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
-    message_body = ACTIONS_TO_FILL_BODY_MAPPER.get(action_type)(payload, action_type)
-    creator = payload.get('action').get('memberCreator').get('fullName')
+    message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
+    creator = payload['action']['memberCreator'].get('fullName')
     return TRELLO_MESSAGE_TEMPLATE.format(full_name=creator, rest=message_body)
 
 def get_added_checklist_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'checklist_name': get_action_data(payload).get('checklist').get('name'),
+        'checklist_name': get_action_data(payload)['checklist'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_added_attachment_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'attachment_url': get_action_data(payload).get('attachment').get('url'),
-        'attachment_name': get_action_data(payload).get('attachment').get('name'),
+        'attachment_url': get_action_data(payload)['attachment'].get('url'),
+        'attachment_name': get_action_data(payload)['attachment'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -115,16 +118,17 @@ def get_updated_card_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
         'card_name': get_card_name(payload),
-        'old_list': get_action_data(payload).get('listBefore').get('name'),
-        'new_list': get_action_data(payload).get('listAfter').get('name'),
+        'old_list': get_action_data(payload)['listBefore'].get('name'),
+        'new_list': get_action_data(payload)['listAfter'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_renamed_card_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
+
     data = {
-        'old_name': get_action_data(payload).get('old').get('name'),
-        'new_name': get_action_data(payload).get('card').get('name'),
+        'old_name': get_action_data(payload)['old'].get('name'),
+        'new_name': get_action_data(payload)['old'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -139,22 +143,22 @@ def get_added_label_body(payload, action_type):
 def get_managed_member_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'member_name': payload.get('action').get('member').get('fullName')
+        'member_name': payload['action']['member'].get('fullName')
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_managed_due_date_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'due_date': prettify_date(get_action_data(payload).get('card').get('due'))
+        'due_date': prettify_date(get_action_data(payload)['card'].get('due'))
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_changed_due_date_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'due_date': prettify_date(get_action_data(payload).get('card').get('due')),
-        'old_due_date': prettify_date(get_action_data(payload).get('old').get('due'))
+        'due_date': prettify_date(get_action_data(payload)['card'].get('due')),
+        'old_due_date': prettify_date(get_action_data(payload)['old'].get('due'))
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -175,19 +179,19 @@ def get_filled_card_url_template(payload):
 
 def get_card_url(payload):
     # type: (Mapping[str, Any]) -> Text
-    return u'https://trello.com/c/{}'.format(get_action_data(payload).get('card').get('shortLink'))
+    return u'https://trello.com/c/{}'.format(get_action_data(payload)['card'].get('shortLink'))
 
 def get_message_body(action_type):
     # type: (Text) -> Text
-    return ACTIONS_TO_MESSAGE_MAPPER.get(action_type)
+    return ACTIONS_TO_MESSAGE_MAPPER[action_type]
 
 def get_card_name(payload):
     # type: (Mapping[str, Any]) -> Text
-    return get_action_data(payload).get('card').get('name')
+    return get_action_data(payload)['card'].get('name')
 
 def get_action_data(payload):
     # type: (Mapping[str, Any]) -> Mapping[str, Any]
-    return payload.get('action').get('data')
+    return payload['action'].get('data')
 
 ACTIONS_TO_FILL_BODY_MAPPER = {
     CREATE: get_body_by_action_type_without_data,
