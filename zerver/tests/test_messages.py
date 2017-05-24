@@ -866,13 +866,13 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored huddle message works
         """
-        self.login(self.mit_user("starnine").email)
+        self.login(self.mit_email("starnine"))
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_user("sipbtest").email,
+                                                     "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": ujson.dumps([self.mit_user("starnine").email,
-                                                                        self.mit_user("espuser").email])})
+                                                     "to": ujson.dumps([self.mit_email("starnine"),
+                                                                        self.mit_email("espuser")])})
         self.assert_json_success(result)
 
     def test_mirrored_personal(self):
@@ -880,12 +880,12 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored personal message works
         """
-        self.login(self.mit_user("starnine").email)
+        self.login(self.mit_email("starnine"))
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_user("sipbtest").email,
+                                                     "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_user("starnine").email})
+                                                     "to": self.mit_email("starnine")})
         self.assert_json_success(result)
 
     def test_duplicated_mirrored_huddle(self):
@@ -894,17 +894,17 @@ class MessagePOSTTest(ZulipTestCase):
         Sending two mirrored huddles in the row return the same ID
         """
         msg = {"type": "private",
-               "sender": self.mit_user("sipbtest").email,
+               "sender": self.mit_email("sipbtest"),
                "content": "Test message",
                "client": "zephyr_mirror",
-               "to": ujson.dumps([self.mit_user("espuser").email,
-                                  self.mit_user("starnine").email])}
+               "to": ujson.dumps([self.mit_email("espuser"),
+                                  self.mit_email("starnine")])}
 
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.login(self.mit_user("starnine").email)
+            self.login(self.mit_email("starnine"))
             result1 = self.client_post("/json/messages", msg)
         with mock.patch('DNS.dnslookup', return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']]):
-            self.login(self.mit_user("espuser").email)
+            self.login(self.mit_email("espuser"))
             result2 = self.client_post("/json/messages", msg)
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
@@ -1000,33 +1000,33 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_send_message_when_sender_is_not_set(self):
         # type: () -> None
-        self.login(self.mit_user("starnine").email)
+        self.login(self.mit_email("starnine"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_user("starnine").email})
+                                                     "to": self.mit_email("starnine")})
         self.assert_json_error(result, "Missing sender")
 
     def test_send_message_as_not_superuser_when_type_is_not_private(self):
         # type: () -> None
-        self.login(self.mit_user("starnine").email)
+        self.login(self.mit_email("starnine"))
         result = self.client_post("/json/messages", {"type": "not-private",
-                                                     "sender": self.mit_user("sipbtest").email,
+                                                     "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_user("starnine").email})
+                                                     "to": self.mit_email("starnine")})
         self.assert_json_error(result, "User not authorized for this query")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_create_mirrored_message_user_returns_invalid_input(self, create_mirrored_message_users_mock):
         # type: (Any) -> None
         create_mirrored_message_users_mock.return_value = (False, True)
-        self.login(self.mit_user("starnine").email)
+        self.login(self.mit_email("starnine"))
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_user("sipbtest").email,
+                                                     "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_user("starnine").email})
+                                                     "to": self.mit_email("starnine")})
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -1039,7 +1039,7 @@ class MessagePOSTTest(ZulipTestCase):
         user.realm.save()
         self.login(email)
         result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_user("sipbtest").email,
+                                                     "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": email}, name='gownooo')
@@ -1149,7 +1149,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
 
-        self.login(self.mit_user("sipbtest").email)
+        self.login(self.mit_email("sipbtest"))
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -1750,7 +1750,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # But it still doesn't work if you're in another realm
-        self.login(self.mit_user("sipbtest").email)
+        self.login(self.mit_email("sipbtest"))
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
 
