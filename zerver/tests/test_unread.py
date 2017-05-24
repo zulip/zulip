@@ -217,7 +217,7 @@ class UnreadCountTests(ZulipTestCase):
 
         message_ids = [self.send_message(self.example_email("hamlet"), self.example_email("iago"),
                                          Recipient.PERSONAL, "test"),
-                       self.send_message(self.example_email("hamlet"), "cordelia@zulip.com",
+                       self.send_message(self.example_email("hamlet"), self.example_email("cordelia"),
                                          Recipient.PERSONAL, "test2")]
 
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
@@ -239,7 +239,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
-        self.subscribe_to_stream("cordelia@zulip.com", "test_stream", user_profile.realm)
+        self.subscribe_to_stream(self.example_email("cordelia"), "test_stream", user_profile.realm)
 
         message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello")
         unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello")

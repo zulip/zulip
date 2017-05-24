@@ -333,7 +333,7 @@ class LoginTest(ZulipTestCase):
         """You will be redirected to the app's main page if you land on the
         login page when already logged in.
         """
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
         response = self.client_get("/login/")
         self.assertEqual(response["Location"], "/")
 
@@ -1706,7 +1706,7 @@ class TestFindMyTeam(ZulipTestCase):
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
-        self.assertIn("cordelia@zulip.com", content)
+        self.assertIn(self.example_email("cordelia"), content)
 
     def test_find_team_ignore_invalid_email(self):
         # type: () -> None

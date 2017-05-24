@@ -664,7 +664,7 @@ class LoginRequiredTest(ZulipTestCase):
 class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_success(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
+        email = self.example_email("cordelia")
 
         self.login(email)
         result = self.client_post("/json/fetch_api_key", {"password": initial_password(email)})
@@ -672,7 +672,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
     def test_fetch_api_key_wrong_password(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
+        email = self.example_email("cordelia")
 
         self.login(email)
         result = self.client_post("/json/fetch_api_key", {"password": "wrong_password"})

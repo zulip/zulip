@@ -527,7 +527,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('operation', equals("add")),
         ])
 
-        message = self.send_message("cordelia@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL, "hello")
+        message = self.send_message(self.example_email("cordelia"), self.example_email("hamlet"), Recipient.PERSONAL, "hello")
         user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred',
@@ -615,7 +615,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: check_send_typing_notification(
-                self.user_profile, ["cordelia@zulip.com"], "start"),
+                self.user_profile, [self.example_email("cordelia")], "start"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
