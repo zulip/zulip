@@ -15,13 +15,13 @@ from zerver.lib.actions import (
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
-from zerver.models import get_realm, get_user_profile_by_email, Realm
+from zerver.models import get_realm, get_user, Realm
 
 
 class RealmTest(ZulipTestCase):
-    def assert_user_profile_cache_gets_new_name(self, email, new_realm_name):
-        # type: (Text, Text) -> None
-        user_profile = get_user_profile_by_email(email)
+    def assert_user_profile_cache_gets_new_name(self, email, realm, new_realm_name):
+        # type: (Text, Realm, Text) -> None
+        user_profile = get_user(email, realm)
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
     def test_do_set_realm_name_caching(self):
@@ -34,7 +34,7 @@ class RealmTest(ZulipTestCase):
         new_name = u'Zed You Elle Eye Pea'
         do_set_realm_property(realm, 'name', new_name)
         self.assertEqual(get_realm(realm.string_id).name, new_name)
-        self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
+        self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', realm, new_name)
 
     def test_update_realm_name_events(self):
         # type: () -> None

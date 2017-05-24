@@ -9,7 +9,7 @@ from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_reci
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_realm, get_user
 
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self):
@@ -61,10 +61,11 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         """
         Sending typing notification to a single recipient is successful
         """
+        # Both sender and recipient belong to zulip realm
         sender = 'hamlet@zulip.com'
         recipient = 'othello@zulip.com'
         expected_recipient_emails = set([sender, recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([get_user(email, get_realm('zulip')).id for email in expected_recipient_emails])
 
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -91,10 +92,11 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         """
         Sending typing notification to a single recipient is successful
         """
+        # All senders and recipients belong to zulip realm
         sender = 'hamlet@zulip.com'
         recipient = ['othello@zulip.com', 'cordelia@zulip.com']
         expected_recipient_emails = set(recipient) | set([sender])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([get_user(email, get_realm('zulip')).id for email in expected_recipient_emails])
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post('/api/v1/typing', {'to': ujson.dumps(recipient),
@@ -152,10 +154,11 @@ class TypingStartedNotificationTest(ZulipTestCase):
         Sending typing notification to another user
         is successful.
         """
+        # Sender and recipient belong to zulip realm
         sender = 'hamlet@zulip.com'
         recipient = 'othello@zulip.com'
         expected_recipient_emails = set([sender, recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([get_user(email, get_realm('zulip')).id for email in expected_recipient_emails])
 
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -215,10 +218,11 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         Sending stopped typing notification to another user
         is successful.
         """
+        # Sender and recipient belong to zulip realm
         sender = 'hamlet@zulip.com'
         recipient = 'othello@zulip.com'
         expected_recipient_emails = set([sender, recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([get_user(email, get_realm('zulip')).id for email in expected_recipient_emails])
 
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
