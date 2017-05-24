@@ -1,4 +1,4 @@
-set_global('$', global.zjquery);
+set_global('$', global.make_zjquery());
 
 set_global('page_params', {
     realm_users: [],
