@@ -51,7 +51,6 @@ most recent message in their view.
 
 ## Composing messages
 
-
 * **Reply to message**: `r` or `Enter` (`Return`) — Allows the user to begin
 replying to the selected message (outlined in blue).
 
@@ -79,17 +78,17 @@ discard their unsent message.
 
 ## Narrowing
 
-* **Narrow by stream**: `s` — This shortcut narrows the view to show all
-messages in the stream of the selected message (outlined in blue).
+* **Narrow by stream**: `s` — Narrows the view to show all messages in the
+stream of the selected message (outlined in blue).
 
-* **Narrow by topic**: `S` — This shortcut narrows the view to show all
-messages with the topic of the selected message (outlined in blue).
+* **Narrow by topic**: `S` — Narrows the view to show all messages with the
+topic of the selected message (outlined in blue).
 
-* **Narrow to all private messages**: `P` — This shortcut narrows the view to
-show all of the user's private messages.
+* **Narrow to all private messages**: `P` — Narrows the view to show all of the
+user's private messages.
 
-* **Narrow to next unread topic**: `n` — This shortcut narrows the view to the
-next unread topic in the stream sidebar.
+* **Narrow to next unread topic**: `n` — Narrows the view to the next unread
+topic in the stream sidebar.
 
 * **Cycle between stream narrows**: `A` and `D` — Allows the user to cycle
 through the narrows showing the messages of a stream according to Stream order
@@ -101,12 +100,14 @@ the Home view, showing all messages in the organization.
 
 ## Message actions
 
-* **Edit your last message**: `⇽` — This shortcut opens the last editable
-message that the user sent in the current view (if any) in the compose box.
+* **Edit your last message**: `⇽` — Opens the last editable message that the
+user sent in the current view (if any) in the compose box.
 
-* **Show images in thread**: `v` — This shortcut opens any images or videos (if
-any) embedded in a message or previous messages within the thread using the
-lightbox viewer.
+* **Show message sender's profile**: `u` — Shows a popover with the profile of
+the user that sent the selected message.
+
+* **Show images in thread**: `v` — Opens any images or videos (if any) embedded
+in a message or previous messages within the thread using the lightbox viewer.
 
 * **Edit selected message**: `i` then `Enter` (`Return`) — Allows the user to
 edit the selected message (outlined in blue) if the user authored the selected
@@ -128,39 +129,38 @@ the selected message (outlined in blue).
 
 ## Menus
 
-* **Toggle the gear menu**: `g` — This shortcut opens the gear menu located in
-the upper-right corner of the window.
+* **Toggle the gear menu**: `g` — Opens the gear menu located in the
+upper-right corner of the window.
 
-* **Open message menu**: `i` — This shortcut opens the message menu with the
-available message actions of the selected message (outlined in blue).
+* **Open message menu**: `i` — Opens the message menu with the available
+message actions of the selected message (outlined in blue).
 
-* **Open reactions menu**: `:` — This shortcut opens the emoji reactions menu,
-allowing you to add an emoji reaction to the selected message.
+* **Open reactions menu**: `:` — Opens the emoji reactions menu, allowing you
+to add an emoji reaction to the selected message.
 
 * **Show keyboard shortcuts**: `?` — Makes a modal window with a list of all of
 the keyboard shortcuts appear.
 
 ## Drafts
 
-* **View drafts**: `d` — This shortcut opens the **Drafts** modal with a list
+* **View drafts**: `d` — Opens the **Drafts** modal with a list
 of all of the user's drafts.
 
-* **Select previous draft**: `↑` — This shortcut selects the previous draft in
-the **Drafts** modal.
+* **Select previous draft**: `↑` — Selects the previous draft in the **Drafts**
+modal.
 
-* **Select next draft**: `↓` — This shortcut selects the next draft in the
-**Drafts** modal.
+* **Select next draft**: `↓` — Selects the next draft in the **Drafts** modal.
 
 * **Scroll up**: `PgUp` (`Fn` + `↑`) — Allows the user to scroll up through the
 **Drafts** modal.
 
-* **Scroll down**: `Spacebar` or `PgDn` (`Fn` + `↓`) — Allowsthe user to scroll
+* **Scroll down**: `Spacebar` or `PgDn` (`Fn` + `↓`) — Allows the user to scroll
 down through the **Drafts** modal.
 
-* **Select first draft**: `Home` (`Fn` + `⇽`) — Allowsthe user to scroll to the
+* **Select first draft**: `Home` (`Fn` + `⇽`) — Allows the user to scroll to the
 first draft in the **Drafts** modal.
 
-* **Select last draft**: `End` (`Fn` + `⇾`) or `G` — Allowsthe user to scroll
+* **Select last draft**: `End` (`Fn` + `⇾`) or `G` — Allows the user to scroll
 to the last draft in the **Drafts** modal.
 
 * **Edit selected draft**: `Enter` (`Return`) — Allows the user to open the
@@ -181,11 +181,11 @@ list of streams shown in the **Streams** modal.
 * **Switch between tabs**: `⇽` and `⇾` — Allows you to switch between the
 **Subscribed** and **All streams** tabs in the **Streams** modal.
 
-* **View stream messages**: `V` — This shortcut narrows your view to the
-messages of the selected stream.
+* **View stream messages**: `V` — Narrows your view to the messages of the
+selected stream.
 
 * **Subscribe to/unsubscribe from selected stream**: `S` — Allows you to
 subscribe to or unsubscribe from the selected stream.
 
-* **Create new stream**: `n` — This shortcut opens the **Create new stream**
+* **Create new stream**: `n` — Opens the **Create new stream**
 panel.
