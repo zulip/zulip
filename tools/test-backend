@@ -27,6 +27,7 @@ target_fully_covered = {path for target in [
     'zerver/context_processors.py',
     'zerver/lib/alert_words.py',
     'zerver/lib/attachments.py',
+    'zerver/lib/avatar.py',
     'zerver/lib/avatar_hash.py',
     'zerver/lib/context_managers.py',
     'zerver/lib/domains.py',
