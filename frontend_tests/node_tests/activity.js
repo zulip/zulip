@@ -280,3 +280,52 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
     ]);
 }());
+
+set_global('$', global.zjquery);
+
+(function test_PM_update_dom_counts() {
+    var value = $('alice-value');
+    var count = $('alice-count');
+    var pm_key = alice.user_id.toString();
+    var li = $("li.user_sidebar_entry[data-user-id='" + pm_key + "']");
+    count.add_child('.value', value);
+    li.add_child('.count', count);
+
+    var counts = new Dict();
+    counts.set(pm_key, 5);
+    li.addClass('user_sidebar_entry');
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(li.hasClass('user-with-count'));
+    assert.equal(value.text(), 5);
+
+    counts.set(pm_key, 0);
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(!li.hasClass('user-with-count'));
+    assert.equal(value.text(), '');
+}());
+
+(function test_group_update_dom_counts() {
+    var value = $('alice-fred-value');
+    var count = $('alice-fred-count');
+    var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
+    var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
+    var li = $(li_selector);
+    count.add_child('.value', value);
+    li.add_child('.count', count);
+
+    var counts = new Dict();
+    counts.set(pm_key, 5);
+    li.addClass('group-pms-sidebar-entry');
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(li.hasClass('group-with-count'));
+    assert.equal(value.text(), 5);
+
+    counts.set(pm_key, 0);
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(!li.hasClass('group-with-count'));
+    assert.equal(value.text(), '');
+}());
