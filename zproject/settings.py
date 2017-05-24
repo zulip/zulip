@@ -977,12 +977,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/app.js'
     },
-    'activity': {
-        'source_filenames': [
-            'third/sorttable/sorttable.js',
-        ],
-        'output_filename': 'min/activity.js'
-    },
     'stats': {
         'source_filenames': [
             'js/stats/stats.js',
