@@ -1543,7 +1543,7 @@ class SubscriptionAPITest(ZulipTestCase):
                                "Invalid stream name '%s'" % (invalid_stream_name,))
 
     def assert_adding_subscriptions_for_principal(self, invitee_email, invitee_realm, streams, invite_only=False):
-        # type: (Text, List[Text], bool) -> None
+        # type: (Text, Realm, List[Text], bool) -> None
         """
         Calling POST /json/users/me/subscriptions on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add

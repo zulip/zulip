@@ -34,7 +34,7 @@ from zerver.lib.validator import (
     check_variable_type, equals, check_none_or,
 )
 from zerver.models import \
-    get_realm, get_user, UserProfile, Client
+    get_realm, get_user, UserProfile, Client, Realm
 
 import ujson
 
@@ -986,12 +986,12 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         do_reactivate_realm(user_profile.realm)
 
     def _do_test(self, user_email):
-        # type: (str) -> HttpResponse
+        # type: (Text) -> HttpResponse
         data = {"status": '"started"'}
         return self.client_post(r'/json/tutorial_status', data)
 
     def _login(self, user_email, user_realm, password=None):
-        # type: (str, str) -> None
+        # type: (Text, Realm, str) -> None
         if password:
             user_profile = get_user(user_email, user_realm)
             user_profile.set_password(password)

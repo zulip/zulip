@@ -499,8 +499,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # type: () -> None
         self.login(self.example_email('hamlet'))
         bot_info = {
-            'full_name': 'The Bot of Hamlet',
-            'short_name': 'hambot',
+            'full_name': u'The Bot of Hamlet',
+            'short_name': u'hambot',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)

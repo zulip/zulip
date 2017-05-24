@@ -340,7 +340,7 @@ class LoginTest(ZulipTestCase):
 class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams, body=''):
-        # type: (str, List[Text], str) -> HttpResponse
+        # type: (Text, List[Text], str) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -356,7 +356,7 @@ class InviteUserTest(ZulipTestCase):
                                  "custom_body": body})
 
     def check_sent_emails(self, correct_recipients, custom_body=None):
-        # type: (List[str], Optional[str]) -> None
+        # type: (List[Text], Optional[str]) -> None
         from django.core.mail import outbox
         self.assertEqual(len(outbox), len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in outbox]
@@ -545,8 +545,8 @@ earl-test@zulip.com""", ["Denmark"]))
         only sent to the new users.
         """
         self.login("hamlet@zulip.com")
-        existing = ["hamlet@zulip.com", "othello@zulip.com"]
-        new = ["foo-test@zulip.com", "bar-test@zulip.com"]
+        existing = [u"hamlet@zulip.com", u"othello@zulip.com"]
+        new = [u"foo-test@zulip.com", u"bar-test@zulip.com"]
 
         result = self.client_post("/json/invite_users",
                                   {"invitee_emails": "\n".join(existing + new),

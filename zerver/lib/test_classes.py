@@ -210,32 +210,32 @@ class ZulipTestCase(TestCase):
         return django_client.get(url, info, **kwargs)
 
     example_user_map = dict(
-        hamlet='hamlet@zulip.com',
-        cordelia='cordelia@zulip.com',
-        iago='iago@zulip.com',
-        prospero='prospero@zulip.com',
-        othello='othello@zulip.com',
-        AARON='AARON@zulip.com',
-        aaron='aaron@zulip.com',
-        ZOE='ZOE@zulip.com',
+        hamlet=u'hamlet@zulip.com',
+        cordelia=u'cordelia@zulip.com',
+        iago=u'iago@zulip.com',
+        prospero=u'prospero@zulip.com',
+        othello=u'othello@zulip.com',
+        AARON=u'AARON@zulip.com',
+        aaron=u'aaron@zulip.com',
+        ZOE=u'ZOE@zulip.com',
     )
 
     mit_user_map = dict(
-        sipbtest="sipbtest@mit.edu",
-        starnine="starnine@mit.edu",
-        espuser="espuser@mit.edu",
+        sipbtest=u"sipbtest@mit.edu",
+        starnine=u"starnine@mit.edu",
+        espuser=u"espuser@mit.edu",
     )
 
     # Non-registered test users
     nonreg_user_map = dict(
-        test='test@zulip.com',
-        test1='test1@zulip.com',
-        alice='alice@zulip.com',
-        newuser='newuser@zulip.com',
-        bob='bob@zulip.com',
-        cordelia='cordelia@zulip.com',
-        newguy='newguy@zulip.com',
-        me='me@zulip.com',
+        test=u'test@zulip.com',
+        test1=u'test1@zulip.com',
+        alice=u'alice@zulip.com',
+        newuser=u'newuser@zulip.com',
+        bob=u'bob@zulip.com',
+        cordelia=u'cordelia@zulip.com',
+        newguy=u'newguy@zulip.com',
+        me=u'me@zulip.com',
     )
 
     def nonreg_user(self, name):
@@ -254,15 +254,15 @@ class ZulipTestCase(TestCase):
         return get_user_profile_by_email(email)
 
     def nonreg_email(self, name):
-        # type: (str) -> str
+        # type: (str) -> Text
         return self.nonreg_user_map[name]
 
     def example_email(self, name):
-        # type: (str) -> str
+        # type: (str) -> Text
         return self.example_user_map[name]
 
     def mit_email(self, name):
-        # type: (str) -> str
+        # type: (str) -> Text
         return self.mit_user_map[name]
 
     def notification_bot(self):

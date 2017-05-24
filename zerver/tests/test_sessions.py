@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Callable
+from typing import Any, Callable, Text
 
 from zerver.lib.sessions import (
     user_sessions,
@@ -20,7 +20,7 @@ from zerver.lib.test_classes import ZulipTestCase
 class TestSessions(ZulipTestCase):
 
     def do_test_session(self, user, action, expected_result):
-        # type: (str, Callable[[], Any], bool) -> None
+        # type: (Text, Callable[[], Any], bool) -> None
         self.login(user)
         self.assertIn('_auth_user_id', self.client.session)
         action()
