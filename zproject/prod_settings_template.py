@@ -403,3 +403,7 @@ CAMO_URI = '/external_content/'
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
+
+# Thumbor host
+# Format HOST:PORT
+THUMBOR_HOST = "127.0.0.1:9995"

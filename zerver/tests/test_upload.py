@@ -580,6 +580,38 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(b"zulip!", data)
             self.logout()
 
+    def test_thumbnail_local_image(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        thumbor_host = '127.0.0.1:9995'
+        with self.settings(THUMBOR_HOST=thumbor_host):
+            with mock.patch('zerver.lib.upload.get_local_file_path') as mock_func:
+                mock_func.return_value = os.path.join(settings.LOCAL_UPLOADS_DIR, 'sdsd/test.jpg')
+                response = self.client_get('/user_uploads/1/sdsd/test.jpg?size=0x100')
+                pass
+            pass
+        self.assertEqual(response.status_code, 302)
+        url_split_result = urllib.parse.urlsplit(urllib.parse.unquote(response.url))
+        self.assertEqual(url_split_result.netloc, thumbor_host)
+        self.assertEqual(url_split_result.path, '/unsafe/0x100/smart/sdsd/test.jpg')
+        url_params = urllib.parse.parse_qs(url_split_result.query)
+        self.assertEqual(url_params['source_type'], ['local_file'])
+
+    def test_thumbnail_s3_image(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        thumbor_host = '127.0.0.1:9995'
+        realm = get_realm("zulip") # FIXME get_realm_by_string_id
+        with self.settings(THUMBOR_HOST=thumbor_host, LOCAL_UPLOADS_DIR=None):
+            original_url = '/user_uploads/{0}/test/test.jpg?size=0x100'.format(realm.id)
+            response = self.client_get(original_url)
+        self.assertEqual(response.status_code, 302)
+        url_split_result = urllib.parse.urlsplit(urllib.parse.unquote(response.url))
+        self.assertEqual(url_split_result.netloc, thumbor_host)
+        self.assertEqual(url_split_result.path, '/unsafe/0x100/smart/1/test/test.jpg')
+        url_params = urllib.parse.parse_qs(url_split_result.query)
+        self.assertEqual(url_params['source_type'], ['s3'])
+
     def tearDown(self):
         # type: () -> None
         destroy_uploads()

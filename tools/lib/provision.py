@@ -123,6 +123,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
+    "libcurl4-openssl-dev", # Thumbor Required Library
 ] + VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
@@ -187,6 +188,8 @@ def main(options):
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
             setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
                              virtualenv_args=['-p', 'python3'])
+        THUMBOR_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "thumbor.txt")
+        setup_virtualenv("/srv/thumbor-venv", THUMBOR_REQS_FILE, patch_activate_script=True)
     else:
         # Import tools/setup_venv.py instead of running it so that we get an
         # activated virtualenv for the rest of the provisioning process.

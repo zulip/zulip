@@ -215,6 +215,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
                     'OFFLINE_THRESHOLD_SECS': 5 * 60,
                     'PUSH_NOTIFICATION_BOUNCER_URL': None,
+                    'THUMBOR_HOST': None,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -1287,3 +1288,5 @@ PROFILE_ALL_REQUESTS = False
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
 
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
+
+THUMBOR_SIGN_KEY = get_secret('thumbor_sign_key')

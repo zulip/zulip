@@ -37,11 +37,14 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm, UserProfile
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
+from zerver.lib.upload import (
+    get_thumbor_link, is_external_url, thumbor_is_enabled,
+    THUMBOR_EXTERNAL_TYPE)
+from zerver.models import Message, Realm, UserProfile
 import six
 from six.moves import range, html_parser
 from typing import Text
@@ -145,7 +148,18 @@ def add_a(root, url, link, title=None, desc=None,
     if data_id is not None:
         a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
-    img.set("src", url)
+    if url == link and thumbor_is_enabled():
+        if is_external_url(url):
+            thumbor_url = get_thumbor_link(url, THUMBOR_EXTERNAL_TYPE, size='0x100')
+            img.set("src", thumbor_url)
+            img.set('data-original', get_thumbor_link(url, THUMBOR_EXTERNAL_TYPE))
+        elif url.startswith('/user_uploads/'):
+            img.set("src", "{0}?size=0x100".format(url))
+            img.set('data-original', "{0}?size=0x0".format(url))
+        else:
+            img.set("src", url)
+    else:
+        img.set("src", url)
     if class_attr == "message_inline_ref":
         summary_div = markdown.util.etree.SubElement(div, "div")
         title_div = markdown.util.etree.SubElement(summary_div, "div")

@@ -31,3 +31,4 @@ var/*
 tools/conf.ini
 tools/custom_provision
 contrib_bots/bots/john/assets/var/database.db
+zthumbor/thumbor_local_settings.py

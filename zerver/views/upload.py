@@ -10,13 +10,19 @@ from zerver.decorator import authenticated_json_post_view
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, get_realm_for_filename, within_upload_quota
+    get_signed_upload_url, get_realm_for_filename, within_upload_quota, \
+    get_thumbor_link, thumbor_is_enabled, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_S3_TYPE
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 
 def serve_s3(request, url_path):
     # type: (HttpRequest, str) -> HttpResponse
+    if thumbor_is_enabled():
+        size = request.GET.get('size') or '0x0'
+        thumbor_url = get_thumbor_link(url_path, THUMBOR_S3_TYPE, size=size)
+        return redirect(thumbor_url)
+
     uri = get_signed_upload_url(url_path)
     return redirect(uri)
 
@@ -28,6 +34,16 @@ def serve_local(request, path_id):
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
+
+    if thumbor_is_enabled():
+        size = request.GET.get('size') or '0x0'
+        local_path = local_path.split(settings.LOCAL_UPLOADS_DIR)[1]
+        # remove first /
+        if local_path.startswith('/'):
+            local_path = local_path[1:]
+        thumbor_url = get_thumbor_link(local_path, THUMBOR_LOCAL_FILE_TYPE, size=size)
+        return redirect(thumbor_url)
+
     filename = os.path.basename(local_path)
     response = FileResponse(open(local_path, 'rb'),
                             content_type = mimetypes.guess_type(filename))
