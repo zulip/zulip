@@ -10,7 +10,7 @@ import sys
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib import utils
-from zerver.models import UserMessage, get_user_profile_by_email
+from zerver.models import UserMessage, UserProfile, get_user, get_realm
 from django.db import models
 
 
@@ -45,6 +45,10 @@ class Command(BaseCommand):
                             dest='email',
                             type=str,
                             help="Email to set messages for")
+        parser.add_argument('--realm',
+                           dest='string_id',
+                           type=str,
+                           help='The string_id of the realm')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -56,8 +60,17 @@ class Command(BaseCommand):
         flag = getattr(UserMessage.flags, options['flag'])
         all_until = options['all_until']
         email = options['email']
-
-        user_profile = get_user_profile_by_email(email)
+        
+        if options.get('string_id'):
+            realm = get_realm(options['string_id'])
+            user_profile = get_user(email, realm)
+        else:
+            try:
+                user_profile = UserProfile.objects.get(email=email)
+            except UserProfile.DoesNotExist:
+                raise RuntimeError("No UserProfiles with the given email")
+            except UserProfile.MultipleObjectsReturned:
+                raise RuntimeError("Multiple UserProfiles for the given email. Please specify realm as well.")
 
         if all_until:
             filt = models.Q(id__lte=all_until)
