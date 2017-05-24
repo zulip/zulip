@@ -398,6 +398,58 @@ paths:
               result:
                 type: string
 
+  /streams:
+    get:
+      description: Gets a list of streams available to a user on the server.
+      operationId: zerver.views.streams.get_streams_backend
+      security:
+      - basicAuth: []
+      parameters:
+      - name: include_public
+        in: query
+        description: |
+                     Set to `false` if the response should not include
+                     public streams.
+        type: string
+        default: true
+      - name: include_all_active
+        in: query
+        description: |
+                     Set to `true` if the response should include all active
+                     streams, including private ones. This requires
+                     API super user access.
+        type: string
+        default: false
+      - name: include_default
+        in: query
+        description: |
+                     Set to `true` if the response should include all the
+                     streams to which new users are subscribed by default.
+        type: string
+        default: false
+      - name: include_subscribed
+        in: query
+        description: |
+                     Set to `false` if response should not include streams
+                     where user is considered subscribed.
+        type: string
+        default: true
+      responses:
+        '200':
+          description: Success.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - description: |
+                           `stream` is an array (that can be zero-length
+                           depending on the parameters set) of available
+                           streams for the authenticated user.
+            - properties:
+                streams:
+                  type: array
+                  items:
+                    $ref: '#/definitions/stream'
+
 #######################
 # Security definitions
 #######################
