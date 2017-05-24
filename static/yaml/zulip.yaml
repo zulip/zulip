@@ -419,23 +419,23 @@ definitions:
     - msg
     - result
     properties:
-      msg:
-        type: string
       result:
         type: string
 
   JsonSuccess:
     allOf:
     - $ref: '#/definitions/JsonResponse'
-      properties:
+    - properties:
         msg:
+          type: string
           default: success
 
   JsonError:
     allOf:
     - $ref: '#/definitions/JsonResponse'
-      properties:
+    - properties:
         msg:
+          type: string
           default: error
 
   # /messages
