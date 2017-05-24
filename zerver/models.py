@@ -527,6 +527,11 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     """
     EMBEDDED_BOT = 4
 
+    SERVICE_BOT_TYPES = [
+        OUTGOING_WEBHOOK_BOT,
+        EMBEDDED_BOT
+    ]
+
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
     email = models.EmailField(blank=False, db_index=True, unique=True) # type: Text
@@ -728,6 +733,11 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     def is_embedded_bot(self):
         # type: () -> bool
         return self.bot_type == UserProfile.EMBEDDED_BOT
+
+    @property
+    def is_service_bot(self):
+        # type: () -> bool
+        return self.is_bot and self.bot_type in UserProfile.SERVICE_BOT_TYPES
 
     @staticmethod
     def emojiset_choices():
