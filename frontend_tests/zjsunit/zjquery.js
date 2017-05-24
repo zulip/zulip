@@ -53,6 +53,18 @@ function new_elem(selector) {
     return self;
 }
 
+function jquery_array(elem) {
+    var result = [elem];
+
+    for (var attr in elem) {
+        if (Object.prototype.hasOwnProperty.call(elem, attr)) {
+            result[attr] = elem[attr];
+        }
+    }
+
+    return result;
+}
+
 exports.zjquery = function (arg) {
     if (typeof arg === "function") {
         // If somebody is passing us a function, we emulate
@@ -68,7 +80,7 @@ exports.zjquery = function (arg) {
         var elem = new_elem(selector);
         elems[selector] = elem;
     }
-    return elems[selector];
+    return jquery_array(elems[selector]);
 };
 
 exports.zjquery.trim = function (s) { return s; };
