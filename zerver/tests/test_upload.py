@@ -18,7 +18,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend
 import zerver.lib.upload
-from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
+from zerver.models import Attachment, Recipient, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
     RealmDomain, get_realm
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
@@ -462,10 +462,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_cross_realm_file_access(self):
         # type: () -> None
 
-        def create_user(email):
+        def create_user(email, realm_id):
             # type: (Text) -> UserProfile
             self.register(email, 'test')
-            return get_user_profile_by_email(email)
+            return get_user(email, get_realm(realm_id))
 
         user1_email = 'user1@uploadtest.example.com'
         user2_email = 'test-og-bot@zulip.com'
@@ -485,9 +485,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
-        create_user(user1_email)
-        create_user(user2_email)
-        create_user(user3_email)
+        create_user(user1_email, 'uploadtest.example.com')
+        create_user(user2_email, 'zulip')
+        create_user(user3_email, 'uploadtest.example.com')
 
         # Send a message from @zulip.com -> @uploadtest.example.com
         self.login(user2_email, 'test')

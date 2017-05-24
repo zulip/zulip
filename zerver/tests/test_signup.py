@@ -23,7 +23,7 @@ from zerver.views.registration import confirmation_key, \
     redirect_and_log_into_subdomain, send_registration_completion_email
 
 from zerver.models import (
-    get_realm, get_prereg_user_by_email, get_user_profile_by_email,
+    get_realm, get_prereg_user_by_email, get_user,
     get_unique_open_realm, completely_open, get_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     Referral, ScheduledJob, UserProfile, UserMessage,
@@ -94,15 +94,16 @@ class AddNewUserHistoryTest(ZulipTestCase):
             "Denmark": {"description": "A Scandinavian country", "invite_only": False},
             "Verona": {"description": "A city in Italy", "invite_only": False}
         }  # type: Dict[Text, Dict[Text, Any]]
-        set_default_streams(get_realm("zulip"), stream_dict)
+        realm = get_realm('zulip')
+        set_default_streams(realm, stream_dict)
         with patch("zerver.lib.actions.add_new_user_history"):
-            self.register("test@zulip.com", "test")
-        user_profile = get_user_profile_by_email("test@zulip.com")
+            self.register(self.nonreg_email('test'), "test")
+        user_profile = self.nonreg_user('test')
 
         subs = Subscription.objects.select_related("recipient").filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM)
         streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
-        self.send_message("hamlet@zulip.com", streams[0].name, Recipient.STREAM, "test")
+        self.send_message(self.example_email('hamlet'), streams[0].name, Recipient.STREAM, "test")
         add_new_user_history(user_profile, streams)
 
 class PasswordResetTest(ZulipTestCase):
@@ -264,10 +265,10 @@ class LoginTest(ZulipTestCase):
         Site.objects.clear_cache()
 
         with queries_captured() as queries:
-            self.register("test@zulip.com", "test")
+            self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
         self.assert_length(queries, 47)
-        user_profile = get_user_profile_by_email('test@zulip.com')
+        user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
 
@@ -281,11 +282,11 @@ class LoginTest(ZulipTestCase):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        result = self.register("test@zulip.com", "test")
+        result = self.register(self.nonreg_email('test'), "test")
         self.assert_in_response("has been deactivated", result)
 
         with self.assertRaises(UserProfile.DoesNotExist):
-            get_user_profile_by_email('test@zulip.com')
+            self.nonreg_user('test')
 
     def test_login_deactivated(self):
         # type: () -> None
@@ -312,12 +313,12 @@ class LoginTest(ZulipTestCase):
         """
         You can log in even if your password contain non-ASCII characters.
         """
-        email = "test@zulip.com"
+        email = self.nonreg_email('test')
         password = u"hÃ¼mbÃ¼Çµ"
 
         # Registering succeeds.
-        self.register("test@zulip.com", password)
-        user_profile = get_user_profile_by_email(email)
+        self.register(email, password)
+        user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.logout()
         self.assertIsNone(get_session_dict_user(self.client.session))
@@ -450,7 +451,7 @@ class InviteUserTest(ZulipTestCase):
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email('hamlet'))
         user_profile = self.example_user('hamlet')
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
@@ -459,12 +460,12 @@ class InviteUserTest(ZulipTestCase):
                                           "Public topic", "Public message")
         secret_msg_id = self.send_message("hamlet@zulip.com", private_stream_name, Recipient.STREAM,
                                           "Secret topic", "Secret message")
-        invitee = "alice-test@zulip.com"
+        invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, [private_stream_name, "Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
 
-        self.submit_reg_form_for_user("alice-test@zulip.com", "password")
-        invitee_profile = get_user_profile_by_email(invitee)
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user('alice')
         invitee_msg_ids = [um.message_id for um in
                            UserMessage.objects.filter(user_profile=invitee_profile)]
         self.assertTrue(public_msg_id in invitee_msg_ids)
@@ -694,16 +695,19 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_invitation_reminder_email(self):
         # type: () -> None
         from django.core.mail import outbox
-        current_user_email = "hamlet@zulip.com"
+
+        # All users belong to zulip realm
+        referrer_user = 'hamlet'
+        current_user_email = self.example_email(referrer_user)
         self.login(current_user_email)
-        invitee = "alice-test@zulip.com"
+        invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
 
         data = {"email": invitee, "referrer_email": current_user_email}
         invitee = get_prereg_user_by_email(data["email"])
-        referrer = get_user_profile_by_email(data["referrer_email"])
+        referrer = self.example_user(referrer_user)
         link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
         context = common_context(referrer)
         context.update({
@@ -882,7 +886,7 @@ class RealmCreationTest(ZulipTestCase):
             realm = get_realm(string_id)
             self.assertIsNotNone(realm)
             self.assertEqual(realm.string_id, string_id)
-            self.assertEqual(get_user_profile_by_email(email).realm, realm)
+            self.assertEqual(get_user(email, realm).realm, realm)
 
             # Check defaults
             self.assertEqual(realm.org_type, Realm.COMMUNITY)
@@ -964,7 +968,7 @@ class RealmCreationTest(ZulipTestCase):
             realm = get_realm(string_id)
             self.assertIsNotNone(realm)
             self.assertEqual(realm.string_id, string_id)
-            self.assertEqual(get_user_profile_by_email(email).realm, realm)
+            self.assertEqual(get_user(email, realm).realm, realm)
 
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, string_id)
@@ -1016,7 +1020,7 @@ class UserSignUpTest(ZulipTestCase):
         Check if the default language of new user is the default language
         of the realm.
         """
-        email = "newguy@zulip.com"
+        email = self.nonreg_email('newguy')
         password = "newpassword"
         timezone = "US/Mountain"
         realm = get_realm('zulip')
@@ -1038,7 +1042,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.submit_reg_form_for_user(email, password, timezone=timezone)
         self.assertEqual(result.status_code, 302)
 
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.nonreg_user('newguy')
         self.assertEqual(user_profile.default_language, realm.default_language)
         self.assertEqual(user_profile.timezone, timezone)
         from django.core.mail import outbox
@@ -1085,7 +1089,7 @@ class UserSignUpTest(ZulipTestCase):
         password_auth_enabled is False.
         """
 
-        email = "newuser@zulip.com"
+        email = self.nonreg_email('newuser')
 
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
@@ -1111,7 +1115,7 @@ class UserSignUpTest(ZulipTestCase):
 
         # User should now be logged in.
         self.assertEqual(result.status_code, 302)
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.nonreg_user('newuser')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_signup_without_full_name(self):
@@ -1837,15 +1841,14 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         # type: () -> None
         request = POSTRequestMock({}, None)
         setattr(request, 'session', self.client.session)
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         user_profile.backend = 'zproject.backends.GitHubAuthBackend'
         full_name = 'Hamlet'
         invalid_subdomain = False
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             response = login_or_register_remote_user(
                 request,
-                email,
+                user_profile.email,
                 user_profile,
                 full_name=full_name,
                 invalid_subdomain=invalid_subdomain)
@@ -1859,15 +1862,14 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         request = POSTRequestMock({}, None)
         setattr(request, 'session', self.client.session)
         setattr(request, 'get_host', lambda: 'localhost')
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         user_profile.backend = 'zproject.backends.GitHubAuthBackend'
         full_name = 'Hamlet'
         invalid_subdomain = False
         with self.settings(REALMS_HAVE_SUBDOMAINS=False):
             response = login_or_register_remote_user(
                 request,
-                email,
+                user_profile.email,
                 user_profile,
                 full_name=full_name,
                 invalid_subdomain=invalid_subdomain)

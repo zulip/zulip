@@ -21,7 +21,7 @@ from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
-    get_user_profile_by_email, get_realm, get_client, get_stream, \
+    get_user, get_realm, get_client, get_stream, \
     Message, get_context_for_message
 
 from zerver.lib.avatar import avatar_url
@@ -236,7 +236,8 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 
-        new_user = get_user_profile_by_email('romeo@zulip.net')
+        # Romeo is a newly registered user
+        new_user = get_user('romeo@zulip.net', get_realm('zulip'))
         self.assertEqual(new_user.full_name, 'Romeo Montague')
         self.assertEqual(new_user.short_name, 'Romeo')
 
@@ -287,17 +288,17 @@ class ActivateTest(ZulipTestCase):
         # type: () -> None
         """This test helps ensure that our URL patterns for /users/me URLs
         handle email addresses starting with "me" correctly."""
-        self.register("me@zulip.com", "testpassword")
+        self.register(self.nonreg_email('me'), "testpassword")
         self.login('iago@zulip.com')
 
         result = self.client_delete('/json/users/me@zulip.com')
         self.assert_json_success(result)
-        user = get_user_profile_by_email('me@zulip.com')
+        user = self.nonreg_user('me')
         self.assertFalse(user.is_active)
 
-        result = self.client_post('/json/users/me@zulip.com/reactivate')
+        result = self.client_post('/json/users/{email}/reactivate'.format(email=self.nonreg_email('me')))
         self.assert_json_success(result)
-        user = get_user_profile_by_email('me@zulip.com')
+        user = self.nonreg_user('me')
         self.assertTrue(user.is_active)
 
     def test_api_with_nonexistent_user(self):
@@ -346,12 +347,13 @@ class GetProfileTest(ZulipTestCase):
         result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
-    def common_get_profile(self, email):
+    def common_get_profile(self, user_id):
         # type: (str) -> Dict[Text, Any]
-        user_profile = get_user_profile_by_email(email)
-        self.send_message(email, "Verona", Recipient.STREAM, "hello")
+        # Assumes all users are example users in realm 'zulip'
+        user_profile = self.example_user(user_id)
+        self.send_message(user_profile.email, "Verona", Recipient.STREAM, "hello")
 
-        result = self.client_get("/api/v1/users/me", **self.api_auth(email))
+        result = self.client_get("/api/v1/users/me", **self.api_auth(user_profile.email))
 
         max_id = most_recent_message(user_profile).id
 
@@ -407,7 +409,7 @@ class GetProfileTest(ZulipTestCase):
         """
         Ensure GET /users/me returns a max message id and returns successfully
         """
-        json = self.common_get_profile("othello@zulip.com")
+        json = self.common_get_profile("othello")
         self.assertEqual(json["pointer"], -1)
 
     def test_profile_with_pointer(self):
@@ -416,17 +418,17 @@ class GetProfileTest(ZulipTestCase):
         Ensure GET /users/me returns a proper pointer id after the pointer is updated
         """
 
-        id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
-        id2 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
+        id1 = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
+        id2 = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
 
-        json = self.common_get_profile("hamlet@zulip.com")
+        json = self.common_get_profile("hamlet")
 
-        self.common_update_pointer("hamlet@zulip.com", id2)
-        json = self.common_get_profile("hamlet@zulip.com")
+        self.common_update_pointer(self.example_email("hamlet"), id2)
+        json = self.common_get_profile("hamlet")
         self.assertEqual(json["pointer"], id2)
 
-        self.common_update_pointer("hamlet@zulip.com", id1)
-        json = self.common_get_profile("hamlet@zulip.com")
+        self.common_update_pointer(self.example_email("hamlet"), id1)
+        json = self.common_get_profile("hamlet")
         self.assertEqual(json["pointer"], id2)  # pointer does not move backwards
 
         result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})
