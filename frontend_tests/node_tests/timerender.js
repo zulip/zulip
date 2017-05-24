@@ -64,6 +64,20 @@ var timerender = require('js/timerender.js');
     assert.equal(expected.needs_update, actual.needs_update);
 }());
 
+(function test_render_now_returns_year_with_year_boundary() {
+    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    var three_months_ago = today.clone().addMonths(-6, true);
+    var expected = {
+        time_str: 'Oct 12, 2018',
+        formal_time_str: 'Friday, October 12, 2018',
+        needs_update: false,
+    };
+    var actual = timerender.render_now(three_months_ago, today);
+    assert.equal(expected.time_str, actual.time_str);
+    assert.equal(expected.formal_time_str, actual.formal_time_str);
+    assert.equal(expected.needs_update, actual.needs_update);
+}());
+
 (function test_render_date_renders_time_html() {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var message_time  = today.clone();
