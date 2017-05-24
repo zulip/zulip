@@ -11,7 +11,7 @@ from zerver.lib.actions import do_change_is_admin, \
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
-    get_realm_by_email_domain, get_user_profile_by_email, \
+    get_realm_by_email_domain, \
     GetRealmByDomainException, RealmDomain
 
 import ujson

@@ -8,13 +8,13 @@ from mock import patch
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_realm, get_user
 from zerver.lib.actions import do_set_muted_topics
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.get_email('hamlet')
         self.login(email)
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -22,7 +22,7 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.client_post(url, data, **self.api_auth(email))
         self.assert_json_success(result)
 
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
         self.assertEqual(ujson.loads(user.muted_topics), [["stream", "topic"]])
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -30,12 +30,12 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.client_post(url, data, **self.api_auth(email))
         self.assert_json_success(result)
 
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
         self.assertEqual(ujson.loads(user.muted_topics), [["stream2", "topic2"]])
 
     def test_add_muted_topic(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -43,7 +43,7 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.client_patch(url, data, **self.api_auth(email))
         self.assert_json_success(result)
 
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
         self.assertIn([u'Verona', u'Verona3'], ujson.loads(user.muted_topics))
 
     def test_remove_muted_topic(self):
@@ -58,7 +58,7 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.client_patch(url, data, **self.api_auth(email))
 
         self.assert_json_success(result)
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
         self.assertNotIn([[u'Verona', u'Verona3']], ujson.loads(user.muted_topics))
 
     def test_muted_topic_add_invalid(self):
