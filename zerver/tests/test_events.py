@@ -974,11 +974,11 @@ class EventsRegisterTest(ZulipTestCase):
 
     def do_set_user_display_settings_test(self, setting_name):
         # type: (str)-> None
-        bool_change = [True, False]  # type: List[bool]
+        bool_change = [True, False, True]  # type: List[bool]
         test_changes = dict(
             change_twenty_four_hour_time=["twenty_four_hour_time", bool_change],
             change_left_side_userlist=["left_side_userlist", bool_change],
-            change_emoji_alt_code= [bool_change] # ["emoji_alt_code", bool_change],
+            change_emoji_alt_code= ["emoji_alt_code", bool_change],
             change_emojiset=["emojiset", [u'apple', u'twitter']],
             default_language=["default_language", [u'es', u'de', u'en']],
             change_timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
