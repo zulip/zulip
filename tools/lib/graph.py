@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from collections import defaultdict
 
-from typing import Callable, DefaultDict, Iterator, List, Set, Tuple
+from typing import Callable, DefaultDict, Iterator, List, Optional, Set, Tuple
 
 Edge = Tuple[str, str]
 EdgeSet = Set[Edge]
@@ -87,7 +87,7 @@ class Graph(object):
             print(tup)
 
 def best_edge_to_remove(orig_graph, is_exempt):
-    # type: (Graph, Callable[[Edge], bool]) -> Edge
+    # type: (Graph, Callable[[Edge], bool]) -> Optional[Edge]
     # expects an already reduced graph as input
 
     orig_edges = orig_graph.edges()
