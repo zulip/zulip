@@ -982,9 +982,9 @@ class EventsRegisterTest(ZulipTestCase):
             #emojiset="emojiset", [u'apple', u'twitter'],
             #default_language="default_language", [u'es', u'de', u'en'],
             #timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']            twenty_four_hour_time = [bool_change],
-            twenty_four_hour_time =[bool_change],
-            left_side_userlist = [bool_change],
-            emoji_alt_code = [bool_change],
+            twenty_four_hour_time =bool_change,
+            left_side_userlist = bool_change,
+            emoji_alt_code = bool_change,
             emojiset = [u'apple', u'twitter'],
             default_language = [u'es', u'de', u'en'],
             timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
