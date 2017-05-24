@@ -223,7 +223,7 @@ class BaseWebsocketHandler(WebSocketHandler):
         self.client = None # type: Any
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Callable
+        # type: (*Any, **Any) -> Optional[Callable]
         # use get method from WebsocketHandler
         return super(BaseWebsocketHandler, self).get(*args, **kwargs)
 
