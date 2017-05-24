@@ -490,7 +490,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.send_message(me, self.example_email("iago"), Recipient.PERSONAL)
         self.send_message(me,
-                          [self.example_email("iago"), 'cordelia@zulip.com'],
+                          [self.example_email("iago"), self.example_email("cordelia")],
                           Recipient.HUDDLE)
         personals = [m for m in get_user_messages(self.example_user('hamlet'))
                      if m.recipient.type == Recipient.PERSONAL or
@@ -514,16 +514,16 @@ class GetOldMessagesTest(ZulipTestCase):
         me = self.example_email("hamlet")
 
         matching_message_ids = []
-        matching_message_ids.append(self.send_message(me, [self.example_email("iago"), 'cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
-        matching_message_ids.append(self.send_message(me, ['cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+        matching_message_ids.append(self.send_message(me, [self.example_email("iago"), self.example_email("cordelia"), 'othello@zulip.com'], Recipient.HUDDLE))
+        matching_message_ids.append(self.send_message(me, [self.example_email("cordelia"), 'othello@zulip.com'], Recipient.HUDDLE))
 
         non_matching_message_ids = []
-        non_matching_message_ids.append(self.send_message(me, 'cordelia@zulip.com', Recipient.PERSONAL))
+        non_matching_message_ids.append(self.send_message(me, self.example_email("cordelia"), Recipient.PERSONAL))
         non_matching_message_ids.append(self.send_message(me, [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
-        non_matching_message_ids.append(self.send_message('cordelia@zulip.com', [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
+        non_matching_message_ids.append(self.send_message(self.example_email("cordelia"), [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
 
         self.login(me)
-        narrow = [dict(operator='group-pm-with', operand='cordelia@zulip.com')]
+        narrow = [dict(operator='group-pm-with', operand=self.example_email("cordelia"))]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
         for message in result["messages"]:
             self.assertIn(message["id"], matching_message_ids)
@@ -700,7 +700,7 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_messages_in_narrow(self):
         # type: () -> None
-        email = 'cordelia@zulip.com'
+        email = self.example_email("cordelia")
         self.login(email)
 
         def send(content):
@@ -737,7 +737,7 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search(self):
         # type: () -> None
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
 
         messages_to_search = [
             ('breakfast', 'there are muffins in the conference room'),
@@ -749,7 +749,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         for topic, content in messages_to_search:
             self.send_message(
-                sender_name="cordelia@zulip.com",
+                sender_name=self.example_email("cordelia"),
                 raw_recipients="Verona",
                 message_type=Recipient.STREAM,
                 content=content,
@@ -759,7 +759,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self._update_tsvector_index()
 
         narrow = [
-            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='sender', operand=self.example_email("cordelia")),
             dict(operator='search', operand='lunch'),
         ]
         result = self.get_and_check_messages(dict(
@@ -814,7 +814,7 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         self._update_tsvector_index()
 
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
 
         stream_search_narrow = [
             dict(operator='search', operand='special'),
@@ -833,7 +833,7 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=True)
     def test_get_messages_with_search_pgroonga(self):
         # type: () -> None
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
 
         messages_to_search = [
             (u'日本語', u'こんにちは。今日はいい天気ですね。'),
@@ -845,7 +845,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         for topic, content in messages_to_search:
             self.send_message(
-                sender_name="cordelia@zulip.com",
+                sender_name=self.example_email("cordelia"),
                 raw_recipients="Verona",
                 message_type=Recipient.STREAM,
                 content=content,
@@ -915,10 +915,10 @@ class GetOldMessagesTest(ZulipTestCase):
         Test that specifying an anchor but 0 for num_before and num_after
         returns at most 1 message.
         """
-        self.login("cordelia@zulip.com")
-        anchor = self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM)
+        self.login(self.example_email("cordelia"))
+        anchor = self.send_message(self.example_email("cordelia"), "Verona", Recipient.STREAM)
 
-        narrow = [dict(operator='sender', operand='cordelia@zulip.com')]
+        narrow = [dict(operator='sender', operand=self.example_email("cordelia"))]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
                                                   anchor=anchor, num_before=0,
                                                   num_after=0)) # type: Dict[str, Dict]
@@ -1089,7 +1089,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Add a few messages that help us test that our query doesn't
         # look at messages that are irrelevant to Hamlet.
-        self.send_message("othello@zulip.com", "cordelia@zulip.com", Recipient.PERSONAL)
+        self.send_message("othello@zulip.com", self.example_email("cordelia"), Recipient.PERSONAL)
         self.send_message("othello@zulip.com", self.example_email("iago"), Recipient.PERSONAL)
 
         query_params = dict(
@@ -1346,7 +1346,7 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search_using_email(self):
         # type: () -> None
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
 
         messages_to_search = [
             ('say hello', 'How are you doing, @**Othello, the Moor of Venice**?'),
@@ -1355,7 +1355,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         for topic, content in messages_to_search:
             self.send_message(
-                sender_name="cordelia@zulip.com",
+                sender_name=self.example_email("cordelia"),
                 raw_recipients="Verona",
                 message_type=Recipient.STREAM,
                 content=content,
@@ -1365,7 +1365,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self._update_tsvector_index()
 
         narrow = [
-            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='sender', operand=self.example_email("cordelia")),
             dict(operator='search', operand='othello@zulip.com'),
         ]
         result = self.get_and_check_messages(dict(
@@ -1376,7 +1376,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 0)
 
         narrow = [
-            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='sender', operand=self.example_email("cordelia")),
             dict(operator='search', operand='othello'),
         ]
         result = self.get_and_check_messages(dict(

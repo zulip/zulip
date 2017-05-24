@@ -70,8 +70,8 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         stream_name = "Saxony"
-        self.subscribe_to_stream("cordelia@zulip.com", stream_name, realm=realm)
-        message_id = self.send_message("cordelia@zulip.com", stream_name, Recipient.STREAM)
+        self.subscribe_to_stream(self.example_email("cordelia"), stream_name, realm=realm)
+        message_id = self.send_message(self.example_email("cordelia"), stream_name, Recipient.STREAM)
 
         user_profile = self.example_user('hamlet')
         sender = user_profile.email

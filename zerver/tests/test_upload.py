@@ -334,7 +334,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, try having a user who didn't receive the message try to publish it, and fail
         body = "Illegal message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
-        self.send_message("cordelia@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.send_message(self.example_email("cordelia"), "Denmark", Recipient.STREAM, body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 

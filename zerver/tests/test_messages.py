@@ -445,7 +445,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_not_too_many_queries(self):
         # type: () -> None
-        recipient_list  = [self.example_email("hamlet"), self.example_email("iago"), 'cordelia@zulip.com', 'othello@zulip.com']
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago"), self.example_email("cordelia"), 'othello@zulip.com']
         for email in recipient_list:
             self.subscribe_to_stream(email, "Denmark")
 
@@ -512,7 +512,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_change_is_admin(user_profile, True, 'api_super_user')
         result = self.client_post("/api/v1/messages", {"type": "stream",
                                                        "to": "Verona",
-                                                       "sender": "cordelia@zulip.com",
+                                                       "sender": self.example_email("cordelia"),
                                                        "client": "test suite",
                                                        "subject": "announcement",
                                                        "content": "Everyone knows Iago rules",
@@ -522,7 +522,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_change_is_admin(user_profile, False, 'api_super_user')
         result = self.client_post("/api/v1/messages", {"type": "stream",
                                                        "to": "Verona",
-                                                       "sender": "cordelia@zulip.com",
+                                                       "sender": self.example_email("cordelia"),
                                                        "client": "test suite",
                                                        "subject": "announcement",
                                                        "content": "Everyone knows Iago rules",
@@ -1121,7 +1121,7 @@ class EditMessageTest(ZulipTestCase):
     def test_fetch_raw_message(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), "cordelia@zulip.com", Recipient.PERSONAL,
+        msg_id = self.send_message(self.example_email("hamlet"), self.example_email("cordelia"), Recipient.PERSONAL,
                                    subject="editing", content="**before** edit")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
@@ -1132,7 +1132,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get('/json/messages/999999')
         self.assert_json_error(result, 'Invalid message(s)')
 
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
 
@@ -1713,13 +1713,13 @@ class StarTests(ZulipTestCase):
         # Send a second message so we can verify it isn't modified
         other_message_ids = [self.send_message(self.example_email("hamlet"), stream_name,
                                                Recipient.STREAM, "test_unused")]
-        received_message_ids = [self.send_message(self.example_email("hamlet"), ['cordelia@zulip.com'],
+        received_message_ids = [self.send_message(self.example_email("hamlet"), [self.example_email("cordelia")],
                                                   Recipient.PERSONAL, "test_received")]
 
         # Now login as another user who wasn't on that stream
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
         # Send a message to yourself to make sure we have at least one with the read flag
-        sent_message_ids = [self.send_message("cordelia@zulip.com", ['cordelia@zulip.com'],
+        sent_message_ids = [self.send_message(self.example_email("cordelia"), [self.example_email("cordelia")],
                                               Recipient.PERSONAL, "test_read_message")]
         result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(sent_message_ids),
@@ -1769,7 +1769,7 @@ class StarTests(ZulipTestCase):
                                          Recipient.PERSONAL, "test")]
 
         # Starring private messages you didn't receive fails.
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -1787,7 +1787,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # Starring private stream messages you didn't receive fails.
-        self.login("cordelia@zulip.com")
+        self.login(self.example_email("cordelia"))
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
 
