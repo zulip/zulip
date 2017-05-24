@@ -6,9 +6,13 @@ var elems = {};
 var exports = {};
 
 function new_elem(selector) {
+    var text = 'never-been-set';
     var value;
     var shown = false;
     var focused = false;
+    var children = new Dict();
+    var my_parent;
+    var classes = new Dict();
 
     var self = {
         val: function () {
@@ -27,6 +31,13 @@ function new_elem(selector) {
         blur: function () {
             focused = false;
         },
+        text: function (arg) {
+            if (arg !== undefined) {
+                text = arg;
+            } else {
+                return text;
+            }
+        },
         focus: function () {
             focused = true;
         },
@@ -37,15 +48,22 @@ function new_elem(selector) {
             shown = false;
         },
         addClass: function (class_name) {
-            assert.equal(class_name, 'active');
-            shown = true;
+            if (class_name === 'active') {
+                shown = true;
+            }
+            classes.set(class_name, true);
         },
         removeClass: function (class_name) {
             if (class_name === 'status_classes') {
                 return self;
             }
-            assert.equal(class_name, 'active');
-            shown = false;
+            if (class_name === 'active') {
+                shown = false;
+            }
+            classes.del(class_name);
+        },
+        hasClass: function (class_name) {
+            return classes.has(class_name);
         },
         debug: function () {
             return {
@@ -61,6 +79,24 @@ function new_elem(selector) {
             // is_focused is not a jQuery thing; this is
             // for our testing
             return focused;
+        },
+        find: function (child_selector) {
+            var child = children.get(child_selector);
+            if (child) {
+                return child;
+            }
+
+            throw "Cannot find " + child_selector + " in " + selector;
+        },
+        add_child: function (child_selector, child_elem) {
+            child_elem.set_parent(self);
+            children.set(child_selector, child_elem);
+        },
+        set_parent: function (parent_elem) {
+            my_parent = parent_elem;
+        },
+        parent: function () {
+            return my_parent;
         },
     };
     return self;
