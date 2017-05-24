@@ -266,7 +266,7 @@ def api_key_only_webhook_view(client_name):
                 if request.content_type == 'application/json':
                     request_body = ujson.dumps(ujson.loads(request.body), indent=4)
                 else:
-                    request_body = request.body
+                    request_body = str(request.body)
                 message = """
 user: {email} ({realm})
 client: {client_name}
