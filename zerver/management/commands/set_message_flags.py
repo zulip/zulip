@@ -10,7 +10,7 @@ import sys
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib import utils
-from zerver.models import UserMessage, get_user_profile_by_email
+from zerver.models import UserMessage, get_user_for_mgmt, get_realm
 from django.db import models
 
 
@@ -20,19 +20,22 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('-r', '--for-real',
+        parser.add_argument('-r', '--realm', nargs='?', default=None,
+                            dest='string_id',
+                            type=str,
+                            help='The name of the realm in which you are setting message flags.')
+
+        parser.add_argument('-f', '--for-real',
                             dest='for_real',
                             action='store_true',
                             default=False,
                             help="Actually change message flags. Default is a dry run.")
 
-        parser.add_argument('-f', '--flag',
-                            dest='flag',
+        parser.add_argument('-flag', nargs='+',
                             type=str,
-                            help="The flag to add of remove")
+                            help="The flag to add or remove")
 
-        parser.add_argument('-o', '--op',
-                            dest='op',
+        parser.add_argument('-op', nargs='+',
                             type=str,
                             help="The operation to do: 'add' or 'remove'")
 
@@ -41,8 +44,7 @@ class Command(BaseCommand):
                             type=str,
                             help="Mark all messages <= specific usermessage id")
 
-        parser.add_argument('-m', '--email',
-                            dest='email',
+        parser.add_argument('-email', nargs='+',
                             type=str,
                             help="Email to set messages for")
 
@@ -56,8 +58,9 @@ class Command(BaseCommand):
         flag = getattr(UserMessage.flags, options['flag'])
         all_until = options['all_until']
         email = options['email']
+        realm = get_realm(options["string_id"])
 
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user_for_mgmt(email, realm)
 
         if all_until:
             filt = models.Q(id__lte=all_until)

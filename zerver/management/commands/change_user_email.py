@@ -8,13 +8,19 @@ from django.core.management.base import BaseCommand
 from typing import Any
 
 from zerver.lib.actions import do_change_user_email
-from zerver.models import UserProfile, get_user_for_mgmt
+from zerver.models import UserProfile, get_user_for_mgmt, get_realm
 
 class Command(BaseCommand):
     help = """Change the email address for a user."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
+        parser.add_argument(
+            '-r', '--realm', nargs='?', default=None,
+            dest='string_id',
+            type=str,
+            help='The name of the realm in which you are changing user emails.')
+
         parser.add_argument('old_email', metavar='<old email>', type=str,
                             help='email address to change')
         parser.add_argument('new_email', metavar='<new email>', type=str,
@@ -24,8 +30,9 @@ class Command(BaseCommand):
         # type: (*Any, **str) -> None
         old_email = options['old_email']
         new_email = options['new_email']
+        realm = get_realm(options["string_id"])
         try:
-            user_profile = get_user_for_mgmt(old_email)
+            user_profile = get_user_for_mgmt(old_email, realm)
         except UserProfile.DoesNotExist:
             print("Old e-mail doesn't exist in the system.")
             sys.exit(1)

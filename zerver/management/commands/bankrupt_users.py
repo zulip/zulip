@@ -7,21 +7,28 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_update_message_flags
-from zerver.models import UserProfile, Message, get_user_profile_by_email
+from zerver.models import UserProfile, Message, get_realm, get_user_for_mgmt
 
 class Command(BaseCommand):
     help = """Bankrupt one or many users."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
+        parser.add_argument(
+            '-r', '--realm', nargs='?', default=None,
+            dest='string_id',
+            type=str,
+            help='The name of the realm in which you are bankrupting users.')
+
         parser.add_argument('emails', metavar='<email>', type=str, nargs='+',
-                            help='email address to bankrupt')
+                            help='email address(es) to bankrupt')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
+        realm = get_realm(options["string_id"])
         for email in options['emails']:
             try:
-                user_profile = get_user_profile_by_email(email)
+                user_profile = get_user_for_mgmt(email, realm)
             except UserProfile.DoesNotExist:
                 print("e-mail %s doesn't exist in the system, skipping" % (email,))
                 continue

@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from zerver.forms import PasswordResetForm
-from zerver.models import UserProfile, get_user_profile_by_email, get_realm
+from zerver.models import UserProfile, get_user_for_mgmt, get_realm
 from django.template import loader
 
 from django.utils.http import urlsafe_base64_encode
@@ -24,17 +24,18 @@ class Command(BaseCommand):
         # type: (ArgumentParser) -> None
         parser.add_argument('--to', metavar='<to>', type=str,
                             help="email of user to send the email")
-        parser.add_argument('--realm', metavar='<realm>', type=str,
+        parser.add_argument('--realm', metavar='<realm>', type=str, dest='string_id',
                             help="realm to send the email to all users in")
         parser.add_argument('--server', metavar='<server>', type=str,
                             help="If you specify 'YES' will send to everyone on server")
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
+        realm = get_realm(options["string_id"])
         if options["to"]:
-            users = [get_user_profile_by_email(options["to"])]
-        elif options["realm"]:
-            realm = get_realm(options["realm"])
+            users = [get_user_for_mgmt(options["to"], realm)]
+        elif options["string_id"]:
+            realm = get_realm(options["string_id"])
             users = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
         elif options["server"] == "YES":
