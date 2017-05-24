@@ -86,6 +86,8 @@ var activity = require('js/activity.js');
 var compose_fade = require('js/compose_fade.js');
 
 compose_fade.update_faded_users = function () {};
+
+var real_update_huddles = activity.update_huddles;
 activity.update_huddles = function () {};
 
 global.compile_template('user_presence_row');
@@ -321,11 +323,12 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     assert.equal(value.text(), '');
 }());
 
-(function test_filter_user_ids() {
-    presence.presence_info = {};
-    presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
-    presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
+presence.presence_info = {};
+presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
+presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
+presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 
+(function test_filter_user_ids() {
     var user_filter = $('.user-list-filter');
     user_filter.val(''); // no search filter
 
@@ -358,3 +361,104 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 }());
+
+(function test_insert_one_user_into_empty_list() {
+    var alice_li = $('alice-li');
+
+    // These selectors are here to avoid some short-circuit logic.
+    $('#user_presences').add_child('[data-user-id="1"]', alice_li);
+
+    var appended_html;
+    $('#user_presences').append = function (html) {
+        appended_html = html;
+    };
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [];
+        },
+    });
+    activity.insert_user_into_list(alice.user_id);
+    assert(appended_html.indexOf('data-user-id="1"') > 0);
+    assert(appended_html.indexOf('user_active') > 0);
+}());
+
+(function test_insert_fred_after_alice() {
+    var fred_li = $('fred-li');
+
+    // These selectors are here to avoid some short-circuit logic.
+    $('#user_presences').add_child('[data-user-id="2"]', fred_li);
+
+    var appended_html;
+    $('#user_presences').append = function (html) {
+        appended_html = html;
+    };
+
+    $('fake-dom-for-alice').attr = function (attr_name) {
+        assert.equal(attr_name, 'data-user-id');
+        return alice.user_id;
+    };
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [
+                'fake-dom-for-alice',
+            ];
+        },
+    });
+    activity.insert_user_into_list(fred.user_id);
+
+    assert(appended_html.indexOf('data-user-id="2"') > 0);
+    assert(appended_html.indexOf('user_active') > 0);
+}());
+
+(function test_insert_fred_before_jill() {
+    var fred_li = $('fred-li');
+
+    // These selectors are here to avoid some short-circuit logic.
+    $('#user_presences').add_child('[data-user-id="2"]', fred_li);
+
+    $('fake-dom-for-jill').attr = function (attr_name) {
+        assert.equal(attr_name, 'data-user-id');
+        return jill.user_id;
+    };
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [
+                'fake-dom-for-jill',
+            ];
+        },
+    });
+
+    var before_html;
+    $('fake-dom-for-jill').before = function (html) {
+        before_html = html;
+    };
+    activity.insert_user_into_list(fred.user_id);
+
+    assert(before_html.indexOf('data-user-id="2"') > 0);
+    assert(before_html.indexOf('user_active') > 0);
+}());
+
+// Reset jquery here.
+set_global('$', global.make_zjquery());
+
+(function test_insert_unfiltered_user_with_filter() {
+    // This test only tests that we do not explode when
+    // try to insert Fred into a list where he does not
+    // match the search filter.
+    var user_filter = $('.user-list-filter');
+    user_filter.val('do-not-match-filter');
+    activity.insert_user_into_list(fred.user_id);
+}());
+
+(function test_realm_presence_disabled() {
+    page_params.realm_presence_disabled = true;
+
+    activity.insert_user_into_list();
+    activity.build_user_sidebar();
+
+    real_update_huddles();
+}());
+
