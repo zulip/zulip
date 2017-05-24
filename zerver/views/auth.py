@@ -194,7 +194,7 @@ def remote_user_jwt(request):
     return login_or_register_remote_user(request, email, user_profile, remote_user)
 
 def google_oauth2_csrf(request, value):
-    # type: (HttpRequest, str) -> HttpResponse
+    # type: (HttpRequest, str) -> str
     # In Django 1.10, get_token returns a salted token which changes
     # everytime get_token is called.
     from django.middleware.csrf import _unsalt_cipher_token
