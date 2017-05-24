@@ -57,7 +57,7 @@ def create_user(email, password, realm, full_name, short_name,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):
-    # type: (Text, Text, Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)

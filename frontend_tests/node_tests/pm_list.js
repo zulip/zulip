@@ -1,5 +1,3 @@
-global.stub_out_jquery();
-
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',

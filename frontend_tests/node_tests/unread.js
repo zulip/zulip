@@ -7,8 +7,6 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies (except _).
 
-global.stub_out_jquery();
-
 add_dependencies({
     muting: 'js/muting.js',
     people: 'js/people.js',
@@ -87,6 +85,7 @@ var zero_counts = {
     assert.equal(count, 0);
 
     var stream_id = 100;
+    var wrong_stream_id = 110;
 
     var message = {
         id: 15,
@@ -107,6 +106,7 @@ var zero_counts = {
     count = unread.num_unread_for_subject(stream_id, 'lunch');
     assert.equal(count, 2);
     assert(unread.topic_has_any_unread(stream_id, 'lunch'));
+    assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
 
     var event = {
         subject: 'dinner',
@@ -129,10 +129,12 @@ var zero_counts = {
     count = unread.num_unread_for_subject(stream_id, 'lunch');
     assert.equal(count, 0);
     assert(!unread.topic_has_any_unread(stream_id, 'lunch'));
+    assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
 
     count = unread.num_unread_for_subject(stream_id, 'snack');
     assert.equal(count, 1);
     assert(unread.topic_has_any_unread(stream_id, 'snack'));
+    assert(!unread.topic_has_any_unread(wrong_stream_id, 'snack'));
 
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.

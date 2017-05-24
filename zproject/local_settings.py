@@ -9,7 +9,7 @@
 import platform
 import six.moves.configparser
 from base64 import b64decode
-from typing import Set
+from typing import Optional, Set
 
 config_file = six.moves.configparser.RawConfigParser()  # type: ignore # https://github.com/python/typeshed/pull/206
 config_file.read("/etc/zulip/zulip.conf")
@@ -99,7 +99,7 @@ EMAIL_GATEWAY_EXTRA_PATTERN_HACK = r'@[\w-]*\.zulip\.net'
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 
-SSO_APPEND_DOMAIN = None  # type: str
+SSO_APPEND_DOMAIN = None  # type: Optional[str]
 
 AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
                            'zproject.backends.GoogleMobileOauth2Backend')

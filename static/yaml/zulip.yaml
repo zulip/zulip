@@ -23,12 +23,12 @@ info:
 # The base configuration for this API
 basePath: /api/v1
 schemes:
-  - http
-  - https
+- http
+- https
 consumes:
-  - application/x-www-form-urlencoded
+- application/x-www-form-urlencoded
 produces:
-  - application/json
+- application/json
 
 ######################
 # Endpoint definitions
@@ -39,36 +39,34 @@ paths:
     post:
       description: Send a message
       operationId: addMessage
-      produces:
-        - application/json
       parameters:
-        - name: type
-          in: formData
-          description: One of {`private`, `stream`}
-          required: true
-          type: string
-        - name: content
-          in: formData
-          description: The content of the message. Maximum message size of 10000 bytes.
-          required: true
-          type: string
-        - name: to
-          in: formData
-          description: |
-                       In the case of a stream message, a string identifying the
-                       stream. In the case of a private message, a JSON-encoded
-                       list containing the usernames of the recipients.
-          required: true
-          type: string
-        - name: subject
-          in: formData
-          description: |
-                       The topic for the message (Only required if type is `stream`).
-                       Maximum length of 60 characters.
-          required: false
-          type: string
+      - name: type
+        in: formData
+        description: One of {`private`, `stream`}
+        required: true
+        type: string
+      - name: content
+        in: formData
+        description: The content of the message. Maximum message size of 10000 bytes.
+        required: true
+        type: string
+      - name: to
+        in: formData
+        description: |
+                     In the case of a stream message, a string identifying the
+                     stream. In the case of a private message, a JSON-encoded
+                     list containing the usernames of the recipients.
+        required: true
+        type: string
+      - name: subject
+        in: formData
+        description: |
+                     The topic for the message (Only required if type is `stream`).
+                     Maximum length of 60 characters.
+        required: false
+        type: string
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: |
@@ -79,51 +77,45 @@ paths:
                        * `id`: The ID of the newly created message.
           schema:
             $ref: '#/definitions/MessageResponse'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /register:
     post:
       description: Register a queue to receive new messages
       operationId: registerQueue
-      produces:
-        - application/json
       parameters:
-        - name: event_types
-          in: formData
-          description: |
-                       (optional) A JSON-encoded array indicating which types of
-                       events you're interested in. Values that you might find
-                       useful include:
+      - name: event_types
+        in: formData
+        description: |
+                     A JSON-encoded array indicating which types of
+                     events you're interested in. Values that you might find
+                     useful include:
 
-                       `message` (messages),
+                     `message` (messages),
 
-                       `subscriptions` (changes in your subscriptions),
+                     `subscriptions` (changes in your subscriptions),
 
-                       `realm_user` (changes in the list of users in your realm), and
+                     `realm_user` (changes in the list of users in your realm), and
 
-                       `pointer` (changes in your pointer).
+                     `pointer` (changes in your pointer).
 
-                       If you do not specify this argument, you will receive all
-                       events, and have to filter out the events not relevant to
-                       your client in your client code. For most applications, one
-                       is only interested in messages, so one specifies:
-                       `event_types=["message"]`
+                     If you do not specify this argument, you will receive all
+                     events, and have to filter out the events not relevant to
+                     your client in your client code. For most applications, one
+                     is only interested in messages, so one specifies:
+                     `event_types=["message"]`
 
-          required: false
-          type: string
-        - name: apply_markdown
-          in: formData
-          description: |
-                       (Optional) Set to `true` if you would like the content to
-                       be rendered in HTML format (by default, the API returns the
-                       raw text that the user entered.)
-          required: false
-          type: string
+        required: false
+        type: string
+      - name: apply_markdown
+        in: formData
+        description: |
+                     Set to `true` if you would like the content to
+                     be rendered in HTML format (by default, the API returns the
+                     raw text that the user entered.)
+        required: false
+        type: string
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: |
@@ -224,44 +216,38 @@ paths:
 
           schema:
             $ref: '#/definitions/RegisterResponse'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /events:
     get:
       description: Get new events from an events queue
       operationId: getEvents
-      produces:
-        - application/json
       parameters:
-        - name: queue_id
-          in: query
-          description: The ID of a queue that you registered via `POST /api/v1/register`.
-          required: true
-          type: string
-        - name: last_event_id
-          in: query
-          description: |
-                       The highest event ID in this queue that you've received and
-                       wish to acknowledge. See the code for `call_on_each_event` in
-                       the zulip Python module for an example implementation of
-                       correctly processing each event exactly once.
-          required: true
-          type: string
-        - name: dont_block
-          in: query
-          description: |
-                       (Optional) Set to `true` if the client is requesting a
-                       nonblocking reply. If not specified, the request will block
-                       until either a new event is available or a few minutes have
-                       passed, in which case the server will send the client a
-                       heartbeat event.
-          required: false
-          type: string
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via `POST /api/v1/register`.
+        required: true
+        type: string
+      - name: last_event_id
+        in: query
+        description: |
+                     The highest event ID in this queue that you've received and
+                     wish to acknowledge. See the code for `call_on_each_event` in
+                     the zulip Python module for an example implementation of
+                     correctly processing each event exactly once.
+        required: true
+        type: string
+      - name: dont_block
+        in: query
+        description: |
+                     Set to `true` if the client is requesting a
+                     nonblocking reply. If not specified, the request will block
+                     until either a new event is available or a few minutes have
+                     passed, in which case the server will send the client a
+                     heartbeat event.
+        required: false
+        type: string
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: |
@@ -272,34 +258,28 @@ paths:
                        guaranteed to be consecutive.
           schema:
             $ref: '#/definitions/EventsResponse'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /users/{user}/presence:
     get:
       description: Get presence data for another user.
       operationId: getPresence
-      produces:
-        - application/json
       parameters:
-        - name: user
-          in: path
-          description: Enter email address
-          required: true
-          type: string
+      - name: user
+        in: path
+        description: Enter email address
+        required: true
+        type: string
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: The response from a successful call
           schema:
             type: object
             required:
-              - msg
-              - result
-              - presence
+            - msg
+            - result
+            - presence
             properties:
               msg:
                 type: string
@@ -307,36 +287,29 @@ paths:
                 type: string
               presence:
                 type: array
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
-
   /user_uploads:
     post:
       description: Upload a file, and print the corresponding URI.
       operationId: userUploads
       consumes:
-        - multipart/form-data
-      produces:
-        - application/json
+      - multipart/form-data
       parameters:
-        - name: file
-          in: formData
-          description: File to be uploaded
-          type: file
-          required: true
+      - name: file
+        in: formData
+        description: File to be uploaded
+        type: file
+        required: true
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: Success
           schema:
             type: object
             required:
-              - msg
-              - result
-              - uri
+            - msg
+            - result
+            - uri
             properties:
               msg:
                 type: string
@@ -344,33 +317,27 @@ paths:
                 type: string
               uri:
                 type: string
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
 
   /messages/{message_id}/:
     get:
       description: Retrieve the content of a message.
-      produces:
-        - application/json
       parameters:
-        - name: message_id
-          in: path
-          description: ID of the message to be retrieved.
-          type: integer
-          required: true
+      - name: message_id
+        in: path
+        description: ID of the message to be retrieved.
+        type: integer
+        required: true
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: Success.
           schema:
             type: object
             required:
-              - msg
-              - result
-              - raw_content
+            - msg
+            - result
+            - raw_content
             properties:
               msg:
                 type: string
@@ -379,70 +346,109 @@ paths:
               raw_content:
                 type: string
                 description: Body of the queried message.
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/ErrorModel'
     patch:
       description: Edit a message that has already been sent.
-      produces:
-        - application/json
       parameters:
-        - name: message_id
-          in: path
-          description: ID of the message to be edited.
-          type: integer
-          required: true
-        - name: subject
-          in: query
-          description: Message's topic.
-          type: string
-        - name: propagate_mode
-          in: query
-          description: propagation mode
-          type: string
-          default: "change_one"
-        - name: content
-          in: query
-          description: Message's body.
-          type: string
+      - name: message_id
+        in: path
+        description: ID of the message to be edited.
+        type: integer
+        required: true
+      - name: subject
+        in: query
+        description: Message's new topic.
+        type: string
+      - name: propagate_mode
+        in: query
+        description: |
+                     Which message(s) should be edited: just
+                     the one indicated in `message_id`, messages in the
+                     same topic that had been sent after this one, or all of
+                     them.
+        type: string
+        enum:
+          - change_one
+          - change_later
+          - change_all
+        default: "change_one"
+      - name: content
+        in: query
+        description: Message's new body.
+        type: string
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: Success
           schema:
-            type: object
-            required:
-              - msg
-              - result
-            properties:
-              msg:
-                type: string
-              result:
-                type: string
+            $ref: '#/definitions/JsonSuccess'
         '400':
           description: Bad request.
           schema:
-            type: object
-            required:
-              - msg
-              - result
+            $ref: '#/definitions/JsonError'
             properties:
               msg:
                 type: string
                 enum:
-                  - Your organization has turned off message editing
-                  - You don't have permission to edit this message
-                  - The time limit for editing this message has past
-                  - Nothing to change
-                  - Topic can't be empty
+                - Your organization has turned off message editing
+                - You don't have permission to edit this message
+                - The time limit for editing this message has past
+                - Nothing to change
+                - Topic can't be empty
               result:
                 type: string
-        default:
-          description: Unexpected error
+
+  /streams:
+    get:
+      description: Gets a list of streams available to a user on the server.
+      operationId: zerver.views.streams.get_streams_backend
+      security:
+      - basicAuth: []
+      parameters:
+      - name: include_public
+        in: query
+        description: |
+                     Set to `false` if the response should not include
+                     public streams.
+        type: string
+        default: true
+      - name: include_all_active
+        in: query
+        description: |
+                     Set to `true` if the response should include all active
+                     streams, including private ones. This requires
+                     API super user access.
+        type: string
+        default: false
+      - name: include_default
+        in: query
+        description: |
+                     Set to `true` if the response should include all the
+                     streams to which new users are subscribed by default.
+        type: string
+        default: false
+      - name: include_subscribed
+        in: query
+        description: |
+                     Set to `false` if response should not include streams
+                     where user is considered subscribed.
+        type: string
+        default: true
+      responses:
+        '200':
+          description: Success.
           schema:
-            $ref: '#/definitions/ErrorModel'
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - description: |
+                           `stream` is an array (that can be zero-length
+                           depending on the parameters set) of available
+                           streams for the authenticated user.
+            - properties:
+                streams:
+                  type: array
+                  items:
+                    $ref: '#/definitions/stream'
 
 #######################
 # Security definitions
@@ -459,14 +465,38 @@ securityDefinitions:
 ####################
 # Shared definitions
 definitions:
+  JsonResponse:
+    type: object
+    required:
+    - msg
+    - result
+    properties:
+      result:
+        type: string
+
+  JsonSuccess:
+    allOf:
+    - $ref: '#/definitions/JsonResponse'
+    - properties:
+        msg:
+          type: string
+          default: success
+
+  JsonError:
+    allOf:
+    - $ref: '#/definitions/JsonResponse'
+    - properties:
+        msg:
+          type: string
+          default: error
 
   # /messages
   MessageResponse:
     type: object
     required:
-      - msg
-      - result
-      - id
+    - msg
+    - result
+    - id
     properties:
       msg:
         type: string
@@ -480,10 +510,10 @@ definitions:
   RegisterResponse:
     type: object
     required:
-      - msg
-      - result
-      - queue_id
-      - last_event_id
+    - msg
+    - result
+    - queue_id
+    - last_event_id
     properties:
       msg:
         type: string
@@ -605,10 +635,10 @@ definitions:
   stream:
     type: object
     required:
-      - stream_id
-      - description
-      - name
-      - invite_only
+    - stream_id
+    - description
+    - name
+    - invite_only
     properties:
       stream_id:
         type: integer
@@ -623,11 +653,11 @@ definitions:
   user:
     type: object
     required:
-      - is_admin
-      - user_id
-      - email
-      - full_name
-      - is_bot
+    - is_admin
+    - user_id
+    - email
+    - full_name
+    - is_bot
     properties:
       is_admin:
         type: boolean
@@ -645,9 +675,9 @@ definitions:
   EventsResponse:
     type: object
     required:
-      - msg
-      - result
-      - events
+    - msg
+    - result
+    - events
     properties:
       msg:
         type: string
@@ -664,23 +694,11 @@ definitions:
   event:
     type: object
     required:
-      - type
-      - id
+    - type
+    - id
     properties:
       type:
         type: string
       id:
         type: integer
         format: int64
-
-  # Unexpected error
-  ErrorModel:
-    type: object
-    required:
-      - msg
-      - result
-    properties:
-      msg:
-        type: string
-      result:
-        type: string

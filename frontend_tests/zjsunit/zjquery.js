@@ -8,6 +8,8 @@ var exports = {};
 function new_elem(selector) {
     var value;
     var shown = false;
+    var focused = false;
+
     var self = {
         val: function () {
             if (arguments.length === 0) {
@@ -22,6 +24,12 @@ function new_elem(selector) {
         removeAttr: noop,
         removeData: noop,
         trigger: noop,
+        blur: function () {
+            focused = false;
+        },
+        focus: function () {
+            focused = true;
+        },
         show: function () {
             shown = true;
         },
@@ -49,16 +57,43 @@ function new_elem(selector) {
         visible: function () {
             return shown;
         },
+        is_focused: function () {
+            // is_focused is not a jQuery thing; this is
+            // for our testing
+            return focused;
+        },
     };
     return self;
 }
 
-exports.zjquery = function (selector) {
+function jquery_array(elem) {
+    var result = [elem];
+
+    for (var attr in elem) {
+        if (Object.prototype.hasOwnProperty.call(elem, attr)) {
+            result[attr] = elem[attr];
+        }
+    }
+
+    return result;
+}
+
+exports.zjquery = function (arg) {
+    if (typeof arg === "function") {
+        // If somebody is passing us a function, we emulate
+        // jQuery's behavior of running this function after
+        // page load time.  But there are no pages to load,
+        // so we just call it right away.
+        arg();
+        return;
+    }
+
+    var selector = arg;
     if (elems[selector] === undefined) {
         var elem = new_elem(selector);
         elems[selector] = elem;
     }
-    return elems[selector];
+    return jquery_array(elems[selector]);
 };
 
 exports.zjquery.trim = function (s) { return s; };

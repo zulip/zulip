@@ -95,7 +95,8 @@ class AdminZulipHandlerTest(ZulipTestCase):
         # type: () -> None
         """A request with with no stack where report.getMessage() has newlines
         in it is handled properly"""
-        self.login("hamlet@zulip.com")
+        email = self.example_email('hamlet')
+        self.login(email)
         with patch("zerver.decorator.rate_limit") as rate_limit_patch:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
@@ -119,7 +120,8 @@ class AdminZulipHandlerTest(ZulipTestCase):
     def test_request(self):
         # type: () -> None
         """A normal request is handled properly"""
-        self.login("hamlet@zulip.com")
+        email = self.example_email('hamlet')
+        self.login(email)
         with patch("zerver.decorator.rate_limit") as rate_limit_patch:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")

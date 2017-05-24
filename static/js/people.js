@@ -679,7 +679,7 @@ exports.is_my_user_id = function (user_id) {
     return user_id.toString() === my_user_id.toString();
 };
 
-$(function () {
+exports.initialize = function () {
     _.each(page_params.realm_users, function (person) {
         exports.add_in_realm(person);
     });
@@ -695,7 +695,7 @@ $(function () {
 
     delete page_params.realm_users; // We are the only consumer of this.
     delete page_params.cross_realm_bots;
-});
+};
 
 return exports;
 

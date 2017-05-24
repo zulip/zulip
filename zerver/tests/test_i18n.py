@@ -80,7 +80,8 @@ class JsonTranslationTestCase(ZulipTestCase):
         dummy_value = "Some other language '%s'"
         mock_gettext.return_value = dummy_value
 
-        self.login("hamlet@zulip.com")
+        email = self.example_email('hamlet')
+        self.login(email)
         result = self.client_post("/json/refer_friend",
                                   HTTP_ACCEPT_LANGUAGE='de')
 
@@ -94,7 +95,8 @@ class JsonTranslationTestCase(ZulipTestCase):
         dummy_value = "Some other language"
         mock_gettext.return_value = dummy_value
 
-        self.login("hamlet@zulip.com")
+        email = self.example_email('hamlet')
+        self.login(email)
         result = self.client_get("/de/accounts/login/jwt/")
 
         self.assert_json_error_contains(result,

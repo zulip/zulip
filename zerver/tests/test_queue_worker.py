@@ -40,17 +40,17 @@ class WorkerTest(ZulipTestCase):
             dict(
                 message=u'\xf3test',
                 time=time.time(),
-                rcpt_to='hamlet@zulip.com',
+                rcpt_to=self.example_email('hamlet'),
             ),
             dict(
                 message='\xf3test',
                 time=time.time(),
-                rcpt_to='hamlet@zulip.com',
+                rcpt_to=self.example_email('hamlet'),
             ),
             dict(
                 message='test',
                 time=time.time(),
-                rcpt_to='hamlet@zulip.com',
+                rcpt_to=self.example_email('hamlet'),
             ),
         ]
         for element in data:

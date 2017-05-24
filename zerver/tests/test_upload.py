@@ -4,7 +4,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from unittest import skip
 
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.bugdown import url_filename
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
@@ -778,6 +778,13 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             with self.settings(MAX_AVATAR_FILE_SIZE=0):
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+
+    def test_get_avatar_url_with_user_profile_lookup(self):
+        # type: () -> None
+        user = self.example_user("hamlet")
+        actual_url = get_avatar_url(u'U', user.email, 42)
+        expected_url_regex = u'/user_avatars/1/([0-9a-f]{40}).png\?x=x&version=42'
+        self.assertTrue(re.match(expected_url_regex, actual_url))
 
     def tearDown(self):
         # type: () -> None

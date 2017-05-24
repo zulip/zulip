@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 import os
 from distutils.version import LooseVersion
@@ -46,7 +46,7 @@ Do this: `./tools/provision`
 '''
 
 def get_provisioning_status():
-    # type: () -> Tuple[bool, str]
+    # type: () -> Tuple[bool, Optional[str]]
 
     version_file = get_version_file()
     if not os.path.exists(version_file):

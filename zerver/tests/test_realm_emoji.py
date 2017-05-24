@@ -11,7 +11,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_list(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         realm = get_realm('zulip')
         check_add_realm_emoji(realm, "my_emoji", "my_emoji")
         result = self.client_get("/json/realm/emoji")
@@ -22,7 +23,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_list_no_author(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         realm = get_realm('zulip')
         RealmEmoji.objects.create(realm=realm, name='my_emojy', file_name='my_emojy')
         result = self.client_get("/json/realm/emoji")
@@ -33,7 +35,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_list_admins_only(self):
         # type: () -> None
-        self.login('othello@zulip.com')
+        email = self.example_email('othello')
+        self.login(email)
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -46,7 +49,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_upload(self):
         # type: () -> None
-        email = "iago@zulip.com"
+        email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
@@ -72,7 +75,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_upload_exception(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_put_multipart('/json/realm/emoji/my_em*oji', info=emoji_data)
@@ -80,7 +84,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_upload_uppercase_exception(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_put_multipart('/json/realm/emoji/my_EMoji', info=emoji_data)
@@ -88,7 +93,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_upload_admins_only(self):
         # type: () -> None
-        self.login('othello@zulip.com')
+        email = self.example_email('othello')
+        self.login(email)
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -99,7 +105,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         realm = get_realm('zulip')
         check_add_realm_emoji(realm, "my_emoji", "my_emoji.png")
         result = self.client_delete("/json/realm/emoji/my_emoji")
@@ -112,7 +119,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete_admins_only(self):
         # type: () -> None
-        self.login('othello@zulip.com')
+        email = self.example_email('othello')
+        self.login(email)
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -122,20 +130,23 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete_exception(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         result = self.client_delete("/json/realm/emoji/invalid_emoji")
         self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
 
     def test_multiple_upload(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         with get_test_image_file('img.png') as fp1, get_test_image_file('img.png') as fp2:
             result = self.client_put_multipart('/json/realm/emoji/my_emoji', {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, 'You must upload exactly one file.')
 
     def test_emoji_upload_file_size_error(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         with get_test_image_file('img.png') as fp:
             with self.settings(MAX_EMOJI_FILE_SIZE=0):
                 result = self.client_put_multipart('/json/realm/emoji/my_emoji', {'file': fp})
@@ -143,7 +154,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_upload_already_existed_emoji(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = self.example_email('iago')
+        self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
