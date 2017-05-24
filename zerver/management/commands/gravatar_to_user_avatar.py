@@ -27,6 +27,7 @@ for both email addresses."""
                             help='The string_id of the realm for the new email')
 
     def _get_user_profile(self, email, realm_string_id=None):
+        # type: (str, str) -> UserProfile
         if realm_string_id:
             realm = get_realm(realm_string_id)
             user_profile = get_user(email, realm)

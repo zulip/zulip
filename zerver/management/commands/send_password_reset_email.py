@@ -14,8 +14,8 @@ from django.template import loader
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
-
 from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
+
 
 class Command(BaseCommand):
     help = """Send email to specified email address."""
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        if options["to"] and  options["realm"]:
+        if options["to"] and options["realm"]:
             realm = get_realm(options["realm"])
             users = [get_user(options["to"], realm)]
         elif options["server"] == "YES":
