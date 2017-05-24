@@ -18,6 +18,7 @@
     "moment": "2.18.1",
     "moment-timezone": "0.5.12",
     "plotly.js": "1.19.2",
+    "script-loader": "0.7.0",
     "source-map-loader": "0.2.1",
     "string.prototype.codepointat": "0.2.0",
     "ts-loader": "2.1.0",

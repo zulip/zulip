@@ -1,7 +1,9 @@
 var config = require('./webpack.config.js');
 var BundleTracker = require('webpack-bundle-tracker');
 
-config.entry.translations.unshift('webpack-dev-server/client?sockjs-node');
+// katex should be an array, to inject webpack dependencies in dev config
+// better to be moved to common.js when common.js is added to assets
+config.entry.katex.unshift('webpack-dev-server/client?/sockjs-node');
 config.devtool = 'eval';
 config.output.publicPath = '/webpack/';
 config.plugins.push(new BundleTracker({filename: 'static/webpack-bundles/webpack-stats-dev.json'}));
