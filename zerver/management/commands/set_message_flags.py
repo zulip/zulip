@@ -66,7 +66,7 @@ class Command(BaseCommand):
             user_profile = get_user(email, realm)
         else:
             try:
-                user_profile = UserProfile.objects.get(email=email)
+                user_profile = UserProfile.objects.select_related().get(email__iexact=email.strip())
             except UserProfile.DoesNotExist:
                 raise RuntimeError("No UserProfiles with the given email")
             except UserProfile.MultipleObjectsReturned:
