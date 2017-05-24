@@ -55,6 +55,9 @@ def update_active_status_backend(request, user_profile, status=REQ(),
                                  ping_only=REQ(validator=check_bool, default=False),
                                  new_user_input=REQ(validator=check_bool, default=False)):
     # type: (HttpRequest, UserProfile, str, bool, bool) -> HttpResponse
+    if user_profile.is_bot:
+        return json_error(_('Presence is not supported for bot users.'))
+
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: %s") % (status,))

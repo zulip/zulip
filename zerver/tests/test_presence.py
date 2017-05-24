@@ -263,6 +263,12 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", req)
         self.assertEqual(result.json()['msg'], '')
 
+    def test_bot_post(self):
+        # type: () -> None
+        result = self.client_post("/api/v1/users/me/presence", {'status': 'active'},
+                                  **self.api_auth('default-bot@zulip.com'))
+        self.assert_json_error(result, "Presence is not supported for bot users.")
+
 class UserPresenceAggregationTests(ZulipTestCase):
     def _send_presence_for_aggregated_tests(self, email, status, validate_time):
         # type: (str, str, datetime.datetime) -> Dict[str, Dict[str, Any]]
