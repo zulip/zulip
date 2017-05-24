@@ -372,8 +372,6 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
-        print (num_events)
-        print (action)
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -1010,17 +1008,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('setting', validator),
         ])
 
-        print (setting_name)
         changes = test_changes.get(setting_name)
-        print (changes)
-        print (setting_name)
         if (changes is None):
             raise AssertionError('No test created for %s' % (setting_name))
         #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
+        import pdb; pdb.set_trace()
         for change in changes[1:]:
-            print (setting_name)
-            print (change)
             events = self.do_test(
                 lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
             error = schema_checker('events[0]', events[0])
@@ -1029,7 +1023,8 @@ class EventsRegisterTest(ZulipTestCase):
     def test_user_display_settings(self):
         # type: () -> None
 
-        for prop in UserProfile.property_types:
+        # for prop in UserProfile.property_types:
+        for prop in ['timezone']
             self.do_set_user_display_settings_test(prop)
 
     def test_change_enable_stream_desktop_notifications(self):
