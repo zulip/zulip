@@ -107,3 +107,17 @@ class TestNotifyNewUser(ZulipTestCase):
         self.assertEqual(actual_stream.name, 'signups')
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertIn("**INTERNAL SIGNUP**", message.content)
+
+    def test_notify_realm_of_new_user(self):
+        # type: () -> None
+        new_user = self.example_user('cordelia')
+        stream = self.make_stream('announce')
+        new_user.realm.notifications_stream = stream
+        new_user.realm.save()
+        new_user = self.example_user('cordelia')
+        notify_new_user(new_user)
+
+        message = self.get_last_message()
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        actual_stream = Stream.objects.get(id=message.recipient.type_id)
+        self.assertEqual(actual_stream.name, 'announce')
