@@ -373,7 +373,10 @@ class EventsRegisterTest(ZulipTestCase):
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
 
+<<<<<<< HEAD
         import pdb; pdb.set_trace()
+=======
+>>>>>>> bd64d5123ac6f2404291d145141fbfc813fbd8c0
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -978,12 +981,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (str)-> None
         bool_change = [True, False]  # type: List[bool]
         test_changes = dict(
-            #twenty_four_hour_time="twenty_four_hour_time", [bool_change],
-            #left_side_userlist="left_side_userlist", [bool_change],
-            #emoji_alt_code= "emoji_alt_code", [bool_change],
-            #emojiset="emojiset", [u'apple', u'twitter'],
-            #default_language="default_language", [u'es', u'de', u'en'],
-            #timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']            twenty_four_hour_time = [bool_change],
+            twenty_four_hour_time = [bool_change],
             twenty_four_hour_time =bool_change,
             left_side_userlist = bool_change,
             emoji_alt_code = bool_change,
@@ -1013,19 +1011,20 @@ class EventsRegisterTest(ZulipTestCase):
         changes = test_changes.get(setting_name)
         if (changes is None):
             raise AssertionError('No test created for %s' % (setting_name))
-        #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
         for change in changes[1:]:
-            events = self.do_test(
-                lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
+            if setting_name == 'timezone':
+                events = self.do_test(lambda: do_set_user_display_setting(self.user_profile, setting_name, change), num_events=2)
+            else:
+                events = self.do_test(
+              		lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
     def test_user_display_settings(self):
         # type: () -> None
 
-        # for prop in UserProfile.property_types:
-        for prop in ['timezone']:
+        for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
 
     def test_change_enable_stream_desktop_notifications(self):
