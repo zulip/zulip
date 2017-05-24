@@ -521,6 +521,11 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     """
     INCOMING_WEBHOOK_BOT = 2
     OUTGOING_WEBHOOK_BOT = 3
+    """
+    Embedded bots run within the Zulip server itself; events are added to the
+    embedded_bots queue and then handled by a QueueProcessingWorker.
+    """
+    EMBEDDED_BOT = 4
 
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
@@ -718,6 +723,11 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     def is_outgoing_webhook_bot(self):
         # type: () -> bool
         return self.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+
+    @property
+    def is_embedded_bot(self):
+        # type: () -> bool
+        return self.bot_type == UserProfile.EMBEDDED_BOT
 
     @staticmethod
     def emojiset_choices():
