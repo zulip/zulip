@@ -1002,6 +1002,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('setting', validator),
         ])
 
+        print (setting_name)
         changes = test_changes.get(setting_name)
         print (changes)
         print (setting_name)
