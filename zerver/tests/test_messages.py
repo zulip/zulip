@@ -1416,11 +1416,11 @@ class EditMessageTest(ZulipTestCase):
 
         # without allow_message_editing, nothing is allowed
         set_message_editing_params(False, 240)
-        do_edit_message_assert_error(id_, 'E', "Your organization has turned off message editing.", True)
+        do_edit_message_assert_error(id_, 'E', "Your organization has turned off message editing", True)
         set_message_editing_params(False, 120)
-        do_edit_message_assert_error(id_, 'F', "Your organization has turned off message editing.", True)
+        do_edit_message_assert_error(id_, 'F', "Your organization has turned off message editing", True)
         set_message_editing_params(False, 0)
-        do_edit_message_assert_error(id_, 'G', "Your organization has turned off message editing.", True)
+        do_edit_message_assert_error(id_, 'G', "Your organization has turned off message editing", True)
 
     def test_propagate_topic_forward(self):
         # type: () -> None

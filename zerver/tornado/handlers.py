@@ -288,7 +288,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         return response
 
     def zulip_finish(self, response, request, apply_markdown):
-        # type: (HttpResponse, HttpRequest, bool) -> None
+        # type: (Dict[str, Any], HttpRequest, bool) -> None
         # Make sure that Markdown rendering really happened, if requested.
         # This is a security issue because it's where we escape HTML.
         # c.f. ticket #64

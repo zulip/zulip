@@ -349,6 +349,101 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+  /messages/{message_id}/:
+    get:
+      description: Retrieve the content of a message.
+      produces:
+        - application/json
+      parameters:
+        - name: message_id
+          in: path
+          description: ID of the message to be retrieved.
+          type: integer
+          required: true
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+              - raw_content
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              raw_content:
+                type: string
+                description: Body of the queried message.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    patch:
+      description: Edit a message that has already been sent.
+      produces:
+        - application/json
+      parameters:
+        - name: message_id
+          in: path
+          description: ID of the message to be edited.
+          type: integer
+          required: true
+        - name: subject
+          in: query
+          description: Message's topic.
+          type: string
+        - name: propagate_mode
+          in: query
+          description: propagation mode
+          type: string
+          default: "change_one"
+        - name: content
+          in: query
+          description: Message's body.
+          type: string
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+        '400':
+          description: Bad request.
+          schema:
+            type: object
+            required:
+              - msg
+              - result
+            properties:
+              msg:
+                type: string
+                enum:
+                  - Your organization has turned off message editing
+                  - You don't have permission to edit this message
+                  - The time limit for editing this message has past
+                  - Nothing to change
+                  - Topic can't be empty
+              result:
+                type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
 #######################
 # Security definitions
 #######################

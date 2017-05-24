@@ -772,7 +772,7 @@ def update_message_flags(request, user_profile,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):
-    # type: (HttpResponse, UserProfile, Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]
+    # type: (HttpRequest, UserProfile, Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]
     if "sender" not in request.POST:
         return (False, None)
 
@@ -991,7 +991,7 @@ def update_message_backend(request, user_profile,
                            content=REQ(default=None)):
     # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[str], Optional[Text]) -> HttpResponse
     if not user_profile.realm.allow_message_editing:
-        return json_error(_("Your organization has turned off message editing."))
+        return json_error(_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
 

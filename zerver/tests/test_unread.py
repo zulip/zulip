@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from typing import Any, Dict, List
 
 from zerver.models import (
-    get_user_profile_by_email, Recipient, UserMessage
+    get_user, Recipient, UserMessage
 )
 
 from zerver.lib.test_helpers import tornado_redirected_to_list
@@ -40,7 +40,7 @@ class PointerTest(ZulipTestCase):
         result = self.client_post("/api/v1/users/me/pointer", {"pointer": msg_id},
                                   **self.api_auth(email))
         self.assert_json_success(result)
-        self.assertEqual(get_user_profile_by_email(email).pointer, msg_id)
+        self.assertEqual(get_user(email, user.realm).pointer, msg_id)
 
     def test_missing_pointer(self):
         # type: () -> None
