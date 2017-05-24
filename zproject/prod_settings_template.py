@@ -482,6 +482,13 @@ CAMO_URI = '/external_content/'
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 
+# By default, Zulip connects to the thumbor (the thumbnailing software
+# we use) service running locally on the machine.  If you're running
+# thumbor on a different server, you can configure that by setting
+# THUMBOR_HOST here.  Setting THUMBOR_HOST='' will disable
+# thumbnailing in Zulip.
+#THUMBOR_HOST = '127.0.0.1:9995'
+
 # Controls the Jitsi video call integration.  By default, the
 # integration uses the SaaS meet.jit.si server.  You can specify
 # your own Jitsi Meet server, or if you'd like to disable the

@@ -60,6 +60,10 @@ if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
                        deploy_path])
 
+# Setup the thumbor venv
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-thumbor-venv"),
+                       deploy_path])
+
 # Make sure the right version of node is installed
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"),
                        deploy_path])
@@ -117,13 +121,19 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
+core_server_services = ["zulip-django", "zulip-tornado", "zulip-senders:*"]
+worker_services = ["zulip-workers:*"]
+# Stop and start thumbor service only if thumbor is installed.
+if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
+    core_server_services.append("zulip-thumbor")
+
 if not args.skip_puppet or migrations_needed:
     # By default, we shut down the service to apply migrations and
     # puppet changes, to minimize risk of issues due to inconsistent
     # state.
     logging.info("Stopping Zulip...")
-    subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
-                           "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
+    subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
+                          preexec_fn=su_to_zulip)
 
 if not args.skip_puppet:
     logging.info("Applying puppet changes...")

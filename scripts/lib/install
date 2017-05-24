@@ -153,6 +153,7 @@ fi
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
+    "$ZULIP_PATH"/scripts/lib/create-thumbor-venv "$ZULIP_PATH"
 fi
 
 "$ZULIP_PATH"/scripts/lib/install-node
