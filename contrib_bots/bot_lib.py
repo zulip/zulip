@@ -23,6 +23,8 @@ class RateLimit(object):
         self.message_limit = message_limit
         self.interval_limit = interval_limit
         self.message_list = []
+        self.error_message = '-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
+        'Is your bot trapped in an infinite loop by reacting to its own messages?'
 
     def is_legal(self):
         self.message_list.append(time.time())
@@ -33,13 +35,17 @@ class RateLimit(object):
         else:
             return True
 
+    def show_error_and_exit(self):
+        logging.error(self.error_message)
+        sys.exit(1)
+
+
 class BotHandlerApi(object):
     def __init__(self, client):
         # Only expose a subset of our Client's functionality
         user_profile = client.get_profile()
         self._rate_limit = RateLimit(20, 5)
         self._client = client
-        print(dir(client))
         try:
             self.full_name = user_profile['full_name']
             self.email = user_profile['email']
@@ -52,19 +58,13 @@ class BotHandlerApi(object):
         if self._rate_limit.is_legal():
             return self._client.send_message(*args, **kwargs)
         else:
-            logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
-                          'Is your bot trapped in an infinite loop by reacting to'
-                          ' its own messages?')
-            sys.exit(1)
+            self._rate_limit.show_error_and_exit()
 
     def update_message(self, *args, **kwargs):
         if self._rate_limit.is_legal():
             return self._client.update_message(*args, **kwargs)
         else:
-            logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
-                          'Is your bot trapped in an infinite loop by reacting to'
-                          ' its own messages?')
-            sys.exit(1)
+            self._rate_limit.show_error_and_exit()
 
     def send_reply(self, message, response):
         if message['type'] == 'private':
