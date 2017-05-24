@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import glob
 import os
 import sys
 import argparse
@@ -94,6 +95,23 @@ PY3_VENV_DIR = "/srv/zulip-py3-venv"
 MYPY_VENV_PATH = os.path.join(PY3_VENV_DIR, "bin", "mypy")
 if six.PY2 and os.path.exists(MYPY_VENV_PATH):
     mypy_command = MYPY_VENV_PATH
+
+    # If we are using zulip-py3-venv we will force the use of the correct version
+    with open(os.path.join(TOOLS_DIR, "..", "requirements", "mypy.txt")) as mypy_req:
+        for line in mypy_req:
+            if line.startswith("git+https://github.com/python/mypy.git"):
+                required_mypy_version = line.rsplit("@")[-1].strip()
+                break
+        else:
+            print("Failed to find required mypy version")
+            sys.exit(1)
+
+    for egg_info in glob.glob(PY3_VENV_DIR + "/lib/python*/site-packages/mypy-*.egg-info"):
+        if required_mypy_version in egg_info:
+            break
+    else:
+        print("Required mypy version not installed. Installing {} now.".format(required_mypy_version))
+        subprocess.check_call(['./tools/install-mypy'])
     print("Using mypy from", mypy_command)
 else:
     mypy_command = "mypy"
