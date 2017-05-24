@@ -39,24 +39,27 @@ if (window.webkitNotifications) {
                 return notification_object;
             } catch (e) {
                 if (e.name == 'TypeError') {
-                    // We are probably on Chrome Android where non-persistent notifications are not supported.
-                    // Details: https://github.com/whatwg/notifications/issues/26
-                    // Use a service worker to send the notification instead.
-                    if ('serviceWorker' in navigator) {
-                        return navigator.serviceWorker.register('/static/js/sw.js').then(function(registration) {
-							return registration.showNotification(title, {
-								icon: icon,
-							  	body: content,
-							  	tag: tag
-							});
-                        });
-                    }
+                    return service_worker_notification(icon, title, content, tag);
                 }
             }
         },
     };
 }
 
+function service_worker_notification() {
+    // we are probably on chrome android where non-persistent notifications are not supported.
+    // details: https://github.com/whatwg/notifications/issues/26
+    // use a service worker to send the notification instead.
+    if ('serviceworker' in navigator) {
+        return navigator.serviceworker.register('/static/js/sw.js').then(function(registration) {
+            return registration.shownotification(title, {
+                icon: icon,
+                body: content,
+                tag: tag
+            });
+        });
+    }
+}
 
 function browser_desktop_notifications_on() {
     return (notifications_api &&
