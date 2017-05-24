@@ -15,33 +15,34 @@ from zerver.models import Attachment
 class AttachmentsTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        user = self.example_user('cordelia')
+        user_profile = self.example_user('cordelia')
         self.attachment = Attachment.objects.create(
-            file_name='test.txt', path_id='foo/bar/test.txt', owner=user)
+            file_name='test.txt', path_id='foo/bar/test.txt', owner=user_profile)
 
     def test_list_by_user(self):
         # type: () -> None
-        self.login("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
+        self.login(user_profile.email)
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
-        user = self.example_user('cordelia')
-        attachments = user_attachments(user)
+        attachments = user_attachments(user_profile)
         data = ujson.loads(result.content)
         self.assertEqual(data['attachments'], attachments)
 
     @mock.patch('zerver.lib.attachments.delete_message_image')
     def test_remove_attachment(self, ignored):
         # type: (Any) -> None
-        self.login("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
+        self.login(user_profile.email)
         result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
         self.assert_json_success(result)
-        user = self.example_user('cordelia')
-        attachments = user_attachments(user)
+        attachments = user_attachments(user_profile)
         self.assertEqual(attachments, [])
 
     def test_list_another_user(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        user_profile = self.example_user('iago')
+        self.login(user_profile.email)
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
         data = ujson.loads(result.content)
@@ -49,11 +50,12 @@ class AttachmentsTests(ZulipTestCase):
 
     def test_remove_another_user(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        user_profile = self.example_user('iago')
+        self.login(user_profile.email)
         result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
         self.assert_json_error(result, 'Invalid attachment')
-        user = self.example_user('cordelia')
-        attachments = user_attachments(user)
+        user_profile_to_remove = self.example_user('cordelia')
+        attachments = user_attachments(user_profile_to_remove)
         self.assertEqual(attachments, [self.attachment.to_dict()])
 
     def test_list_unauthenticated(self):

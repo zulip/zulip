@@ -50,9 +50,9 @@ def rm_tree(path):
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self):
         # type: () -> None
-        for email in ['cordelia@zulip.com', 'hamlet@zulip.com', 'iago@zulip.com']:
+        for email in [self.example_email('cordelia'), self.example_email('hamlet'), self.example_email('iago')]:
             for _ in range(5):
-                self.send_message(email, 'othello@zulip.com', Recipient.PERSONAL)
+                self.send_message(email, self.example_email('othello'), Recipient.PERSONAL)
 
     @slow('creates lots of data')
     def test_query_chunker(self):
@@ -266,7 +266,7 @@ class ExportTest(ZulipTestCase):
                 if r['id'] == db_id][0]
 
         exported_user_emails = get_set('zerver_userprofile', 'email')
-        self.assertIn('cordelia@zulip.com', exported_user_emails)
+        self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
         self.assertIn('emailgateway@zulip.com', exported_user_emails)
 
@@ -295,11 +295,11 @@ class ExportTest(ZulipTestCase):
         full_data = self._export_realm(realm, exportable_user_ids=user_ids)
         data = full_data['realm']
         exported_user_emails = get_set('zerver_userprofile', 'email')
-        self.assertIn('cordelia@zulip.com', exported_user_emails)
-        self.assertIn('hamlet@zulip.com', exported_user_emails)
+        self.assertIn(self.example_email('cordelia'), exported_user_emails)
+        self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertNotIn('default-bot@zulip.com', exported_user_emails)
-        self.assertNotIn('iago@zulip.com', exported_user_emails)
+        self.assertNotIn(self.example_email('iago'), exported_user_emails)
 
         dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
-        self.assertIn('iago@zulip.com', dummy_user_emails)
-        self.assertNotIn('cordelia@zulip.com', dummy_user_emails)
+        self.assertIn(self.example_email('iago'), dummy_user_emails)
+        self.assertNotIn(self.example_email('cordelia'), dummy_user_emails)

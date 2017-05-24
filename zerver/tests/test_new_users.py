@@ -21,7 +21,8 @@ class SendLoginEmailTest(ZulipTestCase):
         # type: () -> None
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
-            self.login("hamlet@zulip.com")
+            email = self.example_email('hamlet')
+            self.login(email)
 
             # email is sent and correct subject
             self.assertEqual(len(mail.outbox), 1)
@@ -30,7 +31,8 @@ class SendLoginEmailTest(ZulipTestCase):
     def test_dont_send_login_emails_if_send_login_emails_is_false(self):
         # type: () -> None
         self.assertFalse(settings.SEND_LOGIN_EMAILS)
-        self.login("hamlet@zulip.com")
+        email = self.example_email('hamlet')
+        self.login(email)
 
         self.assertEqual(len(mail.outbox), 0)
 

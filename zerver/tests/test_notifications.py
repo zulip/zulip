@@ -61,9 +61,9 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         for i in range(0, 11):
-            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, str(i))
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
-        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
+            self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, str(i))
+        self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '11', subject='test2')
+        msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM, '@**hamlet**')
         body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -75,8 +75,8 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         for i in range(0, 3):
-            self.send_message("cordelia@zulip.com", "Denmark", Recipient.STREAM, str(i))
-        msg_id = self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '@**hamlet**')
+            self.send_message(self.example_email('cordelia'), "Denmark", Recipient.STREAM, str(i))
+        msg_id = self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '@**hamlet**')
         body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -87,7 +87,7 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'You and Othello, the Moor of Venice Extremely personal message!'
@@ -100,7 +100,7 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Or just reply to this email.'
@@ -113,7 +113,7 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Please do not reply to this automated message.'
@@ -126,8 +126,8 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com",
-                                   ["hamlet@zulip.com", "iago@zulip.com"],
+        msg_id = self.send_message(self.example_email('othello'),
+                                   [self.example_email('hamlet'), self.example_email('iago')],
                                    Recipient.HUDDLE,
                                    'Group personal message!')
 
@@ -142,8 +142,8 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com",
-                                   ["hamlet@zulip.com", "iago@zulip.com", "cordelia@zulip.com"],
+        msg_id = self.send_message(self.example_email('othello'),
+                                   [self.example_email('hamlet'), self.example_email('iago'), self.example_email('cordelia')],
                                    Recipient.HUDDLE,
                                    'Group personal message!')
 
@@ -158,8 +158,9 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com",
-                                   ["hamlet@zulip.com", "iago@zulip.com", "cordelia@zulip.com", "prospero@zulip.com"],
+        msg_id = self.send_message(self.example_email('othello'),
+                                   [self.example_email('hamlet'), self.example_email('iago'), \
+                                    self.example_email('cordelia'), self.example_email('prospero')],
                                    Recipient.HUDDLE,
                                    'Group personal message!')
 
@@ -174,11 +175,12 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM,
+        msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM,
                                    '@**hamlet** to be deleted')
 
         hamlet = self.example_user('hamlet')
-        self.login("othello@zulip.com")
+        email = self.example_email('othello')
+        self.login(email)
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -191,11 +193,12 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL,
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'), Recipient.PERSONAL,
                                    'Extremely personal message! to be deleted!')
 
         hamlet = self.example_user('hamlet')
-        self.login("othello@zulip.com")
+        email = self.example_email('othello')
+        self.login(email)
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -208,12 +211,13 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"],
+        msg_id = self.send_message(self.example_email('othello'), [self.example_email('hamlet'), self.example_email('iago')],
                                    Recipient.PERSONAL, 'Group personal message!')
 
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
-        self.login("othello@zulip.com")
+        email = self.example_email('othello')
+        self.login(email)
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
