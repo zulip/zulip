@@ -370,13 +370,15 @@ function process_notification(notification) {
             message_id: message.id,
         };
         notification_object = notice_memory[key].obj;
-        notification_object.onclick = function () {
-            notification_object.cancel();
-            if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_subject(message.id, {trigger: 'notification'});
-            }
-            window.focus();
-        };
+        if ('onclick' in notification_object) {
+            notification_object.onclick = function () {
+                notification_object.cancel();
+                if (feature_flags.clicking_notification_causes_narrow) {
+                    narrow.by_subject(message.id, {trigger: 'notification'});
+                }
+                window.focus();
+            };
+        }
         notification_object.onclose = function () {
             delete notice_memory[key];
         };
