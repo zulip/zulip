@@ -372,6 +372,8 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
+        print (num_events)
+        print (action)
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
