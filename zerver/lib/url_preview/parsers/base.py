@@ -10,4 +10,4 @@ class BaseParser(object):
 
     def extract_data(self):
         # type: () -> Any
-        raise NotImplemented
+        raise NotImplementedError()
