@@ -316,6 +316,190 @@ paths:
                 type: string
               presence:
                 type: array
+
+  /users/me/subscriptions:
+    get:
+      description: List streams subscription data for the current user.
+      operationId: zerver.views.streams.list_subscriptions_backend
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - result
+            - subscriptions
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              subscriptions:
+                type: array
+                items:
+                  $ref: '#/definitions/stream'
+    post:
+      description: Bulk adds streams subscription data for the current user.
+      operationId: zerver.views.streams.add_subscriptions_backend
+      parameters:
+      - name: subscriptions
+        in: formData
+        description: |
+                     Serialized JSON string, with the details of the streams
+                     the user is subscribing to.
+
+                     ```
+                     [{
+                       "name":string,      (required)
+                       "invite-only":bool  (optional)
+                     }]
+                     ```
+        required: true
+        type: string
+      - name: invite_only
+        type: boolean
+        default: false
+      - name: announce
+        type: boolean
+        default: false
+      - name: authorization_errors_fatal
+        type: boolean
+        default: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - already_subscribed
+            - result
+            - subscribed
+            properties:
+              msg:
+                type: string
+              already_subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              result:
+                type: string
+              subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      description: |
+                   Bulk modifies (add or delete) streams subscription data
+                   for the current user.
+      operationId: zerver.views.streams.update_subscriptions_backend
+      parameters:
+      - name: delete
+        in: formData
+        description: |
+                     Serialized JSON list of streams to delete. See the
+                     `subscriptions` parameter in the POST method for
+                     details about the format.
+        type: string
+      - name: add
+        in: formData
+        description: |
+                     Serialized JSON list of streams to add. See the
+                     `subscriptions` parameter in the POST method for
+                     details about the format.
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - subscribed
+            - not_subscribed
+            - result
+            - msg
+            - already_subscribed
+            - removed
+            properties:
+              subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              not_subscribed:
+                type: array
+                items:
+                  type: string
+              result:
+                type: string
+              msg:
+                type: string
+              already_subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              removed:
+                type: array
+                items:
+                  type: string
+    delete:
+      description: |
+                   Bulk deletes streams subscription data for the current
+                   user.
+      operationId: zerver.views.streams.remove_subscriptions_backend
+      parameters:
+      - name: subscriptions
+        in: formData
+        description: |
+                     Serialized JSON list of streams to unsubscribe from.
+                     See the `subscriptions` parameter in the POST method
+                     for details about the format.
+        required: true
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - removed
+            - not_subscribed
+            - result
+            properties:
+              msg:
+                type: string
+              removed:
+                type: array
+                items:
+                  type: string
+              not_subscribed:
+                type: array
+                items:
+                  type: string
+              result:
+                type: string
+
   /user_uploads:
     post:
       description: Upload a file, and print the corresponding URI.
