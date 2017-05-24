@@ -828,10 +828,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/signup.js'
     },
-    'app_debug': {
-        'source_filenames': ['js/debug.js'],
-        'output_filename': 'min/app_debug.js'
-    },
     'app': {
         'source_filenames': [
             'third/bootstrap-notify/js/bootstrap-notify.js',
