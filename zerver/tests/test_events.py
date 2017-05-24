@@ -976,13 +976,13 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (str)-> None
         bool_change = [True, False]  # type: List[bool]
         test_changes = dict(
-            """twenty_four_hour_time="twenty_four_hour_time", [bool_change],
-            left_side_userlist="left_side_userlist", [bool_change],
-            emoji_alt_code= "emoji_alt_code", [bool_change],
-            emojiset="emojiset", [u'apple', u'twitter'],
-            default_language="default_language", [u'es', u'de', u'en'],
-            timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']"""
-            twenty_four_hour_time = [bool_change],
+            #twenty_four_hour_time="twenty_four_hour_time", [bool_change],
+            #left_side_userlist="left_side_userlist", [bool_change],
+            #emoji_alt_code= "emoji_alt_code", [bool_change],
+            #emojiset="emojiset", [u'apple', u'twitter'],
+            #default_language="default_language", [u'es', u'de', u'en'],
+            #timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']            twenty_four_hour_time = [bool_change],
+            twenty_four_hour_time =[bool_change],
             left_side_userlist = [bool_change],
             emoji_alt_code = [bool_change],
             emojiset = [u'apple', u'twitter'],
