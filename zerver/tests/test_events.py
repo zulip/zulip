@@ -1024,7 +1024,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
 
         # for prop in UserProfile.property_types:
-        for prop in ['timezone']
+        for prop in ['timezone']:
             self.do_set_user_display_settings_test(prop)
 
     def test_change_enable_stream_desktop_notifications(self):
