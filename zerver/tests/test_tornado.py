@@ -182,7 +182,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
     @gen_test
     def test_tornado_connect(self):
         # type: () -> Generator[str, Any, None]
-        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
         ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', cookie_header=cookie_header)
@@ -193,7 +193,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
     @gen_test
     def test_tornado_auth(self):
         # type: () -> Generator[str, TornadoTestCase, None]
-        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
         ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', cookie_header=cookie_header)
@@ -227,7 +227,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
     @gen_test
     def test_sending_private_message(self):
         # type: () -> Generator[str, Any, None]
-        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
         queue_events_data = self._get_queue_events_data(user_profile.email)
@@ -243,12 +243,12 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 "type": "private",
                 "subject": "(no topic)",
                 "stream": "",
-                "private_message_recipient": "othello@zulip.com",
+                "private_message_recipient": self.example_email('othello'),
                 "content": "hello",
                 "sender_id": user_profile.id,
                 "queue_id": queue_events_data['response']['queue_id'],
-                "to": ujson.dumps(["othello@zulip.com"]),
-                "reply_to": "hamlet@zulip.com",
+                "to": ujson.dumps([self.example_email('othello')]),
+                "reply_to": self.example_email('hamlet'),
                 "local_id": -1
             }
         }
@@ -262,7 +262,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
     @gen_test
     def test_sending_stream_message(self):
         # type: () -> Generator[str, Any, None]
-        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
         queue_events_data = self._get_queue_events_data(user_profile.email)
@@ -283,7 +283,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 "sender_id": user_profile.id,
                 "queue_id": queue_events_data['response']['queue_id'],
                 "to": ujson.dumps(["Denmark"]),
-                "reply_to": "hamlet@zulip.com",
+                "reply_to": self.example_email('hamlet'),
                 "local_id": -1
             }
         }

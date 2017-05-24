@@ -39,7 +39,7 @@ class StatsMock(object):
 class TestReport(ZulipTestCase):
     def test_send_time(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         params = dict(
@@ -66,7 +66,7 @@ class TestReport(ZulipTestCase):
 
     def test_narrow_time(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         params = dict(
@@ -89,7 +89,7 @@ class TestReport(ZulipTestCase):
 
     def test_unnarrow_time(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         params = dict(
@@ -111,7 +111,7 @@ class TestReport(ZulipTestCase):
     @override_settings(BROWSER_ERROR_REPORTING=True)
     def test_report_error(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         params = fix_params(dict(

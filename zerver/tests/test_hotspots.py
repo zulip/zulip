@@ -15,19 +15,19 @@ import ujson
 class TestGetNextHotspots(ZulipTestCase):
     def test_first_hotspot(self):
         # type: () -> None
-        user = UserProfile.objects.get(email='hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertEqual(get_next_hotspots(user), ['welcome'])
 
     def test_some_done_some_not(self):
         # type: () -> None
-        user = UserProfile.objects.get(email='hamlet@zulip.com')
+        user = self.example_user('hamlet')
         do_mark_hotspot_as_read(user, 'welcome')
         do_mark_hotspot_as_read(user, 'topics')
         self.assertEqual(get_next_hotspots(user), ['streams'])
 
     def test_all_done(self):
         # type: () -> None
-        user = UserProfile.objects.get(email='hamlet@zulip.com')
+        user = self.example_user('hamlet')
         for hotspot in ALL_HOTSPOTS:
             do_mark_hotspot_as_read(user, hotspot)
         self.assertEqual(get_next_hotspots(user), [])
@@ -35,16 +35,15 @@ class TestGetNextHotspots(ZulipTestCase):
 class TestHotspots(ZulipTestCase):
     def test_do_mark_hotspot_as_read(self):
         # type: () -> None
-        user = UserProfile.objects.get(email='hamlet@zulip.com')
+        user = self.example_user('hamlet')
         do_mark_hotspot_as_read(user, 'streams')
         self.assertEqual(list(UserHotspot.objects.filter(user=user)
                               .values_list('hotspot', flat=True)), ['streams'])
 
     def test_hotspots_url_endpoint(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user = UserProfile.objects.get(email=email)
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login(user.email)
         result = self.client_post('/json/users/me/hotspots',
                                   {'hotspot': ujson.dumps('welcome')})
         self.assert_json_success(result)
