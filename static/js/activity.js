@@ -35,43 +35,54 @@ $("html").on("mousemove", function () {
 
 var huddle_timestamps = new Dict();
 
-function update_count_in_dom(count_span, value_span, count) {
+function update_pm_count_in_dom(count_span, value_span, count) {
+    var li = count_span.parent();
+
     if (count === 0) {
         count_span.hide();
-        if (count_span.parent().hasClass("user_sidebar_entry")) {
-            count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
-        } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
-            count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
-        }
+        li.removeClass("user-with-count");
         value_span.text('');
         return;
     }
 
     count_span.show();
-
-    if (count_span.parent().hasClass("user_sidebar_entry")) {
-        count_span.parent(".user_sidebar_entry").addClass("user-with-count");
-    } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
-        count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
-    }
+    li.addClass("user-with-count");
     value_span.text(count);
 }
 
-function get_user_list_item(user_id) {
+function update_group_count_in_dom(count_span, value_span, count) {
+    var li = count_span.parent();
+
+    if (count === 0) {
+        count_span.hide();
+        li.removeClass("group-with-count");
+        value_span.text('');
+        return;
+    }
+
+    count_span.show();
+    li.addClass("group-with-count");
+    value_span.text(count);
+}
+
+function get_pm_list_item(user_id) {
     return $("li.user_sidebar_entry[data-user-id='" + user_id + "']");
 }
 
-function get_filter_li(user_ids_string) {
-    if (user_ids_string.indexOf(",") < 0) {
-        return  get_user_list_item(user_ids_string);
-    }
+function get_group_list_item(user_ids_string) {
     return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
 }
 
-function set_count(user_ids_string, count) {
-    var count_span = get_filter_li(user_ids_string).find('.count');
+function set_pm_count(user_ids_string, count) {
+    var count_span = get_pm_list_item(user_ids_string).find('.count');
     var value_span = count_span.find('.value');
-    update_count_in_dom(count_span, value_span, count);
+    update_pm_count_in_dom(count_span, value_span, count);
+}
+
+function set_group_count(user_ids_string, count) {
+    var count_span = get_group_list_item(user_ids_string).find('.count');
+    var value_span = count_span.find('.value');
+    update_group_count_in_dom(count_span, value_span, count);
 }
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -80,7 +91,12 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     counts.pm_count.each(function (count, user_ids_string) {
         // TODO: just use user_ids_string in our markup
-        set_count(user_ids_string, count);
+        var is_pm = user_ids_string.indexOf(',') < 0;
+        if (is_pm) {
+            set_pm_count(user_ids_string, count);
+        } else {
+            set_group_count(user_ids_string, count);
+        }
     });
 };
 
@@ -304,7 +320,7 @@ exports.insert_user_into_list = function (user_id) {
 
     insert();
 
-    var elt = get_user_list_item(user_id);
+    var elt = get_pm_list_item(user_id);
     compose_fade.update_one_user_row(elt);
 };
 
@@ -369,7 +385,7 @@ exports.update_huddles = function () {
 
     _.each(huddles, function (user_ids_string) {
         var count = unread.num_unread_for_person(user_ids_string);
-        set_count(user_ids_string, count);
+        set_group_count(user_ids_string, count);
     });
 
     show_huddles();
