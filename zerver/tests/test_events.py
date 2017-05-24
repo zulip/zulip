@@ -372,6 +372,8 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
+
+        import pdb; pdb.set_trace()
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -1013,7 +1015,6 @@ class EventsRegisterTest(ZulipTestCase):
             raise AssertionError('No test created for %s' % (setting_name))
         #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
-        import pdb; pdb.set_trace()
         for change in changes[1:]:
             events = self.do_test(
                 lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
