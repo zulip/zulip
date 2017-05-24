@@ -30,7 +30,7 @@ class MITNameTest(ZulipTestCase):
     def test_valid_hesiod(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.assertEqual(compute_mit_user_fullname(self.mit_user('starnine').email), "Athena Consulting Exchange User")
+            self.assertEqual(compute_mit_user_fullname(self.mit_email("starnine")), "Athena Consulting Exchange User")
         with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
             self.assertEqual(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
 

@@ -559,24 +559,24 @@ class GetOldMessagesTest(ZulipTestCase):
         A request for old messages for a user in the mit.edu relam with unicode
         stream name should be correctly escaped in the database query.
         """
-        self.login(self.mit_user("starnine").email)
+        self.login(self.mit_email("starnine"))
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         lambda_stream_name = u"\u03bb-stream"
-        self.subscribe_to_stream(self.mit_user("starnine").email, lambda_stream_name)
+        self.subscribe_to_stream(self.mit_email("starnine"), lambda_stream_name)
 
         lambda_stream_d_name = u"\u03bb-stream.d"
-        self.subscribe_to_stream(self.mit_user("starnine").email, lambda_stream_d_name)
+        self.subscribe_to_stream(self.mit_email("starnine"), lambda_stream_d_name)
 
-        self.send_message(self.mit_user("starnine").email, u"\u03bb-stream", Recipient.STREAM)
-        self.send_message(self.mit_user("starnine").email, u"\u03bb-stream.d", Recipient.STREAM)
+        self.send_message(self.mit_email("starnine"), u"\u03bb-stream", Recipient.STREAM)
+        self.send_message(self.mit_email("starnine"), u"\u03bb-stream.d", Recipient.STREAM)
 
         narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
                                                   narrow=ujson.dumps(narrow)))
 
-        messages = get_user_messages(get_user_profile_by_email(self.mit_user("starnine").email))
+        messages = get_user_messages(self.mit_user("starnine"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
 
         self.assertEqual(len(result["messages"]), 2)
