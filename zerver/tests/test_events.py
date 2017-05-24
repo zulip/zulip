@@ -373,10 +373,6 @@ class EventsRegisterTest(ZulipTestCase):
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
 
-<<<<<<< HEAD
-        import pdb; pdb.set_trace()
-=======
->>>>>>> bd64d5123ac6f2404291d145141fbfc813fbd8c0
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
