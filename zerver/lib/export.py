@@ -1121,7 +1121,7 @@ def do_export_user(user_profile, output_dir):
     export_file = os.path.join(output_dir, "user.json")
     write_data_to_file(output_file=export_file, data=response)
     logging.info("Exporting messages")
-    export_messages_single_user(user_profile, output_dir=output_dir)
+    export_messages_single_user(user_profile, output_dir)
 
 def export_single_user(user_profile, response):
     # type: (UserProfile, TableData) -> None
@@ -1171,8 +1171,8 @@ def get_single_user_config():
 
     return user_profile_config
 
-def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
-    # type: (UserProfile, int, Path) -> None
+def export_messages_single_user(user_profile, output_dir, chunk_size=1000):
+    # type: (UserProfile, Path, int) -> None
     user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
     min_id = -1
     dump_file_id = 1
