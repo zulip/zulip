@@ -824,7 +824,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 found_sub = sub
                 break
 
-        self.assertIsNotNone(found_sub)
+        assert(found_sub is not None)
         self.assertEqual(found_sub['color'], new_color)
 
         new_subs.remove(found_sub)

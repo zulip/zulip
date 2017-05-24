@@ -85,7 +85,7 @@ def redirect_to_subdomain_login_url():
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
                                   invalid_subdomain=False, mobile_flow_otp=None,
                                   is_signup=False):
-    # type: (HttpRequest, Text, UserProfile, Text, bool, Optional[str], bool) -> HttpResponse
+    # type: (HttpRequest, Optional[Text], Optional[UserProfile], Text, bool, Optional[str], bool) -> HttpResponse
     if invalid_subdomain:
         # Show login page with an error message
         return redirect_to_subdomain_login_url()

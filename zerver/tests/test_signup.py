@@ -1787,7 +1787,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         # type: () -> None
         request = POSTRequestMock({}, None)
         email = 'new@zulip.com'
-        user_profile = None  # type: Optional[UserProfile]
+        user_profile = None
         full_name = 'New User'
         invalid_subdomain = False
         result = login_or_register_remote_user(
@@ -1805,7 +1805,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         # type: () -> None
         request = POSTRequestMock({}, None)
         email = 'new@zulip.com'
-        user_profile = None  # type: Optional[UserProfile]
+        user_profile = None
         full_name = 'New User'
         invalid_subdomain = True
         response = login_or_register_remote_user(
@@ -1820,8 +1820,8 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
     def test_invalid_email(self):
         # type: () -> None
         request = POSTRequestMock({}, None)
-        email = None  # type: Optional[Text]
-        user_profile = None  # type: Optional[UserProfile]
+        email = None
+        user_profile = None
         full_name = 'New User'
         invalid_subdomain = False
         response = login_or_register_remote_user(

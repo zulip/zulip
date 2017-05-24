@@ -8,7 +8,7 @@ from typing import Any, Union, Mapping, Callable, Text, List
 from zerver.lib.test_classes import ZulipTestCase
 
 from zerver.models import (
-    get_realm_by_email_domain,
+    get_realm,
     UserProfile,
     Recipient,
     Service,
@@ -98,7 +98,7 @@ class TestMentionMessageTrigger(ZulipTestCase):
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="foo-bot@zulip.com",
                                           password="test",
-                                          realm=get_realm_by_email_domain("zulip.com"),
+                                          realm=get_realm("zulip"),
                                           full_name="FooBot",
                                           short_name="foo-bot",
                                           bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,

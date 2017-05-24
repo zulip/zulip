@@ -92,7 +92,7 @@ class UploadSerializeMixin(SerializeMixin):
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff = None  # type: int
+    maxDiff = None  # type: Optional[int]
 
     '''
     WRAPPER_COMMENT:
