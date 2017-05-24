@@ -55,6 +55,7 @@ def check_pyflakes(options, by_lang):
 
     # pyflakes writes some output (like syntax errors) to stderr. :/
     for pipe in (pyflakes.stdout, pyflakes.stderr):
+        assert(pipe is not None) # convince mypy that pipe cannot be None
         for ln in pipe:
             if options.full or not (
                     ('imported but unused' in ln or
@@ -142,6 +143,7 @@ def check_pep8(files):
         ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     for pipe in (pep8.stdout, pep8.stderr):
+        assert(pipe is not None) # convince mypy that pipe cannot be None
         for ln in pipe:
             sys.stdout.write(ln)
             failed = True
