@@ -39,8 +39,6 @@ paths:
     post:
       description: Send a message
       operationId: addMessage
-      produces:
-        - application/json
       parameters:
         - name: type
           in: formData
@@ -84,8 +82,6 @@ paths:
     post:
       description: Register a queue to receive new messages
       operationId: registerQueue
-      produces:
-        - application/json
       parameters:
         - name: event_types
           in: formData
@@ -225,8 +221,6 @@ paths:
     get:
       description: Get new events from an events queue
       operationId: getEvents
-      produces:
-        - application/json
       parameters:
         - name: queue_id
           in: query
@@ -269,8 +263,6 @@ paths:
     get:
       description: Get presence data for another user.
       operationId: getPresence
-      produces:
-        - application/json
       parameters:
         - name: user
           in: path
@@ -301,8 +293,6 @@ paths:
       operationId: userUploads
       consumes:
         - multipart/form-data
-      produces:
-        - application/json
       parameters:
         - name: file
           in: formData
@@ -331,8 +321,6 @@ paths:
   /messages/{message_id}/:
     get:
       description: Retrieve the content of a message.
-      produces:
-        - application/json
       parameters:
         - name: message_id
           in: path
@@ -360,8 +348,6 @@ paths:
                 description: Body of the queried message.
     patch:
       description: Edit a message that has already been sent.
-      produces:
-        - application/json
       parameters:
         - name: message_id
           in: path
