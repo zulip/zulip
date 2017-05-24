@@ -12,11 +12,14 @@ and an authentication mechanism.  Or, you can check out the
 
 #### General
 
-The installer expects Zulip to be the only thing running on the
+The installer expects Zulip to be the **only thing** running on the
 system; it will install system packages with `apt` (like nginx,
 postgresql, and redis) and configure them for its own use.  We
-recommend using either a fresh machine instance in a cloud provider,
-a fresh VM, or a dedicated machine.
+strongly recommend using either a fresh machine instance in a cloud
+provider, a fresh VM, or a dedicated machine.  If you decide to
+disregard our advice and use a server that hosts other services, we
+can't support you, but
+[we do have some notes on issues you'll encounter](prod-install-existing-server.html).
 
 #### Operating System
 
