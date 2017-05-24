@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = {
     entry: [
         'webpack-dev-server/client?http://0.0.0.0:9991/socket.io',
@@ -6,7 +8,7 @@ module.exports = {
     devtool: 'eval',
     output: {
         publicPath: 'http://0.0.0.0:9991/webpack/',
-        path: './static/js',
+        path: path.resolve(__dirname, '../static/js'),
         filename: 'bundle.js',
     },
     devServer: {

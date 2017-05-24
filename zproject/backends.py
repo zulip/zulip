@@ -265,7 +265,8 @@ class ZulipDummyBackend(ZulipAuthMixin):
             if user_profile is None:
                 return None
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
-                return_data["invalid_subdomain"] = True
+                if return_data is not None:
+                    return_data["invalid_subdomain"] = True
                 return None
             return user_profile
         return None
@@ -300,7 +301,8 @@ class EmailAuthBackend(ZulipAuthMixin):
             return None
         if user_profile.check_password(password):
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
-                return_data["invalid_subdomain"] = True
+                if return_data is not None:
+                    return_data["invalid_subdomain"] = True
                 return None
             return user_profile
         return None

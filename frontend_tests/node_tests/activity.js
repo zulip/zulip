@@ -29,8 +29,6 @@ add_dependencies({
 
 var presence = global.presence;
 
-var OFFLINE_THRESHOLD_SECS = 140;
-
 set_global('resize', {
     resize_page_components: function () {},
 });
@@ -217,97 +215,6 @@ presence.presence_info = presence_info;
     assert.equal(
         activity.huddle_fraction_present(huddle),
         '0.50');
-}());
-
-
-(function test_on_mobile_property() {
-    // TODO: move this test to a new test module directly testing presence.js
-    var status_from_timestamp = presence._status_from_timestamp;
-
-    var base_time = 500;
-    var info = {
-        website: {
-            status: "active",
-            timestamp: base_time,
-        },
-    };
-    var status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
-
-    info.Android = {
-        status: "active",
-        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
-        pushable: false,
-    };
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.mobile, true);
-    assert.equal(status.status, "active");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
-    assert.equal(status.status, "active");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.mobile, false);
-    assert.equal(status.status, "offline");
-
-    info.Android = {
-        status: "idle",
-        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
-        pushable: true,
-    };
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.mobile, true);
-    assert.equal(status.status, "idle");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
-    assert.equal(status.status, "active");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.mobile, true);
-    assert.equal(status.status, "offline");
-
-}());
-
-(function test_set_presence_info() {
-    var presences = {};
-    var base_time = 500;
-
-    presences[alice.email] = {
-        website: {
-            status: 'active',
-            timestamp: base_time,
-        },
-    };
-
-    presences[fred.email] = {
-        website: {
-            status: 'idle',
-            timestamp: base_time,
-        },
-    };
-
-    presence.set_info(presences, base_time);
-
-    assert.deepEqual(presence.presence_info[alice.user_id],
-        { status: 'active', mobile: false, last_active: 500}
-    );
-
-    assert.deepEqual(presence.presence_info[fred.user_id],
-        { status: 'idle', mobile: false, last_active: 500}
-    );
-
-    assert.deepEqual(presence.presence_info[zoe.user_id],
-        { status: 'offline', mobile: false, last_active: undefined}
-    );
 }());
 
 presence.presence_info = {};

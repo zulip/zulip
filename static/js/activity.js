@@ -62,7 +62,7 @@ function get_user_list_item(user_id) {
 }
 
 function get_filter_li(user_ids_string) {
-    if (name.indexOf(",") < 0) {
+    if (user_ids_string.indexOf(",") < 0) {
         return  get_user_list_item(user_ids_string);
     }
     return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
