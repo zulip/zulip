@@ -332,7 +332,7 @@ class RateLimitMiddleware(object):
         return response
 
     def process_exception(self, request, exception):
-        # type: (HttpRequest, Exception) -> HttpResponse
+        # type: (HttpRequest, Exception) -> Optional[HttpResponse]
         if isinstance(exception, RateLimited):
             resp = json_error(
                 _("API usage exceeded rate limit"),
