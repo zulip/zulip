@@ -52,3 +52,6 @@ ANALYTICS_LOCK_DIR = "var/analytics-lock-dir"
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
 PASSWORD_MIN_ZXCVBN_QUALITY = 0
+# Make sendfile use django to serve files in development
+SENDFILE_BACKEND = 'sendfile.backends.development'
+SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, 'files')

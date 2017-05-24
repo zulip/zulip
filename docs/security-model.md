@@ -184,24 +184,9 @@ your organization.
 * Zulip supports user-uploaded files; ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
   various same-domain attacks (e.g. zulip-user-content.example.com)
-  using the S3 integration.
-
-  The URLs of user-uploaded files are secret; if you are using the
-  "local file upload" integration, anyone with the URL of an uploaded
-  file can access the file.  This means the local uploads integration
-  is vulnerable to a subtle attack where if a user clicks on a link in
-  a secret .PDF or .HTML file that had been uploaded to Zulip, access
-  to the file might be leaked to the other server via the Referrer
-  header (see [the "Uploads world readable" issue on
-  GitHub](https://github.com/zulip/zulip/issues/320)).
-
-  The Zulip S3 file upload integration is relatively safe against that
-  attack, because the URLs of files presented to users don't host the
-  content.  Instead, the S3 integration checks the user has a valid
-  Zulip session in the relevant realm, and if so then redirects the
-  browser to a one-time S3 URL that expires a short time later.
-  Keeping the URL secret is still important to avoid other users in
-  the Zulip realm from being able to access the file.
+  using the S3 integration. The uploaded files could be viewed by only
+  those users who have access to them. Simple possession of a URL to
+  the uploaded file doesn't qualify as a right to view such a file.
 
 * Zulip supports using the Camo image proxy to proxy content like
   inline image previews that can be inserted into the Zulip message
