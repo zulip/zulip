@@ -31,7 +31,10 @@ class WikipediaHandler(object):
         client.send_reply(message, bot_response)
 
     def get_bot_wiki_response(self, message, client):
+        help_text = 'Please enter your message after @mention-bot'
         query = message['content']
+        if query == '':
+            return help_text
         query_wiki_link = ('https://en.wikipedia.org/w/api.php?action=query&'
                            'list=search&srsearch=%s&format=json' % (query,))
         try:
