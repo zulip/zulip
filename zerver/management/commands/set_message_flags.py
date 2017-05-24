@@ -46,9 +46,9 @@ class Command(BaseCommand):
                             type=str,
                             help="Email to set messages for")
         parser.add_argument('--realm',
-                           dest='string_id',
-                           type=str,
-                           help='The string_id of the realm')
+                            dest='string_id',
+                            type=str,
+                            help='The string_id of the realm')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -60,7 +60,7 @@ class Command(BaseCommand):
         flag = getattr(UserMessage.flags, options['flag'])
         all_until = options['all_until']
         email = options['email']
-        
+
         if options.get('string_id'):
             realm = get_realm(options['string_id'])
             user_profile = get_user(email, realm)
