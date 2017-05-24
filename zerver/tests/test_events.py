@@ -345,6 +345,8 @@ class EventsRegisterTest(ZulipTestCase):
         super(EventsRegisterTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
         self.maxDiff = None # type: Optional[int]
+    user_profile = get_user_profile_by_email('hamlet@zulip.com')
+    maxDiff = None
 
     def create_bot(self, email):
         # type: (str) -> UserProfile

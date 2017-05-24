@@ -8,7 +8,7 @@ from typing import Any, Union, Mapping, Callable, Text, List
 from zerver.lib.test_classes import ZulipTestCase
 
 from zerver.models import (
-    get_realm_by_email_domain,
+    get_realm,
     UserProfile,
     Recipient,
     Service,
@@ -44,7 +44,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(200, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None)
+            do_rest_call(rest_operation, None, None) # type: ignore
             self.assertTrue(mock_succeed_with_message.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.request_retry')
@@ -52,7 +52,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(500, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None)
+            do_rest_call(rest_operation, None, None) # type: ignore
             self.assertTrue(mock_request_retry.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
@@ -60,7 +60,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(400, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None)
+            do_rest_call(rest_operation, None, None) # type: ignore
             self.assertTrue(mock_fail_with_message.called)
 
     @mock.patch('logging.info')
@@ -98,7 +98,7 @@ class TestMentionMessageTrigger(ZulipTestCase):
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="foo-bot@zulip.com",
                                           password="test",
-                                          realm=get_realm_by_email_domain("zulip.com"),
+                                          realm=get_realm("zulip"),
                                           full_name="FooBot",
                                           short_name="foo-bot",
                                           bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,

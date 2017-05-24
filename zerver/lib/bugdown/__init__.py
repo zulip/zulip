@@ -65,7 +65,7 @@ class BugdownRenderingException(Exception):
     pass
 
 def url_embed_preview_enabled_for_realm(message):
-    # type: (Message) -> bool
+    # type: (Optional[Message]) -> bool
     if message is not None:
         realm = message.get_realm()
     else:

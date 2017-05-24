@@ -1594,6 +1594,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
 
+        assert(mirror_sender is not None)
         self.assertTrue(valid_input)
         self.assertEqual(mirror_sender.email, sender_email)
         self.assertTrue(mirror_sender.is_mirror_dummy)
@@ -1945,6 +1946,7 @@ class CheckMessageTest(ZulipTestCase):
         # Try sending to stream that exists with no subscribers longer
         # after; this should send an error to the bot owner that the
         # stream doesn't exist
+        assert(sender.last_reminder is not None)
         sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
         ret = check_message(sender, client, message_type_name, message_to,

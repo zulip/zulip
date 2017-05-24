@@ -177,7 +177,7 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
 
-        self.maxDiff = None # type: Optional[int]
+        self.maxDiff = None
         for name, test in six.iteritems(format_tests):
             converted = bugdown_convert(test['input'])
 
@@ -197,7 +197,7 @@ class BugdownTest(ZulipTestCase):
             return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
 
         print("Running Bugdown Linkify tests")
-        self.maxDiff = None # type: Optional[int]
+        self.maxDiff = None
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
             for inline_url, reference, url in linkify_tests:
                 try:
@@ -301,8 +301,7 @@ class BugdownTest(ZulipTestCase):
         ret = bugdown.url_embed_preview_enabled_for_realm(message)
         self.assertEqual(ret, realm.inline_image_preview)
 
-        message = None
-        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        ret = bugdown.url_embed_preview_enabled_for_realm(None)
         self.assertEqual(ret, True)
 
     def test_inline_dropbox(self):
