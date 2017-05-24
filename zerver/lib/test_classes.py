@@ -34,6 +34,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     get_stream,
+    get_user,
     get_user_profile_by_email,
     get_realm_by_email_domain,
     Client,
@@ -215,6 +216,7 @@ class ZulipTestCase(TestCase):
         prospero='prospero@zulip.com',
         othello='othello@zulip.com',
         AARON='AARON@zulip.com',
+        aaron='aaron@zulip.com',
         ZOE='ZOE@zulip.com',
     )
 
@@ -223,6 +225,23 @@ class ZulipTestCase(TestCase):
         starnine="starnine@mit.edu",
         espuser="espuser@mit.edu",
     )
+
+    # Non-registered test users
+    nonreg_user_map = dict(
+        test='test@zulip.com',
+        test1='test1@zulip.com',
+        alice='alice@zulip.com',
+        newuser='newuser@zulip.com',
+        bob='bob@zulip.com',
+        cordelia='cordelia@zulip.com',
+        newguy='newguy@zulip.com',
+        me='me@zulip.com',
+    )
+
+    def nonreg_user(self, name):
+        # type: (str) -> UserProfile
+        email = self.nonreg_user_map[name]
+        return get_user(email, get_realm_by_email_domain(email))
 
     def example_user(self, name):
         # type: (str) -> UserProfile
@@ -234,6 +253,10 @@ class ZulipTestCase(TestCase):
         email = self.mit_user_map[name]
         return get_user_profile_by_email(email)
 
+    def nonreg_email(self, name):
+        # type: (str) -> str
+        return self.nonreg_user_map[name]
+
     def example_email(self, name):
         # type: (str) -> str
         return self.example_user_map[name]
@@ -241,6 +264,11 @@ class ZulipTestCase(TestCase):
     def mit_email(self, name):
         # type: (str) -> str
         return self.mit_user_map[name]
+
+    def get_email(self, name):
+        # type: (str) -> str
+        email = '{name}@zulip.com'.format(name=name)
+        return email
 
     def notification_bot(self):
         # type: () -> UserProfile

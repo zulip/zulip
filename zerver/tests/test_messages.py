@@ -31,7 +31,7 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmDomain,
-    get_realm, get_stream, get_user_profile_by_email,
+    get_realm, get_realm_by_email_domain, get_stream, get_system_bot, get_user,
     Reaction, sew_messages_and_reactions, flush_per_request_caches
 )
 
@@ -166,7 +166,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def create_user(self, email):
         # type: (Text) -> UserProfile
         self.register(email, 'test')
-        return get_user_profile_by_email(email)
+        return get_user(email, get_realm_by_email_domain(email))
 
     @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
                                                'support@3.example.com'])
@@ -204,7 +204,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
-        feedback_bot = get_user_profile_by_email(feedback_email)
+        feedback_bot = get_system_bot(feedback_email)
         support_bot = self.create_user(support_email)
 
         # Users can PM themselves
@@ -298,10 +298,11 @@ class PersonalMessagesTest(ZulipTestCase):
         Newly created users are auto-subbed to the ability to receive
         personals.
         """
-        self.register("test@zulip.com", "test")
-        user_profile = get_user_profile_by_email('test@zulip.com')
+        test_email = self.nonreg_email('test')
+        self.register(test_email, "test")
+        user_profile = self.nonreg_user('test')
         old_messages_count = message_stream_count(user_profile)
-        self.send_message("test@zulip.com", "test@zulip.com", Recipient.PERSONAL)
+        self.send_message(test_email, test_email, Recipient.PERSONAL)
         new_messages_count = message_stream_count(user_profile)
         self.assertEqual(new_messages_count, old_messages_count + 1)
 
@@ -327,13 +328,14 @@ class PersonalMessagesTest(ZulipTestCase):
         If you send a personal to yourself, only you see it.
         """
         old_user_profiles = list(UserProfile.objects.all())
-        self.register("test1@zulip.com", "test1")
+        test_email = self.nonreg_email('test1')
+        self.register(test_email, "test1")
 
         old_messages = []
         for user_profile in old_user_profiles:
             old_messages.append(message_stream_count(user_profile))
 
-        self.send_message("test1@zulip.com", "test1@zulip.com", Recipient.PERSONAL)
+        self.send_message(test_email, test_email, Recipient.PERSONAL)
 
         new_messages = []
         for user_profile in old_user_profiles:
@@ -341,7 +343,7 @@ class PersonalMessagesTest(ZulipTestCase):
 
         self.assertEqual(old_messages, new_messages)
 
-        user_profile = get_user_profile_by_email("test1@zulip.com")
+        user_profile = self.nonreg_user('test1')
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
@@ -351,8 +353,9 @@ class PersonalMessagesTest(ZulipTestCase):
         Send a private message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
         """
-        sender = get_user_profile_by_email(sender_email)
-        receiver = get_user_profile_by_email(receiver_email)
+        realm = get_realm('zulip')  # Assume realm is always 'zulip'
+        sender = get_user(sender_email, realm)
+        receiver = get_user(receiver_email, realm)
 
         sender_messages = message_stream_count(sender)
         receiver_messages = message_stream_count(receiver)
@@ -981,13 +984,12 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_send_message_as_superuser_to_domain_that_dont_exist(self):
         # type: () -> None
-        email = "emailgateway@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = get_system_bot(settings.EMAIL_GATEWAY_BOT)
         password = "test_password"
         user.set_password(password)
         user.is_api_super_user = True
         user.save()
-        self.login(email, password)
+        self.login(user.email, password)
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "to": "Verona",
                                                      "client": "test suite",
@@ -1047,7 +1049,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_send_message_irc_mirror(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email('hamlet'))
         bot_info = {
             'full_name': 'IRC bot',
             'short_name': 'irc',
@@ -1056,10 +1058,10 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
         email = "irc-bot@zulip.testserver"
-        user = get_user_profile_by_email(email)
+        user = get_user(email, get_realm('zulip'))
         user.is_api_super_user = True
         user.save()
-        user = get_user_profile_by_email(email)
+        user = get_user(email, get_realm('zulip'))
         self.subscribe_to_stream(email, "#IRCland", realm=user.realm)
         result = self.client_post("/api/v1/messages",
                                   {"type": "stream",
@@ -1549,6 +1551,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.mit_user('starnine')
         sender = self.mit_user('sipbtest')
         new_user_email = 'bob_the_new_user@mit.edu'
+        new_user_realm = get_realm("zephyr")
 
         recipients = [user.email, new_user_email]
 
@@ -1570,7 +1573,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertIn(user.email, realm_emails)
         self.assertIn(new_user_email, realm_emails)
 
-        bob = get_user_profile_by_email(new_user_email)
+        bob = get_user(new_user_email, new_user_realm)
         self.assertTrue(bob.is_mirror_dummy)
 
     @mock.patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
@@ -1605,7 +1608,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         sender = self.example_user('hamlet')
         user = sender
 
-        recipients = ['alice@zulip.com', 'bob@irc.zulip.com', 'cordelia@zulip.com']
+        recipients = [self.nonreg_email('alice'), 'bob@irc.zulip.com', self.nonreg_email('cordelia')]
 
         # Now make the request.
         request = self.Request()
@@ -1622,10 +1625,10 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         realm_users = UserProfile.objects.filter(realm=sender.realm)
         realm_emails = {user.email for user in realm_users}
-        self.assertIn('alice@zulip.com', realm_emails)
+        self.assertIn(self.nonreg_email('alice'), realm_emails)
         self.assertIn('bob@irc.zulip.com', realm_emails)
 
-        bob = get_user_profile_by_email('bob@irc.zulip.com')
+        bob = get_user('bob@irc.zulip.com', sender.realm)
         self.assertTrue(bob.is_mirror_dummy)
 
     def test_jabber_mirror(self):
@@ -1635,7 +1638,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         sender = self.example_user('hamlet')
         user = sender
 
-        recipients = ['alice@zulip.com', 'bob@zulip.com', 'cordelia@zulip.com']
+        recipients = [self.nonreg_email('alice'), self.nonreg_email('bob'), self.nonreg_email('cordelia')]
 
         # Now make the request.
         request = self.Request()
@@ -1652,10 +1655,10 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         realm_users = UserProfile.objects.filter(realm=sender.realm)
         realm_emails = {user.email for user in realm_users}
-        self.assertIn('alice@zulip.com', realm_emails)
-        self.assertIn('bob@zulip.com', realm_emails)
+        self.assertIn(self.nonreg_email('alice'), realm_emails)
+        self.assertIn(self.nonreg_email('bob'), realm_emails)
 
-        bob = get_user_profile_by_email('bob@zulip.com')
+        bob = get_user(self.nonreg_email('bob'), sender.realm)
         self.assertTrue(bob.is_mirror_dummy)
 
 class StarTests(ZulipTestCase):
@@ -1792,14 +1795,14 @@ class StarTests(ZulipTestCase):
         """
         New messages aren't starred.
         """
-        test_email = "hamlet@zulip.com"
+        test_email = self.example_email('hamlet')
         self.login(test_email)
         content = "Test message for star"
         self.send_message(test_email, "Verona", Recipient.STREAM,
                           content=content)
 
         sent_message = UserMessage.objects.filter(
-            user_profile=get_user_profile_by_email(test_email)
+            user_profile=self.example_user('hamlet')
         ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
@@ -1856,7 +1859,7 @@ class AttachmentTest(ZulipTestCase):
 class LogDictTest(ZulipTestCase):
     def test_to_log_dict(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.get_email('hamlet')
         stream_name = 'Denmark'
         topic_name = 'Copenhagen'
         content = 'find me some good coffee shops'
@@ -1876,7 +1879,7 @@ class LogDictTest(ZulipTestCase):
         self.assertEqual(dct['sender_realm_str'], 'zulip')
         self.assertEqual(dct['sender_email'], 'hamlet@zulip.com')
         self.assertEqual(dct['sender_full_name'], 'King Hamlet')
-        self.assertEqual(dct['sender_id'], get_user_profile_by_email(email).id)
+        self.assertEqual(dct['sender_id'], self.example_user('hamlet').id)
         self.assertEqual(dct['sender_short_name'], 'hamlet')
         self.assertEqual(dct['sending_client'], 'test suite')
         self.assertEqual(dct['subject'], 'Copenhagen')

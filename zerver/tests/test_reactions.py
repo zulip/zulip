@@ -8,7 +8,7 @@ from six import string_types
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient, \
     get_test_image_file
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, get_user_profile_by_email, Recipient, UserMessage
+from zerver.models import get_realm, Recipient, UserMessage
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self):
@@ -216,25 +216,24 @@ class ReactionEventTest(ZulipTestCase):
         Recipients of the message receive the reaction event
         and event contains relevant data
         """
-        pm_sender = 'hamlet@zulip.com'
-        pm_recipient = 'othello@zulip.com'
+        pm_sender = self.example_user('hamlet')
+        pm_recipient = self.example_user('othello')
         reaction_sender = pm_recipient
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
-                                                       "to": pm_recipient},
-                                  **self.api_auth(pm_sender))
+                                                       "to": pm_recipient.email},
+                                  **self.api_auth(pm_sender.email))
         self.assert_json_success(result)
         content = ujson.loads(result.content)
         pm_id = content['id']
 
-        expected_recipient_emails = set([pm_sender, pm_recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
-                                     **self.api_auth(reaction_sender))
+                                     **self.api_auth(reaction_sender.email))
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -242,7 +241,7 @@ class ReactionEventTest(ZulipTestCase):
         event_user_ids = set(events[0]['users'])
 
         self.assertEqual(expected_recipient_ids, event_user_ids)
-        self.assertEqual(event['user']['email'], reaction_sender)
+        self.assertEqual(event['user']['email'], reaction_sender.email)
         self.assertEqual(event['type'], 'reaction')
         self.assertEqual(event['op'], 'add')
         self.assertEqual(event['emoji_name'], 'smile')
@@ -254,29 +253,28 @@ class ReactionEventTest(ZulipTestCase):
         Recipients of the message receive the reaction event
         and event contains relevant data
         """
-        pm_sender = 'hamlet@zulip.com'
-        pm_recipient = 'othello@zulip.com'
+        pm_sender = self.example_user('hamlet')
+        pm_recipient = self.example_user('othello')
         reaction_sender = pm_recipient
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
-                                                       "to": pm_recipient},
-                                  **self.api_auth(pm_sender))
+                                                       "to": pm_recipient.email},
+                                  **self.api_auth(pm_sender.email))
         self.assert_json_success(result)
         content = ujson.loads(result.content)
         pm_id = content['id']
 
-        expected_recipient_emails = set([pm_sender, pm_recipient])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+        expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
 
         add = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
-                              **self.api_auth(reaction_sender))
+                              **self.api_auth(reaction_sender.email))
         self.assert_json_success(add)
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_delete('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
-                                        **self.api_auth(reaction_sender))
+                                        **self.api_auth(reaction_sender.email))
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -284,7 +282,7 @@ class ReactionEventTest(ZulipTestCase):
         event_user_ids = set(events[0]['users'])
 
         self.assertEqual(expected_recipient_ids, event_user_ids)
-        self.assertEqual(event['user']['email'], reaction_sender)
+        self.assertEqual(event['user']['email'], reaction_sender.email)
         self.assertEqual(event['type'], 'reaction')
         self.assertEqual(event['op'], 'remove')
         self.assertEqual(event['emoji_name'], 'smile')

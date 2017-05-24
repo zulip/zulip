@@ -22,7 +22,6 @@ from zerver.models import (
     receives_online_notifications,
     get_client,
     Recipient,
-    get_user_profile_by_email,
     Stream,
 )
 from zerver.lib import push_notifications as apn
@@ -251,7 +250,7 @@ class PushNotificationTest(BouncerTestCase):
             )
 
         self.sending_client = get_client('test')
-        self.sender = get_user_profile_by_email('hamlet@zulip.com')
+        self.sender = self.example_user('hamlet')
 
     def tearDown(self):
         # type: () -> None
@@ -338,7 +337,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_disabled_notifications(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         user_profile.enable_online_email_notifications = False
         user_profile.enable_online_push_notifications = False
         user_profile.enable_offline_email_notifications = False
@@ -348,7 +347,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_read_message(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=user_profile,
@@ -361,7 +360,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_send_notifications_to_bouncer(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=user_profile,
@@ -548,16 +547,15 @@ class TestGetAPNsPayload(PushNotificationTest):
 class TestGetGCMPayload(PushNotificationTest):
     def test_get_gcm_payload(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.content = 'a' * 210
         message.save()
 
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         payload = apn.get_gcm_payload(user_profile, message)
         expected = {
-            "user": email,
+            "user": user_profile.email,
             "event": "message",
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
@@ -575,12 +573,11 @@ class TestGetGCMPayload(PushNotificationTest):
 
     def test_get_gcm_payload_personal(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
         message = self.get_message(Recipient.PERSONAL, 1)
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         payload = apn.get_gcm_payload(user_profile, message)
         expected = {
-            "user": email,
+            "user": user_profile.email,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,

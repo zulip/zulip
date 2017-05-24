@@ -11,7 +11,7 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
-    get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
+    get_client, get_realm, get_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm,
 )
@@ -340,7 +340,9 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
 class EventsRegisterTest(ZulipTestCase):
+
     def setUp(self):
+        # type: () -> None
         super(EventsRegisterTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
         self.maxDiff = None # type: Optional[int]
@@ -1506,8 +1508,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     def test_max_message_id_with_no_history(self):
         # type: () -> None
-        email = 'aaron@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('aaron')
         # Delete all historical messages for this user
         UserMessage.objects.filter(user_profile=user_profile).delete()
         result = fetch_initial_state_data(user_profile, None, "")

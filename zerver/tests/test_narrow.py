@@ -12,7 +12,7 @@ from sqlalchemy.sql import compiler # type: ignore
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
+    get_display_recipient, get_recipient, get_realm, get_stream, get_user,
     Reaction
 )
 from zerver.lib.message import (
@@ -481,7 +481,7 @@ class GetOldMessagesTest(ZulipTestCase):
         A request for old messages with a narrow by pm-with only returns
         conversations with that user.
         """
-        me = 'hamlet@zulip.com'
+        me = self.example_email('hamlet')
 
         def dr_emails(dr):
             # type: (Union[Text, List[Dict[str, Any]]]) -> Text
@@ -492,7 +492,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.send_message(me,
                           ['iago@zulip.com', 'cordelia@zulip.com'],
                           Recipient.HUDDLE)
-        personals = [m for m in get_user_messages(get_user_profile_by_email(me))
+        personals = [m for m in get_user_messages(self.example_user('hamlet'))
                      if m.recipient.type == Recipient.PERSONAL or
                      m.recipient.type == Recipient.HUDDLE]
         for personal in personals:
@@ -535,7 +535,7 @@ class GetOldMessagesTest(ZulipTestCase):
         A request for old messages with a narrow by stream only returns
         messages for that stream.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email('hamlet'))
         # We need to subscribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
@@ -576,7 +576,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(num_after=2,
                                                   narrow=ujson.dumps(narrow)))
 
-        messages = get_user_messages(get_user_profile_by_email(self.mit_user("starnine").email))
+        messages = get_user_messages(self.mit_user("starnine"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
 
         self.assertEqual(len(result["messages"]), 2)

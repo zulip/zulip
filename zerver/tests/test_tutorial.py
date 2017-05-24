@@ -4,8 +4,9 @@ from __future__ import print_function
 
 from typing import Any, Dict
 
+from django.conf import settings
+
 from zerver.lib.test_helpers import (
-    get_user_profile_by_email,
     most_recent_message,
 )
 
@@ -14,7 +15,8 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    UserProfile,
+    get_system_bot,
+    UserProfile
 )
 
 import ujson
@@ -32,7 +34,7 @@ class TutorialTests(ZulipTestCase):
         email = user.email
         self.login(email)
 
-        welcome_bot = get_user_profile_by_email("welcome-bot@zulip.com")
+        welcome_bot = get_system_bot(settings.WELCOME_BOT)
 
         raw_params = dict(
             type='stream',
@@ -69,7 +71,7 @@ class TutorialTests(ZulipTestCase):
 
     def test_tutorial_status(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         cases = [
@@ -81,5 +83,5 @@ class TutorialTests(ZulipTestCase):
             params = fix_params(raw_params)
             result = self.client_post('/json/tutorial_status', params)
             self.assert_json_success(result)
-            user = get_user_profile_by_email(email)
+            user = self.example_user('hamlet')
             self.assertEqual(user.tutorial_status, expected_db_status)
