@@ -6,6 +6,7 @@ var elems = {};
 var exports = {};
 
 function new_elem(selector) {
+    var html = 'never-been-set';
     var text = 'never-been-set';
     var value;
     var shown = false;
@@ -31,6 +32,13 @@ function new_elem(selector) {
         blur: function () {
             focused = false;
         },
+        html: function (arg) {
+            if (arg !== undefined) {
+                html = arg;
+            } else {
+                return html;
+            }
+        },
         text: function (arg) {
             if (arg !== undefined) {
                 text = arg;
@@ -48,19 +56,12 @@ function new_elem(selector) {
             shown = false;
         },
         addClass: function (class_name) {
-            if (class_name === 'active') {
-                shown = true;
-            }
             classes.set(class_name, true);
+            return self;
         },
         removeClass: function (class_name) {
-            if (class_name === 'status_classes') {
-                return self;
-            }
-            if (class_name === 'active') {
-                shown = false;
-            }
             classes.del(class_name);
+            return self;
         },
         hasClass: function (class_name) {
             return classes.has(class_name);
@@ -98,6 +99,13 @@ function new_elem(selector) {
         parent: function () {
             return my_parent;
         },
+        expectOne: function () {
+            // silently do nothing
+            return self;
+        },
+        on: function () {
+            return self;
+        },
     };
     return self;
 }
@@ -127,9 +135,13 @@ exports.zjquery = function (arg) {
     var selector = arg;
     if (elems[selector] === undefined) {
         var elem = new_elem(selector);
-        elems[selector] = elem;
+        elems[selector] = jquery_array(elem);
     }
-    return jquery_array(elems[selector]);
+    return elems[selector];
+};
+
+exports.zjquery.stub_selector = function (selector, stub) {
+    elems[selector] = stub;
 };
 
 exports.zjquery.trim = function (s) { return s; };
