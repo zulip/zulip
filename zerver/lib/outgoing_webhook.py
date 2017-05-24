@@ -58,7 +58,7 @@ def request_retry(event, failure_message):
         queue_json_publish("outgoing_webhooks", event, lambda x: None)
 
 def do_rest_call(rest_operation, event, timeout=None):
-    # type: (Dict[str, Any], Optional[Dict[str, Any]], Any) -> None
+    # type: (Dict[str, Any], Dict[str, Any], Any) -> None
     rest_operation_validator = check_dict([
         ('method', check_string),
         ('relative_url_path', check_string),

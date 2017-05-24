@@ -754,7 +754,7 @@ class ResponseMock(object):
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response, account_response, subdomain=None,
                            mobile_flow_otp=None):
-        # type: (ResponseMock, Optional[ResponseMock], Optional[str], Optional[str]) -> HttpResponse
+        # type: (ResponseMock, ResponseMock, Optional[str], Optional[str]) -> HttpResponse
         url = "/accounts/login/google/"
         params = {}
         headers = {}
@@ -1065,7 +1065,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         # type: () -> None
         token_response = ResponseMock(400, {})
         with mock.patch("logging.warning") as m:
-            result = self.google_oauth2_test(token_response, None)
+            result = self.google_oauth2_test(token_response, ResponseMock(500, {}))
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          "User error converting Google oauth2 login to token: Response text")
@@ -1074,7 +1074,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         # type: () -> None
         token_response = ResponseMock(500, {})
         with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, None)
+            result = self.google_oauth2_test(token_response, ResponseMock(500, {}))
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          "Could not convert google oauth2 code to access_token: Response text")

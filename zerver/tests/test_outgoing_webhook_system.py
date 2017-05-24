@@ -44,7 +44,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(200, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None)
+            do_rest_call(rest_operation, None, None) # type: ignore
             self.assertTrue(mock_succeed_with_message.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.request_retry')
@@ -52,7 +52,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(500, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None)
+            do_rest_call(rest_operation, None, None) # type: ignore
             self.assertTrue(mock_request_retry.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
@@ -60,7 +60,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(400, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None)
+            do_rest_call(rest_operation, None, None) # type: ignore
             self.assertTrue(mock_fail_with_message.called)
 
     @mock.patch('logging.info')
