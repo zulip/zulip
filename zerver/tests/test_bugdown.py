@@ -177,7 +177,6 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
 
-        self.maxDiff = None
         for name, test in six.iteritems(format_tests):
             converted = bugdown_convert(test['input'])
 
@@ -197,7 +196,6 @@ class BugdownTest(ZulipTestCase):
             return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
 
         print("Running Bugdown Linkify tests")
-        self.maxDiff = None
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
             for inline_url, reference, url in linkify_tests:
                 try:
