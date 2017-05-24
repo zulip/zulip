@@ -3,9 +3,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from lib.css_parser import parse, CssParserException
 from typing import Iterable, Text
-import os
 import sys
 import glob
+import subprocess
 
 # check for the venv
 from lib import sanity_check
@@ -18,7 +18,7 @@ def validate(fn):
     if text != section_list.text():
         print('%s seems to be broken:' % (fn,))
         open('/var/tmp/pretty_css.txt', 'w').write(section_list.text())
-        os.system('diff %s /var/tmp/pretty_css.txt' % (fn,))
+        subprocess.call(['diff', fn, '/var/tmp/pretty_css.txt'], stderr=subprocess.STDOUT)
         sys.exit(1)
 
 def check_our_files(filenames):

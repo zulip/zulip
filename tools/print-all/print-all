@@ -4,6 +4,7 @@ import sh
 import os
 import re
 import sys
+import subprocess
 
 from typing import Iterable
 
@@ -54,7 +55,7 @@ try:
     sh.git('diff-index', '--cached', '--quiet', 'HEAD')
 except sh.ErrorReturnCode:
     sys.stderr.write('Your Git repository is not clean!\n\n')
-    os.system('git status')  # output to terminal
+    subprocess.call(['git', 'status'], stderr=subprocess.STDOUT)  # output to terminal
     sys.exit(1)
 
 with open('tools/print-all/tex/preamble.tex', 'w') as f:
