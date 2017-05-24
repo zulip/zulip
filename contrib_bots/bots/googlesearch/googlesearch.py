@@ -1,4 +1,4 @@
-# See zulip/contrib_bots/lib/readme.md for instructions on running this code.
+# See readme.md for instructions on running this code.
 from __future__ import print_function
 import logging
 import http.client
@@ -8,13 +8,19 @@ from six.moves.urllib.request import urlopen
 #   pip install --upgrade google
 from google import search
 
+
 def get_google_result(search_keywords):
+    help_message = "To use this bot start message with @mentioned-bot\
+                    followed by what you want to search for. If \
+                    found, Zulip will return the first search result \
+                    on Google.\
+                    \
+                    An example message that could be sent is:\
+                    '@mentioned-bot zulip' or \
+                    '@mentioned-bot how to create a chatbot'."
     if search_keywords == 'help':
-        help_message = "To use this bot start message with @google \
-                        followed by what you want to search for. If \
-                        found, Zulip will return the first search result \
-                        on Google. An example message that could be sent is:\
-                        '@google zulip' or '@google how to create a chatbot'."
+        return help_message
+    elif search_keywords == '' or search_keywords is None:
         return help_message
     else:
         try:
@@ -27,12 +33,25 @@ def get_google_result(search_keywords):
             logging.exception(e)
             return 'Error: Search failed. {}.'.format(e)
 
-        if not urls:
-            return 'No URLs returned by google.'
-
-        url = next(urls)
+        try:
+            url = next(urls)
+        except AttributeError as a_err:
+            # google.search query failed and urls is of object
+            # 'NoneType'
+            logging.exception(a_err)
+            return "Error: Google search failed with a NoneType result. {}.".format(a_err)
+        except TypeError as t_err:
+            # google.search query failed and returned None
+            # This technically should not happen but the prior
+            # error check assumed this behavior
+            logging.exception(t_err)
+            return "Error: Google search function failed. {}.".format(t_err)
+        except Exception as e:
+            logging.exception(e)
+            return 'Error: Search failed. {}.'.format(e)
 
         return 'Success: {}'.format(url)
+
 
 class GoogleSearchHandler(object):
     '''
@@ -40,16 +59,17 @@ class GoogleSearchHandler(object):
     term in Zulip and get the top URL sent back
     to the context (stream or private) in which
     it was called. It looks for messages starting
-    with @google.
+    with @mentioned-bot.
     '''
 
     def usage(self):
         return '''
             This plugin will allow users to search
             for a given search term on Google from
-            Zulip. Use '@google help' to get more
-            information on the bot usage. Users
-            should preface messages with @google.
+            Zulip. Use '@mentioned-bot help' to get
+            more information on the bot usage. Users
+            should preface messages with
+            @mentioned-bot.
             '''
 
     def handle_message(self, message, client, state_handler):
@@ -72,6 +92,7 @@ class GoogleSearchHandler(object):
             ))
 
 handler_class = GoogleSearchHandler
+
 
 def test():
     try:
