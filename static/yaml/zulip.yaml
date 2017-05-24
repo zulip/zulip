@@ -361,7 +361,7 @@ paths:
       - name: propagate_mode
         in: query
         description: |
-                     Which message(s) should be edited: just
+                     Which messages should be afected by the edits: just
                      the one indicated in `message_id`, messages in the
                      same topic that had been sent after this one, or all of
                      them.
