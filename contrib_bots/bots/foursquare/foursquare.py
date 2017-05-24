@@ -60,19 +60,7 @@ Example Inputs:
         return '\n'.join(format_venue(venue) for venue in venues)
 
     def send_info(self, message, letter, client):
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=message['sender_email'],
-                content=letter,
-            ))
-        else:
-            client.send_message(dict(
-                type='stream',
-                subject=message['subject'],
-                to=message['display_recipient'],
-                content=letter,
-            ))
+        client.send_reply(message, letter)
 
     def handle_message(self, message, client, state_handler):
         words = message['content'].split()
