@@ -3,6 +3,8 @@ from django.core import mail
 from django.contrib.auth.signals import user_logged_in
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.signals import get_device_browser, get_device_os
+from zerver.lib.actions import notify_new_user
+from zerver.models import Recipient, Stream
 
 class SendLoginEmailTest(ZulipTestCase):
     """
@@ -89,3 +91,18 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
         for user_agent in self.user_agents:
             device_os = get_device_os(user_agent[0])
             self.assertEqual(device_os, user_agent[2])
+
+
+class TestNotifyNewUser(ZulipTestCase):
+
+    def test_notify_of_new_user_internally(self):
+
+        new_user = self.example_user('cordelia')
+        self.make_stream('signups')
+        notify_new_user(new_user, internal=True)
+
+        message = self.get_last_message()
+        actual_stream = Stream.objects.get(id=message.recipient.type_id)
+        self.assertEqual(actual_stream.name, 'signups')
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        self.assertIn("**INTERNAL SIGNUP**", message.content)
