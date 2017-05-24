@@ -21,24 +21,27 @@ def get_clean_response(m, method):
         return response
     elif isinstance(response, list):
         return ', '.join(response)
+    else:
+        return "Sorry, no result found! Please check the word."
 
 def get_thesaurus_result(original_content):
-    search_keyword = original_content.strip().split(' ', 1)[1]
-    if search_keyword == 'help':
-        help_message = "To use this bot, start messages with either \
-                        @mention-bot synonym (to get the synonyms of a given word) \
-                        or @mention-bot antonym (to get the antonyms of a given word). \
-                        Phrases are not accepted so only use single words \
-                        to search. For example you could search '@mention-bot synonym hello' \
-                        or '@mention-bot antonym goodbye'."
+    help_message = "To use this bot, start messages with either \
+                            @mention-bot synonym (to get the synonyms of a given word) \
+                            or @mention-bot antonym (to get the antonyms of a given word). \
+                            Phrases are not accepted so only use single words \
+                            to search. For example you could search '@mention-bot synonym hello' \
+                            or '@mention-bot antonym goodbye'."
+    query = original_content.strip().split(' ', 1)
+    if len(query) < 2:
         return help_message
-    elif original_content.startswith('synonym'):
+    else:
+        search_keyword = query[1]
+    if original_content.startswith('synonym'):
         result = get_clean_response(search_keyword, method = Dictionary.synonym)
     elif original_content.startswith('antonym'):
         result = get_clean_response(search_keyword, method = Dictionary.antonym)
-
-    if result is None:
-        result = "Sorry, no result found! Please check the word."
+    else:
+        result = help_message
     return result
 
 class ThesaurusHandler(object):
