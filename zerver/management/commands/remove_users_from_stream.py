@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import bulk_remove_subscriptions
 from zerver.models import Realm, UserProfile, get_realm, get_stream, \
-    get_user_profile_by_email
+    get_user_for_mgmt
 
 class Command(BaseCommand):
     help = """Remove some or all users in a realm from a stream."""
@@ -47,6 +47,9 @@ class Command(BaseCommand):
             exit(1)
 
         realm = get_realm(options["string_id"])
+        if options["string_id"] is not None and realm is None:
+            print("The realm %s does not exist. Aborting." % options["string_id"])
+            exit(1)
         stream_name = options["stream"].strip()
         stream = get_stream(stream_name, realm)
 
@@ -56,7 +59,11 @@ class Command(BaseCommand):
             emails = set([email.strip() for email in options["users"].split(",")])
             user_profiles = []
             for email in emails:
-                user_profiles.append(get_user_profile_by_email(email))
+                try:
+                    user_profiles.append(get_user_for_mgmt(email, realm))
+                except UserProfile.DoesNotExist:
+                    print("e-mail %s doesn't exist in realm %s, skipping" % (email, realm,))
+                    exit(1)
 
         result = bulk_remove_subscriptions(user_profiles, [stream])
         not_subscribed = result[1]

@@ -10,24 +10,43 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_deactivate_user
 from zerver.lib.sessions import user_sessions
-from zerver.models import get_user_profile_by_email, UserProfile
+from zerver.models import get_realm, get_user_for_mgmt, UserProfile
 
 class Command(BaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
+        parser.add_argument(
+            '-r', '--realm', nargs='?', default=None,
+            dest='string_id',
+            type=str,
+            help='The name of the realm in which you are deactivating a user.')
+
         parser.add_argument('-f', '--for-real',
                             dest='for_real',
                             action='store_true',
                             default=False,
                             help="Actually deactivate the user. Default is a dry run.")
+
         parser.add_argument('email', metavar='<email>', type=str,
                             help='email of user to deactivate')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        user_profile = get_user_profile_by_email(options['email'])
+        email = options['email']
+        realm = get_realm(options["string_id"])
+        if options["string_id"] is not None and realm is None:
+            print("The realm %s does not exist. Aborting." % options["string_id"])
+            exit(1)
+        try:
+            user_profile = get_user_for_mgmt(email, realm)
+        except UserProfile.DoesNotExist:
+            if realm is None:
+                print("e-mail %s doesn't exist in the system, skipping" % (email,))
+            else:
+                print("e-mail %s doesn't exist in the realm, skipping" % (email,))
+            exit(1)
 
         print("Deactivating %s (%s) - %s" % (user_profile.full_name,
                                              user_profile.email,
