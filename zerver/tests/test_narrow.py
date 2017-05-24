@@ -488,9 +488,9 @@ class GetOldMessagesTest(ZulipTestCase):
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
-        self.send_message(me, 'iago@zulip.com', Recipient.PERSONAL)
+        self.send_message(me, self.example_email("iago"), Recipient.PERSONAL)
         self.send_message(me,
-                          ['iago@zulip.com', 'cordelia@zulip.com'],
+                          [self.example_email("iago"), 'cordelia@zulip.com'],
                           Recipient.HUDDLE)
         personals = [m for m in get_user_messages(self.example_user('hamlet'))
                      if m.recipient.type == Recipient.PERSONAL or
@@ -514,13 +514,13 @@ class GetOldMessagesTest(ZulipTestCase):
         me = self.example_email("hamlet")
 
         matching_message_ids = []
-        matching_message_ids.append(self.send_message(me, ['iago@zulip.com', 'cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+        matching_message_ids.append(self.send_message(me, [self.example_email("iago"), 'cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
         matching_message_ids.append(self.send_message(me, ['cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
 
         non_matching_message_ids = []
         non_matching_message_ids.append(self.send_message(me, 'cordelia@zulip.com', Recipient.PERSONAL))
-        non_matching_message_ids.append(self.send_message(me, ['iago@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
-        non_matching_message_ids.append(self.send_message('cordelia@zulip.com', ['iago@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+        non_matching_message_ids.append(self.send_message(me, [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
+        non_matching_message_ids.append(self.send_message('cordelia@zulip.com', [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
 
         self.login(me)
         narrow = [dict(operator='group-pm-with', operand='cordelia@zulip.com')]
@@ -676,7 +676,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM)
         self.send_message("othello@zulip.com", "Scotland", Recipient.STREAM)
         self.send_message("othello@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL)
-        self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM)
+        self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM)
 
         narrow = [dict(operator='sender', operand='othello@zulip.com')]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
@@ -1090,7 +1090,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Add a few messages that help us test that our query doesn't
         # look at messages that are irrelevant to Hamlet.
         self.send_message("othello@zulip.com", "cordelia@zulip.com", Recipient.PERSONAL)
-        self.send_message("othello@zulip.com", "iago@zulip.com", Recipient.PERSONAL)
+        self.send_message("othello@zulip.com", self.example_email("iago"), Recipient.PERSONAL)
 
         query_params = dict(
             use_first_unread_anchor='true',
