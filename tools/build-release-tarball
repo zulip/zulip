@@ -99,10 +99,14 @@ set +x
 USER_PROD_STATIC_LOGPATH="${TMPDIR}/update-prod-static.log"
 BUILD_PROD_STATIC_LOGPATH="${TMP_CHECKOUT}/var/log/update-prod-static.log"
 ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
-echo; echo -e "\033[33mRunning update-prod-static; check ${TMPDIR}/update-prod-static.log if it fails\033[0m"; echo
 set -x
 
-./tools/update-prod-static
+./tools/update-prod-static || (
+    set +x
+    echo; echo -ne "\033[33mRunning update-prod-static failed. "
+    echo -e "Check ${TMPDIR}/update-prod-static.log for more information.\033[0m"
+    exit 1
+)
 echo "$GITID" > build_id
 echo "$version" > version
 rm -f "$USER_PROD_STATIC_LOGPATH"
