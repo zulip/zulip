@@ -22,7 +22,7 @@ class ChangeSettingsTest(ZulipTestCase):
     # are converted into check_for_toggle_param_patch.
     def check_for_toggle_param(self, pattern, param):
         # type: (str, str) -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         json_result = self.client_post(pattern,
                                        {param: ujson.dumps(True)})
@@ -42,7 +42,7 @@ class ChangeSettingsTest(ZulipTestCase):
     # for check_for_toggle_param for PATCH.
     def check_for_toggle_param_patch(self, pattern, param):
         # type: (str, str) -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         json_result = self.client_patch(pattern,
                                         {param: ujson.dumps(True)})
@@ -64,12 +64,12 @@ class ChangeSettingsTest(ZulipTestCase):
         A call to /json/settings/change with valid parameters changes the user's
         settings correctly and returns correct values.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         json_result = self.client_post(
             "/json/settings/change",
             dict(
                 full_name='Foo Bar',
-                old_password=initial_password('hamlet@zulip.com'),
+                old_password=initial_password(self.example_email("hamlet")),
                 new_password='foobar1',
                 confirm_password='foobar1',
             ))
@@ -79,7 +79,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(self.example_user('hamlet').
                          full_name, "Foo Bar")
         self.logout()
-        self.login("hamlet@zulip.com", "foobar1")
+        self.login(self.example_email("hamlet"), "foobar1")
         user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -114,7 +114,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_illegal_characters_in_name_changes(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email("hamlet")
         self.login(email)
 
         # Now try a name with invalid characters
@@ -161,7 +161,7 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         new_password and confirm_password must match
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post(
             "/json/settings/change",
             dict(
@@ -176,7 +176,7 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         new_password and confirm_password must match
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post(
             "/json/settings/change",
             dict(
@@ -193,7 +193,7 @@ class ChangeSettingsTest(ZulipTestCase):
         to this API, or it should fail.  (Eventually, we should
         probably use a patch interface for these changes.)
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/json/settings/change",
                                   dict(old_password='ignored',))
         self.assert_json_error(result, "No new data supplied")

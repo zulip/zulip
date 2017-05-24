@@ -31,7 +31,7 @@ import ujson
 class ActivityTest(ZulipTestCase):
     def test_activity(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
         last_visit = timezone_now()
@@ -96,14 +96,14 @@ class UserPresenceModelTests(ZulipTestCase):
 class UserPresenceTests(ZulipTestCase):
     def test_invalid_presence(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        email = self.example_email("hamlet")
         self.login(email)
         result = self.client_post("/json/users/me/presence", {'status': 'foo'})
         self.assert_json_error(result, 'Invalid status: foo')
 
     def test_set_idle(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        email = self.example_email("hamlet")
         self.login(email)
         client = 'website'
 
@@ -113,7 +113,7 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertIn('timestamp', json['presences'][email][client])
         self.assertIsInstance(json['presences'][email][client]['timestamp'], int)
-        self.assertEqual(list(json['presences'].keys()), ['hamlet@zulip.com'])
+        self.assertEqual(list(json['presences'].keys()), [self.example_email("hamlet")])
         timestamp = json['presences'][email][client]['timestamp']
 
         email = "othello@zulip.com"
@@ -121,21 +121,21 @@ class UserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
-        self.assertEqual(sorted(json['presences'].keys()), ['hamlet@zulip.com', 'othello@zulip.com'])
+        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
+        self.assertEqual(sorted(json['presences'].keys()), [self.example_email("hamlet"), 'othello@zulip.com'])
         newer_timestamp = json['presences'][email][client]['timestamp']
         self.assertGreaterEqual(newer_timestamp, timestamp)
 
     def test_set_active(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         client = 'website'
 
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertEqual(json['presences']["hamlet@zulip.com"][client]['status'], 'idle')
+        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
         email = "othello@zulip.com"
         self.login("othello@zulip.com")
@@ -143,13 +143,13 @@ class UserPresenceTests(ZulipTestCase):
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
+        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
         result = self.client_post("/json/users/me/presence", {'status': 'active'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'active')
-        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
+        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
     def test_no_mit(self):
         # type: () -> None
@@ -201,11 +201,11 @@ class UserPresenceTests(ZulipTestCase):
         self.logout()
 
         # Ensure we don't see hamlet@zulip.com information leakage
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
+        self.assertEqual(json['presences'][self.example_email("hamlet")]["website"]['status'], 'idle')
         # We only want @zulip.com emails
         for email in json['presences'].keys():
             self.assertEqual(email_to_domain(email), 'zulip.com')
@@ -244,7 +244,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assert_json_error(result, "No such user")
 
         # Then, we check everything works
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_get("/json/users/othello@zulip.com/presence")
         result_dict = ujson.loads(result.content)
         self.assertEqual(
