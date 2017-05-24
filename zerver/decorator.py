@@ -308,7 +308,7 @@ def redirect_to_login(next, login_url=None,
 
 # From Django 1.8
 def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
-    # type: (Callable[[UserProfile], bool], Optional[Text], Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # type: (Callable[[HttpResponse], bool], Optional[Text], Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
     """
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if necessary. The test should be a callable
