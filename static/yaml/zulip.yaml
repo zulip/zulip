@@ -396,9 +396,9 @@ paths:
                      them.
         type: string
         enum:
-          - change_one
-          - change_later
-          - change_all
+        - change_one
+        - change_later
+        - change_all
         default: "change_one"
       - name: content
         in: query
