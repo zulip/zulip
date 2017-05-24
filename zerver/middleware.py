@@ -324,11 +324,11 @@ class RateLimitMiddleware(object):
         from zerver.lib.rate_limiter import max_api_calls
         # Add X-RateLimit-*** headers
         if hasattr(request, '_ratelimit_applied_limits'):
-            response['X-RateLimit-Limit'] = max_api_calls(request.user)
+            response['X-RateLimit-Limit'] = str(max_api_calls(request.user))
             if hasattr(request, '_ratelimit_secs_to_freedom'):
-                response['X-RateLimit-Reset'] = int(time.time() + request._ratelimit_secs_to_freedom)
+                response['X-RateLimit-Reset'] = str(int(time.time() + request._ratelimit_secs_to_freedom))
             if hasattr(request, '_ratelimit_remaining'):
-                response['X-RateLimit-Remaining'] = request._ratelimit_remaining
+                response['X-RateLimit-Remaining'] = str(request._ratelimit_remaining)
         return response
 
     def process_exception(self, request, exception):
