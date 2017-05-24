@@ -976,12 +976,12 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (str)-> None
         bool_change = [True, False]  # type: List[bool]
         test_changes = dict(
-            twenty_four_hour_time=["twenty_four_hour_time", bool_change],
-            left_side_userlist=["left_side_userlist", bool_change],
-            emoji_alt_code= ["emoji_alt_code", bool_change],
-            emojiset=["emojiset", [u'apple', u'twitter']],
-            default_language=["default_language", [u'es', u'de', u'en']],
-            timezone=["timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']]
+            twenty_four_hour_time="twenty_four_hour_time", [bool_change],
+            left_side_userlist="left_side_userlist", [bool_change],
+            emoji_alt_code= "emoji_alt_code", [bool_change],
+            emojiset="emojiset", [u'apple', u'twitter'],
+            default_language="default_language", [u'es', u'de', u'en'],
+            timezone="timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
         )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
@@ -1009,10 +1009,11 @@ class EventsRegisterTest(ZulipTestCase):
         if (changes is None):
             raise AssertionError('No test created for %s' % (setting_name))
         #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
+        print (self.user_profile)
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
         for change in changes[1:]:
             events = self.do_test(
-                lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
+                lambda: do_set_user_display_setting(self.user_profile., setting_name, change))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
