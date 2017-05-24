@@ -118,14 +118,14 @@ class PersonalMessageTriggersTest(ZulipTestCase):
         user_profile = self.example_user("othello")
         self.bot_user = do_create_user(email="testvabs-bot@zulip.com",
                                        password="test",
-                                       realm=get_realm_by_email_domain("zulip.com"),
+                                       realm=get_realm("zulip"),
                                        full_name="The Test Bot",
                                        short_name="bot",
                                        bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                                        bot_owner=user_profile)
         self.temp_bot = do_create_user(email="temp-bot@zulip.com",
                                        password="temp",
-                                       realm=get_realm_by_email_domain("zulip.com"),
+                                       realm=get_realm("zulip"),
                                        full_name="The Temp test Bot",
                                        short_name="tempbot",
                                        bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
