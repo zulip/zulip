@@ -49,7 +49,16 @@ class BotHandlerApi(object):
 
     def send_message(self, *args, **kwargs):
         if self._rate_limit.is_legal():
-            self._client.send_message(*args, **kwargs)
+            return self._client.send_message(*args, **kwargs)
+        else:
+            logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
+                          'Is your bot trapped in an infinite loop by reacting to'
+                          ' its own messages?')
+            sys.exit(1)
+
+    def update_message(self, *args, **kwargs):
+        if self._rate_limit.is_legal():
+            return self._client.update_message(*args, **kwargs)
         else:
             logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
                           'Is your bot trapped in an infinite loop by reacting to'
@@ -58,13 +67,13 @@ class BotHandlerApi(object):
 
     def send_reply(self, message, response):
         if message['type'] == 'private':
-            self.send_message(dict(
+            return self.send_message(dict(
                 type='private',
                 to=[x['email'] for x in message['display_recipient'] if self.email != x['email']],
                 content=response,
             ))
         else:
-            self.send_message(dict(
+            return self.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
                 subject=message['subject'],
