@@ -461,8 +461,9 @@ a#undo_markdown_preview {
     margin: auto;
 }
 
+
 .pm_recipient .selectize-dropdown-content {
-    max-height: 100px;
+    height: 140px;
 }
 
 .pm_recipient .selectize-dropdown .label {
