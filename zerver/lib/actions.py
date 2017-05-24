@@ -2844,11 +2844,13 @@ def get_email_gateway_message_string_from_address(address):
     return msg_string
 
 def decode_email_address(email):
-    # type: (Text) -> Tuple[Text, Text]
+    # type: (Text) -> Optional[Tuple[Text, Text]]
     # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
     msg_string = get_email_gateway_message_string_from_address(email)
 
-    if '.' in msg_string:
+    if msg_string is None:
+        return None
+    elif '.' in msg_string:
         # Workaround for Google Groups and other programs that don't accept emails
         # that have + signs in them (see Trac #2102)
         encoded_stream_name, token = msg_string.split('.')
