@@ -439,6 +439,53 @@ paths:
                   - Topic can't be empty
               result:
                 type: string
+
+  /streams:
+    get:
+      description: Gets a list of streams available to a user on the server.
+      operationId: getStreams
+      produces:
+        - application/json
+      security:
+        - basicAuth: []
+      parameters:
+        - name: include_public
+          in: query
+          description: |
+                       (Optional) Set to 'false' if response should not include
+                       public servers. Request defaults to 'true'.
+          required: false
+          type: string
+        - name: include_all_active
+          in: query
+          description: |
+                       (Optional) Set to 'true' if response should include all
+                       active streams, including private ones. This requires
+                       superuser access. Request defaults to 'false'.
+          required: false
+          type: string
+        - name: include_default
+          in: query
+          description: |
+                       (Optional) If set to 'true', adds 'is_default' property
+                       (bool type) to response. Request defaults to 'false'.
+          required: false
+          type: string
+        - name: include_subscribed
+          in: query
+          description: |
+                       (Optional) Set to 'false' if response should exclude streams
+                       where user is considered subscribed. Request defaults to 'true'.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: |
+                       * `stream`: An array (possibly zero-length depending on
+                       parameters set) of available streams for the authenticated
+                       user.
+          schema:
+            $ref: '#/definitions/stream'
         default:
           description: Unexpected error
           schema:
