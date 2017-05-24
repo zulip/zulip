@@ -22,6 +22,7 @@ with tarfile.open(fileobj=stdin, mode='r|*') as in_tar, \
     for info in in_tar:
         if info.isfile():
             file = in_tar.extractfile(info)
+            assert(file is not None) # this assert convinces mypy that it's okay to do file.read()
             data = file.read()
             if data.startswith(old_shebang_bytes + b' ') or data.startswith(old_shebang_bytes + b'\n'):
                 print('editing', info.name, file=sys.stderr)
