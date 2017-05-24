@@ -203,6 +203,7 @@ class MessageDict(object):
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
+            assert edit_history is not None
             obj['edit_history'] = ujson.loads(edit_history)
 
         if apply_markdown:
@@ -220,6 +221,7 @@ class MessageDict(object):
                     # TODO: see #1379 to eliminate bugdown dependencies
                     message = Message.objects.select_related().get(id=message_id)
 
+                assert message is not None  # Hint for mypy.
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
                 rendered_content = render_markdown(message, content, realm=message.get_realm())

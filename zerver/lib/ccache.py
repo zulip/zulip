@@ -103,11 +103,11 @@ def der_encode_octet_string(val):
     return der_encode_tlv(0x04, val)
 
 def der_encode_sequence(tlvs, tagged=True):
-    # type: (List[bytes], Optional[bool]) -> bytes
+    # type: (List[Optional[bytes]], Optional[bool]) -> bytes
     body = []
     for i, tlv in enumerate(tlvs):
         # Missing optional elements represented as None.
-        if not tlv:
+        if tlv is None:
             continue
         if tagged:
             # Assume kerberos-style explicit tagging of components.

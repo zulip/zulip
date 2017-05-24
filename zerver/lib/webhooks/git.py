@@ -192,9 +192,9 @@ def get_commits_content(commits_data, is_truncated=False):
     commits_content = u''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
-            commit_short_sha=get_short_sha(commit.get('sha')),
+            commit_short_sha=get_short_sha(commit['sha']),
             commit_url=commit.get('url'),
-            commit_msg=commit.get('message').partition('\n')[0]
+            commit_msg=commit['message'].partition('\n')[0]
         )
 
     if len(commits_data) > COMMITS_LIMIT:
