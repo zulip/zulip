@@ -828,13 +828,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/signup.js'
     },
-    'zxcvbn': {
-        'source_filenames': [],
-        'minifed_source_filenames': [
-            'node_modules/zxcvbn/dist/zxcvbn.js',
-        ],
-        'output_filename': 'min/zxcvbn.js'
-    },
     'app_debug': {
         'source_filenames': ['js/debug.js'],
         'output_filename': 'min/app_debug.js'
