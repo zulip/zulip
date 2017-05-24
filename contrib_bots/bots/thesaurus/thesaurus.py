@@ -62,21 +62,7 @@ class ThesaurusHandler(object):
 
     def handle_message(self, message, client, state_handler):
         original_content = message['content'].strip()
-        original_sender = message['sender_email']
         new_content = get_thesaurus_result(original_content)
-
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=original_sender,
-                content=new_content,
-            ))
-        else:
-            client.send_message(dict(
-                type=message['type'],
-                to=message['display_recipient'],
-                subject=message['subject'],
-                content=new_content,
-            ))
+        client.send_reply(message, new_content)
 
 handler_class = ThesaurusHandler

@@ -118,19 +118,6 @@ class JohnHandler(object):
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
         bot_response = str(bota.get_response(original_content))
-
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=message['sender_email'],
-                content=bot_response,
-            ))
-        else:
-            client.send_message(dict(
-                type='stream',
-                to=message['display_recipient'],
-                subject=message['subject'],
-                content=bot_response,
-            ))
+        client.send_reply(message, bot_response)
 
 handler_class = JohnHandler
