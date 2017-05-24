@@ -841,10 +841,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/zxcvbn.js'
     },
-    'api': {
-        'source_filenames': ['js/portico/api.js'],
-        'output_filename': 'min/api.js'
-    },
     'app_debug': {
         'source_filenames': ['js/debug.js'],
         'output_filename': 'min/app_debug.js'
@@ -1023,12 +1019,6 @@ JS_SPECS = {
     'sockjs': {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
-    },
-    'katex': {
-        'source_filenames': [
-            'node_modules/katex/dist/katex.js',
-        ],
-        'output_filename': 'min/katex.js'
     }
 }
 

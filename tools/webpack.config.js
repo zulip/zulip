@@ -5,7 +5,6 @@ module.exports =  {
     context: path.resolve(__dirname, "../"),
     entry: assets,
     module: {
-        noParse: /(min)\.js/,
         rules: [
             // Run the typescript compilier on .ts files before webpack
             {
@@ -25,8 +24,14 @@ module.exports =  {
                 test: /\.tsx?$/,
                 use: "source-map-loader",
             },
+            // Uses script-loader on minified files so we don't change global variables in them.
+            // Also has the effect of making processing these files fast
+            {
+                test: /(min)\.js/,
+                use: [ 'script-loader' ],
+            },
         ],
-   },
+    },
     output: {
         path: path.resolve(__dirname, '../static/webpack-bundles'),
         filename: '[name].js',

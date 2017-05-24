@@ -4,9 +4,8 @@
 
 {% block customhead %}
 {{ super() }}
-{{ minified_js('api')|safe }}
+{{ render_bundle('api') }}
 {% endblock %}
-
 
 {% block portico_content %}
     <h1 class="api-page-header">API endpoints documentation</h1>
