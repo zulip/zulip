@@ -5,6 +5,8 @@ add_dependencies({
     unread: 'js/unread',
 });
 
+set_global('blueslip', {});
+
 var tg = require('js/topic_generator.js');
 
 function is_even(i) { return i % 2 === 0; }
@@ -109,6 +111,17 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(gen.next(), undefined);
     assert.equal(gen.next(), undefined);
 
+    var undef = function () {
+        return undefined;
+    };
+
+    global.blueslip.error = function (msg) {
+        assert.equal(msg, 'Invalid generator returned.');
+    };
+
+    ints = tg.list_generator([29, 43]);
+    gen = tg.fchain(ints, undef);
+    gen.next();
 }());
 
 
