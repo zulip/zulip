@@ -340,8 +340,10 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
 class EventsRegisterTest(ZulipTestCase):
-    user_profile = get_user_profile_by_email('hamlet@zulip.com')
-    maxDiff = None # type: Optional[int]
+    def setUp(self):
+        super(EventsRegisterTest, self).setUp()
+        self.user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        self.maxDiff = None # type: Optional[int]
 
     def create_bot(self, email):
         # type: (str) -> UserProfile
