@@ -6,6 +6,7 @@ from typing import Any
 import django
 import mock
 from django.test import TestCase
+from django.utils import translation
 from django.conf import settings
 from django.http import HttpResponse
 from six.moves.http_cookies import SimpleCookie
@@ -21,6 +22,10 @@ class TranslationTestCase(ZulipTestCase):
     Tranlations strings should change with locale. URLs should be locale
     aware.
     """
+
+    def tearDown(self):
+        # type: () -> None
+        translation.activate(settings.LANGUAGE_CODE)
 
     # e.g. self.client_post(url) if method is "post"
     def fetch(self, method, url, expected_status, **kwargs):
@@ -74,6 +79,10 @@ class TranslationTestCase(ZulipTestCase):
 
 
 class JsonTranslationTestCase(ZulipTestCase):
+    def tearDown(self):
+        # type: () -> None
+        translation.activate(settings.LANGUAGE_CODE)
+
     @mock.patch('zerver.lib.request._')
     def test_json_error(self, mock_gettext):
         # type: (Any) -> None
