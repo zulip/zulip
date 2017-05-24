@@ -256,7 +256,7 @@ class POSTRequestMock(object):
     method = "POST"
 
     def __init__(self, post_data, user_profile):
-        # type: (Dict[str, Any], UserProfile) -> None
+        # type: (Dict[str, Any], Optional[UserProfile]) -> None
         self.GET = {}  # type: Dict[str, Any]
         self.POST = post_data
         self.user = user_profile

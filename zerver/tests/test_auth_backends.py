@@ -455,6 +455,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                 mock.patch('zerver.views.auth.login'):
             response = dict(email=self.email, name=self.name)
             result = self.backend.do_auth(response=response)
+            assert(result is not None)
             self.assertNotIn('subdomain=1', result.url)
 
     def test_github_backend_do_auth_with_non_existing_subdomain(self):
@@ -465,6 +466,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                 self.backend.strategy.session_set('subdomain', 'test')
                 response = dict(email=self.email, name=self.name)
                 result = self.backend.do_auth(response=response)
+                assert(result is not None)
                 self.assertIn('subdomain=1', result.url)
 
     def test_github_backend_do_auth_with_subdomains(self):
@@ -475,6 +477,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                 self.backend.strategy.session_set('subdomain', 'zulip')
                 response = dict(email=self.email, name=self.name)
                 result = self.backend.do_auth(response=response)
+                assert(result is not None)
                 self.assertEqual('http://zulip.testserver/accounts/login/subdomain/', result.url)
 
     def test_github_backend_do_auth_for_default(self):
@@ -605,7 +608,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
+            # type: (*Any, **Any) -> None
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -631,7 +634,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
+            # type: (*Any, **Any) -> None
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -656,7 +659,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
+            # type: (*Any, **Any) -> None
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -1062,7 +1065,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         # type: () -> None
         token_response = ResponseMock(400, {})
         with mock.patch("logging.warning") as m:
-            result = self.google_oauth2_test(token_response, None)
+            result = self.google_oauth2_test(token_response, ResponseMock(500, {}))
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          "User error converting Google oauth2 login to token: Response text")
@@ -1071,7 +1074,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         # type: () -> None
         token_response = ResponseMock(500, {})
         with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, None)
+            result = self.google_oauth2_test(token_response, ResponseMock(500, {}))
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          "Could not convert google oauth2 code to access_token: Response text")
@@ -1760,6 +1763,8 @@ class TestLDAP(ZulipTestCase):
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing')
+
+            assert(user_profile is not None)
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1932,6 +1937,7 @@ class TestLDAP(ZulipTestCase):
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
                                                      realm_subdomain=None)
+            assert(user_profile is not None)
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1949,6 +1955,7 @@ class TestLDAP(ZulipTestCase):
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
                                                      realm_subdomain='zulip')
+            assert(user_profile is not None)
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1967,6 +1974,7 @@ class TestLDAP(ZulipTestCase):
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com'):
             user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
                                                      realm_subdomain='zulip')
+            assert(user_profile is not None)
             self.assertEqual(user_profile.email, 'nonexisting@acme.com')
             self.assertEqual(user_profile.full_name, 'NonExisting')
             self.assertEqual(user_profile.realm.string_id, 'zulip')

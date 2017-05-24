@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping
+from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping, Optional
 
 import requests
 import json

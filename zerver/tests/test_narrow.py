@@ -455,7 +455,7 @@ class GetOldMessagesTest(ZulipTestCase):
             if message['id'] == message_id:
                 message_to_assert = message
                 break
-
+        assert(message_to_assert is not None)
         self.assertEqual(len(message_to_assert['reactions']), 1)
         self.assertEqual(message_to_assert['reactions'][0]['emoji_name'],
                          reaction_name)

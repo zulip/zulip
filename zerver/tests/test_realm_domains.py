@@ -135,7 +135,7 @@ class RealmDomainTest(ZulipTestCase):
             if realm_string_id is None:
                 self.assertIsNone(realm)
             else:
-                self.assertIsNotNone(realm)
+                assert(realm is not None)
                 self.assertEqual(realm.string_id, realm_string_id)
 
         assert_and_check('user@zulip.com', 'zulip')
