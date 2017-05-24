@@ -28,7 +28,7 @@ class BotTestCase(TestCase):
 
                 # Check if BotHandlerApi is sending a reply message.
                 # This can later be modified to assert the contents of BotHandlerApi.send_message
-                assert instance.send_message.called is True
+                assert instance.send_reply.called is True
 
 
     def bot_to_run(self, bot_module):
