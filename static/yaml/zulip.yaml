@@ -356,16 +356,24 @@ paths:
         required: true
       - name: subject
         in: query
-        description: Message's topic.
+        description: Message's new topic.
         type: string
       - name: propagate_mode
         in: query
-        description: propagation mode
+        description: |
+                     Which message(s) should be edited: just
+                     the one indicated in `message_id`, messages in the
+                     same topic that had been sent after this one, or all of
+                     them.
         type: string
+        enum:
+          - change_one
+          - change_later
+          - change_all
         default: "change_one"
       - name: content
         in: query
-        description: Message's body.
+        description: Message's new body.
         type: string
       security:
       - basicAuth: []
