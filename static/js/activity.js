@@ -29,10 +29,6 @@ exports.has_focus = document.hasFocus && document.hasFocus();
 // as user activity.
 exports.new_user_input = true;
 
-$("html").on("mousemove", function () {
-    exports.new_user_input = true;
-});
-
 var huddle_timestamps = new Dict();
 
 function update_pm_count_in_dom(count_span, value_span, count) {
@@ -440,6 +436,10 @@ function focus_gained() {
 }
 
 exports.initialize = function () {
+    $("html").on("mousemove", function () {
+        exports.new_user_input = true;
+    });
+
     $(window).focus(focus_gained);
     $(window).idle({idle: DEFAULT_IDLE_TIMEOUT_MS,
                 onIdle: focus_lost,
