@@ -22,7 +22,7 @@ def serve_s3(request, url_path):
 
 # TODO: Rewrite this once we have django-sendfile
 def serve_local(request, path_id):
-    # type: (HttpRequest, str) -> HttpResponse
+    # type: (HttpRequest, str) -> FileResponse
     import os
     import mimetypes
     local_path = get_local_file_path(path_id)
