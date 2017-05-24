@@ -821,12 +821,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/common.js'
     },
-    'landing-page': {
-        'source_filenames': [
-            'js/portico/landing-page.js',
-        ],
-        'output_filename': 'min/landing.js'
-    },
     'signup': {
         'source_filenames': [
             'js/portico/signup.js',
