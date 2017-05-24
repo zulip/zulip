@@ -1,4 +1,4 @@
-global.stub_out_jquery();
+set_global('$', global.zjquery);
 
 set_global('page_params', {
     realm_users: [],
@@ -225,13 +225,6 @@ presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
-    global.$ = function () {
-        return {
-            length: 0,
-            html: function () {},
-        };
-    };
-
     var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
@@ -280,8 +273,6 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
     ]);
 }());
-
-set_global('$', global.zjquery);
 
 (function test_PM_update_dom_counts() {
     var value = $('alice-value');
