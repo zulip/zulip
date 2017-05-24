@@ -1013,7 +1013,7 @@ class EventsRegisterTest(ZulipTestCase):
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
         for change in changes[1:]:
             events = self.do_test(
-                lambda: do_set_user_display_setting(self.user_profile., setting_name, change))
+                lambda: do_set_user_display_setting(self.user_profile, setting_name, change))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
