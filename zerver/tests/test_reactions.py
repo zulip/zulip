@@ -142,7 +142,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         """
         pm_sender = self.example_email("hamlet")
         pm_recipient = 'othello@zulip.com'
-        reaction_sender = 'iago@zulip.com'
+        reaction_sender = self.example_email("iago")
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",

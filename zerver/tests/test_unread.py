@@ -164,9 +164,9 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.unread_msg_ids = [
             self.send_message(
-                "iago@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL, "hello"),
+                self.example_email("iago"), self.example_email("hamlet"), Recipient.PERSONAL, "hello"),
             self.send_message(
-                "iago@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL, "hello2")]
+                self.example_email("iago"), self.example_email("hamlet"), Recipient.PERSONAL, "hello2")]
 
     # Sending a new message results in unread UserMessages being created
     def test_new_message(self):
@@ -215,7 +215,7 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
 
-        message_ids = [self.send_message(self.example_email("hamlet"), "iago@zulip.com",
+        message_ids = [self.send_message(self.example_email("hamlet"), self.example_email("iago"),
                                          Recipient.PERSONAL, "test"),
                        self.send_message(self.example_email("hamlet"), "cordelia@zulip.com",
                                          Recipient.PERSONAL, "test2")]

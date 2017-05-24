@@ -118,7 +118,7 @@ class TopicHistoryTest(ZulipTestCase):
 
     def test_bad_stream_id(self):
         # type: () -> None
-        email = 'iago@zulip.com'
+        email = self.example_email("iago")
         self.login(email)
 
         # non-sensible stream id
@@ -445,7 +445,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_not_too_many_queries(self):
         # type: () -> None
-        recipient_list  = [self.example_email("hamlet"), 'iago@zulip.com', 'cordelia@zulip.com', 'othello@zulip.com']
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago"), 'cordelia@zulip.com', 'othello@zulip.com']
         for email in recipient_list:
             self.subscribe_to_stream(email, "Denmark")
 
@@ -1172,7 +1172,7 @@ class EditMessageTest(ZulipTestCase):
     def test_edit_message_no_permission(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+        msg_id = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
                                    subject="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
@@ -1295,7 +1295,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]['prev_content'], 'content 3')
         self.assertEqual(history[0]['user_id'], hamlet.id)
 
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'subject': 'subject 4',
@@ -1394,9 +1394,9 @@ class EditMessageTest(ZulipTestCase):
             self.assert_json_error(result, error)
             self.check_message(id_, subject=old_subject, content=old_content)
 
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         # send a message in the past
-        id_ = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+        id_ = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
                                 content="content", subject="subject")
         message = Message.objects.get(id=id_)
         message.pub_date = message.pub_date - datetime.timedelta(seconds=180)
@@ -1429,13 +1429,13 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         id1 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
                                 subject="topic1")
-        id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+        id2 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
                                 subject="topic1")
-        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+        id3 = self.send_message(self.example_email("iago"), "Rome", Recipient.STREAM,
                                 subject="topic1")
         id4 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
                                 subject="topic2")
-        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+        id5 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
                                 subject="topic1")
 
         result = self.client_patch("/json/messages/" + str(id1), {
@@ -1458,13 +1458,13 @@ class EditMessageTest(ZulipTestCase):
                                 subject="topic1")
         id2 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
                                 subject="topic1")
-        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+        id3 = self.send_message(self.example_email("iago"), "Rome", Recipient.STREAM,
                                 subject="topic1")
         id4 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
                                 subject="topic2")
-        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+        id5 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
                                 subject="topic1")
-        id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+        id6 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
                                 subject="topic3")
 
         result = self.client_patch("/json/messages/" + str(id2), {

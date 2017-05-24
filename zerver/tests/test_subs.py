@@ -1303,8 +1303,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         {"msg": "",
          "result": "success",
-         "already_subscribed": {"iago@zulip.com": ["Venice", "Verona"]},
-         "subscribed": {"iago@zulip.com": ["Venice8"]}}
+         "already_subscribed": {self.example_email("iago"): ["Venice", "Verona"]},
+         "subscribed": {self.example_email("iago"): ["Venice8"]}}
         """
         result = self.common_subscribe_to_streams(self.test_email, subscriptions,
                                                   other_params, invite_only=invite_only)
@@ -1366,7 +1366,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
-        invitee = "iago@zulip.com"
+        invitee = self.example_email("iago")
 
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names([current_stream])[:1]
@@ -1385,7 +1385,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
-        invitee = "iago@zulip.com"
+        invitee = self.example_email("iago")
         invitee_full_name = 'Iago'
 
         current_stream = self.get_streams(invitee)[0]
@@ -1459,7 +1459,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
-        invitee = "iago@zulip.com"
+        invitee = self.example_email("iago")
         invitee_full_name = 'Iago'
 
         current_stream = self.get_streams(invitee)[0]
@@ -1572,7 +1572,7 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_multi_user_subscription(self):
         # type: () -> None
         email1 = 'cordelia@zulip.com'
-        email2 = 'iago@zulip.com'
+        email2 = self.example_email("iago")
         realm = get_realm("zulip")
         streams_to_sub = ['multi_user_stream']
         events = [] # type: List[Dict[str, Any]]
@@ -1711,7 +1711,7 @@ class SubscriptionAPITest(ZulipTestCase):
             streams_to_sub,
             dict(principals=ujson.dumps(users_to_subscribe)))
 
-        new_users_to_subscribe = ["iago@zulip.com", "cordelia@zulip.com"]
+        new_users_to_subscribe = [self.example_email("iago"), "cordelia@zulip.com"]
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             self.common_subscribe_to_streams(
@@ -1743,7 +1743,7 @@ class SubscriptionAPITest(ZulipTestCase):
         email1 = 'othello@zulip.com'
         email2 = 'cordelia@zulip.com'
         email3 = 'hamlet@zulip.com'
-        email4 = 'iago@zulip.com'
+        email4 = self.example_email("iago")
         realm = get_realm('zulip')
 
         stream1 = self.make_stream('stream1')

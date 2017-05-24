@@ -111,7 +111,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['is_admin'], False)
 
         # Cannot take away from last admin
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
         req = dict(is_admin=ujson.dumps(False))
         events = []
         with tornado_redirected_to_list(events):
@@ -134,7 +134,7 @@ class PermissionTest(ZulipTestCase):
     def test_admin_user_can_change_full_name(self):
         # type: () -> None
         new_name = 'new name'
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assertTrue(result.status_code == 200)
@@ -151,7 +151,7 @@ class PermissionTest(ZulipTestCase):
     def test_admin_cannot_set_long_full_name(self):
         # type: () -> None
         new_name = 'a' * (UserProfile.MAX_NAME_LENGTH + 1)
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Name too long!')
@@ -159,7 +159,7 @@ class PermissionTest(ZulipTestCase):
     def test_admin_cannot_set_short_full_name(self):
         # type: () -> None
         new_name = 'a'
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Name too short!')
@@ -167,7 +167,7 @@ class PermissionTest(ZulipTestCase):
     def test_admin_cannot_set_full_name_with_invalid_characters(self):
         # type: () -> None
         new_name = 'Opheli*'
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Invalid characters in name!')
@@ -289,7 +289,7 @@ class ActivateTest(ZulipTestCase):
         """This test helps ensure that our URL patterns for /users/me URLs
         handle email addresses starting with "me" correctly."""
         self.register(self.nonreg_email('me'), "testpassword")
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
 
         result = self.client_delete('/json/users/me@zulip.com')
         self.assert_json_success(result)
@@ -396,10 +396,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertIn("user_id", result)
         self.assertFalse(result['is_bot'])
         self.assertFalse(result['is_admin'])
-        self.login('iago@zulip.com')
+        self.login(self.example_email("iago"))
         result = ujson.loads(self.client_get('/json/users/me').content)
         self.assertEqual(result['short_name'], 'iago')
-        self.assertEqual(result['email'], 'iago@zulip.com')
+        self.assertEqual(result['email'], self.example_email("iago"))
         self.assertEqual(result['full_name'], 'Iago')
         self.assertFalse(result['is_bot'])
         self.assertTrue(result['is_admin'])

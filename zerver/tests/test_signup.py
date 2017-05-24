@@ -1629,7 +1629,7 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_admin(self):
         # type: () -> None
-        email = 'iago@zulip.com'
+        email = self.example_email("iago")
         self.login(email)
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
@@ -1705,7 +1705,7 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_get(url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn("iago@zulip.com", content)
+        self.assertIn(self.example_email("iago"), content)
         self.assertIn("cordelia@zulip.com", content)
 
     def test_find_team_ignore_invalid_email(self):
@@ -1714,7 +1714,7 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_get(url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn("iago@zulip.com", content)
+        self.assertIn(self.example_email("iago"), content)
         self.assertNotIn("invalid_email", content)
 
     def test_find_team_zero_emails(self):

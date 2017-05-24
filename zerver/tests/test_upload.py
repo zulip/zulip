@@ -516,7 +516,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_download_authorization_invite_only(self):
         # type: () -> None
-        subscribed_users = [self.example_email("hamlet"), "iago@zulip.com"]
+        subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
         unsubscribed_users = ["othello@zulip.com", "prospero@zulip.com"]
         for user in subscribed_users:
             self.subscribe_to_stream(user, "test-subscribe")
@@ -556,7 +556,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_download_authorization_public(self):
         # type: () -> None
-        subscribed_users = [self.example_email("hamlet"), "iago@zulip.com"]
+        subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
         unsubscribed_users = ["othello@zulip.com", "prospero@zulip.com"]
         for user in subscribed_users:
             self.subscribe_to_stream(user, "test-subscribe")
@@ -798,7 +798,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         Attempting to upload two files should fail.
         """
         # Log in as admin
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         with get_test_image_file('img.png') as fp1, \
                 get_test_image_file('img.png') as fp2:
             result = self.client_put_multipart("/json/realm/icon", {'f1': fp1, 'f2': fp2})
@@ -809,7 +809,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         Calling this endpoint with no files should fail.
         """
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
 
         result = self.client_put_multipart("/json/realm/icon")
         self.assert_json_error(result, "You must upload exactly one icon.")
@@ -865,7 +865,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
-            self.login("iago@zulip.com")
+            self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
                 result = self.client_put_multipart("/json/realm/icon", {'file': fp})
             realm = get_realm('zulip')
@@ -888,7 +888,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         for fname in self.corrupt_files:
             # with self.subTest(fname=fname):
-            self.login("iago@zulip.com")
+            self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
                 result = self.client_put_multipart("/json/realm/icon", {'file': fp})
 
@@ -899,7 +899,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         A DELETE request to /json/realm/icon should delete the realm icon and return gravatar URL
         """
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         realm.icon_source = Realm.ICON_UPLOADED
         realm.save()
@@ -915,7 +915,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_realm_icon_version(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         icon_version = realm.icon_version
         self.assertEqual(icon_version, 1)
@@ -926,7 +926,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_realm_icon_upload_file_size_error(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_ICON_FILE_SIZE=0):
                 result = self.client_put_multipart("/json/realm/icon", {'file': fp})
