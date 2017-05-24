@@ -775,10 +775,14 @@ def do_send_messages(messages_maybe_none):
         Message.objects.bulk_create([message['message'] for message in messages])
         ums = []  # type: List[UserMessage]
         for message in messages:
-            # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
-            ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
-                             for user_profile in message['active_recipients']
-                             if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT]
+            # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
+            # they will be processed later.
+            ums_to_create = []
+            for user_profile in message['active_recipients']:
+                # is_service_bot is derived from is_bot and bot_type, and both of these fields
+                # should have been pre-fetched.
+                if not user_profile.is_service_bot:
+                    ums_to_create.append(UserMessage(user_profile=user_profile, message=message['message']))
 
             # These properties on the Message are set via
             # render_markdown by code in the bugdown inline patterns
@@ -803,38 +807,45 @@ def do_send_messages(messages_maybe_none):
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
 
-            # Now prepare the outgoing webhook events
-            message['message'].outgoing_webhook_bot_triggers = []
+            # Prepare to collect service queue events triggered by the message.
+            message['message'].service_queue_events = defaultdict(list)
 
-            # Avoid infinite loops by preventing messages sent by bots
-            # from triggering outgoing webhooks.
+            # Avoid infinite loops by preventing messages sent by bots from generating
+            # Service events.
             sender = message['message'].sender
             if sender.is_bot:
                 continue
 
-            # TODO: Right now, outgoing webhook bots need to be a
-            # subscribed to a stream in order to receive messages when
-            # mentioned; we will want to change that structure.
+            # TODO: Right now, service bots need to be subscribed to a stream in order to
+            # receive messages when mentioned; we will want to change that structure.
             for user_profile in message['active_recipients']:
-                trigger = None
-                if not user_profile.is_bot:
+                if not user_profile.is_service_bot:
                     continue
-                if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+
+                if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+                    queue_name = 'outgoing_webhooks'
+                elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+                    queue_name = 'embedded_bots'
+                else:
+                    logging.error(
+                        'Unexpected bot_type for Service bot %s: %s' %
+                        (user_profile.email, user_profile.bot_type))
                     continue
 
                 # Mention triggers, primarily for stream messages
                 if user_profile.id in mentioned_ids:
-                    trigger = "mention"
+                    trigger = 'mention'
                 # PM triggers for personal and huddle messsages
-                if message['message'].recipient.type != Recipient.STREAM:
-                    trigger = "private_message"
-                if trigger is None:
+                elif message['message'].recipient.type != Recipient.STREAM:
+                    trigger = 'private_message'
+                else:
                     continue
 
-                message['message'].outgoing_webhook_bot_triggers.append({
+                message['message'].service_queue_events[queue_name].append({
                     'trigger': trigger,
                     'user_profile': user_profile,
                 })
+
         UserMessage.objects.bulk_create(ums)
 
         # Claim attachments in message
@@ -900,17 +911,18 @@ def do_send_messages(messages_maybe_none):
                 lambda x: None
             )
 
-        for outgoing_webhook_event in message['message'].outgoing_webhook_bot_triggers:
-            queue_json_publish(
-                'outgoing_webhooks',
-                {
-                    "message": message_to_dict(message['message'], apply_markdown=False),
-                    "trigger": outgoing_webhook_event['trigger'],
-                    "user_profile_id": outgoing_webhook_event["user_profile"].id,
-                    "failed_tries": 0,
-                },
-                lambda x: None
-            )
+        for queue_name, events in message['message'].service_queue_events.items():
+            for event in events:
+                queue_json_publish(
+                    queue_name,
+                    {
+                        "message": message_to_dict(message['message'], apply_markdown=False),
+                        "trigger": event['trigger'],
+                        "user_profile_id": event["user_profile"].id,
+                        "failed_tries": 0,
+                    },
+                    lambda x: None
+                )
 
     # Note that this does not preserve the order of message ids
     # returned.  In practice, this shouldn't matter, as we only
