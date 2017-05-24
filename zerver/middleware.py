@@ -253,7 +253,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+        # type: (HttpRequest, StreamingHttpResponse) -> StreamingHttpResponse
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
