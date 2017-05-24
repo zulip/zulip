@@ -2335,7 +2335,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         {"msg": "",
          "result": "success",
-         "subscribers": ["hamlet@zulip.com", "prospero@zulip.com"]}
+         "subscribers": ["hamlet@zulip.com", self.example_email("prospero")]}
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)

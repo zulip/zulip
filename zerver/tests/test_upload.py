@@ -517,7 +517,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_file_download_authorization_invite_only(self):
         # type: () -> None
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
-        unsubscribed_users = ["othello@zulip.com", "prospero@zulip.com"]
+        unsubscribed_users = ["othello@zulip.com", self.example_email("prospero")]
         for user in subscribed_users:
             self.subscribe_to_stream(user, "test-subscribe")
 
@@ -557,7 +557,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_file_download_authorization_public(self):
         # type: () -> None
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
-        unsubscribed_users = ["othello@zulip.com", "prospero@zulip.com"]
+        unsubscribed_users = ["othello@zulip.com", self.example_email("prospero")]
         for user in subscribed_users:
             self.subscribe_to_stream(user, "test-subscribe")
 
