@@ -1015,7 +1015,6 @@ class EventsRegisterTest(ZulipTestCase):
         if (changes is None):
             raise AssertionError('No test created for %s' % (setting_name))
         #do_set_user_display_setting(self.user_profile.UserProfile, setting_name, changes[0])
-        print (user_profile)
         do_set_user_display_setting(self.user_profile, setting_name, changes[0])
         for change in changes[1:]:
             events = self.do_test(
