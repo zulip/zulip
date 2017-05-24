@@ -304,10 +304,12 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> None
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     try:
-        streams = prereg_user.streams.all()
+        if prereg_user is not None:
+            streams = prereg_user.streams.all()
+        else:
+            streams = []
     except AttributeError:
-        # This will catch both the case where prereg_user is None and where it
-        # is a MitUser.
+        # This will catch the case where prereg_user is a MitUser.
         streams = []
 
     # If the user's invitation didn't explicitly list some streams, we
@@ -869,6 +871,7 @@ def do_send_messages(messages_maybe_none):
             # messages are only associated to their subscribed users.
             if message['stream'] is None:
                 message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
+            assert message['stream'] is not None  # assert needed because stubs for django are missing
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
                 event['stream_name'] = message['stream'].name
@@ -1281,7 +1284,8 @@ def check_message(sender, client, message_type_name, message_to,
                                           forwarder_user_profile.is_api_super_user):
             # Or this request is being done on behalf of a super user
             pass
-        elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
+        elif sender.is_bot and (sender.bot_owner is not None and
+                                subscribed_to_stream(sender.bot_owner, stream)):
             # Or you're a bot and your owner is subscribed.
             pass
         elif sender.email == settings.WELCOME_BOT:
@@ -2013,7 +2017,7 @@ def _default_stream_permision_check(user_profile, stream):
             user = user_profile.bot_owner
         else:
             user = user_profile
-        if stream.invite_only and not subscribed_to_stream(user, stream):
+        if stream.invite_only and (user is None or not subscribed_to_stream(user, stream)):
             raise JsonableError(_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
@@ -2782,6 +2786,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             changed_messages += messages_list
 
     message.last_edit_time = timezone_now()
+    assert message.last_edit_time is not None  # assert needed because stubs for django are missing
     event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
     edit_history_event['timestamp'] = event['edit_timestamp']
     if message.edit_history is not None:
@@ -2896,7 +2901,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
 
     if include_subscribers:
-        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)  # type: Mapping[int, Optional[List[int]]]
     else:
         # If we're not including subscribers, always return None,
         # which the below code needs to check for anyway.
