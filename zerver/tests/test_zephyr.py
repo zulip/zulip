@@ -71,7 +71,7 @@ class ZephyrTest(ZulipTestCase):
             'ssh',
             'server',
             '--',
-            '/home/zulip/zulip/bots/process_ccache',
+            '/home/zulip/zulip/api/integrations/zephyr/process_ccache',
             'starnine',
             get_user(email, realm).api_key,
             'MTIzNA=='])
@@ -98,7 +98,7 @@ class ZephyrTest(ZulipTestCase):
             'ssh',
             'server',
             '--',
-            '/home/zulip/zulip/bots/process_ccache',
+            '/home/zulip/zulip/api/integrations/zephyr/process_ccache',
             'starnine',
             get_user(email, realm).api_key,
             'MTIzNA=='])
