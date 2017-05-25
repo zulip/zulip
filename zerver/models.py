@@ -1758,18 +1758,30 @@ class CustomProfileFieldValue(models.Model):
     class Meta(object):
         unique_together = ('user_profile', 'field')
 
+# A Service corresponds to either an outgoing webhook bot or an embedded bot.
+# The type of Service is determined by the bot_type field of the referenced
+# UserProfile.
+#
+# If the Service is an outgoing webhook bot:
+# - name is any human-readable identifier for the Service
+# - base_url is the address of the third-party site
+# - token is used for authentication with the third-party site
+#
+# If the Service is an embedded bot:
+# - name is the canonical name for the type of bot (e.g. 'xkcd' for an instance
+#   of the xkcd bot); multiple embedded bots can have the same name, but all
+#   embedded bots with the same name will run the same code
+# - base_url and token are currently unused
 class Service(models.Model):
     name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH) # type: Text
-    # owner of service/bot user corresponding to the service
+    # Bot user corresponding to the Service.  The bot_type of this user
+    # deterines the type of service.  If non-bot services are added later,
+    # user_profile can also represent the owner of the Service.
     user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    # address of the third party site
     base_url = models.TextField() # type: Text
-    # used for authentication to third party site
     token = models.TextField() # type: Text
-    # the interface used to send data to third party site
+    # Interface / API version of the service.
     interface = models.PositiveSmallIntegerField(default=1)  # type: int
-
-    # Valid interfaces are {}
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _interfaces = {} # type: Dict[int, Text]
