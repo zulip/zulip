@@ -23,7 +23,7 @@ def get_lib_module(bots_fn):
         print('Please use a .py extension for library files.')
         sys.exit(1)
     base_bots_fn = os.path.basename(os.path.splitext(bots_fn)[0])
-    sys.path.append('bots/{}'.format(base_bots_fn))
+    sys.path.append(os.path.dirname(bots_fn))
     module_name = base_bots_fn
     module = importlib.import_module(module_name)
     return module
