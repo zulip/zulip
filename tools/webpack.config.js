@@ -8,10 +8,13 @@ module.exports =  {
         app_debug: './static/js/debug.js',
         // katex should be an array, to inject webpack dependencies in dev config
         // better to be moved to common.js
-        katex: ['./node_modules/katex/dist/katex.js'],
+        katex: ['./node_modules/katex/dist/katex.min.js'],
         'landing-page': './static/js/portico/landing-page.js',
         translations: './static/js/translations.js',
         zxcvbn: './node_modules/zxcvbn/dist/zxcvbn.js',
+    },
+    module: {
+        noParse: /(min|zxcvbn)\.js/,
     },
     output: {
         path: path.resolve(__dirname, '../static/webpack-bundles'),
