@@ -1771,6 +1771,11 @@ class CustomProfileFieldValue(models.Model):
     class Meta(object):
         unique_together = ('user_profile', 'field')
 
+# Interfaces for services
+# They provide additional functionality like parsing message to obtain query url, data to be sent to url,
+# and parsing the response.
+GENERIC_INTERFACE = u'GenericService'
+
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
 # The type of Service is determined by the bot_type field of the referenced
 # UserProfile.
@@ -1796,8 +1801,13 @@ class Service(models.Model):
     # Interface / API version of the service.
     interface = models.PositiveSmallIntegerField(default=1)  # type: int
 
+    # Valid interfaces are {generic}
+    GENERIC = 1
+
     # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _interfaces = {} # type: Dict[int, Text]
+    _interfaces = {
+        GENERIC: GENERIC_INTERFACE,
+    }  # type: Dict[int, Text]
 
     def interface_name(self):
         # type: () -> Text
