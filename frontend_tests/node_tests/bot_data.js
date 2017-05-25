@@ -33,6 +33,7 @@ global.patch_builtin('_', patched_underscore);
 
 var bot_data = require('js/bot_data.js');
 
+bot_data.initialize();
 // Our startup logic should have added Bot 0 from page_params.
 assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
 
