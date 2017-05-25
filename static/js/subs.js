@@ -477,22 +477,21 @@ exports.switch_rows = function (event) {
         if ($('#search_stream_name').is(":focus")) {
             $('#search_stream_name').blur();
         }
-    } else if (event === 'up_arrow') {
-        switch_row = active_data.row.prev();
+    } else {
+        if (event === 'up_arrow') {
+            switch_row = active_data.row.prevAll().not('.notdisplayed').first();
+        } else if (event === 'down_arrow') {
+            switch_row = active_data.row.nextAll().not('.notdisplayed').first();
+        }
         if ($('#search_stream_name').is(":focus")) {
             // remove focus from Filter streams input instead of switching rows
             // if Filter streams input is focused
             return $('#search_stream_name').blur();
         }
-    } else if (event === 'down_arrow') {
-        switch_row = active_data.row.next();
-        if ($('#search_stream_name').is(":focus")) {
-            return $('#search_stream_name').blur();
-        }
     }
 
     var row_data = get_row_data(switch_row);
-    if (row_data && !switch_row.hasClass('notdisplayed')) {
+    if (row_data) {
         var switch_row_name = row_data.object.name;
         var hash = ['#streams', row_data.id, switch_row_name];
         export_hash(hash);
