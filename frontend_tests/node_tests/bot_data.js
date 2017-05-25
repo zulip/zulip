@@ -58,7 +58,7 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
 
         bot_data.add(test_bot);
 
-         bot = bot_data.get('bot1@zulip.com');
+        bot = bot_data.get('bot1@zulip.com');
         assert.equal('Bot 1', bot.full_name);
         bot_data.update('bot1@zulip.com', {full_name: 'New Bot 1'});
         bot = bot_data.get('bot1@zulip.com');
