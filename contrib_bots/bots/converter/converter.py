@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 from __future__ import division
+from past.utils import old_div
 
 import copy
 import importlib
@@ -120,7 +121,7 @@ def get_bot_converter_response(message, client):
             number_res /= ut_to_std[1]
 
             if base_unit == 'bit':
-                number_res *= 1024 ** (exponent // 3)
+                number_res *= 1024 ** (old_div(exponent, float(3)))
             else:
                 number_res *= 10 ** exponent
             number_res = round_to(number_res, 7)

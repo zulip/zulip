@@ -1,14 +1,9 @@
-# See readme.md for instructions on running this code.
 
 class HelpHandler(object):
     def usage(self):
         return '''
-            This plugin will give info about Zulip to
-            any user that types a message saying "help".
-
-            This is example code; ideally, you would flesh
-            this out for more useful help pertaining to
-            your Zulip instance.
+            The bot will return the city that the next Pycon
+            North America will be held in.              
             '''
 
     def triage_message(self, message, client):
@@ -25,8 +20,8 @@ class HelpHandler(object):
 
     def handle_message(self, message, client, state_handler):
         help_content = '''
-            Info on Zulip can be found here:
-            https://github.com/zulip/zulip
+            Next year Pycon will be in:
+            Cleveland, OH
             '''.strip()
 
         client.send_message(dict(

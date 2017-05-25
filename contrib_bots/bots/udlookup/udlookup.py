@@ -50,11 +50,7 @@ class UDlookupHandler(object):
             '''
 
     def handle_message(self, message, client, state_handler):
-        original_content = message['content']
-        stream = message['display_recipient']
-        subject = message['subject']
-
-        handle_input(client, original_content, stream, subject)
+        handle_input(message, client)
 
 handler_class = UDlookupHandler
 
@@ -93,16 +89,17 @@ def format_output(retrieved_data):
     data = json.loads(retrieved_data)
     return data['list'][0]['definition']
 
-def handle_input(client, original_content, stream, subject):
 
+def handle_input(message, client):
+
+    original_content = message['content']
     if is_help(original_content):
-        send_message(client, HELP_MESSAGE, stream, subject)
+        client.send_reply(message, HELP_MESSAGE)
 
     else:
         sentence = format_input(original_content)
         try:
-            reply_data = send_to_udlookup_api(sentence, get_api_key())
-            reply_message = format_output(reply_data)
+            reply_message = send_to_udlookup_api(sentence, get_api_key())
 
         except ssl.SSLError or TypeError:
             reply_message = 'The service is temporarily unavailable, please try again.'
@@ -113,7 +110,9 @@ def handle_input(client, original_content, stream, subject):
                             '`readme.md` file?'
             logging.error(reply_message)
 
-        send_message(client, reply_message, stream, subject)
+
+        client.send_reply(message, format_output(reply_message))
+
 
 
 def get_api_key():
