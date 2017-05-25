@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
@@ -2096,7 +2096,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assertTrue(dev_auth_enabled(realm))
         self.assertFalse(password_auth_enabled(realm))
 
-class LoginEmailValidatorTestCase(TestCase):
+class LoginEmailValidatorTestCase(ZulipTestCase):
     def test_valid_email(self):
         # type: () -> None
         validate_login_email(u'hamlet@zulip.com')
