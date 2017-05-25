@@ -82,7 +82,7 @@ class PermissionTest(ZulipTestCase):
         members = ujson.loads(result.content)['members']
         hamlet = find_dict(members, 'email', self.example_email("hamlet"))
         self.assertTrue(hamlet['is_admin'])
-        othello = find_dict(members, 'email', 'othello@zulip.com')
+        othello = find_dict(members, 'email', self.example_email("othello"))
         self.assertFalse(othello['is_admin'])
 
         # Giveth
@@ -95,7 +95,7 @@ class PermissionTest(ZulipTestCase):
         admin_users = realm.get_admin_users()
         self.assertTrue(user in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], 'othello@zulip.com')
+        self.assertEqual(person['email'], self.example_email("othello"))
         self.assertEqual(person['is_admin'], True)
 
         # Taketh away
@@ -107,7 +107,7 @@ class PermissionTest(ZulipTestCase):
         admin_users = realm.get_admin_users()
         self.assertFalse(user in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], 'othello@zulip.com')
+        self.assertEqual(person['email'], self.example_email("othello"))
         self.assertEqual(person['is_admin'], False)
 
         # Cannot take away from last admin
@@ -127,7 +127,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, 'Cannot remove the only organization administrator')
 
         # Make sure only admins can patch other user's info.
-        self.login('othello@zulip.com')
+        self.login(self.example_email("othello"))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
 
@@ -254,7 +254,7 @@ class UserProfileTest(ZulipTestCase):
         othello = self.example_user('othello')
         dct = get_emails_from_user_ids([hamlet.id, othello.id])
         self.assertEqual(dct[hamlet.id], self.example_email("hamlet"))
-        self.assertEqual(dct[othello.id], 'othello@zulip.com')
+        self.assertEqual(dct[othello.id], self.example_email("othello"))
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self):
@@ -269,7 +269,7 @@ class ActivateTest(ZulipTestCase):
         # type: () -> None
         admin = self.example_user('othello')
         do_change_is_admin(admin, True)
-        self.login('othello@zulip.com')
+        self.login(self.example_email("othello"))
 
         user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
@@ -305,7 +305,7 @@ class ActivateTest(ZulipTestCase):
         # type: () -> None
         admin = self.example_user('othello')
         do_change_is_admin(admin, True)
-        self.login('othello@zulip.com')
+        self.login(self.example_email("othello"))
 
         # Can not deactivate a user with the bot api
         result = self.client_delete('/json/bots/hamlet@zulip.com')
@@ -329,7 +329,7 @@ class ActivateTest(ZulipTestCase):
         # type: () -> None
         non_admin = self.example_user('othello')
         do_change_is_admin(non_admin, False)
-        self.login('othello@zulip.com')
+        self.login(self.example_email("othello"))
 
         # Can not deactivate a user with the users api
         result = self.client_delete('/json/users/hamlet@zulip.com')

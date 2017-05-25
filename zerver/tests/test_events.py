@@ -324,7 +324,7 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+        self.send_message(email, self.example_email("othello"), Recipient.PERSONAL, "hello")
         self.send_message(email, "Denmark", Recipient.STREAM, "hello")
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -1337,7 +1337,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_subscribe_other_user_never_subscribed(self):
         # type: () -> None
-        action = lambda: self.subscribe_to_stream("othello@zulip.com", u"test_stream")
+        action = lambda: self.subscribe_to_stream(self.example_email("othello"), u"test_stream")
         events = self.do_test(action, num_events=2)
         peer_add_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
@@ -1428,7 +1428,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         # Add another user to that totally new stream
-        action = lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream(self.example_email("othello"), "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               state_change_expected=include_subscribers,

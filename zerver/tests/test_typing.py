@@ -18,7 +18,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         Sending typing notification without op parameter fails
         """
         sender = self.example_email("hamlet")
-        recipient = 'othello@zulip.com'
+        recipient = self.example_email("othello")
         result = self.client_post('/api/v1/typing', {'to': recipient},
                                   **self.api_auth(sender))
         self.assert_json_error(result, 'Missing \'op\' argument')
@@ -29,7 +29,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         Sending typing notification with invalid value for op parameter fails
         """
         sender = self.example_email("hamlet")
-        recipient = 'othello@zulip.com'
+        recipient = self.example_email("othello")
         result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'foo'},
                                   **self.api_auth(sender))
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')

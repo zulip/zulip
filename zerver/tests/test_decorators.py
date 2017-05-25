@@ -559,7 +559,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
 
         # Even if a logged-in session was leaked, it still wouldn't work
@@ -572,13 +572,13 @@ class DeactivatedRealmTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
                                                        "client": "test suite",
-                                                       "to": "othello@zulip.com"},
+                                                       "to": self.example_email("othello")},
                                   **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error_contains(result, "has been deactivated", status_code=401)
 
@@ -693,7 +693,7 @@ class InactiveUserTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
 
         # Even if a logged-in session was leaked, it still wouldn't work
@@ -705,13 +705,13 @@ class InactiveUserTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
                                                        "client": "test suite",
-                                                       "to": "othello@zulip.com"},
+                                                       "to": self.example_email("othello")},
                                   **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error_contains(result, "Account not active", status_code=401)
 

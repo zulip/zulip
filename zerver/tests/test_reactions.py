@@ -141,7 +141,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         Reacting to a inaccessible (for instance, private) message fails
         """
         pm_sender = self.example_email("hamlet")
-        pm_recipient = 'othello@zulip.com'
+        pm_recipient = self.example_email("othello")
         reaction_sender = self.example_email("iago")
 
         result = self.client_post("/api/v1/messages", {"type": "private",
@@ -162,7 +162,7 @@ class ReactionTest(ZulipTestCase):
         Creating the same reaction twice fails
         """
         pm_sender = self.example_email("hamlet")
-        pm_recipient = 'othello@zulip.com'
+        pm_recipient = self.example_email("othello")
         reaction_sender = pm_recipient
 
         pm = self.client_post("/api/v1/messages", {"type": "private",
@@ -186,7 +186,7 @@ class ReactionTest(ZulipTestCase):
         Removing a reaction twice fails
         """
         pm_sender = self.example_email("hamlet")
-        pm_recipient = 'othello@zulip.com'
+        pm_recipient = self.example_email("othello")
         reaction_sender = pm_recipient
 
         pm = self.client_post("/api/v1/messages", {"type": "private",

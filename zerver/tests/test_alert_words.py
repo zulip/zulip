@@ -162,7 +162,7 @@ class AlertWordTests(ZulipTestCase):
     def message_does_alert(self, user_profile, message):
         # type: (UserProfile, Text) -> bool
         """Send a bunch of messages as othello, so Hamlet is notified"""
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
+        self.send_message(self.example_email("othello"), "Denmark", Recipient.STREAM, message)
         user_message = most_recent_usermessage(user_profile)
         return 'has_alert_word' in user_message.flags_list()
 

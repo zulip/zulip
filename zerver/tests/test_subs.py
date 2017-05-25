@@ -1705,7 +1705,7 @@ class SubscriptionAPITest(ZulipTestCase):
         Check users getting add_peer_event is correct
         """
         streams_to_sub = ['multi_user_stream']
-        users_to_subscribe = [self.test_email, "othello@zulip.com"]
+        users_to_subscribe = [self.test_email, self.example_email("othello")]
         self.common_subscribe_to_streams(
             self.test_email,
             streams_to_sub,
@@ -1740,7 +1740,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Check users getting add_peer_event is correct
         """
-        email1 = 'othello@zulip.com'
+        email1 = self.example_email("othello")
         email2 = self.example_email("cordelia")
         email3 = 'hamlet@zulip.com'
         email4 = self.example_email("iago")
@@ -2290,10 +2290,10 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.login(email)
         result = self.common_subscribe_to_streams(
             email, [stream_name],
-            extra_post_data={'principals': ujson.dumps(["othello@zulip.com"])})
+            extra_post_data={'principals': ujson.dumps([self.example_email("othello")])})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertEqual(json["subscribed"], {"othello@zulip.com": [stream_name]})
+        self.assertEqual(json["subscribed"], {self.example_email("othello"): [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
@@ -2303,7 +2303,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
-        self.assertTrue('othello@zulip.com' in json['subscribers'])
+        self.assertTrue(self.example_email("othello") in json['subscribers'])
         self.assertTrue('hamlet@zulip.com' in json['subscribers'])
 
 class GetSubscribersTest(ZulipTestCase):
@@ -2379,7 +2379,7 @@ class GetSubscribersTest(ZulipTestCase):
         for stream_name in streams:
             self.make_stream(stream_name)
 
-        users_to_subscribe = [self.email, "othello@zulip.com", self.example_email("cordelia")]
+        users_to_subscribe = [self.email, self.example_email("othello"), self.example_email("cordelia")]
         ret = self.common_subscribe_to_streams(
             self.email,
             streams,
@@ -2450,7 +2450,7 @@ class GetSubscribersTest(ZulipTestCase):
         streams = ["stream_%s" % i for i in range(10)]
         for stream_name in streams:
             self.make_stream(stream_name, realm=realm)
-        users_to_subscribe = ["othello@zulip.com", self.example_email("cordelia")]
+        users_to_subscribe = [self.example_email("othello"), self.example_email("cordelia")]
         ret = self.common_subscribe_to_streams(
             self.email,
             streams,
@@ -2515,7 +2515,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Create a stream for which Hamlet is the only subscriber.
         stream_name = "Saxony"
         self.common_subscribe_to_streams(self.email, [stream_name])
-        other_email = "othello@zulip.com"
+        other_email = self.example_email("othello")
 
         # Fetch the subscriber list as a non-member.
         self.login(other_email)

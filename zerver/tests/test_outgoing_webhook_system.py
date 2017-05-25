@@ -133,7 +133,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
 
     def test_no_trigger_on_stream_message(self):
         # type: () -> None
-        sender_email = "othello@zulip.com"
+        sender_email = self.example_email("othello")
         recipients = "Denmark"
         message_type = Recipient.STREAM
         with mock.patch('zerver.lib.actions.queue_json_publish') as queue_json_publish:
@@ -143,7 +143,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
     def test_no_trigger_on_message_by_bot(self):
         # type: () -> None
         sender_email = "testvabs-bot@zulip.com"
-        recipients = "othello@zulip.com"
+        recipients = self.example_email("othello")
         message_type = Recipient.PERSONAL
 
         with mock.patch('zerver.lib.actions.queue_json_publish') as queue_json_publish:
@@ -153,7 +153,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
     @mock.patch('zerver.lib.actions.queue_json_publish')
     def test_trigger_on_private_message_by_user(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
-        sender_email = "othello@zulip.com"
+        sender_email = self.example_email("othello")
         recipients = "testvabs-bot@zulip.com"
         message_type = Recipient.PERSONAL
         profile_id = self.bot_user.id
@@ -176,7 +176,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
     @mock.patch('zerver.lib.actions.queue_json_publish')
     def test_trigger_on_huddle_message_by_user(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
-        sender_email = "othello@zulip.com"
+        sender_email = self.example_email("othello")
         recipients = [u"testvabs-bot@zulip.com", u"temp-bot@zulip.com"]
         message_type = Recipient.HUDDLE
         profile_ids = [self.bot_user.id, self.temp_bot.id]

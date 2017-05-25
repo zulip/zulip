@@ -939,7 +939,7 @@ class BugdownApiTests(ZulipTestCase):
         result = self.client_post(
             '/api/v1/messages/render',
             dict(content=content),
-            **self.api_auth('othello@zulip.com')
+            **self.api_auth(self.example_email("othello"))
         )
         self.assert_json_success(result)
         data = ujson.loads(result.content)
@@ -953,7 +953,7 @@ class BugdownApiTests(ZulipTestCase):
         result = self.client_post(
             '/api/v1/messages/render',
             dict(content=content),
-            **self.api_auth('othello@zulip.com')
+            **self.api_auth(self.example_email("othello"))
         )
         self.assert_json_success(result)
         data = ujson.loads(result.content)
@@ -976,7 +976,7 @@ class BugdownErrorTests(ZulipTestCase):
             # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
-                self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
+                self.send_message(self.example_email("othello"), "Denmark", Recipient.STREAM, message)
 
 
 class BugdownAvatarTestCase(ZulipTestCase):
