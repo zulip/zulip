@@ -30,16 +30,17 @@ class BotCommandRegistry(object):
                     msg = self._just_mentioned()
                 else:
                     msg = self._just_mentioned
+                content = "about" # Use pass-through below
             else:
                 content = "help" # Default handling of just mentioning bot
             
         command = content.split()[0].strip()
         args = content.split()[1:]
 
-        if command == 'help':
-            for key,value in self._commands.items(): msg += "  \n"+key+" : "+value[1]
-        elif command == 'about':
+        if command == 'about':
             pass # defaults to about text
+        elif command == 'help':
+            for key,value in self._commands.items(): msg += "  \n"+key+" : "+value[1]
         elif command == 'commands':
             msg = "Commands: "+(" ".join(self._commands.keys()))
         elif command in self._commands.keys():
