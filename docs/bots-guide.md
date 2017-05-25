@@ -169,7 +169,7 @@ handler_class = MyBotHandler
 
 ## Bot API
 
-This section documents functions every bot needs to implement and the structure of the bot's config file.
+This section documents functions available to the bot and the structure of the bot's config file.
 
 With this API, you *can*
 
@@ -184,17 +184,21 @@ With this API, you *cannot*
 explicit recipient).
 
 ### usage
+
 *usage(self)*
 
 is called to retrieve information about the bot.
 
 ##### Arguments
+
 * self - the instance the method is called on.
 
 #### Return values
+
 * A string describing the bot's functionality
 
 #### Example implementation
+
 ```
 def usage(self):
     return '''
@@ -207,23 +211,25 @@ def usage(self):
 ```
 
 ### handle_message
+
 *handle_message(self, message, client)*
 
 handles user message.
 
 #### Arguments
+
 * self - the instance the method is called on.
 
 * message - a dictionary describing a Zulip message
 
 * client - used to interact with the server, e.g. to send a message
-    * use client.send_message(message) to send a message
 
 * state_handler - used to save states/information of the bot **beta**
     * use `state_handler.set_state(state)` to set a state (any object)
     * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
 
 #### Return values
+
 None.
 
 #### Example implementation
@@ -242,6 +248,62 @@ None.
          content=new_content,
      ))
  ```
+### client.send_message
+
+*client.send_message(message)*
+
+will send a message as the bot user.  Generally, this is less
+convenient than *send_reply*, but it offers additional flexibility
+about where the message is sent to.
+
+### Arguments
+
+* message - a dictionary describing the message to be sent by the bot
+
+### Example implementation
+
+```
+client.send_message(dict(
+    type='stream', # can be 'stream' or 'private'
+    to=stream_name, # either the stream name or user's email
+    subject=subject, # message subject
+    content=message, # content of the sent message
+))
+```
+
+### client.send_reply
+
+*client.send_reply(message, response)*
+
+will reply to the triggering message to the same place the original
+message was sent to, with the content of the reply being *response*.
+
+### Arguments
+
+* message - Dictionary containing information on message to respond to
+ (provided by `handle_message`).
+* response - Response message from the bot (string).
+
+### client.update_message
+
+*client.update_message(message)*
+
+will edit the content of a previously sent message.
+
+### Arguments
+
+* message - dictionary defining what message to edit and the new content
+
+### Example
+
+From `/zulip/contrib_bots/incrementor/incrementor.py`:
+
+```
+client.update_message(dict(
+    message_id=self.message_id, # id of message to be updated
+    content=str(self.number), # string with which to update message with
+))
+```
 
 ### Configuration file
 
