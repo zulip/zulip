@@ -95,7 +95,11 @@ CACHES['database'] = {
 }
 
 # Use production config from Webpack in tests
-WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(STATIC_ROOT, 'webpack-bundles', 'webpack-stats-production.json')
+if CASPER_TESTS:
+    WEBPACK_FILE = 'webpack-stats-production.json'
+else:
+    WEBPACK_FILE = 'webpack-stats-test.json'
+WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(STATIC_ROOT, 'webpack-bundles', WEBPACK_FILE)
 
 if CASPER_TESTS:
     # Don't auto-restart Tornado server during casper tests
