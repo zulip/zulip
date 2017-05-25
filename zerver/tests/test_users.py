@@ -339,6 +339,33 @@ class ActivateTest(ZulipTestCase):
         result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_error(result, 'Insufficient permission')
 
+    def test_deactivate_user_with_bot_cascade_set_to_false(self):
+        # type: () -> None
+        """testing actions.py line 549
+        do_deactivate_user(profile, _cascade=False)"""
+
+        user = self.example_user('hamlet')
+        self.assertTrue(user.is_active)
+
+        # login as a new user and create a bot
+        self.login('hamlet@zulip.com')
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        # login as admin
+        admin = self.example_user('othello')
+        do_change_is_admin(admin, True)
+        self.login('othello@zulip.com')
+
+        # while logged in as admin delete user hamlet
+        do_deactivate_user(user)
+        self.assertFalse(user.is_active)
+
+
 class GetProfileTest(ZulipTestCase):
 
     def common_update_pointer(self, email, pointer):
