@@ -1,10 +1,9 @@
 var path = require('path');
+var assets = require('./webpack.assets.json');
 
 module.exports =  {
     context: path.resolve(__dirname, "../"),
-    entry: {
-        translations: ['./static/js/translations.js'],
-    },
+    entry: assets,
     module: {
         noParse: /(min)\.js/,
     },
