@@ -1,3 +1,3 @@
 **Congratulations! You're done!**
 
-Your messages may look like:
+Your {{ integration_display_name }} notifications may look like:
