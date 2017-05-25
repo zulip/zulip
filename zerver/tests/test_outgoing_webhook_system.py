@@ -69,5 +69,3 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock, mock.Mock, mock.Mock) -> None
         do_rest_call(rest_operation, {"command": ""}, None)
         self.assertTrue(mock_fail_with_message.called)
-
-
