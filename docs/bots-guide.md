@@ -169,7 +169,7 @@ handler_class = MyBotHandler
 
 ## Bot API
 
-This section documents functions every bot needs to implement and the structure of the bot's config file.
+This section documents functions available to the bot and the structure of the bot's config file.
 
 With this API, you *can*
 
@@ -217,14 +217,13 @@ handles user message.
 * message - a dictionary describing a Zulip message
 
 * client - used to interact with the server, e.g. to send a message
-    * use client.send_message(message) to send a message
+
 
 * state_handler - used to save states/information of the bot **beta**
     * use `state_handler.set_state(state)` to set a state (any object)
     * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
 
 #### Return values
-None.
 
 #### Example implementation
 
@@ -242,6 +241,45 @@ None.
          content=new_content,
      ))
  ```
+### client.send_message
+*client.send_message(message)*
+Send a message with the bot.
+
+### Arguments
+* message - a dictionary describing the message to be sent by bot
+### Example implementation
+
+```
+client.send_message(dict(
+    type='stream', # can be 'stream' or 'private'
+    to=stream_name, # either the stream name or user's email
+    subject=subject, # message subject
+    content=message, # content of the sent message
+))
+```
+
+### client.send_reply
+*client.send_reply(message, response)*
+Reply using information from dictionary `message`.
+
+### Arguments
+* message - Dictionary containing information on message to respond to
+ (provided by `handle_message`).
+* response - Response message from the bot (string).
+
+### client.update_message
+*client.update_message(message)*
+Updates the message as determined by the argument *message*.
+### Arguments
+* message - dictionary with information on message to be modified
+### Example
+From `/zulip/contrib_bots/incrementor/incrementor.py`:
+```
+client.update_message(dict(
+    message_id=self.message_id, # id of message to be updated
+    content=str(self.number), # string with which to update message with
+))
+```
 
 ### Configuration file
 
