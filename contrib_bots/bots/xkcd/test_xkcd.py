@@ -43,4 +43,5 @@ class TestXkcdBot(BotTestCase):
             self.assert_bot_output(
                 {'content': m, 'type': "private", 'sender_email': "foo"}, r)
             self.assert_bot_output(
-                {'content': m, 'type': "stream", 'sender_email': "foo"}, r)
+                {'content': m, 'type': "stream", 'display_recipient': "foo", 
+                 'subject': "foo"}, r)

@@ -16,15 +16,11 @@ class TestHelloWorldBot(BotTestCase):
     bot_name = "helloworld"
 
     def test_bot(self):
-        self.assert_bot_output(
-            {'content': "foo", 'type': "private", 'sender_email': "foo"},
-            "beep boop"
-        )
-        self.assert_bot_output(
-            {'content': "Hi, my name is abc", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "beep boop"
-        )
-        self.assert_bot_output(
-            {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "beep boop"
-        )
+        txt = "beep boop"
+        messages = ["", "foo", "Hi, my name is abc"]
+        for m in messages:
+            self.assert_bot_output(
+                {'content': m, 'type': "private", 'sender_email': "foo"}, txt)
+            self.assert_bot_output(
+                {'content': m, 'type': "stream", 'display_recipient': "foo", 
+                 'subject': "foo"}, txt)
