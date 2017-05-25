@@ -31,6 +31,7 @@ from six.moves.html_parser import HTMLParser
 import logging
 import optparse
 import os
+import re
 import sys
 import time
 from six.moves import urllib
@@ -82,6 +83,16 @@ parser.add_option('--feed-file',
                   help='The file containing a list of RSS feed URLs to follow, one URL per line',
                   default=os.path.join(RSS_DATA_DIR, "rss-feeds"),
                   action='store')
+parser.add_option('--unwrap',
+                  dest='unwrap',
+                  action='store_true',
+                  help='Convert word-wrapped paragraphs into single lines',
+                  default=False)
+parser.add_option('--math',
+                  dest='math',
+                  action='store_true',
+                  help='Convert $ to $$ (for KaTeX processing)',
+                  default=False)
 parser.add_option_group(zulip.generate_option_group(parser))
 (opts, args) = parser.parse_args() # type: Tuple[Any, List[str]]
 
@@ -147,6 +158,12 @@ def compute_entry_hash(entry):
     entry_id = entry.get("id", entry.get("link"))
     return hashlib.md5(entry_id + str(entry_time)).hexdigest()
 
+def unwrap_text(body):
+    # type: (str) -> str
+    # Replace \n by space if it is preceded and followed by a non-\n.
+    # Example: '\na\nb\nc\n\nd\n' -> '\na b c\n\nd\n'
+    return re.sub('(?<=[^\n])\n(?=[^\n])', ' ', body)
+
 def elide_subject(subject):
     # type: (str) -> str
     MAX_TOPIC_LENGTH = 60
@@ -156,10 +173,18 @@ def elide_subject(subject):
 
 def send_zulip(entry, feed_name):
     # type: (Any, str) -> Dict[str, Any]
+    body = entry.summary # type: str
+    if opts.unwrap:
+        body = unwrap_text(body)
+
     content = "**[%s](%s)**\n%s\n%s" % (entry.title,
                                         entry.link,
-                                        strip_tags(entry.summary),
+                                        strip_tags(body),
                                         entry.link) # type: str
+
+    if opts.math:
+        content = content.replace('$', '$$')
+
     message = {"type": "stream",
                "sender": opts.zulip_email,
                "to": opts.stream,
