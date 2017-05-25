@@ -4,4 +4,4 @@ if [ "$(hostname)" = "staging.zulip.net" ]; then
 else
     site="https://api.zulip.com"
 fi
-/home/zulip/deployments/current/bots/check_send_receive.py --munin "$1" --site="$site"
+/home/zulip/deployments/current/api/integrations/zephyr/check_send_receive.py --munin "$1" --site="$site"

@@ -80,7 +80,7 @@ class zulip_ops::nagios {
     mode       => 644,
     owner      => "root",
     group      => "root",
-    source => '/root/zulip/bots/zuliprc.nagios',
+    source => '/root/zulip/api/integrations/zephyr/zuliprc.nagios',
   }
 
   exec { "fix_nagios_permissions":
