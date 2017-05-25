@@ -25,7 +25,7 @@ class TransifexHookTests(WebhookTestCase):
             language=self.LANGUAGE,
             resource=self.RESOURCE,
         )
-        self.send_and_test_stream_message(None, expected_subject, expected_message)
+        self.send_and_test_stream_message("", expected_subject, expected_message)
 
     def test_transifex_translated_message(self):
         # type: () -> None
@@ -38,8 +38,7 @@ class TransifexHookTests(WebhookTestCase):
             language=self.LANGUAGE,
             resource=self.RESOURCE,
         )
-        self.send_and_test_stream_message(None, expected_subject, expected_message)
-        self.REVIEWED = True
+        self.send_and_test_stream_message("", expected_subject, expected_message)
 
     def get_body(self, fixture_name):
         # type: (Text) -> Dict[str, Any]
