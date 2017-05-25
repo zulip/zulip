@@ -14,13 +14,15 @@ import time
 import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.db import close_old_connections
+from django.core import signals
 from tornado.gen import Return
-from tornado.httpclient import HTTPRequest
+from tornado.httpclient import HTTPRequest, HTTPResponse
 
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.lib.test_classes import ZulipTestCase
 
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_client
 
 from tornado import gen
 from tornado.testing import AsyncHTTPTestCase, gen_test
@@ -28,13 +30,118 @@ from tornado.web import Application
 from tornado.websocket import websocket_connect
 
 from zerver.tornado.application import create_tornado_application
-from zerver.tornado.event_queue import fetch_events
+from zerver.tornado import event_queue
+from zerver.tornado.event_queue import fetch_events, \
+    allocate_client_descriptor, process_event
 from zerver.tornado.views import get_events_backend
 
 from six.moves.http_cookies import SimpleCookie
+from six.moves import urllib_parse
 
-from typing import Any, Callable, Dict, Generator, Optional, Text
+from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
 
+class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        super(TornadoWebTestCase, self).setUp()
+        signals.request_started.disconnect(close_old_connections)
+        signals.request_finished.disconnect(close_old_connections)
+        self.session_cookie = None  # type: Optional[Dict[Text, Text]]
+
+    def tearDown(self):
+        # type: () -> None
+        super(TornadoWebTestCase, self).tearDown()
+        self.session_cookie = None  # type: Optional[Dict[Text, Text]]
+
+    def get_app(self):
+        # type: () -> Application
+        return create_tornado_application()
+
+    def client_get(self, path, **kwargs):
+        # type: (Text, **Any) -> HTTPResponse
+        self.add_session_cookie(kwargs)
+        return self.fetch(path, method='GET', **kwargs)
+
+    def fetch_async(self, method, path, **kwargs):
+        # type: (Text, Text, **Any) -> None
+        self.add_session_cookie(kwargs)
+        self.http_client.fetch(
+            self.get_url(path),
+            self.stop,
+            method=method,
+            **kwargs
+        )
+
+    def client_get_async(self, path, **kwargs):
+        # type: (Text, **Any) -> None
+        self.fetch_async('GET', path, **kwargs)
+
+    def login(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        super(TornadoWebTestCase, self).login(*args, **kwargs)
+        session_cookie = settings.SESSION_COOKIE_NAME
+        session_key = self.client.session.session_key
+        self.session_cookie = {
+            "Cookie": "{}={}".format(session_cookie, session_key)
+        }
+
+    def get_session_cookie(self):
+        # type: () -> Dict[Text, Text]
+        return {} if self.session_cookie is None else self.session_cookie
+
+    def add_session_cookie(self, kwargs):
+        # type: (Dict[str, Any]) -> None
+        # TODO: Currently only allows session cookie
+        headers = kwargs.get('headers', {})
+        headers.update(self.get_session_cookie())
+        kwargs['headers'] = headers
+
+    def create_queue(self, **kwargs):
+        # type: (**Any) -> str
+        response = self.client_get('/json/events?dont_block=true')
+        self.assertEqual(response.code, 200)
+        body = ujson.loads(response.body)
+        self.assertEqual(body['events'], [])
+        self.assertIn('queue_id', body)
+        return body['queue_id']
+
+class EventsTestCase(TornadoWebTestCase):
+    def test_create_queue(self):
+        # type: () -> None
+        self.login(self.example_email('hamlet'))
+        queue_id = self.create_queue()
+        self.assertIn(queue_id, event_queue.clients)
+
+    def test_events_async(self):
+        # type: () -> None
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        event_queue_id = self.create_queue()
+        data = {
+            'queue_id': event_queue_id,
+            'last_event_id': 0,
+        }
+
+        path = '/json/events?{}'.format(urllib_parse.urlencode(data))
+        self.client_get_async(path)
+
+        def process_events():
+            # type: () -> None
+            users = [user_profile.id]
+            event = dict(
+                type='test',
+                data='test data',
+            )
+            process_event(event, users)
+
+        self.io_loop.call_later(0.1, process_events)
+        response = self.wait()
+        data = ujson.loads(response.body)
+        events = data['events']
+        events = cast(List[Dict[str, Any]], events)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]['data'], 'test data')
+        self.assertEqual(data['result'], 'success')
 
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
