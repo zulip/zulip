@@ -559,27 +559,27 @@ class DeactivatedRealmTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
 
         # Even if a logged-in session was leaked, it still wouldn't work
         realm.deactivated = False
         realm.save()
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         realm.deactivated = True
         realm.save()
 
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
                                                        "client": "test suite",
-                                                       "to": "othello@zulip.com"},
-                                  **self.api_auth("hamlet@zulip.com"))
+                                                       "to": self.example_email("othello")},
+                                  **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error_contains(result, "has been deactivated", status_code=401)
 
     def test_fetch_api_key_deactivated_realm(self):
@@ -607,7 +607,7 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         do_deactivate_realm(get_realm("zulip"))
-        result = self.login_with_return("hamlet@zulip.com")
+        result = self.login_with_return(self.example_email("hamlet"))
         self.assert_in_response("has been deactivated", result)
 
     def test_webhook_deactivated_realm(self):
@@ -617,7 +617,7 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         do_deactivate_realm(get_realm("zulip"))
-        email = "hamlet@zulip.com"
+        email = self.example_email("hamlet")
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         data = self.fixture_data('jira', "created_v2")
@@ -664,7 +664,7 @@ class LoginRequiredTest(ZulipTestCase):
 class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_success(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
+        email = self.example_email("cordelia")
 
         self.login(email)
         result = self.client_post("/json/fetch_api_key", {"password": initial_password(email)})
@@ -672,7 +672,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
     def test_fetch_api_key_wrong_password(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
+        email = self.example_email("cordelia")
 
         self.login(email)
         result = self.client_post("/json/fetch_api_key", {"password": "wrong_password"})
@@ -693,7 +693,7 @@ class InactiveUserTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
 
         # Even if a logged-in session was leaked, it still wouldn't work
@@ -705,14 +705,14 @@ class InactiveUserTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
                                                        "client": "test suite",
-                                                       "to": "othello@zulip.com"},
-                                  **self.api_auth("hamlet@zulip.com"))
+                                                       "to": self.example_email("othello")},
+                                  **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error_contains(result, "Account not active", status_code=401)
 
     def test_fetch_api_key_deactivated_user(self):
@@ -742,7 +742,7 @@ class InactiveUserTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         do_deactivate_user(user_profile)
 
-        result = self.login_with_return("hamlet@zulip.com")
+        result = self.login_with_return(self.example_email("hamlet"))
         self.assert_in_response("Please enter a correct email and password", result)
 
     def test_webhook_deactivated_user(self):
@@ -1001,12 +1001,12 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
     def test_authenticated_json_view_if_subdomain_is_invalid(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
+        user_email = self.example_email("hamlet")
         self.login(user_email)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning, \
                     mock.patch('zerver.decorator.get_subdomain', return_value=''):
-                self.assert_json_error_contains(self._do_test(user_email),
+                self.assert_json_error_contains(self._do_test(str(user_email)),
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
@@ -1015,7 +1015,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
 
             with mock.patch('logging.warning') as mock_warning, \
                     mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
-                self.assert_json_error_contains(self._do_test(user_email),
+                self.assert_json_error_contains(self._do_test(str(user_email)),
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
@@ -1030,7 +1030,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
     def test_zulip_login_required_if_subdomain_is_invalid(self):
         # type: () -> None
-        user_email = 'hamlet@zulip.com'
+        user_email = self.example_email("hamlet")
         self.login(user_email)
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
@@ -1098,14 +1098,14 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 class RestAPITest(ZulipTestCase):
     def test_method_not_allowed(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_patch('/json/users')
         self.assertEqual(result.status_code, 405)
         self.assert_in_response('Method Not Allowed', result)
 
     def test_options_method(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_options('/json/users')
         self.assertEqual(result.status_code, 204)
         self.assertEqual(str(result['Allow']), 'GET, POST')

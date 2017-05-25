@@ -179,7 +179,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
 
         process_message(incoming_valid_message)
 
-        # self.login("hamlet@zulip.com")
+        # self.login(self.example_email("hamlet"))
         # confirm that Hamlet got the message
         user_profile = self.example_user('hamlet')
         message = most_recent_message(user_profile)

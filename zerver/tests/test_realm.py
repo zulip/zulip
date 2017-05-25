@@ -67,7 +67,7 @@ class RealmTest(ZulipTestCase):
 
     def test_update_realm_description(self):
         # type: () -> None
-        email = 'iago@zulip.com'
+        email = self.example_email("iago")
         self.login(email)
         realm = get_realm('zulip')
         new_description = u'zulip dev group'
@@ -93,7 +93,7 @@ class RealmTest(ZulipTestCase):
         data = dict(description=ujson.dumps(new_description))
 
         # create an admin user
-        email = 'iago@zulip.com'
+        email = self.example_email("iago")
         self.login(email)
 
         result = self.client_patch('/json/realm', data)
@@ -158,7 +158,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, new_lang)
         # we need an admin user.
-        email = 'iago@zulip.com'
+        email = self.example_email("iago")
         self.login(email)
 
         req = dict(default_language=ujson.dumps(new_lang))

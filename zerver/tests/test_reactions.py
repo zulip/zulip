@@ -16,7 +16,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Sending reaction without emoji fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages/1/emoji_reactions/',
                                  **self.api_auth(sender))
         self.assertEqual(result.status_code, 400)
@@ -26,7 +26,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Sending invalid emoji fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages/1/emoji_reactions/foo',
                                  **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'foo' does not exist")
@@ -36,7 +36,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Removing invalid emoji fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_delete('/api/v1/messages/1/emoji_reactions/foo',
                                     **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'foo' does not exist")
@@ -46,7 +46,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Reacting with valid emoji succeeds
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages/1/emoji_reactions/smile',
                                  **self.api_auth(sender))
         self.assert_json_success(result)
@@ -57,7 +57,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Reacting with zulip emoji succeeds
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages/1/emoji_reactions/zulip',
                                  **self.api_auth(sender))
         self.assert_json_success(result)
@@ -70,8 +70,8 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         stream_name = "Saxony"
-        self.subscribe_to_stream("cordelia@zulip.com", stream_name, realm=realm)
-        message_id = self.send_message("cordelia@zulip.com", stream_name, Recipient.STREAM)
+        self.subscribe_to_stream(self.example_email("cordelia"), stream_name, realm=realm)
+        message_id = self.send_message(self.example_email("cordelia"), stream_name, Recipient.STREAM)
 
         user_profile = self.example_user('hamlet')
         sender = user_profile.email
@@ -96,7 +96,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Reacting with valid realm emoji succeeds
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         emoji_name = 'my_emoji'
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
@@ -120,7 +120,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         """
         Reacting without a message_id fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages//emoji_reactions/smile',
                                  **self.api_auth(sender))
         self.assertEqual(result.status_code, 404)
@@ -130,7 +130,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         """
         Reacting to an invalid message id fails
         """
-        sender = 'hamlet@zulip.com'
+        sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages/-1/emoji_reactions/smile',
                                  **self.api_auth(sender))
         self.assertEqual(result.status_code, 404)
@@ -140,9 +140,9 @@ class ReactionMessageIDTest(ZulipTestCase):
         """
         Reacting to a inaccessible (for instance, private) message fails
         """
-        pm_sender = 'hamlet@zulip.com'
-        pm_recipient = 'othello@zulip.com'
-        reaction_sender = 'iago@zulip.com'
+        pm_sender = self.example_email("hamlet")
+        pm_recipient = self.example_email("othello")
+        reaction_sender = self.example_email("iago")
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
@@ -161,8 +161,8 @@ class ReactionTest(ZulipTestCase):
         """
         Creating the same reaction twice fails
         """
-        pm_sender = 'hamlet@zulip.com'
-        pm_recipient = 'othello@zulip.com'
+        pm_sender = self.example_email("hamlet")
+        pm_recipient = self.example_email("othello")
         reaction_sender = pm_recipient
 
         pm = self.client_post("/api/v1/messages", {"type": "private",
@@ -185,8 +185,8 @@ class ReactionTest(ZulipTestCase):
         """
         Removing a reaction twice fails
         """
-        pm_sender = 'hamlet@zulip.com'
-        pm_recipient = 'othello@zulip.com'
+        pm_sender = self.example_email("hamlet")
+        pm_recipient = self.example_email("othello")
         reaction_sender = pm_recipient
 
         pm = self.client_post("/api/v1/messages", {"type": "private",

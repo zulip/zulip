@@ -96,7 +96,7 @@ class EventsEndpointTest(ZulipTestCase):
 
         # This test is intended to get minimal coverage on the
         # events_register code paths
-        email = 'hamlet@zulip.com'
+        email = self.example_email("hamlet")
         with mock.patch('zerver.views.events_register.do_events_register', return_value={}):
             result = self.client_post('/json/register', **self.api_auth(email))
         self.assert_json_success(result)
@@ -324,7 +324,7 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+        self.send_message(email, self.example_email("othello"), Recipient.PERSONAL, "hello")
         self.send_message(email, "Denmark", Recipient.STREAM, "hello")
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -456,7 +456,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         events = self.do_test(
-            lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"),
+            lambda: self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello"),
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -527,7 +527,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('operation', equals("add")),
         ])
 
-        message = self.send_message("cordelia@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello")
+        message = self.send_message(self.example_email("cordelia"), self.example_email("hamlet"), Recipient.PERSONAL, "hello")
         user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred',
@@ -565,7 +565,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello")
+        message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
             lambda: do_add_reaction(
@@ -589,7 +589,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello")
+        message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
             lambda: do_remove_reaction(
@@ -615,7 +615,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: check_send_typing_notification(
-                self.user_profile, ["cordelia@zulip.com"], "start"),
+                self.user_profile, [self.example_email("cordelia")], "start"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -1337,7 +1337,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_subscribe_other_user_never_subscribed(self):
         # type: () -> None
-        action = lambda: self.subscribe_to_stream("othello@zulip.com", u"test_stream")
+        action = lambda: self.subscribe_to_stream(self.example_email("othello"), u"test_stream")
         events = self.do_test(action, num_events=2)
         peer_add_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
@@ -1421,14 +1421,14 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
-        action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream") # type: Callable
+        action = lambda: self.subscribe_to_stream(self.example_email("hamlet"), "test_stream") # type: Callable
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         # Add another user to that totally new stream
-        action = lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream(self.example_email("othello"), "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               state_change_expected=include_subscribers,
@@ -1460,7 +1460,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         # Now resubscribe a user, to make sure that works on a vacated stream
-        action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream(self.example_email("hamlet"), "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               num_events=2)
