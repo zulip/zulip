@@ -13,38 +13,7 @@ from zerver.models import (
     Recipient,
 )
 
-class TestMentionMessageTrigger(ZulipTestCase):
-
-    def check_values_passed(self, queue_name, trigger_event, x):
-        # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
-        self.assertEqual(queue_name, "outgoing_webhooks")
-        self.assertEqual(trigger_event['user_profile_id'], self.bot_profile.id)
-        self.assertEqual(trigger_event['trigger'], "mention")
-        self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
-        self.assertEqual(trigger_event["message"]["content"], self.content)
-        self.assertEqual(trigger_event["message"]["type"], Recipient._type_names[Recipient.STREAM])
-        self.assertEqual(trigger_event["message"]["display_recipient"], "Denmark")
-
-    @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_mention_message_event_flow(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
-        self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(email="foo-bot@zulip.com",
-                                          password="test",
-                                          realm=get_realm("zulip"),
-                                          full_name="FooBot",
-                                          short_name="foo-bot",
-                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                                          bot_owner=self.user_profile)
-        self.content = u'@**FooBot** foo bar!!!'
-        mock_queue_json_publish.side_effect = self.check_values_passed
-
-        # TODO: In future versions this won't be required
-        self.subscribe_to_stream(self.bot_profile.email, "Denmark")
-        self.send_message(self.user_profile.email, "Denmark", Recipient.STREAM, self.content)
-        self.assertTrue(mock_queue_json_publish.called)
-
-class PersonalMessageTriggersTest(ZulipTestCase):
+class TestServiceBotEventTriggers(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
@@ -64,7 +33,36 @@ class PersonalMessageTriggersTest(ZulipTestCase):
                                        bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                                        bot_owner=user_profile)
 
-    def test_no_trigger_on_stream_message(self):
+    @mock.patch('zerver.lib.actions.queue_json_publish')
+    def test_trigger_on_stream_mention_from_user(self, mock_queue_json_publish):
+        # type: (mock.Mock) -> None
+        self.user_profile = self.example_user("othello")
+        self.bot_profile = do_create_user(email="foo-bot@zulip.com",
+                                          password="test",
+                                          realm=get_realm("zulip"),
+                                          full_name="FooBot",
+                                          short_name="foo-bot",
+                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                                          bot_owner=self.user_profile)
+        self.content = u'@**FooBot** foo bar!!!'
+
+        def check_values_passed(queue_name, trigger_event, x):
+            # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
+            self.assertEqual(queue_name, "outgoing_webhooks")
+            self.assertEqual(trigger_event['user_profile_id'], self.bot_profile.id)
+            self.assertEqual(trigger_event['trigger'], "mention")
+            self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
+            self.assertEqual(trigger_event["message"]["content"], self.content)
+            self.assertEqual(trigger_event["message"]["type"], Recipient._type_names[Recipient.STREAM])
+            self.assertEqual(trigger_event["message"]["display_recipient"], "Denmark")
+        mock_queue_json_publish.side_effect = check_values_passed
+
+        # TODO: In future versions this won't be required
+        self.subscribe_to_stream(self.bot_profile.email, "Denmark")
+        self.send_message(self.user_profile.email, "Denmark", Recipient.STREAM, self.content)
+        self.assertTrue(mock_queue_json_publish.called)
+
+    def test_no_trigger_on_stream_message_without_mention(self):
         # type: () -> None
         sender_email = self.example_email("othello")
         recipients = "Denmark"
@@ -73,7 +71,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
             self.send_message(sender_email, recipients, message_type)
             self.assertFalse(queue_json_publish.called)
 
-    def test_no_trigger_on_message_by_bot(self):
+    def test_no_trigger_on_stream_mention_from_bot(self):
         # type: () -> None
         sender_email = "testvabs-bot@zulip.com"
         recipients = self.example_email("othello")
@@ -84,7 +82,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
             self.assertFalse(queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_trigger_on_private_message_by_user(self, mock_queue_json_publish):
+    def test_trigger_on_personal_message_from_user(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
         sender_email = self.example_email("othello")
         recipients = "testvabs-bot@zulip.com"
@@ -107,7 +105,7 @@ class PersonalMessageTriggersTest(ZulipTestCase):
         self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_trigger_on_huddle_message_by_user(self, mock_queue_json_publish):
+    def test_trigger_on_huddle_message_from_user(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
         sender_email = self.example_email("othello")
         recipients = [u"testvabs-bot@zulip.com", u"temp-bot@zulip.com"]
