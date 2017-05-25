@@ -125,6 +125,19 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
+    def test_no_trigger_on_personal_message_from_bot(self, mock_queue_json_publish):
+        # type: (mock.Mock) -> None
+        for bot_type in BOT_TYPE_TO_QUEUE_NAME:
+            self.bot_profile.bot_type = bot_type
+            self.bot_profile.save()
+
+            sender_email = self.second_bot_profile.email
+            recipient_email = self.bot_profile.email
+            message_type = Recipient.PERSONAL
+            self.send_message(sender_email, recipient_email, message_type)
+            self.assertFalse(mock_queue_json_publish.called)
+
+    @mock.patch('zerver.lib.actions.queue_json_publish')
     def test_trigger_on_huddle_message_from_user(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
         for bot_type, expected_queue_name in BOT_TYPE_TO_QUEUE_NAME.items():
@@ -153,3 +166,16 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.send_message(sender_email, recipient_emails, message_type, subject='', content='test')
             self.assertEqual(mock_queue_json_publish.call_count, 2)
             mock_queue_json_publish.reset_mock()
+
+    @mock.patch('zerver.lib.actions.queue_json_publish')
+    def test_no_trigger_on_huddle_message_from_bot(self, mock_queue_json_publish):
+        # type: (mock.Mock) -> None
+        for bot_type in BOT_TYPE_TO_QUEUE_NAME:
+            self.bot_profile.bot_type = bot_type
+            self.bot_profile.save()
+
+            sender_email = self.second_bot_profile.email
+            recipient_emails = [self.user_profile.email, self.bot_profile.email]
+            message_type = Recipient.HUDDLE
+            self.send_message(sender_email, recipient_emails, message_type)
+            self.assertFalse(mock_queue_json_publish.called)
