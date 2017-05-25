@@ -5,6 +5,9 @@ module.exports =  {
     entry: {
         translations: ['./static/js/translations.js'],
     },
+    module: {
+        noParse: /(min)\.js/,
+    },
     output: {
         path: path.resolve(__dirname, '../static/webpack-bundles'),
         filename: '[name].js',
