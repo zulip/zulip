@@ -242,6 +242,7 @@ $(function () {
     // initialize other stuff
     reload.initialize();
     people.initialize();
+    bot_data.initialize(); // Must happen after people.initialize()
     markdown.initialize();
     composebox_typeahead.initialize();
     search.initialize();
