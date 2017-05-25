@@ -801,33 +801,12 @@ JS_SPECS = {
         ],
         'output_filename': 'min/common.js'
     },
-    'landing-page': {
-        'source_filenames': [
-            'js/portico/landing-page.js',
-        ],
-        'output_filename': 'min/landing.js'
-    },
     'signup': {
         'source_filenames': [
             'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
         ],
         'output_filename': 'min/signup.js'
-    },
-    'zxcvbn': {
-        'source_filenames': [],
-        'minifed_source_filenames': [
-            'node_modules/zxcvbn/dist/zxcvbn.js',
-        ],
-        'output_filename': 'min/zxcvbn.js'
-    },
-    'api': {
-        'source_filenames': ['js/portico/api.js'],
-        'output_filename': 'min/api.js'
-    },
-    'app_debug': {
-        'source_filenames': ['js/debug.js'],
-        'output_filename': 'min/app_debug.js'
     },
     'app': {
         'source_filenames': [
@@ -981,12 +960,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/app.js'
     },
-    'activity': {
-        'source_filenames': [
-            'third/sorttable/sorttable.js',
-        ],
-        'output_filename': 'min/activity.js'
-    },
     'stats': {
         'source_filenames': [
             'js/stats/stats.js',
@@ -1000,12 +973,6 @@ JS_SPECS = {
     'sockjs': {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
-    },
-    'katex': {
-        'source_filenames': [
-            'node_modules/katex/dist/katex.js',
-        ],
-        'output_filename': 'min/katex.js'
     }
 }
 

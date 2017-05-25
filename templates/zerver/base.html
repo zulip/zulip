@@ -28,7 +28,7 @@
         </script>
         {% endblock %}
         {{ minified_js('common')|safe }}
-        {{ minified_js('katex')|safe }}
+        {{ render_bundle('katex') }}
         {% block customhead %}
         {% endblock %}
     </head>
