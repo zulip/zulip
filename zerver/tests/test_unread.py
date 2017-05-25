@@ -23,7 +23,7 @@ class PointerTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         self.assertEqual(self.example_user('hamlet').pointer, -1)
-        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
+        msg_id = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
         result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(self.example_user('hamlet').pointer, msg_id)
@@ -36,7 +36,7 @@ class PointerTest(ZulipTestCase):
         user = self.example_user('hamlet')
         email = user.email
         self.assertEqual(user.pointer, -1)
-        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
+        msg_id = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
         result = self.client_post("/api/v1/users/me/pointer", {"pointer": msg_id},
                                   **self.api_auth(email))
         self.assert_json_success(result)
@@ -96,7 +96,7 @@ class PointerTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Send a new message (this will be unread)
-        new_message_id = self.send_message("othello@zulip.com", "Verona",
+        new_message_id = self.send_message(self.example_email("othello"), "Verona",
                                            Recipient.STREAM, "test")
 
         # If we call get_messages with use_first_unread_anchor=True, we

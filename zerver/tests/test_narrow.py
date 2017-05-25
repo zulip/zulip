@@ -145,12 +145,12 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_sender_operator(self):
         # type: () -> None
-        term = dict(operator='sender', operand='othello@zulip.com')
+        term = dict(operator='sender', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE sender_id = :param_1')
 
     def test_add_term_using_sender_operator_and_negated(self):  # NEGATED
         # type: () -> None
-        term = dict(operator='sender', operand='othello@zulip.com', negated=True)
+        term = dict(operator='sender', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE sender_id != :param_1')
 
     def test_add_term_using_sender_operator_with_non_existing_user_as_operand(self):  # NEGATED
@@ -160,12 +160,12 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self):
         # type: () -> None
-        term = dict(operator='pm-with', operand='othello@zulip.com')
+        term = dict(operator='pm-with', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
 
     def test_add_term_using_pm_with_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
         # type: () -> None
-        term = dict(operator='pm-with', operand='othello@zulip.com', negated=True)
+        term = dict(operator='pm-with', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
 
     def test_add_term_using_pm_with_operator_the_same_user_as_operand(self):
@@ -210,12 +210,12 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self):
         # type: () -> None
-        term = dict(operator='group-pm-with', operand='othello@zulip.com')
+        term = dict(operator='group-pm-with', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
         # type: () -> None
-        term = dict(operator='group-pm-with', operand='othello@zulip.com', negated=True)
+        term = dict(operator='group-pm-with', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id = recipient_id')
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self):
@@ -441,7 +441,7 @@ class GetOldMessagesTest(ZulipTestCase):
         messages = self.get_and_check_messages(dict())
         message_id = messages['messages'][0]['id']
 
-        self.login("othello@zulip.com")
+        self.login(self.example_email("othello"))
         reaction_name = 'slightly_smiling_face'
 
         url = '/json/messages/{}/emoji_reactions/{}'.format(message_id, reaction_name)
@@ -471,9 +471,9 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # We have to support the legacy tuple style while there are old
         # clients around, which might include third party home-grown bots.
-        self.get_and_check_messages(dict(narrow=ujson.dumps([['pm-with', 'othello@zulip.com']])))
+        self.get_and_check_messages(dict(narrow=ujson.dumps([['pm-with', self.example_email("othello")]])))
 
-        self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand='othello@zulip.com')])))
+        self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand=self.example_email("othello"))])))
 
     def test_get_messages_with_narrow_pm_with(self):
         # type: () -> None
@@ -514,13 +514,13 @@ class GetOldMessagesTest(ZulipTestCase):
         me = self.example_email("hamlet")
 
         matching_message_ids = []
-        matching_message_ids.append(self.send_message(me, [self.example_email("iago"), self.example_email("cordelia"), 'othello@zulip.com'], Recipient.HUDDLE))
-        matching_message_ids.append(self.send_message(me, [self.example_email("cordelia"), 'othello@zulip.com'], Recipient.HUDDLE))
+        matching_message_ids.append(self.send_message(me, [self.example_email("iago"), self.example_email("cordelia"), self.example_email("othello")], Recipient.HUDDLE))
+        matching_message_ids.append(self.send_message(me, [self.example_email("cordelia"), self.example_email("othello")], Recipient.HUDDLE))
 
         non_matching_message_ids = []
         non_matching_message_ids.append(self.send_message(me, self.example_email("cordelia"), Recipient.PERSONAL))
-        non_matching_message_ids.append(self.send_message(me, [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
-        non_matching_message_ids.append(self.send_message(self.example_email("cordelia"), [self.example_email("iago"), 'othello@zulip.com'], Recipient.HUDDLE))
+        non_matching_message_ids.append(self.send_message(me, [self.example_email("iago"), self.example_email("othello")], Recipient.HUDDLE))
+        non_matching_message_ids.append(self.send_message(self.example_email("cordelia"), [self.example_email("iago"), self.example_email("othello")], Recipient.HUDDLE))
 
         self.login(me)
         narrow = [dict(operator='group-pm-with', operand=self.example_email("cordelia"))]
@@ -674,15 +674,15 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to send a message here to ensure that we actually
         # have a stream message in this narrow view.
         self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM)
-        self.send_message("othello@zulip.com", "Scotland", Recipient.STREAM)
-        self.send_message("othello@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL)
+        self.send_message(self.example_email("othello"), "Scotland", Recipient.STREAM)
+        self.send_message(self.example_email("othello"), self.example_email("hamlet"), Recipient.PERSONAL)
         self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM)
 
-        narrow = [dict(operator='sender', operand='othello@zulip.com')]
+        narrow = [dict(operator='sender', operand=self.example_email("othello"))]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
         for message in result["messages"]:
-            self.assertEqual(message["sender_email"], "othello@zulip.com")
+            self.assertEqual(message["sender_email"], self.example_email("othello"))
 
     def _update_tsvector_index(self):
         # type: () -> None
@@ -1084,13 +1084,13 @@ class GetOldMessagesTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         # Have Othello send messages to Hamlet that he hasn't read.
-        self.send_message("othello@zulip.com", "Scotland", Recipient.STREAM)
-        last_message_id_to_hamlet = self.send_message("othello@zulip.com", self.example_email("hamlet"), Recipient.PERSONAL)
+        self.send_message(self.example_email("othello"), "Scotland", Recipient.STREAM)
+        last_message_id_to_hamlet = self.send_message(self.example_email("othello"), self.example_email("hamlet"), Recipient.PERSONAL)
 
         # Add a few messages that help us test that our query doesn't
         # look at messages that are irrelevant to Hamlet.
-        self.send_message("othello@zulip.com", self.example_email("cordelia"), Recipient.PERSONAL)
-        self.send_message("othello@zulip.com", self.example_email("iago"), Recipient.PERSONAL)
+        self.send_message(self.example_email("othello"), self.example_email("cordelia"), Recipient.PERSONAL)
+        self.send_message(self.example_email("othello"), self.example_email("iago"), Recipient.PERSONAL)
 
         query_params = dict(
             use_first_unread_anchor='true',
@@ -1274,7 +1274,7 @@ class GetOldMessagesTest(ZulipTestCase):
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                              'narrow': '[["pm-with", "othello@zulip.com"]]'},
+                                              'narrow': '[["pm-with", self.example_email("othello")]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
@@ -1286,7 +1286,7 @@ class GetOldMessagesTest(ZulipTestCase):
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {othello_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                              'narrow': '[["sender", "othello@zulip.com"]]'},
+                                              'narrow': '[["sender", self.example_email("othello")]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
@@ -1366,7 +1366,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [
             dict(operator='sender', operand=self.example_email("cordelia")),
-            dict(operator='search', operand='othello@zulip.com'),
+            dict(operator='search', operand=self.example_email("othello")),
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
@@ -1393,5 +1393,5 @@ class GetOldMessagesTest(ZulipTestCase):
             'say hello')
         self.assertEqual(
             meeting_message['match_content'],
-            '<p>How are you doing, <span class="user-mention" data-user-email="othello@zulip.com" data-user-id="6">' +
+            '<p>How are you doing, <span class="user-mention" data-user-email=self.example_email("othello") data-user-id="6">' +
             '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>')

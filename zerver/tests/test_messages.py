@@ -392,7 +392,7 @@ class PersonalMessagesTest(ZulipTestCase):
         If you send a personal, only you and the recipient see it.
         """
         self.login(self.example_email("hamlet"))
-        self.assert_personal(self.example_email("hamlet"), "othello@zulip.com")
+        self.assert_personal(self.example_email("hamlet"), self.example_email("othello"))
 
     @slow("assert_personal checks several profiles")
     def test_non_ascii_personal(self):
@@ -401,7 +401,7 @@ class PersonalMessagesTest(ZulipTestCase):
         Sending a PM containing non-ASCII characters succeeds.
         """
         self.login(self.example_email("hamlet"))
-        self.assert_personal(self.example_email("hamlet"), "othello@zulip.com", u"hümbüǵ")
+        self.assert_personal(self.example_email("hamlet"), self.example_email("othello"), u"hümbüǵ")
 
 class StreamMessagesTest(ZulipTestCase):
 
@@ -445,7 +445,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_not_too_many_queries(self):
         # type: () -> None
-        recipient_list  = [self.example_email("hamlet"), self.example_email("iago"), self.example_email("cordelia"), 'othello@zulip.com']
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago"), self.example_email("cordelia"), self.example_email("othello")]
         for email in recipient_list:
             self.subscribe_to_stream(email, "Denmark")
 
@@ -825,7 +825,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
@@ -849,7 +849,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "invalid type",
                                                      "content": "Test message",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error(result, "Invalid message type")
 
     def test_empty_message(self):
@@ -861,7 +861,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": " ",
                                                      "client": "test suite",
-                                                     "to": "othello@zulip.com"})
+                                                     "to": self.example_email("othello")})
         self.assert_json_error(result, "Message must not be empty")
 
     def test_mirrored_huddle(self):
@@ -1136,7 +1136,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
 
-        self.login("othello@zulip.com")
+        self.login(self.example_email("othello"))
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -1165,7 +1165,7 @@ class EditMessageTest(ZulipTestCase):
                                    subject="test", content="test")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
-        self.login("othello@zulip.com")
+        self.login(self.example_email("othello"))
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -1900,7 +1900,7 @@ class CheckMessageTest(ZulipTestCase):
         message_content = 'whatever'
         ret = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content)
-        self.assertEqual(ret['message'].sender.email, 'othello@zulip.com')
+        self.assertEqual(ret['message'].sender.email, self.example_email("othello"))
 
     def test_bot_pm_feature(self):
         # type: () -> None

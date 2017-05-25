@@ -340,13 +340,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, have the owner PM it to another user, giving that other user access.
         body = "Second message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
-        self.send_message(self.example_email("hamlet"), "othello@zulip.com", Recipient.PERSONAL, body, "test")
+        self.send_message(self.example_email("hamlet"), self.example_email("othello"), Recipient.PERSONAL, body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
         # Then, have that new recipient user publish it.
         body = "Third message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.send_message(self.example_email("othello"), "Denmark", Recipient.STREAM, body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
@@ -517,7 +517,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_file_download_authorization_invite_only(self):
         # type: () -> None
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
-        unsubscribed_users = ["othello@zulip.com", self.example_email("prospero")]
+        unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
         for user in subscribed_users:
             self.subscribe_to_stream(user, "test-subscribe")
 
@@ -557,7 +557,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_file_download_authorization_public(self):
         # type: () -> None
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
-        unsubscribed_users = ["othello@zulip.com", self.example_email("prospero")]
+        unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
         for user in subscribed_users:
             self.subscribe_to_stream(user, "test-subscribe")
 
