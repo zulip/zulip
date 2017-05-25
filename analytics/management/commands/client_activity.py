@@ -9,7 +9,7 @@ from django.db.models import Count, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import UserActivity, UserProfile, Realm, \
-    get_realm, get_user_profile_by_email
+    get_realm, get_user_for_mgmt
 
 import datetime
 
@@ -19,13 +19,15 @@ class Command(BaseCommand):
 Usage examples:
 
 ./manage.py client_activity
-./manage.py client_activity zulip
-./manage.py client_activity hamlet@zulip.com"""
+./manage.py client_activity --realm zulip
+./manage.py client_activity --email hamlet@zulip.com --realm zulip"""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('arg', metavar='<arg>', type=str, nargs='?', default=None,
-                            help="realm or user to estimate client activity for")
+        parser.add_argument('--email', metavar='<email_arg>', type=str, default=None,
+                            help="email of user to estimate client activity for")
+        parser.add_argument('--realm', metavar='<realm_arg>', type=str, default=None,
+                            help="realm of user to estimate client activity for")
 
     def compute_activity(self, user_activity_objects):
         # type: (QuerySet) -> None
@@ -60,22 +62,27 @@ Usage examples:
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        if options['arg'] is None:
+        if options['email'] is None and options['realm'] is None:
             # Report global activity.
             self.compute_activity(UserActivity.objects.all())
         else:
-            arg = options['arg']
-            try:
-                # Report activity for a user.
-                user_profile = get_user_profile_by_email(arg)
+            if options['email'] is not None and options['realm'] is None:
+                email_arg = options['email']
+                user_profile = get_user_for_mgmt(email_arg)
                 self.compute_activity(UserActivity.objects.filter(
                     user_profile=user_profile))
-            except UserProfile.DoesNotExist:
-                try:
-                    # Report activity for a realm.
-                    realm = get_realm(arg)
+            if options['realm'] is not None and options['email'] is not None:
+                email_arg = options['email']
+                realmobj = get_realm(options['realm'])
+                user_profile = get_user_for_mgmt(email_arg, realmobj)
+                self.compute_activity(UserActivity.objects.filter(
+                    user_profile=user_profile))
+            else:
+                # Report activity for a realm.
+                realmobj = get_realm(options['realm'])
+                if realmobj.count() <> 0:
                     self.compute_activity(UserActivity.objects.filter(
-                        user_profile__realm=realm))
-                except Realm.DoesNotExist:
-                    print("Unknown user or realm %s" % (arg,))
+                        user_profile__realm=realmobj))
+                else:
+                    print("Unknown realm %s" % (options['realm'],))
                     exit(1)
