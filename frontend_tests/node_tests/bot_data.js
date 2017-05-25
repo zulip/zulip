@@ -120,5 +120,11 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
     }());
 
+    (function test_get_all_bots_for_current_user() {
+        var bots = bot_data.get_all_bots_for_current_user();
 
+        assert.equal(bots.length, 2);
+        assert.equal(bots[0].email, 'bot1@zulip.com');
+        assert.equal(bots[1].email, 'bot2@zulip.com');
+    }());
 }());
