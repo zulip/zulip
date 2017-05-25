@@ -12,17 +12,18 @@ if os.path.exists(os.path.join(our_dir, '..')):
     sys.path.insert(0, '..')
 from bots_test_lib import BotTestCase
 
-class TestDefineBot(BotTestCase):
-    bot_name = "define"
+class TestWikipediaBot(BotTestCase):
+    bot_name = "wikipedia"
 
     def test_bot(self):
-        expected = { "":    'Please enter a word to define.',
-                     "foo": "**foo**:\nDefinition not available.",
-                     "cat": 
-            ("**cat**:\n\n* (**noun**) a small domesticated carnivorous mammal "
-             "with soft fur, a short snout, and retractile claws. It is widely "
-             "kept as a pet or for catching mice, and many breeds have been "
-             "developed.\n&nbsp;&nbsp;their pet cat\n\n"),
+        expected = { 
+            "":       'Please enter your message after @mention-bot',
+            "test":   ('For search term "test", '
+                       'https://en.wikipedia.org/wiki/Test'),
+            "cheese": ('For search term "cheese", '
+                       'https://en.wikipedia.org/wiki/Cheese'),
+            "laugh":  ('For search term "laugh", '
+                       'https://en.wikipedia.org/wiki/Laughter'),
                    }
         for m, r in expected.items():
             self.assert_bot_output(
