@@ -255,7 +255,36 @@ exports.is_mobile = function () {
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 };
 
+exports.prefix_sort = function (query, objs, get_item) {
+    // Based on Bootstrap typeahead's default sorter, but taking into
+    // account case sensitivity on "begins with"
+    var beginswithCaseSensitive = [];
+    var beginswithCaseInsensitive = [];
+    var noMatch = [];
+
+    var obj = objs.shift();
+    while (obj) {
+        var item;
+        if (get_item) {
+            item = get_item(obj);
+        } else {
+            item = obj;
+        }
+        if (item.indexOf(query) === 0) {
+            beginswithCaseSensitive.push(obj);
+        } else if (item.toLowerCase().indexOf(query.toLowerCase()) === 0) {
+            beginswithCaseInsensitive.push(obj);
+        } else {
+            noMatch.push(obj);
+        }
+        obj = objs.shift();
+    }
+    return { matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
+             rest:    noMatch };
+};
+
 return exports;
+
 }());
 if (typeof module !== 'undefined') {
     module.exports = util;
