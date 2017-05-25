@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.response import json_error
 from zerver.lib.request import JsonableError
 from django.db import connection
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
