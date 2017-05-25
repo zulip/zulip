@@ -39,6 +39,7 @@ class zulip::base {
              'digest_emails',
              'email_mirror',
              'embed_links',
+             'embedded_bots',
              'error_reports',
              'feedback_messages',
              'invites',
