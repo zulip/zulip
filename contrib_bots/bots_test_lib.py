@@ -14,7 +14,19 @@ from bot_lib import StateHandler
 from contrib_bots import bot_lib
 from six.moves import zip
 
-class BotTestCase():
+from unittest import TestCase
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+class BotTestCase(TestCase):
+    bot_name = None
+
+    def assert_bot_output(self, request, response):
+        # type: (str, str) -> None
+        bot_module = os.path.join(current_dir, "bots",
+                                  self.bot_name, self.bot_name + ".py")
+        self.bot_test(messages=[request], bot_module=bot_module,
+                      bot_response=[response])
 
     def mock_test(self, messages, message_handler, bot_response):
         # type: (List[Dict[str, str]], Function) -> None
@@ -37,6 +49,5 @@ class BotTestCase():
         return message_handler
 
     def bot_test(self, messages, bot_module, bot_response):
-
         message_handler = self.bot_to_run(bot_module)
         self.mock_test(messages=messages, message_handler=message_handler, bot_response=bot_response)
