@@ -48,91 +48,91 @@
                   view is a Bootstrap Nav tab, even though we don't show the tab
                   anymore
                   #}
-                  <li class="invisible" style="display:none;"><a href="#home" data-toggle="tab"></a></li>
-                  <li title="{{ _('Manage streams') }}">
-                    <a href="#streams">
+                  <li class="invisible" style="display:none;" role="presentation"><a href="#home" data-toggle="tab"></a></li>
+                  <li title="{{ _('Manage streams') }}" role="presentation">
+                    <a href="#streams" role="menuitem">
                       <i class="icon-vector-exchange"></i> {{ _('Manage streams') }}
                     </a>
                   </li>
-                  <li title="{{ _('Settings') }}">
-                    <a href="#settings">
+                  <li title="{{ _('Settings') }}" role="presentation">
+                    <a href="#settings" role="menuitem">
                       <i class="icon-vector-wrench"></i> {{ _('Settings') }}
                     </a>
                   </li>
-                  <li title="{{ _('Manage organization') }}" class="admin-menu-item">
-                    <a href="#organization" role="button">
+                  <li title="{{ _('Manage organization') }}" class="admin-menu-item" role="presentation">
+                    <a href="#organization" role="menuitem">
                       <i class="icon-vector-bolt"></i>
                       <span>{{ _('Manage organization') }}</span>
                     </a>
                   </li>
                   <li class="divider"></li>
-                  <li title="{{ _('User documentation') }}">
-                    <a href="/help" target="_blank" role="button">
+                  <li title="{{ _('User documentation') }}" role="presentation">
+                    <a href="/help" target="_blank" role="menuitem">
                       <i class="icon-vector-question-sign"></i> {{ _('User documentation') }}
                     </a>
                   </li>
-                  <li title="{{ _('Keyboard shortcuts') }}">
-                    <a tabindex="0" role="button" data-overlay-trigger="keyboard-shortcuts">
+                  <li title="{{ _('Keyboard shortcuts') }}" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
                       <i class="icon-vector-keyboard"></i> {{ _('Keyboard shortcuts') }}
                     </a>
                   </li>
-                  <li title="{{ _('Message formatting') }}">
-                    <a tabindex="0" role="button" data-overlay-trigger="markdown-help">
+                  <li title="{{ _('Message formatting') }}" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="markdown-help">
                       <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
                     </a>
                   </li>
-                  <li title="{{ _('Search operators') }}">
-                    <a tabindex="0" role="button" data-overlay-trigger="search-operators">
+                  <li title="{{ _('Search operators') }}" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
                       <i class="icon-vector-search"></i> {{ _('Search operators') }}
                     </a>
                   </li>
-                  <li class="divider"></li>
-                  <li title="{{ _('Desktop & mobile apps') }}">
-                    <a href="/apps" target="_blank" role="button">
+                  <li class="divider" role="presentation"></li>
+                  <li title="{{ _('Desktop & mobile apps') }}" role="presentation">
+                    <a href="/apps" target="_blank" role="menuitem">
                       <i class="icon-vector-desktop"></i> {{ _('Desktop & mobile apps') }}
                     </a>
                   </li>
-                  <li title="{{ _('Integrations') }}">
-                    <a href="/integrations" target="_blank" role="button">
+                  <li title="{{ _('Integrations') }}" role="presentation">
+                    <a href="/integrations" target="_blank" role="menuitem">
                       <i class="icon-vector-github"></i> {{ _('Integrations') }}
                     </a>
                   </li>
-                  <li title="{{ _('API documentation') }}">
-                    <a href="/api" target="_blank" role="button">
+                  <li title="{{ _('API documentation') }}" role="presentation">
+                    <a href="/api" target="_blank" role="menuitem">
                       <i class="icon-vector-sitemap"></i> {{ _('API documentation') }}
                     </a>
                   </li>
-                  <li class="divider"></li>
+                  <li class="divider" role="presentation"></li>
                   {% if enable_feedback %}
-                  <li title="{{ _('Feedback') }}">
-                    <a href="#feedback" class="feedback">
+                  <li title="{{ _('Feedback') }}" role="presentation">
+                    <a href="#feedback" class="feedback" role="menuitem">
                       <i class="icon-vector-comment"></i> {{ _('Feedback') }}
                     </a>
                   </li>
                   {% endif %}
                   {% if show_invites %}
-                  <li title="{% trans %}Invite more users to Zulip.{% endtrans %}">
-                    <a href="#invite" role="button">
+                  <li title="{% trans %}Invite more users to Zulip.{% endtrans %}" role="presentation">
+                    <a href="#invite" role="menuitem">
                       <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
                     </a>
                   </li>
-                  <li class="divider"></li>
+                  <li class="divider" role="presentation"></li>
                   {% endif %}
                   {% if show_webathena %}
-                  <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
-                    <a href="#webathena" class="webathena_login">
+                  <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu" role="presentation">
+                    <a href="#webathena" class="webathena_login" role="menuitem">
                       <i class="icon-vector-bolt"></i>{{ _('Link with Webathena') }}
                     </a>
                   </li>
                   {% endif %}
-                  <li title="{{ _('Log out') }}">
-                    <a href="#logout" class="logout_button">
+                  <li title="{{ _('Log out') }}" role="presentation">
+                    <a href="#logout" class="logout_button" role="menuitem">
                       <i class="icon-vector-off"></i> {{ _('Log out') }}
                     </a>
                   </li>
                   {% if show_debug %}
-                  <li title="{{ _('Debug') }}">
-                    <a href="#debug" data-toggle="tab">
+                  <li title="{{ _('Debug') }}" role="presentation">
+                    <a href="#debug" data-toggle="tab" role="menuitem">
                       <i class="icon-vector-barcode"></i> {{ _('Debug') }}
                     </a>
                   </li>
