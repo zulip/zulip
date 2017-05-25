@@ -8,16 +8,59 @@ import inspect
 import logging
 from six.moves import urllib
 from functools import reduce
+from requests import Response
 
 from django.utils.translation import ugettext as _
 
-from zerver.models import Realm, get_realm_by_email_domain, get_user_profile_by_id, get_client
+from zerver.models import Realm, UserProfile, get_realm_by_email_domain, get_user_profile_by_id, get_client
 from zerver.lib.actions import check_send_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 
 MAX_REQUEST_RETRIES = 3
+
+class OutgoingWebhookServiceInterface(object):
+
+    def __init__(self, base_url, token, user_profile, service_name):
+        # type: (Text, Text, UserProfile, Text) -> None
+        self.base_url = base_url  # type: Text
+        self.token = token  # type: Text
+        self.user_profile = user_profile  # type: Text
+        self.service_name = service_name  # type: Text
+
+    # Given an event that triggers an outgoing webhook operation, returns the REST
+    # operation that should be performed, together with the body of the request.
+    #
+    # The input format can vary depending on the type of webhook service.
+    # The return value should be a tuple (rest_operation, request_data), where:
+    # rest_operation is a dictionary containing atleast the following keys: method, relative_url_path and
+    # request_kwargs. It provides rest operation related info.
+    # request_data is a dictionary whose format can vary depending on the type of webhook service.
+    def process_event(self, event):
+        # type: (Dict[str, Any]) -> Tuple[Dict[str ,Any], Dict[str, Any]]
+        raise NotImplementedError()
+
+    # Given a successful response to the outgoing webhook REST operation, returns the message
+    # that should be sent back to the user.
+    #
+    # The response will be the response object obtained from REST operation.
+    # The event will be the same as the input to process_command.
+    # The returned message will be a dictionary which should have "response_message" as key and response message to
+    # be sent to user as value.
+    def process_success(self, response, event):
+        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
+        raise NotImplementedError()
+
+    # Given a failed outgoing webhook REST operation, returns the message that should be sent back to the user.
+    #
+    # The response will be the response object obtained from REST operation.
+    # The event will be the same as the input to process_command.
+    # The returned message will be a dictionary which should have "response_message" as key and response message to
+    # be sent to user as value.
+    def process_failure(self, response, event):
+        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
+        raise NotImplementedError()
 
 def send_response_message(bot_id, message, response_message_content):
     # type: (str, Dict[str, Any], Text) -> None
