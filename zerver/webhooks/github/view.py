@@ -139,7 +139,6 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
     repository = payload['repository']
     updated_topic_focus = topic_focus if topic_focus else repository['name']
 
-
     # Event Handlers
     if event == 'pull_request':
         subject = get_pull_request_or_issue_subject(repository, payload['pull_request'], 'PR')
