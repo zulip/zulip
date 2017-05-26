@@ -7,6 +7,7 @@ import logging
 import optparse
 import os
 import sys
+from types import ModuleType
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, our_dir)
@@ -14,6 +15,7 @@ sys.path.insert(0, our_dir)
 from bot_lib import run_message_handler_for_bot
 
 def get_lib_module(bots_fn):
+    # type: (str) -> ModuleType
     bots_fn = os.path.realpath(bots_fn)
     if not os.path.dirname(bots_fn).startswith(os.path.join(our_dir, 'bots')):
         print('Sorry, we will only import code from contrib_bots/bots.')
@@ -29,6 +31,7 @@ def get_lib_module(bots_fn):
     return module
 
 def run():
+    # type: () -> None
     usage = '''
         ./run.py <lib file>
         Example: ./run.py lib/followup.py
