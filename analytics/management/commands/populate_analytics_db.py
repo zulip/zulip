@@ -17,7 +17,7 @@ from zerver.models import Realm, UserProfile, Stream, Message, Client, \
 from datetime import datetime, timedelta
 
 from six.moves import zip
-from typing import Any, Dict, List, Optional, Text, Type, Union
+from typing import Any, Dict, List, Optional, Text, Type, Union, Mapping
 
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
@@ -60,7 +60,7 @@ class Command(BaseCommand):
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
 
         def insert_fixture_data(stat, fixture_data, table):
-            # type: (CountStat, Dict[Optional[str], List[int]], Type[BaseCount]) -> None
+            # type: (CountStat, Mapping[Optional[str], List[int]], Type[BaseCount]) -> None
             end_times = time_range(last_end_time, last_end_time, stat.frequency,
                                    len(list(fixture_data.values())[0]))
             if table == RealmCount:
@@ -76,13 +76,14 @@ class Command(BaseCommand):
         stat = COUNT_STATS['realm_active_humans::day']
         realm_data = {
             None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
-        } # type: Dict[Optional[str], List[int]]
+        } # type: Mapping[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
         stat = COUNT_STATS['messages_sent:is_bot:hour']
-        user_data = {'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)}
+        user_data = {'false': self.generate_fixture_data(
+            stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)}  # type: Mapping[Optional[str], List[int]]
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}

@@ -183,7 +183,7 @@ def rewrite_client_arrays(value_arrays):
     return mapped_arrays
 
 def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroup_to_label, include_empty_subgroups):
-    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], Dict[Optional[str], str], bool) -> Dict[str, List[int]]
+    # type: (CountStat, Type[BaseCount], int, List[datetime], Dict[Optional[str], str], bool) -> Dict[str, List[int]]
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
     value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]

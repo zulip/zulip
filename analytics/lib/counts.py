@@ -143,6 +143,7 @@ def do_fill_count_stat_at_hour(stat, end_time):
     start_time = end_time - stat.interval
     if not isinstance(stat, LoggingCountStat):
         timer = time.time()
+        assert(stat.data_collector.pull_function is not None)
         rows_added = stat.data_collector.pull_function(stat.property, start_time, end_time)
         logger.info("%s run pull_function (%dms/%sr)" %
                     (stat.property, (time.time()-timer)*1000, rows_added))

@@ -19,7 +19,7 @@ import mock
 import ujson
 
 from six.moves import range
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self):
@@ -47,7 +47,7 @@ class TestGetChartData(ZulipTestCase):
         return [0, 0, i, 0]
 
     def insert_data(self, stat, realm_subgroups, user_subgroups):
-        # type: (CountStat, List[str], List[str]) -> None
+        # type: (CountStat, List[Optional[str]], List[str]) -> None
         if stat.frequency == CountStat.HOUR:
             insert_time = self.end_times_hour[2]
             fill_time = self.end_times_hour[-1]
