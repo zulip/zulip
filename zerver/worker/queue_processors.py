@@ -40,6 +40,7 @@ from zerver.lib.outgoing_webhook import do_rest_call
 from zerver.models import get_bot_services
 from zulip import Client
 from zerver.lib.bot_lib import EmbeddedBotHandler
+from zerver.outgoing_webhooks import get_outgoing_webhook_service_handler
 
 import os
 import sys
@@ -438,19 +439,16 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         message = event['message']
-        services = get_bot_services(event['user_profile_id'])
-        rest_operation = {'method': 'POST',
-                          'relative_url_path': '',
-                          'request_kwargs': {},
-                          'base_url': ''}
-
         dup_event = cast(Dict[str, Any], event)
         dup_event['command'] = message['content']
 
+        services = get_bot_services(event['user_profile_id'])
         for service in services:
-            rest_operation['base_url'] = str(service.base_url)
             dup_event['service_name'] = str(service.name)
-            do_rest_call(rest_operation, dup_event)
+            dup_event['base_url'] = str(service.base_url)
+            service_handler = get_outgoing_webhook_service_handler(service)
+            rest_operation, request_data = service_handler.process_event(dup_event)
+            do_rest_call(rest_operation, request_data, dup_event, service_handler)
 
 @assign_queue('embedded_bots')
 class EmbeddedBotWorker(QueueProcessingWorker):

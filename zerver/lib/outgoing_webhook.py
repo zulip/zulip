@@ -100,8 +100,8 @@ def request_retry(event, failure_message):
     else:
         queue_json_publish("outgoing_webhooks", event, lambda x: None)
 
-def do_rest_call(rest_operation, event, timeout=None):
-    # type: (Dict[str, Any], Dict[str, Any], Any) -> None
+def do_rest_call(rest_operation, request_data, event, service_handler, timeout=None):
+    # type: (Dict[str, Any], Dict[str, Any], Dict[str, Any], Any, Any) -> None
     rest_operation_validator = check_dict([
         ('method', check_string),
         ('relative_url_path', check_string),
@@ -119,16 +119,17 @@ def do_rest_call(rest_operation, event, timeout=None):
     request_kwargs['timeout'] = timeout
 
     try:
-        # TODO: Add comment describing structure of data being sent to third party URL.
-        response = requests.request(http_method, final_url, data=json.dumps(event), **request_kwargs)
+        response = requests.request(http_method, final_url, data=json.dumps(request_data), **request_kwargs)
         if str(response.status_code).startswith('2'):
-            succeed_with_message(event, "received response: `" + str(response.content) + "`.")
+            response_data = service_handler.process_success(response, event)
+            succeed_with_message(event, response_data["response_message"])
 
         # On 50x errors, try retry
         elif str(response.status_code).startswith('5'):
             request_retry(event, "unable to connect with the third party.")
         else:
-            fail_with_message(event, "unable to communicate with the third party.")
+            response_data = service_handler.process_failure(response, event)
+            fail_with_message(event, response_data["response_message"])
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
