@@ -75,13 +75,6 @@ class zulip_ops::nagios {
     content => template('zulip_ops/nagios_autossh.template.erb'),
     notify => Service["nagios3"],
   }
-  file { '/etc/nagios3/zuliprc':
-    ensure     => file,
-    mode       => 644,
-    owner      => "root",
-    group      => "root",
-    source => '/root/zulip/api/integrations/zephyr/zuliprc.nagios',
-  }
 
   exec { "fix_nagios_permissions":
     command => "dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios3/rw",
