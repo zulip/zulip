@@ -163,26 +163,15 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm))
 
     if want('update_display_settings'):
-        state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
-        state['left_side_userlist'] = user_profile.left_side_userlist
-        state['emoji_alt_code'] = user_profile.emoji_alt_code
-        state['emojiset'] = user_profile.emojiset
+        for prop in UserProfile.property_types:
+            state[prop] = getattr(user_profile, prop)
         state['emojiset_choices'] = user_profile.emojiset_choices()
-        state['timezone'] = user_profile.timezone
-        state['default_language'] = user_profile.default_language
         state['autoscroll_forever'] = user_profile.autoscroll_forever
 
     if want('update_global_notifications'):
+        for notification in UserProfile.notification_setting_types:
+            state[notification] = getattr(user_profile, notification)
         state['default_desktop_notifications'] = user_profile.default_desktop_notifications
-        state['enable_stream_desktop_notifications'] = user_profile.enable_stream_desktop_notifications
-        state['enable_stream_sounds'] = user_profile.enable_stream_sounds
-        state['enable_desktop_notifications'] = user_profile.enable_desktop_notifications
-        state['enable_sounds'] = user_profile.enable_sounds
-        state['enable_offline_email_notifications'] = user_profile.enable_offline_email_notifications
-        state['enable_offline_push_notifications'] = user_profile.enable_offline_push_notifications
-        state['enable_online_push_notifications'] = user_profile.enable_online_push_notifications
-        state['enable_digest_emails'] = user_profile.enable_digest_emails
-        state['pm_content_in_desktop_notifications'] = user_profile.pm_content_in_desktop_notifications
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION
