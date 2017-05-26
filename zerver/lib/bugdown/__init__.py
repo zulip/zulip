@@ -67,7 +67,7 @@ class BugdownRenderingException(Exception):
 def url_embed_preview_enabled_for_realm(message):
     # type: (Optional[Message]) -> bool
     if message is not None:
-        realm = message.get_realm()
+        realm = message.get_realm() # type: Optional[Realm]
     else:
         realm = None
 
@@ -81,7 +81,7 @@ def image_preview_enabled_for_realm():
     # type: () -> bool
     global current_message
     if current_message is not None:
-        realm = current_message.get_realm()
+        realm = current_message.get_realm() # type: Optional[Realm]
     else:
         realm = None
     if not settings.INLINE_IMAGE_PREVIEW:
@@ -1457,7 +1457,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
     # * message_realm is passed -> use that realm for bugdown purposes
-    if message:
+    if message is not None:
         if message_realm is None:
             message_realm = message.get_realm()
     if message_realm is None:
@@ -1488,7 +1488,8 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
 
     # Pre-fetch data from the DB that is used in the bugdown thread
     global db_data
-    if message:
+    if message is not None:
+        assert message_realm is not None # ensured above if message is not None
         realm_users = get_active_user_dicts_in_realm(message_realm)
         realm_streams = get_active_streams(message_realm).values('id', 'name')
 

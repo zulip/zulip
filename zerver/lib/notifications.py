@@ -132,6 +132,7 @@ def build_message_list(user_profile, messages):
         plain = fix_plaintext_image_urls(plain)
         plain = relative_to_full_url(plain)
 
+        assert message.rendered_content is not None
         html = message.rendered_content
         html = relative_to_full_url(html)
         html = fix_emoji_sizes(html)

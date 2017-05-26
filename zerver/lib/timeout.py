@@ -42,7 +42,7 @@ def timeout(timeout, func, *args, **kwargs):
             # type: () -> None
             threading.Thread.__init__(self)
             self.result = None  # type: Optional[ResultT]
-            self.exc_info = None  # type: Optional[Tuple[Type[BaseException], BaseException, TracebackType]]
+            self.exc_info = None  # type: Optional[Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]]
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
@@ -92,4 +92,5 @@ def timeout(timeout, func, *args, **kwargs):
         # Raise the original stack trace so our error messages are more useful.
         # from http://stackoverflow.com/a/4785766/90777
         six.reraise(thread.exc_info[0], thread.exc_info[1], thread.exc_info[2])
+    assert thread.result is not None # assured if above did not reraise
     return thread.result
