@@ -1,4 +1,5 @@
-import converter
+from __future__ import absolute_import
+from . import converter
 
 def test():
     for cmd, expected_response in sample_conversation():

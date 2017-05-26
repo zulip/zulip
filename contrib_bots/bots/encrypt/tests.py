@@ -1,4 +1,4 @@
-import encrypt_bot
+from . import encrypt
 
 def test():
     for cmd, expected_response in sample_conversation():
@@ -11,7 +11,7 @@ def test():
 
             def send_message(self, params):
                 self.output = params['content']
-        handler = encrypt_bot.EncryptHandler()
+        handler = encrypt.EncryptHandler()
         client_dummy = ClientDummy()
         handler.handle_message(message, client_dummy, '')
         if client_dummy.output != expected_response:

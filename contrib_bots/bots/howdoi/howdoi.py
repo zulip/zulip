@@ -12,6 +12,8 @@ Note:
       required by `howdoi`.
 """
 
+from __future__ import absolute_import
+
 import sys
 import logging
 from textwrap import fill
