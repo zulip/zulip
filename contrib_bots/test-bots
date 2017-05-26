@@ -8,11 +8,34 @@ import sys
 import unittest
 from unittest import TestCase
 
-if __name__ == '__main__':
+import argparse as ap
 
-    def dir_join(dir1, dir2):
-        # type: (str, str) -> str
-        return os.path.abspath(os.path.join(dir1, dir2))
+test_all = False
+test_bot = False
+single_bot = ''
+
+
+def dir_join(dir1, dir2):
+    # type: (str, str) -> str
+    return os.path.abspath(os.path.join(dir1, dir2))
+
+
+if __name__ == '__main__':
+    description = 'Script to run test_<bot>.py files in bots/<bot> directories'
+    parser = ap.ArgumentParser(description=description)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--all',
+                       action='store_true',
+                       help='test every bot possible')
+    group.add_argument('--bot',
+                       nargs=1,
+                       type=str,
+                       action='store',
+                       help='test specified single bot')
+    if len(sys.argv) == 1:
+        args = parser.parse_args(['-h'])
+        sys.exit()
+    args = parser.parse_args()
 
     bots_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = dir_join(bots_dir, '..')
@@ -20,9 +43,25 @@ if __name__ == '__main__':
 
     sys.path.insert(0, root_dir)
 
-    loader = unittest.TestLoader()
-    suite = loader.discover(start_dir=bots_test_dir, top_level_dir=root_dir)
-    runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite)
-    if result.errors or result.failures:
-        raise Exception('Test failed!')
+    if args.all is True:
+        loader = unittest.TestLoader()
+        suite = loader.discover(
+            start_dir=bots_test_dir,
+            top_level_dir=root_dir
+        )
+        runner = unittest.TextTestRunner(verbosity=2)
+        result = runner.run(suite)
+        if result.errors or result.failures:
+            raise Exception('Test failed!')
+
+    elif args.bot is not None:
+        loader = unittest.TestLoader()
+        single_bots_dir = dir_join(bots_test_dir, args.bot[0])
+        suite = loader.discover(
+            start_dir=bots_test_dir,
+            top_level_dir=root_dir
+        )
+        runner = unittest.TextTestRunner(verbosity=2)
+        result = runner.run(suite)
+        if result.errors or result.failures:
+            raise Exception('Test failed!')
