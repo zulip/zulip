@@ -406,8 +406,8 @@ the `knight` management command:
 If you need to manage the IRC, Jabber, or Zephyr mirrors, you will
 need to create API super users.  To do this, use `./manage.py knight`
 with the `--permission=api_super_user` argument.  See
-`bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
-these.
+`api/integrations/irc-mirror.py` and
+`api/integrations/jabber_mirror.py` for further detail on these.
 
 #### Exporting users and realms with manage.py export
 
