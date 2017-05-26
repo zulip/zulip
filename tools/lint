@@ -505,6 +505,17 @@ def build_custom_checkers(by_lang):
          ]),
          'exclude': set(["templates/zerver/emails"]),
          'description': "`title` value should be translatable."},
+        {'pattern': '\Walt=["\'][^{]',
+         'description': "alt argument should be enclosed by _().",
+         'exclude': set(['tools/lint',
+                         'static/templates/settings/display-settings.handlebars',
+                         'templates/zerver/keyboard_shortcuts.html',
+                         'templates/zerver/markdown_help.html']),
+         },
+        {'pattern': '\Walt=["\']{{ ?["\']',
+         'description': "alt argument should be enclosed by _().",
+         'exclude': set(['tools/lint']),
+         },
     ]  # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
