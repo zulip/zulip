@@ -125,9 +125,6 @@ Django context (i.e. with database access).
 
 * `api/integrations/` Bots distributed as part of the Zulip API bundle.
 
-* `bots/` Previously Zulip internal bots. These usually need a bit of
-   work.
-
 -------------------------------------------------------------------------
 
 ### Production puppet configuration
