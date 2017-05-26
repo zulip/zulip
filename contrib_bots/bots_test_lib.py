@@ -16,20 +16,27 @@ from six.moves import zip
 
 from unittest import TestCase
 
+from typing import List, Dict, Any
+from types import ModuleType
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class BotTestCase(TestCase):
-    bot_name = None
+    bot_name = '' # type: str
 
     def assert_bot_output(self, request, response):
-        # type: (str, str) -> None
+        # type: (Dict[str, Any], str) -> None
         bot_module = os.path.join(current_dir, "bots",
                                   self.bot_name, self.bot_name + ".py")
         self.bot_test(messages=[request], bot_module=bot_module,
                       bot_response=[response])
 
     def mock_test(self, messages, message_handler, bot_response):
-        # type: (List[Dict[str, str]], Function) -> None
+        # message_handler is of type Any, since it can contain any bot's
+        # handler class. Eventually, we want bot's handler classes to
+        # inherit from a common prototype specifying the handle_message
+        # function.
+        # type: (List[Dict[str, Any]], Any, List[str]) -> None
         # Mocking BotHandlerApi
         with patch('contrib_bots.bot_lib.BotHandlerApi') as MockClass:
             instance = MockClass.return_value
@@ -43,11 +50,13 @@ class BotTestCase(TestCase):
                 instance.send_reply.assert_called_with(message, response)
 
     def bot_to_run(self, bot_module):
-        # type: None -> Function
+        # Returning Any, same argument as in mock_test function.
+        # type: (str) -> Any
         lib_module = get_lib_module(bot_module)
         message_handler = lib_module.handler_class()
         return message_handler
 
     def bot_test(self, messages, bot_module, bot_response):
+        # type: (List[Dict[str, Any]], str, List[str]) -> None
         message_handler = self.bot_to_run(bot_module)
         self.mock_test(messages=messages, message_handler=message_handler, bot_response=bot_response)
