@@ -27,7 +27,7 @@ class ZenDeskHookTests(WebhookTestCase):
 
     def do_test(self, expected_subject=None, expected_message=None):
         # type: (Optional[Text], Optional[Text]) -> None
-        self.send_and_test_stream_message(None, expected_subject, expected_message,
+        self.send_and_test_stream_message("", expected_subject, expected_message,
                                           content_type=None, **self.api_auth(self.TEST_USER_EMAIL))
         self.TICKET_TITLE = self.DEFAULT_TICKET_TITLE
         self.TICKET_ID = self.DEFAULT_TICKET_ID

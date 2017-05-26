@@ -90,19 +90,7 @@ class CommuteHandler(object):
 
     # determines if bot will respond as a private message/ stream message
     def send_info(self, message, letter, client):
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=message['sender_email'],
-                content=letter,
-            ))
-        else:
-            client.send_message(dict(
-                type='stream',
-                subject=message['subject'],
-                to=message['display_recipient'],
-                content=letter,
-            ))
+        client.send_reply(message, letter)
 
     def calculate_seconds(self, time_str):
         times = time_str.split(',')

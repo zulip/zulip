@@ -151,7 +151,7 @@ def get_sub_event_for_update_issue(payload):
     return sub_event
 
 def get_event_type(payload):
-    # type: (Dict[str, Any]) -> Text
+    # type: (Dict[str, Any]) -> Optional[Text]
     event = payload.get('webhookEvent')
     if event is None and payload.get('transition'):
         event = 'jira:issue_updated'

@@ -163,6 +163,7 @@ def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=Non
         q = q.order_by('id')
         min_id = -1
         while True:
+            assert db_chunk_size is not None  # Hint for mypy, but also workaround for mypy bug #3442.
             rows = list(q.filter(id__gt=min_id)[0:db_chunk_size])
             if len(rows) == 0:
                 break

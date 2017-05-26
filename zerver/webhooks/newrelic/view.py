@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Text
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
@@ -14,10 +14,10 @@ from zerver.models import UserProfile, Stream
 
 @api_key_only_webhook_view("NewRelic")
 @has_request_variables
-def api_newrelic_webhook(request, user_profile, stream=REQ(),
+def api_newrelic_webhook(request, user_profile, stream=REQ(default='newrelic'),
                          alert=REQ(validator=check_dict([]), default=None),
                          deployment=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[Stream], Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> HttpResponse
     if alert:
         # Use the message as the subject because it stays the same for
         # "opened", "acknowledged", and "closed" messages that should be

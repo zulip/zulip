@@ -22,6 +22,7 @@ static/generated/pygments_data.js
 static/generated/github-contributors.json
 static/locale/language_options.json
 static/third/emoji-data
+static/webpack-bundles
 /node_modules
 /staticfiles.json
 npm-debug.log

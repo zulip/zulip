@@ -10,7 +10,7 @@ set_global('page_params', {
     use_websockets: false,
 });
 
-set_global('$', global.zjquery);
+set_global('$', global.make_zjquery());
 
 add_dependencies({
     compose: 'js/compose',

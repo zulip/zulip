@@ -11,7 +11,7 @@ from zerver.lib.actions import do_change_is_admin, \
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
-    get_realm_by_email_domain, get_user_profile_by_email, \
+    get_realm_by_email_domain, \
     GetRealmByDomainException, RealmDomain
 
 import ujson
@@ -20,7 +20,7 @@ import ujson
 class RealmDomainTest(ZulipTestCase):
     def test_list_realm_domains(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         RealmDomain.objects.create(realm=realm, domain='acme.com', allow_subdomains=True)
         result = self.client_get("/json/realm/domains")
@@ -33,7 +33,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_not_realm_admin(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/domains")
         self.assert_json_error(result, 'Must be a realm administrator')
         result = self.client_patch("/json/realm/domains/15")
@@ -43,7 +43,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_create_realm_domain(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         data = {'domain': ujson.dumps(''),
                 'allow_subdomains': ujson.dumps(True)}
         result = self.client_post("/json/realm/domains", info=data)
@@ -72,7 +72,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_patch_realm_domain(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         RealmDomain.objects.create(realm=realm, domain='acme.com',
                                    allow_subdomains=False)
@@ -92,7 +92,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_delete_realm_domain(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         RealmDomain.objects.create(realm=realm, domain='acme.com')
         result = self.client_delete("/json/realm/domains/non-existent.com")
@@ -106,7 +106,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_delete_all_realm_domains(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         query = RealmDomain.objects.filter(realm=realm)
 
@@ -135,7 +135,7 @@ class RealmDomainTest(ZulipTestCase):
             if realm_string_id is None:
                 self.assertIsNone(realm)
             else:
-                self.assertIsNotNone(realm)
+                assert(realm is not None)
                 self.assertEqual(realm.string_id, realm_string_id)
 
         assert_and_check('user@zulip.com', 'zulip')

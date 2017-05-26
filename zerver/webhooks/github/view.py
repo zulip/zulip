@@ -137,7 +137,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
     target_stream = commit_stream if commit_stream else default_stream
     issue_stream = issue_stream if issue_stream else default_stream
     repository = payload['repository']
-    topic_focus = topic_focus if topic_focus else repository['name']
+    updated_topic_focus = topic_focus if topic_focus else repository['name']
 
     # Event Handlers
     if event == 'pull_request':
@@ -166,7 +166,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
         content = github_object_commented_content(payload, type)
 
     elif event == 'push':
-        subject, content = build_message_from_gitlog(user_profile, topic_focus,
+        subject, content = build_message_from_gitlog(user_profile, updated_topic_focus,
                                                      payload['ref'], payload['commits'],
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
@@ -175,9 +175,9 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
                                                      created=payload['created'],
                                                      deleted=payload['deleted'])
     elif event == 'commit_comment':
-        subject = topic_focus
+        subject = updated_topic_focus
 
-        comment = payload.get('comment')
+        comment = payload['comment']
         action = u'[commented]({})'.format(comment['html_url'])
         content = get_commits_comment_action_message(
             comment['user']['login'],
@@ -301,7 +301,7 @@ def _transform_commits_list_to_common_format(commits):
     new_commits_list = []
     for commit in commits:
         new_commits_list.append({
-            'name': commit.get('author').get('username'),
+            'name': commit['author'].get('username'),
             'sha': commit.get('id'),
             'url': commit.get('url'),
             'message': commit.get('message'),

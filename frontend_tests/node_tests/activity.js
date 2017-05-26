@@ -1,4 +1,4 @@
-global.stub_out_jquery();
+set_global('$', global.make_zjquery());
 
 set_global('page_params', {
     realm_users: [],
@@ -86,6 +86,8 @@ var activity = require('js/activity.js');
 var compose_fade = require('js/compose_fade.js');
 
 compose_fade.update_faded_users = function () {};
+
+var real_update_huddles = activity.update_huddles;
 activity.update_huddles = function () {};
 
 global.compile_template('user_presence_row');
@@ -225,13 +227,6 @@ presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
-    global.$ = function () {
-        return {
-            length: 0,
-            html: function () {},
-        };
-    };
-
     var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
@@ -280,3 +275,190 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
     ]);
 }());
+
+(function test_PM_update_dom_counts() {
+    var value = $('alice-value');
+    var count = $('alice-count');
+    var pm_key = alice.user_id.toString();
+    var li = $("li.user_sidebar_entry[data-user-id='" + pm_key + "']");
+    count.add_child('.value', value);
+    li.add_child('.count', count);
+
+    var counts = new Dict();
+    counts.set(pm_key, 5);
+    li.addClass('user_sidebar_entry');
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(li.hasClass('user-with-count'));
+    assert.equal(value.text(), 5);
+
+    counts.set(pm_key, 0);
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(!li.hasClass('user-with-count'));
+    assert.equal(value.text(), '');
+}());
+
+(function test_group_update_dom_counts() {
+    var value = $('alice-fred-value');
+    var count = $('alice-fred-count');
+    var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
+    var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
+    var li = $(li_selector);
+    count.add_child('.value', value);
+    li.add_child('.count', count);
+
+    var counts = new Dict();
+    counts.set(pm_key, 5);
+    li.addClass('group-pms-sidebar-entry');
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(li.hasClass('group-with-count'));
+    assert.equal(value.text(), 5);
+
+    counts.set(pm_key, 0);
+
+    activity.update_dom_with_unread_counts({pm_count: counts});
+    assert(!li.hasClass('group-with-count'));
+    assert.equal(value.text(), '');
+}());
+
+presence.presence_info = {};
+presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
+presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
+presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
+
+(function test_filter_user_ids() {
+    var user_filter = $('.user-list-filter');
+    user_filter.val(''); // no search filter
+
+    var user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+
+    user_filter.val('abc'); // no match
+    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, []);
+
+    user_filter.val('fred'); // match fred
+    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, [fred.user_id]);
+
+    user_filter.val('fred,alice'); // match fred and alice
+    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+
+    user_filter.val('fr,al'); // match fred and alice partials
+    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+
+    presence.presence_info[alice.user_id] = { status: activity.IDLE };
+    user_filter.val('fr,al'); // match fred and alice partials and idle user
+    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
+
+    $.stub_selector('.user-list-filter', []);
+    presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
+    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+}());
+
+(function test_insert_one_user_into_empty_list() {
+    var alice_li = $('alice-li');
+
+    // These selectors are here to avoid some short-circuit logic.
+    $('#user_presences').add_child('[data-user-id="1"]', alice_li);
+
+    var appended_html;
+    $('#user_presences').append = function (html) {
+        appended_html = html;
+    };
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [];
+        },
+    });
+    activity.insert_user_into_list(alice.user_id);
+    assert(appended_html.indexOf('data-user-id="1"') > 0);
+    assert(appended_html.indexOf('user_active') > 0);
+}());
+
+(function test_insert_fred_after_alice() {
+    var fred_li = $('fred-li');
+
+    // These selectors are here to avoid some short-circuit logic.
+    $('#user_presences').add_child('[data-user-id="2"]', fred_li);
+
+    var appended_html;
+    $('#user_presences').append = function (html) {
+        appended_html = html;
+    };
+
+    $('fake-dom-for-alice').attr = function (attr_name) {
+        assert.equal(attr_name, 'data-user-id');
+        return alice.user_id;
+    };
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [
+                'fake-dom-for-alice',
+            ];
+        },
+    });
+    activity.insert_user_into_list(fred.user_id);
+
+    assert(appended_html.indexOf('data-user-id="2"') > 0);
+    assert(appended_html.indexOf('user_active') > 0);
+}());
+
+(function test_insert_fred_before_jill() {
+    var fred_li = $('fred-li');
+
+    // These selectors are here to avoid some short-circuit logic.
+    $('#user_presences').add_child('[data-user-id="2"]', fred_li);
+
+    $('fake-dom-for-jill').attr = function (attr_name) {
+        assert.equal(attr_name, 'data-user-id');
+        return jill.user_id;
+    };
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [
+                'fake-dom-for-jill',
+            ];
+        },
+    });
+
+    var before_html;
+    $('fake-dom-for-jill').before = function (html) {
+        before_html = html;
+    };
+    activity.insert_user_into_list(fred.user_id);
+
+    assert(before_html.indexOf('data-user-id="2"') > 0);
+    assert(before_html.indexOf('user_active') > 0);
+}());
+
+// Reset jquery here.
+set_global('$', global.make_zjquery());
+
+(function test_insert_unfiltered_user_with_filter() {
+    // This test only tests that we do not explode when
+    // try to insert Fred into a list where he does not
+    // match the search filter.
+    var user_filter = $('.user-list-filter');
+    user_filter.val('do-not-match-filter');
+    activity.insert_user_into_list(fred.user_id);
+}());
+
+(function test_realm_presence_disabled() {
+    page_params.realm_presence_disabled = true;
+
+    activity.insert_user_into_list();
+    activity.build_user_sidebar();
+
+    real_update_huddles();
+}());
+

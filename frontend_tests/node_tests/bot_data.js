@@ -33,6 +33,7 @@ global.patch_builtin('_', patched_underscore);
 
 var bot_data = require('js/bot_data.js');
 
+bot_data.initialize();
 // Our startup logic should have added Bot 0 from page_params.
 assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
 
@@ -57,7 +58,7 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
 
         bot_data.add(test_bot);
 
-         bot = bot_data.get('bot1@zulip.com');
+        bot = bot_data.get('bot1@zulip.com');
         assert.equal('Bot 1', bot.full_name);
         bot_data.update('bot1@zulip.com', {full_name: 'New Bot 1'});
         bot = bot_data.get('bot1@zulip.com');
@@ -119,5 +120,11 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
     }());
 
+    (function test_get_all_bots_for_current_user() {
+        var bots = bot_data.get_all_bots_for_current_user();
 
+        assert.equal(bots.length, 2);
+        assert.equal(bots[0].email, 'bot1@zulip.com');
+        assert.equal(bots[1].email, 'bot2@zulip.com');
+    }());
 }());

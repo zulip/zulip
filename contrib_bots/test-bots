@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+from __future__ import absolute_import
+from __future__ import print_function
+
+import os
+import sys
+import unittest
+from unittest import TestCase
+
+if __name__ == '__main__':
+
+    def dir_join(dir1, dir2):
+        # type: (str, str) -> str
+        return os.path.abspath(os.path.join(dir1, dir2))
+
+    bots_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = dir_join(bots_dir, '..')
+    bots_test_dir = dir_join(bots_dir, 'bots')
+
+    sys.path.insert(0, root_dir)
+
+    loader = unittest.TestLoader()
+    suite = loader.discover(start_dir=bots_test_dir, top_level_dir=root_dir)
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+    if result.errors or result.failures:
+        raise Exception('Test failed!')

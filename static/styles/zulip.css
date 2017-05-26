@@ -2057,8 +2057,12 @@ div.floating_recipient {
 }
 
 .katex-html {
-    line-height: 3em;
+    line-height: initial;
     white-space: initial;
+}
+
+.katex-display .katex-html {
+    line-height: 3em;
 }
 
 .katex-display {
@@ -2066,7 +2070,7 @@ div.floating_recipient {
 }
 
 .tex-error {
-    color: red;
+    color: gray;
 }
 
 .hotkeys_table {

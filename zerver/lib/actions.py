@@ -304,10 +304,12 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> None
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     try:
-        streams = prereg_user.streams.all()
+        if prereg_user is not None:
+            streams = prereg_user.streams.all()
+        else:
+            streams = []
     except AttributeError:
-        # This will catch both the case where prereg_user is None and where it
-        # is a MitUser.
+        # This will catch the case where prereg_user is a MitUser.
         streams = []
 
     # If the user's invitation didn't explicitly list some streams, we
@@ -773,10 +775,14 @@ def do_send_messages(messages_maybe_none):
         Message.objects.bulk_create([message['message'] for message in messages])
         ums = []  # type: List[UserMessage]
         for message in messages:
-            # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
-            ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
-                             for user_profile in message['active_recipients']
-                             if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT]
+            # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
+            # they will be processed later.
+            ums_to_create = []
+            for user_profile in message['active_recipients']:
+                # is_service_bot is derived from is_bot and bot_type, and both of these fields
+                # should have been pre-fetched.
+                if not user_profile.is_service_bot:
+                    ums_to_create.append(UserMessage(user_profile=user_profile, message=message['message']))
 
             # These properties on the Message are set via
             # render_markdown by code in the bugdown inline patterns
@@ -801,38 +807,45 @@ def do_send_messages(messages_maybe_none):
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
 
-            # Now prepare the outgoing webhook events
-            message['message'].outgoing_webhook_bot_triggers = []
+            # Prepare to collect service queue events triggered by the message.
+            message['message'].service_queue_events = defaultdict(list)
 
-            # Avoid infinite loops by preventing messages sent by bots
-            # from triggering outgoing webhooks.
+            # Avoid infinite loops by preventing messages sent by bots from generating
+            # Service events.
             sender = message['message'].sender
             if sender.is_bot:
                 continue
 
-            # TODO: Right now, outgoing webhook bots need to be a
-            # subscribed to a stream in order to receive messages when
-            # mentioned; we will want to change that structure.
+            # TODO: Right now, service bots need to be subscribed to a stream in order to
+            # receive messages when mentioned; we will want to change that structure.
             for user_profile in message['active_recipients']:
-                trigger = None
-                if not user_profile.is_bot:
+                if not user_profile.is_service_bot:
                     continue
-                if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+
+                if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+                    queue_name = 'outgoing_webhooks'
+                elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+                    queue_name = 'embedded_bots'
+                else:
+                    logging.error(
+                        'Unexpected bot_type for Service bot %s: %s' %
+                        (user_profile.email, user_profile.bot_type))
                     continue
 
                 # Mention triggers, primarily for stream messages
                 if user_profile.id in mentioned_ids:
-                    trigger = "mention"
+                    trigger = 'mention'
                 # PM triggers for personal and huddle messsages
-                if message['message'].recipient.type != Recipient.STREAM:
-                    trigger = "private_message"
-                if trigger is None:
+                elif message['message'].recipient.type != Recipient.STREAM:
+                    trigger = 'private_message'
+                else:
                     continue
 
-                message['message'].outgoing_webhook_bot_triggers.append({
+                message['message'].service_queue_events[queue_name].append({
                     'trigger': trigger,
                     'user_profile': user_profile,
                 })
+
         UserMessage.objects.bulk_create(ums)
 
         # Claim attachments in message
@@ -869,6 +882,7 @@ def do_send_messages(messages_maybe_none):
             # messages are only associated to their subscribed users.
             if message['stream'] is None:
                 message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
+            assert message['stream'] is not None  # assert needed because stubs for django are missing
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
                 event['stream_name'] = message['stream'].name
@@ -897,17 +911,18 @@ def do_send_messages(messages_maybe_none):
                 lambda x: None
             )
 
-        for outgoing_webhook_event in message['message'].outgoing_webhook_bot_triggers:
-            queue_json_publish(
-                'outgoing_webhooks',
-                {
-                    "message": message_to_dict(message['message'], apply_markdown=False),
-                    "trigger": outgoing_webhook_event['trigger'],
-                    "user_profile_id": outgoing_webhook_event["user_profile"].id,
-                    "failed_tries": 0,
-                },
-                lambda x: None
-            )
+        for queue_name, events in message['message'].service_queue_events.items():
+            for event in events:
+                queue_json_publish(
+                    queue_name,
+                    {
+                        "message": message_to_dict(message['message'], apply_markdown=False),
+                        "trigger": event['trigger'],
+                        "user_profile_id": event["user_profile"].id,
+                        "failed_tries": 0,
+                    },
+                    lambda x: None
+                )
 
     # Note that this does not preserve the order of message ids
     # returned.  In practice, this shouldn't matter, as we only
@@ -1281,7 +1296,8 @@ def check_message(sender, client, message_type_name, message_to,
                                           forwarder_user_profile.is_api_super_user):
             # Or this request is being done on behalf of a super user
             pass
-        elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
+        elif sender.is_bot and (sender.bot_owner is not None and
+                                subscribed_to_stream(sender.bot_owner, stream)):
             # Or you're a bot and your owner is subscribed.
             pass
         elif sender.email == settings.WELCOME_BOT:
@@ -2013,7 +2029,7 @@ def _default_stream_permision_check(user_profile, stream):
             user = user_profile.bot_owner
         else:
             user = user_profile
-        if stream.invite_only and not subscribed_to_stream(user, stream):
+        if stream.invite_only and (user is None or not subscribed_to_stream(user, stream)):
             raise JsonableError(_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
@@ -2782,6 +2798,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             changed_messages += messages_list
 
     message.last_edit_time = timezone_now()
+    assert message.last_edit_time is not None  # assert needed because stubs for django are missing
     event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
     edit_history_event['timestamp'] = event['edit_timestamp']
     if message.edit_history is not None:
@@ -2844,11 +2861,13 @@ def get_email_gateway_message_string_from_address(address):
     return msg_string
 
 def decode_email_address(email):
-    # type: (Text) -> Tuple[Text, Text]
+    # type: (Text) -> Optional[Tuple[Text, Text]]
     # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
     msg_string = get_email_gateway_message_string_from_address(email)
 
-    if '.' in msg_string:
+    if msg_string is None:
+        return None
+    elif '.' in msg_string:
         # Workaround for Google Groups and other programs that don't accept emails
         # that have + signs in them (see Trac #2102)
         encoded_stream_name, token = msg_string.split('.')
@@ -2894,7 +2913,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
 
     if include_subscribers:
-        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)  # type: Mapping[int, Optional[List[int]]]
     else:
         # If we're not including subscribers, always return None,
         # which the below code needs to check for anyway.

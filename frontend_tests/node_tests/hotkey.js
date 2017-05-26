@@ -153,7 +153,7 @@ function stubbing(func_name_to_stub, test_function) {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abefhlmoptuxyz');
-    assert_unmapped('BEFHILNOQTWXYZ');
+    assert_unmapped('BEFHILNOQTUWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -197,7 +197,9 @@ function stubbing(func_name_to_stub, test_function) {
     modals.settings_open = return_false;
 
     modals.streams_open = return_true;
-    assert_mapping('U', 'subs.keyboard_sub');
+    modals.is_active = return_true;
+    assert_mapping('S', 'subs.keyboard_sub');
+    modals.is_active = return_false;
     assert_mapping('V', 'subs.view_stream');
     assert_mapping('n', 'subs.new_stream_clicked');
     modals.streams_open = return_false;

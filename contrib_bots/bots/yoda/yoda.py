@@ -50,11 +50,7 @@ class YodaSpeakHandler(object):
             '''
 
     def handle_message(self, message, client, state_handler):
-        original_content = message['content']
-        stream = message['display_recipient']
-        subject = message['subject']
-
-        handle_input(client, original_content, stream, subject)
+        handle_input(message, client)
 
 handler_class = YodaSpeakHandler
 
@@ -90,10 +86,11 @@ def format_input(original_content):
     return sentence
 
 
-def handle_input(client, original_content, stream, subject):
+def handle_input(message, client):
 
+    original_content = message['content']
     if is_help(original_content):
-        send_message(client, HELP_MESSAGE, stream, subject)
+        client.send_reply(message, HELP_MESSAGE)
 
     else:
         sentence = format_input(original_content)
@@ -109,7 +106,7 @@ def handle_input(client, original_content, stream, subject):
                             '`readme.md` file?'
             logging.error(reply_message)
 
-        send_message(client, reply_message, stream, subject)
+        client.send_reply(message, reply_message)
 
 
 def get_api_key():

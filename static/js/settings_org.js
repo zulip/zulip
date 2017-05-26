@@ -120,6 +120,21 @@ function _set_up() {
 
     // create property_types object
     var property_types = {
+        settings: {
+            name: {
+                type: 'Text',
+                msg: i18n.t("Name changed!"),
+            },
+            description: {
+                type: 'Text',
+                msg: i18n.t("Description changed!"),
+            },
+            default_language: {
+                type: 'Text',
+                msg: i18n.t("Default language changed!"),
+            },
+        },
+        permissions: {
             add_emoji_by_admins_only: {
                 type: 'bool',
                 checked_msg: i18n.t("Only administrators may now add new emoji!"),
@@ -129,14 +144,6 @@ function _set_up() {
                 type: 'bool',
                 checked_msg: i18n.t("Only administrators may now create new streams!"),
                 unchecked_msg: i18n.t("Any user may now create new streams!"),
-            },
-            default_language: {
-                type: 'Text',
-                msg: i18n.t("Default language changed!"),
-            },
-            description: {
-                type: 'Text',
-                msg: i18n.t("Description changed!"),
             },
             email_changes_disabled: {
                 type: 'bool',
@@ -163,10 +170,6 @@ function _set_up() {
                 checked_msg: i18n.t("Previews for linked websites will be shown!"),
                 unchecked_msg: i18n.t("Previews for linked websites will not be shown!"),
             },
-            name: {
-                type: 'Text',
-                msg: i18n.t("Name changed!"),
-            },
             name_changes_disabled: {
                 type: 'bool',
                 checked_msg: i18n.t("Users cannot change their name!"),
@@ -177,7 +180,56 @@ function _set_up() {
                 checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
                 unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
             },
-        };
+        },
+    };
+
+    function populate_data_for_request(data, category) {
+        _.each(property_types[category], function (v, k) {
+            var field = property_types[category][k];
+            if (field.type === 'bool') {
+                data[k] = JSON.stringify($('#id_realm_'+k).prop('checked'));
+                return;
+            }
+            if (field.type === 'Text') {
+                data[k] = JSON.stringify($('#id_realm_'+k).val().trim());
+                return;
+            }
+        });
+        return data;
+    }
+
+    function process_response_data(response_data, category) {
+        if (!_.has(property_types, category)) {
+            blueslip.error('Unknown category ' + category);
+            return;
+        }
+
+        _.each(response_data, function (value, key) {
+            if (value === undefined || !_.has(property_types[category], key)) {
+                return;
+            }
+
+            var msg;
+            var field_info = property_types[category][key];
+            var setting_type = field_info.type;
+            if (setting_type === 'bool') {
+                if (value) {
+                    msg = field_info.checked_msg;
+                } else {
+                    msg = field_info.unchecked_msg;
+                }
+                ui_report.success(msg,
+                                  property_type_status_element(key));
+                return;
+            }
+
+            if (setting_type === 'Text') {
+                ui_report.success(field_info.msg,
+                                  property_type_status_element(key));
+                return;
+            }
+        });
+    }
 
     $("#id_realm_invite_required").change(function () {
         if (this.checked) {
@@ -199,35 +251,68 @@ function _set_up() {
         }
     });
 
-    $(".organization").on("submit", "form.admin-realm-form", function (e) {
-        // TODO: We actually have three forms named admin-realm-form.  We really
-        //       should break out three separate forms.
-
-        for (var k1 in property_types) {
-            if (property_types.hasOwnProperty(k1)) {
-                property_type_status_element(k1).hide();
-            }
-        }
-
+    $(".organization").on("submit", "form.org-settings-form", function (e) {
+        _.each(property_types.settings, function (v, k) {
+            property_type_status_element(k).hide();
+        });
         var name_status = $("#admin-realm-name-status").expectOne();
-        var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
-        var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var waiting_period_threshold_status = $("#admin-realm-waiting-period-threshold-status").expectOne();
         name_status.hide();
-        authentication_methods_status.hide();
-        message_editing_status.hide();
         waiting_period_threshold_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
+
+        var url = "/json/realm";
+        var data = {
+            waiting_period_threshold: JSON.stringify(parseInt($("#id_realm_waiting_period_threshold").val(), 10)),
+        };
+        data = populate_data_for_request(data, 'settings');
+
+        channel.patch({
+            url: url,
+            data: data,
+
+            success: function (response_data) {
+                process_response_data(response_data, 'settings');
+                if (response_data.waiting_period_threshold !== undefined) {
+                    if (response_data.waiting_period_threshold >= 0) {
+                        ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
+                    }
+                }
+                // Check if no changes made
+                var no_changes_made = true;
+                for (var key in response_data) {
+                    if (['msg', 'result'].indexOf(key) < 0) {
+                        no_changes_made = false;
+                    }
+                }
+                if (no_changes_made) {
+                    ui_report.success(i18n.t("No changes to save!"), name_status);
+                }
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed"), xhr, name_status);
+            },
+        });
+    });
+
+    $(".organization").on("submit", "form.org-permissions-form", function (e) {
+        _.each(property_types.permissions, function (v, k) {
+            property_type_status_element(k).hide();
+        });
+        var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
+        var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
+        restricted_to_domain_status.hide();
+        message_editing_status.hide();
+
+        e.preventDefault();
+        e.stopPropagation();
+
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_message_retention_days = $("#id_realm_message_retention_days").val();
-        var new_waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
-        var new_auth_methods = {};
-        _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
-            new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
-        });
+
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
         // is irrelevant.  Hence if allow_message_editing is unchecked, and
         // message_content_edit_limit_minutes is poorly formed, we set the latter to
@@ -247,50 +332,17 @@ function _set_up() {
 
         var url = "/json/realm";
         var data = {
-            authentication_methods: JSON.stringify(new_auth_methods),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
             message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
-            waiting_period_threshold: JSON.stringify(parseInt(new_waiting_period_threshold, 10)),
         };
-        for (var k2 in property_types) {
-            if (property_types.hasOwnProperty(k2)) {
-                if (property_types[k2].type === 'bool') {
-                    data[k2] = JSON.stringify($('#id_realm_'+k2).prop('checked'));
-                } else if (property_types[k2].type === 'Text') {
-                    data[k2] = JSON.stringify($('#id_realm_'+k2).val());
-                }
-            }
-        }
-
+        data = populate_data_for_request(data, 'permissions');
         channel.patch({
             url: url,
             data: data,
             success: function (response_data) {
-                for (var k3 in response_data) {
-                    if (response_data.hasOwnProperty(k3)) {
-                        if (k3 in property_types && response_data[k3] !== undefined) {
-                            if (property_types[k3].type === 'bool') {
-                                if (response_data[k3]) {
-                                    ui_report.success(property_types[k3].checked_msg,
-                                        property_type_status_element(k3));
-                                } else {
-                                    ui_report.success(property_types[k3].unchecked_msg,
-                                        property_type_status_element(k3));
-                                }
-                            } else if (property_types[k3].type === 'Text') {
-                                ui_report.success(property_types[k3].msg,
-                                   property_type_status_element(k3));
-                            }
-                        }
-                    }
-                }
-                if (response_data.authentication_methods !== undefined) {
-                    if (response_data.authentication_methods) {
-                        ui_report.success(i18n.t("Authentication methods saved!"), authentication_methods_status);
-                    }
-                }
+                process_response_data(response_data, 'permissions');
                 if (response_data.allow_message_editing !== undefined) {
                     // We expect message_content_edit_limit_seconds was sent in the
                     // response as well
@@ -313,9 +365,47 @@ function _set_up() {
                     // in this function, so update the field just in case
                     $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
                 }
-                if (response_data.waiting_period_threshold !== undefined) {
-                    if (response_data.waiting_period_threshold >= 0) {
-                        ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
+                // Check if no changes made
+                var no_changes_made = true;
+                for (var key in response_data) {
+                    if (['msg', 'result'].indexOf(key) < 0) {
+                        no_changes_made = false;
+                    }
+                }
+                if (no_changes_made) {
+                    ui_report.success(i18n.t("No changes to save!"), restricted_to_domain_status);
+                }
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed"), xhr, restricted_to_domain_status);
+            },
+        });
+    });
+    $(".organization").on("submit", "form.org-authentications-form", function (e) {
+        var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
+
+        var new_auth_methods = {};
+        _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
+            new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
+        });
+
+        authentication_methods_status.hide();
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        var url = "/json/realm";
+        var data = {
+            authentication_methods: JSON.stringify(new_auth_methods),
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function (response_data) {
+                if (response_data.authentication_methods !== undefined) {
+                    if (response_data.authentication_methods) {
+                        ui_report.success(i18n.t("Authentication methods saved!"), authentication_methods_status);
                     }
                 }
                 // Check if no changes made
@@ -326,16 +416,11 @@ function _set_up() {
                     }
                 }
                 if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), name_status);
+                    ui_report.success(i18n.t("No changes to save!"), authentication_methods_status);
                 }
             },
             error: function (xhr) {
-                var reason = $.parseJSON(xhr.responseText).reason;
-                if (reason === "no authentication") {
-                    ui_report.error(i18n.t("Failed"), xhr, authentication_methods_status);
-                } else {
-                    ui_report.error(i18n.t("Failed"), xhr, name_status);
-                }
+                ui_report.error(i18n.t("Failed"), xhr, authentication_methods_status);
             },
         });
     });

@@ -242,6 +242,7 @@ $(function () {
     // initialize other stuff
     reload.initialize();
     people.initialize();
+    bot_data.initialize(); // Must happen after people.initialize()
     markdown.initialize();
     composebox_typeahead.initialize();
     search.initialize();
@@ -255,6 +256,7 @@ $(function () {
     activity.initialize();
     emoji.initialize();
     hotspots.initialize();
+    compose_fade.initialize();
 });
 
 

@@ -13,12 +13,6 @@ class HelloWorldHandler(object):
 
     def handle_message(self, message, client, state_handler):
         content = 'beep boop'
-
-        client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['subject'],
-            content=content,
-        ))
+        client.send_reply(message, content)
 
 handler_class = HelloWorldHandler

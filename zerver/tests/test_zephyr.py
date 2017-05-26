@@ -8,12 +8,13 @@ from mock import patch
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_user, get_realm
+
 
 class ZephyrTest(ZulipTestCase):
     def test_webathena_kerberos_login(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         def post(**kwargs):
@@ -27,7 +28,8 @@ class ZephyrTest(ZulipTestCase):
         result = post(cred='whatever')
         self.assert_json_error(result, 'Webathena login not enabled')
 
-        email = str(self.mit_user("starnine").email)
+        email = str(self.mit_email("starnine"))
+        realm = get_realm('zephyr')
         self.login(email)
 
         def ccache_mock(**kwargs):
@@ -71,7 +73,7 @@ class ZephyrTest(ZulipTestCase):
             '--',
             '/home/zulip/zulip/bots/process_ccache',
             'starnine',
-            get_user_profile_by_email(email).api_key,
+            get_user(email, realm).api_key,
             'MTIzNA=='])
 
         # Accounts whose Kerberos usernames are known not to match their
@@ -98,5 +100,5 @@ class ZephyrTest(ZulipTestCase):
             '--',
             '/home/zulip/zulip/bots/process_ccache',
             'starnine',
-            get_user_profile_by_email(email).api_key,
+            get_user(email, realm).api_key,
             'MTIzNA=='])

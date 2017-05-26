@@ -81,7 +81,7 @@ def accounts_register(request):
     # special URL with domain name so that REALM can be identified if multiple realms exist
     unique_open_realm = get_unique_open_realm()
     if unique_open_realm is not None:
-        realm = unique_open_realm
+        realm = unique_open_realm  # type: Optional[Realm]
     elif prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
@@ -196,6 +196,7 @@ def accounts_register(request):
 
             create_streams_with_welcome_messages(realm, stream_info)
             set_default_streams(realm, stream_info)
+        assert(realm is not None)
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)

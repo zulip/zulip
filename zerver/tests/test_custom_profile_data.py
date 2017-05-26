@@ -7,8 +7,8 @@ from mock import patch
 from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data, do_remove_realm_custom_profile_field
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import CustomProfileField, get_user_profile_by_email, \
-    custom_profile_fields_for_realm
+from zerver.models import CustomProfileField, \
+    custom_profile_fields_for_realm, get_user
 import ujson
 
 
@@ -16,7 +16,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
     def test_list(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         try_add_realm_custom_profile_field(realm, u"Phone",
                                            CustomProfileField.SHORT_TEXT)
@@ -28,7 +28,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
     def test_create(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         data = {"name": u"Phone", "field_type": "text id"}  # type: Dict[str, Any]
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, u'argument "field_type" is not valid json.')
@@ -53,7 +53,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
     def test_not_realm_admin(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/profile_fields")
         self.assert_json_error(result, u'Must be a realm administrator')
         result = self.client_delete("/json/realm/profile_fields/1")
@@ -61,7 +61,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
     def test_delete(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         field = try_add_realm_custom_profile_field(
             realm,
@@ -79,7 +79,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
     def test_update(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         result = self.client_patch(
             "/json/realm/profile_fields/100",
@@ -114,7 +114,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
     def test_update_is_aware_of_uniqueness(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         try_add_realm_custom_profile_field(realm, u"Phone",
                                            CustomProfileField.SHORT_TEXT)
@@ -136,7 +136,7 @@ class CustomProfileDataTest(ZulipTestCase):
 
     def test_update_invalid(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         data = [{'id': 1234, 'value': '12'}]
         result = self.client_patch("/json/users/me/profile_data", {
             'data': ujson.dumps(data)
@@ -146,7 +146,7 @@ class CustomProfileDataTest(ZulipTestCase):
 
     def test_update_invalid_value(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         age_field = try_add_realm_custom_profile_field(
             realm,
@@ -164,7 +164,7 @@ class CustomProfileDataTest(ZulipTestCase):
 
     def test_update_invalid_double(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         field = try_add_realm_custom_profile_field(
             realm,
@@ -182,7 +182,7 @@ class CustomProfileDataTest(ZulipTestCase):
 
     def test_update_invalid_short_text(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         field = try_add_realm_custom_profile_field(
             realm,
@@ -200,7 +200,7 @@ class CustomProfileDataTest(ZulipTestCase):
 
     def test_update_profile_data(self):
         # type: () -> None
-        self.login(u"iago@zulip.com")
+        self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         fields = [
             (CustomProfileField.SHORT_TEXT, 'name 1', 'short text data'),
@@ -222,7 +222,7 @@ class CustomProfileDataTest(ZulipTestCase):
                                    {'data': ujson.dumps(data)})
         self.assert_json_success(result)
 
-        iago = get_user_profile_by_email('iago@zulip.com')
+        iago = self.example_user('iago')
         expected_value = {f['id']: f['value'] for f in data}
 
         for field_dict in iago.profile_data:

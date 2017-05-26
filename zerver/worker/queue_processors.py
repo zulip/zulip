@@ -2,12 +2,13 @@
 from __future__ import absolute_import
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
+from contrib_bots.bot_lib import BotHandlerApi, StateHandler
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
-    get_user_profile_by_id, get_prereg_user_by_email, get_client, \
-    UserMessage, Message, Realm, get_system_bot
+    get_client, get_prereg_user_by_email, get_system_bot, \
+    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
@@ -33,6 +34,7 @@ from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call
 from zerver.models import get_bot_services
+from zulip import Client
 
 import os
 import sys
@@ -47,6 +49,8 @@ import requests
 import simplejson
 from six.moves import cStringIO as StringIO
 import re
+import importlib
+
 
 class WorkerDeclarationException(Exception):
     pass
@@ -444,3 +448,75 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
             rest_operation['base_url'] = str(service.base_url)
             dup_event['service_name'] = str(service.name)
             do_rest_call(rest_operation, dup_event)
+
+@assign_queue('embedded_bots')
+class EmbeddedBotWorker(QueueProcessingWorker):
+
+    def get_bot_api_client(self, user_profile):
+        # type: (UserProfile) -> BotHandlerApi
+        raw_client = Client(
+            email=str(user_profile.email),
+            api_key=str(user_profile.api_key),
+            site=str(user_profile.realm.uri))
+        return BotHandlerApi(raw_client)
+
+    def get_bot_handler(self, service):
+        # type: (Service) -> Any
+        bot_module_name = 'contrib_bots.bots.%s.%s' % (service.name, service.name)
+        bot_module = importlib.import_module(bot_module_name) # type: Any
+        return bot_module.handler_class()
+
+    # TODO: Handle stateful bots properly
+    def get_state_handler(self):
+        # type: () -> StateHandler
+        return StateHandler()
+
+    def remove_leading_pattern(self, pattern, content):
+        # type: (str, str) -> Optional[str]
+        """
+        This function attempts to match and remove the pattern from the
+        beginning of the content.  The return value is the removal result if
+        there is a match, or None if there is not a match.
+        """
+        leading_pattern = re.compile(r'^' + pattern)
+        match = leading_pattern.match(content)
+        if match:
+            return content[len(match.group()):]
+        else:
+            return None
+
+    # TODO: Consolidate this with the code in bot_lib.py
+    def remove_leading_mention_if_necessary(self, message, user_profile):
+        # type: (Dict[str, Any], UserProfile) -> None
+        """
+        If the embedded bot is the leading @mention, then this function removes
+        the leading @mention from the message content (note that spaces after
+        the @mention also get stripped).  Otherwise, it leaves the message
+        unchanged.
+        """
+        mention_patterns = [
+            r'@({0})'.format(user_profile.full_name),
+            r'@(\*\*{0}\*\*)'.format(user_profile.full_name),
+        ]
+        content = message['content']
+        for pattern in mention_patterns:
+            content_without_mention = self.remove_leading_pattern(pattern, content)
+            if content_without_mention:
+                message['content'] = content_without_mention.lstrip()
+                return
+
+    def consume(self, event):
+        # type: (Mapping[str, Any]) -> None
+        user_profile_id = event['user_profile_id']
+        user_profile = get_user_profile_by_id(user_profile_id)
+
+        message = cast(Dict[str, Any], event['message'])
+        self.remove_leading_mention_if_necessary(message, user_profile)
+
+        # TODO: Do we actually want to allow multiple Services per bot user?
+        services = get_bot_services(user_profile_id)
+        for service in services:
+            self.get_bot_handler(service).handle_message(
+                message=message,
+                client=self.get_bot_api_client(user_profile),
+                state_handler=self.get_state_handler())

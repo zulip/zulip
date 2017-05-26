@@ -301,6 +301,8 @@ if __name__ == "__main__":
         generate_fixtures_command.append('--force')
         subprocess.call(generate_fixtures_command)
 
+    subprocess.check_call(['tools/webpack', '--test'])
+
     if options.processes is None:
         options.processes = 4
 

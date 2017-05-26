@@ -7,8 +7,6 @@ import zlib
 from django.utils.translation import ugettext as _
 from six import binary_type
 
-from typing import Set, Text
-
 from zerver.lib.avatar import avatar_url_from_dict
 import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
@@ -28,7 +26,7 @@ from zerver.models import (
     Reaction
 )
 
-from typing import Any, Dict, List, Optional, Tuple, Text
+from typing import Any, Dict, List, Optional, Set, Tuple, Text
 
 RealmAlertWords = Dict[int, List[Text]]
 
@@ -203,6 +201,7 @@ class MessageDict(object):
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
+            assert edit_history is not None
             obj['edit_history'] = ujson.loads(edit_history)
 
         if apply_markdown:
@@ -220,6 +219,7 @@ class MessageDict(object):
                     # TODO: see #1379 to eliminate bugdown dependencies
                     message = Message.objects.select_related().get(id=message_id)
 
+                assert message is not None  # Hint for mypy.
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
                 rendered_content = render_markdown(message, content, realm=message.get_realm())
@@ -310,7 +310,6 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
         message.mentions_user_ids = set()
         message.alert_words = set()
         message.links_for_preview = set()
-        message.outgoing_webhook_bot_triggers = []
 
         if realm is None:
             realm = message.get_realm()

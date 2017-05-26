@@ -74,22 +74,8 @@ class GoogleSearchHandler(object):
 
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
-        original_sender = message['sender_email']
         result = get_google_result(original_content)
-
-        if message['type'] == 'private':
-            client.send_message(dict(
-                type='private',
-                to=original_sender,
-                content=result,
-            ))
-        else:
-            client.send_message(dict(
-                type=message['type'],
-                to=message['display_recipient'],
-                subject=message['subject'],
-                content=result,
-            ))
+        client.send_reply(message, result)
 
 handler_class = GoogleSearchHandler
 

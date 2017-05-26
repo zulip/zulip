@@ -29,7 +29,7 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
                 repository.get('absolute_url'),
                 commit.get('raw_node'))
         }
-        for commit in payload.get('commits')
+        for commit in payload['commits']
     ]
 
     if len(commits) == 0:
@@ -43,7 +43,7 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
         branch = payload['commits'][-1]['branch']
         if branches is not None and branches.find(branch) == -1:
             return json_success()
-        content = get_push_commits_event_message(payload.get('user'), None, branch, commits)
+        content = get_push_commits_event_message(payload['user'], None, branch, commits)
         subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=repository['name'], branch=branch)
 
     check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",

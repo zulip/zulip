@@ -61,8 +61,7 @@ def get_changed_source_files(other_checkout):
 
     changed = set()  # type: Set[str]
     for filename in git_diff.split('\n'):
-        if filename in ["package.json", "zproject/settings.py", "tools/minify-js",
-                        "tools/tools/webpack.production.config.js"]:
+        if filename in ["package.json", "zproject/settings.py", "tools/minify-js"]:
             print("Changed a core JS pipeline file; not reusing cached minification results")
             return None
         if not filename.startswith(STATIC_PATH):
@@ -87,7 +86,6 @@ if prev_deploy:
 # Always use the newly compiled handlebars templates and webpack bundle.
 if prev_deploy:
     changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
-    changed_files.add(os.path.join(STATIC_PATH, 'js/bundle.js'))
 
 JS_SPECS = settings.JS_SPECS
 CLOSURE_BINARY = '/usr/bin/closure-compiler'

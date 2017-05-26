@@ -23,6 +23,8 @@ class RateLimit(object):
         self.message_limit = message_limit
         self.interval_limit = interval_limit
         self.message_list = []
+        self.error_message = '-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
+        'Is your bot trapped in an infinite loop by reacting to its own messages?'
 
     def is_legal(self):
         self.message_list.append(time.time())
@@ -32,6 +34,11 @@ class RateLimit(object):
             return time_diff >= self.interval_limit
         else:
             return True
+
+    def show_error_and_exit(self):
+        logging.error(self.error_message)
+        sys.exit(1)
+
 
 class BotHandlerApi(object):
     def __init__(self, client):
@@ -49,22 +56,25 @@ class BotHandlerApi(object):
 
     def send_message(self, *args, **kwargs):
         if self._rate_limit.is_legal():
-            self._client.send_message(*args, **kwargs)
+            return self._client.send_message(*args, **kwargs)
         else:
-            logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
-                          'Is your bot trapped in an infinite loop by reacting to'
-                          ' its own messages?')
-            sys.exit(1)
+            self._rate_limit.show_error_and_exit()
+
+    def update_message(self, *args, **kwargs):
+        if self._rate_limit.is_legal():
+            return self._client.update_message(*args, **kwargs)
+        else:
+            self._rate_limit.show_error_and_exit()
 
     def send_reply(self, message, response):
         if message['type'] == 'private':
-            self.send_message(dict(
+            return self.send_message(dict(
                 type='private',
                 to=[x['email'] for x in message['display_recipient'] if self.email != x['email']],
                 content=response,
             ))
         else:
-            self.send_message(dict(
+            return self.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
                 subject=message['subject'],

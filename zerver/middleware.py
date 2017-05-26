@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.response import json_error
 from zerver.lib.request import JsonableError
 from django.db import connection
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
@@ -253,7 +253,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+        # type: (HttpRequest, StreamingHttpResponse) -> StreamingHttpResponse
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
@@ -324,11 +324,11 @@ class RateLimitMiddleware(object):
         from zerver.lib.rate_limiter import max_api_calls
         # Add X-RateLimit-*** headers
         if hasattr(request, '_ratelimit_applied_limits'):
-            response['X-RateLimit-Limit'] = max_api_calls(request.user)
+            response['X-RateLimit-Limit'] = str(max_api_calls(request.user))
             if hasattr(request, '_ratelimit_secs_to_freedom'):
-                response['X-RateLimit-Reset'] = int(time.time() + request._ratelimit_secs_to_freedom)
+                response['X-RateLimit-Reset'] = str(int(time.time() + request._ratelimit_secs_to_freedom))
             if hasattr(request, '_ratelimit_remaining'):
-                response['X-RateLimit-Remaining'] = request._ratelimit_remaining
+                response['X-RateLimit-Remaining'] = str(request._ratelimit_remaining)
         return response
 
     def process_exception(self, request, exception):

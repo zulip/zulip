@@ -32,7 +32,7 @@ def get_proper_action(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     if action_type == 'updateBoard':
         data = get_action_data(payload)
-        if data.get('old').get('name'):
+        if data['old']['name']:
             return CHANGE_NAME
         raise UnknownUpdateBoardAction()
     return action_type
@@ -40,34 +40,34 @@ def get_proper_action(payload, action_type):
 def get_subject(payload):
     # type: (Mapping[str, Any]) -> Text
     data = {
-        'board_name': get_action_data(payload).get('board').get('name')
+        'board_name': get_action_data(payload)['board']['name']
     }
     return TRELLO_SUBJECT_TEMPLATE.format(**data)
 
 def get_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
-    creator = payload.get('action').get('memberCreator').get('fullName')
+    creator = payload['action']['memberCreator']['fullName']
     return TRELLO_MESSAGE_TEMPLATE.format(full_name=creator, rest=message_body)
 
 def get_managed_member_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'member_name': payload.get('action').get('member').get('fullName'),
+        'member_name': payload['action']['member']['fullName'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_create_list_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'list_name': get_action_data(payload).get('list').get('name'),
+        'list_name': get_action_data(payload)['list']['name'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_change_name_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
-        'old_name': get_action_data(payload).get('old').get('name'),
+        'old_name': get_action_data(payload)['old']['name']
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -85,11 +85,11 @@ def get_filled_board_url_template(payload):
 
 def get_board_name(payload):
     # type: (Mapping[str, Any]) -> Text
-    return get_action_data(payload).get('board').get('name')
+    return get_action_data(payload)['board']['name']
 
 def get_board_url(payload):
     # type: (Mapping[str, Any]) -> Text
-    return u'https://trello.com/b/{}'.format(get_action_data(payload).get('board').get('shortLink'))
+    return u'https://trello.com/b/{}'.format(get_action_data(payload)['board']['shortLink'])
 
 def get_message_body(action_type):
     # type: (Text) -> Text
@@ -97,7 +97,7 @@ def get_message_body(action_type):
 
 def get_action_data(payload):
     # type: (Mapping[str, Any]) -> Mapping[str, Any]
-    return payload.get('action').get('data')
+    return payload['action']['data']
 
 ACTIONS_TO_FILL_BODY_MAPPER = {
     REMOVE_MEMBER: get_managed_member_body,

@@ -36,7 +36,7 @@ provider, you can add to `/etc/zulip/settings.py` the following:
 
 ```
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/var/log/zulip/emails
+EMAIL_FILE_PATH = '/var/log/zulip/emails'
 ```
 
 Outgoing emails that Zulip would have sent will just be written to

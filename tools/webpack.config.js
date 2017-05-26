@@ -1,22 +1,15 @@
 var path = require('path');
+var assets = require('./webpack.assets.json');
 
-module.exports = {
-    entry: [
-        'webpack-dev-server/client?http://0.0.0.0:9991/socket.io',
-        './static/js/src/main.js',
-    ],
-    devtool: 'eval',
+module.exports =  {
+    context: path.resolve(__dirname, "../"),
+    entry: assets,
+    module: {
+        noParse: /(min)\.js/,
+    },
     output: {
-        publicPath: 'http://0.0.0.0:9991/webpack/',
-        path: path.resolve(__dirname, '../static/js'),
-        filename: 'bundle.js',
+        path: path.resolve(__dirname, '../static/webpack-bundles'),
+        filename: '[name].js',
     },
-    devServer: {
-        port: 9994,
-        stats: "errors-only",
-        watchOptions: {
-            aggregateTimeout: 300,
-            poll: 1000,
-        },
-    },
+    plugins: [],
 };

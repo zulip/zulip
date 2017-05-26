@@ -20,7 +20,7 @@ from .exceptions import UnsupportedAction
 def api_trello_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='trello')):
     # type: (HttpRequest, UserProfile, Mapping[str, Any], Text) -> HttpResponse
     payload = ujson.loads(request.body)
-    action_type = payload.get('action').get('type')
+    action_type = payload['action'].get('type')
     try:
         subject, body = get_subject_and_body(payload, action_type)
     except UnsupportedAction:

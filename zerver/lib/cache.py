@@ -154,7 +154,7 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
         # type: (Callable[..., Any]) -> (Callable[..., Any])
         @wraps(func)
         def func_with_caching(*args, **kwargs):
-            # type: (*Any, **Any) -> Callable[..., Any]
+            # type: (*Any, **Any) -> Any
             key = keyfunc(*args, **kwargs)
 
             val = cache_get(key, cache_name=cache_name)

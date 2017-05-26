@@ -79,7 +79,7 @@ def check_none_or(sub_validator):
     return f
 
 def check_list(sub_validator, length=None):
-    # type: (Validator, Optional[int]) -> Validator
+    # type: (Optional[Validator], Optional[int]) -> Validator
     def f(var_name, val):
         # type: (str, Any) -> Optional[str]
         if not isinstance(val, list):

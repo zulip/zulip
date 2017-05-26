@@ -95,7 +95,6 @@ var keypress_mappings = {
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
-    85: {name: 'keyboard_sub', message_view_only: false}, //'U'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: false}, // 'd'
@@ -417,6 +416,17 @@ exports.process_hotkey = function (e, hotkey) {
             }
     }
 
+    if (hotkey.message_view_only && modals.is_active()) {
+        if (exports.processing_text()) {
+            return false;
+        }
+        if (event_name === 'narrow_by_subject' && modals.streams_open()) {
+            subs.keyboard_sub();
+            return true;
+        }
+        return false;
+    }
+
     if (modals.settings_open()) {
         if (exports.processing_text()) {
             return false;
@@ -437,10 +447,6 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (modals.info_overlay_open()) {
-        return false;
-    }
-
-    if (hotkey.message_view_only && modals.is_active()) {
         return false;
     }
 
@@ -564,11 +570,6 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'stream_cycle_forward':
             navigate.cycle_stream('forward');
-            return true;
-        case 'keyboard_sub':
-            if (modals.streams_open()) {
-                subs.keyboard_sub();
-            }
             return true;
         case 'view_selected_stream':
             if (modals.streams_open()) {

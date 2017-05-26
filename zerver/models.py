@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 import django.contrib.auth
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.validators import URLValidator, MinLengthValidator, \
     RegexValidator
 from django.dispatch import receiver
@@ -45,6 +45,7 @@ import logging
 import sre_constants
 import time
 import datetime
+import sys
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -520,6 +521,16 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     """
     INCOMING_WEBHOOK_BOT = 2
     OUTGOING_WEBHOOK_BOT = 3
+    """
+    Embedded bots run within the Zulip server itself; events are added to the
+    embedded_bots queue and then handled by a QueueProcessingWorker.
+    """
+    EMBEDDED_BOT = 4
+
+    SERVICE_BOT_TYPES = [
+        OUTGOING_WEBHOOK_BOT,
+        EMBEDDED_BOT
+    ]
 
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
@@ -717,6 +728,16 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     def is_outgoing_webhook_bot(self):
         # type: () -> bool
         return self.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+
+    @property
+    def is_embedded_bot(self):
+        # type: () -> bool
+        return self.bot_type == UserProfile.EMBEDDED_BOT
+
+    @property
+    def is_service_bot(self):
+        # type: () -> bool
+        return self.is_bot and self.bot_type in UserProfile.SERVICE_BOT_TYPES
 
     @staticmethod
     def emojiset_choices():
@@ -1380,6 +1401,16 @@ def get_user(email, realm):
     # type: (Text, Realm) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
+def get_user_for_mgmt(email, realm=None):
+    # type: (Text, Optional[Realm]) -> UserProfile
+    if realm is not None:
+        return get_user(email, realm)
+    try:
+        return UserProfile.objects.select_related().get(email__iexact=email.strip())
+    except MultipleObjectsReturned:
+        logging.warning("Please specify the realm as this email is a member of multiple realms.")
+        sys.exit(1)
+
 @cache_with_key(bot_profile_cache_key, timeout=3600*24*7)
 def get_system_bot(email):
     # type: (Text) -> UserProfile
@@ -1727,18 +1758,30 @@ class CustomProfileFieldValue(models.Model):
     class Meta(object):
         unique_together = ('user_profile', 'field')
 
+# A Service corresponds to either an outgoing webhook bot or an embedded bot.
+# The type of Service is determined by the bot_type field of the referenced
+# UserProfile.
+#
+# If the Service is an outgoing webhook bot:
+# - name is any human-readable identifier for the Service
+# - base_url is the address of the third-party site
+# - token is used for authentication with the third-party site
+#
+# If the Service is an embedded bot:
+# - name is the canonical name for the type of bot (e.g. 'xkcd' for an instance
+#   of the xkcd bot); multiple embedded bots can have the same name, but all
+#   embedded bots with the same name will run the same code
+# - base_url and token are currently unused
 class Service(models.Model):
     name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH) # type: Text
-    # owner of service/bot user corresponding to the service
+    # Bot user corresponding to the Service.  The bot_type of this user
+    # deterines the type of service.  If non-bot services are added later,
+    # user_profile can also represent the owner of the Service.
     user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    # address of the third party site
     base_url = models.TextField() # type: Text
-    # used for authentication to third party site
     token = models.TextField() # type: Text
-    # the interface used to send data to third party site
+    # Interface / API version of the service.
     interface = models.PositiveSmallIntegerField(default=1)  # type: int
-
-    # Valid interfaces are {}
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _interfaces = {} # type: Dict[int, Text]
