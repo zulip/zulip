@@ -228,7 +228,9 @@ def get_file_info(request, user_file):
         if guessed_type is not None:
             content_type = force_text(guessed_type)
     else:
-        uploaded_file_name = uploaded_file_name + guess_extension(content_type)
+        extension = guess_extension(content_type)
+        if extension is not None:
+            uploaded_file_name = uploaded_file_name + extension
 
     uploaded_file_name = urllib.parse.unquote(uploaded_file_name)
     uploaded_file_size = user_file.size

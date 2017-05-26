@@ -963,7 +963,7 @@ def get_stream_backend(stream_name, realm):
         name__iexact=stream_name.strip(), realm_id=realm.id)
 
 def get_active_streams(realm):
-    # type: (Realm) -> QuerySet
+    # type: (Optional[Realm]) -> QuerySet
     """
     Return all streams (including invite-only streams) that have not been deactivated.
     """
