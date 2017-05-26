@@ -85,9 +85,7 @@ def json_change_ui_settings(request, user_profile,
             user_profile.default_desktop_notifications != default_desktop_notifications:
         do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
         result['default_desktop_notifications'] = default_desktop_notifications
-
     return json_success(result)
-
 @authenticated_json_post_view
 @has_request_variables
 def json_change_settings(request, user_profile,
@@ -197,8 +195,7 @@ def json_change_notify_settings(request, user_profile,
                                 pm_content_in_desktop_notifications=REQ(validator=check_bool,
                                                                         default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
-    result = {}
-
+    result = {}  # type: Dict[str, Any]
     # Stream notification settings.
 
     req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
