@@ -363,6 +363,10 @@ exports.get_message_reactions = function (message) {
     return reactions;
 };
 
+exports.is_reaction = function (emoji) {
+    return emoji.classList.contains('reaction');
+};
+
 $(function () {
     $(document).on('message_id_changed', function (event) {
         // When a message ID is changed via editing, update any
