@@ -449,7 +449,7 @@ exports.change_state = (function () {
 
 exports.launch = function (hash) {
     exports.setup_page(function () {
-        modals.open_overlay({
+        overlays.open_overlay({
             name: 'subscriptions',
             overlay: $("#subscription_overlay"),
             on_close: exports.close,
@@ -542,7 +542,7 @@ function ajaxSubscribe(stream) {
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream}]) },
         success: function (resp, statusText, xhr) {
-            if (modals.streams_open()) {
+            if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
 
                 actually_filter_streams();

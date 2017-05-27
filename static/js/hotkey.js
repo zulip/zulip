@@ -166,8 +166,8 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if (modals.is_active()) {
-        modals.close_active();
+    if (overlays.is_active()) {
+        overlays.close_active();
         return true;
     }
 
@@ -268,13 +268,13 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (modals.settings_open()) {
+    if (overlays.settings_open()) {
         // On the settings page just let the browser handle
         // the enter key for things like submitting forms.
         return false;
     }
 
-    if (modals.streams_open()) {
+    if (overlays.streams_open()) {
         return false;
     }
 
@@ -416,18 +416,18 @@ exports.process_hotkey = function (e, hotkey) {
             }
     }
 
-    if (hotkey.message_view_only && modals.is_active()) {
+    if (hotkey.message_view_only && overlays.is_active()) {
         if (exports.processing_text()) {
             return false;
         }
-        if (event_name === 'narrow_by_subject' && modals.streams_open()) {
+        if (event_name === 'narrow_by_subject' && overlays.streams_open()) {
             subs.keyboard_sub();
             return true;
         }
         return false;
     }
 
-    if (modals.settings_open()) {
+    if (overlays.settings_open()) {
         if (exports.processing_text()) {
             return false;
         }
@@ -446,11 +446,11 @@ exports.process_hotkey = function (e, hotkey) {
         return reactions.reaction_navigate(e, event_name);
     }
 
-    if (modals.info_overlay_open()) {
+    if (overlays.info_overlay_open()) {
         return false;
     }
 
-    if ((event_name === 'up_arrow' || event_name === 'down_arrow') && modals.streams_open()) {
+    if ((event_name === 'up_arrow' || event_name === 'down_arrow') && overlays.streams_open()) {
         return subs.switch_rows(event_name);
     }
 
@@ -516,10 +516,10 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'left_arrow') {
-        if (modals.lightbox_open()) {
+        if (overlays.lightbox_open()) {
             lightbox.prev();
             return true;
-        } else if (modals.streams_open()) {
+        } else if (overlays.streams_open()) {
             subs.toggle_view(event_name);
             return true;
         }
@@ -529,10 +529,10 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'right_arrow') {
-        if (modals.lightbox_open()) {
+        if (overlays.lightbox_open()) {
             lightbox.next();
             return true;
-        } else if (modals.streams_open()) {
+        } else if (overlays.streams_open()) {
             subs.toggle_view(event_name);
             return true;
         }
@@ -572,12 +572,12 @@ exports.process_hotkey = function (e, hotkey) {
             navigate.cycle_stream('forward');
             return true;
         case 'view_selected_stream':
-            if (modals.streams_open()) {
+            if (overlays.streams_open()) {
                 subs.view_stream();
             }
             return true;
         case 'n_key':
-            if (modals.streams_open()) {
+            if (overlays.streams_open()) {
                 subs.new_stream_clicked();
             } else {
                 narrow.narrow_to_next_topic();

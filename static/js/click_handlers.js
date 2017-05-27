@@ -314,7 +314,7 @@ $(function () {
     });
 
     $(".brand").on('click', function (e) {
-        if (modals.is_active()) {
+        if (overlays.is_active()) {
             ui_util.change_tab_to('#home');
         } else {
             narrow.restore_home_state();
@@ -599,7 +599,7 @@ $(function () {
         }
 
         // Unfocus our compose area if we click out of it. Don't let exits out
-        // of modals or selecting text (for copy+paste) trigger cancelling.
+        // of overlays or selecting text (for copy+paste) trigger cancelling.
         if (compose_state.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&

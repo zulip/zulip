@@ -1,46 +1,46 @@
-var modals = (function () {
+var overlays = (function () {
 
 var exports = {};
 
 var active_overlay;
 var close_handler;
-var open_modal_name;
+var open_overlay_name;
 
 function reset_state() {
     active_overlay = undefined;
     close_handler = undefined;
-    open_modal_name = undefined;
+    open_overlay_name = undefined;
 }
 
 exports.is_active = function () {
-    return !!open_modal_name;
+    return !!open_overlay_name;
 };
 
 exports.info_overlay_open = function () {
-    return open_modal_name === 'informationalOverlays';
+    return open_overlay_name === 'informationalOverlays';
 };
 
 exports.settings_open = function () {
-    return open_modal_name === 'settings';
+    return open_overlay_name === 'settings';
 };
 
 exports.streams_open = function () {
-    return open_modal_name === 'subscriptions';
+    return open_overlay_name === 'subscriptions';
 };
 
 exports.lightbox_open = function () {
-    return open_modal_name === 'lightbox';
+    return open_overlay_name === 'lightbox';
 };
 
 exports.open_overlay = function (opts) {
     if (!opts.name || !opts.overlay || !opts.on_close) {
-        blueslip.error('Programming error in open_modal');
+        blueslip.error('Programming error in open_overlay');
         return;
     }
 
-    if (active_overlay || open_modal_name || close_handler) {
+    if (active_overlay || open_overlay_name || close_handler) {
         blueslip.error('Programming error--trying to open ' + opts.name +
-            ' before closing ' + open_modal_name);
+            ' before closing ' + open_overlay_name);
         return;
     }
 
@@ -52,7 +52,7 @@ exports.open_overlay = function (opts) {
         return;
     }
 
-    open_modal_name = opts.name;
+    open_overlay_name = opts.name;
     active_overlay = opts.overlay;
     opts.overlay.addClass('show');
 
@@ -62,16 +62,16 @@ exports.open_overlay = function (opts) {
     };
 };
 
-exports.close_modal = function (name) {
-    if (name !== open_modal_name) {
-        blueslip.error("Trying to close " + name + " when " + open_modal_name + " is open." );
+exports.close_overlay = function (name) {
+    if (name !== open_overlay_name) {
+        blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open." );
         return;
     }
 
     active_overlay.removeClass("show");
 
     if (!close_handler) {
-        blueslip.error("Modal close handler for " + name + " not properly setup." );
+        blueslip.error("Overlay close handler for " + name + " not properly setup." );
         return;
     }
 
@@ -79,12 +79,12 @@ exports.close_modal = function (name) {
 };
 
 exports.close_active = function () {
-    if (!open_modal_name) {
+    if (!open_overlay_name) {
         blueslip.warn('close_active() called without checking is_active()');
         return;
     }
 
-    exports.close_modal(open_modal_name);
+    exports.close_overlay(open_overlay_name);
 };
 
 exports.close_for_hash_change = function () {
@@ -93,7 +93,7 @@ exports.close_for_hash_change = function () {
 };
 
 exports.open_settings = function () {
-    modals.open_overlay({
+    overlays.open_overlay({
         name: 'settings',
         overlay: $("#settings_overlay_container"),
         on_close: function () {
@@ -117,7 +117,7 @@ $(function () {
 
         var target_name = $target.attr("data-overlay");
 
-        exports.close_modal(target_name);
+        exports.close_overlay(target_name);
 
         e.preventDefault();
         e.stopPropagation();
@@ -129,5 +129,5 @@ return exports;
 }());
 
 if (typeof module !== 'undefined') {
-    module.exports = modals;
+    module.exports = overlays;
 }

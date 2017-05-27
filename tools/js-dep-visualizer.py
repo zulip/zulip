@@ -221,14 +221,14 @@ def find_edges_to_remove(graph, methods):
         ('subs', 'narrow'),
         ('unread_ui', 'pm_list'),
         ('unread_ui', 'stream_list'),
-        ('modals', 'hashchange'),
+        ('overlays', 'hashchange'),
         ('emoji_picker', 'reactions'),
     ]
 
     def cut_is_legal(edge):
         # type: (Edge) -> bool
         parent, child = edge
-        if child in ['reload', 'popovers', 'modals', 'notifications',
+        if child in ['reload', 'popovers', 'overlays', 'notifications',
                      'server_events', 'compose_actions']:
             return True
         return edge in APPROVED_CUTS

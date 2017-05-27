@@ -105,16 +105,16 @@ exports.open = function (image) {
         return;
     }
 
-    function lightbox_close_modal() {
+    function lightbox_close_overlay() {
         $(".player-container iframe").remove();
         is_open = false;
         document.activeElement.blur();
     }
 
-    modals.open_overlay({
+    overlays.open_overlay({
         name: 'lightbox',
         overlay: $("#lightbox_overlay"),
-        on_close: lightbox_close_modal,
+        on_close: lightbox_close_overlay,
     });
 
     popovers.hide_all();

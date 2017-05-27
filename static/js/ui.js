@@ -130,7 +130,7 @@ exports.show_info_overlay = function (target) {
     var overlay = $(".informational-overlays");
 
     if (!overlay.hasClass("show")) {
-        modals.open_overlay({
+        overlays.open_overlay({
             name:  'informationalOverlays',
             overlay: overlay,
             on_close: function () {},
