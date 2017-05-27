@@ -32,7 +32,7 @@ as it is not possible for some content.)
 There are tools available to automatically audit a web page for compliance
 with many of the WCAG guidelines.  Here are some of the more useful ones:
 
-* [Accessibility Developer Tools][chrome-webstory]
+* [Accessibility Developer Tools][chrome-webstore]
   This open source Chrome extension from Google adds an accessibility audit to
   the "Audits" tab of the Chrome Developer Tools.  The audit is performed
   against the page's DOM via JavaScript, allowing it to identify some issues
