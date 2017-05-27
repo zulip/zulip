@@ -25,12 +25,12 @@ def get_clean_response(m, method):
         return "Sorry, no result found! Please check the word."
 
 def get_thesaurus_result(original_content):
-    help_message = "To use this bot, start messages with either \
-                            @mention-bot synonym (to get the synonyms of a given word) \
-                            or @mention-bot antonym (to get the antonyms of a given word). \
-                            Phrases are not accepted so only use single words \
-                            to search. For example you could search '@mention-bot synonym hello' \
-                            or '@mention-bot antonym goodbye'."
+    help_message = ("To use this bot, start messages with either "
+                    "@mention-bot synonym (to get the synonyms of a given word) "
+                    "or @mention-bot antonym (to get the antonyms of a given word). "
+                    "Phrases are not accepted so only use single words "
+                    "to search. For example you could search '@mention-bot synonym hello' "
+                    "or '@mention-bot antonym goodbye'.")
     query = original_content.strip().split(' ', 1)
     if len(query) < 2:
         return help_message
