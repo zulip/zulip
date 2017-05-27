@@ -80,7 +80,7 @@ class CommuteHandler(object):
     # adds API Authentication Key to url request
     def get_api_key(self):
         # commute.config must be moved from
-        # ~/zulip/contrib_bots/bots/commute/commute.config into
+        # ~/zulip/api/bots/commute/commute.config into
         # ~/commute.config for program to work
         # see readme.md for more information
         with open(CONFIG_PATH) as settings:

@@ -29,8 +29,8 @@ to messages in any of the following settings:
 Here is an example of running the "follow-up" bot from
 inside a Zulip repo (and in your remote instance):
 
-    cd ~/zulip/contrib_bots
-    ./run.py bots/followup/followup.py --config-file ~/.zuliprc-prod
+    cd ~/zulip/api
+    bots_api/run.py bots/followup/followup.py --config-file ~/.zuliprc-prod
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as

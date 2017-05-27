@@ -44,8 +44,8 @@ If you need help while the bot is running just input `@mention-bot help`.
 Here is an example of running the "yoda" bot from
 inside a Zulip repo:
 
-    cd ~/zulip/contrib_bots
-    ./run.py bots/yoda/yoda.py --config-file ~/.zuliprc-prod
+    cd ~/zulip/api
+    bots_api/run.py bots/yoda/yoda.py --config-file ~/.zuliprc-prod
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as

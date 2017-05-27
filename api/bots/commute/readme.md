@@ -17,7 +17,7 @@ the user home directory and add an API key.
 Move
 
 ```
-~/zulip/contrib_bots/bots/commute/commute.config
+~/zulip/api/bots/commute/commute.config
 ```
 
 into

@@ -11,14 +11,14 @@ except ImportError:
     raise ImportError("""It looks like you are missing chatterbot.
                       Please: pip install chatterbot""")
 
-CONTRIB_BOTS_DIR = os.path.dirname(os.path.abspath(__file__))
-os.chdir(os.path.dirname(CONTRIB_BOTS_DIR))
-sys.path.insert(0, os.path.dirname(CONTRIB_BOTS_DIR))
+BOTS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(BOTS_DIR))
+sys.path.insert(0, os.path.dirname(BOTS_DIR))
 
-JOKES_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets/var/jokes.json')
-DATABASE_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets/var/database.db')
-DIRECTORY_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets')
-VAR_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets/var')
+JOKES_PATH = os.path.join(BOTS_DIR, 'assets/var/jokes.json')
+DATABASE_PATH = os.path.join(BOTS_DIR, 'assets/var/database.db')
+DIRECTORY_PATH = os.path.join(BOTS_DIR, 'assets')
+VAR_PATH = os.path.join(BOTS_DIR, 'assets/var')
 
 if not os.path.exists(DIRECTORY_PATH):
     os.makedirs(DIRECTORY_PATH)

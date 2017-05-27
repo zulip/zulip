@@ -12,7 +12,7 @@ from mock import MagicMock, patch
 
 from run import get_lib_module
 from bot_lib import StateHandler
-import bot_lib
+from bots_api import bot_lib
 from six.moves import zip
 
 from unittest import TestCase
@@ -27,8 +27,7 @@ class BotTestCase(TestCase):
 
     def assert_bot_output(self, request, response):
         # type: (Dict[str, Any], str) -> None
-        bot_module = os.path.join(current_dir, "bots",
-                                  self.bot_name, self.bot_name + ".py")
+        bot_module = os.path.normpath(os.path.join(current_dir, "../bots", self.bot_name, self.bot_name + ".py"))
         self.bot_test(messages=[request], bot_module=bot_module,
                       bot_response=[response])
 
@@ -52,7 +51,7 @@ class BotTestCase(TestCase):
         # function.
         # type: (List[Dict[str, Any]], Any, List[str]) -> None
         # Mocking BotHandlerApi
-        with patch('contrib_bots.bot_lib.BotHandlerApi') as MockClass:
+        with patch('bots_api.bot_lib.BotHandlerApi') as MockClass:
             instance = MockClass.return_value
 
             for (message, response) in zip(messages, bot_response):

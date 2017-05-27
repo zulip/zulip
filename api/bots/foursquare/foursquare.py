@@ -9,11 +9,11 @@ from six.moves import configparser as cp
 from six.moves import range
 
 home = expanduser('~')
-CONFIG_PATH = home + '/zulip/contrib_bots/bots/foursquare/foursquare.config'
+CONFIG_PATH = home + '/zulip/api/bots/foursquare/foursquare.config'
 
 def get_api_key():
     # foursquare.config must have been moved from
-    # ~/zulip/contrib_bots/bots/foursquare/foursquare.config into
+    # ~/zulip/api/bots/foursquare/foursquare.config into
     # ~/foursquare.config for program to work
     # see readme.md for more information
     with open(CONFIG_PATH) as settings:

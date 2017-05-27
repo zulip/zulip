@@ -26,9 +26,10 @@ if __name__ == '__main__':
 
     bots_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = dir_join(bots_dir, '..')
-    bots_test_dir = dir_join(bots_dir, 'bots')
+    bots_test_dir = dir_join(bots_dir, '../bots')
 
     sys.path.insert(0, root_dir)
+    sys.path.insert(0, bots_test_dir)
 
     # mypy doesn't recognize the TestLoader attribute, even though the code
     # is executable
