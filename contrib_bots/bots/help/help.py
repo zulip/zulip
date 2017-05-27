@@ -12,11 +12,7 @@ class HelpHandler(object):
             '''
 
     def handle_message(self, message, client, state_handler):
-        help_content = '''
-            Info on Zulip can be found here:
-            https://github.com/zulip/zulip
-            '''.strip()
-
+        help_content = "Info on Zulip can be found here:\nhttps://github.com/zulip/zulip"
         client.send_reply(message, help_content)
 
 handler_class = HelpHandler
