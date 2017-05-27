@@ -7,10 +7,14 @@ module.exports =  {
     module: {
         noParse: /(min)\.js/,
         rules: [
+            // Run the typescript compilier on .ts files before webpack
             {
                 test: /\.tsx?$/,
                 loader: 'ts-loader',
             },
+            // This loads and transforms sourcemap files from other compiliers.
+            // The typescript comilier will generate a sourcemap and source-map-loaded will output
+            // the correct sourcemap from that.
             {
                 enforce: 'pre',
                 test: /\.js$/,
