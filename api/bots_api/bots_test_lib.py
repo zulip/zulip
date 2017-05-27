@@ -12,7 +12,7 @@ from mock import MagicMock, patch
 
 from run import get_lib_module
 from bot_lib import StateHandler
-from contrib_bots import bot_lib
+import bot_lib
 from six.moves import zip
 
 from unittest import TestCase

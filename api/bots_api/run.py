@@ -17,8 +17,8 @@ from bot_lib import run_message_handler_for_bot
 def get_lib_module(bots_fn):
     # type: (str) -> ModuleType
     bots_fn = os.path.realpath(bots_fn)
-    if not os.path.dirname(bots_fn).startswith(os.path.join(our_dir, 'bots')):
-        print('Sorry, we will only import code from contrib_bots/bots.')
+    if not os.path.dirname(bots_fn).startswith(os.path.normpath(os.path.join(our_dir, "../bots"))):
+        print('Sorry, we will only import code from api/bots.')
         sys.exit(1)
 
     if not bots_fn.endswith('.py'):

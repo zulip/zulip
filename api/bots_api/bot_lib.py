@@ -15,8 +15,8 @@ from types import ModuleType
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
 # For dev setups, we can find the API in the repo itself.
-if os.path.exists(os.path.join(our_dir, '../api/zulip')):
-    sys.path.insert(0, '../api')
+if os.path.exists(os.path.join(our_dir, '../zulip')):
+    sys.path.insert(0, os.path.join(our_dir,'../'))
 
 from zulip import Client
 
