@@ -56,21 +56,6 @@ Use commands like `fs help write` for more details on specific
 commands.
 '''
 
-def test():
-    fs = fs_new()
-    user = 'test_user'
-    fs['user_paths'][user] = '/'
-    assert is_directory(fs, '/')
-
-    for cmd, expected_response in sample_conversation():
-        fs, msg = fs_command(fs, user, cmd)
-        if msg != expected_response:
-            raise AssertionError('''
-                cmd: %s
-                expected: %s
-                but got : %s
-                ''' % (cmd, expected_response, msg))
-
 def sample_conversation():
     return [
         ('cd /', 'Current path: /'),
@@ -349,8 +334,3 @@ def is_directory(fs, fn):
     return fs[fn]['kind'] == 'dir'
 
 handler_class = VirtualFsHandler
-
-if __name__ == '__main__':
-    # We eventually want to test bots with a "real" testing
-    # framework.
-    test()
