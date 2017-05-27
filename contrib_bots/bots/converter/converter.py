@@ -8,7 +8,7 @@ import importlib
 import sys
 from math import log10, floor
 
-from . import utils
+import utils
 import re
 
 def is_float(value):
