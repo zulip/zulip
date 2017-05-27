@@ -124,7 +124,7 @@ exports.initialize = function () {
         name: 'invite',
         overlay: $('#invite-user'),
         on_close: function () {
-            hashchange.exit_modal();
+            hashchange.exit_overlay();
         },
     });
 };

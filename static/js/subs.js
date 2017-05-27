@@ -462,7 +462,7 @@ exports.launch = function (hash) {
 };
 
 exports.close = function () {
-    hashchange.exit_modal();
+    hashchange.exit_overlay();
     subs.remove_miscategorized_streams();
 };
 

@@ -97,7 +97,7 @@ exports.open_settings = function () {
         name: 'settings',
         overlay: $("#settings_overlay_container"),
         on_close: function () {
-            hashchange.exit_modal();
+            hashchange.exit_overlay();
         },
     });
 };

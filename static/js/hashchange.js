@@ -169,7 +169,7 @@ function do_hashchange(from_reload) {
 // return `true` for the current state -- we want to ignore hash changes from
 // within the settings page. The previous hash however should return `false` as it
 // was outside of the scope of settings.
-// there is then an `exit_modal` function that allows the hash to change exactly
+// there is then an `exit_overlay` function that allows the hash to change exactly
 // once without triggering any events. This allows the hash to reset back from
 // a settings page to the previous view available before the settings page
 // (eg. narrow/is/private). This saves the state, scroll position, and makes the
@@ -290,7 +290,7 @@ exports.initialize = function () {
     hashchanged(true);
 };
 
-exports.exit_modal = function (callback) {
+exports.exit_overlay = function (callback) {
     if (should_ignore(window.location.hash)) {
         ui_util.blur_active_element();
         ignore.flag = true;

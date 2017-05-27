@@ -366,7 +366,7 @@ exports.launch = function () {
             name: 'drafts',
             overlay: $('#draft_overlay'),
             on_close: function () {
-                hashchange.exit_modal();
+                hashchange.exit_overlay();
             },
         });
 
