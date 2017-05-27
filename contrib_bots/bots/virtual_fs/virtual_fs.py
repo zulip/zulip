@@ -10,7 +10,7 @@ class VirtualFsHandler(object):
     def handle_message(self, message, client, state_handler):
         command = message['content']
         if command == "":
-            return
+            command = "help"
         sender = message['sender_email']
 
         state = state_handler.get_state()
