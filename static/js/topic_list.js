@@ -214,7 +214,7 @@ exports.set_click_handlers = function (callbacks) {
 
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
-        if (modals.is_active()) {
+        if (overlays.is_active()) {
             ui_util.change_tab_to('#home');
         }
 

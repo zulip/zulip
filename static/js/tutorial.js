@@ -504,7 +504,7 @@ function welcome() {
 }
 
 exports.start = function () {
-    if (modals.is_active()) {
+    if (overlays.is_active()) {
         ui_util.change_tab_to('#home');
     }
     narrow.deactivate();

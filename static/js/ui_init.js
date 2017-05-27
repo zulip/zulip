@@ -68,7 +68,7 @@ $(function () {
     });
 
     message_viewport.message_pane.mousewheel(function (e, delta) {
-        if (!modals.is_active()) {
+        if (!overlays.is_active()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
@@ -78,7 +78,7 @@ $(function () {
 
     $(window).resize($.throttle(50, resize.handler));
 
-    // Scrolling in modals, input boxes, and other elements that
+    // Scrolling in overlay. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
     // propagation in all cases.  Also, ignore the event if the
     // element is already at the top or bottom.  Otherwise we get a
