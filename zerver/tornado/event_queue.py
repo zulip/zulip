@@ -1,7 +1,7 @@
 # See http://zulip.readthedocs.io/en/latest/events-system.html for
 # high-level documentation on how this system works.
 from __future__ import absolute_import
-from typing import cast, AbstractSet, Any, Callable, Dict, List, \
+from typing import cast, AbstractSet, Any, Callable, Deque, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
 
 from django.utils.translation import ugettext as _
@@ -232,7 +232,7 @@ def compute_full_event_type(event):
 class EventQueue(object):
     def __init__(self, id):
         # type: (str) -> None
-        self.queue = deque() # type: ignore # type signature should Deque[Dict[str, Any]] but we need https://github.com/python/mypy/pull/2845 to be merged
+        self.queue = deque() # type: Deque[Dict[str, Any]]
         self.next_event_id = 0 # type: int
         self.id = id # type: str
         self.virtual_events = {} # type: Dict[str, Dict[str, Any]]
