@@ -6,6 +6,7 @@
   "main": "",
   "dependencies": {
     "clipboard": "1.5.16",
+    "emoji-datasource": "3.0.0",
     "expose-loader": "0.7.3",
     "fuzzysearch": "1.0.3",
     "handlebars": "4.0.6",
