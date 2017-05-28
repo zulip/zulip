@@ -58,6 +58,7 @@ class zulip::app_frontend_base {
     }
   }
 
+  $queues_multiprocess = $::memorysize_mb > 4000
   $queues = $zulip::base::normal_queues
   file { "/etc/supervisor/conf.d/zulip.conf":
     require => Package[supervisor],
