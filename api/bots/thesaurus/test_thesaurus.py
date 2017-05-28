@@ -17,32 +17,17 @@ class TestThesaurusBot(BotTestCase):
     bot_name = "thesaurus"
 
     def test_bot(self):
-        self.assert_bot_output(
-            {'content': "synonym good", 'type': "private", 'sender_email': "foo"},
-            "great, satisfying, exceptional, positive, acceptable"
-        )
-        self.assert_bot_output(
-            {'content': "synonym nice", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "cordial, kind, good, okay, fair"
-        )
-        self.assert_bot_output(
-            {'content': "synonym foo", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "bar, thud, X, baz, corge"
-        )
-        self.assert_bot_output(
-            {'content': "antonym dirty", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "ordered, sterile, spotless, moral, clean"
-        )
-        self.assert_bot_output(
-            {'content': "antonym bar", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "loss, whole, advantage, aid, failure"
-        )
-        self.assert_bot_output(
-            {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            ("To use this bot, start messages with either "
-             "@mention-bot synonym (to get the synonyms of a given word) "
-             "or @mention-bot antonym (to get the antonyms of a given word). "
-             "Phrases are not accepted so only use single words "
-             "to search. For example you could search '@mention-bot synonym hello' "
-             "or '@mention-bot antonym goodbye'."),
-        )
+        expected = {
+            "synonym good": "great, satisfying, exceptional, positive, acceptable",
+            "synonym nice": "cordial, kind, good, okay, fair",
+            "synonym foo": "bar, thud, X, baz, corge",
+            "antonym dirty": "ordered, sterile, spotless, moral, clean",
+            "antonym bar": "loss, whole, advantage, aid, failure",
+            "": ("To use this bot, start messages with either "
+                 "@mention-bot synonym (to get the synonyms of a given word) "
+                 "or @mention-bot antonym (to get the antonyms of a given word). "
+                 "Phrases are not accepted so only use single words "
+                 "to search. For example you could search '@mention-bot synonym hello' "
+                 "or '@mention-bot antonym goodbye'."),
+        }
+        self.check_expected_responses(expected)
