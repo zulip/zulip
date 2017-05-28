@@ -58,6 +58,10 @@ class zulip::app_frontend_base {
     }
   }
 
+  # This determines whether we run queue processors multithreaded or
+  # multiprocess.  Multiprocess scales much better, but requires more
+  # RAM; we just auto-detect based on available system RAM.
+  $queues_multiprocess = $::memorysize_mb > 3500
   $queues = $zulip::base::normal_queues
   file { "/etc/supervisor/conf.d/zulip.conf":
     require => Package[supervisor],
