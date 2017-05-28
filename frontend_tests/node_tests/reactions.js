@@ -5,8 +5,6 @@ add_dependencies({
     people: 'js/people.js',
 });
 
-var reactions = require("js/reactions.js");
-
 set_global('emoji', {
     emojis_name_to_css_class: {
         frown: 'frown-css',
@@ -27,27 +25,28 @@ set_global('blueslip', {
 set_global('page_params', {user_id: 5});
 
 set_global('channel', {});
+set_global('templates', {});
 
-(function make_people() {
-    var alice = {
-        email: 'alice@example.com',
-        user_id: 5,
-        full_name: 'Alice',
-    };
-    var bob = {
-        email: 'bob@example.com',
-        user_id: 6,
-        full_name: 'Bob van Roberts',
-    };
-    var cali = {
-        email: 'cali@example.com',
-        user_id: 7,
-        full_name: 'Cali',
-    };
-    people.add_in_realm(alice);
-    people.add_in_realm(bob);
-    people.add_in_realm(cali);
-}());
+var reactions = require("js/reactions.js");
+
+var alice = {
+    email: 'alice@example.com',
+    user_id: 5,
+    full_name: 'Alice',
+};
+var bob = {
+    email: 'bob@example.com',
+    user_id: 6,
+    full_name: 'Bob van Roberts',
+};
+var cali = {
+    email: 'cali@example.com',
+    user_id: 7,
+    full_name: 'Cali',
+};
+people.add_in_realm(alice);
+people.add_in_realm(bob);
+people.add_in_realm(cali);
 
 var message = {
     id: 1001,
@@ -126,4 +125,79 @@ set_global('message_store', {
 
     emoji_name = 'unknown-emoji';
     reactions.message_reaction_on_click(message_id, emoji_name);
+}());
+
+(function test_add_reaction() {
+    var event = {
+        message_id: 1001,
+        emoji_name: '8ball',
+        user: {
+            user_id: alice.user_id,
+        },
+    };
+
+    var message_reactions = $('our-reactions');
+    var message_row = $('our-message-row');
+    var message_table = $('.message_table');
+
+    message_table.add_child("[zid='1001']", message_row);
+    message_row.add_child('.message_reactions', message_reactions);
+
+    message_reactions.find = function (selector) {
+        assert.equal(selector, '.reaction_button');
+        return 'reaction-button-stub';
+    };
+
+    var template_called;
+    global.templates.render = function (template_name, data) {
+        template_called = true;
+        assert.equal(template_name, 'message_reaction');
+        assert.equal(data.message_id, 1001);
+        assert.equal(data.user.user_id, alice.user_id);
+        assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
+        return 'new-reaction-html-stub';
+    };
+
+    var insert_called;
+    $('new-reaction-html-stub').insertBefore = function (element) {
+        assert.equal(element, 'reaction-button-stub');
+        insert_called = true;
+    };
+
+    reactions.add_reaction(event);
+
+    assert(template_called);
+    assert(insert_called);
+
+    // Now, have Bob react to the same emoji.
+
+    event = {
+        message_id: 1001,
+        emoji_name: '8ball',
+        user: {
+            user_id: bob.user_id,
+        },
+    };
+
+    var count_element = $('count-element');
+    var reaction_element = $('reaction-element');
+    reaction_element.add_child('.message_reaction_count', count_element);
+
+    var title_set;
+    reaction_element.prop = function (prop_name, value) {
+        assert.equal(prop_name, 'title');
+        var expected_msg = 'You (click to remove)' +
+            ' and Bob van Roberts reacted with :8ball:';
+        assert.equal(value, expected_msg);
+        title_set = true;
+    };
+
+    message_reactions.find = function (selector) {
+        assert.equal(selector, "[data-emoji-name='8ball']");
+        return reaction_element;
+    };
+
+    reactions.add_reaction(event);
+    assert(title_set);
+
 }());
