@@ -33,7 +33,7 @@ EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
-EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, 'static', 'third', 'emoji-data')
+EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource')
 
 EMOJI_CODES_FILE_TEMPLATE = """\
 var emoji_codes = (function () {
@@ -64,9 +64,9 @@ span.emoji
 {
     display: inline-block;
     background-image: url('sheet_%(emojiset)s_32.png');
-    -webkit-background-size: 4100%%;
-    -moz-background-size: 4100%%;
-    background-size: 4100%%;
+    -webkit-background-size: 4900%%;
+    -moz-background-size: 4900%%;
+    background-size: 4900%%;
     background-repeat: no-repeat;
 
     /* Hide the text. */
@@ -275,8 +275,8 @@ def dump_emojis(cache_path):
         if emoji["has_img_google"]:
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': emoji['unified'].lower(),
-                'pos_x': (emoji["sheet_x"] * 100) / 40,
-                'pos_y': (emoji["sheet_y"] * 100) / 40,
+                'pos_x': (emoji["sheet_x"] * 100) / 48,
+                'pos_y': (emoji["sheet_y"] * 100) / 48,
             }
             # Remove the code below once the migration to iamcal's dataset is complete.
             emoji_name = emoji['short_name']
@@ -284,13 +284,14 @@ def dump_emojis(cache_path):
             if emoji_name in emoji_map and codepoint != emoji_map[emoji_name]:
                 emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                     'codepoint': emoji_map[emoji_name],
-                    'pos_x': (emoji["sheet_x"] * 100) / 40,
-                    'pos_y': (emoji["sheet_y"] * 100) / 40,
+                    'pos_x': (emoji["sheet_x"] * 100) / 48,
+                    'pos_y': (emoji["sheet_y"] * 100) / 48,
                 }
 
     for emojiset in EMOJISETS:
-        sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'sheet_%s_32.png' % (emojiset,))
-        run(['cp', sprite_sheet, cache_path], shell=True)
+        input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
+        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
+        run(['cp', input_sprite_sheet, output_sprite_sheet], shell=True)
         SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
         sprite_css_file = open(SPRITE_CSS_PATH, 'w')
         sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
