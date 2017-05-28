@@ -34,8 +34,7 @@ function make_uploads_relative(content) {
 // This function resets an input type="file".  Pass in the
 // jquery object.
 function clear_out_file_list(jq_file_list) {
-    var clone_for_ie_sake = jq_file_list.clone(true);
-    jq_file_list.replaceWith(clone_for_ie_sake);
+    jq_file_list[0].value = '';
 
     // Hack explanation:
     // IE won't let you do this (untested, but so says StackOverflow):
