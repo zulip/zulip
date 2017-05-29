@@ -64,7 +64,7 @@ from zerver.lib.actions import (
     do_change_realm_domain,
     do_remove_realm_domain,
     do_change_icon_source,
-)
+    do_delete_message)
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
@@ -1482,6 +1482,37 @@ class EventsRegisterTest(ZulipTestCase):
         error = stream_create_schema_checker('events[0]', events[0])
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
+
+    def test_do_delete_message(self):
+        # type: () -> None
+        schema_checker = self.check_events_dict([
+            ('type', equals('delete_message')),
+            ('message_id', check_int),
+            ('sender', check_string),
+        ])
+        msg_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM)
+        message = Message.objects.get(id=msg_id)
+        events = self.do_test(
+            lambda: do_delete_message(self.user_profile, message),
+            state_change_expected=True,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_do_delete_message_no_max_id(self):
+        # type: () -> None
+        user_profile = self.example_user('aaron')
+        # Delete all historical messages for this user
+        user_profile = self.example_user('hamlet')
+        UserMessage.objects.filter(user_profile=user_profile).delete()
+        msg_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM)
+        message = Message.objects.get(id=msg_id)
+        self.do_test(
+            lambda: do_delete_message(self.user_profile, message),
+            state_change_expected=True,
+        )
+        result = fetch_initial_state_data(user_profile, None, "")
+        self.assertEqual(result['max_message_id'], -1)
 
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots

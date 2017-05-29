@@ -21,7 +21,7 @@ from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message
+    extract_recipients, truncate_body, render_incoming_message, do_delete_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import (
     generic_bulk_cached_fetch,
@@ -1069,6 +1069,16 @@ def update_message_backend(request, user_profile,
             'message_realm_id': user_profile.realm_id,
             'urls': links_for_embed}
         queue_json_publish('embed_links', event_data, lambda x: None)
+    return json_success()
+
+
+@has_request_variables
+def delete_message_backend(request, user_profile, message_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    message, ignored_user_message = access_message(user_profile, message_id)
+    if not user_profile.is_realm_admin:
+        raise JsonableError(_("You don't have permission to edit this message"))
+    do_delete_message(user_profile, message)
     return json_success()
 
 @has_request_variables

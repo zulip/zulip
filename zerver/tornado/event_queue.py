@@ -799,7 +799,7 @@ def process_notification(notice):
     # type: (Mapping[str, Any]) -> None
     event = notice['event'] # type: Mapping[str, Any]
     users = notice['users'] # type: Union[Iterable[int], Iterable[Mapping[str, Any]]]
-    if event['type'] in ["update_message"]:
+    if event['type'] in ["update_message", "delete_message"]:
         process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))

@@ -83,6 +83,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/subscriptions.html',
             'zerver/tutorial_finale.html',
             'zerver/message_history.html',
+            'zerver/delete_message.html',
         ]
         unusual = [
             'zerver/emails/confirm_registration_mit.txt',

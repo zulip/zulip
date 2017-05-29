@@ -346,6 +346,12 @@ function dispatch_normal_event(event) {
             break;
         }
         break;
+
+    case 'delete_message':
+        var msg_id = event.message_id;
+        ui.remove_message(msg_id);
+        break;
+
     }
 }
 

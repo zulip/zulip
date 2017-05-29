@@ -28,6 +28,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.retention import move_message_to_archive
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -2821,6 +2822,19 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         }
     send_event(event, list(map(user_info, ums)))
     return len(changed_messages)
+
+
+def do_delete_message(user_profile, message):
+    # type: (UserProfile, Message) -> None
+    event = {
+        'type': 'delete_message',
+        'sender': user_profile.email,
+        'message_id': message.id}  # type: Dict[str, Any]
+    ums = [{'id': um.user_profile_id} for um in
+           UserMessage.objects.filter(message=message.id)]
+    move_message_to_archive(message.id)
+    send_event(event, ums)
+
 
 def encode_email_address(stream):
     # type: (Stream) -> Text
