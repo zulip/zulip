@@ -138,8 +138,8 @@ set_global('message_store', {
     assert.equal(count_element.html(), '5');
 }());
 
-(function test_add_reaction() {
-    var event = {
+(function test_add_and_remove_reaction() {
+    var alice_event = {
         message_id: 1001,
         emoji_name: '8ball',
         user: {
@@ -175,14 +175,14 @@ set_global('message_store', {
         insert_called = true;
     };
 
-    reactions.add_reaction(event);
+    reactions.add_reaction(alice_event);
 
     assert(template_called);
     assert(insert_called);
 
     // Now, have Bob react to the same emoji.
 
-    event = {
+    var bob_event = {
         message_id: 1001,
         emoji_name: '8ball',
         user: {
@@ -208,8 +208,31 @@ set_global('message_store', {
         return reaction_element;
     };
 
-    reactions.add_reaction(event);
+    reactions.add_reaction(bob_event);
     assert(title_set);
     assert.equal(count_element.html(), '2');
 
+    // Now, remove Bob's 8ball emoji.  The event has the same exact
+    // structure as the add event.
+    title_set = false;
+    reaction_element.prop = function (prop_name, value) {
+        assert.equal(prop_name, 'title');
+        var expected_msg = 'You (click to remove) reacted with :8ball:';
+        assert.equal(value, expected_msg);
+        title_set = true;
+    };
+
+    reactions.remove_reaction(bob_event);
+    assert(title_set);
+    assert.equal(count_element.html(), '1');
+
+    // Next, remove Alice's reaction, which exercises removing the
+    // emoji icon.
+    var removed;
+    reaction_element.remove = function () {
+        removed = true;
+    };
+
+    reactions.remove_reaction(alice_event);
+    assert(removed);
 }());
