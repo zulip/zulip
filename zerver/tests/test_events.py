@@ -106,7 +106,7 @@ class LogEventsTest(ZulipTestCase):
 
         try:
             shutil.rmtree(dir_name)
-        except OSError:
+        except OSError:  # nocoverage
             # assume it doesn't exist already
             pass
 
