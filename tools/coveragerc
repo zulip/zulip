@@ -20,3 +20,7 @@ omit =
     */zulip-venv-cache/*
     */migrations/*
     */management/commands/*
+    tools/test-backend
+    zerver/lib/test_fixtures.py
+    zerver/lib/test_runner.py
+    scripts/lib/zulip_tools.py
