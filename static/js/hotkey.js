@@ -253,7 +253,7 @@ exports.process_enter_key = function (e) {
         if (emoji_picker.is_composition(e.target)) {
             e.target.click();
         } else {
-            reactions.toggle_reaction(current_msg_list.selected_id());
+            reactions.toggle_selected_emoji();
         }
         return true;
     }

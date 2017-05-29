@@ -75,27 +75,6 @@ function get_selected_emoji() {
     return $(".emoji-popover-emoji").filter(":focus")[0];
 }
 
-exports.toggle_reaction = function (message_id, emoji_name) {
-    var message = get_message(message_id);
-    if (!message) {
-        return;
-    }
-
-    var selected_emoji = get_selected_emoji();
-    if (emoji_name === undefined && selected_emoji === undefined) {
-        return;
-    }
-    if (selected_emoji) {
-        emoji_name = selected_emoji.title;
-    }
-
-    var has_reacted = exports.current_user_has_reacted_to_emoji(message, emoji_name);
-    var operation = has_reacted ? 'remove' : 'add';
-
-    send_reaction_ajax(message_id, emoji_name, operation);
-    emoji_picker.hide_emoji_popover();
-};
-
 var reaction_show_list = []; // local reaction_show_list
 
 exports.render_reaction_show_list = function () {
@@ -168,8 +147,33 @@ $(document).on('click', '.emoji-popover-emoji.reaction', function () {
     exports.toggle_emoji_reaction(message_id, emoji_name);
 });
 
+// TODO: Move emoji-picker stuff to emoji_picker.js.
+//       (two click handlers, toggle_selected_emoji, reaction_navigate)
+
 $(document).on('input', '.emoji-popover-filter', filter_emojis);
 $(document).on('keydown', '.emoji-popover-filter', maybe_select_emoji);
+
+exports.toggle_selected_emoji = function () {
+    // Toggle the currently selected emoji.
+    var message_id = current_msg_list.selected_id();
+
+    var message = message_store.get(message_id);
+
+    if (!message) {
+        blueslip.error('reactions: Bad message id: ' + message_id);
+        return;
+    }
+
+    var selected_emoji = get_selected_emoji();
+
+    if (selected_emoji === undefined) {
+        return;
+    }
+
+    var emoji_name = selected_emoji.title;
+
+    exports.toggle_emoji_reaction(message_id, emoji_name);
+};
 
 exports.reaction_navigate = function (e, event_name) {
     var first_emoji = get_emoji_at_index(0);
