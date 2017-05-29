@@ -127,6 +127,17 @@ set_global('message_store', {
     reactions.message_reaction_on_click(message_id, emoji_name);
 }());
 
+(function test_set_reaction_count() {
+    var count_element = $('count-stub');
+    var reaction_element = $('reaction-stub');
+
+    reaction_element.add_child('.message_reaction_count', count_element);
+
+    reactions.set_reaction_count(reaction_element, 5);
+
+    assert.equal(count_element.html(), '5');
+}());
+
 (function test_add_reaction() {
     var event = {
         message_id: 1001,
@@ -199,5 +210,6 @@ set_global('message_store', {
 
     reactions.add_reaction(event);
     assert(title_set);
+    assert.equal(count_element.html(), '2');
 
 }());

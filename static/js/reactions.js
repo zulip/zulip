@@ -256,6 +256,11 @@ exports.get_add_reaction_button = function (message_id) {
     return add_button;
 };
 
+exports.set_reaction_count = function (reaction, count) {
+    var count_element = reaction.find('.message_reaction_count');
+    count_element.html(count);
+};
+
 exports.add_reaction = function (event) {
     var message_id = event.message_id;
     var emoji_name = event.emoji_name;
@@ -291,9 +296,8 @@ exports.update_existing_reaction = function (event, user_list) {
     var emoji_name = event.emoji_name;
 
     var reaction = exports.find_reaction(message_id, emoji_name);
-    var count_element = reaction.find('.message_reaction_count');
 
-    count_element.html(user_list.length);
+    exports.set_reaction_count(reaction, user_list.length);
 
     var new_title = generate_title(emoji_name, user_list);
     reaction.prop('title', new_title);
@@ -381,8 +385,7 @@ exports.remove_reaction = function (event) {
     var new_title = generate_title(emoji_name, user_list);
     reaction.prop('title', new_title);
 
-    var count_element = reaction.find('.message_reaction_count');
-    count_element.html(user_list.length);
+    exports.set_reaction_count(reaction, user_list.length);
 
     if (user_id === page_params.user_id) {
         reaction.removeClass("reacted");
