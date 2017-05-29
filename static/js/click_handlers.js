@@ -120,7 +120,7 @@ $(function () {
         e.stopPropagation();
         var emoji_name = $(this).attr('data-emoji-name');
         var message_id = $(this).parent().attr('data-message-id');
-        reactions.message_reaction_on_click(message_id, emoji_name);
+        reactions.toggle_emoji_reaction(message_id, emoji_name);
     });
 
     $("#main_div").on("click", "a.stream", function (e) {

@@ -53,7 +53,7 @@ function get_message(message_id) {
     return message;
 }
 
-exports.message_reaction_on_click = function (message_id, emoji_name) {
+exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     // This toggles the current user's reaction to the clicked emoji.
 
     var message = get_message(message_id);

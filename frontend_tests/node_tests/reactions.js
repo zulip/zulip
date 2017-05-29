@@ -103,7 +103,7 @@ set_global('message_store', {
 
     global.with_stub(function (stub) {
         global.channel.del = stub.f;
-        reactions.message_reaction_on_click(message_id, emoji_name);
+        reactions.toggle_emoji_reaction(message_id, emoji_name);
         var args = stub.get_args('args').args;
         assert.equal(args.url, '/json/messages/1001/emoji_reactions/smile');
 
@@ -118,13 +118,13 @@ set_global('message_store', {
     emoji_name = 'alien'; // not set yet
     global.with_stub(function (stub) {
         global.channel.put = stub.f;
-        reactions.message_reaction_on_click(message_id, emoji_name);
+        reactions.toggle_emoji_reaction(message_id, emoji_name);
         var args = stub.get_args('args').args;
         assert.equal(args.url, '/json/messages/1001/emoji_reactions/alien');
     });
 
     emoji_name = 'unknown-emoji';
-    reactions.message_reaction_on_click(message_id, emoji_name);
+    reactions.toggle_emoji_reaction(message_id, emoji_name);
 }());
 
 (function test_set_reaction_count() {
