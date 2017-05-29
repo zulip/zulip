@@ -6,18 +6,19 @@ an emoji reaction.
 1. Locate the message you want to react to in the message table.
 
 {!message-actions.md!} smiley face (<i class="icon-vector-smile"></i>)
-icon to reveal the emoji reactions menu.
+icon to reveal the emoji reactions picker.
 
     !!! tip ""
-        For messages that you sent, the menu to add a reaction is
+        For messages that you sent, the picker to add a reaction is
         instead accessed by clicking the {!down-chevron.md!}
 
 3. Locate the emoji you want to choose as your reaction in the emoji
-reactions menu pop-up by using the arrow keys, the scroll-bar on the
-right edge, or entering the emoji phrase in the menu's search bar.
+reactions picker pop-up by using the arrow keys, the scroll-bar on the
+right edge, or filtering the emoji list with the search bar at the
+top.
 
-4. Upon clicking on an emoji in the emoji reactions menu, the selected emoji
-will appear under the message as an emoji reaction.
+4. Upon clicking on an emoji in the emoji reactions picker, the
+selected emoji will appear under the message as an emoji reaction.
 
     !!! tip ""
         If you want to remove your emoji reaction from a message, simply
@@ -39,13 +40,13 @@ message by following the following steps.
 the smiley face (<i class="icon-vector-smile"></i>) and plus (<i
 class="icon-vector-plus"></i>) icons.
 
-2. Upon clicking on the button, the emoji reactions menu will appear.
+2. Upon clicking on the button, the emoji reactions picker will appear.
 
 3. Locate the emoji you want to choose as your reaction in the emoji
-reactions menu by scrolling through the menu or entering the emoji phrase in
-the menu's search bar.
+reactions picker by scrolling through the picker or entering the emoji phrase in
+the picker's search bar.
 
-4. Upon clicking on an emoji in the emoji reactions menu, the selected emoji
+4. Upon clicking on an emoji in the emoji reactions picker, the selected emoji
 will appear under the message as an emoji reaction.
 
 !!! tip ""
