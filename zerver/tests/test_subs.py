@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Text
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib import cache
 
@@ -654,6 +655,8 @@ class StreamAdminTest(ZulipTestCase):
         threshold should be able to create new streams.
         """
         user_profile = self.example_user('hamlet')
+        user_profile.date_joined = timezone_now()
+        user_profile.save()
         email = user_profile.email
         self.login(email)
         do_change_is_admin(user_profile, False)
