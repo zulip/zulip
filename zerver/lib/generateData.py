@@ -2,6 +2,7 @@ import itertools
 import json
 import random
 import os
+from typing import List, Dict, Any
 
 def loadConfig():
 
@@ -11,7 +12,7 @@ def loadConfig():
     return config
 
 
-def getStreamTitle(gens):
+def getStreamTitle(gens): #type (Dict[Any, Any]) -> str
 
     # the secret to generating unique data is:
     # make sure that count of each list is a different prime number
@@ -190,7 +191,7 @@ def removeActions(line):
     if newVal != line:
         newVal = removeActions(newVal)
 
-    return newVal.strip()
+    return newVal
 
 
 def processDialog(paragraphs):
