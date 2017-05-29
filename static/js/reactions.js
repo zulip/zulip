@@ -65,6 +65,10 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     var operation = has_reacted ? 'remove' : 'add';
 
     send_reaction_ajax(message_id, emoji_name, operation);
+
+    // The next line isn't always necessary, but it is harmless/quick
+    // when no popovers are there.
+    emoji_picker.hide_emoji_popover();
 };
 
 function get_selected_emoji() {

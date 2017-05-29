@@ -26,6 +26,9 @@ set_global('page_params', {user_id: 5});
 
 set_global('channel', {});
 set_global('templates', {});
+set_global('emoji_picker', {
+    hide_emoji_popover: function () {},
+});
 
 var reactions = require("js/reactions.js");
 
