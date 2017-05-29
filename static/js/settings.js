@@ -113,7 +113,7 @@ exports.launch_page = function (tab) {
         $(".sidebar .ind-tab[data-tab-key='settings']").click();
     }
 
-    modals.open_settings();
+    overlays.open_settings();
 
     $active_tab.click();
 };

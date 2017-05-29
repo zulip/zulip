@@ -128,7 +128,7 @@ exports.restore_draft = function (draft_id) {
                               draft_copy);
     }
 
-    modals.close_modal("drafts");
+    overlays.close_overlay("drafts");
     compose_fade.clear_compose();
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
@@ -354,7 +354,7 @@ exports.drafts_handle_events = function (e, event_key) {
 
 exports.toggle = function () {
     if (exports.drafts_overlay_open()) {
-        modals.close_modal("drafts");
+        overlays.close_overlay("drafts");
     } else {
         exports.launch();
     }
@@ -362,7 +362,7 @@ exports.toggle = function () {
 
 exports.launch = function () {
     exports.setup_page(function () {
-        modals.open_overlay({
+        overlays.open_overlay({
             name: 'drafts',
             overlay: $('#draft_overlay'),
             on_close: function () {
