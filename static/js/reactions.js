@@ -238,45 +238,102 @@ function generate_title(emoji_name, user_ids) {
     return _.initial(user_names).join(', ') + ' and ' + _.last(user_names) + reacted_with_string;
 }
 
+exports.get_reaction_section = function (message_id) {
+    var message_element = $('.message_table').find("[zid='" + message_id + "']");
+    var section = message_element.find('.message_reactions');
+    return section;
+};
+
+exports.find_reaction = function (message_id, emoji_name) {
+    var reaction_section = exports.get_reaction_section(message_id);
+    var reaction = reaction_section.find("[data-emoji-name='" + emoji_name + "']");
+    return reaction;
+};
+
+exports.get_add_reaction_button = function (message_id) {
+    var reaction_section = exports.get_reaction_section(message_id);
+    var add_button = reaction_section.find('.reaction_button');
+    return add_button;
+};
+
 exports.add_reaction = function (event) {
-    event.emoji_name_css_class = emoji.emojis_name_to_css_class[event.emoji_name];
-    event.user.id = event.user.user_id;
-    var message = message_store.get(event.message_id);
+    var message_id = event.message_id;
+    var emoji_name = event.emoji_name;
+
+    var message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message in cache, do nothing; if we
         // ever fetch it from the server, it'll come with the
         // latest reactions attached
         return;
     }
+
+    event.emoji_name_css_class = emoji.emojis_name_to_css_class[emoji_name];
+    event.user.id = event.user.user_id;
+
     message.reactions.push(event);
-    var message_element = $('.message_table').find("[zid='" + event.message_id + "']");
-    var message_reactions_element = message_element.find('.message_reactions');
-    var user_list = get_user_list_for_message_reaction(message, event.emoji_name);
-    var new_title = generate_title(event.emoji_name, user_list);
-    if (user_list.length === 1) {
-        if (emoji.realm_emojis[event.emoji_name]) {
-            event.is_realm_emoji = true;
-            event.url = emoji.realm_emojis[event.emoji_name].emoji_url;
-        }
-        event.count = 1;
-        event.title = new_title;
-        event.emoji_alt_code = page_params.emoji_alt_code;
-        if (event.user.id === page_params.user_id) {
-            event.class = "message_reaction reacted";
-        } else {
-            event.class = "message_reaction";
-        }
-        var reaction_button_element = message_reactions_element.find('.reaction_button');
-        $(templates.render('message_reaction', event)).insertBefore(reaction_button_element);
+
+    var user_list = get_user_list_for_message_reaction(message, emoji_name);
+
+    if (user_list.length > 1) {
+        exports.update_existing_reaction(event, user_list);
     } else {
-        var reaction = message_reactions_element.find("[data-emoji-name='" + event.emoji_name + "']");
-        var count_element = reaction.find('.message_reaction_count');
-        count_element.html(user_list.length);
-        reaction.prop('title', new_title);
-        if (event.user.id === page_params.user_id) {
-            reaction.addClass("reacted");
-        }
+        exports.insert_new_reaction(event, user_list);
     }
+};
+
+exports.update_existing_reaction = function (event, user_list) {
+    // Our caller ensures that this message already has a reaction
+    // for this emoji and sets up our user_list.  This function
+    // simply updates the DOM.
+
+    var message_id = event.message_id;
+    var emoji_name = event.emoji_name;
+
+    var reaction = exports.find_reaction(message_id, emoji_name);
+    var count_element = reaction.find('.message_reaction_count');
+
+    count_element.html(user_list.length);
+
+    var new_title = generate_title(emoji_name, user_list);
+    reaction.prop('title', new_title);
+
+    if (event.user.id === page_params.user_id) {
+        reaction.addClass("reacted");
+    }
+};
+
+exports.insert_new_reaction = function (event, user_list) {
+    // Our caller ensures we are the first user to react to this
+    // message with this emoji, and it populates user_list for
+    // us.  We then render the emoji/title/count and insert it
+    // before the add button.
+
+    var message_id = event.message_id;
+    var emoji_name = event.emoji_name;
+
+    var new_title = generate_title(emoji_name, user_list);
+
+    if (emoji.realm_emojis[emoji_name]) {
+        event.is_realm_emoji = true;
+        event.url = emoji.realm_emojis[emoji_name].emoji_url;
+    }
+
+    event.count = 1;
+    event.title = new_title;
+    event.emoji_alt_code = page_params.emoji_alt_code;
+
+    if (event.user.id === page_params.user_id) {
+        event.class = "message_reaction reacted";
+    } else {
+        event.class = "message_reaction";
+    }
+
+    var new_reaction = $(templates.render('message_reaction', event));
+
+    // Now insert it before the add button.
+    var reaction_button_element = exports.get_add_reaction_button(message_id);
+    new_reaction.insertBefore(reaction_button_element);
 };
 
 exports.remove_reaction = function (event) {
