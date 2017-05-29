@@ -650,7 +650,7 @@ exports.process_hotkey = function (e, hotkey) {
             open_reactions();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-            reactions.toggle_reaction(msg.id, '+1');
+            reactions.toggle_emoji_reaction(msg.id, '+1');
             return true;
         case 'toggle_mute':
             muting_ui.toggle_mute(msg);

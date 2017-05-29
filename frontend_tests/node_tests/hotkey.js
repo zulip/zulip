@@ -236,7 +236,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('@', 'compose_actions.reply_with_mention');
     assert_mapping('*', 'message_flags.toggle_starred');
-    assert_mapping('+', 'reactions.toggle_reaction');
+    assert_mapping('+', 'reactions.toggle_emoji_reaction');
     assert_mapping('r', 'compose_actions.respond_to_message');
     assert_mapping('R', 'compose_actions.respond_to_message', true);
     assert_mapping('j', 'navigate.down');
