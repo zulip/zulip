@@ -947,6 +947,70 @@ $(function () {
                 _.extend({}, exports.send_times_data[event.old_id], value);
         }
     });
+
+    if (!window.Selectize.prototype.positionDropdownOriginal) {
+        window.Selectize.prototype.positionDropdownOriginal = window.Selectize.prototype.positionDropdown;
+        window.Selectize.prototype.positionDropdown = function () {
+            if (this.settings.dropdownDirection === 'up') {
+                var $control = this.$control;
+                var offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+
+                this.$dropdown.css({
+                    width: $control.outerWidth(),
+                    top: offset.top - this.$dropdown.outerHeight(),
+                    left: offset.left
+                });
+                this.$dropdown.addClass('direction-' + this.settings.dropdownDirection);
+                this.$control.addClass('direction-' + this.settings.dropdownDirection);
+                this.$wrapper.addClass('direction-' + this.settings.dropdownDirection);
+            } else {
+                window.Selectize.prototype.positionDropdownOriginal.apply(this, arguments);
+            }
+        };
+    }
+
+    // Selectize Dropdown
+    $('#private_message_recipient').selectize({
+        plugins: ['restore_on_backspace'],
+        persist: false,
+        maxItems: null,
+        selectOnTab: true,
+        closeAfterSelect: true,
+        highlight: true,
+        dropdownDirection: "up",
+        valueField: 'email',
+        labelField: 'name',
+        searchField: ['name', 'email'],
+        options: people.get_all_persons().map(function (person) {
+            return {
+                name: person.full_name,
+                email: person.email
+            };
+        }),
+        onDropdownOpen: function ($dropdown) {
+            // Manually prevent dropdown from opening when there is no search term
+            if (!this.lastQuery.length) {
+                this.close();
+            }
+        },
+        render: {
+            item: function (item, escape) {
+                return '<div>' +
+                    '<span class="name">' +
+                        (item.name ? escape(item.name) : '') +
+                    '</span>' +
+                '</div>';
+            },
+            option: function (item, escape) {
+                var label = item.name || item.email;
+                var caption = item.name ? item.email : null;
+                return '<div>' +
+                    '<span class="label">' + escape(label) + '</span>' +
+                    (caption ? '<span class="caption"> ' + escape(caption) + '</span>' : '') +
+                '</div>';
+            }
+        }
+    });
 });
 
 return exports;
@@ -955,3 +1019,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose;
 }
+
+
