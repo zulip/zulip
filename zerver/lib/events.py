@@ -309,7 +309,8 @@ def apply_event(state, event, user_profile, include_subscribers):
             state[field] = event['value']
 
             # Tricky interaction: Whether we can create streams can get changed here.
-            if field == 'realm_create_stream_by_admins_only' and 'can_create_streams' in state:
+            if (field in ['realm_create_stream_by_admins_only',
+                          'realm_waiting_period_threshold']) and 'can_create_streams' in state:
                 state['can_create_streams'] = user_profile.can_create_streams()
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
