@@ -253,7 +253,7 @@ exports.process_enter_key = function (e) {
         if (emoji_picker.is_composition(e.target)) {
             e.target.click();
         } else {
-            reactions.toggle_selected_emoji();
+            emoji_picker.toggle_selected_emoji();
         }
         return true;
     }
@@ -443,7 +443,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (emoji_picker.reactions_popped()) {
-        return reactions.reaction_navigate(e, event_name);
+        return emoji_picker.navigate(e, event_name);
     }
 
     if (overlays.info_overlay_open()) {

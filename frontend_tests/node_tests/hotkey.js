@@ -20,10 +20,6 @@ set_global('drafts', {
 set_global('overlays', {
 });
 
-set_global('reactions', {
-    reaction_navigate: function () { return; },
-});
-
 set_global('$', function () {
     return {
         // Hack: Used for reactions hotkeys; may want to restructure.
