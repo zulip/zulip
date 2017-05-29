@@ -154,16 +154,20 @@ user_id = os.getuid()
 
 def setup_shell_profile(shell_profile):
     # type: (str) -> None
-    source_activate_command = "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),)
     shell_profile_path = os.path.expanduser(shell_profile)
 
-    if os.path.exists(shell_profile_path):
-        with open(shell_profile_path, 'a+') as shell_profile_file:
-            if source_activate_command not in shell_profile_file.read():
-                shell_profile_file.writelines(source_activate_command)
-    else:
-        with open(shell_profile_path, 'w') as shell_profile_file:
-            shell_profile_file.writelines(source_activate_command)
+    def write_command(command):
+        if os.path.exists(shell_profile_path):
+            with open(shell_profile_path, 'a+') as shell_profile_file:
+                if command not in shell_profile_file.read():
+                    shell_profile_file.writelines(command + '\n')
+        else:
+            with open(shell_profile_path, 'w') as shell_profile_file:
+                shell_profile_file.writelines(command + '\n')
+
+    source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
+    write_command(source_activate_command)
+    write_command('cd /srv/zulip')
 
 def main(options):
     # type: (Any) -> int
