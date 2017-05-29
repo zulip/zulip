@@ -4,7 +4,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import get_user_profile_by_email, UserMessage
+from zerver.models import get_user, get_realm, UserMessage
 from zerver.views.messages import get_messages_backend
 import cProfile
 import logging
@@ -18,9 +18,10 @@ class MockSession(object):
         self.modified = False
 
 class MockRequest(HttpRequest):
-    def __init__(self, email):
-        # type: (str) -> None
-        self.user = get_user_profile_by_email(email)
+    def __init__(self, email, realm):
+        # type: (str, str) -> None
+        self.realm = get_realm(realm)
+        self.user = get_user(email, realm)
         self.path = '/'
         self.method = "POST"
         self.META = {"REMOTE_ADDR": "127.0.0.1"}
@@ -53,7 +54,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
         parser.add_argument('--email', action='store')
+        parser.add_argument('--realm', action='store')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        profile_request(MockRequest(options["email"]))
+        profile_request(MockRequest(options["email"], options["realm"]))
