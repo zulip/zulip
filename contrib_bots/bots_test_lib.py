@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import sys
 import unittest
+import logging
 
 from mock import MagicMock, patch
 
@@ -30,6 +31,19 @@ class BotTestCase(TestCase):
                                   self.bot_name, self.bot_name + ".py")
         self.bot_test(messages=[request], bot_module=bot_module,
                       bot_response=[response])
+
+    def check_expected_responses(self, expectations, email="foo", recipient="foo", subject="foo", type="all"):
+        # type: (Dict[str, str], str, str, str, str) -> None
+        if type not in ["private", "stream", "all"]:
+            logging.exception("check_expected_response expects type to be 'private', 'stream' or 'all'")
+        for m, r in expectations.items():
+            if type != "stream":
+                self.assert_bot_output(
+                    {'content': m, 'type': "private", 'sender_email': email}, r)
+            if type != "private":
+                self.assert_bot_output(
+                    {'content': m, 'type': "stream", 'display_recipient': recipient,
+                     'subject': subject}, r)
 
     def mock_test(self, messages, message_handler, bot_response):
         # message_handler is of type Any, since it can contain any bot's

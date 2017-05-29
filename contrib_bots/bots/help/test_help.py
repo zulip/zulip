@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import os
 import sys
+from six.moves import zip
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 # For dev setups, we can find the API in the repo itself.
@@ -16,15 +17,6 @@ class TestHelpBot(BotTestCase):
     bot_name = "help"
 
     def test_bot(self):
-        self.assert_bot_output(
-            {'content': "help", 'type': "private", 'sender_email': "foo"},
-            "Info on Zulip can be found here:\nhttps://github.com/zulip/zulip"
-        )
-        self.assert_bot_output(
-            {'content': "Hi, my name is abc", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "Info on Zulip can be found here:\nhttps://github.com/zulip/zulip"
-        )
-        self.assert_bot_output(
-            {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "Info on Zulip can be found here:\nhttps://github.com/zulip/zulip"
-        )
+        txt = "Info on Zulip can be found here:\nhttps://github.com/zulip/zulip"
+        messages = ["", "help", "Hi, my name is abc"]
+        self.check_expected_responses(dict(list(zip(messages, len(messages)*[txt]))))

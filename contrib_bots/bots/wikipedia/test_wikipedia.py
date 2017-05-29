@@ -16,19 +16,15 @@ class TestWikipediaBot(BotTestCase):
     bot_name = "wikipedia"
 
     def test_bot(self):
-        self.assert_bot_output(
-            {'content': "foo", 'type': "private", 'sender_email': "foo"},
-            'For search term "foo", https://en.wikipedia.org/wiki/Foobar'
-        )
-        self.assert_bot_output(
-            {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            'Please enter your message after @mention-bot'
-        )
-        self.assert_bot_output(
-            {'content': "sssssss kkkkk", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            'I am sorry. The search term you provided is not found :slightly_frowning_face:'
-        )
-        self.assert_bot_output(
-            {'content': "123", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            'For search term "123", https://en.wikipedia.org/wiki/123'
-        )
+        expected = {
+            "": 'Please enter your message after @mention-bot',
+            "sssssss kkkkk": ('I am sorry. The search term you provided '
+                              'is not found :slightly_frowning_face:'),
+            "foo": ('For search term "foo", '
+                    'https://en.wikipedia.org/wiki/Foobar'),
+            "123": ('For search term "123", '
+                    'https://en.wikipedia.org/wiki/123'),
+            "laugh": ('For search term "laugh", '
+                      'https://en.wikipedia.org/wiki/Laughter'),
+        }
+        self.check_expected_responses(expected)

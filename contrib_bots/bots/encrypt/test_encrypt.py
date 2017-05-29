@@ -16,23 +16,11 @@ class TestEncryptBot(BotTestCase):
     bot_name = "encrypt"
 
     def test_bot(self):
-        self.assert_bot_output(
-            {'content': "Please encrypt this", 'type': "private", 'sender_email': "foo@gmail.com"},
-            "Encrypted/Decrypted text: Cyrnfr rapelcg guvf"
-        )
-        self.assert_bot_output(
-            {'content': "Let\'s Do It", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "Encrypted/Decrypted text: Yrg\'f Qb Vg"
-        )
-        self.assert_bot_output(
-            {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "Encrypted/Decrypted text: "
-        )
-        self.assert_bot_output(
-            {'content': "me&mom together..!!", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "Encrypted/Decrypted text: zr&zbz gbtrgure..!!"
-        )
-        self.assert_bot_output(
-            {'content': "foo bar", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "Encrypted/Decrypted text: sbb one"
-        )
+        expected = {
+            "": "Encrypted/Decrypted text: ",
+            "Let\'s Do It": "Encrypted/Decrypted text: Yrg\'f Qb Vg",
+            "me&mom together..!!": "Encrypted/Decrypted text: zr&zbz gbtrgure..!!",
+            "foo bar": "Encrypted/Decrypted text: sbb one",
+            "Please encrypt this": "Encrypted/Decrypted text: Cyrnfr rapelcg guvf",
+        }
+        self.check_expected_responses(expected)

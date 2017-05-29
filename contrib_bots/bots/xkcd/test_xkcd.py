@@ -39,8 +39,4 @@ class TestXkcdBot(BotTestCase):
                      "(https://imgs.xkcd.com/comics/chess_notation.png)"),
             "999999999": invalid_id_txt + "999999999",
         }
-        for m, r in expected.items():
-            self.assert_bot_output(
-                {'content': m, 'type': "private", 'sender_email': "foo"}, r)
-            self.assert_bot_output(
-                {'content': m, 'type': "stream", 'sender_email': "foo"}, r)
+        self.check_expected_responses(expected)
