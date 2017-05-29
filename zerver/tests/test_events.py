@@ -19,20 +19,23 @@ from zerver.models import (
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    do_add_alert_words,
     check_add_realm_emoji,
     check_send_typing_notification,
-    notify_realm_custom_profile_fields,
-    do_add_realm_filter,
+    do_add_alert_words,
+    do_add_default_stream,
     do_add_reaction,
-    do_remove_reaction,
+    do_add_realm_domain,
+    do_add_realm_filter,
     do_change_avatar_fields,
+    do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
     do_change_full_name,
-    do_change_bot_owner,
+    do_change_icon_source,
     do_change_is_admin,
+    do_change_notification_settings,
+    do_change_realm_domain,
     do_change_stream_description,
     do_change_subscription_property,
     do_create_user,
@@ -43,27 +46,25 @@ from zerver.lib.actions import (
     do_refer_friend,
     do_regenerate_api_key,
     do_remove_alert_words,
+    do_remove_default_stream,
+    do_remove_reaction,
+    do_remove_realm_domain,
     do_remove_realm_emoji,
     do_remove_realm_filter,
     do_rename_stream,
-    do_add_default_stream,
-    do_remove_default_stream,
     do_set_muted_topics,
-    do_set_realm_property,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
+    do_set_realm_property,
+    do_set_user_display_setting,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
     do_update_muted_topic,
     do_update_pointer,
     do_update_user_presence,
-    do_set_user_display_setting,
-    do_change_notification_settings,
-    do_add_realm_domain,
-    do_change_realm_domain,
-    do_remove_realm_domain,
-    do_change_icon_source,
+    notify_realm_custom_profile_fields,
+    recipient_for_emails,
 )
 from zerver.lib.events import (
     apply_events,
@@ -491,7 +492,7 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content),
-            state_change_expected=False,
+            state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -550,6 +551,24 @@ class EventsRegisterTest(ZulipTestCase):
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+    def test_update_read_flag_removes_unread_msg_ids(self):
+        # type: () -> None
+        message = self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM, "hello")
+        user_profile = self.example_user('hamlet')
+        self.do_test(
+            lambda: do_update_message_flags(user_profile, 'add', 'read',
+                                            [message], False, None, None),
+            state_change_expected=True,
+        )
+
+    def test_send_message_to_existing_recipient(self):
+        # type: () -> None
+        self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM, "hello 1"),
+        self.do_test(
+            lambda: self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM, "hello 2"),
+            state_change_expected=True,
+        )
 
     def test_send_reaction(self):
         # type: () -> None
@@ -1512,6 +1531,47 @@ class FetchInitialStateDataTest(ZulipTestCase):
         UserMessage.objects.filter(user_profile=user_profile).delete()
         result = fetch_initial_state_data(user_profile, None, "")
         self.assertEqual(result['max_message_id'], -1)
+
+    def test_unread_msgs(self):
+        # type: () -> None
+        message_pm1 = self.send_message("cordelia@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello1")
+        message_pm2 = self.send_message("cordelia@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")
+        message_stream = self.send_message("cordelia@zulip.com", "Denmark", Recipient.STREAM, "hello")
+        message_huddle = self.send_message("cordelia@zulip.com", ["hamlet@zulip.com", "othello@zulip.com"], Recipient.HUDDLE, "hello2")
+
+        user_profile = self.example_user('hamlet')
+        result = fetch_initial_state_data(user_profile, None, "")
+
+        self.assertEqual(len(result['unread_msgs']), 3)
+
+        unread_pm = result['unread_msgs'][0]
+        self.assertEqual(len(unread_pm[0]['display_recipient']), 1)
+        self.assertEqual(unread_pm[0]['display_recipient'][0]['email'], u'hamlet@zulip.com')
+        self.assertEqual(
+            unread_pm[0]['recipient_id'],
+            Message.objects.get(id=message_pm1).recipient_id,
+        )
+        self.assertEqual(unread_pm[0]['subject'], '')
+        self.assertEqual(unread_pm[1], [message_pm1, message_pm2])
+
+        unread_stream = result['unread_msgs'][1]
+        self.assertEqual(unread_stream[0]['display_recipient'], 'Denmark')
+        self.assertEqual(
+            unread_stream[0]['recipient_id'],
+            Message.objects.get(id=message_stream).recipient_id,
+        )
+        self.assertEqual(unread_stream[0]['stream_id'], get_stream('Denmark', user_profile.realm).id)
+        self.assertEqual(unread_stream[0]['subject'], 'test')
+        self.assertEqual(unread_stream[1], [message_stream])
+
+        unread_huddle = result['unread_msgs'][2]
+        self.assertEqual(len(unread_huddle[0]['display_recipient']), 3)
+        self.assertEqual(unread_huddle[0]['display_recipient'][0]['email'], u'cordelia@zulip.com')
+        self.assertEqual(unread_huddle[0]['display_recipient'][1]['email'], u'hamlet@zulip.com')
+        self.assertEqual(unread_huddle[0]['display_recipient'][2]['email'], u'othello@zulip.com')
+        self.assertEqual(unread_huddle[0]['subject'], '')
+        self.assertEqual(unread_huddle[1], [message_huddle])
+
 
 class EventQueueTest(TestCase):
     def test_one_event(self):
