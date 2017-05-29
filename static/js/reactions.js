@@ -143,7 +143,7 @@ function maybe_select_emoji(e) {
             if (emoji_picker.is_composition(first_emoji)) {
                 first_emoji.click();
             } else {
-                exports.toggle_reaction(current_msg_list.selected_id(), first_emoji.title);
+                exports.toggle_emoji_reaction(current_msg_list.selected_id(), first_emoji.title);
             }
         }
     }
@@ -165,7 +165,7 @@ $(document).on('click', '.emoji-popover-emoji.reaction', function () {
     if (exports.current_user_has_reacted_to_emoji(message, emoji_name)) {
         $(this).removeClass('reacted');
     }
-    exports.toggle_reaction(message_id, emoji_name);
+    exports.toggle_emoji_reaction(message_id, emoji_name);
 });
 
 $(document).on('input', '.emoji-popover-filter', filter_emojis);
