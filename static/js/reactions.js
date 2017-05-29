@@ -342,33 +342,50 @@ exports.remove_reaction = function (event) {
     var user_id = event.user.user_id;
     var i = -1;
     var message = message_store.get(message_id);
+
     if (message === undefined) {
         // If we don't have the message in cache, do nothing; if we
         // ever fetch it from the server, it'll come with the
         // latest reactions attached
         return;
     }
+
+    // Do the data part first:
+    // Remove reactions from our message object.
     _.each(message.reactions, function (reaction, index) {
         if (reaction.emoji_name === emoji_name && reaction.user.id === user_id) {
             i = index;
         }
     });
+
     if (i !== -1) {
         message.reactions.splice(i, 1);
     }
+
+    // Compute the new user list for this reaction.
     var user_list = get_user_list_for_message_reaction(message, emoji_name);
-    var new_title = generate_title(emoji_name, user_list);
-    var message_element = $('.message_table').find("[zid='" + message_id + "']");
-    var message_reactions_element = message_element.find('.message_reactions');
-    var matching_reactions = message_reactions_element.find('[data-emoji-name="' + emoji_name + '"]');
-    var count_element = matching_reactions.find('.message_reaction_count');
-    matching_reactions.prop('title', new_title);
-    if (user_id === page_params.user_id) {
-        matching_reactions.removeClass("reacted");
-    }
-    count_element.html(user_list.length);
+
+    var reaction = exports.find_reaction(message_id, emoji_name);
+
     if (user_list.length === 0) {
-        matching_reactions.remove();
+        // If this user was the only one reacting for this emoji, we simply
+        // remove the reaction and exit.
+        reaction.remove();
+        return;
+    }
+
+    // The emoji still has reactions from other users, so we need to update
+    // the title/count and, if the user is the current user, turn off the
+    // "reacted" class.
+
+    var new_title = generate_title(emoji_name, user_list);
+    reaction.prop('title', new_title);
+
+    var count_element = reaction.find('.message_reaction_count');
+    count_element.html(user_list.length);
+
+    if (user_id === page_params.user_id) {
+        reaction.removeClass("reacted");
     }
 };
 
