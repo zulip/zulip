@@ -45,7 +45,7 @@ def upload_emoji(request, user_profile, emoji_name=REQ()):
 
 def delete_emoji(request, user_profile, emoji_name):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    check_emoji_admin(user_profile)
     check_valid_emoji(user_profile.realm, emoji_name)
+    check_emoji_admin(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name)
     return json_success()
