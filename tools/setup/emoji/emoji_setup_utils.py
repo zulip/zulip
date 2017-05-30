@@ -206,26 +206,16 @@ def google_color_bug(names):
     return [name for name in names if
             name[:5] == 'black' or name[:5] == 'white' or name in miscolored_names]
 
-def emoji_names_for_picker(emoji_map):
-    # type: (Dict[Text, Text]) -> List[str]
-    codepoint_to_names = defaultdict(list) # type: Dict[Text, List[str]]
-    for name, codepoint in emoji_map.items():
-        codepoint_to_names[codepoint].append(str(name))
-
-    # blacklisted must come first, followed by {one_lettered, ideographless}
-    # Each function here returns a list of names to be removed from a list of names
-    for func in [blacklisted, one_lettered, ideographless, word_superset,
-                 superstring, longer, google_color_bug]:
-        for codepoint, names in codepoint_to_names.items():
-            codepoint_to_names[codepoint] = [name for name in names if name not in func(names)]
-
-    for names in whitelisted_names:
-        codepoint = emoji_map[names[0]]
-        for name in names:
-            assert (emoji_map[name] == codepoint)
-        codepoint_to_names[codepoint] = names
-
-    return sorted(list(chain.from_iterable(codepoint_to_names.values())))
+def emoji_names_for_picker(emoji_data):
+    # type: (List[Dict[Text, Any]]) -> List[str]
+    names = [] # type: List[str]
+    for emoji in emoji_data:
+        if emoji_is_universal(emoji):
+            names.append(str(emoji['short_name']))
+    # TODO: Remove this after separating the data used for rendering the
+    # emojis on frontend and the data for autocomplete.
+    names.append('poop')
+    return sorted(names)
 
 # Returns a dict from categories to list of codepoints. The list of
 # codepoints are sorted according to the `sort_order` as defined in

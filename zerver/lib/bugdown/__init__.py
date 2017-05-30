@@ -704,13 +704,11 @@ unicode_emoji_list = set([name_to_codepoint[name] for name in name_to_codepoint]
 
 def make_emoji(codepoint, display_string):
     # type: (Text, Text) -> Element
-    src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (codepoint,)
-    elt = markdown.util.etree.Element('img')
-    elt.set('src', src)
-    elt.set('class', 'emoji')
-    elt.set("alt", display_string)
-    elt.set("title", display_string)
-    return elt
+    span = markdown.util.etree.Element('span')
+    span.set('class', 'emoji emoji-%s' % (codepoint,))
+    span.set('title', display_string)
+    span.text = display_string
+    return span
 
 def make_realm_emoji(src, display_string):
     # type: (Text, Text) -> Element

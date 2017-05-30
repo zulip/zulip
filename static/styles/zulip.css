@@ -2344,17 +2344,12 @@ button.topic_edit_cancel {
     height: 25px;
     width: 25px;
     position: relative;
-    top: 3px;
+    top: 6px;
     margin-top: -7px;
 }
 
-div.emoji {
-    /* This is needed when using the sprite sheets */
-    top: 6px;
-}
-
 img.emoji {
-    /* This is the right offset for <img> style emoji */
+    /* This is the right offset for the realm emoji <img> style emoji */
     top: 3px;
 }
 

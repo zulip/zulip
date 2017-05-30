@@ -16,8 +16,8 @@ from typing import Dict, Text, Union
 from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 
-from emoji_setup_utils import generate_emoji_catalog, emoji_names_for_picker, \
-    EMOJISETS
+from emoji_setup_utils import generate_emoji_catalog, emoji_is_universal, \
+    emoji_names_for_picker, EMOJISETS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -204,6 +204,11 @@ def dump_emojis(cache_path):
     code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
     emoji_data = ujson.load(open(os.path.join(EMOJI_DATA_PATH, 'emoji.json')))
     emoji_catalog = generate_emoji_catalog(emoji_data)
+    name_to_codepoint = {}
+    for emoji in emoji_data:
+        if emoji_is_universal(emoji):
+            for name in emoji["short_names"]:
+                name_to_codepoint[str(name)] = str(emoji["unified"].lower())
 
     os.chdir(EMOJI_DUMP_DIR_PATH)
 
@@ -261,7 +266,7 @@ def dump_emojis(cache_path):
     # Spritesheet CSS generation code.
     emoji_positions = ""
     for emoji in emoji_data:
-        if emoji["has_img_google"]:
+        if emoji_is_universal(emoji):
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': emoji['unified'].lower(),
                 'pos_x': (emoji["sheet_x"] * 100) / 40,
@@ -290,11 +295,7 @@ def dump_emojis(cache_path):
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
 
-    # put thumbs_up before thumbs_down
-    names = emoji_names_for_picker(emoji_map)
-    down_index = names.index('thumbs_down')
-    up_index = names.index('thumbs_up')
-    names[down_index], names[up_index] = ('thumbs_up', 'thumbs_down')
+    names = emoji_names_for_picker(emoji_data)
 
     # Patch CSS classes of flag emojis.
     patched_css_classes = {}
@@ -306,17 +307,17 @@ def dump_emojis(cache_path):
 
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
-        'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
-        'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map},
+        'codepoints': sorted([str(emoji["unified"].lower()) for emoji in emoji_data]),
+        'name_to_codepoint': name_to_codepoint,
         'emoji_catalog': emoji_catalog,
-        'patched_css_classes': patched_css_classes
+        'patched_css_classes': patched_css_classes,
     })
     emoji_codes_file.close()
 
     NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
     name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
 
-    name_to_codepoint_file.write(ujson.dumps(emoji_map))
+    name_to_codepoint_file.write(ujson.dumps(name_to_codepoint))
     name_to_codepoint_file.close()
 
 if __name__ == "__main__":

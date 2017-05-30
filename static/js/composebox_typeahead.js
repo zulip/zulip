@@ -340,7 +340,10 @@ exports.compose_content_begins_typeahead = function (query) {
 
 exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
-        return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
+        if (item.is_realm_emoji) {
+            return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
+        }
+        return "<span class='emoji emoji-" + item.codepoint + "' /> " + item.emoji_name;
     } else if (this.completing === 'mention') {
         var item_formatted = typeahead_helper.render_person(item);
         return typeahead_helper.highlight_with_escaping(this.token, item_formatted);

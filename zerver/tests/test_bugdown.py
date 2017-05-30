@@ -509,11 +509,11 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="\u2615">\u2615</span></p>')
 
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="\u2615">\u2615</span><span class="emoji emoji-2615" title="\u2615">\u2615</span></p>')
 
     def test_realm_patterns(self):
         # type: () -> None
