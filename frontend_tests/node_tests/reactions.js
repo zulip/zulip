@@ -15,7 +15,9 @@ set_global('emoji', {
         alien: '1f47d',
         smile: '1f604',
     },
-    realm_emojis: {},
+    realm_emojis: {
+        realm_emoji: 'whatever',
+    },
 });
 
 set_global('blueslip', {
@@ -166,6 +168,8 @@ set_global('message_store', {
     global.templates.render = function (template_name, data) {
         template_called = true;
         assert.equal(template_name, 'message_reaction');
+        assert.equal(data.class, 'message_reaction reacted');
+        assert(!data.is_realm_emoji);
         assert.equal(data.message_id, 1001);
         assert.equal(data.user.user_id, alice.user_id);
         assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
@@ -244,4 +248,31 @@ set_global('message_store', {
 
     current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
     assert.deepEqual(current_emojis, ['smile']);
+
+
+    // Now add Cali's realm_emoji reaction.
+    var cali_event = {
+        message_id: 1001,
+        emoji_name: 'realm_emoji',
+        user: {
+            user_id: cali.user_id,
+        },
+    };
+
+    template_called = false;
+    global.templates.render = function (template_name, data) {
+        assert.equal(data.class, 'message_reaction');
+        assert(data.is_realm_emoji);
+        template_called = true;
+        return 'new-reaction-html-stub';
+    };
+
+    message_reactions.find = function (selector) {
+        assert.equal(selector, '.reaction_button');
+        return 'reaction-button-stub';
+    };
+
+    reactions.add_reaction(cali_event);
+    assert(template_called);
+
 }());
