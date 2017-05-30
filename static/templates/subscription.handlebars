@@ -14,6 +14,15 @@
                 <span class="subscriber-count-text">{{subscriber_count}}</span>
                 <i class="icon-vector-user"></i>
             </div>
+            <div class="stream-message-count">
+                {{#if is_old_stream}}
+                <span class="stream-message-count-text">{{stream_message_count}}/wk</span>
+                <i class="icon-vector-comments"></i>
+                {{else}}
+                <span class="stream-message-count-text">New</span>
+                {{/if}}
+                <div class="stream-message-hover-content"> Average weekly traffic </div>
+            </div>
         </div>
         <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
     </div>
