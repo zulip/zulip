@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
+from zerver.lib.cache import get_stream_cache_key, cache_delete
 from zilencer.models import Deployment
 
 from zerver.lib.message import (
@@ -467,12 +468,17 @@ class StreamMessagesTest(ZulipTestCase):
             check_send_message(sender, sending_client, message_type_name, [stream],
                                subject, content, forwarder_user_profile=sender, realm=realm)
 
+        # To get accurate count of the queries, we should make sure that
+        # caches don't come into play. If we count queries while caches are
+        # filled, we will get a lower count. Caches are not supposed to be
+        # persistent, so our test can also fail if cache is invalidated
+        # during the course of the unit test.
         flush_per_request_caches()
-        send_message() # prime the caches
+        cache_delete(get_stream_cache_key(stream, realm))
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 12)
+        self.assert_length(queries, 16)
 
     def test_stream_message_dict(self):
         # type: () -> None
