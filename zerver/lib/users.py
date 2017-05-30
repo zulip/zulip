@@ -27,3 +27,8 @@ def check_change_full_name(user_profile, full_name_raw, acting_user):
     new_full_name = check_full_name(full_name_raw)
     do_change_full_name(user_profile, new_full_name, acting_user)
     return new_full_name
+
+def check_valid_bot_type(bot_type):
+    # type: (int) -> None
+    if bot_type not in UserProfile.ALLOWED_BOT_TYPES:
+        raise JsonableError(_('Invalid bot type'))
