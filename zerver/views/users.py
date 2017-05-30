@@ -22,7 +22,7 @@ from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string
+from zerver.lib.validator import check_bool, check_string, check_int
 from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
@@ -230,11 +230,11 @@ def regenerate_bot_api_key(request, user_profile, email):
     return json_success(json_result)
 
 @has_request_variables
-def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name=REQ(),
+def add_bot_backend(request, user_profile, bot_type=REQ(validator=check_int, default=1), full_name_raw=REQ("full_name"), short_name=REQ(),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, int, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
@@ -269,7 +269,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
                                  short_name=short_name, active=True,
-                                 bot_type=UserProfile.DEFAULT_BOT,
+                                 bot_type=bot_type,
                                  bot_owner=user_profile,
                                  avatar_source=avatar_source,
                                  default_sending_stream=default_sending_stream,
