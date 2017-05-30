@@ -474,6 +474,32 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post('/json/bots/nonexistentuser@zulip.com/api_key/regenerate')
         self.assert_json_error(result, 'No such user')
 
+    def test_add_bot_with_bot_type_default(self):
+        # type: () -> None
+        bot_email = 'hambot-bot@zulip.testserver'
+        bot_realm = get_realm('zulip')
+
+        self.login(self.example_email('hamlet'))
+        self.assert_num_bots_equal(0)
+        self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
+        self.assert_num_bots_equal(1)
+
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.bot_type, UserProfile.DEFAULT_BOT)
+
+    def test_add_bot_with_bot_type_incoming_webhook(self):
+        # type: () -> None
+        bot_email = 'hambot-bot@zulip.testserver'
+        bot_realm = get_realm('zulip')
+
+        self.login(self.example_email('hamlet'))
+        self.assert_num_bots_equal(0)
+        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        self.assert_num_bots_equal(1)
+
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
+
     def test_patch_bot_full_name(self):
         # type: () -> None
         self.login(self.example_email('hamlet'))
