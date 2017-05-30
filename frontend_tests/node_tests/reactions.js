@@ -294,4 +294,16 @@ set_global('message_store', {
     reactions.add_reaction(alice_event);
 
     assert(reaction_element.hasClass('reacted'));
+    var result = reactions.get_message_reactions(message);
+    var realm_emoji_data = _.filter(result, function (v) {
+        return v.emoji_name === 'realm_emoji';
+    })[0];
+
+    assert.equal(realm_emoji_data.count, 2);
+    assert.equal(realm_emoji_data.is_realm_emoji, true);
+
+    // And then remove Alice's reaction.
+    reactions.remove_reaction(alice_event);
+    assert(!reaction_element.hasClass('reacted'));
+
 }());
