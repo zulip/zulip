@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import os
 import sys
+from six.moves import zip
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 # For dev setups, we can find the API in the repo itself.
@@ -16,15 +17,6 @@ class TestHelloWorldBot(BotTestCase):
     bot_name = "helloworld"
 
     def test_bot(self):
-        self.assert_bot_output(
-            {'content': "foo", 'type': "private", 'sender_email': "foo"},
-            "beep boop"
-        )
-        self.assert_bot_output(
-            {'content': "Hi, my name is abc", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "beep boop"
-        )
-        self.assert_bot_output(
-            {'content': "", 'type': "stream", 'display_recipient': "foo", 'subject': "foo"},
-            "beep boop"
-        )
+        txt = "beep boop"
+        messages = ["", "foo", "Hi, my name is abc"]
+        self.check_expected_responses(dict(list(zip(messages, len(messages)*[txt]))))
