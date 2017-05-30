@@ -133,6 +133,19 @@ exports.restore_draft = function (draft_id) {
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
     }
+    if (draft.type === "stream") {
+        var stream = draft_copy.stream;
+        var topic = draft_copy.subject;
+        console.log(stream);
+        console.log(stream_data.get_sub(stream));
+        if (stream_data.get_sub(stream) !== undefined) {
+            narrow.activate([{operand: stream, operator: "stream"},
+                             {operand: topic, operator: "topic"}]);
+        }
+    }
+    if (draft.type === "private") {
+        narrow.activate([{operand: draft_copy.reply_to, operator: "pm-with"}]);
+    }
     compose_actions.start(draft_copy.type, draft_copy);
     compose_ui.autosize_textarea();
     $("#new_message_content").data("draft-id", draft_id);
