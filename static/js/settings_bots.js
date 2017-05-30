@@ -70,6 +70,18 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
+function bot_name_from_email(email) {
+    return email.substring(0, email.indexOf("-bot@"));
+}
+
+exports.generate_flaskbotrc_content = function (email, api_key) {
+    return "[" + bot_name_from_email(email) + "]" +
+           "\nemail=" + email +
+           "\nkey=" + api_key +
+           "\nsite=" + page_params.realm_uri +
+           "\n";
+};
+
 exports.set_up = function () {
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
@@ -86,6 +98,22 @@ exports.set_up = function () {
             $("#get_api_key_box form").submit();
         }
         $("#api_key_button_box").hide();
+    });
+
+    $('#download_flaskbotrc').click(function () {
+        var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
+        var content = "";
+        $("#active_bots_list .bot-information-box").each(function () {
+            var bot_info = $(this);
+            var email = bot_info.find(".email .value").text();
+            var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+            var bot = bot_data.get(email);
+
+            if (bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
+                content += exports.generate_flaskbotrc_content(email, api_key);
+            }
+        });
+        $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
     });
 
     $("#get_api_key_box").hide();

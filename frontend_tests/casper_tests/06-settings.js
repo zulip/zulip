@@ -1,11 +1,13 @@
 var common = require('../casper_lib/common.js').common;
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
 var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
+var OUTGOING_WEBHOOK_BOT_TYPE = '3';
 
 common.start_and_log_in();
 
 var form_sel = 'form[action^="/json/settings/change"]';
 var regex_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
+var regex_flaskbotrc = /^data:application\/octet-stream;charset=utf-8,\[.\]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 casper.then(function () {
     var menu_selector = '#settings-dropdown';
@@ -105,7 +107,8 @@ casper.then(function create_bot() {
     casper.fill('#create_bot_form',{
         bot_name: 'Bot 1',
         bot_short_name: '1',
-        bot_type: '1',
+        bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
+        payload_url: 'http://hostname.example.com/bots/followup',
     });
 
     casper.test.info('Submitting the create bot form');
@@ -130,6 +133,19 @@ casper.then(function () {
                 decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
                 regex_zuliprc,
                 'Looks like a bot ~/.zuliprc file');
+        });
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#download_flaskbotrc', function () {
+        casper.click("#download_flaskbotrc");
+
+        casper.waitUntilVisible('#download_flaskbotrc[href^="data:application"]', function () {
+            casper.test.assertMatch(
+                decodeURIComponent(casper.getElementsAttribute('#download_flaskbotrc', 'href')),
+                regex_flaskbotrc,
+                'Looks like a flaskbotrc file');
         });
     });
 });

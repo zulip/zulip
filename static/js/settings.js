@@ -88,6 +88,7 @@ function _setup_page() {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
+        flaskbotrc: 'flaskbotrc',
         timezones: moment.tz.names(),
     });
 
