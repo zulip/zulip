@@ -2,7 +2,11 @@
 from __future__ import absolute_import
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
-from contrib_bots.bot_lib import BotHandlerApi, StateHandler
+import sys
+import os
+sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../api')))
+
+from bots_api.bot_lib import BotHandlerApi, StateHandler
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
@@ -462,7 +466,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
 
     def get_bot_handler(self, service):
         # type: (Service) -> Any
-        bot_module_name = 'contrib_bots.bots.%s.%s' % (service.name, service.name)
+        bot_module_name = 'bots_api.bots.%s.%s' % (service.name, service.name)
         bot_module = importlib.import_module(bot_module_name) # type: Any
         return bot_module.handler_class()
 

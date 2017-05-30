@@ -307,7 +307,7 @@ We want to make it easier to deploy **Zulip Readers** on
 Zulip hardware.  The following document talks about how we want to enable this
 from a code structuring standpoint:
 
-[Writing contrib bots](https://github.com/zulip/zulip/blob/master/contrib_bots/bots/readme.md)
+[Writing contrib bots](https://github.com/zulip/zulip/blob/master/api/bots/readme.md)
 
 This document, on the other hand, is more about designing the Zulip backend
 system to support eventual deployment of reader apps on the Zulip server.

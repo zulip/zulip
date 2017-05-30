@@ -25,20 +25,14 @@ that help with writing bots, please visit
 [Zulip development community server](https://chat.zulip.org), open an
 issue, or submit a pull request to share your ideas!
 
-# The contrib_bot system
+# The bots system
 
-Zulip's bot system resides in the `contrib_bots` directory.
+Zulip's bot system resides in the `api` directory.
 
- **Note: There exists an additional directory called `bots`. This directory does *not* contain normal bots,
- but rather unpolished integrations.**
-
-The `contrib_bots` directory structure looks like the following:
+The structure of the bots ecosystem in the `api` directory looks like the following:
 
 ```
-contrib_bots
-│   bot_lib.py
-│   run.py
-│
+api
 └───bots
     └───bot1
     └───bot2
@@ -52,6 +46,12 @@ contrib_bots
         └───assets
            |
            └───pic.png
+├── bots_api
+│   ├── bot_lib.py
+│   ├── bots_test_lib.py
+│   ├── run.py
+│   ├── test_bots
+├── integrations
 ```
 
 Each subdirectory in `bots` contains a bot. When developing bots, try to use the structure outlined
@@ -60,9 +60,9 @@ above as an orientation.
 ## How to run a bot
 
 This guide will show you how to run a bot on a running Zulip
-server.  It assumes you want to use one of the existing `contrib_bots`
+server.  It assumes you want to use one of the existing `api/bots`
 bots in your Zulip organization.  If you want to write a new one, you
-just need to write the `<my-bot>.py` script and put it into `/contrib_bots/bots/<my-bot>` directory.
+just need to write the `<my-bot>.py` script and put it into `/api/bots/<my-bot>` directory.
 
 You need:
 
@@ -73,7 +73,7 @@ You need:
   your bot.
 * A computer where you're running the bot from, with a clone of the
   [Zulip repository](https://github.com/zulip/zulip), which contains
-  the bot library code in its `contrib_bots/<my-bot>` subdirectory. This is
+  the bot library code in its `api/bots_api/<my-bot>` subdirectory. This is
   required to run your bot. The following instructions assume this
   repository to be located in `~/zulip/`.
 
@@ -106,10 +106,10 @@ You need:
 
 4. Run the bot.
 
-    * In your Zulip repository, navigate to `~/zulip/contrib_bots/`
+    * In your Zulip repository, navigate to `~/zulip/api/bots_api/`
     * Run
       ```
-      python run.py bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
+      python run.py ../bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
       ```
       (using the path to the `.zuliprc` file from step 2).
     * Check the output of the command. It should start with the text
@@ -296,7 +296,7 @@ will edit the content of a previously sent message.
 
 ### Example
 
-From `/zulip/contrib_bots/incrementor/incrementor.py`:
+From `/zulip/api/bots/incrementor/incrementor.py`:
 
 ```
 client.update_message(dict(
@@ -330,7 +330,7 @@ client.update_message(dict(
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that your bot script is located in zulip/contrib_bots/bots/<my-bot>/
+    * Ensure that you bot script is located in zulip/api/bots/<my-bot>/
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
     * Some bots require Python 3. Try switching to a Python 3 environment before running
