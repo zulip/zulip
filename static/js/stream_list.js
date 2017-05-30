@@ -412,7 +412,6 @@ $(function () {
 
         var stream_li = exports.maybe_activate_stream_item(event.filter);
         if (stream_li) {
-            unread_ops.process_visible();
             exports.scroll_to_active_stream(stream_li);
         }
     });
