@@ -307,3 +307,32 @@ set_global('message_store', {
     assert(!reaction_element.hasClass('reacted'));
 
 }());
+
+(function test_error_handling() {
+    var error_msg;
+
+    global.message_store.get = function () {
+        return;
+    };
+
+    global.blueslip.error = function (msg) {
+        error_msg = msg;
+    };
+
+    var bogus_event  = {
+        message_id: 55,
+        emoji_name: 'realm_emoji',
+        user: {
+            user_id: 99,
+        },
+    };
+    reactions.toggle_emoji_reaction(55);
+    assert.equal(error_msg, 'reactions: Bad message id: 55');
+
+    error_msg = undefined;
+    reactions.add_reaction(bogus_event);
+    assert.equal(error_msg, undefined);
+
+    reactions.remove_reaction(bogus_event);
+    assert.equal(error_msg, undefined);
+}());
