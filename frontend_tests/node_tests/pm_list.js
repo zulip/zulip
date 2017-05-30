@@ -1,3 +1,5 @@
+set_global('$', global.make_zjquery());
+
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
@@ -15,14 +17,6 @@ set_global('unread', {});
 
 // TODO: move pm_list-related tests to their own module
 var pm_list = require('js/pm_list.js');
-
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
-$.fn.expectOne = function () {
-    assert(this.length === 1);
-    return this;
-};
 
 global.compile_template('sidebar_private_message_list');
 
@@ -59,9 +53,30 @@ global.people.initialize_current_user(me.user_id);
         return 1;
     };
 
-    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations);
-    global.write_test_output("test_build_private_messages_list", convos_html);
+    var template_data;
 
-    var conversation = $(convos_html).find('a').text().trim();
-    assert.equal(conversation, 'Alice, Bob');
+    global.templates.render = function (template_name, data) {
+        assert.equal(template_name, 'sidebar_private_message_list');
+        template_data = data;
+    };
+
+    pm_list._build_private_messages_list(active_conversation, max_conversations);
+
+    var expected_data = {
+        messages: [
+            {
+                recipients: 'Alice, Bob',
+                user_ids_string: '101,102',
+                unread: 1,
+                is_zero: false,
+                zoom_out_hide: false,
+                url: '#narrow/pm-with/101,102-group',
+            },
+        ],
+        zoom_class: 'zoomed-out',
+        want_show_more_messages_links: false,
+    };
+
+    assert.deepEqual(template_data, expected_data);
+
 }());

@@ -807,6 +807,10 @@ function render(template_name, args) {
     var html = '';
     html += render('sidebar_private_message_list', args);
 
+    var conversations = $(html).find('a').text().trim().split('\n');
+    assert.equal(conversations[0], 'alice,bob');
+    assert.equal(conversations[1].trim(), '(more conversations)');
+
     global.write_handlebars_output("sidebar_private_message_list", html);
 }());
 
