@@ -31,3 +31,16 @@ var settings_bots = require("js/settings_bots.js");
 
     assert.equal(content, expected);
 }());
+
+(function test_generate_flaskbotrc_content() {
+    var user = {
+        email: "vabstest-bot@zulip.com",
+        api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
+    };
+    var content = settings_bots.generate_flaskbotrc_content(user.email, user.api_key);
+    var expected = "[vabstest]\nemail=vabstest-bot@zulip.com\n" +
+                   "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
+                   "site=https://chat.example.com\n";
+
+    assert.equal(content, expected);
+}());
