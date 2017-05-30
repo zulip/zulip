@@ -170,7 +170,7 @@ exports.setup_page = function (callback) {
                 var space_string = new Handlebars.SafeString("&nbsp;");
                 var stream = (draft.stream.length > 0 ? draft.stream : space_string);
                 var draft_topic = draft.subject.length === 0 ?
-                        compose.empty_topic_placeholder() : draft.subject;
+                        compose_ui.empty_topic_placeholder() : draft.subject;
 
                 formatted = {
                     draft_id: id,
