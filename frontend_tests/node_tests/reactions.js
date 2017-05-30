@@ -144,6 +144,7 @@ set_global('message_store', {
 }());
 
 (function test_add_and_remove_reaction() {
+    // Insert 8ball for Alice.
     var alice_event = {
         message_id: 1001,
         emoji_name: '8ball',
@@ -187,7 +188,7 @@ set_global('message_store', {
     assert(template_called);
     assert(insert_called);
 
-    // Now, have Bob react to the same emoji.
+    // Now, have Bob react to the same emoji (update).
 
     var bob_event = {
         message_id: 1001,
@@ -274,5 +275,23 @@ set_global('message_store', {
 
     reactions.add_reaction(cali_event);
     assert(template_called);
+    assert(!reaction_element.hasClass('reacted'));
 
+    // And then have Alice update it.
+    alice_event = {
+        message_id: 1001,
+        emoji_name: 'realm_emoji',
+        user: {
+            user_id: alice.user_id,
+        },
+    };
+
+    message_reactions.find = function (selector) {
+        assert.equal(selector, "[data-emoji-name='realm_emoji']");
+        return reaction_element;
+    };
+    reaction_element.prop = function () {};
+    reactions.add_reaction(alice_event);
+
+    assert(reaction_element.hasClass('reacted'));
 }());
