@@ -168,7 +168,10 @@ def init_from_options(options, client=None):
                   client_cert_key=options.client_cert_key)
 
 def get_default_config_filename():
-    # type: () -> str
+    # type: () -> Optional[str]
+    if os.environ.get("HOME") is None:
+        return None
+
     config_file = os.path.join(os.environ["HOME"], ".zuliprc")
     if (not os.path.exists(config_file) and
             os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
@@ -205,7 +208,7 @@ class Client(object):
         if config_file is None:
             config_file = get_default_config_filename()
 
-        if os.path.exists(config_file):
+        if config_file is not None and os.path.exists(config_file):
             config = SafeConfigParser()
             with open(config_file, 'r') as f:
                 config.readfp(f, config_file)
