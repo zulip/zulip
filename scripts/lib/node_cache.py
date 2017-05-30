@@ -31,6 +31,7 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     swagger_dist_path = os.path.join(cached_node_modules, 'swagger-ui-dist')
     swagger_zulip_path = os.path.join(ZULIP_PATH, 'static', 'swagger')
     swagger_html_path = os.path.join(ZULIP_PATH, 'static', 'html', 'swaggerindex.html')
+    swagger_default_index_path = os.path.join(ZULIP_PATH, 'static', 'swagger', 'index.html')
 
     # Check if a cached version already exists
     if not os.path.exists(success_stamp):
@@ -47,6 +48,7 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
         ["ln", "-nsf", cached_node_modules, 'node_modules'],
         ["cp", "-r", swagger_dist_path, swagger_zulip_path],
         ["cp", swagger_html_path, swagger_zulip_path],
+        ['rm', swagger_default_index_path],
     ]
     for cmd in cmds:
         run(cmd, stdout=stdout, stderr=stderr)
