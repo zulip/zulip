@@ -359,6 +359,17 @@ exports.maybe_activate_stream_item = function (filter) {
 
         if (stream_id && stream_data.id_is_subscribed(stream_id)) {
             var stream_li = exports.get_stream_li(stream_id);
+
+            if (stream_li.length !== 1) {
+                // It should be the case then when we have a subscribed
+                // stream, there will always be a stream list item
+                // corresponding to that stream in our sidebar.  We have
+                // evidence that this assumption breaks down for some users,
+                // but we are not clear why it happens.
+                blueslip.error('No stream_li for subscribed stream ' + stream_name);
+                return;
+            }
+
             var op_subject = filter.operands('topic');
             if (op_subject.length === 0) {
                 stream_li.addClass('active-filter');
