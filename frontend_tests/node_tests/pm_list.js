@@ -14,6 +14,7 @@ set_global('message_store', {
 });
 
 set_global('unread', {});
+set_global('unread_ui', {});
 
 // TODO: move pm_list-related tests to their own module
 var pm_list = require('js/pm_list.js');
@@ -79,4 +80,42 @@ global.people.initialize_current_user(me.user_id);
 
     assert.deepEqual(template_data, expected_data);
 
+}());
+
+(function test_update_dom_with_unread_counts() {
+    var total_value = $('total-value-stub');
+    var total_count = $('total-count-stub');
+    var private_li = $("#global_filters > li[data-name='private']");
+    private_li.add_child('.count', total_count);
+    total_count.add_child('.value', total_value);
+
+    var child_value = $('child-value-stub');
+    var child_count = $('child-count-stub');
+    var child_li = $('child-li-stub');
+    private_li.add_child("li[data-user-ids-string='101,102']", child_li);
+    child_li.add_child('.private_message_count', child_count);
+    child_count.add_child('.value', child_value);
+
+    var pm_count = new Dict();
+    var user_ids_string = '101,102';
+    pm_count.set(user_ids_string, 7);
+
+    var counts = {
+        private_message_count: 10,
+        pm_count: pm_count,
+    };
+
+    var toggle_button_set;
+    unread_ui.set_count_toggle_button = function (elt, count) {
+        toggle_button_set = true;
+        assert.equal(count, 10);
+    };
+
+    unread_ui.animate_private_message_changes = function () {};
+
+    pm_list.update_dom_with_unread_counts(counts);
+
+    assert(toggle_button_set);
+    assert.equal(child_value.text(), '7');
+    assert.equal(total_value.text(), '10');
 }());
