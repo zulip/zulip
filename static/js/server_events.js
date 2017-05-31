@@ -133,6 +133,9 @@ function dispatch_normal_event(event) {
         break;
 
     case 'realm_emoji':
+        // Update `page_params.realm_emoji` so that settings page
+        // can display it properly when reopened without refresh.
+        page_params.realm_emoji = event.realm_emoji;
         emoji.update_emojis(event.realm_emoji);
         settings_emoji.populate_emoji(event.realm_emoji);
         break;
