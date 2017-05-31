@@ -42,14 +42,14 @@ whitelisted_names = [
     ['play_button', 'arrow_forward'],
     # github/slack both get rid of shuffle_tracks_button, which seems wrong
     ['shuffle_tracks_button', 'twisted_rightwards_arrows'],
-    ['iphone', 'mobile_phone'], # disagrees with github/slack/emojione
+    ['iphone', 'mobile_phone'],  # disagrees with github/slack/emojione
     # both github and slack remove {growing,beating}_heart, not sure what I think
     ['heartpulse', 'growing_heart'], ['heartbeat', 'beating_heart'],
     # did remove cityscape_at_dusk from (city_sunset, cityscape_at_dusk)
     ['sunset', 'city_sunrise'],
-    ['punch', 'oncoming_fist'], # doesn't include facepunch
-    ['+1', 'thumbs_up'], # doesn't include thumbsup
-    ['-1', 'thumbs_down'], # doesn't include thumbsdown
+    ['punch', 'oncoming_fist'],  # doesn't include facepunch
+    ['+1', 'thumbs_up'],  # doesn't include thumbsup
+    ['-1', 'thumbs_down'],  # doesn't include thumbsdown
     # shit, hankey. slack allows poop, shit, hankey. github calls it hankey,
     # and autocompletes for poop and shit. emojione calls it poop, and
     # autocompletes for pile_of_poo and shit.
@@ -68,63 +68,63 @@ whitelisted_names = [
 # :american_football: instead.  So we just remove the shorter names here.
 blacklisted_names = frozenset([
     # would be chosen by words_supersets or superstrings
-    'football', # american_football
-    'post_office', # european_post_office (there's also a japanese_post_office)
-    'castle', # european_castle (there's also a japanese_castle)
-    'chart', # chart_increasing_with_yen (should rename chart_increasing to chart)
-    'loop', # double_curly_loop (should rename curly_loop to loop)
-    'massage', # face_massage
-    'bulb', # light_bulb
-    'barber', # barber_pole
-    'mens', # mens_room
-    'womens', # womens_room
-    'knife', # kitchen_knife (hocho also maps here)
-    'notes', # musical_notes
-    'beetle', # lady_beetle
-    'ab', # ab_button (due to keeping a_button, due to the one_lettered() rule)
-    'headphone', # headphones
-    'mega', # megaphone
-    'ski', # skis
-    'high_heel', # high_heeled_shoe (so that it shows up when searching for shoe)
+    'football',  # american_football
+    'post_office',  # european_post_office (there's also a japanese_post_office)
+    'castle',  # european_castle (there's also a japanese_castle)
+    'chart',  # chart_increasing_with_yen (should rename chart_increasing to chart)
+    'loop',  # double_curly_loop (should rename curly_loop to loop)
+    'massage',  # face_massage
+    'bulb',  # light_bulb
+    'barber',  # barber_pole
+    'mens',  # mens_room
+    'womens',  # womens_room
+    'knife',  # kitchen_knife (hocho also maps here)
+    'notes',  # musical_notes
+    'beetle',  # lady_beetle
+    'ab',  # ab_button (due to keeping a_button, due to the one_lettered() rule)
+    'headphone',  # headphones
+    'mega',  # megaphone
+    'ski',  # skis
+    'high_heel',  # high_heeled_shoe (so that it shows up when searching for shoe)
     # less confident about the following
-    'dolls', # japanese_dolls
-    'moon', # waxing_gibbous_moon (should rename crescent_moon to moon)
-    'clapper', # clapper_board
-    'traffic_light', # horizontal_traffic_light (there's also a vertical_traffic_light)
+    'dolls',  # japanese_dolls
+    'moon',  # waxing_gibbous_moon (should rename crescent_moon to moon)
+    'clapper',  # clapper_board
+    'traffic_light',  # horizontal_traffic_light (there's also a vertical_traffic_light)
     'lantern',
-    'red_paper_lantern', # izakaya_lantern (in the future we should make sure
-                         # red_paper_lantern finds this)
+    'red_paper_lantern',  # izakaya_lantern (in the future we should make sure
+                          # red_paper_lantern finds this)
 
     # would be chosen by longer
-    'down_button', # arrow_down_small, I think to match the other arrow_*
-                   # names. Matching what github and slack do.
-    'running_shoe', # athletic_shoe, both github and slack agree here.
-    'running', # runner. slack has both, github has running_man and running_woman, but not runner
-    'o2', # o_button
-    'star2', # glowing_star
-    'bright', # high_brightness, to match low_brightness, what github/slack do
-    'dim_button', # low_brightness, copying github/slack
-    'stars', # shooting_star. disagrees with github, slack, and emojione, but this seems better
-    'nail_care', # nail_polish. Also disagrees github/slack/emojione, is nail_polish mostly an
+    'down_button',  # arrow_down_small, I think to match the other arrow_*
+                    # names. Matching what github and slack do.
+    'running_shoe',  # athletic_shoe, both github and slack agree here.
+    'running',  # runner. slack has both, github has running_man and running_woman, but not runner
+    'o2',  # o_button
+    'star2',  # glowing_star
+    'bright',  # high_brightness, to match low_brightness, what github/slack do
+    'dim_button',  # low_brightness, copying github/slack
+    'stars',  # shooting_star. disagrees with github, slack, and emojione, but this seems better
+    'nail_care',  # nail_polish. Also disagrees github/slack/emojione, is nail_polish mostly an
                  # american thing?
-    'busstop', # bus_stop
-    'tophat', # top_hat
-    'old_woman', # older_woman, following github/slack/emojione on these
-    'old_man', # older_man
-    'blue_car', # recreational_vehicle
-    'litter_in_bin_sign', # put_litter_in_its_place
-    'moai', # moyai based on github/slack
-    'fuelpump', # fuel_pump
+    'busstop',  # bus_stop
+    'tophat',  # top_hat
+    'old_woman',  # older_woman, following github/slack/emojione on these
+    'old_man',  # older_man
+    'blue_car',  # recreational_vehicle
+    'litter_in_bin_sign',  # put_litter_in_its_place
+    'moai',  # moyai based on github/slack
+    'fuelpump',  # fuel_pump
 
     # names not otherwise excluded by our heuristics
-    'left_arrow', # arrow_left, to match other arrow_* shortnames
-    'right_arrow', # arrow_right
-    'up_arrow', # arrow_up
-    'down_arrow', # arrow_down
-    'chequered_flag', # checkered_flag
-    'e_mail', # e-mail
-    'non_potable_water', # non-potable_water
-    'flipper', # dolphin
+    'left_arrow',  # arrow_left, to match other arrow_* shortnames
+    'right_arrow',  # arrow_right
+    'up_arrow',  # arrow_up
+    'down_arrow',  # arrow_down
+    'chequered_flag',  # checkered_flag
+    'e_mail',  # e-mail
+    'non_potable_water',  # non-potable_water
+    'flipper',  # dolphin
 ])
 
 ## functions that take in a list of names at a codepoint and return a subset to exclude
@@ -208,7 +208,7 @@ def google_color_bug(names):
 
 def emoji_names_for_picker(emoji_map):
     # type: (Dict[Text, Text]) -> List[str]
-    codepoint_to_names = defaultdict(list) # type: Dict[Text, List[str]]
+    codepoint_to_names = defaultdict(list)  # type: Dict[Text, List[str]]
     for name, codepoint in emoji_map.items():
         codepoint_to_names[codepoint].append(str(name))
 
@@ -232,8 +232,8 @@ def emoji_names_for_picker(emoji_map):
 # `emoji_data`.
 def generate_emoji_catalog(emoji_data):
     # type: (List[Dict[Text, Any]]) -> Dict[str, List[str]]
-    sort_order = {} # type: Dict[str, int]
-    emoji_catalog = {} # type: Dict[str, List[str]]
+    sort_order = {}  # type: Dict[str, int]
+    emoji_catalog = {}  # type: Dict[str, List[str]]
     for emoji in emoji_data:
         if not emoji_is_universal(emoji):
             continue
