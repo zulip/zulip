@@ -271,6 +271,7 @@ EVENT_FUNCTION_MAPPER = {
     'Merge Request Hook update': get_merge_request_updated_event_body,
     'Merge Request Hook merge': partial(get_merge_request_event_body, action='merged'),
     'Merge Request Hook close': partial(get_merge_request_event_body, action='closed'),
+    'Merge Request Hook reopen': partial(get_merge_request_event_body, action='reopened'),
     'Wiki Page Hook create': partial(get_wiki_page_event_body, action='created'),
     'Wiki Page Hook update': partial(get_wiki_page_event_body, action='updated'),
     'Build Hook': get_build_hook_event_body,
