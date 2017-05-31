@@ -158,6 +158,20 @@ var event_fixtures = {
         server_timestamp: 999999,
     },
 
+    reaction__add: {
+        type: 'reaction',
+        op: 'add',
+        message_id: 128,
+        emoji_name: 'anguished_pig',
+    },
+
+    reaction__remove: {
+        type: 'reaction',
+        op: 'remove',
+        message_id: 256,
+        emoji_name: 'angery',
+    },
+
     // Please keep this next section un-nested, as we want this to partly
     // be simple documentation on the formats of individual events.
     realm__update__create_stream_by_admins_only: {
@@ -484,6 +498,27 @@ with_overrides(function (override) {
         assert_same(args.email, 'alice@example.com');
         assert_same(args.presence, event.presence);
         assert_same(args.server_time, event.server_timestamp);
+    });
+});
+
+with_overrides(function (override) {
+    // reaction
+    var event = event_fixtures.reaction__add;
+    global.with_stub(function (stub) {
+        override('reactions.add_reaction', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.emoji_name, event.emoji_name);
+        assert_same(args.event.message_id, event.message_id);
+    });
+
+    event = event_fixtures.reaction__remove;
+    global.with_stub(function (stub) {
+        override('reactions.remove_reaction', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.emoji_name, event.emoji_name);
+        assert_same(args.event.message_id, event.message_id);
     });
 });
 
