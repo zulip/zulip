@@ -59,6 +59,10 @@ function get_events_success(events) {
         events_stored_while_loading = [];
     }
 
+    // Most events are dispatched via the code server_events_dispatch,
+    // called in the default case.  The goal of this split is to avoid
+    // contributors needing to read or understand the complex and
+    // rarely modified logic for non-normal events.
     var dispatch_event = function dispatch_event(event) {
         switch (event.type) {
         case 'message':
