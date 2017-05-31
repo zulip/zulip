@@ -33,11 +33,11 @@ OUTPUT_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
 def get_js_edges():
     # type: () -> Tuple[EdgeSet, MethodDict]
     names = set()
-    modules = [] # type: List[Dict[str, Any]]
+    modules = []  # type: List[Dict[str, Any]]
     for js_file in os.listdir(JS_FILES_DIR):
         if not js_file.endswith('.js'):
             continue
-        name = js_file[:-3] # remove .js
+        name = js_file[:-3]  # remove .js
         path = os.path.join(JS_FILES_DIR, js_file)
         names.add(name)
         modules.append(dict(
@@ -49,7 +49,7 @@ def get_js_edges():
     comment_regex = re.compile('\s+//')
     call_regex = re.compile('[^_](\w+\.\w+)\(')
 
-    methods = defaultdict(list) # type: DefaultDict[Edge, List[Method]]
+    methods = defaultdict(list)  # type: DefaultDict[Edge, List[Method]]
     edges = set()
     for module in modules:
         parent = module['name']
@@ -144,7 +144,7 @@ def find_edges_to_remove(graph, methods):
         ('stream_edit', 'stream_list'),
         ('reactions', 'emoji_picker'),
         ('message_edit', 'resize'),
-    ] # type: List[Edge]
+    ]  # type: List[Edge]
 
     def is_exempt(edge):
         # type: (Tuple[str, str]) -> bool
@@ -260,8 +260,8 @@ def find_edges_to_remove(graph, methods):
 def report_roadmap(edges, methods):
     # type: (List[Edge], MethodDict) -> None
     child_modules = {child for parent, child in edges}
-    module_methods = defaultdict(set) # type: DefaultDict[str, Set[str]]
-    callers = defaultdict(set) # type: DefaultDict[Tuple[str, str], Set[str]]
+    module_methods = defaultdict(set)  # type: DefaultDict[str, Set[str]]
+    callers = defaultdict(set)  # type: DefaultDict[Tuple[str, str], Set[str]]
     for parent, child in edges:
         for method in methods[(parent, child)]:
             module_methods[child].add(method)
