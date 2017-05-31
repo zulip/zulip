@@ -13,6 +13,13 @@ set_global('message_store', {
     recent_private_messages: new global.Array(),
 });
 
+set_global('narrow_state', {});
+set_global('resize', {
+    resize_stream_filters_container: function () {},
+});
+set_global('stream_popover', {
+    hide_topic_popover: function () {},
+});
 set_global('unread', {});
 set_global('unread_ui', {});
 
@@ -80,6 +87,57 @@ global.people.initialize_current_user(me.user_id);
 
     assert.deepEqual(template_data, expected_data);
 
+}());
+
+(function test_expand_and_update_private_messages() {
+    var collapsed;
+    $('ul.expanded_private_messages').remove = function () {
+        collapsed = true;
+    };
+
+    global.templates.render = function (template_name) {
+        assert.equal(template_name, 'sidebar_private_message_list');
+        return 'fake-dom-for-pm-list';
+    };
+
+    var private_li = $("#global_filters > li[data-name='private']");
+    var alice_li = $('alice-li-stub');
+    var bob_li = $('bob-li-stub');
+
+    private_li.add_child("li[data-user-ids-string='101']", alice_li);
+    private_li.add_child("li[data-user-ids-string='102']", bob_li);
+
+    var dom;
+    private_li.append = function (html) {
+        dom = html;
+    };
+
+    pm_list.expand([alice.email]);
+    assert.equal(dom, 'fake-dom-for-pm-list');
+    assert(collapsed);
+    assert(alice_li.hasClass('active-sub-filter'));
+
+    // Next, simulate clicking on Bob.
+    narrow_state.active = function () { return true; };
+
+    narrow_state.filter = function () {
+        return {
+            operands: function (operand) {
+                if (operand === 'is') {
+                    return 'private';
+                }
+                assert.equal(operand, 'pm-with');
+                return [bob.email];
+            },
+        };
+    };
+
+    collapsed = false;
+
+    pm_list.update_private_messages();
+
+    assert(collapsed);
+    assert(bob_li.hasClass('active-sub-filter'));
 }());
 
 (function test_update_dom_with_unread_counts() {
