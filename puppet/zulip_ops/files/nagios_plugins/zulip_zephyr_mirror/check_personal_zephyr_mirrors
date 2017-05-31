@@ -15,14 +15,14 @@ if False:
 import os
 import time
 
-RESULTS_DIR = "/home/zulip/mirror_status" # type: str
+RESULTS_DIR = "/home/zulip/mirror_status"  # type: str
 
 states = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-} # type: Dict[str, int]
+}  # type: Dict[str, int]
 
 def report(state, output):
     # type: (str, str) -> None
