@@ -7,6 +7,7 @@ import argparse
 import os
 import sys
 import unittest
+import logging
 from unittest import TestCase
 
 def dir_join(dir1, dir2):
@@ -15,13 +16,11 @@ def dir_join(dir1, dir2):
 
 
 if __name__ == '__main__':
+
     description = 'Script to run test_<bot>.py files in bots/<bot> directories'
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--bot',
-                        nargs=1,
-                        type=str,
-                        action='store',
-                        help='test specified single bot')
+    parser.add_argument('bot_to_test', metavar='bot', nargs='*',
+                        help='specific bots to test (default is all)')
     args = parser.parse_args()
 
     bots_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,14 +30,28 @@ if __name__ == '__main__':
     sys.path.insert(0, root_dir)
     sys.path.insert(0, bots_test_dir)
 
-    # mypy doesn't recognize the TestLoader attribute, even though the code
-    # is executable
-    loader = unittest.TestLoader()  # type: ignore
-    if args.bot is not None:
-        bots_test_dir = dir_join(bots_test_dir, args.bot[0])
-    suite = loader.discover(start_dir=bots_test_dir, top_level_dir=root_dir)
-    runner = unittest.TextTestRunner(verbosity=2)
-    # same issue as for TestLoader
-    result = runner.run(suite)  # type: ignore
-    if result.errors or result.failures:
-        raise Exception('Test failed!')
+    def run_tests_in(start_dir):
+        # type: (str) -> None
+        # mypy doesn't recognize the TestLoader attribute, even though the code
+        # is executable
+        loader = unittest.TestLoader() # type: ignore
+        suite = loader.discover(start_dir=start_dir, top_level_dir=root_dir)
+        runner = unittest.TextTestRunner(verbosity=2)
+        # same issue as for TestLoader
+        result = runner.run(suite) # type: ignore
+        if result.errors or result.failures:
+            raise Exception('Test failed!')
+
+    if len(args.bot_to_test) > 0:
+        btd = bots_test_dir
+        available_bots = [b for b in os.listdir(btd) if os.path.isdir(dir_join(btd, b))]
+        tests_incomplete = False
+        for n in args.bot_to_test:
+            if n not in available_bots:
+                logging.warning("Bot with name '%s' is unavailable for testing." % (n))
+                tests_incomplete = True
+            else:
+                run_tests_in(dir_join(bots_test_dir, n))
+        sys.exit(tests_incomplete)
+    else:
+        run_tests_in(bots_test_dir)
