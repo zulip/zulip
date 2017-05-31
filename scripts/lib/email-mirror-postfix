@@ -89,7 +89,7 @@ def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
     # type: (Text, Text, Text, Text, bool, bool) -> None
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
-        exit(posix.EX_NOUSER) # type: ignore # There are no stubs for posix in python 3
+        exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3
     msg_text = sys.stdin.read(MAX_ALLOWED_PAYLOAD + 1)
     if len(msg_text) > MAX_ALLOWED_PAYLOAD:
         # We're not at EOF, reject large mail.
