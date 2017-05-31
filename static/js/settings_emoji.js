@@ -10,8 +10,15 @@ function can_admin_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
     }
-    if (!page_params.realm_add_emoji_by_admins_only && people.is_current_user(emoji.author.email)) {
-        return true;
+    if (!page_params.realm_add_emoji_by_admins_only) {
+        if (!emoji.author || !emoji.author.email) {
+            blueslip.error('Cannot find author of emoji: ' + emoji.source_url);
+            return false;
+        }
+
+        if (people.is_current_user(emoji.author.email)) {
+            return true;
+        }
     }
     return false;
 }
