@@ -88,7 +88,7 @@ exports.make_zjquery = function () {
                     return child;
                 }
 
-                throw "Cannot find " + child_selector + " in " + selector;
+                throw Error("Cannot find " + child_selector + " in " + selector);
             },
             add_child: function (child_selector, child_elem) {
                 child_elem.set_parent(self);
