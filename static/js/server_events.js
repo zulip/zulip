@@ -18,6 +18,7 @@ var get_events_params = {};
 // system when coming back from unsuspend.
 exports.suspect_offline = false;
 
+// Note that the main event dipatcher used here has been moved to dispatch.js
 function get_events_success(events) {
     var messages = [];
     var messages_to_update = [];
