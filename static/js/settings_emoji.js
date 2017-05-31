@@ -10,6 +10,10 @@ function can_admin_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
     }
+    if (emoji.author === null) {
+        // If we don't have the author information then only admin is allowed to disable that emoji.
+        return false;
+    }
     if (!page_params.realm_add_emoji_by_admins_only && people.is_current_user(emoji.author.email)) {
         return true;
     }
@@ -32,7 +36,7 @@ exports.populate_emoji = function (emoji_data) {
             emoji: {
                 name: name, source_url: data.source_url,
                 display_url: data.source_url,
-                author: data.author,
+                author: data.author || '',
                 can_admin_emoji: can_admin_emoji(data),
             },
         }));
