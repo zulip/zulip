@@ -10,7 +10,7 @@ var default_emoji_order = {};
 // Saves an array of the complete emoji list in default order.
 var complete_emoji_list;
 
-function promote_popular(a, b) {
+var promote_popular = (function () {
     function rank(name) {
         switch (name) {
             case '+1': return 1;
@@ -22,14 +22,16 @@ function promote_popular(a, b) {
         }
     }
 
-    var diff = rank(a.name) - rank(b.name);
+    return function (a, b) {
+        var diff = rank(a.name) - rank(b.name);
 
-    if (diff !== 0) {
-        return diff;
-    }
+        if (diff !== 0) {
+            return diff;
+        }
 
-    return util.strcmp(a.name, b.name);
-}
+        return util.strcmp(a.name, b.name);
+    };
+}());
 
 function compute_placement(elt) {
     var approx_popover_height = 400;
@@ -53,56 +55,108 @@ function compute_placement(elt) {
     return placement;
 }
 
-function generate_emoji_picker_content(id) {
-    var emojis = _.clone(emoji.emojis_name_to_css_class);
+function get_emoji_categories() {
+    return [
+        { name: "People", icon: "fa-smile-o" },
+        { name: "Nature", icon: "fa-leaf" },
+        { name: "Foods", icon: "fa-cutlery" },
+        { name: "Activity", icon: "fa-soccer-ball-o" },
+        { name: "Places", icon: "fa-car" },
+        { name: "Objects", icon: "fa-lightbulb-o" },
+        { name: "Symbols", icon: "fa-hashtag" },
+        { name: "Custom", icon: "fa-thumbs-o-up" },
+    ];
+}
 
-    var realm_emojis = emoji.realm_emojis;
-    _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
-        emojis[realm_emoji_name] = {
-            name: realm_emoji_name,
-            is_realm_emoji: true,
-            url: realm_emoji.emoji_url,
-        };
-    });
+var subhead_offsets = [];
 
-    // Reacting to a specific message
-    if (id !== undefined) {
-        var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
-        _.each(emojis_used, function (emoji_name) {
-            emojis[emoji_name] = {
-                name: emoji_name,
-                has_reacted: true,
-                css_class: emoji.emojis_name_to_css_class[emoji_name],
-                is_realm_emoji: emojis[emoji_name].is_realm_emoji,
-                url: emojis[emoji_name].url,
-            };
+var generate_emoji_picker_content = (function () {
+    var emoji_by_unicode = (function () {
+        var map = {};
+
+        _.each(emoji.emojis, function (emoji) {
+            map[emoji.codepoint] = emoji;
         });
-    }
-
-    var emoji_recs = _.map(emojis, function (val, emoji_name) {
-        if (val.name) {
-            return val;
-        }
 
         return {
-            name: emoji_name,
-            css_class: emoji.emojis_name_to_css_class[emoji_name],
-            has_reacted: false,
-            is_realm_emoji: false,
+            find: function (unicode) {
+                return map[unicode];
+            },
         };
-    });
+    }());
 
-    var args = {
-        message_id: id,
-        emojis: emoji_recs.sort(promote_popular),
+    var emoji_map_by_name = function (map) {
+        var _map = {};
+        Object.keys(map).forEach(function (category) {
+            map[category].forEach(function (item) {
+                _map[item.name] = item;
+            });
+        });
+
+        return _map;
     };
 
-    for (var i = 1; i <= emoji_recs.length; i += 1) {
-        default_emoji_order[emoji_recs[i-1].name] = i;
-    }
+    var emoji_map = Object.assign({}, emoji_codes.emoji_catalog);
 
-    return templates.render('emoji_popover_content', args);
-}
+    _.each(emoji_map, function (category, key) {
+        emoji_map[key] = _.map(category, function (emoji_unicode) {
+            var url = emoji.emojis_by_unicode[emoji_unicode];
+            var _emoji = emoji_by_unicode.find(emoji_unicode);
+
+            return {
+                url: url,
+                is_realm_emoji: false,
+                name: _emoji ? _emoji.emoji_name : null,
+                css_class: emoji_unicode,
+            };
+        }).filter(function (emoji) {
+            return emoji.name && emoji.url;
+        });
+    });
+
+    return function (id) {
+        emoji_map.Custom = [];
+        _.each(emoji.realm_emoji, function (realm_emoji, realm_emoji_name) {
+            emoji_map.Custom[realm_emoji_name] = {
+                name: realm_emoji_name,
+                is_realm_emoji: true,
+                url: realm_emoji.emoji_url,
+            };
+        });
+
+        // Reacting to a specific message
+        if (id !== undefined) {
+            var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
+            var emoji_by_name_map = emoji_map_by_name(emoji_map);
+
+            _.each(emojis_used, function (emoji_name) {
+                emoji_by_name_map[emoji_name].has_reacted = true;
+                emoji_by_name_map[emoji_name].css_class =
+                 emoji.emojis_name_to_css_class[emoji_name];
+            });
+        }
+
+        Object.keys(emoji_map).forEach(function (category) {
+            if (emoji_map[category].length === 0) {
+                delete emoji_map[category];
+            }
+        });
+
+        var categories = get_emoji_categories();
+
+        var emojis = categories.map(function (category) {
+            return Object.assign(category, {
+                emojis: emoji_map[category.name] ?
+                    emoji_map[category.name].sort(promote_popular) : undefined,
+            });
+        });
+
+        return templates.render('emoji_popover_content', {
+            message_id: id,
+            emoji_categories: emojis,
+        });
+    };
+}());
 
 exports.toggle_emoji_popover = function (element, id) {
     var last_popover_elem = current_message_emoji_popover_elem;
@@ -122,8 +176,13 @@ exports.toggle_emoji_popover = function (element, id) {
 
     if (elt.data('popover') === undefined) {
         elt.prop('title', '');
+        var template_args = {
+            class: "emoji-info-popover",
+            categories: get_emoji_categories(),
+        };
         elt.popover({
             placement: compute_placement(elt),
+            template:  templates.render('emoji_popover', template_args),
             title:     "",
             content:   generate_emoji_picker_content(id),
             trigger:   "manual",
@@ -137,8 +196,20 @@ exports.toggle_emoji_popover = function (element, id) {
             wheelSpeed: 25,
         });
         current_message_emoji_popover_elem = elt;
+
         exports.render_emoji_show_list();
         complete_emoji_list = $('.emoji-popover-emoji').toArray();
+
+        $('.emoji-popover-subheading').each(function () {
+            subhead_offsets.push({
+                section: $(this).attr('data-section'),
+                position_y: $(this).position().top,
+            });
+        });
+        var $emoji_map = $('.emoji-popover-emoji-map');
+        $emoji_map.on("scroll", function () {
+            emoji_picker.emoji_select_tab($emoji_map);
+        });
     }
 };
 
@@ -173,6 +244,10 @@ exports.render_emoji_show_list = function () {
 // order_no (case: empty search string) or the order_no as per the
 // sorted order obtained w.r.t the search string.
 function set_emoji_order(emoji_list, is_set_default) {
+    if (!emoji_list) {
+        return;
+    }
+
     var order_no;
     // To get the order_no as per the sorted order.
     var get_order = function (i) { return i.toString(); };
@@ -345,7 +420,23 @@ exports.navigate = function (e, event_name) {
     return false;
 };
 
+exports.emoji_select_tab = function (elt) {
+    var scrolltop = elt.scrollTop();
+    var currently_selected = "";
+    subhead_offsets.forEach(function (o) {
+        if (scrolltop >= o.position_y) {
+            currently_selected = o.section;
+        }
+    });
+
+    if (currently_selected) {
+        $('.emoji-popover-tab-item.active').removeClass('active');
+        $('.emoji-popover-tab-item[data-tab-name="'+currently_selected+'"]').addClass('active');
+    }
+};
+
 exports.register_click_handlers = function () {
+
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
         var emoji_text = ':' + this.title + ':';
         var textarea = $("#new_message_content");
@@ -382,6 +473,15 @@ exports.register_click_handlers = function () {
     $(document).on('input', '.emoji-popover-filter', filter_emojis);
     $(document).on('keydown', '.emoji-popover-filter', maybe_select_emoji);
 
+    $("body").on("click", ".emoji-popover-tab-item", function () {
+        var offset = _.find(subhead_offsets, function (o) {
+            return o.section === $(this).attr("data-tab-name");
+        }.bind(this));
+
+        if (offset) {
+            $(".emoji-popover-emoji-map").scrollTop(offset.position_y);
+        }
+    });
 };
 
 exports.is_composition = function (emoji) {
