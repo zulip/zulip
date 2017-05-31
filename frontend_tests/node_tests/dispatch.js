@@ -397,6 +397,22 @@ var event_fixtures = {
         value: 'black',
     },
 
+    typing__start: {
+        type: 'typing',
+        sender: {
+            user_id: 4,
+        },
+        op: 'start',
+    },
+
+    typing__stop: {
+        type: 'typing',
+        sender: {
+            user_id: 6,
+        },
+        op: 'stop',
+    },
+
     update_display_settings__default_language: {
         type: 'update_display_settings',
         setting_name: 'default_language',
@@ -807,6 +823,25 @@ with_overrides(function (override) {
         assert_same(args.stream_id, event.stream_id);
         assert_same(args.property, event.property);
         assert_same(args.value, event.value);
+    });
+});
+
+with_overrides(function (override) {
+    // typing
+    var event = event_fixtures.typing__start;
+    global.with_stub(function (stub) {
+        override('typing_events.display_notification', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.sender.user_id, 4);
+    });
+
+    event = event_fixtures.typing__stop;
+    global.with_stub(function (stub) {
+        override('typing_events.hide_notification', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.sender.user_id, 6);
     });
 });
 
