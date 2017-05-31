@@ -283,7 +283,7 @@ exports.stream_topic = function () {
 exports.narrow_to_next_topic = function () {
     var curr_info = exports.stream_topic();
 
-    if (!curr_info || !curr_info.stream) {
+    if (!curr_info) {
         return;
     }
 
@@ -305,7 +305,7 @@ exports.narrow_to_next_topic = function () {
         select_first_unread: true,
     };
 
-    narrow.activate(filter_expr, opts);
+    exports.activate(filter_expr, opts);
 };
 
 
