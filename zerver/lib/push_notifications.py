@@ -325,7 +325,7 @@ def get_gcm_payload(user_profile, message):
         'user': user_profile.email,
         'event': 'message',
         'alert': get_alert_from_message(message),
-        'zulip_message_id': message.id, # message_id is reserved for CCS
+        'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
         'content': content,
         'content_truncated': content_truncated,
