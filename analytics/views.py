@@ -54,7 +54,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['realm_active_humans::day']
         tables = [RealmCount]
-        subgroup_to_label = {None: 'human'} # type: Dict[Optional[str], str]
+        subgroup_to_label = {None: 'human'}  # type: Dict[Optional[str], str]
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
@@ -131,7 +131,7 @@ def sort_client_labels(data):
     # type: (Dict[str, Dict[str, List[int]]]) -> List[str]
     realm_order = sort_by_totals(data['realm'])
     user_order = sort_by_totals(data['user'])
-    label_sort_values = {} # type: Dict[str, float]
+    label_sort_values = {}  # type: Dict[str, float]
     for i, label in enumerate(realm_order):
         label_sort_values[label] = i
     for i, label in enumerate(user_order):
@@ -172,7 +172,7 @@ def client_label_map(name):
 
 def rewrite_client_arrays(value_arrays):
     # type: (Dict[str, List[int]]) -> Dict[str, List[int]]
-    mapped_arrays = {} # type: Dict[str, List[int]]
+    mapped_arrays = {}  # type: Dict[str, List[int]]
     for label, array in value_arrays.items():
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
@@ -186,7 +186,7 @@ def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroup_to_labe
     # type: (CountStat, Type[BaseCount], int, List[datetime], Dict[Optional[str], str], bool) -> Dict[str, List[int]]
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
-    value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]
+    value_dicts = defaultdict(lambda: defaultdict(int))  # type: Dict[Optional[str], Dict[datetime, int]]
     for subgroup, end_time, value in queryset:
         value_dicts[subgroup][end_time] = value
     value_arrays = {}
@@ -261,7 +261,7 @@ def get_realm_day_counts():
     rows = dictfetchall(cursor)
     cursor.close()
 
-    counts = defaultdict(dict) # type: Dict[str, Dict[int, int]]
+    counts = defaultdict(dict)  # type: Dict[str, Dict[int, int]]
     for row in rows:
         counts[row['string_id']][row['age']] = row['cnt']
 
@@ -745,8 +745,8 @@ def ad_hoc_queries():
 @has_request_variables
 def get_activity(request):
     # type: (HttpRequest) -> HttpResponse
-    duration_content, realm_minutes = user_activity_intervals() # type: Tuple[mark_safe, Dict[str, float]]
-    counts_content = realm_summary_table(realm_minutes) # type: str
+    duration_content, realm_minutes = user_activity_intervals()  # type: Tuple[mark_safe, Dict[str, float]]
+    counts_content = realm_summary_table(realm_minutes)  # type: str
     data = [
         ('Counts', counts_content),
         ('Durations', duration_content),
@@ -828,7 +828,7 @@ def get_user_activity_summary(records):
     #: We could use something like:
     # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
     #: but that would require this long `Union` to carry on throughout inner functions.
-    summary = {} # type: Dict[str, Dict[str, Any]]
+    summary = {}  # type: Dict[str, Dict[str, Any]]
 
     def update(action, record):
         # type: (str, QuerySet) -> None
@@ -1038,8 +1038,8 @@ def realm_user_summary_table(all_records, admin_emails):
 @require_server_admin
 def get_realm_activity(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
-    data = [] # type: List[Tuple[str, str]]
-    all_user_records = {} # type: Dict[str, Any]
+    data = []  # type: List[Tuple[str, str]]
+    all_user_records = {}  # type: Dict[str, Any]
 
     try:
         admins = Realm.objects.get(string_id=realm_str).get_admin_users()
@@ -1079,7 +1079,7 @@ def get_user_activity(request, email):
     # type: (HttpRequest, str) -> HttpResponse
     records = get_user_activity_records_for_email(email)
 
-    data = [] # type: List[Tuple[str, str]]
+    data = []  # type: List[Tuple[str, str]]
     user_summary = get_user_activity_summary(records)
     content = user_activity_summary_table(user_summary)
 
