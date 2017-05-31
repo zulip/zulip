@@ -141,7 +141,7 @@ class Command(makemessages.Command):
     def extract_strings(self, data):
         # type: (str) -> Dict[str, str]
         data = self.ignore_javascript_comments(data)
-        translation_strings = {} # type: Dict[str, str]
+        translation_strings = {}  # type: Dict[str, str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
@@ -162,7 +162,7 @@ class Command(makemessages.Command):
 
     def get_translation_strings(self):
         # type: () -> Dict[str, str]
-        translation_strings = {} # type: Dict[str, str]
+        translation_strings = {}  # type: Dict[str, str]
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
@@ -226,7 +226,7 @@ class Command(makemessages.Command):
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
         """
-        new_strings = {} # Dict[str, str]
+        new_strings = {}  # Dict[str, str]
         for k in translation_strings:
             k = k.replace('\\n', '\n')
             new_strings[k] = old_strings.get(k, k)
