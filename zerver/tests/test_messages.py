@@ -613,7 +613,8 @@ class MessageDictTest(ZulipTestCase):
 
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
-        self.assertTrue(delay < 0.001 * num_ids)
+        error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
+        self.assertTrue(delay < 0.001 * num_ids, error_msg)
         self.assert_length(queries, 5)
         self.assertEqual(len(rows), num_ids)
 
