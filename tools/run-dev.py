@@ -379,8 +379,8 @@ class Application(web.Application):
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
+            (r"/sockjs-node.*", WebPackHandler),
             (r"/sockjs.*", TornadoHandler),
-            (r"/socket.io.*", WebPackHandler),
             (r"/.*", DjangoHandler)
         ]
         super(Application, self).__init__(handlers, enable_logging=enable_logging)
