@@ -171,7 +171,7 @@ for tries in range(10):
             actually_subscribed = True
             break
     except IOError as e:
-        if "SERVNAK received" in e: # type: ignore # https://github.com/python/mypy/issues/2118
+        if "SERVNAK received" in e:  # type: ignore # https://github.com/python/mypy/issues/2118
             logger.error("SERVNAK repeatedly received, punting rest of test")
         else:
             logger.exception("Exception subscribing to zephyrs")
@@ -181,8 +181,8 @@ if not actually_subscribed:
     print_status_and_exit(1)
 
 # Prepare keys
-zhkeys = {} # type: Dict[str, Tuple[str, str]]
-hzkeys = {} # type: Dict[str, Tuple[str, str]]
+zhkeys = {}  # type: Dict[str, Tuple[str, str]]
+hzkeys = {}  # type: Dict[str, Tuple[str, str]]
 def gen_key(key_dict):
     # type: (Dict[str, Any]) -> str
     bits = str(random.getrandbits(32))
@@ -293,7 +293,7 @@ def process_keys(content_list):
     # Start by filtering out any keys that might have come from
     # concurrent check-mirroring processes
     content_keys = [key for key in content_list if key in all_keys]
-    key_counts = {} # type: Dict[str, int]
+    key_counts = {}  # type: Dict[str, int]
     for key in all_keys:
         key_counts[key] = 0
     for key in content_keys:
