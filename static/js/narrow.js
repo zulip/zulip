@@ -196,6 +196,7 @@ exports.activate = function (raw_operators, opts) {
                 // narrowing
                 message_viewport.set_message_offset(then_select_offset);
             }
+            unread_ops.process_visible();
         }
     }
 
