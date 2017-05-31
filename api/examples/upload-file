@@ -32,7 +32,7 @@ from typing import IO
 import zulip
 
 class StringIO(_StringIO):
-    name = '' # https://github.com/python/typeshed/issues/598
+    name = ''  # https://github.com/python/typeshed/issues/598
 
 usage = """upload-file --user=<user's email address> --api-key=<user's api key> [options]
 
@@ -51,7 +51,7 @@ parser.add_option_group(zulip.generate_option_group(parser))
 
 client = zulip.init_from_options(options)
 
-file = None # type: IO
+file = None  # type: IO
 if options.file_path:
     file = open(options.file_path, 'rb')
 else:
