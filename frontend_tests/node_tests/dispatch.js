@@ -124,6 +124,11 @@ var event_fixtures = {
         ],
     },
 
+    hotspots: {
+        type: 'hotspots',
+        hotspots: ['nice', 'chicken'],
+    },
+
     message: {
         type: 'message',
         message: {
@@ -423,6 +428,14 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.realm_default_streams, event.default_streams);
 
+});
+
+with_overrides(function (override) {
+    // hotspots
+    var event = event_fixtures.hotspots;
+    override('hotspots.show', noop);
+    dispatch(event);
+    assert_same(page_params.hotspots, event.hotspots);
 });
 
 with_overrides(function (override) {
