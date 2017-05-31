@@ -64,7 +64,7 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
             stream_dict = {
                 "social": {"description": "For socializing", "invite_only": False},
                 "engineering": {"description": "For engineering", "invite_only": False}
-            } # type: Dict[Text, Dict[Text, Any]]
+            }  # type: Dict[Text, Dict[Text, Any]]
             set_default_streams(realm, stream_dict)
 
             print("\033[1;36mDefault streams set to social,engineering,zulip!\033[0m")
