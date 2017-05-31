@@ -29,13 +29,15 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileVisible(last_message_id, function () {
-        var msgs_after_deleting = casper.evaluate(function () {
-            return $('#zhome .message_row').length;
-        });
-        casper.test.assertEquals(msgs_qty - 1, msgs_after_deleting);
-        casper.test.assertDoesntExist(last_message_id);
+    casper.waitFor(function check_length() {
+        return casper.evaluate(function (expected_length) {
+            return $('#zhome .message_row').length === expected_length;
+        }, msgs_qty - 1);
     });
+});
+
+casper.then(function () {
+    casper.test.assertDoesntExist(last_message_id);
 });
 
 casper.run(function () {
