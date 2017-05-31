@@ -36,7 +36,7 @@ parser.add_option('--min-threshold',
 output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
                                  universal_newlines=True)
 
-consumers = defaultdict(int) # type: Dict[str, int]
+consumers = defaultdict(int)  # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 from scripts.lib.zulip_tools import su_to_zulip
