@@ -264,6 +264,30 @@ var event_fixtures = {
         ],
     },
 
+    realm_domains__add: {
+        type: 'realm_domains',
+        op: 'add',
+        realm_domain: {
+            domain: 'ramen',
+            allow_subdomains: false,
+        },
+    },
+
+    realm_domains__change: {
+        type: 'realm_domains',
+        op: 'change',
+        realm_domain: {
+            domain: 'ramen',
+            allow_subdomains: true,
+        },
+    },
+
+    realm_domains__remove: {
+        type: 'realm_domains',
+        op: 'remove',
+        domain: 'ramen',
+    },
+
     realm_user__add: {
         type: 'realm_user',
         op: 'add',
@@ -630,6 +654,23 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 
+});
+
+with_overrides(function (override) {
+    // realm_domains
+    var event = event_fixtures.realm_domains__add;
+    page_params.realm_domains = [];
+    override('settings_org.populate_realm_domains', noop);
+    dispatch(event);
+    assert_same(page_params.realm_domains, [event.realm_domain]);
+
+    event = event_fixtures.realm_domains__change;
+    dispatch(event);
+    assert_same(page_params.realm_domains, [event.realm_domain]);
+
+    event = event_fixtures.realm_domains__remove;
+    dispatch(event);
+    assert_same(page_params.realm_domains, []);
 });
 
 with_overrides(function (override) {
