@@ -230,7 +230,7 @@ class ReactionEventTest(ZulipTestCase):
 
         expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
 
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                                      **self.api_auth(reaction_sender.email))
@@ -271,7 +271,7 @@ class ReactionEventTest(ZulipTestCase):
                               **self.api_auth(reaction_sender.email))
         self.assert_json_success(add)
 
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_delete('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                                         **self.api_auth(reaction_sender.email))
