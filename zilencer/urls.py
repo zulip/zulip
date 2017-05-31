@@ -6,7 +6,7 @@ from zerver.lib.rest import rest_dispatch
 import zilencer.views
 import zerver.views.report
 
-i18n_urlpatterns = [] # type: Any
+i18n_urlpatterns = []  # type: Any
 
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
