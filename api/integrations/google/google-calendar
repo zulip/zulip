@@ -130,7 +130,7 @@ def populate_events():
                 event_timezone = pytz.timezone(event["start"]["timeZone"])
                 # pytz timezones include an extra localize method that's not part
                 # of the tzinfo base class.
-                start = event_timezone.localize(start) # type: ignore
+                start = event_timezone.localize(start)  # type: ignore
         except KeyError:
             # All-day events can have only a date.
             start_naive = dateutil.parser.parse(event["start"]["date"])
@@ -140,7 +140,7 @@ def populate_events():
             calendar_timezone = pytz.timezone(feed["timeZone"])
             # pytz timezones include an extra localize method that's not part
             # of the tzinfo base class.
-            start = calendar_timezone.localize(start_naive) # type: ignore
+            start = calendar_timezone.localize(start_naive)  # type: ignore
 
         try:
             events.append((event["id"], start, event["summary"]))
