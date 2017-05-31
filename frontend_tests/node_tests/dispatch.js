@@ -440,6 +440,11 @@ var event_fixtures = {
         flag: 'starred',
         messages: [99],
     },
+
+    delete_message: {
+        type: 'delete_message',
+        message_id: 1337,
+    },
 };
 
 function assert_same(actual, expected) {
@@ -864,5 +869,16 @@ with_overrides(function (override) {
         var args = stub.get_args('message_id', 'new_value');
         assert_same(args.message_id, 99);
         assert_same(args.new_value, true); // for 'add'
+    });
+});
+
+with_overrides(function (override) {
+    // delete_message
+    var event = event_fixtures.delete_message;
+    global.with_stub(function (stub) {
+        override('ui.remove_message', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message_id');
+        assert_same(args.message_id, 1337);
     });
 });
