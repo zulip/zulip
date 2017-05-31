@@ -40,3 +40,36 @@
 <p>You're done! Example message:</p>
 
 <img class="screenshot" src="/static/images/integrations/zapier/005.png"/>
+
+<p>
+    <b>Weather Update with Zapier!</b><br />
+</p>
+<p>
+    Sign into your Zapier account, then go to the URL <code>https://zapier.com/app/explore</code> .
+
+    <img class="screenshot" src="/static/images/integrations/zapier/006.png" /><br />
+    Choose the trigger app <b>Weather by Zapier.</b><br /><br />
+    <img class="screenshot" src="/static/images/integrations/zapier/007.png" /><br />
+    Next, select the option <b>Today's Forecast.</b><br /><br />
+    <img class="screenshot" src="/static/images/integrations/zapier/008.png" /><br />
+    Fill in the latitude and longitude of your location.<br /><br />
+    Next, fill in your choice of units Fahrenheit or Celsius.<br /><br />
+    <img class="screenshot" src="/static/images/integrations/zapier/009.png" /><br />
+    After you select <code>Webhook</code> as the action, choose the  <code>POST</code> option
+    and then fill in the URL as
+    <code>https://[your Zulip domain]/api/v1/external/zapier?api_key=[your Zulip API key]&stream=zapier.</code><br />
+    Select <code>JSON</code> as the payload type.<br />
+</p><br />
+<p>
+    You have to add 2 fields:<br />
+    <ul>
+        <li><code>subject</code> is a field corresponding to the subject of the message,
+            such as <code>Here is your weather update for the day</code>.</li>
+        <li><code>content</code> is a field corresponding to the content of the message,
+            such as <code>Summary</code>, <code>Temperature Max</code>, and so on.</li>
+    </ul><br /><br />
+    <img class="screenshot" src="/static/images/integrations/zapier/010.png" /><br />
+</p>
+<p>
+    <b>Congratulations! You're done!</b><br />
+</p>
