@@ -94,7 +94,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body') # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -126,7 +126,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         headers['Reply-To'] = self.example_email('othello')
 
         # empty body
-        incoming_valid_message = MIMEText('') # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('')  # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -134,7 +134,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
         exception_message = ""
-        debug_info = {} # type: Dict[str, Any]
+        debug_info = {}  # type: Dict[str, Any]
 
         # process_message eats the exception & logs an error which can't be parsed here
         # so calling process_stream_message directly
@@ -170,7 +170,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body') # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('othello')
@@ -212,7 +212,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body') # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestMissedHuddleMessageEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('cordelia')
@@ -306,7 +306,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         Quote"""
 
-        incoming_valid_message = MIMEText(text) # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText(text)  # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -351,7 +351,7 @@ class TestReplyExtraction(ZulipTestCase):
         </html>
         """
 
-        incoming_valid_message = MIMEText(html, 'html') # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText(html, 'html')  # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
