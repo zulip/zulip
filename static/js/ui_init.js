@@ -258,6 +258,7 @@ $(function () {
     hotspots.initialize();
     reactions.initialize();
     compose_fade.initialize();
+    stream_list.initialize();
 });
 
 

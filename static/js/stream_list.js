@@ -385,7 +385,7 @@ function deselect_top_left_corner_items() {
     $("ul.filters li").removeClass('active-filter active-sub-filter');
 }
 
-$(function () {
+exports.initialize = function () {
     // TODO, Eventually topic_list won't be a big singleton,
     // and we can create more component-based click handlers for
     // each stream.
@@ -459,7 +459,7 @@ $(function () {
         e.stopPropagation();
     });
 
-});
+};
 
 function actually_update_streams_for_search() {
     exports.update_streams_sidebar();
