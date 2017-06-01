@@ -236,7 +236,7 @@ exports.get_counts = function () {
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
     res.mentioned_message_count = unread_mentioned.num_items();
-    res.pm_count = new Dict(); // Hash by email -> count
+    res.pm_count = new Dict(); // Hash by user_ids_string -> count
 
     // This sets stream_count, subject_count, and home_unread_messages
     var topic_res = exports.unread_topic_counter.get_counts(res);
