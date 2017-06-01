@@ -148,6 +148,8 @@ exports.add_message_metadata = function (message) {
 
         stream_data.process_message_for_recent_topics(message);
         exports.set_topic_edit_properties(message);
+
+        recent_senders.process_message_for_senders(message);
         break;
 
     case 'private':

@@ -875,6 +875,7 @@ JS_SPECS = {
             'js/unread.js',
             'js/topic_list.js',
             'js/pm_list.js',
+            'js/recent_senders.js',
             'js/stream_sort.js',
             'js/topic_generator.js',
             'js/stream_list.js',

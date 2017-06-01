@@ -136,6 +136,7 @@
         "current_msg_list": true,
         "home_msg_list": false,
         "pm_list": false,
+        "recent_senders": false,
         "unread_ui": false,
         "unread_ops": false,
         "user_events": false,
