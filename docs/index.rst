@@ -137,5 +137,6 @@ Contents:
    client
    logging
    release-checklist
+   api-release-checklist
    README
    user-docs
