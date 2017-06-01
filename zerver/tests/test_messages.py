@@ -612,9 +612,12 @@ class MessageDictTest(ZulipTestCase):
                 MessageDict.build_dict_from_raw_db_row(row, False)
 
         delay = time.time() - t
-        # Make sure we don't take longer than 1ms per message to extract messages.
+        # Make sure we don't take longer than 1.5ms per message to
+        # extract messages.  Note that we increased this from 1ms to
+        # 1.5ms to handle tests running in parallel being a bit
+        # slower.
         error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
-        self.assertTrue(delay < 0.001 * num_ids, error_msg)
+        self.assertTrue(delay < 0.0015 * num_ids, error_msg)
         self.assert_length(queries, 5)
         self.assertEqual(len(rows), num_ids)
 
