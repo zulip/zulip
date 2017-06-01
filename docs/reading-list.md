@@ -126,11 +126,19 @@ Some titles have been shortened for organizational purposes.
 
 [Android Development for Beginners]: https://www.udacity.com/course/android-development-for-beginners--ud837
 
+*Blog* - [Java Tutorials for Beginners][]
+
+[Java Tutorials for Beginners]: http://www.geeksforgeeks.org/java/
+
 ## JavaScript/ECMAScript
 
 *Tutorial* - [clean-code-javascript Software engineering principles][]
 
 [clean-code-javascript Software engineering principles]: https://github.com/ryanmcdermott/clean-code-javascript
+
+*Course* - [React native and redux course][]  (*Not free!*)
+
+[React native and redux course]: https://www.udemy.com/the-complete-react-native-and-redux-course/
 
 *Slides* - [TypeScript vs. CoffeeScript vs. ES6][]
 
