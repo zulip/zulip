@@ -4,7 +4,7 @@ from functools import partial
 import random
 
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
-    Text, Type
+    Text, Type, cast, Union
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
@@ -239,11 +239,32 @@ def process_instrumented_calls(func):
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
+SerializedSubsuite = Tuple[Type[Iterable[TestCase]], List[str]]
+SubsuiteArgs = Union[
+    Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool],
+    Tuple[int, SerializedSubsuite, bool]
+]
+
 def run_subsuite(args):
-    # type: (Tuple[int, Tuple[Type[Iterable[TestCase]], List[str]], bool]) -> Tuple[int, Any]
+    # type: (SubsuiteArgs) -> Tuple[int, Any]
     # Reset the accumulated INSTRUMENTED_CALLS before running this subsuite.
     test_helpers.INSTRUMENTED_CALLS = []
-    subsuite_index, subsuite, failfast = args
+    if len(args) == 4:
+        # This condition runs for Django 1.11. The first argument is the
+        # test runner class but we don't need it because we run our own
+        # version of the runner class.
+        args = cast(Tuple[Type[RemoteTestRunner],
+                          int,
+                          SerializedSubsuite,
+                          bool], args)
+        _, subsuite_index, subsuite, failfast = args
+    else:
+        # We are making mypy to ignore the following line because
+        # it is only valid in Django 1.10. In Django 1.11, this
+        # tuple is made up of 4 elements.
+        args = cast(Tuple[int, SerializedSubsuite, bool], args)
+        subsuite_index, subsuite, failfast = args
+
     runner = RemoteTestRunner(failfast=failfast)
     result = runner.run(deserialize_suite(subsuite))
     # Now we send instrumentation related events. This data will be
