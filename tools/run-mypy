@@ -27,10 +27,10 @@ zproject/settings.py
 zproject/test_settings.py
 """.split()
 
-# We don't run mypy on contrib_bots, since the code there will
+# We don't run mypy on api/bots since the code there will
 # often be shared with other projects that do not want a mypy
 # dependency (at least while it's still kind of beta).
-exclude_common += ['contrib_bots/bots']
+exclude_common += ['api/bots']
 
 exclude_py2 = []  # type: List[str]
 
