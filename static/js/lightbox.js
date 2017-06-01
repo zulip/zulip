@@ -83,13 +83,21 @@ exports.open = function (image) {
     } else {
         var $parent = $image.parent();
         var $message = $parent.closest("[zid]");
+        var $localsource;
+
+        // thumbor supplies the src as thumbnail, data-original as full-sized.
+        if ($image.attr("data-original")) {
+            $localsource = $image.attr("data-original");
+        } else {
+            $localsource = $image.attr("src");
+        }
 
         payload = {
             user: message_store.get($message.attr("zid")).sender_full_name,
             title: $image.parent().attr("title"),
             type: is_youtube_video ? "youtube-video" : "image",
             preview: $image.attr("src"),
-            source: is_youtube_video ? $parent.attr("data-id") : $image.attr("src"),
+            source: is_youtube_video ? $parent.attr("data-id") : $localsource,
         };
 
         asset_map[payload.preview] = payload;

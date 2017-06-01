@@ -49,6 +49,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
+  config.vm.network "forwarded_port", guest: 9995, host: 9995, host_ip: "127.0.0.1"
+
 
   if Vagrant.has_plugin?("vagrant-proxyconf")
     if http_proxy != ""
