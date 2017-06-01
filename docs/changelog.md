@@ -4,6 +4,11 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.5.2 -- 2017-06-01
+
+- CVE-2017-0896: Restricting inviting new users to admins was broken.
+- CVE-2015-8861: Insecure old version of handlebars templating engine.
+
 ### 1.5.1 -- 2017-02-07
 
 - Fix exception trying to copy node_modules during upgrade process.
