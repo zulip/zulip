@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+set -x
+
+if ! git diff-index --quiet HEAD; then
+    set +x
+    echo "There are uncommitted changes:"
+    git status --short
+    echo "Doing nothing to avoid losing your work."
+    exit 1
+fi
+request_id="$1"
+remote=${2:-"upstream"}
+git fetch "$remote" "pull/$request_id/head"
+git checkout -B "review-original-${request_id}"
+git reset --hard FETCH_HEAD
