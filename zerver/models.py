@@ -138,7 +138,7 @@ class Realm(ModelReprMixin, models.Model):
     org_type = models.PositiveSmallIntegerField(default=COMMUNITY) # type: int
 
     date_created = models.DateTimeField(default=timezone_now) # type: datetime.datetime
-    notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
+    notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: Text
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
@@ -312,7 +312,7 @@ def name_changes_disabled(realm):
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class RealmDomain(models.Model):
-    realm = models.ForeignKey(Realm) # type: Realm
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True) # type: Text
     allow_subdomains = models.BooleanField(default=False)
@@ -396,8 +396,8 @@ def get_realm_domains(realm):
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
-    author = models.ForeignKey('UserProfile', blank=True, null=True)
-    realm = models.ForeignKey(Realm) # type: Realm
+    author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
@@ -461,7 +461,7 @@ def filter_format_validator(value):
         raise ValidationError('URL format string must be in the following format: `https://example.com/%(\w+)s`')
 
 class RealmFilter(models.Model):
-    realm = models.ForeignKey(Realm) # type: Realm
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
     pattern = models.TextField(validators=[filter_pattern_validator]) # type: Text
     url_format_string = models.TextField(validators=[URLValidator, filter_format_validator]) # type: Text
 
@@ -569,7 +569,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     # pointer points to Message.id, NOT UserMessage.id.
     pointer = models.IntegerField() # type: int
     last_pointer_updater = models.CharField(max_length=64) # type: Text
-    realm = models.ForeignKey(Realm) # type: Realm
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
     api_key = models.CharField(max_length=API_KEY_LENGTH) # type: Text
     tos_version = models.CharField(null=True, max_length=10) # type: Optional[Text]
 
@@ -599,8 +599,8 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     rate_limits = models.CharField(default=u"", max_length=100) # type: Text # comma-separated list of range:max pairs
 
     # Default streams
-    default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+') # type: Optional[Stream]
-    default_events_register_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+') # type: Optional[Stream]
+    default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+', on_delete=CASCADE) # type: Optional[Stream]
+    default_events_register_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+', on_delete=CASCADE) # type: Optional[Stream]
     default_all_public_streams = models.BooleanField(default=False) # type: bool
 
     # UI vars
@@ -803,7 +803,7 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField() # type: Text
-    referred_by = models.ForeignKey(UserProfile, null=True) # Optional[UserProfile]
+    referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE) # Optional[UserProfile]
     streams = models.ManyToManyField('Stream') # type: Manager
     invited_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
     realm_creation = models.BooleanField(default=False)
@@ -812,19 +812,19 @@ class PreregistrationUser(models.Model):
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0) # type: int
 
-    realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE) # type: Optional[Realm]
 
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField() # type: Text
     old_email = models.EmailField() # type: Text
     updated_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
 
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0) # type: int
 
-    realm = models.ForeignKey(Realm) # type: Realm
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
 
 class AbstractPushDeviceToken(models.Model):
     APNS = 1
@@ -852,7 +852,7 @@ class AbstractPushDeviceToken(models.Model):
 
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
-    user = models.ForeignKey(UserProfile, db_index=True) # type: UserProfile
+    user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE) # type: UserProfile
 
 def generate_email_token_for_stream():
     # type: () -> Text
@@ -861,7 +861,7 @@ def generate_email_token_for_stream():
 class Stream(ModelReprMixin, models.Model):
     MAX_NAME_LENGTH = 60
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True) # type: Text
-    realm = models.ForeignKey(Realm, db_index=True) # type: Realm
+    realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE) # type: Realm
     invite_only = models.NullBooleanField(default=False) # type: Optional[bool]
     # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
     # e-mail length of 254, and our max stream length is 30, so we
@@ -1055,14 +1055,14 @@ def sew_messages_and_reactions(messages, reactions):
 
 
 class AbstractMessage(ModelReprMixin, models.Model):
-    sender = models.ForeignKey(UserProfile) # type: UserProfile
-    recipient = models.ForeignKey(Recipient) # type: Recipient
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
+    recipient = models.ForeignKey(Recipient, on_delete=CASCADE) # type: Recipient
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: Text
     content = models.TextField() # type: Text
     rendered_content = models.TextField(null=True) # type: Optional[Text]
     rendered_content_version = models.IntegerField(null=True) # type: Optional[int]
     pub_date = models.DateTimeField('date published', db_index=True) # type: datetime.datetime
-    sending_client = models.ForeignKey(Client) # type: Client
+    sending_client = models.ForeignKey(Client, on_delete=CASCADE) # type: Client
     last_edit_time = models.DateTimeField(null=True) # type: Optional[datetime.datetime]
     edit_history = models.TextField(null=True) # type: Optional[Text]
     has_attachment = models.BooleanField(default=False, db_index=True) # type: bool
@@ -1227,8 +1227,8 @@ def get_context_for_message(message):
 post_save.connect(flush_message, sender=Message)
 
 class Reaction(ModelReprMixin, models.Model):
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    message = models.ForeignKey(Message) # type: Message
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
+    message = models.ForeignKey(Message, on_delete=CASCADE) # type: Message
     emoji_name = models.TextField() # type: Text
 
     class Meta(object):
@@ -1255,7 +1255,7 @@ class Reaction(ModelReprMixin, models.Model):
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
 class AbstractUserMessage(ModelReprMixin, models.Model):
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
@@ -1280,12 +1280,12 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
 
 
 class ArchivedUserMessage(AbstractUserMessage):
-    message = models.ForeignKey(ArchivedMessage)  # type: Message
+    message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: Message
     archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 
 class UserMessage(AbstractUserMessage):
-    message = models.ForeignKey(Message)  # type: Message
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
 
 def parse_usermessage_flags(val):
@@ -1305,8 +1305,8 @@ class AbstractAttachment(ModelReprMixin, models.Model):
     # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
     # then its path_id will be a/b/abc/temp_file.py.
     path_id = models.TextField(db_index=True, unique=True)  # type: Text
-    owner = models.ForeignKey(UserProfile)  # type: UserProfile
-    realm = models.ForeignKey(Realm, blank=True, null=True)  # type: Optional[Realm]
+    owner = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    realm = models.ForeignKey(Realm, blank=True, null=True, on_delete=CASCADE)  # type: Optional[Realm]
     is_realm_public = models.BooleanField(default=False)  # type: bool
     create_time = models.DateTimeField(default=timezone_now,
                                        db_index=True)  # type: datetime.datetime
@@ -1375,8 +1375,8 @@ def get_old_unclaimed_attachments(weeks_ago):
     return old_attachments
 
 class Subscription(ModelReprMixin, models.Model):
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    recipient = models.ForeignKey(Recipient) # type: Recipient
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
+    recipient = models.ForeignKey(Recipient, on_delete=CASCADE) # type: Recipient
     active = models.BooleanField(default=True) # type: bool
     in_home_view = models.NullBooleanField(default=True) # type: Optional[bool]
 
@@ -1523,8 +1523,8 @@ def clear_database():
     Session.objects.all().delete()
 
 class UserActivity(models.Model):
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    client = models.ForeignKey(Client) # type: Client
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
+    client = models.ForeignKey(Client, on_delete=CASCADE) # type: Client
     query = models.CharField(max_length=50, db_index=True) # type: Text
 
     count = models.IntegerField() # type: int
@@ -1536,14 +1536,14 @@ class UserActivity(models.Model):
 class UserActivityInterval(models.Model):
     MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
 
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
     start = models.DateTimeField('start time', db_index=True) # type: datetime.datetime
     end = models.DateTimeField('end time', db_index=True) # type: datetime.datetime
 
 
 class UserPresence(models.Model):
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    client = models.ForeignKey(Client) # type: Client
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
+    client = models.ForeignKey(Client, on_delete=CASCADE) # type: Client
 
     # Valid statuses
     ACTIVE = 1
@@ -1679,14 +1679,14 @@ class UserPresence(models.Model):
         unique_together = ("user_profile", "client")
 
 class DefaultStream(models.Model):
-    realm = models.ForeignKey(Realm) # type: Realm
-    stream = models.ForeignKey(Stream) # type: Stream
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
+    stream = models.ForeignKey(Stream, on_delete=CASCADE) # type: Stream
 
     class Meta(object):
         unique_together = ("realm", "stream")
 
 class Referral(models.Model):
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
     email = models.EmailField(blank=False, null=False) # type: Text
     timestamp = models.DateTimeField(auto_now_add=True, null=False) # type: datetime.datetime
 
@@ -1704,10 +1704,10 @@ class ScheduledJob(models.Model):
     filter_string = models.CharField(max_length=100) # type: Text
 
 class RealmAuditLog(models.Model):
-    realm = models.ForeignKey(Realm) # type: Realm
-    acting_user = models.ForeignKey(UserProfile, null=True, related_name='+') # type: Optional[UserProfile]
-    modified_user = models.ForeignKey(UserProfile, null=True, related_name='+') # type: Optional[UserProfile]
-    modified_stream = models.ForeignKey(Stream, null=True) # type: Optional[Stream]
+    realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
+    acting_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE) # type: Optional[UserProfile]
+    modified_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE) # type: Optional[UserProfile]
+    modified_stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE) # type: Optional[Stream]
     event_type = models.CharField(max_length=40) # type: Text
     event_time = models.DateTimeField(db_index=True) # type: datetime.datetime
     # If True, event_time is an overestimate of the true time. Can be used
@@ -1716,7 +1716,7 @@ class RealmAuditLog(models.Model):
     extra_data = models.TextField(null=True) # type: Optional[Text]
 
 class UserHotspot(models.Model):
-    user = models.ForeignKey(UserProfile) # type: UserProfile
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
     hotspot = models.CharField(max_length=30) # type: Text
     timestamp = models.DateTimeField(default=timezone_now) # type: datetime.datetime
 
@@ -1789,7 +1789,7 @@ class Service(models.Model):
     # Bot user corresponding to the Service.  The bot_type of this user
     # deterines the type of service.  If non-bot services are added later,
     # user_profile can also represent the owner of the Service.
-    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
     base_url = models.TextField() # type: Text
     token = models.TextField() # type: Text
     # Interface / API version of the service.

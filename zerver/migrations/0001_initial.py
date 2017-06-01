@@ -103,7 +103,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('token', models.CharField(unique=True, max_length=255)),
                 ('last_updated', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -188,7 +188,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('token', models.CharField(unique=True, max_length=4096)),
                 ('last_updated', models.DateTimeField(default=django.utils.timezone.now, auto_now=True)),
                 ('ios_app_id', models.TextField(null=True)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -219,7 +219,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('domain', models.CharField(unique=True, max_length=80, db_index=True)),
-                ('realm', models.ForeignKey(to='zerver.Realm', null=True)),
+                ('realm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm', null=True)),
             ],
             options={
             },
@@ -231,7 +231,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.TextField()),
                 ('img_url', models.TextField()),
-                ('realm', models.ForeignKey(to='zerver.Realm')),
+                ('realm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
             ],
             options={
             },
@@ -243,7 +243,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('pattern', models.TextField()),
                 ('url_format_string', models.TextField()),
-                ('realm', models.ForeignKey(to='zerver.Realm')),
+                ('realm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
             ],
             options={
             },
@@ -266,7 +266,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('email', models.EmailField(max_length=75)),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('user_profile', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -296,7 +296,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('description', models.CharField(default='', max_length=1024)),
                 ('date_created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('deactivated', models.BooleanField(default=False)),
-                ('realm', models.ForeignKey(to='zerver.Realm')),
+                ('realm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
             ],
             options={
             },
@@ -322,8 +322,8 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('desktop_notifications', models.BooleanField(default=True)),
                 ('audible_notifications', models.BooleanField(default=True)),
                 ('notifications', models.BooleanField(default=False)),
-                ('recipient', models.ForeignKey(to='zerver.Recipient')),
-                ('user_profile', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('recipient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Recipient')),
+                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -336,8 +336,8 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('query', models.CharField(max_length=50, db_index=True)),
                 ('count', models.IntegerField()),
                 ('last_visit', models.DateTimeField(verbose_name='last visit')),
-                ('client', models.ForeignKey(to='zerver.Client')),
-                ('user_profile', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Client')),
+                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -349,7 +349,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('start', models.DateTimeField(verbose_name='start time', db_index=True)),
                 ('end', models.DateTimeField(verbose_name='end time', db_index=True)),
-                ('user_profile', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -360,8 +360,8 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('flags', bitfield.models.BitField(['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned', 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse', 'has_alert_word', 'historical', 'is_me_message'], default=0)),
-                ('message', models.ForeignKey(to='zerver.Message')),
-                ('user_profile', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Message')),
+                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -373,8 +373,8 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('timestamp', models.DateTimeField(verbose_name='presence changed')),
                 ('status', models.PositiveSmallIntegerField(default=1)),
-                ('client', models.ForeignKey(to='zerver.Client')),
-                ('user_profile', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Client')),
+                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -399,7 +399,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         migrations.AddField(
             model_name='streamcolor',
             name='subscription',
-            field=models.ForeignKey(to='zerver.Subscription'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Subscription'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -421,19 +421,19 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         migrations.AddField(
             model_name='realm',
             name='notifications_stream',
-            field=models.ForeignKey(related_name='+', blank=True, to='zerver.Stream', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', blank=True, to='zerver.Stream', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='preregistrationuser',
             name='realm',
-            field=models.ForeignKey(to='zerver.Realm', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='preregistrationuser',
             name='referred_by',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, null=True),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -445,31 +445,31 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         migrations.AddField(
             model_name='message',
             name='recipient',
-            field=models.ForeignKey(to='zerver.Recipient'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Recipient'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='message',
             name='sender',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='message',
             name='sending_client',
-            field=models.ForeignKey(to='zerver.Client'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Client'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='defaultstream',
             name='realm',
-            field=models.ForeignKey(to='zerver.Realm'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='defaultstream',
             name='stream',
-            field=models.ForeignKey(to='zerver.Stream'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Stream'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -479,13 +479,13 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         migrations.AddField(
             model_name='userprofile',
             name='default_events_register_stream',
-            field=models.ForeignKey(related_name='+', to='zerver.Stream', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='zerver.Stream', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='userprofile',
             name='default_sending_stream',
-            field=models.ForeignKey(related_name='+', to='zerver.Stream', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='zerver.Stream', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -497,7 +497,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         migrations.AddField(
             model_name='userprofile',
             name='realm',
-            field=models.ForeignKey(to='zerver.Realm'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
             preserve_default=True,
         ),
         migrations.AddField(

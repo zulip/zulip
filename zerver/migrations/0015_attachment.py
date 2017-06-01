@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('path_id', models.TextField(db_index=True)),
                 ('create_time', models.DateTimeField(default=django.utils.timezone.now, db_index=True)),
                 ('messages', models.ManyToManyField(to='zerver.Message')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]
