@@ -872,9 +872,6 @@ function render(template_name, args) {
     html += render('stream_sidebar_row', args);
     html += '</ul>';
 
-    // because it won't mark the template as read otherwise.
-    render('stream_privacy');
-
     global.write_handlebars_output("stream_sidebar_row", html);
 
     var swatch = $(html).find(".stream-privacy");
