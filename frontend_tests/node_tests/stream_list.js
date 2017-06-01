@@ -1,49 +1,23 @@
-global.stub_out_jquery();
+set_global('$', global.make_zjquery());
+
+set_global('templates', {});
 
 add_dependencies({
-    Handlebars: 'handlebars',
     colorspace: 'js/colorspace',
     hash_util: 'js/hash_util',
-    hashchange: 'js/hashchange',
-    muting: 'js/muting',
     narrow: 'js/narrow',
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     stream_sort: 'js/stream_sort',
-    subs: 'js/subs',
-    templates: 'js/templates',
     unread: 'js/unread',
     util: 'js/util',
 });
 
 var stream_list = require('js/stream_list.js');
 
-
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
-$.fn.expectOne = function () {
-    assert(this.length === 1);
-    return this;
-};
-
-global.compile_template('stream_sidebar_row');
-global.compile_template('stream_privacy');
-
-function clear_filters() {
-    var stream_search_box = $('<input class="stream-list-filter" type="text" placeholder="Search streams">');
-    var stream_filters = $('<ul id="stream_filters">');
-    $("body").empty();
-    $("body").append(stream_search_box);
-    $("body").append(stream_filters);
-
-}
-
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
-
-    clear_filters();
 
     var devel = {
         name: 'devel',
@@ -67,34 +41,84 @@ function clear_filters() {
         return 42;
     };
 
-    stream_list.create_sidebar_row(devel);
-    stream_list.create_sidebar_row(social);
+    (function create_devel_sidebar_row() {
+        var devel_value = $('devel-value');
+        var devel_count = $('devel-count');
+        $('devel-stub-html').add_child('.count', devel_count);
+        $('devel-count').add_child('.value', devel_value);
+
+        global.templates.render = function (template_name, data) {
+            assert.equal(template_name, 'stream_sidebar_row');
+            assert.equal(data.uri, '#narrow/stream/devel');
+            return 'devel-stub-html';
+        };
+
+        stream_list.create_sidebar_row(devel);
+        assert.equal(devel_value.text(), '42');
+    }());
+
+    (function create_social_sidebar_row() {
+        var social_value = $('social-value');
+        var social_count = $('social-count');
+        $('social-stub-html').add_child('.count', social_count);
+        $('social-count').add_child('.value', social_value);
+
+        global.templates.render = function (template_name, data) {
+            assert.equal(template_name, 'stream_sidebar_row');
+            assert.equal(data.uri, '#narrow/stream/social');
+            return 'social-stub-html';
+        };
+
+        stream_list.create_sidebar_row(social);
+        assert.equal(social_value.text(), '42');
+    }());
+
+    function set_getter(elem, stub_value) {
+        elem.get = function (idx) {
+            assert.equal(idx, 0);
+            return stub_value;
+        };
+    }
+
+    set_getter($('<hr class="stream-split">'), 'split');
+    set_getter($('devel-stub-html'), 'devel-sidebar');
+    set_getter($('social-stub-html'), 'social-sidebar');
+
+    var appended_elems;
+    $('#stream_filters').append = function (elems) {
+        appended_elems = elems;
+    };
+
     stream_list.build_stream_list();
 
-    var html = $("body").html();
-    global.write_test_output("test_create_sidebar_row", html);
+    var expected_elems = [
+        'split',
+        'devel-sidebar',
+        'social-sidebar',
+    ];
 
-    var li = stream_list.get_stream_li(social.stream_id);
-    assert.equal(li.attr('data-name'), 'social');
-    assert.equal(li.find('a.stream-name').text().trim(), 'social');
-    assert(li.find('.arrow').find("i").hasClass("icon-vector-chevron-down"));
+    assert.deepEqual(appended_elems, expected_elems);
 
-    global.append_test_output("Then make 'social' private.");
-    global.stream_data.get_sub('social').invite_only = true;
-
-    stream_list.redraw_stream_privacy('social');
-
-    html = $("body").html();
-    global.append_test_output(html);
-
-    assert(li.find('.stream-privacy').find("i").hasClass("icon-vector-lock"));
 }());
 
 
 (function test_sort_streams() {
-    clear_filters();
-
     stream_data.clear_subscriptions();
+
+    function add_row(sub) {
+        global.stream_data.add_sub(sub.name, sub);
+        var row = {
+            update_whether_active: function () {},
+            get_li: function () {
+                return {
+                    get: function () {
+                        return 'stub-' + sub.name;
+                    },
+                };
+            },
+        };
+        stream_list.stream_sidebar.set_row(sub.stream_id, row);
+    }
 
     // pinned streams
     var develSub = {
@@ -105,8 +129,7 @@ function clear_filters() {
         pin_to_top: true,
         subscribed: true,
     };
-    stream_list.create_sidebar_row(develSub);
-    global.stream_data.add_sub('devel', develSub);
+    add_row(develSub);
 
     var RomeSub = {
         name: 'Rome',
@@ -116,8 +139,7 @@ function clear_filters() {
         pin_to_top: true,
         subscribed: true,
     };
-    stream_list.create_sidebar_row(RomeSub);
-    global.stream_data.add_sub('Rome', RomeSub);
+    add_row(RomeSub);
 
     var testSub = {
         name: 'test',
@@ -127,8 +149,7 @@ function clear_filters() {
         pin_to_top: true,
         subscribed: true,
     };
-    stream_list.create_sidebar_row(testSub);
-    global.stream_data.add_sub('test', testSub);
+    add_row(testSub);
 
     // unpinned streams
     var announceSub = {
@@ -139,8 +160,7 @@ function clear_filters() {
         pin_to_top: false,
         subscribed: true,
     };
-    stream_list.create_sidebar_row(announceSub);
-    global.stream_data.add_sub('announce', announceSub);
+    add_row(announceSub);
 
     var DenmarkSub = {
         name: 'Denmark',
@@ -150,8 +170,7 @@ function clear_filters() {
         pin_to_top: false,
         subscribed: true,
     };
-    stream_list.create_sidebar_row(DenmarkSub);
-    global.stream_data.add_sub('Denmark', DenmarkSub);
+    add_row(DenmarkSub);
 
     var carSub = {
         name: 'cars',
@@ -161,17 +180,34 @@ function clear_filters() {
         pin_to_top: false,
         subscribed: true,
     };
-    stream_list.create_sidebar_row(carSub);
-    global.stream_data.add_sub('cars', carSub);
+    add_row(carSub);
 
 
     global.stream_data.is_active = function (sub) {
         return sub.name !== 'cars';
     };
 
+
+    var appended_elems;
+    $('#stream_filters').append = function (elems) {
+        appended_elems = elems;
+    };
+
     stream_list.build_stream_list();
 
-    var streams = global.stream_sort.get_streams().slice(0, 6);
+    var expected_elems = [
+        'stub-devel',
+        'stub-Rome',
+        'stub-test',
+        'split',
+        'stub-announce',
+        'stub-Denmark',
+        'split',
+        'stub-cars',
+    ];
+    assert.deepEqual(appended_elems, expected_elems);
+
+    var streams = global.stream_sort.get_streams();
 
     assert.deepEqual(streams, [
         // three groups: pinned, normal, dormant
@@ -184,35 +220,5 @@ function clear_filters() {
         //
         'cars',
     ]);
-
-    var li;
-    var hr;
-
-    // verify pinned streams are sorted by lowercase stream name
-    li = stream_list.stream_sidebar.get_row(develSub.stream_id).get_li();
-    assert.equal(li.next().find('[ data-name="Rome"]').length, 1);
-
-    li = stream_list.stream_sidebar.get_row(RomeSub.stream_id).get_li();
-    assert.equal(li.next().find('[ data-name="test"]').length, 1);
-
-    li = stream_list.stream_sidebar.get_row(testSub.stream_id).get_li();
-
-    // <hr>
-    hr = li.next();
-    assert.equal(hr.attr('class'), 'stream-split');
-
-    // verify unpinned streams are sorted by lowercase stream name
-    assert.equal(hr.next().find('[ data-name="announce"]').length, 1);
-
-    li = stream_list.stream_sidebar.get_row(announceSub.stream_id).get_li();
-    assert.equal(li.next().find('[ data-name="Denmark"]').length, 1);
-
-    li = stream_list.stream_sidebar.get_row(DenmarkSub.stream_id).get_li();
-
-    // <hr>
-    hr = li.next();
-    assert.equal(hr.attr('class'), 'stream-split');
-
-    assert.equal(hr.next().find('[ data-name="cars"]').length, 1);
 
 }());
