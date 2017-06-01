@@ -6,8 +6,7 @@ stream manually even though it's the default.
 
 {!create-bot-construct-url.md!}
 
-To change the topic displayed by the bot, simply append `&topic=name`
-to the end of the above URL, where `name` is your topic.
+{!append-topic.md!}
 
 Go to the account settings page of your GoSquared account and under
 **Project Settings > Services > Webhook > Add New**, add the above
