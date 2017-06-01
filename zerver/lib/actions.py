@@ -1427,7 +1427,7 @@ def internal_prep_private_message(realm, sender, recipient_email, content):
 
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
                           subject, content, send_internal_notice=False):
-    # type: (Realm, Text, str, Text, Text, Text, Optional[bool]) -> None
+    # type: (Realm, Text, str, Text, Text, Text, bool) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
                                 subject, content, send_internal_notice)
 
@@ -1815,6 +1815,16 @@ def bulk_remove_subscriptions(users, streams):
     all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
     for stream in streams:
+        # Send a notification to private stream when user is unsubscibed
+        if stream.invite_only:
+            sub_to_remove_names = [user.full_name for user in altered_user_dict[stream.id]]
+            if len(sub_to_remove_names) == 0:
+                pass
+            else:
+                content = _(", ".join(sub_to_remove_names) + " left.")
+                realm = get_user_profile_by_email(settings.NOTIFICATION_BOT).realm
+                internal_send_message(realm, settings.NOTIFICATION_BOT, "stream",
+                                      stream.name, "Users", content, send_internal_notice=True)
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             continue
 
