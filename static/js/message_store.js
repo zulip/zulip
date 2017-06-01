@@ -49,6 +49,10 @@ exports.process_message_for_recent_private_messages = function (message) {
         return;
     }
 
+    _.each(user_ids, function (user_id) {
+        pm_conversations.set_partner(user_id);
+    });
+
     var user_ids_string = user_ids.join(',');
 
     if (!user_ids_string) {

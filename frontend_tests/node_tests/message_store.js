@@ -1,6 +1,7 @@
 add_dependencies({
     people: 'js/people.js',
     util: 'js/util.js',
+    pm_conversations: 'js/pm_conversations.js',
 });
 
 var noop = function () {};
