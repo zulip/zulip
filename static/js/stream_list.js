@@ -121,7 +121,7 @@ exports.build_stream_list = function () {
 
     _.each(stream_groups.dormant_streams, add_sidebar_li);
 
-    $(elems).appendTo(parent);
+    parent.append(elems);
 };
 
 function iterate_to_find(selector, name_to_find, context) {
