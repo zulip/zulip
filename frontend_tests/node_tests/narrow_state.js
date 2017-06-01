@@ -4,6 +4,9 @@ add_dependencies({
     Filter: 'js/filter.js',
 });
 
+set_global('page_params', {
+});
+
 var narrow_state = require('js/narrow_state.js');
 
 var Filter = global.Filter;
@@ -17,17 +20,36 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
+
 (function test_stream() {
+    assert.equal(narrow_state.public_operators(), undefined);
+    assert(!narrow_state.active());
+
     var test_stream = {name: 'Test', stream_id: 15};
     stream_data.add_sub('Test', test_stream);
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
-    set_filter([['stream', 'Test'], ['topic', 'Bar'], ['search', 'yo']]);
+    set_filter([
+        ['stream', 'Test'],
+        ['topic', 'Bar'],
+        ['search', 'yo'],
+    ]);
+    assert(narrow_state.active());
 
     assert.equal(narrow_state.stream(), 'Test');
     assert.equal(narrow_state.topic(), 'Bar');
     assert(narrow_state.is_for_stream_id(test_stream.stream_id));
+
+    var expected_operators = [
+        { negated: false, operator: 'stream', operand: 'Test' },
+        { negated: false, operator: 'topic', operand: 'Bar' },
+        { negated: false, operator: 'search', operand: 'yo' },
+    ];
+
+    var public_operators = narrow_state.public_operators();
+    assert.deepEqual(public_operators, expected_operators);
+    assert.equal(narrow_state.search_string(), 'stream:Test topic:Bar yo');
 }());
 
 
