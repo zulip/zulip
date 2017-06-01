@@ -2,17 +2,18 @@ import itertools
 import json
 import random
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Text, Optional
 
-def loadConfig():
-
+def loadConfig(): 
+    # type: () -> Dict [string, Any]
     infile = open("zerver/lib/config.generate_data.json", "r")
     config = json.loads(infile.read())
 
     return config
 
 
-def getStreamTitle(gens): #type (Dict[Any, Any]) -> str
+def getStreamTitle(gens): 
+    # type: (Dict[string, Any]) -> str
 
     # the secret to generating unique data is:
     # make sure that count of each list is a different prime number
@@ -25,6 +26,7 @@ def getStreamTitle(gens): #type (Dict[Any, Any]) -> str
 
 
 def loadGenerators(config):
+    # type: (Dict[str, Any]) -> Dict[str, Any]
 
     results = {}
     cfg = config["gen_fodder"]
@@ -48,6 +50,7 @@ def loadGenerators(config):
 
 
 def checkForDupes(gens):
+    # type: (Dict[str, Any]) -> None
 
     results = []
 
@@ -63,6 +66,7 @@ def checkForDupes(gens):
 
 
 def parseFile(config, gens, corpus_file):
+    # type: (Dict[str, Any], Dict[str, Any], str) -> List[str]
 
     # let's load the entire file into a dictionary first,
     # then we'll apply our custom filters to it as needed
@@ -80,6 +84,7 @@ def parseFile(config, gens, corpus_file):
 
 
 def getFlairGen(length):
+    # type: (int) -> List[str]
 
     # grab the percentages from the config file
     # create a list that we can consume that will guarantee distrubition
@@ -95,6 +100,7 @@ def getFlairGen(length):
 
 
 def addFlair(paragraphs, gens):
+    # type: (List[str], Dict[str, Any]) -> List[str]
 
     # roll the dice and see what kind of flair we should add, if any
     results = []
@@ -136,6 +142,7 @@ def addFlair(paragraphs, gens):
 
 
 def addMD(mode, text):
+    # type: (str, str) -> str
 
     # mode means: bold, italic, etc.
     # to add a list at the end of a paragraph, * iterm one\n * item two
@@ -152,6 +159,7 @@ def addMD(mode, text):
 
 
 def addEmoji(text, emoji):
+    # type: (str, str) -> str
 
     vals = text.split()
     start = random.randrange(len(vals))
@@ -161,6 +169,7 @@ def addEmoji(text, emoji):
 
 
 def addLink(text, link):
+    # type: (str, str) -> str
 
     vals = text.split()
     start = random.randrange(len(vals))
@@ -171,11 +180,12 @@ def addLink(text, link):
 
 
 def addPicture(text):
-
+    # type: (str) -> ()
     pass
 
 
 def removeActions(line):
+    # type: (str) -> str
 
     # sure, we can regex, but why hassle with that?
     newVal = line
@@ -195,6 +205,7 @@ def removeActions(line):
 
 
 def processDialog(paragraphs):
+    # type: (List[str]) -> List[str]
 
     results = []
     for dialog in paragraphs:
@@ -207,6 +218,7 @@ def processDialog(paragraphs):
 
 
 def removeLineBreaks(fh):
+    # type: (Any) -> List[str]
 
     # we're going to remove line breaks from paragraphs
     results = []    # save the dialogs as tuples with (author, dialog)
@@ -231,6 +243,7 @@ def removeLineBreaks(fh):
 
 
 def getDialog(line):
+    # type: (str) -> Any
 
     # we've got a line from the play,
     # let's see if it's a line or dialog or something else
@@ -249,6 +262,7 @@ def getDialog(line):
 
 
 def writeFile(paragraphs, filename):
+    # type: (List[str], str) -> None
 
     with open(filename, "w") as outfile:
         outfile.write(json.dumps(paragraphs))
@@ -256,6 +270,8 @@ def writeFile(paragraphs, filename):
 
 
 def create_test_data():
+    # type: () -> None
+
     gens = loadGenerators(config)   # returns a dictionary of generators
 
     paragraphs = parseFile(config, gens, config["corpus"]["filename"])
@@ -264,9 +280,8 @@ def create_test_data():
 
 
 
-config = loadConfig()
+config = loadConfig() # type: Dict[str, Any]
 
 if __name__ == "__main__":
-    create_test_data()
+    create_test_data() # type: () -> ()
 
-    # checkForDupes(gens)
