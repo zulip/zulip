@@ -6,6 +6,24 @@ var blueslip = (function () {
 
 var exports = {};
 
+var getLogRulesChecker = function (LOG_ALL, ALLOWED, BLOCKED) {
+    return function (msg, more_info) {
+        if (!page_params.debug_mode) {
+            return true; // log everything in production
+        }
+        // if a message type is both in the allowed as well as blocked list,
+        // it will get printed. If it is not in either list, the global
+        // LOG_ALL value decides.
+        if (ALLOWED.indexOf(msg) != -1) { //msg type is allowed
+            return true;
+        }
+        if (BLOCKED.indexOf(msg) != -1) { //msg type is blocked
+            return false;
+        }
+        return LOG_ALL;
+    };
+};
+
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -358,26 +376,42 @@ function build_arg_list(msg, more_info) {
     return args;
 }
 
+ // Specify which log messages should be allowed or blocked.
+ // Parameters: getLogRulesChecker(LOG_ALL, ALLOWED, BLOCKED)
+var shouldWeLog = getLogRulesChecker(
+                    true,
+                    [],
+                    ["Narrowed","Unnarrowed"]
+                );
+
 exports.debug = function blueslip_debug (msg, more_info) {
-    var args = build_arg_list(msg, more_info);
-    logger.debug.apply(logger, args);
+    if (shouldWeLog(msg)) {
+        var args = build_arg_list(msg, more_info);
+        logger.debug.apply(logger, args);
+    }
 };
 
 exports.log = function blueslip_log (msg, more_info) {
-    var args = build_arg_list(msg, more_info);
-    logger.log.apply(logger, args);
+    if (shouldWeLog(msg)) {
+        var args = build_arg_list(msg, more_info);
+        logger.log.apply(logger, args);
+    }
 };
 
 exports.info = function blueslip_info (msg, more_info) {
-    var args = build_arg_list(msg, more_info);
-    logger.info.apply(logger, args);
+    if (shouldWeLog(msg)) {
+        var args = build_arg_list(msg, more_info);
+        logger.info.apply(logger, args);
+    }
 };
 
 exports.warn = function blueslip_warn (msg, more_info) {
-    var args = build_arg_list(msg, more_info);
-    logger.warn.apply(logger, args);
-    if (page_params.debug_mode) {
-        console.trace();
+    if (shouldWeLog(msg)) {
+        var args = build_arg_list(msg, more_info);
+        logger.warn.apply(logger, args);
+        if (page_params.debug_mode) {
+            console.trace();
+        }
     }
 };
 
