@@ -4,9 +4,7 @@ Configuring the HelloSign integration is easy!
 
 {!create-bot-construct-url.md!}
 
-If you'd like to hardcode the `topic` used by the bot, simply append
-`&topic=topic_name` to the end of the above URL, where `topic_name`
-is your topic.
+{!append-topic.md!}
 
 Go to the account settings page of your HelloSign account and
 under the **Integrations** tab, go to **API** and **Account Callback**.
