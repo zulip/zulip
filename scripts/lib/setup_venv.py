@@ -244,7 +244,7 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 
-    run(["pip", "install", "-U", "setuptools"])
+    run(["pip", "install", "-U", "setuptools==35.0.2"])
     run(["pip", "install", "--upgrade", "pip", "wheel"])
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
