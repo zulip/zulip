@@ -1378,6 +1378,24 @@ Switched to a new branch 'review-original-5156'
 HEAD is now at 5a1e982 tools: Update clean-branches to clean review branches.
 ```
 
+### Delete unimportant branches
+
+`tools/clean-branches` is a shell script that removes branches that are either:
+
+1. Local branches that are ancestors of origin/master.
+2. Branches in origin that are ancestors of origin/master and named like `$USER-*`.
+3. Review branches created by `tools/fetch-rebase-pull-request` and `tools/fetch-pull-request`.
+
+First, make sure you are working in branch `master`. Then run the script without any
+arguments for default behavior. Since removing review branches can inadvertently remove any
+feature branches whose names are like `review-*`, it is not done by default. To
+use it, run `tools/clean-branches --reviews`.
+
+```
+$ tools/clean-branches --reviews
+Deleting local branch review-original-5156 (was 5a1e982)
+```
+
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [gitbook-git-rebase]: https://git-scm.com/docs/git-rebase
