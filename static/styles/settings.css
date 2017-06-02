@@ -217,6 +217,28 @@ td .button {
     margin-right: 5px;
 }
 
+.settings-section .tip {
+    position: relative;
+    display: block;
+    background-color: #fbf7ea;
+    border: 1px solid #e0ddd0;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #666;
+}
+
+.settings-section .tip::before {
+    content: "\f0a2";
+
+    display: inline;
+    margin-right: 8px;
+
+    font-family: FontAwesome, "Yantramanav", Humbug;
+    font-weight: 600;
+}
 .dynamic-input {
     display: inline-block;
     padding: 5px;
