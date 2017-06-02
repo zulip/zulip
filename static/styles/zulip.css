@@ -239,6 +239,8 @@ p.n-margin {
 .app-main .column-middle {
     min-height: 100%;
     background-color: #ffffff;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
 }
 
 .column-middle {
@@ -675,14 +677,11 @@ td.pointer {
 }
 
 .message_list .recipient_row {
-    background: hsl(0, 0%, 94%);
-    border-bottom: 1px solid hsl(0, 0%, 88%);
-    border-top: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
 
-.floating_recipient .recipient_row {
-    border-top: 1px solid hsl(0, 0%, 88%);
+.recipient_row {
+    padding: 0px 10px;
 }
 
 .stream_label {
@@ -999,9 +998,8 @@ td.pointer {
     position: relative;
 }
 
-.private-message .messagebox,
-.message_header_private_message .message-header-contents {
-    background-color: hsl(192, 19%, 95%);
+.private-message .messagebox {
+    background-color: #f0f4f5;
 }
 
 .message-header-contents {
@@ -1072,12 +1070,19 @@ td.pointer {
     z-index: 1;
 }
 
+.messagebox-content {
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-                     -1px -1px 0px 0px hsl(215, 47%, 50%),
-                      1px 1px 0px 0px hsl(215, 47%, 50%),
-                     -1px 1px 0px 0px hsl(215, 47%, 50%),
-                      1px -1px 0px 0px hsl(215, 47%, 50%);
+    border-color: #ccc;
+    background-color: #fafafa;
+}
+
+.private-message.selected_message .messagebox-content {
+    border-color: #bfd3d8;
+    background-color: #e7f0f3;
 }
 
 .message_sender {
@@ -1280,8 +1285,6 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
 }
 
 .message_row.selected_message {
@@ -1936,7 +1939,10 @@ div.floating_recipient {
 }
 
 .message-header-contents {
-    background: hsl(0, 0%, 88%);
+    background: #e2e2e2;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .recipient_row.sticky {
