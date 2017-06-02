@@ -24,4 +24,3 @@ class CheckRemoveActions(TestCase):
         string = "This looks [Walks to the dresser.] interesting."
         result = removeActions(string)
         self.assertEqual(result, "This looks  interesting.")
-

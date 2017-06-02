@@ -4,16 +4,16 @@ import random
 import os
 from typing import List, Dict, Any, Text, Optional
 
-def loadConfig(): 
-    # type: () -> Dict [string, Any]
+def loadConfig():
+    # type: () -> Dict [str, Any]
     infile = open("zerver/lib/config.generate_data.json", "r")
     config = json.loads(infile.read())
 
     return config
 
 
-def getStreamTitle(gens): 
-    # type: (Dict[string, Any]) -> str
+def getStreamTitle(gens):
+    # type: (Dict[str, Any]) -> str
 
     # the secret to generating unique data is:
     # make sure that count of each list is a different prime number
@@ -71,12 +71,11 @@ def parseFile(config, gens, corpus_file):
     # let's load the entire file into a dictionary first,
     # then we'll apply our custom filters to it as needed
 
-    paragraphs = [] # type: List[str] 
+    paragraphs = [] # type: List[str]
 
     with open(corpus_file, "r") as infile:
         # OUR DATA: we need to seperate the person talking and what they say
         paragraphs = removeLineBreaks(infile)
-        paragraphs = removeActions(paragraphs)
         paragraphs = processDialog(paragraphs)
         paragraphs = addFlair(paragraphs, gens)
 
@@ -249,7 +248,7 @@ def getDialog(line):
             actor = line[:strpos]
             vals = actor.split()
             if len(vals) < 2:
-                return removeActions(line[strpos + 1:].strip())
+                return removeActions(line[strpos + 2:].strip())
             else:
                 # no actor, so not a line of dialog
                 return None
