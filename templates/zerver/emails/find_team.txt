@@ -1,6 +1,6 @@
-Hi {{ user_profile.full_name }},
+Hi {{ user_profile.full_name|safe }},
 
-You can log in to your Zulip organization, {{ user_profile.realm.name }},
+You can log in to your Zulip organization, {{ user_profile.realm.name|safe }},
 at the following link:
     {{ user_profile.realm.uri }}
 

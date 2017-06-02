@@ -1,5 +1,6 @@
 {# Informs user of a new login to their account #}
 
+{% autoescape off %}
 Hello, {{ user.full_name | title }}.
 
 This is a notification that a new login to your Zulip account has just occurred.
@@ -17,3 +18,4 @@ If you recognize this login activity, you can archive this notice.
 
 Thanks,
 Zulip Account Security
+{% endautoescape %}
