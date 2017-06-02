@@ -180,13 +180,26 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
     return user_ids.join(',');
 };
 
-exports.get_user_time = function (user_id) {
+exports.get_user_time_preferences = function (user_id) {
     var user_timezone = people.get_person_from_user_id(user_id).timezone;
     if (user_timezone) {
         if (page_params.twenty_four_hour_time) {
-            return moment().tz(user_timezone).format("HH:mm");
+            return {
+                timezone: user_timezone,
+                format: "HH:mm",
+            };
         }
-        return moment().tz(user_timezone).format("hh:mm A");
+        return {
+            timezone: user_timezone,
+            format: "hh:mm A",
+        };
+    }
+};
+
+exports.get_user_time = function (user_id) {
+    var user_pref = people.get_user_time_preferences(user_id);
+    if (user_pref) {
+        return moment().tz(user_pref.timezone).format(user_pref.format);
     }
 };
 
