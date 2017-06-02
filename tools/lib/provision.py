@@ -240,18 +240,28 @@ def main(options):
     if not options.is_production_travis:
         # These won't be used anyway
         run(["scripts/setup/configure-rabbitmq"])
-        run(["tools/setup/postgres-init-dev-db"])
-        run(["tools/do-destroy-rebuild-database"])
         # Need to set up Django before using is_template_database_current.
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
         from zerver.lib.test_fixtures import is_template_database_current
+
+        if options.is_force or not is_template_database_current(
+                migration_status="var/migration_status_dev",
+                settings="zproject.settings",
+                database_name="zulip",
+        ):
+            run(["tools/setup/postgres-init-dev-db"])
+            run(["tools/do-destroy-rebuild-database"])
+        else:
+            print("No need to regenerate the dev DB.")
+
         if options.is_force or not is_template_database_current():
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
         else:
             print("No need to regenerate the test DB.")
+
         run(["./manage.py", "compilemessages"])
 
     # Here we install nvm, node, and npm.
