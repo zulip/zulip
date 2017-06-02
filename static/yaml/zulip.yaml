@@ -586,7 +586,7 @@ paths:
         - change_one
         - change_later
         - change_all
-        default: "change_one"
+        default: change_one
       - name: content
         in: query
         description: Message's new body.
