@@ -100,6 +100,7 @@ exports.populate_auth_methods = function (auth_methods) {
     if (!page_params.is_admin) {
         $(".organization-box [data-name='auth-methods']")
             .find("input, button, select, checked").attr("disabled", true);
+        $(".organization-box").find(".settings-section").prepend("<p><b>Note:</b> Non-administrator users have read-only access to organization settings.</p>");
     }
 };
 
