@@ -30,6 +30,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  inline_url_embed_preview=REQ(validator=check_bool, default=None),
                  create_stream_by_admins_only=REQ(validator=check_bool, default=None),
                  add_emoji_by_admins_only=REQ(validator=check_bool, default=None),
+                 should_animate_emoji_on_hover=REQ(validator=check_book, default=None),
                  allow_message_editing=REQ(validator=check_bool, default=None),
                  message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None),
                  default_language=REQ(validator=check_string, default=None),
