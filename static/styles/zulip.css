@@ -1273,6 +1273,9 @@ div.message_table {
     margin-left: auto;
     display: none;
     width: 100%;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .message_row {
