@@ -12,6 +12,7 @@ var me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
+    timezone: 'US/Pacific',
 };
 
 function initialize() {
@@ -88,6 +89,30 @@ initialize();
 (function test_get_recipients() {
     assert.equal(people.get_recipients('30'), 'Me Myself');
     assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
+}());
+
+(function test_user_timezone() {
+    var expected_pref = {
+        timezone: 'US/Pacific',
+        format: 'HH:mm',
+    };
+
+    global.page_params.twenty_four_hour_time = true;
+    assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
+
+    expected_pref.format = 'hh:mm A';
+    global.page_params.twenty_four_hour_time = false;
+    assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
+
+    var actual_moment = require('moment-timezone');
+    set_global('moment', function () { return actual_moment('20130208T080910'); });
+
+    global.page_params.twenty_four_hour_time = true;
+    assert.equal(people.get_user_time(me.user_id), '00:09');
+
+    expected_pref.format = 'hh:mm A';
+    global.page_params.twenty_four_hour_time = false;
+    assert.equal(people.get_user_time(me.user_id), '12:09 AM');
 }());
 
 (function test_updates() {
