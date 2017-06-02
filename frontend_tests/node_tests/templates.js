@@ -933,6 +933,14 @@ function render(template_name, args) {
     assert.equal($(html).find(".stream-privacy").children("*").attr("class"), "hashtag");
 }());
 
+(function subscription_invites_warning_modal() {
+    var html = render('subscription_invites_warning_modal');
+
+    global.write_handlebars_output("subscription_invites_warning_modal", html);
+
+    var button = $(html).find(".close-invites-warning-modal").last();
+    assert.equal(button.text(), 'Oops! Let me change it');
+}());
 
 (function subscription_settings() {
     var sub = {

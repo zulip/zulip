@@ -164,6 +164,14 @@ function create_stream() {
         announce
     );
 }
+
+function show_large_invites_warning(count) {
+    var invites_warning_modal = templates.render('subscription_invites_warning_modal');
+    $('#stream-creation').append(invites_warning_modal);
+    var confirm_button = $('#invites-warning-overlay').find('.confirm-invites-warning-modal');
+    confirm_button.text(i18n.t('Invite __count__ users!', {count: count}));
+}
+
 exports.new_stream_clicked = function (stream) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
@@ -313,13 +321,27 @@ $(function () {
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
-
         var name_ok = stream_name_error.validate_for_submit(stream);
 
         if (!name_ok) {
             return;
         }
+
+        var principals = get_principals();
+        if (principals.length > 100) {
+            show_large_invites_warning(principals.length);
+        } else {
+            create_stream();
+        }
+    });
+
+    $(document).on("click", ".close-invites-warning-modal", function () {
+        $("#invites-warning-overlay").remove();
+    });
+
+    $(document).on("click", ".confirm-invites-warning-modal", function () {
         create_stream();
+        $("#invites-warning-overlay").remove();
     });
 
     $(".subscriptions").on("input", "#create_stream_name", function () {
