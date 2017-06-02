@@ -360,12 +360,15 @@ paths:
         required: true
         type: string
       - name: invite_only
+        in: formData
         type: boolean
         default: false
       - name: announce
+        in: formData
         type: boolean
         default: false
       - name: authorization_errors_fatal
+        in: formData
         type: boolean
         default: true
       security:
