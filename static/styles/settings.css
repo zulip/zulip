@@ -217,6 +217,36 @@ td .button {
     margin-right: 5px;
 }
 
+.settings-section .tip {
+    position: relative;
+    display: block;
+    background-color: #fbf7ea;
+    border: 1px solid #e0ddd0;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #666;
+    -webkit-font-smoothing: antialiased;
+}
+
+.settings-section .tip p {
+    margin-bottom: 0;
+}
+
+.settings-section .tip::before {
+    display: inline;
+    content: "\f0eb   Tip:  ";
+    font-family: FontAwesome, "Yantramanav", Humbug;
+    font-weight: 600;
+}
+
+.settings-section .tip p:first-of-type {
+    display: inline;
+}
+
 .dynamic-input {
     display: inline-block;
     padding: 5px;

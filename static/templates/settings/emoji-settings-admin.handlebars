@@ -10,7 +10,7 @@
             </tbody>
         </table>
     </div>
-
+    {{#unless realm_add_emoji_by_admins_only}}
     <form class="form-horizontal admin-emoji-form">
         <div class="add-new-emoji-box grey-bg green-bg">
             <div class="new-emoji-form">
@@ -34,4 +34,5 @@
             </div>
         </div>
     </form>
+    {{/unless}}
 </div>
