@@ -1,0 +1,26 @@
+var SwaggerParser = require('swagger-parser');
+
+function validateSwagger(file) {
+    SwaggerParser.validate(file)
+        .then(function() {
+            // The validation passed, no need to say anything
+            return;
+        })
+        .catch(function(err) {
+            // There is something wrong. Display the validation errors
+            console.error('In', file + ':');
+            console.error(err.message);
+            process.exitCode = 1;
+        });
+}
+
+// Iterate through the changed files, passed in the arguments.
+// The two first arguments are the call to the Node interpreter and this
+// script, hence the starting point at 2.
+for(var i = 2; i < process.argv.length; i++) {
+    var file = process.argv[i];
+    // Run the validator only for YAML files inside static/swagger
+    if(file.startsWith('static/swagger')) {
+        validateSwagger(file);
+    }
+}
