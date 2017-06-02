@@ -24,7 +24,8 @@ from zerver.views.registration import confirmation_key, \
 
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user,
-    get_unique_open_realm, completely_open, get_recipient,
+    get_unique_open_realm, get_unique_non_system_realm,
+    completely_open, get_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob, flush_per_request_caches
@@ -1635,6 +1636,9 @@ class TestOpenRealms(ZulipTestCase):
             self.assertEqual(get_unique_open_realm(), mit_realm)
         mit_realm.restricted_to_domain = True
         mit_realm.save()
+        with self.settings(SYSTEM_ONLY_REALMS={"zulip"}):
+            self.assertEqual(get_unique_open_realm(), None)
+            self.assertEqual(get_unique_non_system_realm(), mit_realm)
 
 class DeactivateUserTest(ZulipTestCase):
 

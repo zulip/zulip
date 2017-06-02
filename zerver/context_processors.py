@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
 
-from zerver.models import UserProfile, get_realm, get_unique_open_realm, Realm
+from zerver.models import UserProfile, get_realm, get_unique_non_system_realm, Realm
 from zproject.backends import (
     any_oauth_backend_enabled,
     dev_auth_enabled,
@@ -40,7 +40,7 @@ def get_realm_from_request(request):
         subdomain = get_subdomain(request)
         return get_realm(subdomain)
     # This will return None if there is no unique, open realm.
-    return get_unique_open_realm()
+    return get_unique_non_system_realm()
 
 def zulip_default_context(request):
     # type: (HttpRequest) -> Dict[str, Any]

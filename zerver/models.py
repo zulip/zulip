@@ -281,12 +281,8 @@ def completely_open(realm):
         return False
     return not realm.invite_required and not realm.restricted_to_domain
 
-def get_unique_open_realm():
+def get_unique_non_system_realm():
     # type: () -> Optional[Realm]
-    """We only return a realm if there is a unique non-system-only realm,
-    it is completely open, and there are no subdomains."""
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        return None
     realms = Realm.objects.filter(deactivated=False)
     # On production installations, the (usually "zulip.com") system
     # realm is an empty realm just used for system bots, so don't
@@ -294,7 +290,17 @@ def get_unique_open_realm():
     realms = realms.exclude(string_id__in=settings.SYSTEM_ONLY_REALMS)
     if len(realms) != 1:
         return None
-    realm = realms[0]
+    return realms[0]
+
+def get_unique_open_realm():
+    # type: () -> Optional[Realm]
+    """We only return a realm if there is a unique non-system-only realm,
+    it is completely open, and there are no subdomains."""
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        return None
+    realm = get_unique_non_system_realm()
+    if realm is None:
+        return None
     if realm.invite_required or realm.restricted_to_domain:
         return None
     return realm
