@@ -2,6 +2,7 @@
 Mail sent to user when she was not logged in and received a PM or @-mention
 #}
 
+{% autoescape off %}
 Hello {{ name }},
 
 While you were away you received {{ message_count }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
@@ -38,3 +39,4 @@ Manage email preferences:
 Unsubscribe from missed message emails:
 
 {{ unsubscribe_link }}
+{% endautoescape %}

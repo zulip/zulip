@@ -1,7 +1,7 @@
 {#
 Mail sent to a user who hasn't logged in for 24 hours.
 #}
-
+{% autoescape off %}
 Hello {{ name }},
 
 A lot has happened on Zulip while you've been away! Visit
@@ -59,3 +59,4 @@ Manage email preferences:
 Unsubscribe from digest emails:
 
 {{ unsubscribe_link }}
+{% endautoescape %}
