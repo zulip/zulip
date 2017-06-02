@@ -6,7 +6,8 @@ var exports = {};
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
 var current_message_emoji_popover_elem;
-
+var default_emoji_order = {};
+var complete_emoji_list; //saves an array of the complete emoji list in default order.
 function promote_popular(a, b) {
     function rank(name) {
         switch (name) {
@@ -94,6 +95,10 @@ function generate_emoji_picker_content(id) {
         emojis: emoji_recs.sort(promote_popular),
     };
 
+    for (var i = 1; i <= emoji_recs.length; i += 1) {
+        default_emoji_order[emoji_recs[i-1].name] = i;
+    }
+
     return templates.render('emoji_popover_content', args);
 }
 
@@ -131,6 +136,7 @@ exports.toggle_emoji_popover = function (element, id) {
         });
         current_message_emoji_popover_elem = elt;
         exports.render_emoji_show_list();
+        complete_emoji_list = $('.emoji-popover-emoji').toArray();
     }
 };
 
@@ -154,28 +160,67 @@ function get_selected_emoji() {
 var emoji_show_list = []; // local emoji_show_list
 
 exports.render_emoji_show_list = function () {
-    var reaction_list = $(".emoji-popover-emoji");
-    emoji_show_list = reaction_list.filter(function () {
-        return $(this).css('display') === "inline-block";
+    var emoji_list = $(".emoji-popover-emoji");
+    emoji_show_list = emoji_list.filter(function () {
+        return $(this).css('display') === "block";
     }).toArray();
 };
+
+// This function sets the order_no to each of the emojis visible in the emoji_picker.
+// The emojis are set with either the default order_no (case: empty search string)
+//  or the order_no as per the sorted order obtained w.r.t the search string.
+function set_emoji_order(emoji_list, is_set_default) {
+    var order_no;
+    // To get the order_no as per the sorted order.
+    var get_order = function (i) { return i.toString(); };
+    if (is_set_default) { // To get default order_no.
+        get_order = function (i) {
+            return default_emoji_order[$(emoji_list[i-1]).attr('title')];
+        };
+    }
+    for (var i = 1; i <= emoji_list.length; i += 1) {
+        order_no = get_order(i); // Gets the respective order_no.
+        $(emoji_list[i-1]).css('order', order_no);
+    }
+}
+
+// This function on top of the default ordering of the emojis, sorts and sets the
+//  order_no for the emojis based on the query string (search string).
+function order_emoji_show_list(emoji_list, query) {
+    // Sets the default order_no for the emojis
+    // This helps in preserving the default ordering of emoojis which gets changed
+    //   based on the query string.
+    set_emoji_order(emoji_list, true);
+    if (query !== '') {
+        // Sorts the default emoji order w.r.t the query string.
+        var result = util.prefix_sort(query, emoji_list,
+            function (x) { return $(x).attr('title'); });
+        emoji_list = result.matches.concat(result.rest);
+        set_emoji_order(emoji_list, false); // sets the order_no as per the sorted order
+    }
+    return emoji_list;
+}
 
 function filter_emojis() {
     var elt = $(".emoji-popover-filter").expectOne();
     var search_term = elt.val().trim().toLowerCase();
     var emoji_list = $(".emoji-popover-emoji");
     if (search_term !== '') {
-        emoji_list.each(function () {
-            if (this.title.indexOf(search_term) === -1) {
-                this.classList.add("hide");
+        emoji_show_list = [];
+        for (var i = 0; i < emoji_list.length; i += 1) {
+            if (emoji_list[i].title.indexOf(search_term) === -1) {
+                emoji_list[i].classList.add("hide");
             } else {
-                this.classList.remove("hide");
+                emoji_list[i].classList.remove("hide");
+                emoji_show_list.push(emoji_list[i]);
             }
-        });
+        }
     } else {
         emoji_list.removeClass("hide");
+        // Direct assignment to optimize and render the complete list emoji faster.
+        emoji_show_list = complete_emoji_list;
     }
-    exports.render_emoji_show_list();
+    emoji_show_list = order_emoji_show_list(emoji_show_list, search_term);
 }
 
 function get_emoji_at_index(index) {
