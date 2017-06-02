@@ -100,6 +100,8 @@ exports.populate_auth_methods = function (auth_methods) {
     if (!page_params.is_admin) {
         $(".organization-box [data-name='auth-methods']")
             .find("input, button, select, checked").attr("disabled", true);
+        $(".organization-box").find(".settings-section:not(.can-edit)")
+            .prepend(i18n.t("<div class='tip'>Only organization administrators can edit these settings.</div>"));
     }
 };
 
