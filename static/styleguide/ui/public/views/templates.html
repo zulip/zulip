@@ -1,0 +1,111 @@
+<form class="init-component component inline-block animated primary" b-template="init-component" data-tab="component">
+  <div class="title-block">
+    <span class="component-block-color arrow">Component</span>
+    <span>New Component</span>
+  </div>
+
+  <div class="section sides inline-block">
+    <div class="control-group">
+      <label class="input-group">
+        Component Name<br>
+        <input type="text" placeholder="Checkbox" b-prop="component_name" value="" />
+      </label>
+
+      <label class="input-group">
+        Template Name<br>
+        <input type="text" placeholder="generic-checkbox" b-prop="template_name" value="" />
+      </label>
+
+      <label class="input-group">
+        Custom Class List<br>
+        <input type="text" placeholder=".light, .dark, .square, .danger" b-prop="class_list" value="" />
+      </label>
+
+      <label class="input-group">
+        Modifiers <span class='dark-grey'>(includes id)<br>
+        <input type="text" placeholder="checked" b-prop="modifiers" />
+      </label>
+    </div>
+
+    <label class="input-group double">
+      Description<br>
+      <textarea class="wide" placeholder="This is a stylistic replacement for the webkit default checkbox appearance that allows customization of size, color, and border radius." b-prop="description"></textarea>
+    </label>
+
+    <br>
+
+    <button type="button" class="button sides" b-prop="submit" name="button">Submit</button>
+  </div>
+</form>
+
+<form class="init-font component inline-block animated" b-template="init-font" data-tab="font">
+  <div class="title-block">
+    <span class="font-block-color arrow">Font</span>
+    <span>New Font</span>
+  </div>
+  <div class="section sides inline-block">
+    <div class="control-group">
+      <label class="input-group">
+        Name<br>
+        <input type="text" b-prop="name" placeholder="Paragraph Text" />
+      </label>
+
+      <label class="input-group">
+        Font Family<br>
+        <input type="text" b-prop="font_family" placeholder="Helvetica Neue" />
+      </label>
+
+      <label class="input-group">
+        Font Weight<br>
+        <input type="text" b-prop="font_weight" placeholder="500" />
+      </label>
+
+      <label class="input-group">
+        Font Size<br>
+        <input type="text" b-prop="font_size" placeholder="0.9rem" />
+      </label>
+    </div>
+
+    <label class="input-group double">
+      Sample Text<br>
+      <textarea class="wide" b-prop="sample_text" placeholder="The original Black Scholes Model was created by Fisher Black and Myron Scholes in the late 1970s."></textarea>
+    </label>
+
+    <br>
+
+    <button type="button" b-prop="submit" class="button sides" name="button">Submit</button>
+  </div>
+</form>
+
+<form class="init-color component inline-block animated" b-template="init-color" data-tab="color">
+  <div class="title-block">
+    <span class="color-block-color arrow">Color Palette</span>
+    <span>New Color</span>
+  </div>
+
+  <div class="section sides inline-block">
+    <div class="control-group">
+      <label class="input-group">
+        Palette<br>
+        <select b-prop="palette">
+          <option value="primary" selected>Primary</option>
+          <option value="secondary">Secondary</option>
+        </select>
+      </label>
+
+      <label class="input-group">
+        Color Name<br>
+        <input type="text" b-prop="name" placeholder="Sea Green" value="" />
+      </label>
+
+      <label class="input-group">
+        Color Value<br>
+        <input type="text" b-prop="value" placeholder="eg. #fff, rgb(255,67,84)" value="" />
+      </label>
+
+      <br>
+
+      <button type="button" b-prop="submit" class="button sides" name="button">Submit</button>
+    </div>
+  </div>
+</form>
