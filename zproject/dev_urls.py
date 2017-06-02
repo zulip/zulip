@@ -11,6 +11,10 @@ use_prod_static = getattr(settings, 'PIPELINE_ENABLED', False)
 static_root = os.path.join(settings.DEPLOY_ROOT, 'prod-static/serve' if use_prod_static else 'static')
 
 urls = [
+    # Serve static assets via the Django server
+    url(r'^static/(?P<path>.*)$', serve, {'document_root': static_root}),
+
+    # Serve useful development environment resources (docs, coverage reports, etc.)
     url(r'^coverage/(?P<path>.*)$',
         serve, {'document_root':
                 os.path.join(settings.DEPLOY_ROOT, 'var/coverage'),
@@ -18,7 +22,8 @@ urls = [
     url(r'^docs/(?P<path>.*)$',
         serve, {'document_root':
                 os.path.join(settings.DEPLOY_ROOT, 'docs/_build/html')}),
-    url(r'^static/(?P<path>.*)$', serve, {'document_root': static_root}),
+
+    # The special no-password login endpoint for development
     url(r'^devlogin/$', zerver.views.auth.login_page,
         {'template_name': 'zerver/dev_login.html'}, name='zerver.views.auth.login_page'),
 ]
