@@ -7,9 +7,12 @@ var blueslip = (function () {
 var exports = {};
 
 var getLogRulesChecker = function (LOG_ALL, ALLOWED, BLOCKED) {
-    return function (msg, more_info) {
+    return function (msg, console_name) {
         if (!page_params.debug_mode) {
             return true; // log everything in production
+        }
+        if (["error", "warn"].indexOf(console_name) != -1) {
+            return true; // log all warnings and errors
         }
         // if a message type is both in the allowed as well as blocked list,
         // it will get printed. If it is not in either list, the global
@@ -23,6 +26,14 @@ var getLogRulesChecker = function (LOG_ALL, ALLOWED, BLOCKED) {
         return LOG_ALL;
     };
 };
+
+ // Specify which log messages should be allowed or blocked.
+ // Parameters: getLogRulesChecker(LOG_ALL, ALLOWED, BLOCKED)
+var shouldWeLog = getLogRulesChecker(
+                    true,
+                    [],
+                    ["Narrowed","Unnarrowed"]
+                );
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -83,8 +94,7 @@ Logger.prototype = (function () {
             if (this._memory_log.length > 1000) {
                 this._memory_log.shift();
             }
-
-            if (console[name] !== undefined) {
+            if (console[name] !== undefined && shouldWeLog(arguments['0'], name)) {
                 return console[name].apply(console, arguments);
             }
             return undefined;
@@ -376,42 +386,26 @@ function build_arg_list(msg, more_info) {
     return args;
 }
 
- // Specify which log messages should be allowed or blocked.
- // Parameters: getLogRulesChecker(LOG_ALL, ALLOWED, BLOCKED)
-var shouldWeLog = getLogRulesChecker(
-                    true,
-                    [],
-                    ["Narrowed","Unnarrowed"]
-                );
-
 exports.debug = function blueslip_debug (msg, more_info) {
-    if (shouldWeLog(msg)) {
-        var args = build_arg_list(msg, more_info);
-        logger.debug.apply(logger, args);
-    }
+    var args = build_arg_list(msg, more_info);
+    logger.debug.apply(logger, args);
 };
 
 exports.log = function blueslip_log (msg, more_info) {
-    if (shouldWeLog(msg)) {
-        var args = build_arg_list(msg, more_info);
-        logger.log.apply(logger, args);
-    }
+    var args = build_arg_list(msg, more_info);
+    logger.log.apply(logger, args);
 };
 
 exports.info = function blueslip_info (msg, more_info) {
-    if (shouldWeLog(msg)) {
-        var args = build_arg_list(msg, more_info);
-        logger.info.apply(logger, args);
-    }
+    var args = build_arg_list(msg, more_info);
+    logger.info.apply(logger, args);
 };
 
 exports.warn = function blueslip_warn (msg, more_info) {
-    if (shouldWeLog(msg)) {
-        var args = build_arg_list(msg, more_info);
-        logger.warn.apply(logger, args);
-        if (page_params.debug_mode) {
-            console.trace();
-        }
+    var args = build_arg_list(msg, more_info);
+    logger.warn.apply(logger, args);
+    if (page_params.debug_mode) {
+        console.trace();
     }
 };
 
