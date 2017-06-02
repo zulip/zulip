@@ -758,7 +758,7 @@ definitions:
       never_subscribed:
         type: array
         items:
-          $ref: "#/definitions/stream"
+          $ref: '#/definitions/stream'
       pointer:
         type: integer
         format: int64
@@ -779,7 +779,7 @@ definitions:
       realm_default_streams:
         type: array
         items:
-          $ref: "#/definitions/stream"
+          $ref: '#/definitions/stream'
       realm_domain:
         type: string
       realm_domains:
@@ -802,7 +802,7 @@ definitions:
       realm_users:
         type: array
         items:
-          $ref: "#/definitions/user"
+          $ref: '#/definitions/user'
       realm_waiting_period_threshold:
         type: integer
         format: int64
@@ -811,7 +811,7 @@ definitions:
       streams:
         type: array
         items:
-          $ref: "#/definitions/stream"
+          $ref: '#/definitions/stream'
       twenty_four_hour_time:
         type: boolean
       unsubscribed:
@@ -865,7 +865,7 @@ definitions:
       events:
         type: array
         items:
-          $ref: "#/definitions/event"
+          $ref: '#/definitions/event'
 
   #####
   # definitions used by /register
