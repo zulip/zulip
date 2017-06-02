@@ -89,12 +89,18 @@ function maybe_add_update_list_entry(needs_update, id, time, time_above) {
 function render_date_span(elem, rendered_time, rendered_time_above) {
     elem.text("");
     if (rendered_time_above !== undefined) {
-        return elem.append('<i class="date-direction icon-vector-caret-up"></i>' +
-                           rendered_time_above.time_str).append($('<hr class="date-line">')).append(
-                               '<i class="date-direction icon-vector-caret-down"></i>'
-                                   + rendered_time.time_str);
+        var pieces = [
+            '<i class="date-direction icon-vector-caret-up"></i>',
+            rendered_time_above.time_str,
+            '<hr class="date-line">',
+            '<i class="date-direction icon-vector-caret-down"></i>',
+            rendered_time.time_str,
+        ];
+        elem.append(pieces);
+        return elem;
     }
-    return elem.append(rendered_time.time_str).attr('title', rendered_time.formal_time_str);
+    elem.append(rendered_time.time_str);
+    return elem.attr('title', rendered_time.formal_time_str);
 }
 
 // Given an XDate object 'time', return a DOM node that initially
