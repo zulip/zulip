@@ -324,6 +324,9 @@ Now run these commands:
 
 ```
 ./tools/install-mypy
+sudo mkdir /srv/zulip-emoji-cache
+sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
+./tools/setup/emoji/download-emoji-data
 ./tools/setup/emoji/build_emoji
 ./tools/setup/build_pygments_data.py
 ./scripts/setup/generate_secrets.py --development
