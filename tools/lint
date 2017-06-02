@@ -688,6 +688,13 @@ def run():
         return func
 
     def external_linter(name, command, target_langs=[]):
+        """Registers an external linter program to be run as part of the
+        linter.  This program will be passed the subset of files being
+        linted that have extensions in target_langs.  If there are no
+        such files, exits without doing anything.
+
+        If target_langs is empty, just runs the linter unconditionally.
+        """
         # type: (str, List[str], List[str]) -> None
         def run_linter():
             # type: () -> int
