@@ -259,6 +259,7 @@ $(function () {
     reactions.initialize();
     compose_fade.initialize();
     stream_list.initialize();
+    drafts.initialize();
 });
 
 

@@ -383,14 +383,13 @@ exports.launch = function () {
     });
 };
 
-$(function () {
-
+exports.initialize = function () {
     window.addEventListener("beforeunload", function () {
         exports.update_draft();
     });
 
     $("#new_message_content").focusout(exports.update_draft);
-});
+};
 
 return exports;
 
