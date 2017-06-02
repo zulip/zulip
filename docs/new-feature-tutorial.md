@@ -60,7 +60,7 @@ Realm setting, in `test_realm.py`).
 **JavaScript:** Zulip's JavaScript is located in the directory
 `static/js/`. The exact files you may need to change depend on your
 feature. If you've added a new event that is sent to clients, be sure to
-add a handler for it to `static/js/server_events.js`.
+add a handler for it to `static/js/server_events_dispatch.js`.
 
 **CSS:** The primary CSS file is `static/styles/zulip.css`. If your new
 feature requires UI changes, you may need to add additional CSS to this
@@ -395,10 +395,10 @@ form control in `static/js/admin.js`.
       }
     });
 
-Finally, update `server_events.js` to handle related events coming from
+Finally, update `server_events_dispatch.js` to handle related events coming from
 the server.
 
-    # static/js/server_events.js
+    # static/js/server_events_dispatch.js
 
     function dispatch_normal_event(event) {
         switch (event.type) {

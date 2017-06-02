@@ -3,6 +3,7 @@ var assert = require('assert');
 add_dependencies({
     util: 'js/util.js',
     tutorial: 'js/tutorial.js',
+    server_events_dispatch: 'js/server_events_dispatch.js',
 });
 
 var noop = function () {};

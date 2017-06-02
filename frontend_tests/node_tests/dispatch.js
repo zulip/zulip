@@ -50,6 +50,9 @@ var page_params = global.page_params;
 // that we write directly to alert_words.words
 add_dependencies({alert_words: 'js/alert_words.js'});
 
+// contains the main event dispatching function
+add_dependencies({server_events_dispatch: 'js/server_events_dispatch.js'});
+
 // we also directly write to pointer
 set_global('pointer', {});
 

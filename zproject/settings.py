@@ -940,6 +940,7 @@ JS_SPECS = {
             'js/message_events.js',
             'js/message_fetch.js',
             'js/server_events.js',
+            'js/server_events_dispatch.js',
             'js/zulip.js',
             'js/presence.js',
             'js/activity.js',
