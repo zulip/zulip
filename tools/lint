@@ -693,6 +693,8 @@ def run():
             # type: () -> int
             if len(target_langs) == 0:
                 return subprocess.call(command)
+            # Run the linter only for the files that have changed, and have
+            # one of the languages specified in target_langs
             targets = [target for lang in target_langs for target in by_lang[lang]]
             if len(targets) == 0:
                 return 0
