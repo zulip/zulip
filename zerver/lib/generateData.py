@@ -52,7 +52,7 @@ def loadGenerators(config):
 def checkForDupes(gens):
     # type: (Dict[str, Any]) -> None
 
-    results = []
+    results = [] # type: List[str]
 
     for i in range(106):
         key = next(gens["verbs"]) + " " + next(gens["connectors"]) + \
@@ -71,7 +71,7 @@ def parseFile(config, gens, corpus_file):
     # let's load the entire file into a dictionary first,
     # then we'll apply our custom filters to it as needed
 
-    paragraphs = []  # order is important so they make sense
+    paragraphs = [] # type: List[str] 
 
     with open(corpus_file, "r") as infile:
         # OUR DATA: we need to seperate the person talking and what they say
@@ -177,12 +177,6 @@ def addLink(text, link):
     vals[start] = vals[start] + " " + link + " "
 
     return " ".join(vals)
-
-
-def addPicture(text):
-    # type: (str) -> ()
-    pass
-
 
 def removeActions(line):
     # type: (str) -> str

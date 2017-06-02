@@ -8,16 +8,19 @@ from zerver.lib.generateData import removeActions
 
 class CheckRemoveActions(TestCase):
     def test_remove_leading_action(self):
+        # type: () -> None
         string = "[Walks to the dresser.] This looks interesting."
         result = removeActions(string)
         self.assertEqual(result, "This looks interesting.")
 
     def test_remove_trailingaction(self):
+        # type: () -> None
         string = "This looks interesting. [Walks to the dresser.]"
         result = removeActions(string)
         self.assertEqual(result, "This looks interesting.")
 
     def test_remove_middle_action(self):
+        # type: () -> None
         string = "This looks [Walks to the dresser.] interesting."
         result = removeActions(string)
         self.assertEqual(result, "This looks  interesting.")
