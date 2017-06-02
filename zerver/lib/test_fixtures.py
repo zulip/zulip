@@ -14,7 +14,6 @@ from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
 FILENAME_SPLITTER = re.compile('[\W\-_]')
-TEST_DB_STATUS_DIR = 'var/test_db_status'
 
 def database_exists(database_name, **options):
     # type: (Text, **Any) -> bool
@@ -66,19 +65,19 @@ def are_migrations_the_same(migration_file, **options):
         migration_content = f.read()
     return migration_content == get_migration_status(**options)
 
-def _get_hash_file_path(source_file_path):
-    # type: (str) -> str
+def _get_hash_file_path(source_file_path, status_dir):
+    # type: (str, str) -> str
     basename = os.path.basename(source_file_path)
     filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
-    return os.path.join(TEST_DB_STATUS_DIR, filename)
+    return os.path.join(status_dir, filename)
 
-def _check_hash(target_hash_file, **options):
-    # type: (str, **Any) -> bool
+def _check_hash(target_hash_file, status_dir):
+    # type: (str, str) -> bool
     """
     This function has a side effect of creating a new hash file or
     updating the old hash file.
     """
-    source_hash_file = _get_hash_file_path(target_hash_file)
+    source_hash_file = _get_hash_file_path(target_hash_file, status_dir)
 
     with open(target_hash_file) as f:
         target_hash_content = hashlib.sha1(f.read().encode('utf8')).hexdigest()
@@ -98,8 +97,9 @@ def is_template_database_current(
         database_name='zulip_test_template',
         migration_status='var/migration-status',
         settings='zproject.test_settings',
+        status_dir='var/test_db_status',
         check_files=None):
-    # type: (Text, Text, Text, Optional[List[str]]) -> bool
+    # type: (str, str, str, str, Optional[List[str]]) -> bool
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
         check_files = [
@@ -108,14 +108,14 @@ def is_template_database_current(
             'tools/setup/postgres-init-dev-db',
         ]
 
-    if not os.path.exists(TEST_DB_STATUS_DIR):
-        os.mkdir(TEST_DB_STATUS_DIR)
+    if not os.path.exists(status_dir):
+        os.mkdir(status_dir)
 
     if database_exists(database_name):
         # To ensure Python evaluates all the hash tests (and thus creates the
         # hash files about the current state), we evaluate them in a
         # list and then process the result
-        hash_status = all([_check_hash(fn) for fn in check_files])
+        hash_status = all([_check_hash(fn, status_dir) for fn in check_files])
         return are_migrations_the_same(migration_status, settings=settings) and hash_status
 
     return False
