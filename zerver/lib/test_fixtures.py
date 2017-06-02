@@ -95,7 +95,7 @@ def _check_hash(target_hash_file, status_dir):
 
 def is_template_database_current(
         database_name='zulip_test_template',
-        migration_status='var/migration-status',
+        migration_status='var/migration_status_test',
         settings='zproject.test_settings',
         status_dir='var/test_db_status',
         check_files=None):

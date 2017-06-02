@@ -26,7 +26,7 @@ EOF
 sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 ./manage.py migrate --noinput --settings=zproject.test_settings
-migration_status "var/migration-status"
+migration_status "var/migration_status_test"
 
 # This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
 ./manage.py populate_db --settings=zproject.test_settings --test-suite -n30 \
