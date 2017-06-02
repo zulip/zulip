@@ -12,7 +12,7 @@ import traceback
 
 try:
     # Use the Zulip virtualenv if available
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../../.."))
     import scripts.lib.setup_path_on_import
 except ImportError:
     pass
@@ -20,7 +20,7 @@ except ImportError:
 import json
 import ujson
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../api"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
 import zulip
 from typing import List
 
