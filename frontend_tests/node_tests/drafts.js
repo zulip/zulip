@@ -1,4 +1,5 @@
-global.stub_out_jquery();
+set_global('$', global.make_zjquery());
+set_global('window', {});
 
 add_dependencies({
     localstorage: 'js/localstorage',
@@ -127,4 +128,22 @@ var draft_2 = {
 
     stub_draft({});
     assert.equal(drafts.snapshot_message(), undefined);
+}());
+
+(function test_initialize() {
+    var message_content = $("#new_message_content");
+    message_content.focusout = function (f) {
+        assert.equal(f, drafts.update_draft);
+        f();
+    };
+
+    global.window.addEventListener = function (event_name, f) {
+        assert.equal(event_name, "beforeunload");
+        var called = false;
+        drafts.update_draft = function () { called = true; };
+        f();
+        assert(called);
+    };
+
+    drafts.initialize();
 }());
