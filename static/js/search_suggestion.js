@@ -3,6 +3,18 @@ var search_suggestion = (function () {
 var exports = {};
 
 function phrase_match(phrase, q) {
+    /*
+    phrase_match
+    Check if the query q matches the phrase.
+    A match occurs if q matches word[0:*] of any word (separated by a space)
+    in the phrase
+    Case insenstitive
+    Arguments:
+        phrase (string): the phrase to check the query against
+        q (string): the query or part of the query as entered to the search bar by user
+    Return value:
+        true if q matches phrase, false otherwise
+    */
     // match "tes" to "test" and "stream test" but not "hostess"
     var i;
     q = q.toLowerCase();
@@ -22,26 +34,48 @@ function phrase_match(phrase, q) {
 }
 
 function person_matches_query(person, q) {
+    // true if the query matches the person
+    // checked with the person's fullname or email address
+    // Argument: person (object), q (string)
     return phrase_match(person.full_name, q) || phrase_match(person.email, q);
 }
 
 function stream_matches_query(stream_name, q) {
+    // true if the query match the name of the stream
+    // Argument: stream_name (string), q (string)
     return phrase_match(stream_name, q);
 }
 
 function highlight_person(query, person) {
+    // TODO
     var hilite = typeahead_helper.highlight_query_in_phrase;
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
 function get_stream_suggestions(operators) {
+    /*
+    get_stream_suggestions
+    Argument:
+        operators: array of operators object, each has 3 keys:
+            operator : string | the operator
+            operand : string | the operand for this operator
+            negated : boolean | whether searching to exclude or include
+    Return value:
+        (array[obj]): each object has two properties:
+            description : string | the suggestion to be printed in the dropdown
+            search_string : string | the original query
+    */
     var query;
 
     switch (operators.length) {
     case 0:
+        // If there's no operator object, query is empty
         query = '';
         break;
     case 1:
+        // If there's exactly one operator object, and the
+        // operator is not 'stream' or 'search', return 
+        // no suggestion (empty array)
         var operator = operators[0].operator;
         query = operators[0].operand;
         if (!(operator === 'stream' || operator === 'search')) {
@@ -49,17 +83,27 @@ function get_stream_suggestions(operators) {
         }
         break;
     default:
+        // If there's more than one operator objects, return no
+        // suggestion (empty array)
         return [];
     }
 
+    // I think this is an array of strings that are names of all 
+    // streams the user is subscribed to
     var streams = stream_data.subscribed_streams();
 
+    // Filter down to the streams that match the query
     streams = _.filter(streams, function (stream) {
         return stream_matches_query(stream, query);
     });
 
+    // Sort them, presummably alphabetically
     streams = typeahead_helper.sorter(query, streams);
 
+    // Produce suggestions for the streams that match the query
+    // For each of the match, append a 
+    // 'Narrow to stream' + stream name
+    // This seems redundant with Filter.describe somehow?
     var objs = _.map(streams, function (stream) {
         var prefix = 'Narrow to stream';
         var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
@@ -76,10 +120,25 @@ function get_stream_suggestions(operators) {
 }
 
 function get_private_suggestions(all_people, operators, person_operator_matches) {
+    /*
+    get_private_suggestions
+    Arguments:
+        all_people /TODO
+        operators /TODO
+        person_operator_matches /TODO
+    Return value:
+        (array[obj]): each object has two properties:
+            description : string | the suggestion to be printed in the dropdown
+            search_string : string | the original query
+    */
+    // If no token , then return empty array
     if (operators.length === 0) {
         return [];
     }
 
+    // If the first token's operator and operand pair is 'is' and 'private'
+    // Remove that token from the operators array
+    // else /TODO
     var ok = false;
     if ((operators[0].operator === 'is') && (operators[0].operand === 'private')) {
         operators = operators.slice(1);
@@ -92,6 +151,8 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         });
     }
 
+    // If the first token isn't asking for private suggestions or there's no match,
+    // return empty array
     if (!ok) {
         return [];
     }
@@ -99,6 +160,8 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
     var query;
     var matching_operator;
     var negated = false;
+
+    // /TODO
 
     if (operators.length === 0) {
         query = '';
@@ -126,7 +189,8 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         return [];
     }
 
-
+    // Get the people that matches the query from the list of all people
+    // and sort them by pm recipient count
     var people = _.filter(all_people, function (person) {
         return (query === '') || person_matches_query(person, query);
     });
@@ -135,6 +199,8 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
 
     // Take top 15 people, since they're ordered by pm_recipient_count.
     people = people.slice(0, 15);
+
+    // Form suggestions by /TODO
 
     var prefix = Filter.operator_to_prefix(matching_operator, negated);
 
@@ -163,10 +229,23 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
 }
 
 function get_group_suggestions(all_people, operators) {
+    /*
+    get_group_suggestion
+    Argument:
+        all_people
+        operators
+    Return value:
+        (array[obj]): each object has two properties:
+            description : string | the suggestion to be printed in the dropdown
+            search_string : string | the original query
+    */
+
+    // If no search operator, return empty array
     if (operators.length === 0) {
         return [];
     }
 
+    // Why is this in here
     if ((operators[0].operator === 'is') && (operators[0].operand === 'private')) {
         operators = operators.slice(1);
     }
@@ -232,6 +311,17 @@ function get_group_suggestions(all_people, operators) {
 }
 
 function get_person_suggestions(all_people, query, autocomplete_operator) {
+    /*
+    get_person_suggestions
+    Arguments:
+        all_people
+        query
+        autocomplete_operator
+    Return value:
+        (array[obj]): each object has two properties:
+            description : string | the suggestion to be printed in the dropdown
+            search_string : string | the original query
+    */
     if (query === '') {
         return [];
     }
