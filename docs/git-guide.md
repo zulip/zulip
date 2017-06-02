@@ -1335,8 +1335,7 @@ HEAD is now at 2bcd1d8 troubleshooting tip about provisioning
 request locally][self-fetch-pr] in its own branch and then updating it with any
 changes from upstream/master with `git rebase`.
 
-First, make sure you are working in branch `master`. Then run the script with
-the ID number of the pull request as the first argument.
+Run the script with the ID number of the pull request as the first argument.
 
 ```
 $ tools/fetch-rebase-pull-request 1913
@@ -1355,6 +1354,28 @@ Switched to a new branch 'review-1913'
 HEAD is now at 99aa2bf Add provision.py fails issue in common erros
 + git pull --rebase
 Current branch review-1913 is up to date.
+```
+
+### Fetch a pull request without rebasing
+
+`tools/fetch-pull-request` is a similar to `tools/fetch-rebase-pull-request`, but
+it does not rebase the pull request against upstream/master, thereby getting
+exactly the same repository state as the commit author had.
+
+Run the script with the ID number of the pull request as the first argument.
+
+```
+$ tools/fetch-pull-request 5156
++ git diff-index --quiet HEAD
++ request_id=5156
++ remote=upstream
++ git fetch upstream pull/5156/head
+From https://github.com/zulip/zulip
+ * branch            refs/pull/5156/head -> FETCH_HEAD
++ git checkout -B review-original-5156
+Switched to a new branch 'review-original-5156'
++ git reset --hard FETCH_HEAD
+HEAD is now at 5a1e982 tools: Update clean-branches to clean review branches.
 ```
 
 
