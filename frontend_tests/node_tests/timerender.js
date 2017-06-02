@@ -1,9 +1,9 @@
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
+set_global('$', global.make_zjquery());
+set_global('i18n', {
+    t: function (str) { return 'translated: ' + str; },
+});
 
 add_dependencies({
-    i18n: 'i18next',
     XDate: 'node_modules/xdate/src/xdate.js',
 });
 
@@ -81,23 +81,50 @@ var timerender = require('js/timerender.js');
 (function test_render_date_renders_time_html() {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var message_time  = today.clone();
-    var expected_html = 'Today';
+    var expected_html = i18n.t('Today');
+
+    var attrs = new Dict();
+    var span_stub = $('<span />');
+
+    span_stub.attr = function (name, val) {
+        attrs.set(name, val);
+        return span_stub;
+    };
+
+    span_stub.append = function (str) {
+        span_stub.html(str);
+        return span_stub;
+    };
+
     var actual = timerender.render_date(message_time, undefined, today);
     assert.equal(expected_html, actual.html());
+    assert.equal(attrs.get('title'), 'Friday, April 12, 2019');
+    assert.equal(attrs.get('id'), 'timerender0');
 }());
 
 (function test_render_date_renders_time_above_html() {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var message_time = today.clone();
     var message_time_above = today.clone().addDays(-1);
-    var expected = $('<div></div>');
-    expected.append('<i class="date-direction icon-vector-caret-up"></i>');
-    expected.append('Yesterday');
-    expected.append('<hr class="date-line">');
-    expected.append('<i class="date-direction icon-vector-caret-down"></i>');
-    expected.append('Today');
-    var actual = timerender.render_date(message_time, message_time_above, today);
-    assert.equal(expected.html(), actual.html());
+
+    var span_stub = $('<span />');
+
+    var appended_val;
+    span_stub.append = function (val) {
+        appended_val = val;
+        return span_stub;
+    };
+
+    var expected = [
+        '<i class="date-direction icon-vector-caret-up"></i>',
+        i18n.t('Yesterday'),
+        '<hr class="date-line">',
+        '<i class="date-direction icon-vector-caret-down"></i>',
+        i18n.t('Today'),
+    ];
+
+    timerender.render_date(message_time, message_time_above, today);
+    assert.deepEqual(appended_val, expected);
 }());
 
 (function test_get_full_time() {
@@ -148,8 +175,15 @@ var timerender = require('js/timerender.js');
         timestamp: 1495091573, // 5/18/2017 7:12:53 AM (UTC+0)
     };
     var time_element = $('<span/>');
+    var attrs = new Dict();
+
+    time_element.attr = function (name, val) {
+        attrs.set(name, val);
+        return time_element;
+    };
+
     var expected = '5/18/2017 7:12:53 AM (UTC+0)';
     timerender.set_full_datetime(message, time_element);
-    var actual = time_element.attr('title');
+    var actual = attrs.get('title');
     assert.equal(expected, actual);
 }());
