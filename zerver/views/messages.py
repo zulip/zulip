@@ -133,6 +133,9 @@ class NarrowBuilder(object):
         elif operand == 'starred':
             cond = column("flags").op("&")(UserMessage.flags.starred.mask) != 0
             return query.where(maybe_negate(cond))
+        elif operand == 'unread':
+            cond = column("flags").op("&")(UserMessage.flags.unread.mask) != 0
+            return query.where(maybe_negate(cond))
         elif operand == 'mentioned' or operand == 'alerted':
             cond = column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0
             return query.where(maybe_negate(cond))

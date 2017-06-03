@@ -374,5 +374,6 @@
   "more topics": "more topics", 
   "right": "right", 
   "waiting period threshold changed!": "waiting period threshold changed!", 
-  "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message"
+  "Mark this message as {{#if msg/unread}}Read{{else}}Unread{{/if}}": "Mark this message as {{#if msg/unread}}Read{{else}}Unread{{/if}}",
+  "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message",
 }

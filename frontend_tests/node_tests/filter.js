@@ -256,6 +256,10 @@ function make_sub(name, stream_id) {
     assert(predicate({starred: true}));
     assert(!predicate({starred: false}));
 
+    predicate = get_predicate([['is', 'unread']]);
+    assert(predicate({unread: true}));
+    assert(!predicate({unread: false}));
+
     predicate = get_predicate([['is', 'alerted']]);
     assert(predicate({alerted: true}));
     assert(!predicate({alerted: false}));
@@ -498,6 +502,7 @@ function make_sub(name, stream_id) {
     narrow = [
         {operator: 'stream', operand: 'devel'},
         {operator: 'is', operand: 'starred'},
+        {operator: 'is', operand: 'unread'},
     ];
     string = 'Narrow to stream devel, Narrow to starred messages';
     assert.equal(Filter.describe(narrow), string);
@@ -571,6 +576,13 @@ function make_sub(name, stream_id) {
         {operator: 'is', operand: 'starred', negated: true},
     ];
     string = 'Narrow to stream devel, Exclude starred messages';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: 'is', operand: 'unread', negated: true},
+    ];
+    string = 'Narrow to stream devel, Exclude unread messages';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [

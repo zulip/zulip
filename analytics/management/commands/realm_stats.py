@@ -147,6 +147,16 @@ class Command(BaseCommand):
             active_user_subs = Subscription.objects.filter(
                 user_profile__in=user_profiles, active=True)
 
+            # Unread messages
+            nonreaders = UserMessage.objects.filter(user_profile__in=user_profiles,
+                                                  flags=UserMessage.flags.unread).values(
+                "user_profile").annotate(count=Count("user_profile"))
+            print("%d users have %d unread messages" % (
+                len(nonreaders), sum([elt["count"] for elt in nonreaders])))
+
+            active_user_subs = Subscription.objects.filter(
+                user_profile__in=user_profiles, active=True)
+
             # Streams not in home view
             non_home_view = active_user_subs.filter(in_home_view=False).values(
                 "user_profile").annotate(count=Count("user_profile"))

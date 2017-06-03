@@ -587,6 +587,7 @@ function render(template_name, args) {
             content: 'This is message one.',
             last_edit_timestr: '11:00',
             starred: true,
+            unread: false,
         },
     };
 
@@ -602,6 +603,10 @@ function render(template_name, args) {
 
     var starred_title = first_message.find(".star").attr("title");
     assert.equal(starred_title, "Unstar this message");
+}());
+
+    var unread_title = first_message.find(".unread").attr("title");
+    assert.equal(unread_title, "Mark this message read");
 }());
 
 (function message_edit_form() {
@@ -624,6 +629,7 @@ function render(template_name, args) {
                 id: 1,
                 match_content: 'This is message one.',
                 starred: true,
+                unread: false,
                 is_stream: true,
                 content: 'This is message one.',
             },
