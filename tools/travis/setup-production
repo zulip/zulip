@@ -34,8 +34,6 @@ if ! env TRAVIS=1 ./tools/build-release-tarball "${build_options[@]}" travis; th
 fi
 mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
 
-# Remove zulip-npm-cache to ensure we install node_modules correctly
-rm -rf /home/travis/zulip-npm-cache
 
 # Shut down all services so that restarting postgres and rebuilding
 # the postgres database to match the prod installation setup will work.
