@@ -1,4 +1,7 @@
 set_global('$', global.make_zjquery());
+set_global('page_params', {});
+set_global('document', {});
+set_global('window', {});
 
 add_dependencies({
     util: 'js/util.js',
@@ -28,6 +31,13 @@ var _ = global._;
 (function test_extract_pm_recipients() {
     assert.equal(util.extract_pm_recipients('bob@foo.com, alice@foo.com').length, 2);
     assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
+}());
+
+(function test_is_pm_recipient() {
+    var message = { reply_to: 'alice@example.com,bOb@exaMple.com,fred@example.com' };
+    assert(util.is_pm_recipient('alice@example.com', message));
+    assert(util.is_pm_recipient('bob@example.com', message));
+    assert(!util.is_pm_recipient('unknown@example.com', message));
 }());
 
 (function test_rtrim() {
@@ -78,13 +88,60 @@ var _ = global._;
         {type: 'stream', stream_id: 101, subject: 'Bar'},
         {type: 'private'}));
 
+    assert(!util.same_recipient(
+        {type: 'private', to_user_ids: undefined},
+        {type: 'private'}));
+
+    assert(!util.same_recipient(
+        {type: 'unknown type'},
+        {type: 'unknown type'}));
+
+    assert(!util.same_recipient(
+        undefined,
+        {type: 'private'}));
+
+    assert(!util.same_recipient(undefined, undefined));
+}());
+
+(function test_execute_early() {
+    var doc = $(document);
+    doc.one = function (event_name, f) {
+        assert.equal(event_name, 'phantom_page_loaded');
+        f();
+    };
+
+    var called = false;
+    var func = function () { called = true; };
+
+    global.page_params.test_suite = true;
+    util.execute_early(func);
+    assert(called);
+
+    called = false;
+    global.page_params.test_suite = false;
+    util.execute_early(func);
+    assert(called);
 }());
 
 (function test_robust_uri_decode() {
     assert.equal(util.robust_uri_decode('xxx%3Ayyy'), 'xxx:yyy');
     assert.equal(util.robust_uri_decode('xxx%3'), 'xxx');
+
+    set_global('decodeURIComponent', function () { throw 'foo'; });
+    try {
+        util.robust_uri_decode('%E0%A4%A');
+    } catch (e) {
+        assert(e, 'foo');
+    }
 }());
 
+(function test_is_mobile() {
+    global.window.navigator = { userAgent: "Android" };
+    assert(util.is_mobile());
+
+    global.window.navigator = { userAgent: "Not mobile" };
+    assert(!util.is_mobile());
+}());
 
 (function test_array_compare() {
     assert(util.array_compare([], []));
