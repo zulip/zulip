@@ -338,6 +338,30 @@ exports.pm_with_user_ids = function (message) {
     return sorted_other_user_ids(user_ids);
 };
 
+exports.group_pm_with_user_ids = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    if (message.display_recipient.length === 0) {
+        blueslip.error('Empty recipient list in message');
+        return;
+    }
+    var user_ids = _.map(message.display_recipient, function (elem) {
+        return elem.user_id || elem.id;
+    });
+    var is_user_present = _.some(user_ids, function (user_id) {
+        return people.is_my_user_id(user_id);
+    });
+    if (is_user_present) {
+        user_ids.sort();
+        if (user_ids.length > 2) {
+            return user_ids;
+        }
+    }
+    return false;
+};
+
 exports.pm_with_url = function (message) {
     var user_ids = exports.pm_with_user_ids(message);
 

@@ -12,7 +12,7 @@ exports.encodeHashComponent = function (str) {
 };
 
 exports.encode_operand = function (operator, operand) {
-    if ((operator === 'pm-with') || (operator === 'sender')) {
+    if ((operator === 'group-pm-with') || (operator === 'pm-with') || (operator === 'sender')) {
         var slug = people.emails_to_slug(operand);
         if (slug) {
             return slug;
@@ -27,7 +27,7 @@ exports.decodeHashComponent = function (str) {
 };
 
 exports.decode_operand = function (operator, operand) {
-    if ((operator === 'pm-with') || (operator === 'sender')) {
+    if ((operator === 'group-pm-with') || (operator === 'pm-with') || (operator === 'sender')) {
         var emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;

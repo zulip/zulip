@@ -73,6 +73,12 @@ function make_tab_data() {
                 tabs.push(make_tab(names.join(', '), hashed));
             }
 
+        } else if (filter.has_operator("group-pm-with")) {
+
+            tabs.push(make_tab("Group Private", '#narrow/group-pm-with',
+                                undefined, 'private_message '));
+
+
         } else if (filter.has_operand("is", "starred")) {
             tabs.push(make_tab("Starred", hashed));
         } else if (filter.has_operator("near")) {

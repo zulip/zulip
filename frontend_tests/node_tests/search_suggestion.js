@@ -122,6 +122,7 @@ topic_data.reset();
         "is:private is:alerted",
         "is:private pm-with:alice@zulip.com",
         "is:private sender:alice@zulip.com",
+        "is:private group-pm-with:alice@zulip.com",
         "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -224,6 +225,7 @@ topic_data.reset();
         "is:starred has:link is:private is:alerted",
         "is:starred has:link is:private pm-with:alice@zulip.com",
         "is:starred has:link is:private sender:alice@zulip.com",
+        "is:starred has:link is:private group-pm-with:alice@zulip.com",
         "is:starred has:link is:private",
         "is:starred has:link",
         "is:starred",
@@ -759,6 +761,8 @@ init();
         "pm-with:ted@zulip.com",
         "sender:bob@zulip.com",
         "sender:ted@zulip.com",
+        "group-pm-with:bob@zulip.com",
+        "group-pm-with:ted@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -776,6 +780,7 @@ init();
         "Ted",
         "pm-with:ted@zulip.com",
         "sender:ted@zulip.com",
+        "group-pm-with:ted@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);

@@ -572,6 +572,9 @@ exports.get_suggestions = function (query) {
     suggestions = get_person_suggestions(persons, last, base_operators, 'from');
     attach_suggestions(result, base, suggestions);
 
+    suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
+    attach_suggestions(result, base, suggestions);
+
     suggestions = get_group_suggestions(persons, last, base_operators);
     attach_suggestions(result, base, suggestions);
 
