@@ -71,4 +71,6 @@ var _ = require('node_modules/underscore/underscore.js');
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
         true);
+
+    assert.equal(rs.compare_by_recency({}, {}, _.uniqueId(), ''), 0);
 }());
