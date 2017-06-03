@@ -202,6 +202,10 @@ exports.process_read_message = function (message) {
     }
 
     if (message.type === 'stream') {
+        if (message.stream_id === undefined) {
+            blueslip.error('No stream_id found for message ' + message.id);
+            return;
+        }
         exports.unread_topic_counter.del(
             message.stream_id,
             message.subject,
