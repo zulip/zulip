@@ -589,6 +589,32 @@ init();
         'stream:office -topic:test',
     ];
     assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = search.get_suggestions('is:alerted stream:devel is:starred topic:');
+    expected = [
+        'is:alerted stream:devel is:starred topic:',
+        'is:alerted stream:devel is:starred topic:REXX',
+        'is:alerted stream:devel is:starred',
+        'is:alerted stream:devel',
+        'is:alerted',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = search.get_suggestions('is:private stream:devel topic:');
+    expected = [
+        'is:private stream:devel topic:',
+        'is:private stream:devel',
+        'is:private',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = search.get_suggestions('topic:REXX stream:devel topic:');
+    expected = [
+        'topic:REXX stream:devel topic:',
+        'topic:REXX stream:devel',
+        'topic:REXX',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 (function test_whitespace_glitch() {
