@@ -403,6 +403,27 @@ exports.fatal = function blueslip_fatal (msg, more_info) {
     throw new BlueslipError(msg, more_info);
 };
 
+// Produces an easy-to-read preview on an HTML element.  Currently
+// only used for including in error report emails; be sure to discuss
+// with other developers before using it in a user-facing context
+// because it is not XSS-safe.
+exports.preview_node = function (node) {
+    if (node.constructor === jQuery) {
+        node = node[0];
+    }
+
+    var tag = node.tagName.toLowerCase();
+    var className = node.className.length ? node.className : false;
+    var id = node.id.length ? node.id : false;
+
+    var node_preview = "<" + tag +
+       (id ? " id='" + id + "'" : "") +
+       (className ? " class='" + className + "'" : "") +
+       "></" + tag + ">";
+
+      return node_preview;
+};
+
 return exports;
 }());
 
