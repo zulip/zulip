@@ -23,6 +23,8 @@ class Command(BaseCommand):
                             help="worker label")
         parser.add_argument('--all', dest="all", action="store_true", default=False,
                             help="run all queues")
+        parser.add_argument('--multi_threaded', nargs='+', metavar='<list of queue name>', type=str, required=False,
+                            help="list of queue to process")
 
     help = "Runs a queue processing worker"
 
@@ -39,19 +41,23 @@ class Command(BaseCommand):
                 logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
             sys.exit(1)
 
-        def run_threaded_workers(logger):
-            # type: (logging.Logger) -> None
+        def run_threaded_workers(queues, logger):
+            # type: (Any, logging.Logger) -> None
             cnt = 0
-            for queue_name in get_active_worker_queues():
+            for queue_name in queues:
                 if not settings.DEVELOPMENT:
                     logger.info('launching queue worker thread ' + queue_name)
                 cnt += 1
                 td = Threaded_worker(queue_name)
                 td.start()
+            assert len(queues) == cnt
             logger.info('%d queue worker threads were launched' % (cnt,))
 
         if options['all']:
-            autoreload.main(run_threaded_workers, (logger,))
+            autoreload.main(run_threaded_workers, (get_active_worker_queues(), logger))
+        elif options['multi_threaded']:
+            queues = options['multi_threaded']
+            autoreload.main(run_threaded_workers, (queues, logger))
         else:
             queue_name = options['queue_name']
             worker_num = options['worker_num']
