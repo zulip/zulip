@@ -138,7 +138,7 @@ exports.rtrim = function (str) {
 // doesn't support the ECMAScript Internationalization API
 // Specification, do a dumb string comparison because
 // String.localeCompare is really slow.
-exports.strcmp = (function () {
+exports.make_strcmp = function () {
     try {
         var collator = new Intl.Collator();
         return collator.compare;
@@ -149,7 +149,8 @@ exports.strcmp = (function () {
     return function util_strcmp(a, b) {
         return (a < b ? -1 : (a > b ? 1 : 0));
     };
-}());
+};
+exports.strcmp = exports.make_strcmp();
 
 exports.escape_regexp = function (string) {
     // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions

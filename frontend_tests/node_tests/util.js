@@ -135,6 +135,14 @@ var _ = global._;
     }
 }());
 
+(function test_dumb_strcmp() {
+    Intl.Collator = undefined;
+    var strcmp = util.make_strcmp();
+    assert.equal(strcmp('a', 'b'), -1);
+    assert.equal(strcmp('c', 'c'), 0);
+    assert.equal(strcmp('z', 'y'), 1);
+}());
+
 (function test_is_mobile() {
     global.window.navigator = { userAgent: "Android" };
     assert(util.is_mobile());
