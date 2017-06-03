@@ -1,4 +1,4 @@
-global.stub_out_jquery();
+set_global('$', global.make_zjquery());
 
 add_dependencies({
     util: 'js/util.js',
