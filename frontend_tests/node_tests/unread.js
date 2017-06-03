@@ -458,5 +458,14 @@ stream_data.get_stream_id = function () {
     unread.process_read_message(message);
     var counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
+
+    // Test undefined stream_id
+    message = { type: 'stream' };
+
+    global.blueslip.error = function (msg) {
+        assert.equal(msg, 'No stream_id found for message undefined');
+    };
+
+    unread.process_read_message(message);
 }());
 
