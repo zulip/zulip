@@ -463,29 +463,29 @@ function get_special_filter_suggestions(last, operators) {
     return suggestions;
 }
 
-function get_sent_by_me_suggestions(query, operators) {
-    if (operators.length >= 2) {
-        return [];
-    }
-
+function get_sent_by_me_suggestions(last, operators) {
+    var last_string = Filter.unparse([last]).toLowerCase();
     var sender_query = 'sender:' + people.my_current_email();
     var from_query = 'from:' + people.my_current_email();
     var description = 'Sent by me';
+    var invalid = [
+        {operator: 'sender'},
+        {operator: 'from'},
+    ];
 
-    query = query.toLowerCase();
-
-    if (query === sender_query || query === from_query) {
+    if (match_criteria(operators, invalid)) {
         return [];
-    } else if (query === '' ||
-        sender_query.indexOf(query) === 0 ||
-        description.toLowerCase().indexOf(query) === 0) {
+    }
+
+    if (last.operator === '' || sender_query.indexOf(last_string) === 0 ||
+        'sender:me'.indexOf(last_string) === 0 || last_string === 'sent') {
         return [
             {
                 search_string: sender_query,
                 description: description,
             },
         ];
-    } else if (from_query.indexOf(query) === 0) {
+    } else if (from_query.indexOf(last_string) === 0 || 'sender:me'.indexOf(last_string) === 0) {
         return [
             {
                 search_string: from_query,
@@ -541,8 +541,8 @@ exports.get_suggestions = function (query) {
     suggestions = get_special_filter_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
-    suggestions = get_sent_by_me_suggestions(query, operators);
-    result = result.concat(suggestions);
+    suggestions = get_sent_by_me_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
 
     suggestions = get_stream_suggestions(operators);
     result = result.concat(suggestions);
