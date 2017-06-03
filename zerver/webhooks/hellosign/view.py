@@ -56,6 +56,6 @@ def api_hellosign_webhook(request, user_profile,
 
     body = format_body(payload['signature_request']['signatures'], model_payload)
     topic = topic or model_payload['contract_title']
-    check_send_message(user_profile, client, 'stream', [stream],
+    check_send_message(user_profile, request.client, 'stream', [stream],
                        topic, body)
     return json_success()
