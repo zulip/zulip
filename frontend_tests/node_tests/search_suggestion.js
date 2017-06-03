@@ -417,6 +417,33 @@ init();
         "sender:bob@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
+
+    query = 'stream:Denmark topic:Denmark1 sent';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "stream:Denmark topic:Denmark1 sent",
+        "stream:Denmark topic:Denmark1 sender:bob@zulip.com",
+        "stream:Denmark topic:Denmark1",
+        "stream:Denmark",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'is:starred sender:m';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "is:starred sender:m",
+        "is:starred sender:bob@zulip.com",
+        "is:starred",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:alice@zulip.com sender:';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:alice@zulip.com sender:",
+        "sender:alice@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 (function test_topic_suggestions() {
