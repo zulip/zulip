@@ -76,13 +76,9 @@ $(function () {
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
-function maybe_add_update_list_entry(needs_update, id, time, time_above) {
-    if (needs_update) {
-        if (time_above !== undefined) {
-            update_list.push([id, time, time_above]);
-        } else {
-            update_list.push([id, time]);
-        }
+function maybe_add_update_list_entry(entry) {
+    if (entry.needs_update) {
+        update_list.push(entry);
     }
 }
 
@@ -123,7 +119,12 @@ exports.render_date = function (time, time_above, today) {
     } else {
         node = render_date_span(node, rendered_time);
     }
-    maybe_add_update_list_entry(rendered_time.needs_update, className, time, time_above);
+    maybe_add_update_list_entry({
+      needs_update: rendered_time.needs_update,
+      className: className,
+      time: time,
+      time_above: time_above,
+    });
     return node;
 };
 
@@ -136,26 +137,28 @@ exports.update_timestamps = function () {
         update_list = [];
 
         _.each(to_process, function (entry) {
-            var className = entry[0];
+            var className = entry.className;
             var elements = $('.' + className);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
             if (elements !== null) {
                 _.each(elements, function (element) {
-                  blueslip.log(element);
-                    var time = entry[1];
-                    var time_above;
+                    var time = entry.time;
+                    var time_above = entry.time_above;
                     var rendered_time = exports.render_now(time);
-                    if (entry.length === 3) {
-                        time_above = entry[2];
+                    if (time_above) {
                         var rendered_time_above = exports.render_now(time_above);
                         render_date_span($(element), rendered_time, rendered_time_above);
                     } else {
                         render_date_span($(element), rendered_time);
                     }
-                    maybe_add_update_list_entry(
-                      rendered_time.needs_update, className, time, time_above);
+                    maybe_add_update_list_entry({
+                        needs_update: rendered_time.needs_update,
+                        className: className,
+                        time: time,
+                        time_above: time_above,
+                    });
                 });
             }
         });
