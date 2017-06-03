@@ -884,7 +884,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             converted,
             '<p>'
-            '<a data-toggle="modal" href="#settings" title="#settings">Settings page</a>'
+            '<a href="#settings" title="#settings">Settings page</a>'
             '</p>'
         )
 

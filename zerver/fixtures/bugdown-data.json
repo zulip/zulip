@@ -387,7 +387,7 @@
     {
       "name": "modal_link",
       "input": "!modal_link(#settings, Settings page)",
-      "expected_output": "<p><a data-toggle=\"modal\" href=\"#settings\" title=\"#settings\">Settings page</a></p>",
+      "expected_output": "<p><a href=\"#settings\" title=\"#settings\">Settings page</a></p>",
       "bugdown_matches_marked": false
     },
     {
