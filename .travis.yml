@@ -11,7 +11,7 @@ cache:
   - apt: false
   - directories:
     - $HOME/zulip-venv-cache
-    - node_modules
+    - $HOME/zulip-npm-cache
     - $HOME/node
 env:
   global:
