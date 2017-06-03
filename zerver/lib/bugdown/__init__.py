@@ -793,7 +793,6 @@ class ModalLink(markdown.inlinepatterns.Pattern):
         a_tag = markdown.util.etree.Element("a")
         a_tag.set("href", relative_url)
         a_tag.set("title", relative_url)
-        a_tag.set("data-toggle", "modal")
         a_tag.text = text
 
         return a_tag
