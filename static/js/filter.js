@@ -293,6 +293,9 @@ Filter.unparse = function (operators) {
             return elem.operand;
         }
         var sign = elem.negated ? '-' : '';
+        if (elem.operator === '') {
+            return elem.operand;
+        }
         return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
     });
     return parts.join(' ');

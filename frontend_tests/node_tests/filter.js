@@ -580,6 +580,9 @@ function make_sub(name, stream_id) {
     string = 'Narrow to stream devel, Exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [];
+    string = 'Go to Home view';
+    assert.equal(Filter.describe(narrow), string);
 }());
 
 (function test_update_email() {
