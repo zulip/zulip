@@ -44,24 +44,22 @@ function match_criteria(operators, criteria) {
     });
 }
 
-function get_stream_suggestions(operators) {
-    var query;
-
-    switch (operators.length) {
-    case 0:
-        query = '';
-        break;
-    case 1:
-        var operator = operators[0].operator;
-        query = operators[0].operand;
-        if (!(operator === 'stream' || operator === 'search')) {
-            return [];
-        }
-        break;
-    default:
+function get_stream_suggestions(last, operators) {
+    if (!(last.operator === 'stream' || last.operator === 'search'
+        || last.operator === '')) {
         return [];
     }
 
+    var invalid = [
+        {operator: 'stream'},
+        {operator: 'is', operand: 'private'},
+        {operator: 'pm-with'},
+    ];
+    if (match_criteria(operators, invalid)) {
+        return [];
+    }
+
+    var query = last.operand;
     var streams = stream_data.subscribed_streams();
 
     streams = _.filter(streams, function (stream) {
@@ -501,8 +499,8 @@ exports.get_suggestions = function (query) {
     suggestions = get_sent_by_me_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
-    suggestions = get_stream_suggestions(operators);
-    result = result.concat(suggestions);
+    suggestions = get_stream_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
 
     var persons = people.get_all_persons();
 
