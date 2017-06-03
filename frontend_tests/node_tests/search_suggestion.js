@@ -118,6 +118,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions(query);
     expected = [
         "is:private al",
+        "is:private is:alerted",
         "pm-with:alice@zulip.com",
         "is:private",
     ];

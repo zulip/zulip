@@ -34,6 +34,16 @@ function highlight_person(query, person) {
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
+function match_criteria(operators, criteria) {
+    var filter = new Filter(operators);
+    return _.any(criteria, function (cr) {
+        if (_.has(cr, 'operand')) {
+            return filter.has_operand(cr.operator, cr.operand);
+        }
+        return filter.has_operator(cr.operator);
+    });
+}
+
 function get_stream_suggestions(operators) {
     var query;
 
@@ -257,6 +267,9 @@ function get_person_suggestions(all_people, query, autocomplete_operator) {
 function get_default_suggestion(operators) {
     // Here we return the canonical suggestion for the full query that the
     // user typed.  (The caller passes us the parsed query as "operators".)
+    if (operators.length === 0) {
+        return {description: '', search_string: ''};
+    }
     var search_string = Filter.unparse(operators);
     var description = Filter.describe(operators);
     description = Handlebars.Utils.escapeExpression(description);
@@ -362,7 +375,7 @@ function get_topic_suggestions(query_operators) {
     });
 }
 
-function get_operator_subset_suggestions(query, operators) {
+function get_operator_subset_suggestions(operators) {
     // For stream:a topic:b search:c, suggest:
     //  stream:a topic:b
     //  stream:a
@@ -385,51 +398,68 @@ function get_operator_subset_suggestions(query, operators) {
 }
 
 
-function get_special_filter_suggestions(query, operators) {
-    if (operators.length >= 2) {
-        return [];
-    }
-
+function get_special_filter_suggestions(last, operators) {
     var suggestions = [
-        {
-            search_string: '',
-            description: 'Home',
-        },
         {
             search_string: 'in:all',
             description: 'All messages',
+            invalid: [
+                {operator: 'in'},
+                {operator: 'stream'},
+                {operator: 'pm-with'},
+                {operator: 'is', operand: 'private'},
+            ],
         },
         {
             search_string: 'is:private',
             description: 'Private messages',
+            invalid: [
+                {operator: 'is', operand: 'private'},
+                {operator: 'stream'},
+                {operator: 'pm-with'},
+                {operator: 'in'},
+            ],
+
         },
         {
             search_string: 'is:starred',
             description: 'Starred messages',
+            invalid: [
+                {operator: 'is', operand: 'starred'},
+            ],
         },
         {
             search_string: 'is:mentioned',
             description: '@-mentions',
+            invalid: [
+                {operator: 'is', operand: 'mentioned'},
+            ],
         },
         {
             search_string: 'is:alerted',
             description: 'Alerted messages',
+            invalid: [
+                {operator: 'is', operand: 'alerted'},
+            ],
         },
     ];
 
-    query = query.toLowerCase();
-
+    var last_string = Filter.unparse([last]).toLowerCase();
     suggestions = _.filter(suggestions, function (s) {
-        if (s.search_string.toLowerCase() === query) {
-            return false; // redundant
+        if (match_criteria(operators, s.invalid)) {
+            return false;
         }
-        if (query === '') {
+        if (last_string === '') {
             return true;
         }
-        return (s.search_string.toLowerCase().indexOf(query) === 0) ||
-               (s.description.toLowerCase().indexOf(query) === 0);
+        return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
+               (s.description.toLowerCase().indexOf(last_string) === 0);
     });
 
+    // Only show home if there's an empty bar
+    if (operators.length === 0 && last_string === '') {
+        suggestions.unshift({search_string: '', description: 'Home'});
+    }
     return suggestions;
 }
 
@@ -466,6 +496,16 @@ function get_sent_by_me_suggestions(query, operators) {
     return [];
 }
 
+function attach_suggestions(result, base, suggestions) {
+    _.each(suggestions, function (suggestion) {
+        if (base.description.length > 0) {
+            suggestion.search_string = base.search_string + " " + suggestion.search_string;
+            suggestion.description = base.description + ", " + suggestion.description;
+        }
+        result.push(suggestion);
+    });
+}
+
 exports.get_suggestions = function (query) {
     // This method works in tandem with the typeahead library to generate
     // search suggestions.  If you want to change its behavior, be sure to update
@@ -474,15 +514,32 @@ exports.get_suggestions = function (query) {
     // with information for subsequent callbacks.
     var result = [];
     var suggestion;
+    var base; //base, default suggestion
     var suggestions;
 
     // Add an entry for narrow by operators.
     var operators = Filter.parse(query);
-    suggestion = get_default_suggestion(operators);
-    result = [suggestion];
+    var last = {operator: '', operand: '', negated: false};
+    if (operators.length > 0) {
+        last = operators.slice(-1)[0];
+    }
 
-    suggestions = get_special_filter_suggestions(query, operators);
-    result = result.concat(suggestions);
+    // Display the default first
+    if (last.operator !== '') {
+        suggestion = get_default_suggestion(operators);
+        result = [suggestion];
+    }
+
+    var base_operators = [];
+    if (operators.length > 1) {
+        base_operators = operators.slice(0, -1);
+    }
+    base = get_default_suggestion(base_operators);
+
+    // Get all individual suggestions, and then attach_suggestions
+    // mutates the list 'result' to add a properly-formatted suggestion
+    suggestions = get_special_filter_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
 
     suggestions = get_sent_by_me_suggestions(query, operators);
     result = result.concat(suggestions);
@@ -507,7 +564,7 @@ exports.get_suggestions = function (query) {
     suggestions = get_topic_suggestions(operators);
     result = result.concat(suggestions);
 
-    suggestions = get_operator_subset_suggestions(query, operators);
+    suggestions = get_operator_subset_suggestions(operators);
     result = result.concat(suggestions);
 
     // Typeahead expects us to give it strings, not objects, so we maintain our own hash
