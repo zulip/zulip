@@ -9,6 +9,11 @@ var stream_sort = require('js/stream_sort.js');
 var stream_data = require('js/stream_data.js');
 var with_overrides = global.with_overrides;
 
+// Test no subscribed streams
+(function test_no_subscribed_streams() {
+    assert.equal(stream_sort.sort_groups(''), undefined);
+}());
+
 stream_data.add_sub('scalene', {
     subscribed: true,
     name: 'scalene',
