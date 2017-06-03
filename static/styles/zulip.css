@@ -772,6 +772,14 @@ td.pointer {
     display: none;
 }
 
+/*
+   used to override .hide-date when floating_recipient_bar just begins to
+   overlap the top-most recipient_bar
+*/
+.recipient_row_date.temp-show-date {
+    display: block !important;
+}
+
 .floating_recipient .recipient_row_date.hide-date {
     display: block;
 }
