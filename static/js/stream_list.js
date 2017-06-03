@@ -139,7 +139,9 @@ function get_filter_li(type, name) {
 exports.get_stream_li = function (stream_id) {
     var row = exports.stream_sidebar.get_row(stream_id);
     if (!row) {
-        blueslip.error('Cannot find stream for id ' + stream_id);
+        // Not all streams are in the sidebar, so we don't report
+        // an error here, and it's up for the caller to error if
+        // they expected otherwise.
         return;
     }
 
@@ -304,7 +306,9 @@ function set_count(type, name, count) {
 function set_stream_unread_count(stream_id, count) {
     var unread_count_elem = exports.get_stream_li(stream_id);
     if (!unread_count_elem) {
-        blueslip.error('passed in bad stream id ' + stream_id);
+        // This can happen for legitimate reasons, but we warn
+        // just in case.
+        blueslip.warn('stream id no longer in sidebar: ' + stream_id);
         return;
     }
     update_count_in_dom(unread_count_elem, count);

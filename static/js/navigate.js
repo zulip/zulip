@@ -123,6 +123,10 @@ exports.cycle_stream = function (direction) {
         var stream_id = stream_data.get_stream_id(stream_name);
         currentStream = stream_list.get_stream_li(stream_id);
     }
+    if (!currentStream) {
+        return;
+    }
+
     switch (direction) {
         case 'forward':
             if (narrow_state.stream() === undefined) {
