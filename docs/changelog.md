@@ -12,19 +12,21 @@ Highlights:
   login, registration, integrations, etc.  Now organization admins can
   configure an icon, name, and description for their organization that
   is displayed on the login/registration pages.
-* Redesigned the numerous UI elements, including the keyboard
+* Redesigned numerous UI elements, including the keyboard
   shortcuts, emoji picker, user profile popovers, sidebars, compose, etc.
 * Massive performance improvements to presence and settings pages,
   especially for very large organizations (1000+ users).
 * Added typing notifications for private message threads.
+* Added a new saved drafts feature, backed by local storage.
+* Added support for users changing their own email address.
 * Added a dozen useful new keyboard shortcuts, from editing messages
   to emoji reactions to drafts and managing streams.
 * Mobile web now works much better, especially on iOS.
-* Apps documentation now recommends Electron and React Native mobile apps.
-* Added support for users changing their own email address.
-* Added a new saved drafts feature, backed by local storage.
-* Added support for mobile push notifications to be forwarded to the
-  app store mobile apps through zulipchat.com.
+* Apps documentation now points to the React Native iOS mobile app.
+* Added support for sending
+  [mobile push notifications via a new forwarding service][mobile-push].
+
+[mobile-push]: https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
 
 Full feature Changelog:
 
@@ -53,6 +55,8 @@ Full feature Changelog:
 * Added a command-line Slack importer tool using the API.
 * Added new announcement notifications on stream creation.
 * Added support for some newer unicode emoji code points.
+* Added support for users deleting realm emoji they themselves uploaded.
+* Added support for organization administrators deleting messages.
 * Extended data available to mobile apps to cover the entire API.
 * Redesigned bots UI.  Now can change owners and reactivate bots.
 * Redesigned the visuals of code blocks to be prettier.
@@ -72,10 +76,12 @@ Full feature Changelog:
 * Improved subject lines of missed message emails.
 * Improved handling of users trying to login with Oauth without an account.
 * Improved UI of off-the-Internet errors to not be hidden in narrow windows.
+* Improved rate-limiting errors to be more easily machine-readable.
 * Parallelized the backend test suite; now runs 1600 tests in <30s.
 * Fixed numerous bugs and performance issues with stream management.
 * Fixed an issue with the fake emails assigned to bot users.
 * Fixed a major performance issue in stream creation.
+* Fixed numerous minor accessibility issues.
 * Fixed a subtle interaction between click-to-reply and copy-paste.
 * Fixed various formatting issues with /me messages.
 * Fixed numerous real-time sync issues involving users changing their
@@ -106,7 +112,12 @@ Full feature Changelog:
 * Changed `NOREPLY_EMAIL_ADDRESS` setting to `Name <user@example.com>`
   format.
 * Disabled the web tutorial on mobile.
-* Backend test coverage is now 92%, with 100% in views code.
+* Backend test coverage is now 93%, with 100% in views code.
+
+### 1.5.2 -- 2017-06-01
+
+- CVE-2017-0896: Restricting inviting new users to admins was broken.
+- CVE-2015-8861: Insecure old version of handlebars templating engine.
 
 ### 1.5.1 -- 2017-02-07
 
