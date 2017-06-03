@@ -12,6 +12,7 @@ cache:
   - directories:
     - $HOME/zulip-venv-cache
     - $HOME/zulip-npm-cache
+    - $HOME/zulip-emoji-cache
     - $HOME/node
 env:
   global:
