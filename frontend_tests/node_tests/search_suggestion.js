@@ -119,7 +119,8 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "is:private al",
         "is:private is:alerted",
-        "pm-with:alice@zulip.com",
+        "is:private pm-with:alice@zulip.com",
+        "is:private sender:alice@zulip.com",
         "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -172,7 +173,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     suggestions = search.get_suggestions(query);
     expected = [
         "-sender:te",
-        "is:private -sender:ted@zulip.com",
+        "-sender:ted@zulip.com",
         "is:private",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -210,6 +211,46 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "pm-with:ted@zulip.com near:3",
         "pm-with:ted@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Make sure suggestions still work if preceding tokens
+    query = 'is:alerted sender:ted@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "is:alerted sender:ted@zulip.com",
+        "is:alerted is:private",
+        "is:alerted",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'is:starred has:link is:private al';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "is:starred has:link is:private al",
+        "is:starred has:link is:private is:alerted",
+        "is:starred has:link is:private pm-with:alice@zulip.com",
+        "is:starred has:link is:private sender:alice@zulip.com",
+        "is:starred has:link is:private",
+        "is:starred has:link",
+        "is:starred",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Make sure it handles past context correctly
+    query = 'stream:Denmark pm-with:';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'stream:Denmark pm-with:',
+        'stream:Denmark',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:ted@zulip.com sender:';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'sender:ted@zulip.com sender:',
+        'sender:ted@zulip.com',
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());
@@ -318,6 +359,27 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "-pm-with:bob@zulip.com,red",
         "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Test multiple operators
+    query = 'is:starred has:link pm-with:bob@zulip.com,Smit';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "is:starred has:link pm-with:bob@zulip.com,Smit",
+        "is:starred has:link pm-with:bob@zulip.com,ted@zulip.com",
+        "is:starred has:link is:private",
+        "is:starred has:link",
+        "is:starred",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'stream:Denmark has:link pm-with:bob@zulip.com,Smit';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "stream:Denmark has:link pm-with:bob@zulip.com,Smit",
+        "stream:Denmark has:link",
+        "stream:Denmark",
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());
@@ -433,6 +495,7 @@ init();
     expected = [
         "is:starred sender:m",
         "is:starred sender:bob@zulip.com",
+        "is:starred is:private",
         "is:starred",
     ];
     assert.deepEqual(suggestions.strings, expected);

@@ -85,108 +85,20 @@ function get_stream_suggestions(operators) {
     return objs;
 }
 
-function get_private_suggestions(all_people, operators, person_operator_matches) {
-    if (operators.length === 0) {
+function get_group_suggestions(all_people, last, operators) {
+    if (last.operator !== 'pm-with' ) {
         return [];
     }
 
-    var ok = false;
-    if ((operators[0].operator === 'is') && (operators[0].operand === 'private')) {
-        operators = operators.slice(1);
-        ok = true;
-    } else  {
-        _.each(person_operator_matches, function (item) {
-            if (operators[0].operator === item) {
-                ok = true;
-            }
-        });
-    }
-
-    if (!ok) {
+    var invalid = [
+        {operator: 'stream'},
+    ];
+    if (match_criteria(operators, invalid)) {
         return [];
     }
 
-    var query;
-    var matching_operator;
-    var negated = false;
-
-    if (operators.length === 0) {
-        query = '';
-        matching_operator = person_operator_matches[0];
-    } else if (operators.length === 1) {
-        var operator = operators[0].operator;
-
-        if (operator === 'search') {
-            query = operators[0].operand;
-            matching_operator = person_operator_matches[0];
-        } else {
-            _.each(person_operator_matches, function (item) {
-                if (operator === item) {
-                    query = operators[0].operand;
-                    matching_operator = item;
-                    negated = operators[0].negated;
-                }
-            });
-        }
-
-        if (query === undefined) {
-            return [];
-        }
-    } else {
-        return [];
-    }
-
-
-    var people = _.filter(all_people, function (person) {
-        return (query === '') || person_matches_query(person, query);
-    });
-
-    people.sort(typeahead_helper.compare_by_pms);
-
-    // Take top 15 people, since they're ordered by pm_recipient_count.
-    people = people.slice(0, 15);
-
-    var prefix = Filter.operator_to_prefix(matching_operator, negated);
-
-    var suggestions = _.map(people, function (person) {
-        var term = {
-            operator: matching_operator,
-            operand: person.email,
-            negated: negated,
-        };
-        var name = highlight_person(query, person);
-        var description = prefix + ' ' + name;
-        var terms = [term];
-        if (negated) {
-            terms = [{operator: 'is', operand: 'private'}, term];
-        }
-        var search_string = Filter.unparse(terms);
-        return {description: description, search_string: search_string};
-    });
-
-    suggestions.push({
-        search_string: 'is:private',
-        description: 'Private messages',
-    });
-
-    return suggestions;
-}
-
-function get_group_suggestions(all_people, operators) {
-    if (operators.length === 0) {
-        return [];
-    }
-
-    if ((operators[0].operator === 'is') && (operators[0].operand === 'private')) {
-        operators = operators.slice(1);
-    }
-
-    if (operators.length !== 1 || operators[0].operator !== 'pm-with') {
-        return [];
-    }
-
-    var operand = operators[0].operand;
-    var negated = operators[0].negated;
+    var operand = last.operand;
+    var negated = last.negated;
 
     // The operand has the form "part1,part2,pa", where all but the last part
     // are emails, and the last part is an arbitrary query.
@@ -238,11 +150,40 @@ function get_group_suggestions(all_people, operators) {
         return {description: description, search_string: search_string};
     });
 
+    if (!match_criteria(operators, [{operator: "is", operand: "private"}])) {
+        suggestions.push({description: "Private messages", search_string:"is:private"});
+    }
     return suggestions;
 }
 
-function get_person_suggestions(all_people, query, autocomplete_operator) {
-    if (query === '') {
+// Possible args for autocomplete_operator: pm-with, sender, from
+function get_person_suggestions(all_people, last, operators, autocomplete_operator) {
+    if (last.operator === "is" && last.operand === "private") {
+        // Interpret 'is:private' as equivalent to 'pm-with:'
+        last = {operator: "pm-with", operand: "", negated: false};
+    }
+
+    var query = last.operand;
+
+    // Only accept queries who match the specified operator, or no operator (search)
+    if (!(last.operator === 'search' || last.operator === autocomplete_operator)) {
+        return [];
+    }
+
+    // Be especially strict about the less common "from" operator.
+    if (autocomplete_operator === 'from' && last.operator !== 'from') {
+        return [];
+    }
+
+    var invalid;
+    if (autocomplete_operator === 'pm-with') {
+        invalid = [{operator: 'pm-with'}, {operator: 'stream'}];
+    } else {
+        // If not pm-with, then this must either be 'sender' or 'from'
+        invalid = [{operator: 'sender'}, {operator: 'from'}];
+    }
+
+    if (match_criteria(operators, invalid)) {
         return [];
     }
 
@@ -252,15 +193,31 @@ function get_person_suggestions(all_people, query, autocomplete_operator) {
 
     people.sort(typeahead_helper.compare_by_pms);
 
-    var prefix = Filter.operator_to_prefix(autocomplete_operator);
+    var prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
 
     var objs = _.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
-        var search_string = autocomplete_operator + ':' + person.email;
+        var terms = [{
+            operator: autocomplete_operator,
+            operand: person.email,
+            negated: last.negated,
+        }];
+        if (autocomplete_operator === 'pm-with' && last.negated) {
+            // In the special case of '-pm-with', add 'is:private' before it
+            // because we assume the user still wants to narrow to PMs
+            terms.unshift({operator: 'is', operand: 'private'});
+        }
+        var search_string = Filter.unparse(terms);
         return {description: description, search_string: search_string};
     });
 
+    // If we've specified an operator, and we're not searching through group
+    // PMs (i.e. no comma), then add 'is:private' as a generic option
+    if (last.operator !== 'search' && last.operand.indexOf(",") === -1
+        && !match_criteria(operators, [{operator: "is", operand: "private"}])) {
+        objs.push({description: "Private messages", search_string:"is:private"});
+    }
     return objs;
 }
 
@@ -549,17 +506,17 @@ exports.get_suggestions = function (query) {
 
     var persons = people.get_all_persons();
 
-    suggestions = get_person_suggestions(persons, query, 'pm-with');
-    result = result.concat(suggestions);
+    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
+    attach_suggestions(result, base, suggestions);
 
-    suggestions = get_person_suggestions(persons, query, 'sender');
-    result = result.concat(suggestions);
+    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
+    attach_suggestions(result, base, suggestions);
 
-    suggestions = get_group_suggestions(persons, operators);
-    result = result.concat(suggestions);
+    suggestions = get_person_suggestions(persons, last, base_operators, 'from');
+    attach_suggestions(result, base, suggestions);
 
-    suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender', 'from']);
-    result = result.concat(suggestions);
+    suggestions = get_group_suggestions(persons, last, base_operators);
+    attach_suggestions(result, base, suggestions);
 
     suggestions = get_topic_suggestions(operators);
     result = result.concat(suggestions);
