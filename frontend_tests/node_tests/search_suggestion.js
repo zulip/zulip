@@ -592,6 +592,8 @@ init();
         "te",
         "pm-with:bob@zulip.com", // bob TErry
         "pm-with:ted@zulip.com",
+        "group-pm-with:bob@zulip.com",
+        "group-pm-with:ted@zulip.com",
         "sender:bob@zulip.com",
         "sender:ted@zulip.com",
     ];
@@ -610,6 +612,7 @@ init();
     expected = [
         "Ted",
         "pm-with:ted@zulip.com",
+        "group-pm-with:ted@zulip.com",
         "sender:ted@zulip.com",
     ];
 
