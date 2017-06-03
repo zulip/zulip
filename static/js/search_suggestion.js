@@ -231,18 +231,28 @@ function get_default_suggestion(operators) {
     return {description: description, search_string: search_string};
 }
 
-function get_topic_suggestions(query_operators) {
-    if (query_operators.length === 0) {
+function get_topic_suggestions(last, operators) {
+    if (last.operator === '') {
         return [];
     }
 
-    var last_term = query_operators.slice(-1)[0];
-    var operator = Filter.canonicalize_operator(last_term.operator);
-    var operand = last_term.operand;
-    var negated = (operator === 'topic') && (last_term.negated);
+    var invalid = [
+        {operator: 'pm-with'},
+        {operator: 'is', operand: 'private'},
+        {operator: 'topic'},
+    ];
+
+    if (match_criteria(operators, invalid)) {
+        return [];
+    }
+
+    var operator = Filter.canonicalize_operator(last.operator);
+    var operand = last.operand;
+    var negated = (operator === 'topic') && (last.negated);
     var stream;
     var guess;
-    var filter;
+    var filter = new Filter(operators);
+    var suggest_operators = [];
 
     // stream:Rome -> show all Rome topics
     // stream:Rome topic: -> show all Rome topics
@@ -261,26 +271,18 @@ function get_topic_suggestions(query_operators) {
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
     switch (operator) {
     case 'stream':
-        filter = new Filter(query_operators);
-        if (filter.has_operator('topic')) {
-            return [];
-        }
         guess = '';
         stream = operand;
+        suggest_operators.push(last);
         break;
     case 'topic':
     case 'search':
         guess = operand;
-        query_operators = query_operators.slice(0, -1);
-        filter = new Filter(query_operators);
-        if (filter.has_operator('topic')) {
-            return [];
-        }
         if (filter.has_operator('stream')) {
             stream = filter.operands('stream')[0];
         } else {
             stream = narrow_state.stream();
-            query_operators.push({operator: 'stream', operand: stream});
+            suggest_operators.push({operator: 'stream', operand: stream});
         }
         break;
     default:
@@ -323,7 +325,7 @@ function get_topic_suggestions(query_operators) {
 
     return _.map(topics, function (topic) {
         var topic_term = {operator: 'topic', operand: topic, negated: negated};
-        var operators = query_operators.concat([topic_term]);
+        var operators = suggest_operators.concat([topic_term]);
         var search_string = Filter.unparse(operators);
         var description = Filter.describe(operators);
         return {description: description, search_string: search_string};
@@ -516,8 +518,8 @@ exports.get_suggestions = function (query) {
     suggestions = get_group_suggestions(persons, last, base_operators);
     attach_suggestions(result, base, suggestions);
 
-    suggestions = get_topic_suggestions(operators);
-    result = result.concat(suggestions);
+    suggestions = get_topic_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
 
     suggestions = get_operator_subset_suggestions(operators);
     result = result.concat(suggestions);
