@@ -99,7 +99,7 @@ var timerender = require('js/timerender.js');
     var actual = timerender.render_date(message_time, undefined, today);
     assert.equal(expected_html, actual.html());
     assert.equal(attrs.get('title'), 'Friday, April 12, 2019');
-    assert.equal(attrs.get('id'), 'timerender0');
+    assert.equal(attrs.get('class'), 'timerender0');
 }());
 
 (function test_render_date_renders_time_above_html() {

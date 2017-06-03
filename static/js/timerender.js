@@ -113,50 +113,53 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
 exports.render_date = function (time, time_above, today) {
-    var id = "timerender" + next_timerender_id;
+    var className = "timerender" + next_timerender_id;
     next_timerender_id += 1;
     var rendered_time = exports.render_now(time, today);
-    var node = $("<span />").attr('id', id);
+    var node = $("<span />").attr('class', className);
     if (time_above !== undefined) {
         var rendered_time_above = exports.render_now(time_above, today);
         node = render_date_span(node, rendered_time, rendered_time_above);
     } else {
         node = render_date_span(node, rendered_time);
     }
-    maybe_add_update_list_entry(rendered_time.needs_update, id, time, time_above);
+    maybe_add_update_list_entry(rendered_time.needs_update, className, time, time_above);
     return node;
 };
 
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {
-    var time = new XDate();
-    if (time >= next_update) {
+    var now = new XDate();
+    if (now >= next_update) {
         var to_process = update_list;
         update_list = [];
 
-        _.each(to_process, function (elem) {
-            var id = elem[0];
-            var element = document.getElementById(id);
+        _.each(to_process, function (entry) {
+            var className = entry[0];
+            var elements = $('.' + className);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
-            if (element !== null) {
-                var time = elem[1];
-                var time_above;
-                var rendered_time = exports.render_now(time);
-                if (elem.length === 3) {
-                    time_above = elem[2];
-                    var rendered_time_above = exports.render_now(time_above);
-                    render_date_span($(element), rendered_time, rendered_time_above);
-                } else {
-                    render_date_span($(element), rendered_time);
-                }
-                maybe_add_update_list_entry(rendered_time.needs_update, id, time, time_above);
+            if (elements !== null) {
+                _.each(elements, function (element) {
+                    var time = entry[1];
+                    var time_above;
+                    var rendered_time = exports.render_now(time);
+                    if (entry.length === 3) {
+                        time_above = entry[2];
+                        var rendered_time_above = exports.render_now(time_above);
+                        render_date_span($(element), rendered_time, rendered_time_above);
+                    } else {
+                        render_date_span($(element), rendered_time);
+                    }
+                    maybe_add_update_list_entry(
+                      rendered_time.needs_update, className, time, time_above);
+                });
             }
         });
 
-        next_update = set_to_start_of_day(time.clone().addDays(1));
+        next_update = set_to_start_of_day(now.clone().addDays(1));
     }
 };
 
