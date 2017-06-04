@@ -6,10 +6,10 @@ instead like to test or develop a new feature, we recommend the
 
 You will need an Ubuntu system that satisfies
 [the installation requirements](prod-requirements.html).  In short,
-you should have an Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit
-server instance, with at least 4GB RAM, 2 CPUs, and 10 GB disk space.
-You should also have a domain name available and have updated its DNS
-record to point to your server.
+you need:
+* A Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit server
+* At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
+* A DNS name, an SSL certificate, and credentials for sending email.
 
 ## Step 0: Subscribe
 

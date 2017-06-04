@@ -25,6 +25,7 @@ Highlights:
 * Apps documentation now points to the React Native iOS mobile app.
 * Added support for sending
   [mobile push notifications via a new forwarding service][mobile-push].
+* Added support for installing a small Zulip server with only 2GB of RAM.
 
 [mobile-push]: https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
 
