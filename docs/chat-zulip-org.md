@@ -91,25 +91,60 @@ descriptions for all of them.  Relevant to almost everyone are these:
 * [#learning](https://chat.zulip.org/#narrow/stream/learning) is for
   posting great learning resources one comes across.
 
-## Office hours and sprints
+## Chat meetings
 
-Every few weeks, we hold meetings on chat.zulip.org: office hours or
-sprints. Anyone can schedule one: announce it in
+We have regular chat meetings on Zulip to coordinate work on various
+parts of the Zulip project.  While most developer discussion happens
+asynchonrously, these meetings are used mainly to coordinate work
+within a major area of Zulip.  These meetings are usually scheduled in
+Pacific time mornings, since that seems to be the best time for our
+global contributor base (the part of the world where it's the deep
+middle of the night is the Pacific Ocean).
+
+Anyone is welcome to attend and contribute to the discussions in these
+meetings, and they're a great time to stop by and introduce yourself
+if you'd like to get involved (though really, any time is, so).
+
+Here are the regular meetings that exist today along with their usual
+times (actual times are listed in the linked agenda documents):
+
+* Mobile team on
+[#mobile](https://chat.zulip.org/#narrow/stream/mobile), generally
+Wednesdays at 10AM Pacific time.  [Agendas][mobile-agendas].
+
+* Backend/infrastructure team on
+[#backend](https://chat.zulip.org/#narrow/stream/backend), generally
+Fridays at 10AM Pacific time.  [Agendas][infra-agendas].
+
+* Bots and integrations team on
+[#integrations](https://chat.zulip.org/#narrow/stream/integrations),
+generally Thursdays at 9AM Pacific time.  [Agendas][bots-agendas].
+
+[mobile-agendas]: https://paper.dropbox.com/doc/Zulip-mobile-agendas-nVdb9I7SDiom9hY8Zw8Ge
+[infra-agendas]: https://paper.dropbox.com/doc/Zulip-infrastructure-team-agendas-kGyCvF2u2kLcZ1Hzyd9iD
+[bots-agendas]: https://paper.dropbox.com/doc/Zulip-bots-and-integrations-agendas-3MR8NAL3fg4tIEpfb5jyx
+
+### Office hours and sprints
+
+We also do project-wide ad-hoc "office hours" and remote sprints
+irregularly, about once a month.
+
+Anyone can schedule one: announce it in
 [#announce](https://chat.zulip.org/#narrow/stream/announce) and on
-[the zulip-devel mailing
-list](https://groups.google.com/forum/#!forum/zulip-devel) a few days
-ahead of time, and ideally, tell
+[the zulip-devel mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+a few days ahead of time, and ideally, tell
 [Sumana](https://chat.zulip.org/#narrow/sender/18-sh) so she can put
-it on [the public Zulip meetings
-calendar](https://calendar.google.com/calendar/embed?src=ktiduof4eoh47lmgcl2qunnc0o@group.calendar.google.com).
+it on [the public Zulip meetings calendar][meetings-calendar].
 
 *Office hours* are simply times for us to informally discuss current
-priorities, find out what questions people have, and so on. We set
-them up so people know there'll be more people around at a particular
-time to chat. You don't need to RSVP and you don't need to show up on
-time or stop conversations when the "hour" stops. They start in
-[#general](https://chat.zulip.org/#narrow/stream/general) and
+global project priorities, find out what questions people have, and so
+on. We set them up so people know there'll be more people around at a
+particular time to chat. You don't need to RSVP and you don't need to
+show up on time or stop conversations when the "hour" stops. They
+start in [#general](https://chat.zulip.org/#narrow/stream/general) and
 conversations move into other streams and topics as they come up.
 
 *Sprints* are times when Zulip developers get together in chat, and
 sometimes in person, to work on related issues at the same time.
+
+[meetings-calendar]: https://calendar.google.com/calendar/embed?src=ktiduof4eoh47lmgcl2qunnc0o@group.calendar.google.com
