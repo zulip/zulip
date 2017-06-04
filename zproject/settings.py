@@ -11,6 +11,7 @@ from __future__ import absolute_import
 # See http://zulip.readthedocs.io/en/latest/settings.html for more information
 #
 ########################################################################
+from copy import deepcopy
 import os
 import platform
 import time
@@ -296,31 +297,35 @@ if PRODUCTION:
     # Template caching is a significant performance win in production.
     LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
 
-TEMPLATES = [
-    {
-        'NAME': 'Jinja2',
-        'BACKEND': 'zproject.jinja2.backends.Jinja2',
-        'DIRS': [
-            os.path.join(DEPLOY_ROOT, 'templates'),
-            os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
+base_template_engine_settings = {
+    'NAME': 'Jinja2',
+    'BACKEND': 'zproject.jinja2.backends.Jinja2',
+    'DIRS': [
+        os.path.join(DEPLOY_ROOT, 'templates'),
+        os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
+    ],
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'debug': DEBUG,
+        'environment': 'zproject.jinja2.environment',
+        'extensions': [
+            'jinja2.ext.i18n',
+            'jinja2.ext.autoescape',
+            'pipeline.jinja2.PipelineExtension',
+            'webpack_loader.contrib.jinja2ext.WebpackExtension',
         ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'debug': DEBUG,
-            'environment': 'zproject.jinja2.environment',
-            'extensions': [
-                'jinja2.ext.i18n',
-                'jinja2.ext.autoescape',
-                'pipeline.jinja2.PipelineExtension',
-                'webpack_loader.contrib.jinja2ext.WebpackExtension',
-            ],
-            'context_processors': [
-                'zerver.context_processors.zulip_default_context',
-                'zerver.context_processors.add_metrics',
-                'django.template.context_processors.i18n',
-            ],
-        },
+        'context_processors': [
+            'zerver.context_processors.zulip_default_context',
+            'zerver.context_processors.add_metrics',
+            'django.template.context_processors.i18n',
+        ],
     },
+}
+
+default_template_engine_settings = deepcopy(base_template_engine_settings)
+
+TEMPLATES = [
+    default_template_engine_settings,
 ]
 
 MIDDLEWARE_CLASSES = (
