@@ -121,12 +121,12 @@ function message_matches_search_term(message, operator, operand) {
         if (!operand_ids) {
             return false;
         }
-        var message_ids = people.pm_with_user_ids(message);
-        if (!message_ids) {
+        var user_ids = people.pm_with_user_ids(message);
+        if (!user_ids) {
             return false;
         }
 
-        return _.isEqual(operand_ids, message_ids);
+        return _.isEqual(operand_ids, user_ids);
     }
 
     return true; // unknown operators return true (effectively ignored)
