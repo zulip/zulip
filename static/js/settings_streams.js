@@ -115,9 +115,9 @@ function make_stream_default(stream_name) {
         data: data,
         error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
-                ui_report.error(i18n.t("Failed!"), xhr, default_stream_status);
+                ui_report.error(i18n.t("Failed"), xhr, default_stream_status);
             } else {
-                ui_report.error(i18n.t("Failed!"), default_stream_status);
+                ui_report.error(i18n.t("Failed"), default_stream_status);
             }
             default_stream_status.show();
         },
