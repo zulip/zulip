@@ -17,7 +17,7 @@ exports.all_everyone_warn_threshold = 15;
 var uploads_domain = document.location.protocol + '//' + document.location.host;
 var uploads_path = '/user_uploads';
 var uploads_re = new RegExp("\\]\\(" + uploads_domain + "(" + uploads_path + "[^\\)]+)\\)", 'g');
-
+var clone_file_input;
 function make_upload_absolute(uri) {
     if (uri.indexOf(uploads_path) === 0) {
         // Rewrite the URI to a usable link
@@ -34,9 +34,9 @@ function make_uploads_relative(content) {
 // This function resets an input type="file".  Pass in the
 // jquery object.
 function clear_out_file_list(jq_file_list) {
-    var clone_for_ie_sake = jq_file_list.clone(true);
-    jq_file_list.replaceWith(clone_for_ie_sake);
-
+    if (clone_file_input !== undefined) {
+        jq_file_list.replaceWith(clone_file_input.clone(true));
+    }
     // Hack explanation:
     // IE won't let you do this (untested, but so says StackOverflow):
     //    $("#file_input").val("");
@@ -745,6 +745,9 @@ $(function () {
 
     $("#compose").on("click", "#attach_files", function (e) {
         e.preventDefault();
+        if (clone_file_input === undefined) {
+            clone_file_input = $('#file_input').clone(true);
+        }
         $("#compose #file_input").trigger("click");
     } );
 
