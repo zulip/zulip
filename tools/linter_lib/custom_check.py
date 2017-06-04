@@ -428,6 +428,7 @@ def build_custom_checkers(by_lang):
             "zerver/webhooks/solano/doc.md",
             "zerver/webhooks/trello/doc.md",
             "zerver/webhooks/papertrail/doc.md",
+            "templates/zerver/help/include/git-webhook-url-with-branches.md",
         }
         for fn in by_lang['md']:
             max_length = None
