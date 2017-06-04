@@ -173,7 +173,7 @@ def elide_subject(subject):
 
 def send_zulip(entry, feed_name):
     # type: (Any, str) -> Dict[str, Any]
-    body = entry.summary # type: str
+    body = entry.summary  # type: str
     if opts.unwrap:
         body = unwrap_text(body)
 
