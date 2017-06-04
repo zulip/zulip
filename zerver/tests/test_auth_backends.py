@@ -251,7 +251,7 @@ class AuthBackendTest(ZulipTestCase):
         # Verify valid_attestation parameter is set correctly
         unverified_payload = dict(email_verified=False)
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=unverified_payload):
-            ret = dict() # type: Dict[str, str]
+            ret = dict()  # type: Dict[str, str]
             result = backend.authenticate(return_data=ret)
             self.assertIsNone(result)
             self.assertFalse(ret["valid_attestation"])
@@ -564,7 +564,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('zproject.backends.get_user_profile_by_email',
                         side_effect=UserProfile.DoesNotExist("Do not exist")):
             response = dict(email=self.email, name=self.name)
-            return_data = dict() # type: Dict[str, Any]
+            return_data = dict()  # type: Dict[str, Any]
             user = self.backend.authenticate(return_data=return_data, response=response)
             self.assertIs(user, None)
             self.assertTrue(return_data['valid_attestation'])
@@ -572,7 +572,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
     def test_github_backend_authenticate_invalid_email(self):
         # type: () -> None
         response = dict(email=None, name=self.name)
-        return_data = dict() # type: Dict[str, Any]
+        return_data = dict()  # type: Dict[str, Any]
         user = self.backend.authenticate(return_data=return_data, response=response)
         self.assertIs(user, None)
         self.assertTrue(return_data['invalid_email'])
@@ -1538,7 +1538,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         # type: () -> None
         email = self.example_email("hamlet")
         result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
-        self.assertEqual(result.status_code, 200) # This should ideally be not 200.
+        self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
         self.assertIs(get_session_dict_user(self.client.session), None)
 
     def test_login_failure_due_to_nonexisting_user(self):
@@ -1668,7 +1668,7 @@ class TestJWTLogin(ZulipTestCase):
             web_token = jwt.encode(payload, auth_key).decode('utf8')
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
-            self.assertEqual(result.status_code, 200) # This should ideally be not 200.
+            self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
             self.assertIs(get_session_dict_user(self.client.session), None)
 
             # The /accounts/login/jwt/ endpoint should also handle the case
@@ -1677,7 +1677,7 @@ class TestJWTLogin(ZulipTestCase):
                     'zerver.views.auth.authenticate',
                     side_effect=UserProfile.DoesNotExist("Do not exist")):
                 result = self.client_post('/accounts/login/jwt/', data)
-            self.assertEqual(result.status_code, 200) # This should ideally be not 200.
+            self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
             self.assertIs(get_session_dict_user(self.client.session), None)
 
     def test_login_failure_due_to_wrong_subdomain(self):
