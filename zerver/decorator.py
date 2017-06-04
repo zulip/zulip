@@ -41,7 +41,7 @@ if settings.ZILENCER_ENABLED:
 else:
     from mock import Mock
     get_remote_server_by_uuid = Mock()
-    RemoteZulipServer = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
@@ -78,7 +78,7 @@ def asynchronous(method):
         # type: (HttpRequest, *Any, **Any) -> Union[HttpResponse, _RespondAsynchronously]
         return method(request, handler=request._tornado_handler, *args, **kwargs)
     if getattr(method, 'csrf_exempt', False):
-        wrapper.csrf_exempt = True # type: ignore # https://github.com/JukkaL/mypy/issues/1170
+        wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
 def update_user_activity(request, user_profile):
@@ -116,7 +116,7 @@ def require_post(func):
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
         return func(request, *args, **kwargs)
-    return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def require_realm_admin(func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -126,7 +126,7 @@ def require_realm_admin(func):
         if not user_profile.is_realm_admin:
             raise JsonableError(_("Must be a realm administrator"))
         return func(request, user_profile, *args, **kwargs)
-    return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
 from zerver.lib.user_agent import parse_user_agent
 
@@ -185,7 +185,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
 
     if not is_remote_server(role):
         try:
-            profile = get_user_profile_by_email(role) # type: Union[UserProfile, RemoteZulipServer]
+            profile = get_user_profile_by_email(role)  # type: Union[UserProfile, RemoteZulipServer]
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid user: %s") % (role,))
     else:
@@ -208,7 +208,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
             raise JsonableError(_("This API key only works on the root subdomain"))
         return profile
 
-    profile = cast(UserProfile, profile) # is UserProfile
+    profile = cast(UserProfile, profile)  # is UserProfile
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
     if profile.is_incoming_webhook and not is_webhook:
@@ -392,7 +392,7 @@ def require_server_admin(view_func):
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
         return add_logging_data(view_func)(request, *args, **kwargs)
-    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 # authenticated_api_view will add the authenticated user's
 # user_profile to the view function's arguments list, since we have to
@@ -499,7 +499,7 @@ def process_as_post(view_func):
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     # type: (HttpRequest, Callable[..., HttpResponse], *Any, **Any) -> HttpResponse
@@ -537,7 +537,7 @@ def authenticated_json_post_view(view_func):
                            *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticated_json_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -546,7 +546,7 @@ def authenticated_json_view(view_func):
                            *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def is_local_addr(addr):
     # type: (Text) -> bool
@@ -729,10 +729,10 @@ def profiled(func):
         # type: (*Any, **Any) -> Any
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs) # type: Any
+        retval = prof.runcall(func, *args, **kwargs)  # type: Any
         prof.dump_stats(fn)
         return retval
-    return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapped_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def return_success_on_head_request(view_func):
     # type: (Callable) -> Callable
