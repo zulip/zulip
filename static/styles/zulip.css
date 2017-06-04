@@ -2186,12 +2186,6 @@ div.floating_recipient {
     cursor: pointer;
 }
 
-.stream_sub_unsub_button {
-    min-width: 140px;
-    margin-top: 9px;
-    margin-right: 10px;
-}
-
 .sub_button_row {
     text-align: center;
 }
@@ -2439,6 +2433,7 @@ img.emoji {
     margin: 0px 5px 0px 5px;
 }
 
+.sub-unsub-message span,
 .date_row span {
     display: block;
     background: inherit;
@@ -2450,6 +2445,13 @@ img.emoji {
     text-shadow: 1px 1px 0px #fff;
 }
 
+.sub-unsub-message span {
+    font-size: 1em;
+    text-transform: none;
+}
+
+.sub-unsub-message span:before,
+.sub-unsub-message span:after,
 .date_row span:before,
 .date_row span:after {
     display: inline-block;
@@ -2462,11 +2464,13 @@ img.emoji {
     border-bottom: 1px solid #fff;
 }
 
+.sub-unsub-message span:before,
 .date_row span:before {
     right: 0.5em;
     margin-left: -50%;
 }
 
+.sub-unsub-message span:after,
 .date_row span:after {
     left: 0.5em;
     margin-right: -50%;
