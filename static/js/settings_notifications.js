@@ -15,101 +15,44 @@ var notification_settings = [
 ];
 
 exports.set_up = function () {
-    $("#notify-settings-status").hide();
+    var notify_settings_status = $("#notify-settings-status").expectOne();
+    notify_settings_status.hide();
 
     if (!page_params.realm_show_digest_email) {
         $("#other_notifications").hide();
     }
 
-    function update_notification_settings_success(resp, statusText, xhr) {
-        var result = JSON.parse(xhr.responseText);
-        var notify_settings_status = $('#notify-settings-status').expectOne();
+    _.each(notification_settings, function (setting) {
+         $("#" + setting).change(function () {
+            var data = {};
+            var setting_name = $('label[for=' + setting + ']').text().trim();
+            var context = {setting_name: setting_name};
+            data[setting] = JSON.stringify(this.checked);
 
-        // Stream notification settings.
-
-        _.each(result, function  (v, k) {
-            if (_.has(notification_settings, k) && result[k] !== undefined) {
-                page_params[k] = result[k];
+            channel.patch({
+                url: '/json/settings/notifications',
+                data: data,
+                success: function () {
+                    if (data[setting] === 'true') {
+                        ui_report.success(i18n.t("Enabled: __setting_name__",
+                            context), notify_settings_status);
+                    } else {
+                        ui_report.success(i18n.t("Disabled: __setting_name__",
+                            context), notify_settings_status);
+                    }
+                },
+                error: function (xhr) {
+                    ui_report.error(i18n.t('Error updating: __setting_name__',
+                        context), xhr, notify_settings_status);
+                },
+            });
+            if (setting === 'enable_stream_desktop_notifications') {
+                stream_edit.set_notification_setting_for_all_streams('desktop_notifications', data[setting]);
+            } else if (setting === 'enable_stream_sounds') {
+                stream_edit.set_notification_setting_for_all_streams('audible_notifications', data[setting]);
             }
         });
-        ui_report.success(i18n.t("Updated notification settings!"), notify_settings_status);
-    }
-
-    function update_notification_settings_error(xhr) {
-        ui_report.error(i18n.t("Error changing settings"), xhr, $('#notify-settings-status').expectOne());
-    }
-
-    function post_notify_settings_changes(notification_changes, success_func,
-                                          error_func) {
-        return channel.patch({
-            url: "/json/settings/notifications",
-            data: notification_changes,
-            success: success_func,
-            error: error_func,
-        });
-    }
-
-    $("#change_notification_settings").on("click", function (e) {
-        e.preventDefault();
-
-        var updated_settings = {};
-        _.each(notification_settings, function (setting) {
-            updated_settings[setting] = $("#" + setting).is(":checked");
-        });
-        post_notify_settings_changes(updated_settings,
-                                     update_notification_settings_success,
-                                     update_notification_settings_error);
     });
-
-    function update_global_stream_setting(notification_type, new_setting) {
-        var data = {};
-        data[notification_type] = new_setting;
-        channel.patch({
-            url: "/json/settings/notifications",
-            data: data,
-            success: update_notification_settings_success,
-            error: update_notification_settings_error,
-        });
-    }
-
-    function update_desktop_notification_setting(new_setting) {
-        update_global_stream_setting("enable_stream_desktop_notifications", new_setting);
-        stream_edit.set_all_stream_desktop_notifications_to(new_setting);
-    }
-
-    function update_audible_notification_setting(new_setting) {
-        update_global_stream_setting("enable_stream_sounds", new_setting);
-        stream_edit.set_all_stream_audible_notifications_to(new_setting);
-    }
-
-    function maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                           propagate_setting_function) {
-        var html = templates.render("propagate_notification_change");
-        // TODO: This seems broken!!!
-        var control_group = notification_checkbox.closest(".control-group");
-        var checkbox_status = notification_checkbox.is(":checked");
-        control_group.find(".propagate_stream_notifications_change").html(html);
-        control_group.find(".yes_propagate_notifications").on("click", function () {
-            propagate_setting_function(checkbox_status);
-            control_group.find(".propagate_stream_notifications_change").empty();
-        });
-        control_group.find(".no_propagate_notifications").on("click", function () {
-            control_group.find(".propagate_stream_notifications_change").empty();
-        });
-    }
-
-    $("#enable_stream_desktop_notifications").on("click", function () {
-        var notification_checkbox = $("#enable_stream_desktop_notifications");
-        maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                      update_desktop_notification_setting);
-    });
-
-    $("#enable_stream_sounds").on("click", function () {
-        var notification_checkbox = $("#enable_stream_sounds");
-        maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                      update_audible_notification_setting);
-    });
-
 };
 
 function _update_page() {
