@@ -1,0 +1,12 @@
+.git
+.gitignore
+AUTHORS
+LICENSE
+README
+README.md
+TODO
+TODO.md
+kubernetes/
+scripts/
+docker-compose.yml
+docker-compose-*.yml
