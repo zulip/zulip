@@ -149,6 +149,15 @@ function do_hashchange(from_reload) {
     case "#streams":
         ui_util.change_tab_to("#streams");
         break;
+    case "#keyboard-shortcuts":
+        ui.show_info_overlay("keyboard-shortcuts");
+        break;
+    case "#markdown-help":
+        ui.show_info_overlay("markdown-help");
+        break;
+    case "#search-operators":
+        ui.show_info_overlay("search-operators");
+        break;
     case "#drafts":
         ui_util.change_tab_to("#drafts");
         break;

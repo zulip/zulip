@@ -145,7 +145,9 @@ exports.show_info_overlay = function (target) {
         overlays.open_overlay({
             name:  'informationalOverlays',
             overlay: overlay,
-            on_close: function () {},
+            on_close: function () {
+                hashchange.changehash("");
+            },
         });
     }
 
