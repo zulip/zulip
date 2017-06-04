@@ -29,7 +29,7 @@ class RateLimit(object):
         # type: (int, int) -> None
         self.message_limit = message_limit
         self.interval_limit = interval_limit
-        self.message_list = [] # type: List[float]
+        self.message_list = []  # type: List[float]
         self.error_message = '-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
         'Is your bot trapped in an infinite loop by reacting to its own messages?'
 
@@ -97,7 +97,7 @@ class BotHandlerApi(object):
 class StateHandler(object):
     def __init__(self):
         # type: () -> None
-        self.state = None # type: Any
+        self.state = None  # type: Any
 
     def set_state(self, state):
         # type: (Any) -> None
