@@ -21,7 +21,7 @@ def format_body(signatories, model_payload):
         elif i + 3 != len(signatories):
             result.append(',')
 
-    result = ["The {}".format(model_payload['contract_title'])] # type: Any
+    result = ["The {}".format(model_payload['contract_title'])]  # type: Any
     for i, signatory in enumerate(signatories):
         name = model_payload['name_{}'.format(i)]
         if signatory['status_code'] == 'awaiting_signature':
