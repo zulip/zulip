@@ -94,7 +94,7 @@ descriptions for all of them.  Relevant to almost everyone are these:
 ## Chat meetings
 
 We have regular chat meetings on Zulip to coordinate work on various
-parts of the Zulip project.  While most developer discussion happens
+parts of the Zulip project.  While most developer discussions happen
 asynchonrously, these meetings are used mainly to coordinate work
 within a major area of Zulip.  These meetings are usually scheduled in
 Pacific time mornings, since that seems to be the best time for our
