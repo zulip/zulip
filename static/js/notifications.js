@@ -367,6 +367,14 @@ function process_notification(notification) {
                     iconUrl: people.small_avatar_url(message),
                     tag: message.id,
                 });
+                notification_object.onclick = function () {
+                    // We don't need to bring the browser window into focus explicitly
+                    // by calling `window.focus()` as well as don't need to clear the
+                    // notification since it is the default behavior in Firefox.
+                    if (feature_flags.clicking_notification_causes_narrow) {
+                        narrow.by_subject(message.id, {trigger: 'notification'});
+                    }
+                };
             } else {
                 in_browser_notify(message, title, content, raw_operators, opts);
             }
