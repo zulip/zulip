@@ -1791,13 +1791,20 @@ def bulk_remove_subscriptions(users, streams):
         occupied_streams_after = list(get_occupied_streams(user_profile.realm))
 
     new_vacant_streams = [stream for stream in
-                          set(occupied_streams_before) - set(occupied_streams_after)
-                          if not stream.invite_only]
-    if new_vacant_streams:
+                          set(occupied_streams_before) - set(occupied_streams_after)]
+    new_vacant_private_streams = [stream for stream in new_vacant_streams
+                                  if stream.invite_only]
+    new_vacant_public_streams = [stream for stream in new_vacant_streams
+                                 if not stream.invite_only]
+    if new_vacant_public_streams:
         event = dict(type="stream", op="vacate",
                      streams=[stream.to_dict()
-                              for stream in new_vacant_streams])
+                              for stream in new_vacant_public_streams])
         send_event(event, active_user_ids(user_profile.realm))
+    if new_vacant_private_streams:
+        # Deactivate any newly-vacant private streams
+        for stream in new_vacant_private_streams:
+            do_deactivate_stream(stream)
 
     altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
     streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
