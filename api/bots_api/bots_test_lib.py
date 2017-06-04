@@ -23,7 +23,7 @@ from types import ModuleType
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class BotTestCase(TestCase):
-    bot_name = '' # type: str
+    bot_name = ''  # type: str
 
     def check_expected_responses(self, expectations, expected_method='send_reply', email="foo_sender@zulip.com", recipient="foo", subject="foo", type="all"):
         # type: (Dict[str, Any], str, str, str, str, str) -> None
