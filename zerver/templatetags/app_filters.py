@@ -85,7 +85,10 @@ def render_markdown_path(markdown_file_path, context=None):
     if markdown_file_path.endswith('doc.md'):
         integration_dir = markdown_file_path.split('/')[0]
         integration = context['integrations_dict'][integration_dir]
-        context['integration_name'] = integration.name
+        if integration.name == 'bitbucket2':
+            context['integration_name'] = 'bitbucket'
+        else:
+            context['integration_name'] = integration.name
         context['integration_display_name'] = integration.display_name
         context['integration_url'] = integration.url[3:]
 
