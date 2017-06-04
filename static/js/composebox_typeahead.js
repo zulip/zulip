@@ -468,7 +468,7 @@ exports.initialize = function () {
         fixed: true,
         highlighter: function (item) {
             var query = this.query;
-            return typeahead_helper.highlight_query_in_phrase(query, item);
+            return typeahead_helper.highlight_with_escaping(query, item);
         },
         matcher: function (item) {
             // The matcher for "stream" is strictly prefix-based,
