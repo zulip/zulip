@@ -343,15 +343,15 @@ exports.MessageList.prototype = {
     },
 
     subscribed_bookend_content: function (stream_name) {
-        return "--- Subscribed to stream " + stream_name + " ---";
+        return "You subscribed to stream " + stream_name;
     },
 
     unsubscribed_bookend_content: function (stream_name) {
-        return "--- Unsubscribed from stream " + stream_name + " ---";
+        return "You unsubscribed from stream " + stream_name;
     },
 
     not_subscribed_bookend_content: function (stream_name) {
-        return "--- Not subscribed to stream " + stream_name + " ---";
+        return "You are not subscribed to stream " + stream_name;
     },
 
     // Maintains a trailing bookend element explaining any changes in

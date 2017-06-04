@@ -2187,9 +2187,24 @@ div.floating_recipient {
 }
 
 .stream_sub_unsub_button {
-    min-width: 140px;
-    margin-top: 9px;
-    margin-right: 10px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    color: inherit;
+    background-color: #fff;
+    border: 1px solid #CCC;
+    box-shadow: none;
+    border-radius: 4px;
+    font-weight: 400;
+    text-align: center;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 9px 10px 0 0;
+}
+
+.stream_sub_unsub_button.unsubscribed {
+    color: #5bb792;
+    border-color: #addcc9;
 }
 
 .sub_button_row {
@@ -2439,6 +2454,7 @@ img.emoji {
     margin: 0px 5px 0px 5px;
 }
 
+.sub-unsub-message span,
 .date_row span {
     display: block;
     background: inherit;
@@ -2450,6 +2466,13 @@ img.emoji {
     text-shadow: 1px 1px 0px #fff;
 }
 
+.sub-unsub-message span {
+    font-size: 1em;
+    text-transform: none;
+}
+
+.sub-unsub-message span:before,
+.sub-unsub-message span:after,
 .date_row span:before,
 .date_row span:after {
     display: inline-block;
@@ -2462,11 +2485,13 @@ img.emoji {
     border-bottom: 1px solid #fff;
 }
 
+.sub-unsub-message span:before,
 .date_row span:before {
     right: 0.5em;
     margin-left: -50%;
 }
 
+.sub-unsub-message span:after,
 .date_row span:after {
     left: 0.5em;
     margin-right: -50%;
