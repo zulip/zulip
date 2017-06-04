@@ -244,7 +244,7 @@ class UnreadCountTests(ZulipTestCase):
         message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello")
         unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello")
 
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                "op": "add",
@@ -294,7 +294,7 @@ class UnreadCountTests(ZulipTestCase):
 
         message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello", "test_topic")
         unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello", "Denmark2")
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                "op": "add",
