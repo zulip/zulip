@@ -109,7 +109,7 @@ class ZulipAuthMixin(object):
             return None
 
 class SocialAuthMixin(ZulipAuthMixin):
-    auth_backend_name = None # type: Text
+    auth_backend_name = None  # type: Text
 
     def get_email_address(self, *args, **kwargs):
         # type: (*Any, **Any) -> Text
@@ -556,4 +556,4 @@ AUTH_BACKEND_NAME_MAP = {
     u'Google': GoogleMobileOauth2Backend,
     u'LDAP': ZulipLDAPAuthBackend,
     u'RemoteUser': ZulipRemoteUserBackend,
-} # type: Dict[Text, Any]
+}  # type: Dict[Text, Any]
