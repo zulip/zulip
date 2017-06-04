@@ -142,6 +142,11 @@ name suggestions will appear.
     blocks. It is not possible to use the syntax highlighter in blocks
     indented with spaces.
 
+!!! warn ""
+    You can only specify the language's short name in fenced code blocks.
+    It is not possible to use the syntax highlighter in blocks indented with
+    spaces.
+
 ![Python syntax highlighting](/static/images/help/python-syntax.png)
 
 ![JavaScript syntax highlighting](/static/images/help/javascript-syntax.png)
