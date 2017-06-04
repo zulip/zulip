@@ -20,6 +20,10 @@ and an authentication mechanism.  Or, you can check out the
   using highly CPU-limited servers like the AWS `t2` style instances
   for organizations with a hundreds of users (active or no).
 
+  See our
+  [documentation on scalability](prod-maintain-secure-upgrade.html#scalability)
+  for advice on hardware requirements for larger organizations.
+
 * Disk space: You'll need at least 10GB of free disk space. If you intend to
   store uploaded files locally rather than on S3 you will likely need more.
 

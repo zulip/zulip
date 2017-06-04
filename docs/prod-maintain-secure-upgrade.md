@@ -303,7 +303,18 @@ encouraged!
 ## Scalability
 
 This section attempts to address the considerations involved with
-running Zulip with a large team (>1000 users).
+running Zulip with larger teams (especially >1000 users).
+
+* For an organization with 100+ users, it's important to have more
+  than 4GB of RAM on the system.  Zulip will install on a system with
+  2GB of RAM, but with less than 3.5GB of RAM, it will run its
+  [queue processors](queuing.html) multithreaded to conserve memory;
+  this creates a significant performance bottleneck.
+
+* [chat.zulip.org](chat-zulip-org.html), with thousands of user
+  accounts and thousands of messages sent every week, has 8GB of RAM,
+  4 cores, and 80GB of disk.  The CPUs are essentially always idle,
+  but the 8GB of RAM is important.
 
 * We recommend using a [remote postgres
   database](prod-postgres.html) for isolation, though it is
