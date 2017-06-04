@@ -903,7 +903,7 @@ def valid_stream_name(name):
 
 def parse_zephyr_subs(verbose=False):
     # type: (bool) -> Set[Tuple[str, str, str]]
-    zephyr_subscriptions = set() # type: Set[Tuple[str, str, str]]
+    zephyr_subscriptions = set()  # type: Set[Tuple[str, str, str]]
     subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
     if not os.path.exists(subs_file):
         if verbose:
