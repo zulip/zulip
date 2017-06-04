@@ -92,5 +92,5 @@ def timeout(timeout, func, *args, **kwargs):
         # Raise the original stack trace so our error messages are more useful.
         # from http://stackoverflow.com/a/4785766/90777
         six.reraise(thread.exc_info[0], thread.exc_info[1], thread.exc_info[2])
-    assert thread.result is not None # assured if above did not reraise
+    assert thread.result is not None  # assured if above did not reraise
     return thread.result
