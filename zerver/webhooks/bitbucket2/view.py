@@ -307,7 +307,7 @@ def get_push_tag_body(payload, change):
     # type: (Dict[str, Any], Dict[str, Any]) -> Text
     if change.get('created'):
         tag = change['new']
-        action = 'pushed' # type: Optional[Text]
+        action = 'pushed'  # type: Optional[Text]
     elif change.get('closed'):
         tag = change['old']
         action = 'removed'
