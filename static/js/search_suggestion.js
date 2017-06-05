@@ -453,6 +453,24 @@ function get_sent_by_me_suggestions(last, operators) {
     return [];
 }
 
+function get_containing_suggestions(last) {
+        if (!(last.operator === 'search' || last.operator === 'has')) {
+            return [];
+        }
+
+        var choices = ['link', 'image', 'attachment'];
+        choices = _.filter(choices, function (choice) {
+            return phrase_match(choice, last.operand);
+        });
+
+        return _.map(choices, function (choice) {
+            var op = [{operator: 'has', operand: choice, negated: false}];
+            var search_string = Filter.unparse(op);
+            var description = Filter.describe(op);
+            return {description: description, search_string: search_string};
+        });
+}
+
 function attach_suggestions(result, base, suggestions) {
     _.each(suggestions, function (suggestion) {
         if (base.description.length > 0) {
@@ -519,6 +537,9 @@ exports.get_suggestions = function (query) {
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_topic_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_containing_suggestions(last);
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_operator_subset_suggestions(operators);
