@@ -134,6 +134,15 @@ class GithubIntegration(WebhookIntegration):
     We need this class to don't creating url object for git integrations.
     We want to have one generic url with dispatch function for github service and github webhook.
     """
+    def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
+                 function=None, url=None, display_name=None, doc=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+        url = self.DEFAULT_URL.format(name='github')
+
+        super(GithubIntegration, self).__init__(
+            name, client_name, logo, secondary_line_text,
+            function, url, display_name, doc)
+
     @property
     def url_object(self):
         # type: () -> None
