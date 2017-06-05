@@ -258,7 +258,7 @@ INTEGRATIONS = {
     'puppet': Integration('puppet', 'puppet', doc='zerver/integrations/puppet.html'),
     'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.html'),
     'rss': Integration('rss', 'rss', display_name='RSS', doc='zerver/integrations/rss.html'),
-    'subversion': Integration('subversion', 'subversion', doc='zerver/integrations/subversion.html'),
+    'subversion': Integration('subversion', 'subversion', doc='zerver/integrations/subversion.md'),
     'trac': Integration('trac', 'trac', doc='zerver/integrations/trac.html'),
     'trello-plugin': Integration(
         'trello-plugin',
