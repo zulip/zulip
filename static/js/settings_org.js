@@ -100,6 +100,12 @@ exports.populate_auth_methods = function (auth_methods) {
     if (!page_params.is_admin) {
         $(".organization-box [data-name='auth-methods']")
             .find("input, button, select, checked").attr("disabled", true);
+        $(".organization-box").find(".settings-section:not(#emoji-settings)").append("<div class='tip'><p>Only organization administrators can edit these settings.</p></div>");
+        if (!page_params.realm_add_emoji_by_admins_only) {
+            $(".settings-section#emoji-settings").append("<div class='tip'><p>An organization administrator has allowed users to add custom emojis.</p></div>");
+        } else {
+            $(".settings-section#emoji-settings").append("<div class='tip'><p>Only organization administrators can edit these settings.</p></div>");
+        }
     }
 };
 
