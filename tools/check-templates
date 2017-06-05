@@ -108,7 +108,6 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/hello.html',
             'templates/zerver/home.html',
             'templates/zerver/integrations/index.html',
-            'templates/zerver/invite_user.html',
             'templates/zerver/login.html',
             'templates/zerver/markdown_help.html',
             'templates/zerver/register.html',
