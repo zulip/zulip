@@ -194,7 +194,7 @@ set_global('timerender', {
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'bottom');
 
-        assert(message_group1.bookend_bottom);
+        assert(message_group2.bookend_top);
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group1, message_group2]);
@@ -326,7 +326,7 @@ set_global('timerender', {
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'top');
 
-        assert(message_group2.bookend_bottom);
+        assert(message_group1.bookend_top);
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2, message_group1]);

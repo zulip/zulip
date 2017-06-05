@@ -289,8 +289,8 @@ MessageListView.prototype = {
         // Add a subscription marker
         } else if (this.list !== home_msg_list &&
                    last_msg_container.msg.historical !== first_msg_container.msg.historical) {
-            first_group.bookend_bottom = true;
-            this.add_subscription_marker(first_group, last_msg_container, first_msg_container);
+            second_group.bookend_top = true;
+            this.add_subscription_marker(second_group, last_msg_container, first_msg_container);
         }
         return false;
     },
