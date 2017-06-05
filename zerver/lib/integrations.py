@@ -244,7 +244,7 @@ INTEGRATIONS = {
         'mercurial',
         'mercurial',
         display_name='Mercurial (hg)',
-        doc='zerver/integrations/mercurial.html'
+        doc='zerver/integrations/mercurial.md'
     ),
     'nagios': Integration('nagios', 'nagios', doc='zerver/integrations/nagios.html'),
     'openshift': Integration(
