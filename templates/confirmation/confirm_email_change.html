@@ -5,12 +5,12 @@
 <div class="pitch">
     <hr/>
     {% if confirmed %}
-    <p>
-    This confirms that the email address for your Zulip account has changed
-    from {{old_email}} to {{ new_email }}.
-    </p>
+        <p>
+            This confirms that the email address for your Zulip account has changed
+            from {{old_email}} to {{ new_email }}.
+        </p>
     {% else %}
-    <p class="lead">Whoops, something's not right. We couldn't find your confirmation ID!</p>
+        <p class="lead">Whoops, something's not right. We couldn't find your confirmation ID!</p>
 
         {% if verbose_support_offers %}
         <p>Make sure you copied the link correctly in to your browser. If you're
