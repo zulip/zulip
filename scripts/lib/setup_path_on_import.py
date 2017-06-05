@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Use libraries from a virtualenv (by modifying sys.path) in production.
 Also add Zulip's root directory to sys.path

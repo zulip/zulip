@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 from __future__ import absolute_import
 from contextlib import contextmanager
@@ -479,6 +479,8 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
                          'scripts/lib/setup_venv.py',
+                         'scripts/lib/create-production-venv',
+                         'scripts/lib/setup_path_on_import.py',
                          'tools/lint']),
          'description': 'Explicit python invocations should not include a version'}
     ]) + whitespace_rules
