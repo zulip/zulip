@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import bulk_remove_subscriptions
 from zerver.models import Realm, UserProfile, get_realm, get_stream, \
-    get_user_profile_by_email
+    get_user
 
 class Command(BaseCommand):
     help = """Remove some or all users in a realm from a stream."""
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             emails = set([email.strip() for email in options["users"].split(",")])
             user_profiles = []
             for email in emails:
-                user_profiles.append(get_user_profile_by_email(email))
+                user_profiles.append(get_user(email, realm))
 
         result = bulk_remove_subscriptions(user_profiles, [stream])
         not_subscribed = result[1]
