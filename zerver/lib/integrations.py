@@ -223,7 +223,7 @@ INTEGRATIONS = {
         'google-calendar',
         'google-calendar',
         display_name='Google Calendar',
-        doc='zerver/integrations/google-calendar.html'
+        doc='zerver/integrations/google-calendar.md'
     ),
     'hubot': Integration('hubot', 'hubot', doc='zerver/integrations/hubot.html'),
     'jenkins': Integration(
