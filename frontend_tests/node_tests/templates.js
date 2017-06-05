@@ -675,7 +675,10 @@ function render(template_name, args) {
         content: "Let's go to lunch!",
         edit_history: [
             {
-                body_to_render: "<p>Let's go to <span class='highlight_text_replaced'>dinner</span>!</p>",
+                body_to_render: "<p>Let's go to " +
+                                    "<span class='highlight_text_deleted'>lunch</span>" +
+                                    "<span class='highlight_text_inserted'>dinner</span>" +
+                                "!</p>",
                 timestamp: 1468132659,
                 edited_by: 'Alice',
                 posted_or_edited: "Edited by",
@@ -688,7 +691,7 @@ function render(template_name, args) {
     global.write_test_output("message_edit_history.handlebars", html);
     var edited_message = $(html).find("div.messagebox-content");
     assert.equal(edited_message.text().trim(),
-                "1468132659\n                Let's go to dinner!\n                Edited by Alice");
+                "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
 }());
 
 (function message_reaction() {
