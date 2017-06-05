@@ -251,7 +251,7 @@ INTEGRATIONS = {
         'openshift',
         'openshift',
         display_name='OpenShift',
-        doc='zerver/integrations/openshift.html'
+        doc='zerver/integrations/openshift.md'
     ),
     'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.html'),
     'phabricator': Integration('phabricator', 'phabricator', doc='zerver/integrations/phabricator.html'),
