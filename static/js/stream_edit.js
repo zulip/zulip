@@ -255,20 +255,12 @@ exports.set_stream_property = function (sub, property, value) {
     });
 };
 
-function set_notification_setting_for_all_streams(notification_type, new_setting) {
+exports.set_notification_setting_for_all_streams = function (notification_type, new_setting) {
     _.each(stream_data.subscribed_subs(), function (sub) {
         if (sub[notification_type] !== new_setting) {
             exports.set_stream_property(sub, notification_type, new_setting);
         }
     });
-}
-
-exports.set_all_stream_desktop_notifications_to = function (new_setting) {
-    set_notification_setting_for_all_streams("desktop_notifications", new_setting);
-};
-
-exports.set_all_stream_audible_notifications_to = function (new_setting) {
-    set_notification_setting_for_all_streams("audible_notifications", new_setting);
 };
 
 function redraw_privacy_related_stuff(sub_row, sub) {
