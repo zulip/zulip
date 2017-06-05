@@ -67,10 +67,10 @@ You can publish events to a RabbitMQ queue using the
 ### Clearing a RabbitMQ queue
 
 If you need to clear a queue (delete all the events in it), run
-`./manage.py purge_queue <queue_name>`, for example:
+`./manage.py purge_queue --queue-name <queue_name>`, for example:
 
 ```
-./manage.py purge_queue user_activity
+./manage.py purge_queue --queue-name user_activity
 ```
 
 You can also use the amqp tools directly.  Install `amqp-tools` from
