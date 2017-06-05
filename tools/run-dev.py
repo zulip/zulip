@@ -57,9 +57,9 @@ parser.add_argument('--minify',
 parser.add_argument('--interface',
                     action='store',
                     default=None, help='Set the IP or hostname for the proxy to listen on')
-parser.add_argument('--no-clear-memcached',
-                    action='store_false', dest='clear_memcached',
-                    default=True, help='Do not clear memcached')
+parser.add_argument('--no-clear-redis',
+                    action='store_false', dest='clear_redis',
+                    default=True, help='Do not clear redis')
 parser.add_argument('--force',
                     action="store_true",
                     default=False, help='Run command despite possible problems.')
@@ -67,6 +67,7 @@ parser.add_argument('--enable-tornado-logging',
                     action="store_true",
                     default=False, help='Enable access logs from tornado proxy server.')
 options = parser.parse_args()
+
 
 if not options.force:
     ok, msg = get_provisioning_status()
@@ -119,9 +120,9 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')
 
-if options.clear_memcached:
-    print("Clearing memcached ...")
-    subprocess.check_call('./scripts/setup/flush-memcached')
+if options.clear_redis:
+    print("Clearing redis ...")
+    subprocess.check_call(['redis-cli', 'FLUSHALL'])
 
 # Set up a new process group, so that we can later kill run{server,tornado}
 # and all of the processes they spawn.

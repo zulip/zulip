@@ -95,7 +95,6 @@ application:
 * rabbitmq-server
 * nginx
 * redis
-* memcached
 
 If one of these services is not installed or functioning correctly,
 Zulip will not work.  Below we detail some common configuration

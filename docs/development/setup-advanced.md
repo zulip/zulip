@@ -64,6 +64,7 @@ to install everything manually, these instructions should work.
 * [Fedora/CentOS common steps](#common-to-fedora-centos-instructions)
 * [Steps for all systems](#all-systems)
 
+
 ### On Debian or Ubuntu systems:
 
 #### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
@@ -78,8 +79,8 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
-    memcached rabbitmq-server libldap2-dev redis-server \
-    postgresql-server-dev-all libmemcached-dev python3-dev \
+    rabbitmq-server libldap2-dev redis-server \
+    postgresql-server-dev-all python3-dev \
     python-dev python-virtualenv hunspell-en-us git \
     yui-compressor puppet gettext postgresql \
     libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev \
@@ -141,8 +142,8 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo add-apt-repository ppa:tabbott/zulip
 sudo apt-get update
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
-    memcached rabbitmq-server libldap2-dev redis-server \
-    postgresql-server-dev-all libmemcached-dev python3-dev python-dev \
+    rabbitmq-server libldap2-dev redis-server \
+    postgresql-server-dev-all python3-dev python-dev \
     hunspell-en-us git yui-compressor \
     puppet gettext tsearch-extras
 ```
@@ -164,9 +165,9 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```
-sudo dnf install libffi-devel memcached rabbitmq-server \
+sudo dnf install libffi-devel rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
-    postgresql-devel postgresql libmemcached-devel freetype-devel \
+    postgresql-devel postgresql freetype-devel \
     yuicompressor closure-compiler gettext
 ```
 
@@ -207,9 +208,9 @@ su zulip
 sudo yum install epel-release
 
 # Install dependencies
-sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
+sudo yum install libffi-devel rabbitmq-server openldap-devel \
     python-devel redis postgresql-server postgresql-devel postgresql \
-    libmemcached-devel wget python-pip openssl-devel freetype-devel \
+    wget python-pip openssl-devel freetype-devel \
     libjpeg-turbo-devel zlib-devel yuicompressor \
     closure-compiler gettext
 
@@ -251,7 +252,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
-    memcached libmemcached py-Pillow py-cryptography py-cffi
+    py-Pillow py-cryptography py-cffi
 
 # Get tsearch_extras and build it (using a modified version which
 # aliases int4 on OpenBSD):
@@ -311,10 +312,10 @@ sudo vi /var/lib/pgsql/data/pg_hba.conf
 host    all             all             127.0.0.1/32            md5
 
 # Start the services
-sudo systemctl start redis memcached rabbitmq-server postgresql
+sudo systemctl start redis rabbitmq-server postgresql
 
 # Enable automatic service startup after the system startup
-sudo systemctl enable redis rabbitmq-server memcached postgresql
+sudo systemctl enable redis rabbitmq-server postgresql
 ```
 
 Finally continue with the [All Systems](#all-systems) instructions below.

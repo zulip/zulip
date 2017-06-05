@@ -137,7 +137,6 @@ POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
 COMMON_DEPENDENCIES = [
     "closure-compiler",
-    "memcached",
     "rabbitmq-server",
     "supervisor",
     "git",
@@ -450,10 +449,9 @@ def main(options):
     if is_circleci or (is_travis and not options.is_production_travis):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
-        run(["sudo", "service", "memcached", "restart"])
         run(["sudo", "service", "postgresql", "restart"])
     elif family == 'redhat':
-        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
+        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "redis"]:
             run(["sudo", "-H", "systemctl", "enable", service])
             run(["sudo", "-H", "systemctl", "start", service])
     elif options.is_docker:
@@ -461,7 +459,6 @@ def main(options):
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
         run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
         run(["sudo", "service", "redis-server", "restart"])
-        run(["sudo", "service", "memcached", "restart"])
     if not options.is_production_travis:
         # The following block is skipped for the production Travis
         # suite, because that suite doesn't make use of these elements

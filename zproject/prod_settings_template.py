@@ -491,14 +491,6 @@ CAMO_URI = '/external_content/'
 # To use another rabbitmq user than the default 'zulip', set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = 'zulip'
 
-# Memcached configuration
-#
-# By default, Zulip connects to memcached running locally on the machine,
-# but Zulip also supports connecting to memcached over the network;
-# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
-# Format HOST:PORT
-# MEMCACHED_LOCATION = 127.0.0.1:11211
-
 # Redis configuration
 #
 # By default, Zulip connects to redis running locally on the machine,

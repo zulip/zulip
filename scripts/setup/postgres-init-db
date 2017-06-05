@@ -51,7 +51,7 @@ EOF
 "$(dirname "$0")/postgres-create-db"
 )
 
-# Clear memcached to avoid contamination from previous database state
-"$(dirname "$0")/flush-memcached"
+# Clear redis to avoid contamination from previous database state
+redis-cli FLUSHALL
 
 echo "Database created"

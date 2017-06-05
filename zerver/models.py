@@ -44,7 +44,6 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from collections import defaultdict, OrderedDict
 from datetime import timedelta
-import pylibmc
 import re
 import logging
 import sre_constants
@@ -1947,7 +1946,7 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
         return huddle
 
 def clear_database() -> None:  # nocoverage # Only used in populate_db
-    pylibmc.Client(['127.0.0.1']).flush_all()
+    cache_clear()
     model = None  # type: Any
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
