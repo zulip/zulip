@@ -14,6 +14,22 @@ var notification_settings = [
     "pm_content_in_desktop_notifications",
 ];
 
+function maybe_bulk_update_stream_notification_setting(notification_checkbox,
+                                                       propagate_setting_function) {
+    var html = templates.render("propagate_notification_change");
+    // TODO: This seems broken!!!
+    var group = notification_checkbox.closest(".input-group");
+    var checkbox_status = notification_checkbox.prop('checked');
+    group.find(".propagate_stream_notifications_change").html(html);
+    group.find(".yes_propagate_notifications").on("click", function () {
+        propagate_setting_function(checkbox_status);
+        group.find(".propagate_stream_notifications_change").empty();
+    });
+    group.find(".no_propagate_notifications").on("click", function () {
+        group.find(".propagate_stream_notifications_change").empty();
+    });
+}
+
 exports.set_up = function () {
     var notify_settings_status = $("#notify-settings-status").expectOne();
     notify_settings_status.hide();
@@ -27,13 +43,14 @@ exports.set_up = function () {
             var data = {};
             var setting_name = $('label[for=' + setting + ']').text().trim();
             var context = {setting_name: setting_name};
-            data[setting] = JSON.stringify(this.checked);
+            var setting_data = $(this).prop('checked');
+            data[setting] = JSON.stringify(setting_data);
 
             channel.patch({
                 url: '/json/settings/notifications',
                 data: data,
                 success: function () {
-                    if (data[setting] === 'true') {
+                    if (setting_data === true) {
                         ui_report.success(i18n.t("Enabled: __setting_name__",
                             context), notify_settings_status);
                     } else {
@@ -47,9 +64,13 @@ exports.set_up = function () {
                 },
             });
             if (setting === 'enable_stream_desktop_notifications') {
-                stream_edit.set_notification_setting_for_all_streams('desktop_notifications', data[setting]);
+                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
+                    stream_edit.set_notification_setting_for_all_streams('desktop_notifications', setting_data);
+                });
             } else if (setting === 'enable_stream_sounds') {
-                stream_edit.set_notification_setting_for_all_streams('audible_notifications', data[setting]);
+                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
+                    stream_edit.set_notification_setting_for_all_streams('audible_notifications', setting_data);
+                });
             }
         });
     });
