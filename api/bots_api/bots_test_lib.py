@@ -73,35 +73,54 @@ class BotTestCase(TestCase):
         message_handler = self.bot_to_run(bot_module)
         return message_handler
 
+    def call_request(self, message_handler, message, expected_method,
+                     MockClass, response):
+        # type: (Any, Dict[str, Any], str, Any, Optional[Dict[str, Any]]) -> None
+        # Send message to the concerned bot
+        message_handler.handle_message(message, MockClass(), StateHandler())
+
+        # Check if the bot is sending a message via `send_message` function.
+        # Where response is a dictionary here.
+        instance = MockClass.return_value
+        if expected_method == "send_message":
+            instance.send_message.assert_called_with(response)
+        else:
+            instance.send_reply.assert_called_with(message, response['content'])
+
     def assert_bot_output(self, messages, bot_response, expected_method,
                           http_request=None, http_response=None):
         # type: (List[Dict[str, Any]], List[Dict[str, str]], str, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> None
         message_handler = self.get_bot_message_handler()
         # Mocking BotHandlerApi
         with patch('bots_api.bot_lib.BotHandlerApi') as MockClass:
-            instance = MockClass.return_value
+            for (message, response) in zip(messages, bot_response):
+                # If not mock http_request/http_response are provided,
+                # just call the request normally (potentially using
+                # the Internet)
+                if http_response is None:
+                    assert http_request is None
+                    self.call_request(message_handler, message, expected_method,
+                                      MockClass, response)
+                    continue
 
-            with patch('requests.get') as mock_get:
-                mock_result = mock.MagicMock()
-                mock_result.json.return_value = http_response
-                mock_result.ok.return_value = True
-                mock_get.return_value = mock_result
-
-                for (message, response) in zip(messages, bot_response):
-                    # Send message to the concerned bot
-                    message_handler.handle_message(message, MockClass(), StateHandler())
-
+                # Otherwise, we mock requests, and verify that the bot
+                # made the correct HTTP request to the third-party API
+                # (and provide the correct third-party API response.
+                # This allows us to test things that would require the
+                # Internet without it).
+                assert http_request is not None
+                with patch('requests.get') as mock_get:
+                    mock_result = mock.MagicMock()
+                    mock_result.json.return_value = http_response
+                    mock_result.ok.return_value = True
+                    mock_get.return_value = mock_result
+                    self.call_request(message_handler, message, expected_method,
+                                      MockClass, response)
                     # Check if the bot is sending the correct http_request corresponding
                     # to the given http_response.
                     if http_request is not None:
-                        mock_get.assert_called_with(http_request['api_url'], params=http_request['params'])
-
-                    # Check if the bot is sending a message via `send_message` function.
-                    # Where response is a dictionary here.
-                    if expected_method == "send_message":
-                        instance.send_message.assert_called_with(response)
-                    else:
-                        instance.send_reply.assert_called_with(message, response['content'])
+                        mock_get.assert_called_with(http_request['api_url'],
+                                                    params=http_request['params'])
 
     def bot_to_run(self, bot_module):
         # Returning Any, same argument as in get_bot_message_handler function.
