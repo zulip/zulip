@@ -471,7 +471,7 @@ input[type=checkbox].inline-block {
     margin-right: 8px;
 }
 #notification-settings .notification-reminder {
-    text-align: center;
+    text-align: left;
 }
 
 .control-label-disabled {
