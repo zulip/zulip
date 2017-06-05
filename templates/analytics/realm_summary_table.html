@@ -3,21 +3,21 @@
 <table class="table summary-table sortable table-striped table-bordered">
 
     <thead class="activity_head">
-    <tr>
-        <th>Realm</th>
-        <th>Active users</th>
-        <th>At-risk users</th>
-        <th>Total users</th>
-        <th>Bots</th>
-        <th>Hours per user</th>
-        <th>Hours</th>
-        <th></th>
-        <th colspan=8>Messages sent</th>
-    </tr>
+        <tr>
+            <th>Realm</th>
+            <th>Active users</th>
+            <th>At-risk users</th>
+            <th>Total users</th>
+            <th>Bots</th>
+            <th>Hours per user</th>
+            <th>Hours</th>
+            <th></th>
+            <th colspan=8>Messages sent</th>
+        </tr>
     </thead>
 
     <tbody>
-    {% for row in rows %}
+        {% for row in rows %}
         <tr>
 
             {# Realm #}
@@ -61,12 +61,12 @@
 
             {# Messages sent #}
             {% if row.history %}
-                {{ row.history|safe }}
+            {{ row.history|safe }}
             {% else %}
-                <td colspan=8></td>
+            <td colspan=8></td>
             {% endif %}
         </tr>
-    {% endfor %}
+        {% endfor %}
     </tbody>
 
 </table>
