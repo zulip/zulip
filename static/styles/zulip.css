@@ -1463,7 +1463,7 @@ blockquote p {
 }
 
 .bookend {
-    padding-top: 10px;
+    margin-top: 10px;
     background-color: transparent;
 }
 
@@ -2422,7 +2422,7 @@ img.emoji {
 .sub-unsub-message,
 .date_row {
     text-align: center;
-    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .date_row .date-direction {
