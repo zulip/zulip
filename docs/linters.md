@@ -115,6 +115,10 @@ script performs several lint checks in parallel by forking out subprocesses.  Th
 is still evolving, but you can look at the method `run_parallel` to get the
 gist of how it works.
 
+Note that our project does custom regex-based checks on the code, and we
+also customize how we call pyflakes and pycodestyle (pep8).  The code for these
+types of checks mostly lives [here](https://github.com/zulip/zulip/blob/master/tools/linter_lib).
+
 ### Special options
 
 You can use the `-h` option for `lint` to see its usage.  One particular
