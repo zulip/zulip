@@ -2355,7 +2355,7 @@ div.emoji {
 
 img.emoji {
     /* This is the right offset for <img> style emoji */
-    top: 3px;
+    top: 6px;
 }
 
 .emoji.realm-emoji {
