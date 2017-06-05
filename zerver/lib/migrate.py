@@ -1,5 +1,5 @@
 from __future__ import print_function
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple, Text
 from django.db.models.query import QuerySet
 import re
 import time
@@ -73,18 +73,28 @@ def add_bool_columns(db, table, cols):
             ', '.join(['ALTER %s SET NOT NULL' % (col,) for col in cols]))
     timed_ddl(db, stmt)
 
-def create_index_if_nonexistant(db, table, col, index):
-    # type: (Any, str, str, str) -> None
-    validate(table)
-    validate(col)
-    validate(index)
-    test = """SELECT relname FROM pg_class
-              WHERE relname = %s"""
-    if len(db.execute(test, params=[index])) != 0:
-        print("Not creating index '%s' because it already exists" % (index,))
-    else:
-        stmt = "CREATE INDEX %s ON %s (%s)" % (index, table, col)
-        timed_ddl(db, stmt)
+def create_index_if_not_exist(index_name, table_name, column_string, where_clause):
+    # type: (Text, Text, Text, Text) -> Text
+    #
+    # FUTURE TODO: When we no longer need to support postgres 9.3 for Trusty,
+    #              we can use "IF NOT EXISTS", which is part of postgres 9.5
+    #              (and which already is supported on Xenial systems).
+    stmt = '''
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM pg_class
+                where relname = '%s'
+                ) THEN
+                    CREATE INDEX
+                    %s
+                    ON %s (%s)
+                    %s;
+            END IF;
+        END$$;
+        ''' % (index_name, index_name, table_name, column_string, where_clause)
+    return stmt
 
 def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
     # type: (Any, Dict[str, Any], List[Tuple[Callable[[QuerySet], QuerySet], Callable[[QuerySet], None]]], int , float) -> None
