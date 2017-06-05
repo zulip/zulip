@@ -222,6 +222,8 @@ def build_custom_checkers(by_lang):
             for rule in skip_rules or []:
                 if re.match(rule, line):
                     skip = True
+            if line_fully_stripped.endswith('  # nolint'):
+                continue
             if skip:
                 continue
             for rule in rules:
