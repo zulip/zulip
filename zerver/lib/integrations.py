@@ -259,7 +259,7 @@ INTEGRATIONS = {
     'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.html'),
     'rss': Integration('rss', 'rss', display_name='RSS', doc='zerver/integrations/rss.html'),
     'subversion': Integration('subversion', 'subversion', doc='zerver/integrations/subversion.md'),
-    'trac': Integration('trac', 'trac', doc='zerver/integrations/trac.html'),
+    'trac': Integration('trac', 'trac', doc='zerver/integrations/trac.md'),
     'trello-plugin': Integration(
         'trello-plugin',
         'trello-plugin',
