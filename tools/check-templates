@@ -139,7 +139,6 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/index.html',
         'templates/zerver/integrations/index.html',
         'templates/zerver/keyboard_shortcuts.html',
-        'templates/zerver/left_sidebar.html',
         'templates/zerver/login.html',
         'templates/zerver/markdown_help.html',
         'templates/zerver/navbar.html',
