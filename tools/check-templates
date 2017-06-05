@@ -128,7 +128,6 @@ def check_html_templates(templates, all_dups):
         'puppet/zulip_ops/files/sparkle/win/sparkle-changelog.html',
         'static/html/5xx.html',
         'templates/analytics/activity.html',
-        'templates/analytics/ad_hoc_query.html',
         'templates/analytics/realm_summary_table.html',
         'templates/analytics/stats.html',
         'templates/confirmation/confirm_email_change.html',
