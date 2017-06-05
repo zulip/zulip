@@ -150,7 +150,7 @@ exports.get_keypress_hotkey = function (e) {
 };
 
 exports.processing_text = function () {
-    var selector = 'input:focus,select:focus,textarea:focus,#compose-send-button:focus';
+    var selector = 'input:focus,select:focus,textarea:focus,#compose-send-button:focus,.editable-section:focus';
     return $(selector).length > 0;
 };
 
