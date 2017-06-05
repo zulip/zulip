@@ -99,7 +99,6 @@ def check_html_templates(templates, all_dups):
         bad_files = [
             'static/html/5xx.html',
             'templates/corporate/zephyr-mirror.html',
-            'templates/corporate/zephyr.html',
             'templates/zerver/api.html',
             'templates/zerver/api_endpoints.html',
             'templates/zerver/apps.html',
@@ -129,7 +128,6 @@ def check_html_templates(templates, all_dups):
         'templates/analytics/activity.html',
         'templates/analytics/stats.html',
         'templates/corporate/zephyr-mirror.html',
-        'templates/corporate/zephyr.html',
         'templates/zerver/api.html',
         'templates/zerver/apps.html',
         'templates/zerver/compose.html',
