@@ -218,7 +218,7 @@ INTEGRATIONS = {
     'capistrano': Integration('capistrano', 'capistrano', display_name='Capistrano', doc='zerver/integrations/capistrano.md'),
     'codebase': Integration('codebase', 'codebase', doc='zerver/integrations/codebase.html'),
     'email': EmailIntegration('email', 'email', doc='zerver/integrations/email.html'),
-    'git': Integration('git', 'git', doc='zerver/integrations/git.html'),
+    'git': Integration('git', 'git', doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',
         'google-calendar',
