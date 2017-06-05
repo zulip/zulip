@@ -520,7 +520,7 @@ html {
 
 .split-view .info-box .organization-path {
     font-weight: 500;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 46%);
     margin-top: 10px;
 }
 
@@ -532,7 +532,7 @@ html {
     width: 328px;
     display: block;
     margin: 0 auto;
-    color: hsl(0, 0%, 73%);
+    color: hsl(0, 0%, 34%);
     font-weight: 600;
     text-align: center;
     text-transform: uppercase;
@@ -582,7 +582,7 @@ button.login-google-button,
 button.login-github-button {
     background-color: #fff;
     box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
-    color: hsl(0, 0%, 53%);
+    color: hsl(0, 0%, 34%);
 }
 
 button.login-google-button:hover,
@@ -617,7 +617,7 @@ button.login-google-button {
 }
 
 .split-view .actions a {
-    color: hsl(170, 41%, 52%);
+    color: hsl(164, 100%, 23%);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.8em;
@@ -769,6 +769,10 @@ button.login-google-button {
 
     .split-view .left-side .description {
         margin: 20px 0px;
+    }
+
+    .split-view .left-side .description a {
+        color: hsl(200, 100%, 36%);
     }
 
     .split-view .right-side {
