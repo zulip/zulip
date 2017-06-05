@@ -129,7 +129,6 @@ def check_html_templates(templates, all_dups):
         'static/html/5xx.html',
         'templates/analytics/activity.html',
         'templates/analytics/stats.html',
-        'templates/confirmation/confirm_email_change.html',
         'templates/zerver/emails/confirm_new_email.html',
         'templates/zerver/emails/invitation.html',
         'templates/zerver/emails/confirm_registration.html',
