@@ -1251,7 +1251,10 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(message_history[1]['rendered_content'],
                          '<p>content after edit</p>')
         self.assertEqual(message_history[1]['content_html_diff'],
-                         '<p>content <span class="highlight_text_replaced">after</span> edit</p>')
+                         ('<p>content '
+                          '<span class="highlight_text_deleted">before</span>'
+                          '<span class="highlight_text_inserted">after</span>'
+                          ' edit</p>'))
 
         # Check content of message before edit.
         self.assertEqual(message_history[1]['prev_rendered_content'],

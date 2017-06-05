@@ -22,10 +22,6 @@ def highlight_deleted(text):
     # type: (Text) -> Text
     return highlight_with_class('highlight_text_deleted', text)
 
-def highlight_replaced(text):
-    # type: (Text) -> Text
-    return highlight_with_class('highlight_text_replaced', text)
-
 def chunkize(text, in_tag):
     # type: (Text, bool) -> Tuple[List[Tuple[Text, Text]], bool]
     start = 0
@@ -92,20 +88,9 @@ def highlight_html_differences(s1, s2):
         next_op = None
         if idx != len(ops) - 1:
             next_op, next_text = ops[idx + 1]
-        if op == diff_match_patch.DIFF_DELETE and next_op == diff_match_patch.DIFF_INSERT:
-            # Replace operation
-            chunks, in_tag = chunkize(next_text, in_tag)
-            retval += highlight_chunks(chunks, highlight_replaced)
-            idx += 1
-        elif op == diff_match_patch.DIFF_INSERT and next_op == diff_match_patch.DIFF_DELETE:
-            # Replace operation
-            # I have no idea whether diff_match_patch generates inserts followed
-            # by deletes, but it doesn't hurt to handle them
+        if op == diff_match_patch.DIFF_DELETE:
             chunks, in_tag = chunkize(text, in_tag)
-            retval += highlight_chunks(chunks, highlight_replaced)
-            idx += 1
-        elif op == diff_match_patch.DIFF_DELETE:
-            retval += highlight_deleted('&nbsp;')
+            retval += highlight_chunks(chunks, highlight_deleted)
         elif op == diff_match_patch.DIFF_INSERT:
             chunks, in_tag = chunkize(text, in_tag)
             retval += highlight_chunks(chunks, highlight_inserted)
