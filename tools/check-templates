@@ -98,15 +98,12 @@ def check_html_templates(templates, all_dups):
         # localization.  See github #1236.
         bad_files = [
             'static/html/5xx.html',
-            'templates/corporate/mit.html',
             'templates/corporate/zephyr-mirror.html',
             'templates/corporate/zephyr.html',
             'templates/zerver/accounts_home.html',
-            'templates/zerver/accounts_send_confirm.html',
             'templates/zerver/api.html',
             'templates/zerver/api_endpoints.html',
             'templates/zerver/apps.html',
-            'templates/zerver/create_realm.html',
             'templates/zerver/emails/followup_day1.html',
             'templates/zerver/emails/followup_day2.html',
             'templates/zerver/features.html',
@@ -123,16 +120,6 @@ def check_html_templates(templates, all_dups):
             'zerver/webhooks/freshdesk/doc.html',
             'zerver/webhooks/taiga/doc.html',
             'zerver/webhooks/zendesk/doc.html',
-
-            'templates/zerver/integrations/capistrano.html',
-            'templates/zerver/integrations/git.html',
-            'templates/zerver/integrations/jira-plugin.html',
-            'templates/zerver/integrations/mercurial.html',
-            'templates/zerver/integrations/nagios.html',
-            'templates/zerver/integrations/openshift.html',
-            'templates/zerver/integrations/subversion.html',
-            'templates/zerver/integrations/trac.html',
-            'templates/zerver/integrations/twitter.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
@@ -169,31 +156,16 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/index.html',
         'templates/zerver/integrations/index.html',
         'templates/zerver/keyboard_shortcuts.html',
-        'templates/zerver/landing_nav.html',
         'templates/zerver/left_sidebar.html',
         'templates/zerver/login.html',
         'templates/zerver/markdown_help.html',
         'templates/zerver/navbar.html',
         'templates/zerver/register.html',
         'zerver/webhooks/deskdotcom/doc.html',
-        'zerver/webhooks/greenhouse/doc.html',
         'zerver/webhooks/librato/doc.html',
-        'zerver/webhooks/pivotal/doc.html',
         'zerver/webhooks/splunk/doc.html',
         'zerver/webhooks/stripe/doc.html',
-        'zerver/webhooks/trello/doc.html',
         'zerver/webhooks/wordpress/doc.html',
-        'zerver/webhooks/zapier/doc.html',
-
-        'templates/zerver/integrations/capistrano.html',
-        'templates/zerver/integrations/git.html',
-        'templates/zerver/integrations/google-calendar.html',
-        'templates/zerver/integrations/jira-plugin.html',
-        'templates/zerver/integrations/mercurial.html',
-        'templates/zerver/integrations/nagios.html',
-        'templates/zerver/integrations/openshift.html',
-        'templates/zerver/integrations/subversion.html',
-        'templates/zerver/integrations/trac.html',
     ]
     # TODO: Clean these files
     for fn in templates:
