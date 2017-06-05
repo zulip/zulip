@@ -1892,11 +1892,14 @@ nav a .no-style {
 }
 
 .highlight_text_inserted {
-    background-color: #E6EDFF;
+    color: #158318;
+    background-color: #E9FBE9;
 }
 
 .highlight_text_deleted {
-    background-color: #FFE6E6;
+    color: #BBBBBB;
+    text-decoration: line-through;
+    background-color: #FEDFDB;
 }
 
 .highlight_text_replaced {
