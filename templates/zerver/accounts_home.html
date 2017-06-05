@@ -34,15 +34,17 @@ $(function () {
                 {% endif %}
                 <div class="right-side">
                     {% if no_auth_enabled %}
-                    <div class="alert">
-                        <p>No authentication backends are enabled on this
-                        server yet, so it is impossible to register!</p>
+                        <div class="alert">
+                            <p>No authentication backends are enabled on this
+                            server yet, so it is impossible to register!</p>
 
-                        <p>See
-                        the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">Zulip
-                        authentication documentation</a> to learn how to
-                        configure authentication backends.</p>
-                    </div>
+                            <p>
+                                See
+                                the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">Zulip
+                                authentication documentation</a> to learn how to
+                                configure authentication backends.
+                            </p>
+                        </div>
                     {% else %}
                         {% if password_auth_enabled %}
                             <form class="form-inline" id="send_confirm" name="email_form"
@@ -82,7 +84,7 @@ $(function () {
                         {% if github_auth_enabled %}
                         <div class="login-github">
                             <a href="{{ url('signup-social', args=('github',)) }}"
-                               class="github-wrapper">
+                                class="github-wrapper">
                                 <button class="login-github-button github">
                                     <span>{{ _('Sign up with GitHub') }}</span>
                                 </button>
