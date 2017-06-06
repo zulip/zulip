@@ -109,7 +109,7 @@ as an **organization**.
 ## Misc
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
-<!-- Zulip on Mac OS -->
+<!-- Zulip on macOS -->
 <!-- Zulip on Linux -->
 <!-- Zulip on iOS -->
 <!-- Zulip in a terminal -->

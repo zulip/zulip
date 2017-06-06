@@ -31,7 +31,7 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
   for your platform.
 
-* If your host is OS X or older Linux, [download Vagrant][vagrant-dl]
+* If your host is macOS or older Linux, [download Vagrant][vagrant-dl]
   and [VirtualBox][vbox-dl].  Or, instead of Virtualbox you can use
   [VMWare Fusion][vmware-fusion-dl] with the [VMWare vagrant
   provider][vagrant-vmware-fusion-dl] for a nonfree option with better
