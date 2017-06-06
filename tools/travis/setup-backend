@@ -2,6 +2,13 @@
 set -e
 set -x
 
+# This is just a thin wrapper around provision.
 tools/provision --travis
+
+# Create nagios state so that we can test-run the Nagios checks
+# against the run-dev.py server, as a form of end-to-end test
+# (tools/).
+#
+# TODO: Is this actually required?  We don't seem to use it.
 sudo mkdir -p /var/lib/nagios_state
 sudo chown travis /var/lib/nagios_state
