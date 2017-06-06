@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-06-06 18:39+0000\n"
-"PO-Revision-Date: 2017-06-06 18:39+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2017-06-06 19:15+0000\n"
+"Last-Translator: Yago González <yagogonzalezg@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/zulip/zulip/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -78,7 +78,7 @@ msgstr "Iniciar sesión en Zulip"
 #: templates/zerver/reset_confirm.html:37
 #: templates/zerver/reset_confirm.html:56
 msgid "Valid"
-msgstr ""
+msgstr "Válido"
 
 #: templates/zerver/accounts_home.html:59
 msgid "Sign up"
@@ -151,11 +151,11 @@ msgstr ""
 
 #: templates/zerver/apps.html:97
 msgid "MacOS"
-msgstr ""
+msgstr "MacOS"
 
 #: templates/zerver/apps.html:118
 msgid "Windows"
-msgstr ""
+msgstr "Windows"
 
 #: templates/zerver/apps.html:142
 msgid ""
@@ -166,7 +166,7 @@ msgstr "Ofrecemos un <a href=\"https://zulip.org/dist/apps/linux/zulip-desktop_l
 
 #: templates/zerver/apps.html:145
 msgid "Download"
-msgstr ""
+msgstr "Descargar"
 
 #: templates/zerver/apps.html:159
 msgid ""
@@ -190,7 +190,7 @@ msgstr "Snipe, un cliente de chat\nmultiprotocolo basado en\nla terminal, es una
 
 #: templates/zerver/authors.html:23
 msgid "Avatar"
-msgstr ""
+msgstr "Avatar"
 
 #: templates/zerver/bankruptcy.html:6
 msgid "Welcome back"
@@ -293,7 +293,7 @@ msgstr "Enviar"
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
-msgstr ""
+msgstr "Cuenta de Zulip no encontrada."
 
 #: templates/zerver/confirm_continue_registration.html:17
 msgid ""
@@ -314,7 +314,7 @@ msgid ""
 "                        Zulip account with this email address.\n"
 "\n"
 "                        "
-msgstr ""
+msgstr "\n\nHas intentado iniciar sesión usando la cuenta de correo electrónico\n %(email)s, pero esta dirección no tiene\nuna cuenta de Zulip en esta organización. Si\nquieres, puedes intentar registrar una nueva\ncuenta de Zulip con esta dirección de correo electrónico."
 
 #: templates/zerver/confirm_continue_registration.html:45
 msgid "Continue to registration?"
@@ -348,11 +348,11 @@ msgstr "\nLa organización a la que estás intentando unirte,  %(deactivated_dom
 
 #: templates/zerver/delete_message.html:4
 msgid "Delete message"
-msgstr ""
+msgstr "Eliminar mensaje"
 
 #: templates/zerver/delete_message.html:8
 msgid "Are you sure you want to delete this message?"
-msgstr ""
+msgstr "¿Seguro que deseas eliminar este mensaje?"
 
 #: templates/zerver/delete_message.html:13
 #: templates/zerver/invite_user.html:36
@@ -362,7 +362,7 @@ msgstr "Cancelar"
 
 #: templates/zerver/delete_message.html:14
 msgid "Yes, delete this message"
-msgstr ""
+msgstr "Sí, elimina este mensaje"
 
 #: templates/zerver/dev_login.html:9
 msgid "Click on a user to log in!"
@@ -888,7 +888,7 @@ msgstr "Último mensaje"
 
 #: templates/zerver/keyboard_shortcuts.html:45
 msgid "First message"
-msgstr ""
+msgstr "Primer mensaje"
 
 #: templates/zerver/keyboard_shortcuts.html:52
 msgid "Composing messages"
@@ -960,7 +960,7 @@ msgstr "Editar tu último mensaje"
 
 #: templates/zerver/keyboard_shortcuts.html:134
 msgid "Show images in thread"
-msgstr ""
+msgstr "Mostrar imágenes en el tema"
 
 #: templates/zerver/keyboard_shortcuts.html:138
 msgid "Edit selected message"
@@ -972,7 +972,7 @@ msgstr "Destacar el mensaje seleccionado"
 
 #: templates/zerver/keyboard_shortcuts.html:147
 msgid "React to selected message with"
-msgstr ""
+msgstr "Reaccionar al mensaje seleccionado con"
 
 #: templates/zerver/keyboard_shortcuts.html:156
 msgid "Toggle topic mute"
@@ -984,11 +984,11 @@ msgstr "Ver borradores"
 
 #: templates/zerver/keyboard_shortcuts.html:174
 msgid "Edit selected draft"
-msgstr ""
+msgstr "Editar el borrador seleccionado"
 
 #: templates/zerver/keyboard_shortcuts.html:178
 msgid "Delete selected draft"
-msgstr ""
+msgstr "Eliminar el borrador seleccionado"
 
 #: templates/zerver/keyboard_shortcuts.html:184
 msgid "Menus"
@@ -996,7 +996,7 @@ msgstr "Menus"
 
 #: templates/zerver/keyboard_shortcuts.html:189
 msgid "Toggle the gear menu"
-msgstr ""
+msgstr "Abrir el menú engranaje"
 
 #: templates/zerver/keyboard_shortcuts.html:193
 msgid "Open message menu"
@@ -1016,23 +1016,23 @@ msgstr "Canales"
 
 #: templates/zerver/keyboard_shortcuts.html:215
 msgid "Scroll through streams"
-msgstr ""
+msgstr "Desplazarse por los canales"
 
 #: templates/zerver/keyboard_shortcuts.html:219
 msgid "Switch between tabs"
-msgstr ""
+msgstr "Cambiar entre pestañas"
 
 #: templates/zerver/keyboard_shortcuts.html:223
 msgid "View stream messages"
-msgstr ""
+msgstr "Ver mensajes de canal"
 
 #: templates/zerver/keyboard_shortcuts.html:227
 msgid "Subscribe to/unsubscribe from selected stream"
-msgstr ""
+msgstr "Suscribirse/desuscribirse del canal seleccionado"
 
 #: templates/zerver/keyboard_shortcuts.html:231
 msgid "Create new stream"
-msgstr ""
+msgstr "Crear nuevo canal"
 
 #: templates/zerver/left_sidebar.html:10
 msgid "Home"
@@ -1525,7 +1525,7 @@ msgstr "Ajustes de organización"
 
 #: templates/zerver/settings_overlay.html:53
 msgid "Organization permissions"
-msgstr ""
+msgstr "Permisos de la organización"
 
 #: templates/zerver/settings_overlay.html:57
 msgid "Custom emoji"
@@ -1982,7 +1982,7 @@ msgstr "El emoticono '%s' no existe"
 
 #: zerver/lib/emoji.py:44
 msgid "Must be a realm administrator or emoji author"
-msgstr ""
+msgstr "Debes ser administrador de la instancia o autor del emoticono"
 
 #: zerver/lib/emoji.py:50 zerver/models.py:404
 msgid "Invalid characters in emoji name"
@@ -2070,7 +2070,7 @@ msgstr "¡Nombre demasiado largo!"
 
 #: zerver/lib/users.py:16
 msgid "Name too short!"
-msgstr ""
+msgstr "¡Nombre demasiado corto!"
 
 #: zerver/lib/users.py:18
 msgid "Invalid characters in name!"
@@ -2159,7 +2159,7 @@ msgstr "Error CSRF: %s"
 
 #: zerver/middleware.py:338
 msgid "API usage exceeded rate limit"
-msgstr ""
+msgstr "El uso de la API excedió el límite"
 
 #: zerver/models.py:665
 msgid "Apple style"
@@ -2244,7 +2244,7 @@ msgstr "Tu cuenta ha sido desactivada."
 
 #: zerver/views/auth.py:505
 msgid "This user is not registered."
-msgstr ""
+msgstr "Este usuario no está registrado."
 
 #: zerver/views/auth.py:546
 msgid "Password auth is disabled in your team."
@@ -2354,7 +2354,7 @@ msgstr "Los nombres de canal IRC deben empezar con #"
 
 #: zerver/views/messages.py:994
 msgid "Your organization has turned off message editing"
-msgstr ""
+msgstr "Tu organización ha desactivado la edición de mensajes"
 
 #: zerver/views/messages.py:1009 zerver/views/messages.py:1080
 msgid "You don't have permission to edit this message"

@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-06-06 18:39+0000\n"
-"PO-Revision-Date: 2017-06-06 18:45+0000\n"
+"PO-Revision-Date: 2017-06-06 19:32+0000\n"
 "Last-Translator: Robert Hönig <robhoenig@gmail.com>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
@@ -1172,7 +1172,7 @@ msgstr "Editier-Verlauf der Nachricht"
 
 #: templates/zerver/message_history.html:12
 msgid "Close"
-msgstr "Close"
+msgstr "Schließen"
 
 #: templates/zerver/navbar.html:24 templates/zerver/navbar.html:25
 msgid "Search"
@@ -1587,7 +1587,7 @@ msgstr "Avatar auswählen"
 
 #: templates/zerver/settings_sidebar.html:30
 msgid "Clear avatar"
-msgstr "Clear avatar"
+msgstr "Avatar entfernen"
 
 #: templates/zerver/settings_sidebar.html:34
 msgid "Save"
