@@ -1,7 +1,7 @@
 // commonjs code goes here
 
 (function () {
-    var i18n = window.i18n = require('i18next');
+    var i18n = require('expose-loader?i18n!i18next');
     var XHR = require('i18next-xhr-backend');
     var lngDetector = require('i18next-browser-languagedetector');
     var Cache = require('i18next-localstorage-cache');
