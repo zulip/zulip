@@ -328,6 +328,8 @@ if __name__ == "__main__":
         cov.stop()
         cov.save()
         cov.combine()
+        cov.data_suffix = False  # Disable suffix so that filename is .coverage
+        cov.save()
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
