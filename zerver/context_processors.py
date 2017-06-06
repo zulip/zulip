@@ -77,6 +77,10 @@ def zulip_default_context(request):
         about_link_disabled = True
         find_team_link_disabled = False
 
+    apps_page_url = 'https://zulipchat.com/apps/'
+    if settings.ZILENCER_ENABLED:
+        apps_page_url = '/apps/'
+
     return {
         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
@@ -100,6 +104,7 @@ def zulip_default_context(request):
         'server_uri': settings.SERVER_URI,
         'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
+        'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'password_auth_enabled': password_auth_enabled(realm),
         'dev_auth_enabled': dev_auth_enabled(realm),
