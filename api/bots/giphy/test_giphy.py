@@ -51,11 +51,10 @@ class TestGiphyBot(BotTestCase):
         # This message calls `send_reply` function of BotHandlerApi
         keyword = "Hello"
         gif_url = "https://media4.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif"
-        expectations = {
-            keyword: get_bot_response(gif_url)
-        }
-        self.check_expected_responses(
-            expectations=expectations,
+        self.assert_bot_response(
+            message = {'content': keyword},
+            response = {'content': get_bot_response(gif_url)},
+            expected_method='send_reply',
             http_request=get_http_request(keyword),
             http_response=get_http_response_json(gif_url)
         )
