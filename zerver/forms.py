@@ -14,6 +14,7 @@ from jinja2 import Markup as mark_safe
 from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
+from zerver.lib.send_email import send_email
 from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
@@ -190,13 +191,16 @@ class ZulipPasswordResetForm(PasswordResetForm):
         # type: (str, str, Dict[str, Any], str, str, str) -> None
         """
         Currently we don't support accounts in multiple subdomains using
-        a single email addresss. We override this function so that we do
+        a single email address. We override this function so that we do
         not send a reset link to an email address if the reset attempt is
         done on the subdomain which does not match user.realm.subdomain.
 
         Once we start supporting accounts with the same email in
-        multiple subdomains, we may be able to delete or refactor this
-        function.
+        multiple subdomains, we may be able to refactor this function.
+
+        A second reason we override this function is so that we can send
+        the mail through the functions in zerver.lib.send_email, to match
+        how we send all other mail in the codebase.
         """
         user_realm = get_user_profile_by_email(to_email).realm
         attempted_subdomain = get_subdomain(getattr(self, 'request'))
@@ -204,14 +208,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if not check_subdomain(user_realm.subdomain, attempted_subdomain):
             context['attempted_realm'] = get_realm(attempted_subdomain)
 
-        super(ZulipPasswordResetForm, self).send_mail(
-            subject_template_name,
-            email_template_name,
-            context,
-            from_email,
-            to_email,
-            html_email_template_name=html_email_template_name
-        )
+        send_email('zerver/emails/password_reset', to_email, from_email=from_email,
+                   context=context)
 
     def save(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
