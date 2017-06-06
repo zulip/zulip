@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-06-06 18:39+0000\n"
-"PO-Revision-Date: 2017-06-06 19:32+0000\n"
+"PO-Revision-Date: 2017-06-06 20:00+0000\n"
 "Last-Translator: Robert Hönig <robhoenig@gmail.com>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
@@ -1567,7 +1567,7 @@ msgstr "Filter-Einstellungen"
 
 #: templates/zerver/settings_sidebar.html:9
 msgid "Edit bot"
-msgstr "Edit bot"
+msgstr "Bot editieren"
 
 #: templates/zerver/settings_sidebar.html:12
 msgid "Bot email"

@@ -125,7 +125,7 @@
   "E-mail invitation required": "E-mail Einladung benötigt", 
   "EDITED": "BEARBEITET", 
   "Edit": "Bearbeiten", 
-  "Edit bot": "Edit bot", 
+  "Edit bot": "Bot editieren", 
   "Edit user": "Nutzer bearbeiten", 
   "Edited (__last_edit_timestr__)": "Editiert (__last_edit_timestr__)", 
   "Email": "Email", 
@@ -421,5 +421,5 @@
   "more topics": "mehr Themen", 
   "right": "rechts", 
   "text": "Text", 
-  "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message"
+  "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "{{#if msg/starred}}Markierung aufheben{{else}}Diese Nachricht markieren{{/if}}"
 }
