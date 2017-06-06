@@ -441,7 +441,7 @@ exports.show_history = function (message) {
                 }
 
                 // Format timestamp nicely for display
-                var item = {timestamp: timerender.get_full_time(msg.timestamp)};
+                var item = {timestamp: moment(timerender.get_full_time(msg.timestamp)).format("h:mm A")};
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
                     item.body_to_render = msg.rendered_content;
