@@ -1,9 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/events-system.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
-before_install:
-  # TODO: Check if this can be removed; we probably don't use it.
-  - nvm install 0.10
 install:
   # Disable Travis CI's built-in NVM installation
   - mv ~/.nvm ~/.travis-nvm-disabled
