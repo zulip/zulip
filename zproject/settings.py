@@ -298,13 +298,7 @@ if PRODUCTION:
     LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
 
 base_template_engine_settings = {
-    'NAME': 'Jinja2',
     'BACKEND': 'zproject.jinja2.backends.Jinja2',
-    'DIRS': [
-        os.path.join(DEPLOY_ROOT, 'templates'),
-        os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
-    ],
-    'APP_DIRS': True,
     'OPTIONS': {
         'debug': DEBUG,
         'environment': 'zproject.jinja2.environment',
@@ -323,9 +317,30 @@ base_template_engine_settings = {
 }
 
 default_template_engine_settings = deepcopy(base_template_engine_settings)
+default_template_engine_settings.update({
+    'NAME': 'Jinja2',
+    'DIRS': [
+        os.path.join(DEPLOY_ROOT, 'templates'),
+        os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
+    ],
+    'APP_DIRS': True,
+})
 
+non_html_template_engine_settings = deepcopy(base_template_engine_settings)
+non_html_template_engine_settings.update({
+    'NAME': 'Jinja2_plaintext',
+    'DIRS': [os.path.join(DEPLOY_ROOT, 'templates')],
+    'APP_DIRS': False,
+})
+non_html_template_engine_settings['OPTIONS'].update({
+    'autoescape': False,
+})
+
+# The order here is important; get_template and related/parent functions try
+# the template engines in order until one succeeds.
 TEMPLATES = [
     default_template_engine_settings,
+    non_html_template_engine_settings,
 ]
 
 MIDDLEWARE_CLASSES = (
