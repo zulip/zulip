@@ -68,7 +68,7 @@ def do_rest_call(rest_operation, event, timeout=None):
 
     error = rest_operation_validator('rest_operation', rest_operation)
     if error:
-        raise JsonableError(_("%s") % (error,))
+        raise JsonableError(error)
 
     http_method = rest_operation['method']
     final_url = urllib.parse.urljoin(rest_operation['base_url'], rest_operation['relative_url_path'])
