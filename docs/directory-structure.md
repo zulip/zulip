@@ -123,7 +123,11 @@ Django context (i.e. with database access).
 
 * `api/examples/` API examples.
 
-* `api/integrations/` Bots distributed as part of the Zulip API bundle.
+* `api/integrations/` Integrations distributed as part of the Zulip API bundle.
+
+* `api/bots/` Bots distributed as part of the Zulip API bundle.
+
+* `api/bots_api/` Framework for running and testing bots in `api/bots/`.
 
 -------------------------------------------------------------------------
 
