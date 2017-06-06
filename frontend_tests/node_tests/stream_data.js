@@ -3,8 +3,11 @@ set_global('page_params', {
     realm_users: [],
 });
 
-set_global('$', function () {
-});
+var jsdom = require("jsdom");
+set_global('$', function () {});
+set_global('window', jsdom.jsdom().defaultView);
+
+set_global('Router', require("js/router.js"));
 
 add_dependencies({
     marked: 'third/marked/lib/marked.js',

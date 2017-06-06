@@ -1,5 +1,10 @@
 set_global('$', global.make_zjquery());
 
+var jsdom = require("jsdom");
+set_global('window', jsdom.jsdom().defaultView);
+
+set_global('Router', require("js/router.js"));
+
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',

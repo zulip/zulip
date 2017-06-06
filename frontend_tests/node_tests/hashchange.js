@@ -1,3 +1,6 @@
+set_global('window', require("jsdom").jsdom().defaultView);
+set_global('Router', require('js/router.js'));
+
 add_dependencies({
     hash_util: 'js/hash_util.js',
     people: 'js/people.js',
@@ -18,7 +21,7 @@ var hashchange = require('js/hashchange.js');
     hash = hashchange.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/topic/algol');
 
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hashchange.parse_narrow(new Router().parse(hash));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'algol', negated: false},
@@ -31,7 +34,7 @@ var hashchange = require('js/hashchange.js');
     hash = hashchange.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/-topic/visual.20c.2B.2B');
 
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hashchange.parse_narrow(new Router().parse(hash));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'visual c++', negated: true},
@@ -56,7 +59,7 @@ var hashchange = require('js/hashchange.js');
     ];
     hash = hashchange.operators_to_hash(operators);
     assert.equal(hash, '#narrow/sender/42-alice');
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hashchange.parse_narrow(new Router().parse(hash));
     assert.deepEqual(narrow, [
         {operator: 'sender', operand: 'alice@example.com', negated: false},
     ]);

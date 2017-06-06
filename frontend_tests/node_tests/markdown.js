@@ -2,11 +2,11 @@
 var path = require('path');
 var fs = require('fs');
 
-set_global('window', {
-    location: {
-        origin: 'http://zulip.zulipdev.com',
-    },
-});
+var jsdom = require("jsdom");
+set_global('window', jsdom.jsdom().defaultView);
+jsdom.changeURL(window, "http://zulip.zulipdev.com");
+
+set_global('Router', require("js/router.js"));
 
 set_global('page_params', {
     realm_users: [],

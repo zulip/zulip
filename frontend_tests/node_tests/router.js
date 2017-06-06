@@ -1,5 +1,8 @@
-var Router = require("js/router.js")({ addEventListener: function () {} });
-var router = new Router();
+var jsdom = require("jsdom");
+set_global('window', jsdom.jsdom().defaultView);
+
+var Router = require("js/router.js");
+var router = new Router(window);
 
 // test the parsing components to make sure that they are structurally what we
 // expect them to be.

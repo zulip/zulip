@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global("window", require('jsdom').jsdom().defaultView);
 
 set_global('page_params', {
     realm_users: [],
@@ -20,6 +21,7 @@ set_global('compose_actions', {});
 
 add_dependencies({
     Handlebars: 'handlebars',
+    Router: 'js/router',
     templates: 'js/templates',
     util: 'js/util.js',
     compose_fade: 'js/compose_fade.js',

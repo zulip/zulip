@@ -1,3 +1,10 @@
+var jsdom = require("jsdom");
+
+set_global('window', jsdom.jsdom().defaultView);
+set_global('Router', require("js/router.js"));
+
+global.$ = require('jquery')(window);
+
 add_dependencies({
     Handlebars: 'handlebars',
     hash_util: 'js/hash_util',
@@ -9,10 +16,6 @@ add_dependencies({
 });
 
 set_global('unread', {});
-
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
 
 var topic_list = require('js/topic_list.js');
 
