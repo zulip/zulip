@@ -69,7 +69,7 @@ function get_stream_suggestions(last, operators) {
     streams = typeahead_helper.sorter(query, streams);
 
     var objs = _.map(streams, function (stream) {
-        var prefix = 'Narrow to stream';
+        var prefix = 'stream';
         var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         var description = prefix + ' ' + highlighted_stream;
         var term = {
@@ -359,7 +359,7 @@ function get_special_filter_suggestions(last, operators) {
     var suggestions = [
         {
             search_string: 'in:all',
-            description: 'All messages',
+            description: 'all messages',
             invalid: [
                 {operator: 'in'},
                 {operator: 'stream'},
@@ -369,7 +369,7 @@ function get_special_filter_suggestions(last, operators) {
         },
         {
             search_string: 'is:private',
-            description: 'Private messages',
+            description: 'private messages',
             invalid: [
                 {operator: 'is', operand: 'private'},
                 {operator: 'stream'},
@@ -380,7 +380,7 @@ function get_special_filter_suggestions(last, operators) {
         },
         {
             search_string: 'is:starred',
-            description: 'Starred messages',
+            description: 'starred messages',
             invalid: [
                 {operator: 'is', operand: 'starred'},
             ],
@@ -394,7 +394,7 @@ function get_special_filter_suggestions(last, operators) {
         },
         {
             search_string: 'is:alerted',
-            description: 'Alerted messages',
+            description: 'alerted messages',
             invalid: [
                 {operator: 'is', operand: 'alerted'},
             ],
@@ -424,7 +424,7 @@ function get_sent_by_me_suggestions(last, operators) {
     var last_string = Filter.unparse([last]).toLowerCase();
     var sender_query = 'sender:' + people.my_current_email();
     var from_query = 'from:' + people.my_current_email();
-    var description = 'Sent by me';
+    var description = 'sent by me';
     var invalid = [
         {operator: 'sender'},
         {operator: 'from'},
@@ -544,6 +544,11 @@ exports.get_suggestions = function (query) {
 
     suggestions = get_operator_subset_suggestions(operators);
     result = result.concat(suggestions);
+
+    _.each(result, function (sug) {
+        var first = sug.description.charAt(0).toUpperCase();
+        sug.description = first + sug.description.slice(1);
+    });
 
     // Typeahead expects us to give it strings, not objects, so we maintain our own hash
     // back to our objects, and we also filter duplicates here.

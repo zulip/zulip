@@ -200,8 +200,6 @@ Filter.canonicalize_term = function (opts) {
     };
 };
 
-
-
 /* We use a variant of URI encoding which looks reasonably
    nice and still handles unambiguously cases such as
    spaces in operands.
@@ -419,10 +417,10 @@ Filter.operator_to_prefix = function (operator, negated) {
     var verb;
 
     if (operator === 'search') {
-        return negated ? 'Exclude' : 'Search for';
+        return negated ? 'exclude' : 'search for';
     }
 
-    verb = negated ? 'Exclude ' : 'Narrow to ';
+    verb = negated ? 'exclude ' : '';
 
     switch (operator) {
     case 'stream':
@@ -474,7 +472,7 @@ Filter.describe = function (operators) {
         if (is(operators[0], 'stream') && is(operators[1], 'topic')) {
             var stream = operators[0].operand;
             var topic = operators[1].operand;
-            var part = 'Narrow to ' + stream + ' > ' + topic;
+            var part = "stream " + stream + ' > ' + topic;
             parts = [part];
             operators = operators.slice(2);
         }
@@ -484,13 +482,13 @@ Filter.describe = function (operators) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator ==='is') {
-            var verb = elem.negated ? 'Exclude ' : 'Narrow to ';
+            var verb = elem.negated ? 'exclude ' : '';
             if (operand === 'private') {
-                return verb + 'all private messages';
+                return verb + 'private messages';
             } else if (operand === 'starred') {
                 return verb + 'starred messages';
             } else if (operand === 'mentioned') {
-                return verb + 'mentioned messages';
+                return verb + '@-mentions';
             } else if (operand === 'alerted') {
                 return verb + 'alerted messages';
             }
@@ -501,7 +499,7 @@ Filter.describe = function (operators) {
                 return prefix_for_operator + ' ' + operand;
             }
         }
-        return 'Narrow to (unknown operator)';
+        return "unknown operand";
     });
     return parts.concat(more_parts).join(', ');
 };

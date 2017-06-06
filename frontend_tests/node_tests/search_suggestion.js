@@ -422,7 +422,7 @@ init();
     assert.equal(describe('is:mentioned'), '@-mentions');
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
-    assert.equal(describe('stream:devel'), 'Narrow to stream <strong>devel</strong>');
+    assert.equal(describe('stream:devel'), 'Stream <strong>devel</strong>');
 }());
 
 (function test_sent_by_me_suggestions() {
@@ -557,7 +557,7 @@ init();
         return suggestions.lookup_table[q].description;
     }
     assert.equal(describe('te'), "Search for te");
-    assert.equal(describe('stream:office topic:team'), "Narrow to office > team");
+    assert.equal(describe('stream:office topic:team'), "Stream office > team");
 
     suggestions = search.get_suggestions('topic:staplers stream:office');
     expected = [
@@ -718,9 +718,9 @@ init();
         return suggestions.lookup_table[q].description;
     }
     assert.equal(describe('pm-with:ted@zulip.com'),
-        "Narrow to private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
     assert.equal(describe('sender:ted@zulip.com'),
-        "Narrow to messages sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+        "Messages sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
 
     suggestions = search.get_suggestions('Ted '); // note space
 
