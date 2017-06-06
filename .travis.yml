@@ -15,10 +15,6 @@ install:
   # becoming huge.  TODO: Add similar cleanup code for the other caches.
   - tools/clean-venv-cache --travis
 script:
-  # We unset GEM_PATH here as a hack to work around Travis CI having
-  # broken all ruby on their guests.  It's possible they fixed their
-  # bug and we can remove this; we should test.
-  - unset GEM_PATH
   - ./tools/travis/$TEST_SUITE
 cache:
   - apt: false
