@@ -253,28 +253,28 @@ expect_home();
 
 // Narrow by typing in search strings or operators.
 // Test stream / recipient autocomplete in the search bar
-search_and_check('Verona', 'Narrow to stream', expect_stream,
+search_and_check('Verona', 'Stream', expect_stream,
                  'Verona - Zulip Dev - Zulip');
 
-search_and_check('Cordelia', 'Narrow to private', expect_1on1,
+search_and_check('Cordelia', 'Private', expect_1on1,
                  'private - Zulip Dev - Zulip');
 
 // Test operators
-search_and_check('stream:Verona', 'Narrow', expect_stream,
+search_and_check('stream:Verona', '', expect_stream,
                  'Verona - Zulip Dev - Zulip');
 
-search_and_check('stream:Verona subject:frontend+test', 'Narrow', expect_stream_subject,
+search_and_check('stream:Verona subject:frontend+test', '', expect_stream_subject,
                  'frontend test - Zulip Dev - Zulip');
 
-search_and_check('stream:Verona topic:frontend+test', 'Narrow', expect_stream_subject,
+search_and_check('stream:Verona topic:frontend+test', '', expect_stream_subject,
                  'frontend test - Zulip Dev - Zulip');
 
-search_and_check('subject:frontend+test', 'Narrow', expect_subject,
+search_and_check('subject:frontend+test', '', expect_subject,
                  'home - Zulip Dev - Zulip');
 
-search_silent_user('sender:emailgateway@zulip.com', 'Narrow');
+search_silent_user('sender:emailgateway@zulip.com', '');
 
-search_non_existing_user('sender:dummyuser@zulip.com', 'Narrow');
+search_non_existing_user('sender:dummyuser@zulip.com', '');
 
 // Narrow by clicking the left sidebar.
 casper.then(function () {
