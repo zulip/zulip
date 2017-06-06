@@ -48,7 +48,7 @@ private one-on-one and group conversations, inline image previews, team
 presence/buddy lists, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
 users who connect to Zulip using dedicated iOS, Android, Linux, Windows,
-and Mac OS X clients, as well as people using modern web browsers or
+and macOS clients, as well as people using modern web browsers or
 dedicated Zulip API clients.
 
 A server can host multiple Zulip *realms* (organizations) at the same
