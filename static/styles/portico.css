@@ -419,11 +419,6 @@ input.text-error {
     padding: 6px 0px 6px 0px;
 }
 
-.header-main .portico-simple-logo {
-    height: 40px;
-    width: auto;
-}
-
 .app {
     width: 100%;
     z-index: 99;
@@ -937,48 +932,10 @@ input.new-organization-button {
     margin-left: 10px;
 }
 
-.main-headline-container,
-.os-headline-container {
+.main-headline-container {
     position: relative;
     height: 100%;
     padding-top: 40px !important;
-}
-
-.os-headline-container {
-    padding: 20px;
-    background: #1e5799;
-    background: linear-gradient(to bottom, #1e5799 0%,#2989d8 52%,#7db9e8 100%);
-    padding-bottom: 40px !important;
-    text-align: center;
-}
-
-.os-tagline,
-.os-footnote {
-    color: #eeeeee !important;
-}
-
-.os-footnote a:link,
-.os-footnote a:visited,
-.os-footnote a:active {
-    color: #eeeeee;
-    text-decoration: none;
-    border-bottom: 1px solid #dddddd;
-}
-
-.os-footnote a:hover {
-    color: #ffffff;
-    text-decoration: none;
-    border-bottom: 1px solid #ffffff;
-}
-
-.os-illustration {
-    height: 200px;
-    width: auto;
-    margin-bottom: 15px;
-}
-
-.portico-os-announcement {
-    padding-top: 56px;
 }
 
 .main-headline-logo {
