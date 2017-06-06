@@ -2358,12 +2358,6 @@ img.emoji {
     top: 6px;
 }
 
-.emoji.realm-emoji {
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
 .twitter-tweet {
     border: 1px solid #ddd;
     padding: .5em .75em;
