@@ -836,6 +836,7 @@ JS_SPECS = {
             'js/loading.js',
             'js/util.js',
             'js/dynamic_text.js',
+            'js/router.js',
             'js/rtl.js',
             'js/dict.js',
             'js/components.js',

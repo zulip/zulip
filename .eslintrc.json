@@ -21,6 +21,7 @@
         "moment": false,
         "i18n": false,
         "DynamicText": false,
+        "Router": false,
         "bridge": false,
         "page_params": false,
         "attachments_ui": false,
