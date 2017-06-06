@@ -1,6 +1,10 @@
+{% extends "zerver/emails/email_base.html" %}
+
 {#
 Mail sent to a user who hasn't logged in for 24 hours.
 #}
+
+{% block content %}
 
 Hello {{ name }},
 
@@ -94,6 +98,7 @@ Here are some of the hot conversations that have happened while you've been gone
 The Zulip Team</p>
 
 <p>
-  <a href="{{ realm_uri }}/#settings">Manage email preferences</a> |
-  <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
+    <a href="{{ realm_uri }}/#settings">Manage email preferences</a> |
+    <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
 </p>
+{% endblock %}
