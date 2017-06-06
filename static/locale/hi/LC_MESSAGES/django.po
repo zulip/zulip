@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Boris Yankov <borisyankov@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
@@ -11,17 +10,17 @@ msgstr ""
 "POT-Creation-Date: 2017-06-06 18:39+0000\n"
 "PO-Revision-Date: 2017-06-06 18:39+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Bulgarian (http://www.transifex.com/zulip/zulip/language/bg/)\n"
+"Language-Team: Hindi (http://www.transifex.com/zulip/zulip/language/hi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: bg\n"
+"Language: hi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: analytics/views.py:83
 #, python-format
 msgid "Unknown chart name: %s"
-msgstr "Неизвестно име на графика: %s"
+msgstr ""
 
 #: analytics/views.py:88
 #, python-format
@@ -51,7 +50,7 @@ msgstr ""
 #: templates/zerver/register.html:33 templates/zerver/reset.html:25
 #: templates/zerver/reset_confirm.html:24
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:41
 #, python-format
@@ -60,7 +59,7 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:53
 msgid "Enter"
-msgstr "Въведи"
+msgstr ""
 
 #: templates/zerver/accounts_home.html:17
 msgid "Sign up for Zulip"
@@ -238,11 +237,11 @@ msgstr ""
 
 #: templates/zerver/compose.html:59
 msgid "Stream"
-msgstr "Канал"
+msgstr ""
 
 #: templates/zerver/compose.html:63
 msgid "Topic"
-msgstr "Тема"
+msgstr ""
 
 #: templates/zerver/compose.html:72
 msgid "You and"
@@ -355,7 +354,7 @@ msgstr ""
 #: templates/zerver/invite_user.html:36
 #: templates/zerver/settings_sidebar.html:35
 msgid "Cancel"
-msgstr "Отказ"
+msgstr ""
 
 #: templates/zerver/delete_message.html:14
 msgid "Yes, delete this message"
@@ -371,11 +370,11 @@ msgstr ""
 
 #: templates/zerver/dev_login.html:17
 msgid "Administrators"
-msgstr "Администратори"
+msgstr ""
 
 #: templates/zerver/dev_login.html:24
 msgid "Normal users"
-msgstr "Нормални потребители"
+msgstr ""
 
 #: templates/zerver/dev_login.html:31
 msgid "Community users"
@@ -387,7 +386,7 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.html:11
 #: templates/zerver/portico.html:21
 msgid "Zulip"
-msgstr "Zulip"
+msgstr ""
 
 #: templates/zerver/features.html:18
 msgid "Zulip features"
@@ -670,7 +669,7 @@ msgstr ""
 #: templates/zerver/footer.html:21 templates/zerver/portico.html:39
 #: templates/zerver/portico.html:44
 msgid "Log in"
-msgstr "Вход"
+msgstr ""
 
 #: templates/zerver/footer.html:28 templates/zerver/portico.html:46
 #: templates/zerver/register.html:208
@@ -856,7 +855,7 @@ msgstr ""
 #: templates/zerver/keyboard_shortcuts.html:17
 #: templates/zerver/right_sidebar.html:15
 msgid "Search people"
-msgstr "Търси хора"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:21
 #: templates/zerver/left_sidebar.html:68
@@ -1033,15 +1032,15 @@ msgstr ""
 
 #: templates/zerver/left_sidebar.html:10
 msgid "Home"
-msgstr "Всичко"
+msgstr "घर"
 
 #: templates/zerver/left_sidebar.html:21
 msgid "Private messages"
-msgstr "Лични съобщения"
+msgstr "निजी संदेश"
 
 #: templates/zerver/left_sidebar.html:40
 msgid "Mentions"
-msgstr "Споменавания"
+msgstr "उल्लेख"
 
 #: templates/zerver/left_sidebar.html:48
 msgid "Subscribed streams"
@@ -1065,7 +1064,7 @@ msgstr ""
 
 #: templates/zerver/left_sidebar.html:61
 msgid "All streams"
-msgstr "Всички канали"
+msgstr ""
 
 #: templates/zerver/left_sidebar.html:78
 msgid "SHARE THE LOVE"
@@ -1108,7 +1107,7 @@ msgstr ""
 #: templates/zerver/login.html:87 templates/zerver/register.html:69
 #: templates/zerver/reset_confirm.html:31
 msgid "Password"
-msgstr "Парола"
+msgstr ""
 
 #: templates/zerver/login.html:102
 msgid ""
@@ -1117,11 +1116,11 @@ msgstr ""
 
 #: templates/zerver/login.html:112
 msgid "Sign in"
-msgstr "Вход"
+msgstr ""
 
 #: templates/zerver/login.html:124
 msgid "Sign in with Google"
-msgstr "Вход с Google"
+msgstr ""
 
 #: templates/zerver/login.html:133
 msgid "Sign in with GitHub"
@@ -1167,7 +1166,7 @@ msgstr ""
 
 #: templates/zerver/navbar.html:24 templates/zerver/navbar.html:25
 msgid "Search"
-msgstr "Търси"
+msgstr ""
 
 #: templates/zerver/navbar.html:52 templates/zerver/navbar.html:54
 msgid "Manage streams"
@@ -1177,7 +1176,7 @@ msgstr ""
 #: templates/zerver/settings_overlay.html:4
 #: templates/zerver/settings_overlay.html:105
 msgid "Settings"
-msgstr "Настройки"
+msgstr ""
 
 #: templates/zerver/navbar.html:62 templates/zerver/navbar.html:65
 msgid "Manage organization"
@@ -1221,7 +1220,7 @@ msgstr ""
 #: templates/zerver/navbar.html:128 templates/zerver/navbar.html:130
 #: templates/zerver/settings_overlay.html:98
 msgid "Log out"
-msgstr "Изход"
+msgstr ""
 
 #: templates/zerver/navbar.html:134 templates/zerver/navbar.html:136
 msgid "Debug"
