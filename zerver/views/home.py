@@ -265,6 +265,12 @@ def desktop_home(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponseRedirect(reverse('zerver.views.home.home'))
 
+def apps_view(request):
+    # type: (HttpRequest) -> HttpResponse
+    if settings.ZILENCER_ENABLED:
+        return render(request, 'zerver/apps.html')
+    return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
+
 def is_buggy_ua(agent):
     # type: (str) -> bool
     """Discrimiate CSS served to clients based on User Agent
