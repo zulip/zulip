@@ -18,8 +18,10 @@ def display_email(user):
 
 def send_email(template_prefix, to_email, from_email=None, reply_to_email=None, context={}):
     # type: (str, Text, Optional[Text], Optional[Text], Dict[str, Any]) -> bool
-    subject = loader.render_to_string(template_prefix + '.subject', context).strip()
-    message = loader.render_to_string(template_prefix + '.txt', context)
+    subject = loader.render_to_string(template_prefix + '.subject',
+                                      context=context, using='Jinja2_plaintext').strip()
+    message = loader.render_to_string(template_prefix + '.txt',
+                                      context=context, using='Jinja2_plaintext')
     # Remove try/expect once https://github.com/zulip/zulip/issues/4691 is resolved.
     try:
         html_message = loader.render_to_string(template_prefix + '.html', context)
