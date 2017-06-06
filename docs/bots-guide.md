@@ -25,7 +25,7 @@ that help with writing bots, please visit
 [Zulip development community server](https://chat.zulip.org), open an
 issue, or submit a pull request to share your ideas!
 
-# The bots system
+## The bots system
 
 Zulip's bot system resides in the `api` directory.
 
