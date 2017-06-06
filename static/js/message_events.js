@@ -214,6 +214,7 @@ exports.update_messages = function update_messages(events) {
                 msg.edit_history = [];
             }
             msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+            delete msg.raw_content;
             message_content_edited = true;
         }
 
