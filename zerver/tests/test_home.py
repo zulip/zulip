@@ -395,6 +395,23 @@ class HomeTest(ZulipTestCase):
         path = urllib.parse.urlparse(result['Location']).path
         self.assertEqual(path, "/")
 
+    def test_apps_view(self):
+        # type: () -> None
+        result = self.client_get('/apps')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'].endswith('/apps/'))
+
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'] == 'https://zulipchat.com/apps/')
+
+        with self.settings(ZILENCER_ENABLED=True):
+            result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode('utf-8')
+        self.assertIn('Appsolutely', html)
+
     def test_generate_204(self):
         # type: () -> None
         email = self.example_email("hamlet")
