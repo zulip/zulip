@@ -434,6 +434,7 @@ exports.show_history = function (message) {
         success: function (data) {
             // For now, we ignore topic edits
             var content_edit_history = [];
+            var prev_timestamp;
             _.each(data.message_history, function (msg, index) {
                 if (index !== 0 && !msg.prev_content) {
                     // Skip topic edits
@@ -441,13 +442,20 @@ exports.show_history = function (message) {
                 }
 
                 // Format timestamp nicely for display
-                var item = {timestamp: moment(timerender.get_full_time(msg.timestamp)).format("h:mm A")};
+                var timestamp = timerender.get_full_time(msg.timestamp);
+                var item = {
+                    timestamp: moment(timestamp).format("h:mm A"),
+                    display_date: moment(timestamp).format("MMMM D, YYYY"),
+                };
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
                     item.body_to_render = msg.rendered_content;
+                    prev_timestamp = timestamp;
+                    item.show_date_row = true;
                 } else {
                     item.posted_or_edited = "Edited by";
                     item.body_to_render = msg.content_html_diff;
+                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                 }
                 if (msg.user_id) {
                     var person = people.get_person_from_user_id(msg.user_id);
