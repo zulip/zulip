@@ -146,7 +146,7 @@ if __name__ == "__main__":
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
                       default=False,
-                      help='Compute test coverage. Enforces processes=1.')
+                      help='Compute test coverage.')
     parser.add_option('--verbose-coverage', dest='verbose_coverage',
                       action="store_true",
                       default=False, help='Enable verbose print of coverage report.')
@@ -197,12 +197,6 @@ if __name__ == "__main__":
                             "test-backend was run.  Implies --nonfatal-errors."))
 
     (options, args) = parser.parse_args()
-    if options.coverage:
-        # Currently coverage doesn't work with parallel mode, so when
-        # coverage parameter is supplied we enfore serial mode.
-        print("Disabling parallel mode because coverage isn't supported.")
-        options.processes = 1
-
     zerver_test_dir = 'zerver/tests/'
 
     # While running --rerun, we read var/last_test_failure.json to get
@@ -279,7 +273,7 @@ if __name__ == "__main__":
 
     if options.coverage:
         import coverage
-        cov = coverage.Coverage(config_file="tools/coveragerc")
+        cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
         cov.start()
     if options.profile:
         import cProfile
@@ -333,6 +327,7 @@ if __name__ == "__main__":
     if options.coverage:
         cov.stop()
         cov.save()
+        cov.combine()
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
