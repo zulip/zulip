@@ -1,4 +1,8 @@
 #!/bin/bash
+# This script is very similar to tools/test-all (what one runs
+# locally).  Possibly they should be merged, though it's worth noting,
+# they are intentionally different (basically some slow stuff is not
+# worth running in `test-all`).
 
 source tools/travis/activate-venv
 

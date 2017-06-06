@@ -8,7 +8,8 @@ important components are documented in depth in their own sections:
 - [Django](testing-with-django.html): backend Python tests
 - [Casper](testing-with-casper.html): end-to-end UI tests
 - [Node](testing-with-node.html): unit tests for JS front end code
-- [Linters](linters.html)
+- [Linters](linters.html): Our parallel linter suite
+- [Travis CI details](travis.html): How all of these run in Travis CI
 
 This document covers more general testing issues, such as how to run the
 entire test suite, how to troubleshoot database issues, how to manually
