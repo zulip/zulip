@@ -227,6 +227,15 @@ exports.is_mobile = function () {
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 };
 
+// this is a litmus test to see whether or not a browser is IE 8>=.
+// this works in hacky ways because in all other browsers [1,] => [1], but
+// in IE8 and below it is equal to [1,undefined].
+// then, we take advantage of the fact that -[1] => -1 and -[1,undefined] => NaN,
+// and so !-1 = false for browsers that aren't IE and !NaN = true.
+exports.is_unsupported_ie = function () {
+    return !-[1,]; // eslint-disable-line
+};
+
 exports.prefix_sort = function (query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"

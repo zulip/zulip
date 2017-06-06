@@ -420,19 +420,21 @@ exports.change_state = (function () {
             return;
         }
 
+        hash.shift();
+
         // if there are any arguments the state should be modified.
-        if (hash.arguments.length > 0) {
+        if (hash.length > 0) {
             // if in #streams/new form.
-            if (hash.arguments[0] === "new") {
+            if (hash[0].component === "new") {
                 exports.new_stream_clicked();
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
-            } else if (hash.arguments[0] === "all") {
+            } else if (hash[0].component === "all") {
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
-            } else if (hash.arguments[0] === "subscribed") {
+            } else if (hash[0].component === "subscribed") {
                 components.toggle.lookup("stream-filter-toggle").goto("Subscribed");
             // if the first argument is a valid number.
-            } else if (/\d+/.test(hash.arguments[0])) {
-                var $stream_row = $(".stream-row[data-stream-id='" + hash.arguments[0] + "']");
+            } else if (/\d+/.test(hash[0].component)) {
+                var $stream_row = $(".stream-row[data-stream-id='" + hash[0].component + "']");
                 var top = $stream_row.click()[0].offsetTop;
 
                 $(".streams-list").animate({ scrollTop: top }, 200);
@@ -448,14 +450,19 @@ exports.change_state = (function () {
 }());
 
 exports.launch = function (hash) {
-    exports.setup_page(function () {
-        overlays.open_overlay({
-            name: 'subscriptions',
-            overlay: $("#subscription_overlay"),
-            on_close: exports.close,
+    if (!overlays.streams_open()) {
+        exports.setup_page(function () {
+            overlays.open_overlay({
+                name: 'subscriptions',
+                overlay: $("#subscription_overlay"),
+                on_close: exports.close,
+            });
+            exports.change_state(hash);
         });
+    } else {
         exports.change_state(hash);
-    });
+    }
+
     if (!get_active_data().id) {
         $('#search_stream_name').focus();
     }
