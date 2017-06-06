@@ -215,6 +215,9 @@ exports.update_messages = function update_messages(events) {
             }
             msg.edit_history = [edit_history_entry].concat(msg.edit_history);
             message_content_edited = true;
+
+            // Update raw_content, so that editing a few times in a row is fast.
+            msg.raw_content = event.content;
         }
 
         msg.last_edit_timestamp = event.edit_timestamp;
