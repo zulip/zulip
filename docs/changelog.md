@@ -4,30 +4,41 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.6.0 -- 2017-06-06
+
 Highlights:
 
-* Completely redesigned the Zulip settings interfaces to look a lot
-  nicer and be easier to navigate.
-* Completely redesigned the logged-out pages, including
-  login, registration, integrations, etc.  Now organization admins can
-  configure an icon, name, and description for their organization that
-  is displayed on the login/registration pages.
-* Redesigned numerous UI elements, including the keyboard
-  shortcuts, emoji picker, user profile popovers, sidebars, compose, etc.
-* Massive performance improvements to presence and settings pages,
-  especially for very large organizations (1000+ users).
-* Added typing notifications for private message threads.
-* Added a new saved drafts feature, backed by local storage.
-* Added support for users changing their own email address.
-* Added a dozen useful new keyboard shortcuts, from editing messages
-  to emoji reactions to drafts and managing streams.
-* Mobile web now works much better, especially on iOS.
-* Apps documentation now points to the React Native iOS mobile app.
-* Added support for sending
-  [mobile push notifications via a new forwarding service][mobile-push].
-* Added support for installing a small Zulip server with only 2GB of RAM.
+- A complete visual redesign of the logged-out pages, including login,
+registration, integrations, etc.
+- New visual designs for numerous UI elements, including the emoji
+picker, user profile popovers, sidebars, compose, and many more.
+- A complete redesign of the Zulip settings interfaces to look a lot
+nicer and be easier to navigate.
+- Organization admins can now configure the login and registration
+pages to show visitors a nice organization profile with custom text
+and images, written in Markdown.
+- Massively improved performance for presence and settings pages,
+especially for very large organizations (1000+ users).
+- A dozen useful new keyboard shortcuts, from editing messages to
+emoji reactions to drafts and managing streams.
+- Typing notifications for private message threads.
+- Users can now change their own email address.
+- New saved-drafts feature.
+- The server can now run on a machine with as little as 2GB of RAM.
+- The new [Electron desktop app][electron-app] and new
+[React Native mobile app for iOS][ios-app] are now the recommended
+Zulip apps.
+- Mobile web now works much better, especially on iOS.
+- Support for sending mobile push notifications via
+[a new forwarding service][mobile-push]
+- Complete translations for Spanish, German, and Czech (and
+  expanded partial translations for Japanese, Chinese, French,
+  Hungarian, Polish, Dutch, Russian, Bulgarian, Portuguese,
+  Serbian, Malayalam, Korean, and Italian).
 
 [mobile-push]: https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
+[electron-app]: https://github.com/zulip/zulip-electron/releases
+[ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 
 Full feature Changelog:
 
@@ -96,6 +107,8 @@ Full feature Changelog:
 * Fixed load spikes when email mirror is receiving a lot of traffic.
 * Fixed the ugly grey flicker when scrolling fast on Macs.
 * Fixed previews of GitHub image URLs.
+* Fixed narrowing via clicking on desktop notifications.
+* Fixed Subscribed/Unsubscribed bookends appearing incorrectly.
 * Eliminated the idea of a realm having a canonical domain; now
   there's simply the list of allowed domains for new users.
 * Migrated avatars to a user-id-based storage setup (not email-based).
