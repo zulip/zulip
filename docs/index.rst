@@ -107,9 +107,10 @@ Contents:
 
    testing
    linters
-   testing-with-node
    testing-with-django
+   testing-with-node
    testing-with-casper
+   travis
    manual-testing
 
 .. _subsystem-documentation:
