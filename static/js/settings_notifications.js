@@ -2,6 +2,12 @@ var settings_notifications = (function () {
 
 var exports = {};
 
+var notification_settings = ["enable_stream_desktop_notifications",
+    "enable_stream_sounds", "enable_desktop_notifications",
+    "pm_content_in_desktop_notifications", "enable_sounds",
+    "enable_offline_email_notifications", "enable_offline_push_notifications",
+    "enable_online_push_notifications","enable_digest_emails"];
+
 exports.set_up = function () {
     $("#notify-settings-status").hide();
 
@@ -15,47 +21,11 @@ exports.set_up = function () {
 
         // Stream notification settings.
 
-        if (result.enable_stream_desktop_notifications !== undefined) {
-            page_params.enable_stream_desktop_notifications =
-                result.enable_stream_desktop_notifications;
-        }
-        if (result.enable_stream_sounds !== undefined) {
-            page_params.enable_stream_sounds = result.enable_stream_sounds;
-        }
-
-        // PM and @-mention notification settings.
-
-        if (result.enable_desktop_notifications !== undefined) {
-            page_params.enable_desktop_notifications = result.enable_desktop_notifications;
-        }
-        if (result.enable_sounds !== undefined) {
-            page_params.enable_sounds = result.enable_sounds;
-        }
-
-        if (result.enable_offline_email_notifications !== undefined) {
-            page_params.enable_offline_email_notifications =
-                result.enable_offline_email_notifications;
-        }
-
-        if (result.enable_offline_push_notifications !== undefined) {
-            page_params.enable_offline_push_notifications =
-                result.enable_offline_push_notifications;
-        }
-
-        if (result.enable_online_push_notifications !== undefined) {
-            page_params.enable_online_push_notifications = result.enable_online_push_notifications;
-        }
-
-        if (result.pm_content_in_desktop_notifications !== undefined) {
-            page_params.pm_content_in_desktop_notifications
-                = result.pm_content_in_desktop_notifications;
-        }
-        // Other notification settings.
-
-        if (result.enable_digest_emails !== undefined) {
-            page_params.enable_digest_emails = result.enable_digest_emails;
-        }
-
+        _.each(result, function  (v, k) {
+            if (_.has(notification_settings, k) && result[k] !== undefined) {
+                page_params[k] = result[k];
+            }
+        });
         ui_report.success(i18n.t("Updated notification settings!"), notify_settings_status);
     }
 
@@ -77,12 +47,7 @@ exports.set_up = function () {
         e.preventDefault();
 
         var updated_settings = {};
-        _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
-                "enable_desktop_notifications", "pm_content_in_desktop_notifications", "enable_sounds",
-                "enable_offline_email_notifications",
-                "enable_offline_push_notifications", "enable_online_push_notifications",
-                "enable_digest_emails"],
-               function (setting) {
+        _.each(notification_settings, function (setting) {
                    updated_settings[setting] = $("#" + setting).is(":checked");
                });
         post_notify_settings_changes(updated_settings,
@@ -142,15 +107,9 @@ exports.set_up = function () {
 };
 
 function _update_page() {
-    $("#enable_stream_desktop_notifications").prop('checked', page_params.enable_stream_desktop_notifications);
-    $("#enable_stream_sounds").prop('checked', page_params.enable_stream_sounds);
-    $("#enable_desktop_notifications").prop('checked', page_params.enable_desktop_notifications);
-    $("#enable_sounds").prop('checked', page_params.enable_sounds);
-    $("#enable_offline_email_notifications").prop('checked', page_params.enable_offline_email_notifications);
-    $("#enable_offline_push_notifications").prop('checked', page_params.enable_offline_push_notifications);
-    $("#enable_online_push_notifications").prop('checked', page_params.enable_online_push_notifications);
-    $("#pm_content_in_desktop_notifications").prop('checked', page_params.pm_content_in_desktop_notifications);
-    $("#enable_digest_emails").prop('checked', page_params.enable_digest_emails);
+    _.each(notification_settings, function (setting) {
+        $("#"+setting).prop('checked', page_params[setting]);
+    });
 }
 
 exports.update_page = function () {
