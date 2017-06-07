@@ -117,6 +117,20 @@ var MessageList = require('js/message_list').MessageList;
     assert.deepEqual(list.all_messages(), []);
 }());
 
+(function test_message_range() {
+    var table;
+    var filter = {};
+    var list = new MessageList(table, filter);
+
+    var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
+    list.append(messages, true);
+    assert.deepEqual(list.message_range(2, 30), [{id: 30}]);
+    assert.deepEqual(list.message_range(2, 31), [{id: 30}, {id: 40}]);
+    assert.deepEqual(list.message_range(30, 40), [{id: 30}, {id: 40}]);
+    assert.deepEqual(list.message_range(31, 39), [{id: 40}]);
+    assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
+}());
+
 (function test_nth_most_recent_id() {
     var table;
     var filter = {};
