@@ -234,3 +234,41 @@ var MessageList = require('js/message_list').MessageList;
         });
     });
 }());
+
+(function test_unmuted_messages() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+
+    var unmuted = [
+        {
+            id: 50,
+            stream: 'bad',
+            mentioned: true,
+        },
+        {
+            id: 60,
+            stream: 'good',
+            mentioned: false,
+        },
+    ];
+    var muted = [
+        {
+            id: 70,
+            stream: 'bad',
+            mentioned: false,
+        },
+    ];
+
+    with_overrides(function (override) {
+        override('muting.is_topic_muted', function (stream) {
+            return stream === 'bad';
+        });
+
+        // Make sure unmuted_message filters out the "muted" entry,
+        // which we mark as having a muted topic, and not mentioned.
+        var test_unmuted = list.unmuted_messages(unmuted.concat(muted));
+        assert.deepEqual(unmuted, test_unmuted);
+    });
+}());
