@@ -56,19 +56,18 @@ everyone, even non-developers:
 * [#announce](https://chat.zulip.org/#narrow/stream/announce) is for
   announcements and discussions thereof; we try to keep traffic there
   to a minimum.
+* [#feedback](https://chat.zulip.org/#narrow/stream/feedback) is for
+  posting feedback on Zulip.
 * [#design](https://chat.zulip.org/#narrow/stream/design) is where we
   discuss the UI design and collect feedback on potential design
   changes.  We love feedback, so don't hesitate to speak up!
-* [#documentation](https://chat.zulip.org/#narrow/stream/documentation)
-  is where we discuss improving Zulip's user, sysadmin, and developer
-  documentation.
+* [#user community](https://chat.zulip.org/#narrow/stream/user.20community) is
+  for Zulip users to discuss their experiences using and adopting Zulip.
 * [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
   is for production environment related discussions.
 * [#test here](https://chat.zulip.org/#narrow/stream/test.20here) is
   for sending test messages without inconveniencing other users :).
   We recommend muting this stream when not using it.
-* [#translation](https://chat.zulip.org/#narrow/stream/translation) is
-  for discussing Zulip's translations.
 
 There are dozens of streams for development discussions in the Zulip
 community (e.g. one for each app, etc.); check out the
@@ -88,6 +87,11 @@ descriptions for all of them.  Relevant to almost everyone are these:
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
   feedback is super helpful.
+* [#documentation](https://chat.zulip.org/#narrow/stream/documentation)
+  is where we discuss improving Zulip's user, sysadmin, and developer
+  documentation.
+* [#translation](https://chat.zulip.org/#narrow/stream/translation) is
+  for discussing Zulip's translations.
 * [#learning](https://chat.zulip.org/#narrow/stream/learning) is for
   posting great learning resources one comes across.
 
