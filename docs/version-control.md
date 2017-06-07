@@ -9,12 +9,12 @@ makes the commit history a much more useful resource for developers
 trying to understand why the code works the way it does, which also
 helps a lot in preventing bugs.
 
-Coherency requirements for any commit:
+Commits must be coherent:
 
 -   It should pass tests (so test updates needed by a change should be
     in the same commit as the original change, not a separate "fix the
     tests that were broken by the last commit" commit).
--   It should be safe to deploy individually, or comment in detail in
+-   It should be safe to deploy individually, or explain in detail in
     the commit message as to why it isn't (maybe with a [manual] tag).
     So implementing a new API endpoint in one commit and then adding the
     security checks in a future commit should be avoided -- the security
@@ -22,9 +22,9 @@ Coherency requirements for any commit:
 -   Error handling should generally be included along with the code that
     might trigger the error.
 -   TODO comments should be in the commit that introduces the issue or
-    functionality with further work required.
+    the functionality with further work required.
 
-When you should be minimal:
+Commits should generally be minimal:
 
 -   Significant refactorings should be done in a separate commit from
     functional changes.
@@ -34,32 +34,33 @@ When you should be minimal:
 -   2 different features should be done in different commits.
 -   If you find yourself writing a commit message that reads like a list
     of somewhat dissimilar things that you did, you probably should have
-    just done 2 commits.
+    just done multiple commits.
 
 When not to be overly minimal:
 
 -   For completely new features, you don't necessarily need to split out
-    new commits for each little subfeature of the new feature. E.g. if
+    new commits for each little subfeature of the new feature. E.g., if
     you're writing a new tool from scratch, it's fine to have the
     initial tool have plenty of options/features without doing separate
     commits for each one. That said, reviewing a 2000-line giant blob of
     new code isn't fun, so please be thoughtful about submitting things
     in reviewable units.
--   Don't bother to split back end commits from front end commits, even
+-   Don't bother to split backend commits from frontend commits, even
     though the backend can often be coherent on its own.
 
 Other considerations:
 
--   Overly fine commits are easily squashed, but not vice versa, so err
-    toward small commits, and the code reviewer can advise on squashing.
+-   Overly fine commits are easy to squash later, but not vice versa.
+    So err toward small commits, and the code reviewer can advise on
+    squashing.
 -   If a commit you write doesn't pass tests, you should usually fix
     that by amending the commit to fix the bug, not writing a new "fix
     tests" commit on top of it.
 
 Zulip expects you to structure the commits in your pull requests to form
-a clean history before we will merge them; it's best to write your
+a clean history before we will merge them.  It's best to write your
 commits following these guidelines in the first place, but if you don't,
-you can always fix your history using git rebase -i.
+you can always fix your history using `git rebase -i`.
 
 Never mix multiple changes together in a single commit, but it's great
 to include several related changes, each in their own commit, in a
@@ -78,8 +79,8 @@ It can take some practice to get used to writing your commits with a
 clean history so that you don't spend much time doing interactive
 rebases. For example, often you'll start adding a feature, and discover
 you need to a refactoring partway through writing the feature. When that
-happens, we recommend stashing your partial feature, do the refactoring,
-commit it, and then finish implementing your feature.
+happens, we recommend you stash your partial feature, do the refactoring,
+commit it, and then unstash and finish implementing your feature.
 
 ## Commit Messages
 
