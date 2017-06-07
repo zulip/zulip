@@ -24,7 +24,9 @@ common.then_send_message('stream', {
         content: 'test star',
 });
 
-casper.waitForText("test star");
+casper.then(function () {
+    casper.waitForSelectorText("#zhome .message_row", "test star");
+});
 
 casper.then(function () {
     casper.test.info("Checking star counts");
