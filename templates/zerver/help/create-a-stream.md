@@ -14,20 +14,20 @@ the left sidebar.  Streams can be either:
 
 {!subscriptions.md!}
 
-3. Click the plus (<i class="icon-vector-plus"></i>) icon to the right of
-the **Filter streams** input.
+3. Click the plus (<i class="fa fa-plus" aria-hidden="true"></i>) icon to the
+right of the **Filter streams** input.
 
     !!! warn ""
         **Note:** If you do not see the plus
-        (<i class="icon-vector-plus"></i>) icon, it
+        (<i class="fa fa-plus" aria-hidden="true"></i>) icon, it
         is probably because your organization's administrators
         have disabled stream creation for ordinary users.
         If that's the case, then you need to ask them to
         allow ordinary users to create streams, or you will have
         to ask an administrator for help creating each particular stream.
 
-4. After clicking the plus (<i class="icon-vector-plus"></i>) icon, at
-right side of the [Streams](/#streams) page, labeled
+4. After clicking the plus (<i class="fa fa-plus" aria-hidden="true"></i>) icon,
+at right side of the [Streams](/#streams) page, labeled
 **Create stream**, will now display options for creating a stream.
 
 5. Enter the title of your stream in the **Stream name** input.
