@@ -34,11 +34,11 @@ if __name__ == '__main__':
         # type: (str) -> None
         # mypy doesn't recognize the TestLoader attribute, even though the code
         # is executable
-        loader = unittest.TestLoader() # type: ignore
+        loader = unittest.TestLoader()  # type: ignore
         suite = loader.discover(start_dir=start_dir, top_level_dir=root_dir)
         runner = unittest.TextTestRunner(verbosity=2)
         # same issue as for TestLoader
-        result = runner.run(suite) # type: ignore
+        result = runner.run(suite)  # type: ignore
         if result.errors or result.failures:
             raise Exception('Test failed!')
 
