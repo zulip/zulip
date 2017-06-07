@@ -38,7 +38,7 @@ if (window.webkitNotifications) {
                 notification_object.cancel = function () { notification_object.close(); };
                 return notification_object;
             } catch (e) {
-                if (e.name == 'TypeError') {
+                if (e.name === 'TypeError') {
                     return service_worker_notification(icon, title, content, tag);
                 }
             }
@@ -46,16 +46,16 @@ if (window.webkitNotifications) {
     };
 }
 
-function service_worker_notification() {
+function service_worker_notification(icon, title, content, tag) {
     // we are probably on chrome android where non-persistent notifications are not supported.
     // details: https://github.com/whatwg/notifications/issues/26
     // use a service worker to send the notification instead.
     if ('serviceworker' in navigator) {
-        return navigator.serviceworker.register('/static/js/sw.js').then(function(registration) {
+        return navigator.serviceworker.register('/static/js/sw.js').then(function (registration) {
             return registration.shownotification(title, {
                 icon: icon,
                 body: content,
-                tag: tag
+                tag: tag,
             });
         });
     }

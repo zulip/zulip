@@ -1,17 +1,18 @@
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
     var clickedNotification = event.notification;
     clickedNotification.close();
 
-    // This looks to see if the current is already open and  
-    // focuses if it is  
+    // This looks to see if the current is already open and
+    // focuses if it is
     event.waitUntil(
-        clients.matchAll({  
+        /* eslint-disable no-undef */
+        clients.matchAll({
             includeUncontrolled: true,
-            type: "window"
+            type: "window",
         })
-        .then(function(clientList) {  
-            for (var i = 0; i < clientList.length; i++) {  
-                var client = clientList[i];  
+        .then(function (clientList) {  
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
                 if ('focus' in client) {
                     // Do something as the result of the notification click
                     // TODO: how to get access feature_flags and narrow variables here?
@@ -22,8 +23,9 @@ self.addEventListener('notificationclick', function(event) {
                 }
             }  
             if (clients.openWindow) {
-                return clients.openWindow('/');  
+                return clients.openWindow('/');
             }
         })
+        /* eslint-enable no-undef */
     );
 });
