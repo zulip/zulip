@@ -7,6 +7,7 @@ add_dependencies({
     people: 'js/people.js',
     typeahead_helper: 'js/typeahead_helper.js',
     util: 'js/util.js',
+    Handlebars: 'handlebars',
 });
 
 var popular = {num_items: function () {
@@ -137,4 +138,24 @@ _.each(matches, function (person) {
         'b_bot@example.com',
     ]);
 
+}());
+
+(function test_highlight_with_escaping() {
+    var item = "Denmark";
+    var query = "Den";
+    var expected = "<strong>Den</strong>mark";
+    var result = th.highlight_with_escaping(query, item);
+    assert.equal(result, expected);
+
+    item = "w3IrD_naMe";
+    query = "w3IrD_naMe";
+    expected = "<strong>w3IrD_naMe</strong>";
+    result = th.highlight_with_escaping(query, item);
+    assert.equal(result, expected);
+
+    item = "development help";
+    query = "development h";
+    expected = "<strong>development h</strong>elp";
+    result = th.highlight_with_escaping(query, item);
+    assert.equal(result, expected);
 }());
