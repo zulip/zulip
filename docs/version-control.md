@@ -87,44 +87,45 @@ commit it, and then unstash and finish implementing your feature.
 First, check out
 [these](https://github.com/zulip/zulip/commit/4869e1b0b2bc6d56fcf44b7d0e36ca20f45d0521)
 [examples](https://github.com/zulip/zulip/commit/cd5b38f5d8bdcc1771ad794f37262a61843c56c0)
-of commits with good commit messages.  There are a few mistakes we see
-often that make commit messages less useful than they could be.
+of commits with good commit messages.
 
-- The first line of commit messages should be written in the
-    imperative and be kept relatively short while concisely explaining
-    what the commit does.  And it should be clear about what part of
-    the code is affected.  For example:
+The first line of the commit message is the **summary**. The summary:
+* is written in the imperative (e.g., "Fix ...", "Add ...")
+* is kept short, while concisely explaining what the commit does
+* is clear about what part of the code is affected -- often by prefixing
+  with the name of the subsystem and a colon, like "zjsunit: ..." or "docs: ..."
+* is a complete sentence, ending with a period.
 
-Good:
-``` text
-gather_subscriptions: Fix exception handling bad input.
-zjsunit: Fix running stream_data and node tests individually.
-Add GitLab integration.
-```
+Good summaries:
 
-Bad:
+> *zjsunit: Fix running stream_data and node tests individually.*
 
-``` text
-bugfix
-gather_subscriptions was broken
-fixing exception when given bad input
-fix bug #234.
-```
+> *gather_subscriptions: Fix exception handling bad input.*
 
--   Use present-tense action verbs in your commit messages.
+> *Add GitLab integration.*
 
-Bad:
+Compare "*gather_subscriptions: Fix exception handling bad input.*" with:
 
-``` text
-gather_subscriptions: Fixing exception when given bad input.
-gather_subscriptions: Fixed exception when given bad input.
-```
+* "*gather_subscriptions was broken*", which doesn't explain how
+  it was broken (and isn't in the imperative)
+* "*Fix exception when given bad input*", in which it's impossible to
+  tell from the summary what part of the code is affected
+* "*gather_subscriptions: Fixing exception when given bad input.*",
+  not in the imperative
+* "*gather_subscriptions: Fixed exception when given bad input.*",
+  not in the imperative
 
--   Please use a complete sentence in the summary, ending with a period.
--   The rest of the commit message should be written in full prose and
-    explain why and how the change was made. If the commit makes
-    performance improvements, you should generally include some rough
-    benchmarks showing that it actually improves the performance.
+The summary is followed by a blank line, and then the body of the
+commit message.
+-   The body is written in prose, with full paragraphs.
+-   The body explains:
+    -   why and how the change was made
+    -   any manual testing you did in addition to running the automated tests
+    -   any aspects of the commit that you think are questionable and
+        you'd like special attention applied to.
+-   If the commit makes performance improvements, you should generally
+    include some rough benchmarks showing that it actually improves the
+    performance.
 -   When you fix a GitHub issue, [mark that you've fixed the issue in
     your commit
     message](https://help.github.com/articles/closing-issues-via-commit-messages/)
@@ -133,8 +134,4 @@ gather_subscriptions: Fixed exception when given bad input.
     the commit message read e.g. "Fixes: \#123."
 -   Any paragraph content in the commit message should be line-wrapped
     to less than 76 characters per line, so that your commit message
-    will be reasonably readable in git log in a normal terminal.
--   In your commit message, you should describe any manual testing you
-    did in addition to running the automated tests, and any aspects of
-    the commit that you think are questionable and you'd like special
-    attention applied to.
+    will be reasonably readable in `git log` in a normal terminal.
