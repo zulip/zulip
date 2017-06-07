@@ -131,6 +131,45 @@ var MessageList = require('js/message_list').MessageList;
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
 }());
 
+(function test_updates() {
+    var table;
+    var filter = {};
+    var list = new MessageList(table, filter);
+    list.view.rerender_the_whole_thing = noop;
+
+    var messages = [
+        {
+            id: 1,
+            sender_id: 100,
+            sender_full_name: "tony",
+            stream_id: 32,
+            stream: "denmark",
+            small_avatar_url: "http://zulip.spork",
+        },
+        {
+            id: 2,
+            sender_id: 39,
+            sender_full_name: "jeff",
+            stream_id: 64,
+            stream: "russia",
+            small_avatar_url: "http://github.com",
+        },
+    ];
+
+    list.append(messages, true);
+    list.update_user_full_name(100, "Anthony");
+    assert.equal(list.get(1).sender_full_name, "Anthony");
+    assert.equal(list.get(2).sender_full_name, "jeff");
+
+    list.update_user_avatar(100, "http://zulip.org");
+    assert.equal(list.get(1).small_avatar_url, "http://zulip.org");
+    assert.equal(list.get(2).small_avatar_url, "http://github.com");
+
+    list.update_stream_name(64, "Finland");
+    assert.equal(list.get(2).stream, "Finland");
+    assert.equal(list.get(1).stream, "denmark");
+}());
+
 (function test_nth_most_recent_id() {
     var table;
     var filter = {};
