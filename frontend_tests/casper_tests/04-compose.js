@@ -2,6 +2,18 @@ var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
+var msgs_qty;
+
+casper.then(function () {
+    casper.waitUntilVisible("#zhome");
+});
+
+casper.then(function () {
+    msgs_qty = this.evaluate(function () {
+        return $('#zhome .message_row').length;
+    });
+});
+
 // Send a message to try replying to
 common.then_send_many([
     { stream: 'Verona',
@@ -13,7 +25,15 @@ common.then_send_many([
     },
 ]);
 
-casper.waitForText("And reply to this message", function () {
+casper.then(function () {
+    casper.waitFor(function check_length() {
+        return casper.evaluate(function (expected_length) {
+            return $('#zhome .message_row').length === expected_length;
+        }, msgs_qty + 2);
+    });
+});
+
+casper.then(function () {
     // TODO: Test opening the compose box from the left side buttons
     casper.click('body');
     casper.page.sendEvent('keypress', "c");
