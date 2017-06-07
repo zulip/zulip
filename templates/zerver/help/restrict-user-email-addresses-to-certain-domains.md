@@ -29,7 +29,7 @@ the list and clicking the **Add** button.
         enabled.
 
 5. Once you have made all your changes, exit out of the **Allowed domains** list
- by clicking the x (<i class="icon-vector-remove"></i>) icon in the top
- right-hand corner of the **Allowed Domains** list.
+ by clicking the x (<i class="fa fa-times"></i>) icon in the top right-hand
+ corner of the **Allowed Domains** list.
 
 {!save-changes.md!} organization settings.
