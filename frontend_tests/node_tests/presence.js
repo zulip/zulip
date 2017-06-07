@@ -30,10 +30,18 @@ var zoe = {
     full_name: 'Zoe Yang',
 };
 
+var bot = {
+    email: 'bot@zulip.com',
+    user_id: 7,
+    full_name: 'The Bot',
+    is_bot: true,
+};
+
 people.add_in_realm(me);
 people.add_in_realm(alice);
 people.add_in_realm(fred);
 people.add_in_realm(zoe);
+people.add_in_realm(bot);
 people.initialize_current_user(me.user_id);
 
 (function test_on_mobile_property() {
@@ -124,5 +132,7 @@ people.initialize_current_user(me.user_id);
     assert.deepEqual(presence.presence_info[zoe.user_id],
         { status: 'offline', mobile: false, last_active: undefined}
     );
+
+    assert(!presence.presence_info[bot.user_id]);
 }());
 

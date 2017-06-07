@@ -150,6 +150,11 @@ exports.update_info_for_small_realm = function () {
             return;
         }
 
+        if (person.is_bot) {
+            // we don't show presence for bots
+            return;
+        }
+
         presence_info[user_id] = {
             status: "offline",
             mobile: false,
