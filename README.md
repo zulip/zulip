@@ -209,14 +209,12 @@ mind:
   These are great projects if you're looking to make an impact.
 
 Another way to find issues in Zulip is to take advantage of our
-"area:<foo>" convention in separating out issues.  We partition all of
+`area:<foo>` convention in separating out issues.  We partition all of
 our issues into areas like admin, compose, emoji, hotkeys, i18n,
-onboarding, search, etc.  You can see this here:
-
-<https://github.com/zulip/zulip/labels>
-
-Click on any of the "area:" labels and you will see all the tickets
-related to your area of interest.
+onboarding, search, etc.  Look through our
+[list of labels](https://github.com/zulip/zulip/labels), and click on
+some of the `area:` labels to see all the tickets related to your
+areas of interest.
 
 If you're excited about helping with an open issue, make sure to claim
 the issue by commenting the following in the comment section:
@@ -254,8 +252,10 @@ get broad feedback before you spend too much time on implementation
 details.
 
 Finally, before implementing a larger feature, we highly recommend
-looking at the new feature tutorial and coding style guidelines on
-ReadTheDocs.
+looking at the
+[new feature tutorial](http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
+and [coding style guidelines](http://zulip.readthedocs.io/en/latest/code-style.html)
+on ReadTheDocs.
 
 Feedback on how to make this development process more efficient, fun,
 and friendly to new contributors is very welcome!  Just send an email
