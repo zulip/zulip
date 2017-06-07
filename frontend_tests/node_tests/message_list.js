@@ -182,6 +182,18 @@ var MessageList = require('js/message_list').MessageList;
     assert.equal(list.nth_most_recent_id(4), -1);
 }());
 
+(function test_change_message_id() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+    list.append([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
+    list.change_message_id(10.5, 11);
+    assert.equal(list.get(11).content, "good job");
+
+    list.change_message_id(20.5, 10);
+    assert.equal(list.get(10).content, "ok!");
+}());
 
 (function test_local_echo() {
     var table;
