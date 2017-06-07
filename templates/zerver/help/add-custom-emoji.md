@@ -35,8 +35,8 @@ the success of the addition of your custom emoji to your organization.
     The emoji's information and settings will also be displayed above the
     **Add a new emoji** section. You can also delete a custom emoji in
     your organization through this panel by clicking the trash (<i
-    class="icon-vector-trash"></i>) icon to the right of the icon you wish to
-    delete.
+    class="fa fa-trash" aria-hidden="true"></i>) icon to the right of the icon
+    you wish to delete.
 
 Users in your organization can now use your emoji in their messages.
 
