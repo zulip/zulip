@@ -112,11 +112,13 @@ exports.set_up = function () {
             $('#bot_table_error').hide();
         },
         submitHandler: function () {
+            var bot_type = $('#create_bot_type :selected').val();
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var formData = new FormData();
 
             formData.append('csrfmiddlewaretoken', csrf_token);
+            formData.append('bot_type', bot_type);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
