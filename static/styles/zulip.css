@@ -2357,13 +2357,7 @@ div.emoji {
 
 img.emoji {
     /* This is the right offset for <img> style emoji */
-    top: 3px;
-}
-
-.emoji.realm-emoji {
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+    top: 6px;
 }
 
 .twitter-tweet {

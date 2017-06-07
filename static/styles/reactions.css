@@ -152,10 +152,17 @@
 
 .emoji-popover-emoji {
     display: inline-block;
+    height: 25px;
+    width: 25px;
     margin: 0;
     padding: 6px;
     cursor: pointer;
     border-radius: 0.5em;
+}
+/* To properly algin the realm-emoji div's with the rest*/
+.emoji-popover-emoji.realm-emoji {
+    position: relative;
+    top: -4px;
 }
 
 .emoji-popover-emoji.hide {
