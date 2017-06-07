@@ -500,6 +500,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
 
+    def test_add_bot_with_bot_type_invalid(self):
+        # type: () -> None
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+            'bot_type': 7,
+        }
+
+        self.login(self.example_email('hamlet'))
+        self.assert_num_bots_equal(0)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_num_bots_equal(0)
+        self.assert_json_error(result, 'Invalid bot type')
+
     def test_patch_bot_full_name(self):
         # type: () -> None
         self.login(self.example_email('hamlet'))
