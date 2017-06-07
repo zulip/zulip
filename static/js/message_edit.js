@@ -320,8 +320,20 @@ function start_edit_maintaining_scroll(row, content) {
     }
 }
 
+function start_edit_with_content(row, content, edit_box_open_callback) {
+    start_edit_maintaining_scroll(row, content);
+    if (edit_box_open_callback) {
+        edit_box_open_callback();
+    }
+}
+
 exports.start = function (row, edit_box_open_callback) {
     var message = current_msg_list.get(rows.id(row));
+    if (message.raw_content) {
+        start_edit_with_content(row, message.raw_content, edit_box_open_callback);
+        return;
+    }
+
     var msg_list = current_msg_list;
     channel.get({
         url: '/json/messages/' + message.id,
@@ -329,10 +341,7 @@ exports.start = function (row, edit_box_open_callback) {
         success: function (data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
-                start_edit_maintaining_scroll(row, data.raw_content);
-                if (edit_box_open_callback) {
-                    edit_box_open_callback();
-                }
+                start_edit_with_content(row, data.raw_content, edit_box_open_callback);
             }
         },
     });
