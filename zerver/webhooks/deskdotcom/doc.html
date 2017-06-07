@@ -41,7 +41,7 @@
     for Action Type, and copy-paste this to the "Appended URL path":
 </p>
 {% raw %}
-    <p><code>?stream=desk&amp;topic={{ case.id }}:+{{ case.subject }}</code></p>
+<p><code>?stream=desk&amp;topic={{ case.id }}:+{{ case.subject }}</code></p>
 {% endraw %}
 <p>
     The "appended URL path" will be the same for every notification —
@@ -54,7 +54,7 @@
     POST":
 </p>
 {% raw %}
-    <pre>
+       <pre>
 <code>Case [{{ case.id }}, {{ case.subject }}]({{ case.direct_url }}), was updated.
 
 * Status: {{ case.status.name }}
@@ -63,12 +63,12 @@
 * Company: {{ customer.company }}
 * Description: {{ case.description }}
 </code></pre>
-    <p>
-        You don't need to edit that, although you may if you wish. All
-        the funny-looking stuff inside <code>{{</code> and <code>}}</code>
-        will be filled in by Desk.com for each event. The dialog should look
-        like this:
-    </p>
+<p>
+    You don't need to edit that, although you may if you wish. All
+    the funny-looking stuff inside <code>{{</code> and <code>}}</code>
+    will be filled in by Desk.com for each event. The dialog should look
+    like this:
+</p>
 {% endraw %}
 
 <img src="/static/images/integrations/desk/004.png"/>

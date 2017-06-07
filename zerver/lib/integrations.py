@@ -215,15 +215,15 @@ WEBHOOK_INTEGRATIONS = [
 
 INTEGRATIONS = {
     'asana': Integration('asana', 'asana', doc='zerver/integrations/asana.html'),
-    'capistrano': Integration('capistrano', 'capistrano', doc='zerver/integrations/capistrano.html'),
+    'capistrano': Integration('capistrano', 'capistrano', display_name='Capistrano', doc='zerver/integrations/capistrano.md'),
     'codebase': Integration('codebase', 'codebase', doc='zerver/integrations/codebase.html'),
     'email': EmailIntegration('email', 'email', doc='zerver/integrations/email.html'),
-    'git': Integration('git', 'git', doc='zerver/integrations/git.html'),
+    'git': Integration('git', 'git', doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',
         'google-calendar',
         display_name='Google Calendar',
-        doc='zerver/integrations/google-calendar.html'
+        doc='zerver/integrations/google-calendar.md'
     ),
     'hubot': Integration('hubot', 'hubot', doc='zerver/integrations/hubot.html'),
     'jenkins': Integration(
@@ -238,28 +238,28 @@ INTEGRATIONS = {
         logo='static/images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
         display_name='JIRA',
-        doc='zerver/integrations/jira-plugin.html'
+        doc='zerver/integrations/jira-plugin.md'
     ),
     'mercurial': Integration(
         'mercurial',
         'mercurial',
         display_name='Mercurial (hg)',
-        doc='zerver/integrations/mercurial.html'
+        doc='zerver/integrations/mercurial.md'
     ),
-    'nagios': Integration('nagios', 'nagios', doc='zerver/integrations/nagios.html'),
+    'nagios': Integration('nagios', 'nagios', doc='zerver/integrations/nagios.md'),
     'openshift': Integration(
         'openshift',
         'openshift',
         display_name='OpenShift',
-        doc='zerver/integrations/openshift.html'
+        doc='zerver/integrations/openshift.md'
     ),
     'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.html'),
     'phabricator': Integration('phabricator', 'phabricator', doc='zerver/integrations/phabricator.html'),
     'puppet': Integration('puppet', 'puppet', doc='zerver/integrations/puppet.html'),
     'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.html'),
     'rss': Integration('rss', 'rss', display_name='RSS', doc='zerver/integrations/rss.html'),
-    'subversion': Integration('subversion', 'subversion', doc='zerver/integrations/subversion.html'),
-    'trac': Integration('trac', 'trac', doc='zerver/integrations/trac.html'),
+    'subversion': Integration('subversion', 'subversion', doc='zerver/integrations/subversion.md'),
+    'trac': Integration('trac', 'trac', doc='zerver/integrations/trac.md'),
     'trello-plugin': Integration(
         'trello-plugin',
         'trello-plugin',
@@ -268,7 +268,7 @@ INTEGRATIONS = {
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.html'
     ),
-    'twitter': Integration('twitter', 'twitter', doc='zerver/integrations/twitter.html'),
+    'twitter': Integration('twitter', 'twitter', doc='zerver/integrations/twitter.md'),
 
 }  # type: Dict[str, Integration]
 
