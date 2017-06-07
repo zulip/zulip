@@ -5,7 +5,8 @@ you can compose a private message to someone using the user list.
 
 1. In the user list on the right sidebar, hover over the name of the user
 you want to privately message to reveal a down chevron (<i
-class="icon-vector-chevron-down"></i>) icon to the right of the user's name.
+class="fa fa-chevron-down" aria-hidden="true"></i>) icon to the right of the
+user's name.
 
     !!! tip ""
         You can search for a specific user by entering the user's name in
