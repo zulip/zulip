@@ -272,3 +272,30 @@ var MessageList = require('js/message_list').MessageList;
         assert.deepEqual(unmuted, test_unmuted);
     });
 }());
+
+(function test_add_remove_rerender() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+
+    var messages = [{id: 1}, {id: 2}, {id: 3}];
+
+    list.unmuted_messages = function (m) { return m; };
+    global.with_stub(function (stub) {
+        list.view.rerender_the_whole_thing = stub.f;
+        list.add_and_rerender(messages);
+
+        // Make sure the function has triggered a rerender
+        // and that all 3 items were added to the list.
+        assert.equal(stub.num_calls, 1);
+        assert.equal(list.num_items(), 3);
+    });
+
+    global.with_stub(function (stub) {
+        list.rerender = stub.f;
+        list.remove_and_rerender(messages);
+        assert.equal(stub.num_calls, 1);
+        assert.equal(list.num_items(), 0);
+    });
+}());
