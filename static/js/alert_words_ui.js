@@ -31,19 +31,6 @@ function update_alert_word_status(status_text, is_error) {
     alert_word_status.show();
 }
 
-function update_alert_words() {
-    var words = _.map($('.alert-word-item'), function (e) {
-        return $(e).data('word').toString();
-    });
-    words = _.filter(words, function (word) {
-        return word !== "";
-    });
-    channel.post({
-        url: '/json/users/me/alert_words',
-        idempotent: true,
-        data: {alert_words: JSON.stringify(words)}});
-}
-
 function add_alert_word(alert_word) {
     if ($.trim(alert_word) === '') {
         update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
@@ -64,6 +51,21 @@ function add_alert_word(alert_word) {
     });
 }
 
+function remove_alert_word(alert_word) {
+    var words_to_be_removed = [alert_word];
+
+    channel.del({
+        url: '/json/users/me/alert_words',
+        data: {alert_words: JSON.stringify(words_to_be_removed)},
+        success: function () {
+            update_alert_word_status(i18n.t("Alert word removed successfully!"), false);
+        },
+        error: function () {
+            update_alert_word_status(i18n.t("Error removing alert word!"), true);
+        },
+    });
+}
+
 exports.set_up_alert_words = function () {
     // The settings page must be rendered before this function gets called.
 
@@ -75,10 +77,8 @@ exports.set_up_alert_words = function () {
     });
 
     $('#alert_words_list').on('click', '.remove-alert-word', function (event) {
-        var li = $(event.currentTarget).parents('li');
-        li.remove();
-
-        update_alert_words();
+        var word = $(event.currentTarget).parents('li').find('.value').text();
+        remove_alert_word(word);
     });
 
     $('#alert_words_list').on('keypress', '#create_alert_word_name', function (event) {

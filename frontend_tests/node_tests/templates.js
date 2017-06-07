@@ -298,16 +298,42 @@ function render(template_name, args) {
 (function alert_word_settings_item() {
     var html = '<ul id="alert-words">';
     var words = ['lunch', 'support'];
+    var args;
     _.each(words, function (word) {
-        var args = {
+        args = {
             word: word,
         };
         html += render('alert_word_settings_item', args);
     });
+    args = {
+        word: '',
+        editing: true,
+    };
+    html += render('alert_word_settings_item', args);
     html += "</ul>";
     global.write_handlebars_output("alert_word_settings_item", html);
+
     var li = $(html).find("li.alert-word-item:first");
+    var value = li.find('.value');
+    var button = li.find('button');
     assert.equal(li.attr('data-word'),'lunch');
+    assert.equal(value.length, 1);
+    assert.equal(value.text(), 'lunch');
+    assert.equal(button.attr('title'), 'Delete alert word');
+    assert.equal(button.attr('data-word'),'lunch');
+
+    var title = $(html).find('.new-alert-word-section-title');
+    var textbox = $(html).find('#create_alert_word_name');
+    button = $(html).find('#create_alert_word_button');
+    assert.equal(title.length, 1);
+    assert.equal(title.text().trim(), 'Add a new alert word');
+    assert.equal(textbox.length, 1);
+    assert.equal(textbox.attr('maxlength'), 100);
+    assert.equal(textbox.attr('placeholder'), 'Alert word');
+    assert.equal(textbox.attr('class'), 'required');
+    assert.equal(button.length, 1);
+    assert.equal(button.text().trim(), 'Add alert word');
+
 }());
 
 (function announce_stream_docs() {

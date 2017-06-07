@@ -475,8 +475,9 @@ function assert_same(actual, expected) {
 
 var with_overrides = global.with_overrides; // make lint happy
 
-with_overrides(function () {
+with_overrides(function (override) {
     // alert_words
+    override('alert_words_ui.render_alert_words_ui', noop);
     var event = event_fixtures.alert_words;
     dispatch(event);
     assert_same(global.alert_words.words, ['fire', 'lunch']);
