@@ -11,35 +11,17 @@
         <link href="/static/min/portico.css" rel="stylesheet">
     </head>
 
-    <body>
-
+    <body id="error_page">
         <div class="container">
-
-            <div class="navbar">
-                <ul class="nav pull-right">
-                    <li><a href="/accounts/login/?next=/">Log in</a></li>
-                </ul>
-            </div>
             <div class="row-fluid">
-                <div class="span2"></div>
-                <div class="span10">
-                    <div class="title">
-                        <a class="title" href="/">Zulip</a>
-                        <span class="for_you"> got a bit lost there.</span>
+                <img src="../images/400art.svg" alt=""/>
+                <div class="errorbox">
+                    <div class="errorcontent">
+                        <h1 class="lead">Page not found (404)</h1>
+                        <p>We can't find the page you're looking for.</p>
                     </div>
-
-                    <br/>
-                    <p class="lead">404: Page not found.</p>
-                    <br/>
-
-                    <p>We know this is stressful, but we still love you.</p>
-
-                    <!-- TODO: Make nginx 5xx error page customizable -->
-                    <!-- This is tricky because it's not served by Django, -->
-                    <!-- so we can't use variables -->
                 </div>
             </div>
-
         </div>
 
     </body>
