@@ -2,6 +2,24 @@ var alert_words_ui = (function () {
 
 var exports = {};
 
+exports.render_alert_words_ui = function () {
+    var alert_words = page_params.alert_words;
+    var word_list = $('#alert_words_list');
+
+    word_list.find('.alert-word-item').remove();
+    _.each(alert_words, function (alert_word) {
+        var rendered_alert_word = templates.render('alert_word_settings_item',
+                                                   {word: alert_word, editing: false});
+        word_list.append(rendered_alert_word);
+    });
+    var new_alert_word_form = templates.render('alert_word_settings_item',
+                                               {word: '', editing: true});
+    word_list.append(new_alert_word_form);
+
+    // Focus new alert word name text box.
+    $('#create_alert_word_name').focus();
+};
+
 function update_alert_word_status(status_text, is_error) {
     var alert_word_status = $('#alert_word_status');
     if (is_error) {
@@ -50,13 +68,7 @@ function add_alert_word(word, event) {
 exports.set_up_alert_words = function () {
     // The settings page must be rendered before this function gets called.
 
-    var word_list = $('#alert_words_list');
-    _.each(alert_words.words, function (word) {
-        var li = templates.render('alert_word_settings_item', {word: word});
-        word_list.append(li);
-    });
-    var new_word = templates.render('alert_word_settings_item', {word: '', editing: true});
-    word_list.append(new_word);
+    exports.render_alert_words_ui();
 
     $('#alert_words_list').on('click', '#create_alert_word_button', function (event) {
         var word = $('#create_alert_word_name').val();
