@@ -261,10 +261,10 @@ exports.prefix_sort = function (query, objs, get_item) {
     var beginswithCaseSensitive = [];
     var beginswithCaseInsensitive = [];
     var noMatch = [];
-
-    var obj = objs.shift();
-    while (obj) {
-        var item;
+    var obj;
+    var item;
+    for (var i = 0; i < objs.length; i += 1) {
+        obj = objs[i];
         if (get_item) {
             item = get_item(obj);
         } else {
@@ -277,7 +277,6 @@ exports.prefix_sort = function (query, objs, get_item) {
         } else {
             noMatch.push(obj);
         }
-        obj = objs.shift();
     }
     return { matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
              rest:    noMatch };
