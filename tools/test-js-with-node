@@ -4,6 +4,7 @@ import optparse
 import os
 import subprocess
 import sys
+import ujson
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -18,6 +19,30 @@ USAGE = '''
     tools/test-js-with-node util.js activity.js  - to run just a couple tests
     tools/test-js-with-node --coverage           - to generage coverage report
     '''
+
+enforce_fully_covered = {
+    'static/js/alert_words.js',
+    'static/js/bot_data.js',
+    'static/js/colorspace.js',
+    'static/js/common.js',
+    'static/js/compose_state.js',
+    'static/js/compose_ui.js',
+    'static/js/dict.js',
+    'static/js/filter.js',
+    'static/js/hash_util.js',
+    'static/js/muting.js',
+    'static/js/people.js',
+    'static/js/pm_conversations.js',
+    'static/js/reactions.js',
+    'static/js/recent_senders.js',
+    'static/js/rtl.js',
+    'static/js/search_suggestion.js',
+    'static/js/stream_sort.js',
+    'static/js/topic_generator.js',
+    'static/js/typing_data.js',
+    'static/js/typing_status.js',
+    'static/js/unread.js',
+}
 
 parser = optparse.OptionParser(USAGE)
 parser.add_option('--coverage', dest='coverage',
@@ -65,6 +90,45 @@ try:
 except OSError:
     print('Bad command: %s' % (command,))
     raise
+
+NODE_COVERAGE_PATH = 'var/node-coverage/coverage.json'
+
+if options.coverage and ret == 0:
+    coverage_json = None
+    try:
+        with open(NODE_COVERAGE_PATH, 'r') as f:
+            coverage_json = ujson.load(f)
+    except IOError:
+        print(NODE_COVERAGE_PATH + " doesn't exist. Cannot enforce fully covered files.")
+        raise
+    print()
+    print("=============================================================================")
+    print("Checking enforced fully covered files...")
+    for relative_path in enforce_fully_covered:
+        path = ROOT_DIR + "/" + relative_path
+        if not (path in coverage_json):
+            print("ERROR: %s has no node test coverage" % (relative_path,))
+            continue
+        line_coverage = coverage_json[path]['s']
+        missing_lines = []
+        for line in line_coverage:
+            if line_coverage[line] == 0:
+                missing_lines.append(line)
+        if len(missing_lines):
+            print("ERROR: %s no longer has complete node test coverage" % (relative_path,))
+            print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
+            print()
+            ret = 1
+    if ret:
+        print("It looks like your changes lost 100% test coverage in one or more files.")
+        print("Usually, the right fix for this is to add some tests.")
+        print("But also check out the include/exclude lists in `tools/test-js-with-node`.")
+        print("To run this check locally, use `test-js-with-node --coverage`.")
+        print()
+    else:
+        print("All enforced fully covered files still have 100% test coverage!")
+    print("=============================================================================")
+    print()
 
 if ret == 0:
     print("Test(s) passed. SUCCESS!")
