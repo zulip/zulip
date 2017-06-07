@@ -1,3 +1,4 @@
+var util = require("util");
 var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 var common = (function () {
 
@@ -73,6 +74,21 @@ exports.initialize_casper = function () {
             return true;
         });
     });
+
+    // This function should always be enclosed within a then() otherwise
+    // it might not exist on casper object.
+    casper.waitForSelectorText = function (selector, text, then, onTimeout, timeout) {
+        this.waitForSelector(selector, function _then() {
+            this.waitFor(function _check() {
+                var content = this.fetchText(selector);
+                if (util.isRegExp(text)) {
+                    return text.test(content);
+                }
+                return content.indexOf(text) !== -1;
+            }, then, onTimeout, timeout);
+        }, onTimeout, timeout);
+        return this;
+    };
 
     casper.evaluate(function () {
         window.localStorage.clear();
