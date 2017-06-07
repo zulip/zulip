@@ -195,6 +195,32 @@ var MessageList = require('js/message_list').MessageList;
     assert.equal(list.get(10).content, "ok!");
 }());
 
+(function test_last_sent_by_me() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+    var items = [
+            {
+                id: 1,
+                sender_id: 3,
+            },
+            {
+                id: 2,
+                sender_id: 3,
+            },
+            {
+                id: 3,
+                sender_id: 6,
+            },
+    ];
+
+    list.append(items);
+    set_global("page_params", {user_id: 3});
+    // Look for the last message where user_id == 3 (our ID)
+    assert.equal(list.get_last_message_sent_by_me().id, 2);
+}());
+
 (function test_local_echo() {
     var table;
     var filter = {};
