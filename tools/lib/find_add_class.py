@@ -32,6 +32,10 @@ GENERIC_KEYWORDS = [
     'zoom-out',
 ]
 
+EXCLUDED_MODULES = [
+    'modal.js',
+]
+
 def raise_error(fn, i, line):
     # type: (str, int, str) -> None
     error = '''
@@ -91,6 +95,8 @@ def find(fns):
                         html_classes = ['bar-success', 'bar-danger']
                     elif fn == 'hotspots.js' and 'arrow_placement' in line:
                         html_classes = ['arrow-top', 'arrow-left', 'arrow-bottom', 'arrow-right']
+                    elif fn in EXCLUDED_MODULES:
+                        continue
                     elif 'color_class' in line:
                         continue
                     elif 'stream_dark' in line:

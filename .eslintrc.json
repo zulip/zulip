@@ -22,6 +22,7 @@
         "i18n": false,
         "DynamicText": false,
         "LightboxCanvas": false,
+        "Modal": false,
         "bridge": false,
         "page_params": false,
         "attachments_ui": false,
