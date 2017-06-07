@@ -1,1 +1,1 @@
-{{referrer.full_name}} invited you to join Zulip
+{{ referrer.full_name|safe }} invited you to join Zulip

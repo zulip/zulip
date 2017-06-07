@@ -1,8 +1,8 @@
 Hi there,
 
-{{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip -- the group communication tool you've always wished you had at work.
+{{ referrer.full_name|safe }} ({{ referrer.email }}) wants you to join them on Zulip -- the group communication tool you've always wished you had at work.
 {% if custom_body %}
-Message from {{ referrer.full_name }}: {{ custom_body }}
+Message from {{ referrer.full_name|safe }}: {{ custom_body|safe }}
 {% endif %}
 To get started, visit the link below:
     <{{ activate_url }}>
