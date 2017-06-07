@@ -1260,9 +1260,6 @@ class Reaction(ModelReprMixin, models.Model):
 # though each row is only 4 integers.
 class AbstractUserMessage(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
-    # We're not using the archived field for now, but create it anyway
-    # since this table will be an unpleasant one to do schema changes
-    # on later
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
                  'has_alert_word', "historical", 'is_me_message']
