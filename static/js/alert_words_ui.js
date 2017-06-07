@@ -2,6 +2,17 @@ var alert_words_ui = (function () {
 
 var exports = {};
 
+function update_alert_word_status(status_text, is_error) {
+    var alert_word_status = $('#alert_word_status');
+    if (is_error) {
+        alert_word_status.removeClass('alert-success').addClass('alert-danger');
+    } else {
+        alert_word_status.removeClass('alert-danger').addClass('alert-success');
+    }
+    alert_word_status.find('.alert_word_status_text').text(status_text);
+    alert_word_status.show();
+}
+
 function update_alert_words() {
     var words = _.map($('.alert-word-item'), function (e) {
         return $(e).data('word').toString();
@@ -17,7 +28,7 @@ function update_alert_words() {
 
 function add_alert_word(word, event) {
     if ($.trim(word) === '') {
-        $("#empty_alert_word_error").show();
+        update_alert_word_status(i18n.t("Alert words can't be empty!"), true);
         return;
     }
     var final_li = templates.render('alert_word_settings_item', {word: word, editing: false});
@@ -70,7 +81,7 @@ exports.set_up_alert_words = function () {
         }
     });
 
-    $('#alert_words_list').on('click', '.close-empty-alert-word-error', function (event) {
+    $('#alert-word-settings').on('click', '.close-alert-word-status', function (event) {
         event.preventDefault();
         var alert = $(event.currentTarget).parents('.alert');
         alert.hide();

@@ -4,11 +4,11 @@
             {{t "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip."}}
         </p>
     </form>
-    <div class="alert alert-danger" id="empty_alert_word_error" role="alert">
-        <button type="button" class="close close-empty-alert-word-error" aria-label="Close">
+    <div class="alert" id="alert_word_status" role="alert">
+        <button type="button" class="close close-alert-word-status" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
-        <span>{{t "Alert words can't be empty!"}}</span>
+        <span class="alert_word_status_text"></span>
     </div>
     <ul id="alert_words_list"></ul>
 </div>

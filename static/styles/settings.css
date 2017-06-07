@@ -736,18 +736,6 @@ input[type=checkbox].inline-block {
     width: 8em;
 }
 
-#empty_alert_word_error {
-    display: none;
-    width: 90%;
-    margin: 0 auto;
-    margin-bottom: 15px;
-    padding: 10px;
-}
-
-#empty_alert_word_error .close {
-    position: inherit;
-}
-
 #attachments_list {
     list-style-type: none;
     margin: auto;
