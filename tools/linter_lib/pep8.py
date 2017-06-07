@@ -109,6 +109,7 @@ def check_pep8(files):
     if not len(filtered_files_E261) == 0:
         # Adding an extra ignore rule for these files since they still remain in
         # violation of PEP-E261.
-        failed = run_pycodestyle(filtered_files_E261, ignored_rules + ['E261'])
+        if not failed:
+            failed = run_pycodestyle(filtered_files_E261, ignored_rules + ['E261'])
 
     return failed
