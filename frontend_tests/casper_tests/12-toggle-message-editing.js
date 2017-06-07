@@ -20,8 +20,8 @@ common.then_send_message('stream', {
 });
 
 casper.then(function () {
-    casper.waitForText(content1);
-    casper.waitForText(content2);
+    casper.waitForSelectorText('#zhome .message_row', content1);
+    casper.waitForSelectorText('#zhome .message_row', content2);
 });
 
 // wait for message to be sent
