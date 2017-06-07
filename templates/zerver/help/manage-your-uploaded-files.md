@@ -48,9 +48,9 @@ longer view the file, so please be careful!
 2. Locate the file you want to delete in the **Uploaded files** section; the
 files are sorted by the time they were uploaded, oldest to newest.
 
-3. Click the trash (<i class="icon-vector-trash"></i>) icon to the right of the
-file you want to delete.
+3. Click the trash (<i class="fa fa-trash" aria-hidden="true"></i>) icon to the
+right of the file you want to delete.
 
-4. Upon clicking on the trash (<i class="icon-vector-trash"></i>) icon, the
-uploaded file will be removed from the **Uploaded files** section, confirming
-the success of your file deletion.
+4. Upon clicking on the trash (<i class="fa fa-trash" aria-hidden="true"></i>)
+icon, the uploaded file will be removed from the **Uploaded files** section,
+confirming the success of your file deletion.
