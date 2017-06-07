@@ -2,10 +2,13 @@
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
+var noop = function () {};
+
 add_dependencies({
     util: 'js/util.js',
     muting: 'js/muting.js',
     MessageListView: 'js/message_list_view.js',
+    i18n: 'i18next',
 });
 
 
@@ -14,8 +17,9 @@ set_global('document', null);
 global.stub_out_jquery();
 
 set_global('feature_flags', {});
-set_global('Filter', function () {});
+set_global('Filter', noop);
 
+var with_overrides = global.with_overrides; // make lint happy
 var MessageList = require('js/message_list').MessageList;
 
 (function test_basics() {
@@ -175,4 +179,58 @@ var MessageList = require('js/message_list').MessageList;
     assert.equal(list.closest_id(51), 50.02);
     assert.equal(list.closest_id(59), 60);
     assert.equal(list.closest_id(50.01), 50.01);
+}());
+
+(function test_bookend() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+
+    with_overrides(function (override) {
+        var expected = "You subscribed to stream IceCream";
+        list.view.clear_trailing_bookend = noop;
+        list.narrowed = true;
+
+        override("narrow_state.stream", function () {
+            return "IceCream";
+        });
+
+        override("stream_data.is_subscribed", function () {
+            return true;
+        });
+
+        global.with_stub(function (stub) {
+            list.view.render_trailing_bookend = stub.f;
+            list.update_trailing_bookend();
+            var bookend = stub.get_args('content', 'subscribed');
+            assert.equal(bookend.content, expected);
+            assert.equal(bookend.subscribed, true);
+        });
+
+        expected = "You unsubscribed from stream IceCream";
+        list.last_message_historical = false;
+        override("stream_data.is_subscribed", function () {
+            return false;
+        });
+
+        global.with_stub(function (stub) {
+            list.view.render_trailing_bookend = stub.f;
+            list.update_trailing_bookend();
+            var bookend = stub.get_args('content', 'subscribed');
+            assert.equal(bookend.content, expected);
+            assert.equal(bookend.subscribed, false);
+        });
+
+        expected = "You are not subscribed to stream IceCream";
+        list.last_message_historical = true;
+
+        global.with_stub(function (stub) {
+            list.view.render_trailing_bookend = stub.f;
+            list.update_trailing_bookend();
+            var bookend = stub.get_args('content', 'subscribed');
+            assert.equal(bookend.content, expected);
+            assert.equal(bookend.subscribed, false);
+        });
+    });
 }());
