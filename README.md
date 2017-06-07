@@ -104,10 +104,11 @@ relevant list!  Please report any security issues you discover to
 zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
-app (including most integrations); the
-[React Native Mobile iOS app][ios-exp], [Android app][Android],
+app (including most integrations).  The
+[beta React Native mobile app][mobile], [Java Android app][Android]
+(see [our mobile strategy][mobile-strategy]),
 [new Electron desktop app][electron], and
-[legacy QT-based desktop app][desktop] are all separate repositories.
+[legacy Qt-based desktop app][desktop] are all separate repositories.
 
 * **Glue code**. We maintain a [Hubot adapter][hubot-adapter] and several
 integrations ([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][],
@@ -140,7 +141,8 @@ is valuable.
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
-[ios-exp]: https://github.com/zulip/zulip-mobile
+[mobile]: https://github.com/zulip/zulip-mobile
+[mobile-strategy]: https://github.com/zulip/zulip-android/blob/master/android-strategy.md
 [email-android]: https://groups.google.com/forum/#!forum/zulip-android
 [email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
 [hubot-adapter]: https://github.com/zulip/hubot-zulip
@@ -161,19 +163,8 @@ is valuable.
 We participated in
 [GSoC](https://developers.google.com/open-source/gsoc/) in 2016 (with
 [great results](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/))
-and are participating in 2017 as well.  For guidance, please read
-[our GSoC instructions and ideas page](https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md)
-and feel free to email
-[our GSoC mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc).
-
-**Note**: For GSoC 2017, we will be focused on making our
-[React Native app](https://github.com/zulip/zulip-mobile) better
-rather than developing the
-[Java Android app](https://github.com/zulip/zulip-android) and
-[React Native app](https://github.com/zulip/zulip-mobile) in
-parallel. You can review
-[our detailed plan](https://github.com/zulip/zulip-android/blob/master/android-strategy.md)
-for further details on the motivation and logistics.
+and [are participating](https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md)
+in 2017 as well.
 
 ## How to get involved with contributing to Zulip
 
