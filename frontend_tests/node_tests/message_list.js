@@ -44,6 +44,7 @@ var MessageList = require('js/message_list').MessageList;
 
     list.append(messages, true);
 
+    assert.equal(list.num_items(), 4);
     assert.equal(list.empty(), false);
     assert.equal(list.first().id, 50);
     assert.equal(list.last().id, 80);
@@ -65,8 +66,19 @@ var MessageList = require('js/message_list').MessageList;
     list.select_id(50);
 
     assert.equal(list.selected_id(), 50);
+    assert.equal(list.selected_idx(), 0);
 
     list.advance_past_messages([60, 80]);
+    assert.equal(list.selected_id(), 60);
+    assert.equal(list.selected_idx(), 1);
+
+    // Make sure not rerendered when reselected
+    var num_renders = 0;
+    list.rerender = function () {
+        num_renders += 1;
+    };
+    list.reselect_selected_id();
+    assert.equal(num_renders, 0);
     assert.equal(list.selected_id(), 60);
 
     var old_messages = [
@@ -99,7 +111,6 @@ var MessageList = require('js/message_list').MessageList;
 
     list.clear();
     assert.deepEqual(list.all_messages(), []);
-
 }());
 
 (function test_nth_most_recent_id() {
