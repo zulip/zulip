@@ -10,7 +10,7 @@ through your operating system.
 {!go-to-the.md!} **Text Entry** page.
 
 3. Add a language by clicking on the plus
-(<i class="icon-vector-plus"></i>) icon.
+(<i class="fa fa-plus" aria-hidden="true"></i>) icon.
 
 4. Select the language you want from the menu that appears.
 
@@ -64,7 +64,7 @@ and then click **OK**.
 
 4. Then click **Input Sources**.
 
-5. Click **Add** (<i class="icon-vector-plus"></i>).
+5. Click **Add** (<i class="fa fa-plus" aria-hidden="true""></i>).
 
 6. Search for the language or input source and select it.
 
