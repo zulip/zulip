@@ -164,6 +164,7 @@ Corporate Organization:
 
 Next, you'll likely want to do one of the following:
 
+* [Read our advice for new organization administrators][realm-admin-docs]
 * [Customize your Zulip organization](prod-customize.html).
 * [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
 
@@ -177,3 +178,5 @@ to debug.  If that doesn't help, please visit
 in the [Zulip developerment community server](chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
 traceback and we'll try to help you out!
+
+[realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip

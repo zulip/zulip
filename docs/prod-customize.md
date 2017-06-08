@@ -3,9 +3,11 @@
 Once you've got Zulip setup, you'll likely want to configure it the
 way you like.  Most configuration can be done by a realm administrator
 on the web (see
-[the documentation for realm administrators](https://zulipchat.com/help/getting-your-organization-started-with-zulip);
-this page discusses those additional configuration items that can be
-done by a system administrator.
+[the documentation for realm administrators][realm-admin-docs]); this
+page discusses those additional configuration items that can be done
+by a system administrator.
+
+[realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
 
 ## Mobile and desktop apps
 
