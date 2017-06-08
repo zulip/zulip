@@ -183,8 +183,7 @@ function show_subscription_settings(sub_row) {
         source: people.get_realm_persons, // This is a function.
         items: 5,
         highlighter: function (item) {
-            var item_formatted = typeahead_helper.render_person(item);
-            return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
+            return typeahead_helper.render_person(this.query, item);
         },
         matcher: function (item) {
             var query = $.trim(this.query.toLowerCase());

@@ -342,8 +342,7 @@ exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
         return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
     } else if (this.completing === 'mention') {
-        var item_formatted = typeahead_helper.render_person(item);
-        return typeahead_helper.highlight_with_escaping(this.token, item_formatted);
+        return typeahead_helper.render_person(this.token, item);
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(this.token, item);
     } else if (this.completing === 'syntax') {
@@ -502,8 +501,7 @@ exports.initialize = function () {
         fixed: true,
         highlighter: function (item) {
             var query = get_last_recipient_in_pm(this.query);
-            var item_formatted = typeahead_helper.render_person(item);
-            return typeahead_helper.highlight_with_escaping(query, item_formatted);
+            return typeahead_helper.render_person(query, item);
         },
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);
