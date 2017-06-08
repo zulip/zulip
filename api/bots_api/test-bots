@@ -17,12 +17,6 @@ def dir_join(dir1, dir2):
 
 if __name__ == '__main__':
 
-    description = 'Script to run test_<bot>.py files in bots/<bot> directories'
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('bot_to_test', metavar='bot', nargs='*',
-                        help='specific bots to test (default is all)')
-    args = parser.parse_args()
-
     bots_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = dir_join(bots_dir, '..')
     bots_test_dir = dir_join(bots_dir, '../bots')
@@ -30,28 +24,46 @@ if __name__ == '__main__':
     sys.path.insert(0, root_dir)
     sys.path.insert(0, bots_test_dir)
 
-    def run_tests_in(start_dir):
-        # type: (str) -> None
-        # mypy doesn't recognize the TestLoader attribute, even though the code
-        # is executable
-        loader = unittest.TestLoader()  # type: ignore
-        suite = loader.discover(start_dir=start_dir, top_level_dir=root_dir)
-        runner = unittest.TextTestRunner(verbosity=2)
-        # same issue as for TestLoader
-        result = runner.run(suite)  # type: ignore
-        if result.errors or result.failures:
-            raise Exception('Test failed!')
+    btd = bots_test_dir
+    available_bots = [b for b in os.listdir(btd) if os.path.isdir(dir_join(btd, b))]
 
-    if len(args.bot_to_test) > 0:
-        btd = bots_test_dir
-        available_bots = [b for b in os.listdir(btd) if os.path.isdir(dir_join(btd, b))]
-        tests_incomplete = False
-        for n in args.bot_to_test:
+    description = 'Script to run test_<bot>.py files in api/bots/<bot> directories'
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('bots_to_test', metavar='bot', nargs='*', default=available_bots,
+                        help='specific bots to test (default is all)')
+    parser.add_argument('--exclude', metavar='bot', action='append', default=[],
+                        help='specific bot to exclude (can be used multiple times)')
+    args = parser.parse_args()
+
+    tests_incomplete = False
+    if args.bots_to_test != available_bots and len(args.bots_to_test) > 0:
+        for n in args.bots_to_test:
             if n not in available_bots:
                 logging.warning("Bot with name '%s' is unavailable for testing." % (n))
+                args.bots_to_test.remove(n)
                 tests_incomplete = True
-            else:
-                run_tests_in(dir_join(bots_test_dir, n))
-        sys.exit(tests_incomplete)
-    else:
-        run_tests_in(bots_test_dir)
+
+    for to_exclude in args.exclude:
+        if to_exclude in args.bots_to_test:
+            args.bots_to_test.remove(to_exclude)
+
+    # mypy doesn't recognize the TestLoader attribute, even though the code
+    # is executable
+    loader = unittest.TestLoader()  # type: ignore
+
+    suites = []
+    for bot_to_test in args.bots_to_test:
+        try:
+            suites.append(loader.discover(start_dir = dir_join(bots_test_dir, bot_to_test),
+                                          top_level_dir = root_dir))
+        except ImportError:
+            logging.warning("Bot %s requires __init__.py to be added" % (bot_to_test))
+
+    suite = unittest.TestSuite(suites)
+    runner = unittest.TextTestRunner(verbosity=2)
+    # same issue as for TestLoader
+    result = runner.run(suite)  # type: ignore
+    if result.errors or result.failures:
+        raise Exception('Test failed!')
+
+    sys.exit(tests_incomplete)
