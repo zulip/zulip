@@ -1233,7 +1233,6 @@ input.new-organization-button {
     padding: 20px 30px 100px 30px;
 
     min-height: calc(100vh - 64px - 100px - 20px);
-
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
