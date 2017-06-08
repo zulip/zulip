@@ -69,6 +69,10 @@ exports.save = function (row, from_topic_edited_only) {
     var message = current_msg_list.get(message_id);
     var changed = false;
 
+    if (message.draft !== undefined) {
+        delete message.draft;
+    }
+
     var new_content = row.find(".message_edit_content").val();
     var topic_changed = false;
     var new_topic;
@@ -309,6 +313,15 @@ function edit_message(row, raw_content) {
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });
     }
+
+    if (message.draft !== undefined) {
+        if (editability === editability_types.FULL) {
+            row.find(".message_edit_topic").val(message.draft.topic);
+            row.find(".message_edit_content").val(message.draft.content);
+        } else if (editability === editability_types.TOPIC_ONLY) {
+            row.find(".message_edit_topic").val(message.draft.topic);
+        }
+    }
 }
 
 function start_edit_maintaining_scroll(row, content) {
@@ -328,6 +341,22 @@ function start_edit_with_content(row, content, edit_box_open_callback) {
 }
 
 exports.start = function (row, edit_box_open_callback) {
+    if (Object.keys(currently_editing_messages).length === 0) {
+         $('a').on('click', function () {
+                _.each(currently_editing_messages, function (elem, idx) {
+                 if (current_msg_list.get(idx) !== undefined) {
+                        var row = current_msg_list.get_row(idx);
+                        var message = current_msg_list.get(rows.id(row));
+                        var draft = {
+                            topic: row.find("#message_edit_topic").val(),
+                            content: row.find("#message_edit_content").val(),
+                        };
+                        message.draft = draft;
+                        message_edit.end(row);
+                    }
+             });
+        });
+    }
     var message = current_msg_list.get(rows.id(row));
     if (message.raw_content) {
         start_edit_with_content(row, message.raw_content, edit_box_open_callback);
@@ -392,6 +421,9 @@ exports.end = function (row) {
     }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();
+    if (Object.keys(currently_editing_messages).length === 1) {
+        $('a').off('click');
+    }
 };
 
 exports.maybe_show_edit = function (row, id) {
