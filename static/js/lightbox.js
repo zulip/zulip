@@ -27,15 +27,25 @@ function render_lightbox_list_images(preview_source) {
     }
 }
 
-function display_image(payload) {
+function display_image(payload, options) {
     render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
-    $(".image-actions, .image-description, .download").show();
+    $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
 
-    var img = new Image();
-    img.src = payload.source;
-    $("#lightbox_overlay .image-preview").html(img).show();
+    if (options.lightbox_canvas === true) {
+        var canvas = document.createElement("canvas");
+        canvas.setAttribute("data-src", payload.source);
+
+        $("#lightbox_overlay .image-preview").html(canvas).show();
+        var photo = new LightboxCanvas(canvas);
+        photo.speed(2.3);
+    } else {
+        var img = new Image();
+        img.src = payload.source;
+
+        $("#lightbox_overlay .image-preview").html(img).show();
+    }
 
     $(".image-description .title").text(payload.title || "N/A");
     $(".image-description .user").text(payload.user);
@@ -46,7 +56,7 @@ function display_image(payload) {
 function display_youtube_video(payload) {
     render_lightbox_list_images(payload.preview);
 
-    $("#lightbox_overlay .image-preview, .image-description, .download").hide();
+    $("#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger").hide();
 
     var iframe = $("<iframe></iframe>", {
         src: "https://www.youtube.com/embed/" + payload.source,
@@ -61,7 +71,14 @@ function display_youtube_video(payload) {
 // the image param is optional, but required on the first preview of an image.
 // this will likely be passed in every time but just ignored if the result is already
 // stored in the `asset_map`.
-exports.open = function (image) {
+exports.open = function (image, options) {
+    if (!options) {
+        options = {
+            // default to showing standard images.
+            lightbox_canvas: $(".lightbox-canvas-trigger").hasClass("enabled"),
+        };
+    }
+
     var $image = $(image);
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
@@ -77,7 +94,7 @@ exports.open = function (image) {
         if (payload.type === "youtube-video") {
             display_youtube_video(payload);
         } else if (payload.type === "image") {
-            display_image(payload);
+            display_image(payload, options);
         }
     // otherwise retrieve the metadata from the DOM and store into the asset_map.
     } else {
@@ -97,7 +114,7 @@ exports.open = function (image) {
         if (payload.type === "youtube-video") {
             display_youtube_video(payload);
         } else if (payload.type === "image") {
-            display_image(payload);
+            display_image(payload, options);
         }
     }
 
@@ -198,6 +215,26 @@ $(function () {
         }
     });
 
+    $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
+        var $img = $("#lightbox_overlay").find(".image-preview img");
+
+        if ($img.length) {
+            $(this).addClass("enabled");
+            // the `lightbox.open` function will see the enabled class and
+            // enable the `LightboxCanvas` class.
+            exports.open($img);
+        } else {
+            $img = $("#lightbox_overlay").find(".image-preview canvas")[0].image;
+
+            $(this).removeClass("enabled");
+            exports.open($img);
+        }
+    });
+
+    $("#lightbox_overlay .image-preview").on("dblclick", "img, canvas", function (e) {
+        $("#lightbox_overlay .lightbox-canvas-trigger").click();
+        e.preventDefault();
+    });
 });
 
 return exports;
