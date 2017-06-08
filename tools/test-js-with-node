@@ -42,6 +42,7 @@ enforce_fully_covered = {
     'static/js/typing_data.js',
     'static/js/typing_status.js',
     'static/js/unread.js',
+    'static/js/util.js',
 }
 
 parser = optparse.OptionParser(USAGE)
