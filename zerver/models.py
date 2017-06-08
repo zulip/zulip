@@ -1245,16 +1245,15 @@ class Reaction(ModelReprMixin, models.Model):
                   'user_profile__id', 'user_profile__full_name']
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
 
-# Whenever a message is sent, for each user current subscribed to the
+# Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
-# table, which has has columns (id, user profile id, message id,
-# flags) indicating which messages each user has received.  This table
+# table indicating that that user received that message.  This table
 # allows us to quickly query any user's last 1000 messages to generate
 # the home view.
 #
 # Additionally, the flags field stores metadata like whether the user
-# has read the message, starred the message, collapsed or was
-# mentioned the message, etc.
+# has read the message, starred or collapsed the message, was
+# mentioned in the message, etc.
 #
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
