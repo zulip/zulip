@@ -6,8 +6,8 @@
 {% stylesheet 'landing-page' %}
 {{ render_bundle('landing-page') }}
 <style>
-html {
-    background: rgb(32, 39, 51);
+.portico-page {
+    padding-bottom: 0px;
 }
 </style>
 
@@ -15,14 +15,17 @@ html {
 
 {% block portico_content %}
 
-{% include 'zerver/landing_nav_blue.html' %}
+{% include 'zerver/landing_nav.html' %}
+
+<div class="gradients">
+    <div class="gradient sunburst"></div>
+    <div class="gradient dark-blue"></div>
+    <div class="gradient green"></div>
+    <div class="gradient blue"></div>
+    <div class="gradient white-fade"></div>
+</div>
+
 <div class="portico-landing hello show">
-    <div class="gradients">
-        <div class="gradient sunburst"></div>
-        <div class="gradient dark-blue"></div>
-        <div class="gradient green"></div>
-        <div class="gradient blue"></div>
-    </div>
     <div class="hero">
         <div class="content">
             <header>
