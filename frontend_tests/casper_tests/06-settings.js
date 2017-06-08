@@ -160,39 +160,61 @@ casper.then(function () {
     });
 });
 
-/*
-   This test needs a modification. As it stands now, it will cause a race
-   condition with all subsequent tests which access the UserProfile object
-   this test modifies. Currently, if we modify alert words, we don't get
-   any notification from the server, issue reported at
-   https://github.com/zulip/zulip/issues/1269. Consequently, we can't wait
-   on any condition to avoid the race condition.
+casper.then(function () {
+    casper.click('[data-section="alert-words"]');
+    casper.waitUntilVisible('#create_alert_word_form', function () {
+        casper.test.info('Attempting to submit an empty alert word');
+        casper.click('#create_alert_word_button');
+        casper.waitUntilVisible('#alert_word_status', function () {
+            casper.test.info('Checking that an error is displayed');
+            casper.test.assertSelectorHasText('.alert_word_status_text', 'Alert word can\'t be empty!');
+            casper.test.info('Closing the error message');
+            casper.click('.close-alert-word-status');
+            casper.test.info('Checking the error is hidden');
+            casper.test.assertNotVisible('#alert_word_status');
+        });
+    });
+});
 
-casper.waitUntilVisible('#create_alert_word_form', function () {
-    casper.test.info('Attempting to submit an empty alert word');
-    casper.click('#create_alert_word_button');
-    casper.test.info('Checking that an error is displayed');
-    casper.test.assertVisible('#empty_alert_word_error');
-
-    casper.test.info('Closing the error message');
-    casper.click('.close-empty-alert-word-error');
-    casper.test.info('Checking the error is hidden');
-    casper.test.assertNotVisible('#empty_alert_word_error');
-
+casper.then(function () {
     casper.test.info('Filling out the alert word input');
     casper.sendKeys('#create_alert_word_name', 'some phrase');
     casper.click('#create_alert_word_button');
-
-    casper.test.info('Checking that an element was created');
-    casper.test.assertExists('div.alert-word-information-box');
-    casper.test.assertSelectorHasText('span.value', 'some phrase');
-
-    casper.test.info('Deleting element');
-    casper.click('button.remove-alert-word');
-    casper.test.info('Checking that the element was deleted');
-    casper.test.assertDoesntExist('div.alert-word-information-box');
+    casper.test.info('Checking that a success message is displayed');
+    casper.waitUntilVisible('#alert_word_status', function () {
+        casper.test.assertSelectorHasText('.alert_word_status_text', 'Alert word added successfully!');
+        casper.test.info('Closing the status message');
+        casper.click('.close-alert-word-status');
+        casper.test.info('Checking the status message is hidden');
+        casper.test.assertNotVisible('#alert_word_status');
+    });
 });
-*/
+
+casper.then(function () {
+    casper.test.info('Checking that an element was created');
+    casper.waitUntilVisible(".alert-word-item[data-word='some phrase']", function () {
+        casper.test.assertExists('div.alert-word-information-box');
+        casper.test.assertSelectorHasText('span.value', 'some phrase');
+    });
+});
+
+casper.then(function () {
+    casper.test.info('Deleting alert word');
+    casper.click('button.remove-alert-word');
+    casper.test.info('Checking that a success message is displayed');
+    casper.waitUntilVisible('#alert_word_status', function () {
+        casper.test.assertSelectorHasText('.alert_word_status_text', 'Alert word removed successfully!');
+        casper.test.info('Closing the status message');
+        casper.click('.close-alert-word-status');
+        casper.test.info('Checking the status message is hidden');
+        casper.test.assertNotVisible('#alert_word_status');
+    });
+    casper.test.info('Checking that the element was deleted');
+    casper.waitWhileVisible(".alert-word-item[data-word='some phrase']", function () {
+        casper.test.assertDoesntExist('div.alert-word-information-box');
+        casper.test.info('Element deleted successfully');
+    });
+});
 
 casper.then(function change_default_language() {
     casper.test.info('Changing the default language');
