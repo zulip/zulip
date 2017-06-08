@@ -25,15 +25,27 @@ can enable this for your Zulip server as follows:
    https://push.zulipchat.com` line in your `/etc/zulip/settings.py`
    file, and
    [restart your Zulip server](prod-maintain-secure-upgrade.html#updating-settings).
+   Note that if you installed Zulip older than 1.6, you'll need to add
+   the line (it won't be there to uncomment).
 
 That should be all you need to do!
 
-To test whether you've configured it properly, just
-[configure mobile push notifications to always be sent][notification-settings],
-start the
-[Zulip Android app](https://play.google.com/store/apps/details?id=com.zulip.android),
-in the background, and then have another user send you private
-messages.  They should appear in the Android notification area.
+To test whether you've configured it properly, you should do the
+following:
+* [Configure mobile push notifications to always be sent][notification-settings]
+  (normally they're only sent if you're idle, which isn't ideal for
+  this sort of testing).
+* On an Android device, download and login to the
+[Zulip Android app](https://play.google.com/store/apps/details?id=com.zulip.android).
+If you were already logged in before configuring the server, you'll
+need to logout first, since the app only registers for push
+notifications on login.
+* Hit the home button, so Zulip is running in the background, and then
+have another user send you a private message.  A push notification
+should appear in the Android notification area.
+
+Zulip's [new iOS app](https://itunes.apple.com/us/app/zulip/id1203036395)
+doesn't yet support push notifications, but it will by July 2017.
 
 [notification-settings]: https://zulipchat.com/help/configure-mobile-notifications
 
