@@ -17,13 +17,16 @@ Starting with Zulip 1.6, Zulip servers support forwarding push
 notifications to a central push notification forwarding service.  You
 can enable this for your Zulip server as follows:
 
-1. First, contact support@zulipchat.com for instructions on
-   registering your server (we hope to have a nice web flow available
-   for this soon).
+1. First, contact support@zulipchat.com with the `zulip_org_id` and
+   `zulip_org_key` values from your `/etc/zulip/zulip-secrets.conf` file, as
+   well as a hostname and contact email address you'd like us to use in case
+   of any issues (we hope to have a nice web flow available for this soon).
 
-2. Then, uncomment the `PUSH_NOTIFICATION_BOUNCER_URL =
-   https://push.zulipchat.com` line in your `/etc/zulip/settings.py`
-   file, and
+2. We'll enable push notifications for your server on our end. Look for a
+   reply from Zulipchat support within 24 hours.
+
+3. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL = https://push.zulipchat.com`
+   line in your `/etc/zulip/settings.py` file, and
    [restart your Zulip server](prod-maintain-secure-upgrade.html#updating-settings).
    Note that if you installed Zulip older than 1.6, you'll need to add
    the line (it won't be there to uncomment).
@@ -48,6 +51,10 @@ Zulip's [new iOS app](https://itunes.apple.com/us/app/zulip/id1203036395)
 doesn't yet support push notifications, but it will by July 2017.
 
 [notification-settings]: https://zulipchat.com/help/configure-mobile-notifications
+
+Note that use of the push notification bouncer is subject to the Terms of
+Service at https://zulipchat.com/terms/. By using push notifications, you
+agree to those terms.
 
 ## Why this is necessary
 
