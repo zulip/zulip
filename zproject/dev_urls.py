@@ -4,6 +4,7 @@ import os.path
 from django.views.static import serve
 import zerver.views.registration
 import zerver.views.auth
+import zerver.views.test_emails
 
 # These URLs are available only in the development environment
 
@@ -26,6 +27,9 @@ urls = [
     # The special no-password login endpoint for development
     url(r'^devlogin/$', zerver.views.auth.login_page,
         {'template_name': 'zerver/dev_login.html'}, name='zerver.views.auth.login_page'),
+
+    # Page for testing email templates
+    url(r'^emails/$', zerver.views.test_emails.email_page),
 ]
 
 i18n_urls = [
