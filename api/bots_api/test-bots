@@ -35,13 +35,13 @@ if __name__ == '__main__':
                         help='specific bot to exclude (can be used multiple times)')
     args = parser.parse_args()
 
-    tests_incomplete = False
+    failed = False
     if args.bots_to_test != available_bots and len(args.bots_to_test) > 0:
         for n in args.bots_to_test:
             if n not in available_bots:
                 logging.warning("Bot with name '%s' is unavailable for testing." % (n))
                 args.bots_to_test.remove(n)
-                tests_incomplete = True
+                failed = True
 
     for to_exclude in args.exclude:
         if to_exclude in args.bots_to_test:
@@ -57,7 +57,8 @@ if __name__ == '__main__':
             suites.append(loader.discover(start_dir = dir_join(bots_test_dir, bot_to_test),
                                           top_level_dir = root_dir))
         except ImportError:
-            logging.warning("Bot %s requires __init__.py to be added" % (bot_to_test))
+            logging.error("Bot %s requires __init__.py to be added" % (bot_to_test))
+            failed = True
 
     suite = unittest.TestSuite(suites)
     runner = unittest.TextTestRunner(verbosity=2)
@@ -66,4 +67,4 @@ if __name__ == '__main__':
     if result.errors or result.failures:
         raise Exception('Test failed!')
 
-    sys.exit(tests_incomplete)
+    sys.exit(failed)
