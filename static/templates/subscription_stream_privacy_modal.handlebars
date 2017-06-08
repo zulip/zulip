@@ -6,13 +6,13 @@
     <div class="modal-body">
         {{#if is_private}}
             {{#tr this}}
-            This stream is currently <span class="icon-vector-lock"></span> <b>an invite-only stream</b>
+            This stream is currently <span class="fa fa-lock" aria-hidden="true"></span> <b>an invite-only stream</b>
             which means only invited members can join and access its content. Making it public will make
             it possible for anyone in your organization to join and access it.
             {{/tr}}
         {{else}}
             {{#tr this}}
-            This stream is currently <span class="icon-vector-globe"></span> <b>a public stream</b>
+            This stream is currently <span class="fa fa-globe" aria-hidden="true"></span> <b>a public stream</b>
             which means anyone in the organization can join it. Making it private will mean that
             only the invited members can join and access its content. Members of the stream can
             invite others.
