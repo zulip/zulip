@@ -69,11 +69,15 @@ exports.highlight_query_in_phrase = function (query, phrase) {
     return result;
 };
 
-exports.render_person = function (person) {
+exports.render_person = function (token, person) {
     if (person.special_item_text) {
         return person.special_item_text;
     }
-    return person.full_name + " <" + person.email + ">";
+
+    var full_name = exports.highlight_with_escaping(token, person.full_name);
+    var email = exports.highlight_with_escaping(token, person.email);
+
+    return full_name + " <" + email + ">";
 };
 
 exports.render_stream = function (token, stream) {
