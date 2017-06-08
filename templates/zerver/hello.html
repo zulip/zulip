@@ -17,12 +17,18 @@ html {
 
 {% include 'zerver/landing_nav_blue.html' %}
 <div class="portico-landing hello show">
+    <div class="gradients">
+        <div class="gradient sunburst"></div>
+        <div class="gradient dark-blue"></div>
+        <div class="gradient green"></div>
+        <div class="gradient blue"></div>
+    </div>
     <div class="hero">
         <div class="content">
             <header>
                 <h1>The world's most productive group chat</h1>
                 <p>
-                    Zulip combines the immediacy of Slack with Gmail's
+                    Zulip combines the immediacy of Slack with an email
                     threading model.  <br />With Zulip, you don't have to
                     choose between missing important conversations and
                     wasting time reading irrelevant ones.
@@ -34,7 +40,7 @@ html {
                            name="button">{{ _('Log in now!') }}</button>
                 </a>
                 {% else %}
-                <a href="{{ url('register') }}">
+                <a class="no-style" href="{{ url('register') }}">
                    <button href="" class="download-button" type="button"
                            name="button">{{ _('Register now!') }}</button>
                 </a>
@@ -302,6 +308,7 @@ html {
     </div>
 
     <div class="apps">
+        <div class="triangle"></div>
         <div class="left-side">
             <div class="content">
                 <header>
