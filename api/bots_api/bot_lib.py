@@ -51,7 +51,7 @@ class RateLimit(object):
         sys.exit(1)
 
 
-class BotHandlerApi(object):
+class ExternalBotHandler(object):
     def __init__(self, client):
         # type: (Client) -> None
         # Only expose a subset of our Client's functionality
@@ -129,7 +129,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
     #
     # Make sure you set up your ~/.zuliprc
     client = Client(config_file=config_file)
-    restricted_client = BotHandlerApi(client)
+    restricted_client = ExternalBotHandler(client)
 
     message_handler = lib_module.handler_class()
     if hasattr(message_handler, 'initialize'):
@@ -141,7 +141,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         print(message_handler.usage())
 
     def extract_query_without_mention(message, client):
-        # type: (Dict[str, Any], BotHandlerApi) -> str
+        # type: (Dict[str, Any], ExternalBotHandler) -> str
         """
         If the bot is the first @mention in the message, then this function returns
         the message with the bot's @mention removed.  Otherwise, it returns None.
@@ -154,7 +154,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         return query_without_mention.lstrip()
 
     def is_private(message, client):
-        # type: (Dict[str, Any], BotHandlerApi) -> bool
+        # type: (Dict[str, Any], ExternalBotHandler) -> bool
         # bot will not reply if the sender name is the same as the bot name
         # to prevent infinite loop
         if message['type'] == 'private':
