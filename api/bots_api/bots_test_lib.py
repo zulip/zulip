@@ -17,9 +17,10 @@ from bot_lib import StateHandler
 from bots_api import bot_lib
 from six.moves import zip
 
+from contextlib import contextmanager
 from unittest import TestCase
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable
 from types import ModuleType
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -74,39 +75,32 @@ class BotTestCase(TestCase):
         else:
             instance.send_reply.assert_called_with(message, response['content'])
 
-    def assert_bot_response(self, message, response, expected_method,
-                            http_request=None, http_response=None):
-        # type: (Dict[str, Any], Dict[str, Any], str, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> None
+    @contextmanager
+    def mock_http_conversation(self, http_request, http_response):
+        # type: (Dict[str, Any], Dict[str, Any]) -> Any
+        """
+        Use this context manager to mock and verify a bot's HTTP
+        requests to the third-party API (and provide the correct
+        third-party API response. This allows us to test things
+        that would require the Internet without it).
+        """
+        assert http_response is not None and http_request is not None
+        with patch('requests.get') as mock_get:
+            mock_result = mock.MagicMock()
+            mock_result.json.return_value = http_response
+            mock_result.ok.return_value = True
+            mock_get.return_value = mock_result
+            yield
+            mock_get.assert_called_with(http_request['api_url'],
+                                        params=http_request['params'])
+
+    def assert_bot_response(self, message, response, expected_method):
+        # type: (Dict[str, Any], Dict[str, Any], str) -> None
         message_handler = self.get_bot_message_handler()
         # Mocking BotHandlerApi
         with patch('bots_api.bot_lib.BotHandlerApi') as MockClass:
-            # If not mock http_request/http_response are provided,
-            # just call the request normally (potentially using
-            # the Internet)
-            if http_response is None:
-                assert http_request is None
-                self.call_request(message_handler, message, expected_method,
-                                  MockClass, response)
-                return
-
-            # Otherwise, we mock requests, and verify that the bot
-            # made the correct HTTP request to the third-party API
-            # (and provide the correct third-party API response.
-            # This allows us to test things that would require the
-            # Internet without it).
-            assert http_request is not None
-            with patch('requests.get') as mock_get:
-                mock_result = mock.MagicMock()
-                mock_result.json.return_value = http_response
-                mock_result.ok.return_value = True
-                mock_get.return_value = mock_result
-                self.call_request(message_handler, message, expected_method,
-                                  MockClass, response)
-                # Check if the bot is sending the correct http_request corresponding
-                # to the given http_response.
-                if http_request is not None:
-                    mock_get.assert_called_with(http_request['api_url'],
-                                                params=http_request['params'])
+            self.call_request(message_handler, message, expected_method,
+                              MockClass, response)
 
     def bot_to_run(self, bot_module):
         # Returning Any, same argument as in get_bot_message_handler function.
