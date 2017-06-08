@@ -838,6 +838,7 @@ JS_SPECS = {
             'js/loading.js',
             'js/util.js',
             'js/dynamic_text.js',
+            'js/lightbox_canvas.js',
             'js/rtl.js',
             'js/dict.js',
             'js/components.js',

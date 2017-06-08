@@ -2025,6 +2025,7 @@ div.floating_recipient {
 
 .twitter-image,
 .message_inline_image {
+    position: relative;
     margin-bottom: 5px;
     margin-left: 5px;
     height: 100px;
