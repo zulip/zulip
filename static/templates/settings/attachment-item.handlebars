@@ -6,7 +6,7 @@
                 {{#if attachment.extension}}
                 {{ attachment.extension }}
                 {{else}}
-                <i class="icon icon-vector-file"></i>
+                <i class="icon fa fa-file" aria-hidden="true"></i>
                 {{/if}}
             </div>
         </div>
@@ -18,7 +18,7 @@
                 <button type="submit"
                     class="button small no-style remove-attachment"
                     title="{{t 'Delete file' }}" data-attachment="{{attachment.id}}">
-                    <i class="icon-vector-trash"></i>
+                    <i class="fa fa-trash" aria-hidden="true"></i>
                 </button>
             </div>
             {{#if attachment.messages }}
