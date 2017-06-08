@@ -1976,6 +1976,26 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.full_name, 'NonExisting')
             self.assertEqual(user_profile.realm.string_id, 'zulip')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_when_user_does_not_exist_with_valid_subdomain(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=nonexisting,ou=users,dc=acme,dc=com': {
+                'cn': ['NonExisting', ],
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='acme.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com'):
+            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+                                                     realm_subdomain='zulip')
+            self.assertEqual(user_profile.email, 'nonexisting@acme.com')
+            self.assertEqual(user_profile.full_name, 'NonExisting')
+            self.assertEqual(user_profile.realm.string_id, 'zulip')
+
 class TestZulipLDAPUserPopulator(ZulipTestCase):
     def test_authenticate(self):
         # type: () -> None
