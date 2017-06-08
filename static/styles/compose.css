@@ -26,7 +26,11 @@
 }
 
 .autocomplete_secondary {
-    opacity: 0.6;
+    opacity: 0.8;
+}
+
+.active .autocomplete_secondary {
+    opacity: 1;
 }
 
 #compose_buttons {
