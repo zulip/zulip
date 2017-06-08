@@ -1,7 +1,7 @@
 {{! Client-side Mustache template for rendering users in the stream creation modal.}}
 
 <div id="copy-from-stream-expand-collapse" class="add-user-label">
-    <i class="toggle icon-vector-caret-right"></i>
+    <i class="toggle fa fa-caret-right" aria-hidden="true"></i>
     <span class="control-label">
         {{t "Copy from stream" }}
     </span>
@@ -12,7 +12,7 @@
     <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}" data-stream-name="{{this.name}}">
         <input type="checkbox" name="stream" value="{{this.name}}" />
         <span></span>
-        {{this.name}} ( <i class="icon-vector-user"></i> {{this.subscriber_count}})
+        {{this.name}} ( <i class="fa fa-user" aria-hidden="true"></i> {{this.subscriber_count}})
     </label>
     {{/each}}
 </div>
