@@ -11,7 +11,7 @@ self.addEventListener('notificationclick', function (event) {
             type: "window",
         })
         .then(function (clientList) {  
-            for (var i = 0; i < clientList.length; i++) {
+            for (var i = 0; i < clientList.length; i + 1) {
                 var client = clientList[i];
                 if ('focus' in client) {
                     // Do something as the result of the notification click
@@ -21,7 +21,7 @@ self.addEventListener('notificationclick', function (event) {
                     // }
                     return client.focus();
                 }
-            }  
+            }
             if (clients.openWindow) {
                 return clients.openWindow('/');
             }
