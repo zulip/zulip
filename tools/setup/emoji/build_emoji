@@ -82,7 +82,12 @@ EMOJI_POS_INFO_TEMPLATE = """\
 }
 """
 
-# change directory
+# Make and enter emoji directory
+user_id = os.getuid()
+if not os.path.isdir(EMOJI_CACHE_PATH):
+    run(["sudo", "mkdir", EMOJI_CACHE_PATH])
+run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
+run(["tools/setup/emoji/download-emoji-data"])
 os.chdir(EMOJI_SCRIPT_DIR_PATH)
 
 if 'TRAVIS' in os.environ:
