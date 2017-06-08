@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../api')))
 
-from bots_api.bot_lib import BotHandlerApi, StateHandler
+from bots_api.bot_lib import ExternalBotHandler, StateHandler
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
@@ -455,12 +455,12 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
 class EmbeddedBotWorker(QueueProcessingWorker):
 
     def get_bot_api_client(self, user_profile):
-        # type: (UserProfile) -> BotHandlerApi
+        # type: (UserProfile) -> ExternalBotHandler
         raw_client = Client(
             email=str(user_profile.email),
             api_key=str(user_profile.api_key),
             site=str(user_profile.realm.uri))
-        return BotHandlerApi(raw_client)
+        return ExternalBotHandler(raw_client)
 
     def get_bot_handler(self, service):
         # type: (Service) -> Any

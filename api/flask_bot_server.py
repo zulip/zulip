@@ -15,7 +15,7 @@ if os.path.exists(os.path.join(our_dir, '../api/zulip')):
 
 from zulip import Client
 from bots_api.run import get_lib_module
-from bots_api.bot_lib import BotHandlerApi, StateHandler
+from bots_api.bot_lib import ExternalBotHandler, StateHandler
 
 bots_config = {}  # type: Dict[str, Mapping[str, str]]
 available_bots = []  # type: List[str]
@@ -50,7 +50,7 @@ def handle_bot(bot):
     client = Client(email=bots_config[bot]["email"],
                     api_key=bots_config[bot]["key"],
                     site=bots_config[bot]["site"])
-    restricted_client = BotHandlerApi(client)
+    restricted_client = ExternalBotHandler(client)
     message_handler = bots_lib_module[bot].handler_class()
 
     # TODO: Handle stateful bots properly.

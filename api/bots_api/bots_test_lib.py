@@ -43,8 +43,8 @@ class BotTestCase(TestCase):
 
     def setUp(self):
         # type: () -> None
-        # Mocking BotHandlerApi
-        self.patcher = patch('bots_api.bot_lib.BotHandlerApi')
+        # Mocking ExternalBotHandler
+        self.patcher = patch('bots_api.bot_lib.ExternalBotHandler')
         self.MockClass = self.patcher.start()
         self.message_handler = self.get_bot_message_handler()
 
