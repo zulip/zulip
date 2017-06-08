@@ -69,6 +69,10 @@ exports.highlight_query_in_phrase = function (query, phrase) {
     return result;
 };
 
+function render_secondary(item) {
+    return '&nbsp;&nbsp;<small class = "autocomplete_secondary">' + item + '</small>';
+}
+
 exports.render_person = function (token, person) {
     if (person.special_item_text) {
         return person.special_item_text;
@@ -77,7 +81,7 @@ exports.render_person = function (token, person) {
     var full_name = exports.highlight_with_escaping(token, person.full_name);
     var email = exports.highlight_with_escaping(token, person.email);
 
-    return full_name + " <" + email + ">";
+    return full_name + render_secondary(email);
 };
 
 exports.render_stream = function (token, stream) {
@@ -92,7 +96,7 @@ exports.render_stream = function (token, stream) {
 
     var name = exports.highlight_with_escaping(token, stream.name);
 
-    return name + '&nbsp;&nbsp;<small class = "autocomplete_secondary">' + desc + '</small>';
+    return name + render_secondary(desc);
 };
 
 function split_by_subscribers(people, current_stream) {
