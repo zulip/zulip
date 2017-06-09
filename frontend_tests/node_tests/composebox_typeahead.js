@@ -12,16 +12,21 @@ var emoji_moneybag = {
     emoji_name: 'moneybag',
     emoji_url: 'TBD',
 };
-var japanese_post_office = {
+var emoji_japanese_post_office = {
     emoji_name: 'japanese_post_office',
     emoji_url: 'TBD',
 };
-var see_no_evil = {
+var emoji_panda_face = {
+    emoji_name: 'panda_face',
+    emoji_url: 'TBD',
+};
+var emoji_see_no_evil = {
     emoji_name: 'see_no_evil',
     emoji_url: 'TBD',
 };
 
-var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium, japanese_post_office, see_no_evil ];
+var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
+                   emoji_panda_face, emoji_see_no_evil ];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
