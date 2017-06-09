@@ -74,6 +74,21 @@ def verify_html(html):
         return False
     return True
 
+def check_tags(text):
+    # type: (Text) -> Text
+    # The current diffing algorithm produces malformed html when text is
+    # added to existing new lines. This patch manually corrects that.
+    in_tag = False
+    if text.endswith('<'):
+        text = text[:-1]
+    for c in text:
+        if c == '<':
+            in_tag = True
+        elif c == '>' and not in_tag:
+            text = '<' + text
+            break
+    return text
+
 def highlight_html_differences(s1, s2):
     # type: (Text, Text) -> Text
     differ = diff_match_patch()
@@ -85,9 +100,15 @@ def highlight_html_differences(s1, s2):
     idx = 0
     while idx < len(ops):
         op, text = ops[idx]
-        next_op = None
-        if idx != len(ops) - 1:
-            next_op, next_text = ops[idx + 1]
+        text = check_tags(text)
+        if idx != 0:
+            prev_op, prev_text = ops[idx - 1]
+            prev_text = check_tags(prev_text)
+            # Remove visual offset from editing newlines
+            if '<p><br>' in text:
+                text = text.replace('<p><br>', '<p>')
+            elif prev_text.endswith('<p>') and text.startswith('<br>'):
+                text = text[4:]
         if op == diff_match_patch.DIFF_DELETE:
             chunks, in_tag = chunkize(text, in_tag)
             retval += highlight_chunks(chunks, highlight_deleted)
