@@ -218,7 +218,7 @@ function order_emoji_show_list(emoji_list, query) {
 
 function filter_emojis() {
     var elt = $(".emoji-popover-filter").expectOne();
-    var search_term = elt.val().trim().toLowerCase();
+    var search_term = elt.val().trim().toLowerCase().split(" ").join("_");
     var emoji_list = $(".emoji-popover-emoji");
     if (search_term !== '') {
         emoji_show_list = [];
