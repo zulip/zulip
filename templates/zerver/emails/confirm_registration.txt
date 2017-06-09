@@ -4,6 +4,8 @@ You recently signed up for Zulip. Awesome!
 
 To complete signup, visit this link below:
     <{{ activate_url }}>
+if you signed up from Zulip mobile app, copy and paste the below code in the app:
+    <{{ confirmation_key }}>
 
 {% if verbose_support_offers %}
 Feel free to give us a shout at <{{ support_email }}> if you have any questions.

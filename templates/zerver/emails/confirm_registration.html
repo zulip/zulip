@@ -19,6 +19,11 @@
                 <a href="{{ activate_url }}" style="color:#08c">{{ activate_url }}</a>
             </p>
             <p>
+            	if you signed up from Zulip mobile app, copy and paste the below code in the app:
+            	<br />
+            	<a href="{{ confirmation_key }}" style="color:#08c">{{ confirmation_key }}</a>
+            </p>
+            <p>
             {% if verbose_support_offers %}
                 Feel free to give us a shout at <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a>, if you have any questions.
             {% else %}
