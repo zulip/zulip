@@ -68,7 +68,7 @@ class TranslateHandler(object):
             This plugin will allow users to get the translation
             for a given word to a specified language. To use this
             plugin, users need to install the PyDictionary module
-            using 'pip install PyDictionary'.Use '@translate help'
+            using 'pip install PyDictionary'. Use '@translate help'
             for more usage information. Users should preface messages
             with @translate.
             '''
