@@ -133,6 +133,74 @@ You need:
   the `helloworld` bot, you should expect the bot to respond with
   "beep boop".
 
+## Zulip Bot Server
+It is a simple python flask server which can be used to interact with bots through making use of
+outgoing webhook services. It makes it really convenient for users to run multiple bots. Traditionally,
+a person would be required to download zuliprc of each bot and run each of them separately. With Zulip Bot
+server, he or she would be able to download a single configuration file for all bots i.e. `flaskbotrc` and
+start the server which would enable interacting with all the bots.
+
+It's location is `api/zulip/bot_server.py`.
+
+### How to run bots using the Flask server
+
+1.  Make sure that bot with whom you want to interact has been setup and is active (lets call it bot1).
+
+2.  Download the `flaskbotrc` from the `your-bots` settings page. It contains the configuration details
+    for all the active outgoing webhook bots. It's structure is very similar to that of zuliprc.
+
+3.  Install the `zulip` PyPI package using `pip`, the command for the above:
+    ```
+    pip install zulip
+    ```
+
+4.  Run the Zulip Bot server by passing the `flaskbotrc` to it. The command format is:
+    ```
+    zulip-bot-server  --config-file <path_to_flaskbotrc> --hostname <address> --port <port>
+    ```
+    The user can provide the hostname and port to run the server on, or omit it and run it on
+    the default address `127.0.0.1` and port `5002`.
+
+5.  Now setup the outgoing webhook service which will interact with the server. For this create an
+    `outgoing webhook` type bot (lets call this bot2) and create a service with base url of the form:
+    ```
+    http://hostname:port/bots/<bot_name>
+    ```
+    The `bot name` here refers to the name of the bot with whom you want to interact. It can be obtained by
+    removing `-bot@*.*` from the bot email. Example: the bot name of bot with email `followup-bot@zulip.com`
+    is `followup`. `hostname` and `port` can be either provided by user or can be the default ones.
+
+    On the development environment, an outgoing webhook bot and corresponding service already exists,
+    with the email `outgoing-webhook@zulip.com`. This can be used for interacting with flask server bots.
+
+6.  Now with everything setup, you can start interacting with the bot (bot1 here) by triggering the outgoing
+    webhook service, through @-mentioning or sending a private message to bot2. The content of the above message
+    should be text you want to send to bot1.
+
+    Please note that in order to @-mention trigger a bot on a stream, the bot needs to be subscribed to it.
+
+### Followup bot example
+
+1.  First setup the followup bot by creating a new bot with username `followup`.
+    Create a new `followup` stream and subscribe the bot to the stream where it will be triggered.
+
+2.  Download the `flaskbotrc` file.
+
+3.  If you haven't installed already, install the `zulip` package using `pip` through the command:
+    `pip install zulip`
+
+4.  Run the Zulip Bot server with the following command:
+    `zulip-bot-server  --config-file <path_to_flaskbotrc>`
+
+    If you want to run the server on a specific hostname and port, use the following command:
+    `zulip-bot-server  --config-file <path_to_flaskbotrc> --hostname <address> --port <port>`
+
+5.  Create a new outgoing webhook bot and a corresponding service with base url of the form
+    `http://hostname:port/bots/followup`.
+
+6.  Trigger the outgoing webhook bot using @-mentions or private message. You will see a message in the `followup`
+    stream by the followup bot.
+
 ## How to develop a bot
 
 The tutorial below explains the structure of a bot `<my-bot>.py`,
