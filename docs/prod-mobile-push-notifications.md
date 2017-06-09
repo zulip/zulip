@@ -25,7 +25,7 @@ can enable this for your Zulip server as follows:
 2. We'll enable push notifications for your server on our end. Look for a
    reply from Zulipchat support within 24 hours.
 
-3. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL = https://push.zulipchat.com`
+3. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL = "https://push.zulipchat.com"`
    line in your `/etc/zulip/settings.py` file, and
    [restart your Zulip server](prod-maintain-secure-upgrade.html#updating-settings).
    Note that if you installed Zulip older than 1.6, you'll need to add
