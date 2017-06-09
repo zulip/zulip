@@ -78,14 +78,14 @@ These settings include:
   maintaining this installation and who will get support and error
   emails.
 
-- `EMAIL_*` and `NOREPLY_EMAIL_ADDRESS`:
+- `EMAIL_*`:
   credentials for an outgoing SMTP server so Zulip can send emails
   when needed (don't forget to set `email_password` in the
   `zulip-secrets.conf` file!).  We highly recommend reading our
   [production email docs](prod-email.html) and following the test
   procedure discussed there to make sure you've setup outgoing email
   correctly, since outgoing email is the most common configuration
-  problem.
+  problem. You may also want to update `NOREPLY_EMAIL_ADDRESS`
 
 - If desired, you can also configure additional
   [authentication backends](prod-authentication-methods.html) while
