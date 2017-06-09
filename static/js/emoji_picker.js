@@ -226,6 +226,7 @@ function filter_emojis() {
         // Direct assignment to optimize and render the complete list emoji faster.
         emoji_show_list = complete_emoji_list;
     }
+    $('.emoji-popover-emoji-map').perfectScrollbar('update');
     emoji_show_list = order_emoji_show_list(emoji_show_list, search_term);
 }
 
