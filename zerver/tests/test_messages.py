@@ -1232,33 +1232,78 @@ class EditMessageTest(ZulipTestCase):
     def test_edit_message_history(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="editing", content="content before edit")
-        new_content = 'content after edit'
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
-            'message_id': msg_id, 'content': new_content
+        # Single-line edit
+        msg_id_1 = self.send_message(self.example_email("hamlet"),
+                                     "Scotland",
+                                     Recipient.STREAM,
+                                     subject="editing",
+                                     content="content before edit")
+        new_content_1 = 'content after edit'
+        result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
+            'message_id': msg_id_1, 'content': new_content_1
         })
-        self.assert_json_success(result)
+        self.assert_json_success(result_1)
 
-        message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
-        json_response = ujson.loads(message_edit_history.content.decode('utf-8'))
-        message_history = json_response['message_history']
+        message_edit_history_1 = self.client_get(
+            "/json/messages/" + str(msg_id_1) + "/history")
+        json_response_1 = ujson.loads(
+            message_edit_history_1.content.decode('utf-8'))
+        message_history_1 = json_response_1['message_history']
 
         # Check content of message after edit.
-        self.assertEqual(message_history[0]['rendered_content'],
+        self.assertEqual(message_history_1[0]['rendered_content'],
                          '<p>content before edit</p>')
-        self.assertEqual(message_history[1]['rendered_content'],
+        self.assertEqual(message_history_1[1]['rendered_content'],
                          '<p>content after edit</p>')
-        self.assertEqual(message_history[1]['content_html_diff'],
+        self.assertEqual(message_history_1[1]['content_html_diff'],
                          ('<p>content '
                           '<span class="highlight_text_deleted">before</span>'
                           '<span class="highlight_text_inserted">after</span>'
                           ' edit</p>'))
-
         # Check content of message before edit.
-        self.assertEqual(message_history[1]['prev_rendered_content'],
+        self.assertEqual(message_history_1[1]['prev_rendered_content'],
                          '<p>content before edit</p>')
+
+        # Edits on new lines
+        msg_id_2 = self.send_message(self.example_email("hamlet"),
+                                     "Scotland",
+                                     Recipient.STREAM,
+                                     subject="editing",
+                                     content=('content before edit, line 1\n'
+                                              '\n'
+                                              'content before edit, line 3'))
+        new_content_2 = ('content before edit, line 1\n'
+                         'content after edit, line 2\n'
+                         'content before edit, line 3')
+        result_2 = self.client_patch("/json/messages/" + str(msg_id_2), {
+            'message_id': msg_id_2, 'content': new_content_2
+        })
+        self.assert_json_success(result_2)
+
+        message_edit_history_2 = self.client_get(
+            "/json/messages/" + str(msg_id_2) + "/history")
+        json_response_2 = ujson.loads(
+            message_edit_history_2.content.decode('utf-8'))
+        message_history_2 = json_response_2['message_history']
+
+        self.assertEqual(message_history_2[0]['rendered_content'],
+                         ('<p>content before edit, line 1</p>\n'
+                          '<p>content before edit, line 3</p>'))
+        self.assertEqual(message_history_2[1]['rendered_content'],
+                         ('<p>content before edit, line 1<br>\n'
+                          'content after edit, line 2<br>\n'
+                          'content before edit, line 3</p>'))
+        self.assertEqual(message_history_2[1]['content_html_diff'],
+                         ('<p>content before edit, line 1</p>'
+                          '<span class="highlight_text_deleted">\n'
+                          '</span><p><span class="highlight_text_inserted">\n'
+                          'content after edit, line 2</span><br>'
+                          '<span class="highlight_text_inserted">\n'
+                          '</span>content before edit, line 3</p>'))
+        self.assertEqual(message_history_2[1]['prev_rendered_content'],
+                         ('<p>content before edit, line 1</p>\n'
+                          '<p>content before edit, line 3</p>'))
 
     def test_edit_cases(self):
         # type: () -> None
