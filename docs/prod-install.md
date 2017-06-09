@@ -87,15 +87,11 @@ These settings include:
   correctly, since outgoing email is the most common configuration
   problem.
 
-- `AUTHENTICATION_BACKENDS`: a list of enabled authentication
-  mechanisms.  You'll need to enable at least one authentication
-  mechanism by uncommenting its corresponding line, and then also do
-  any additional configuration required for that backend as documented
-  in the `settings.py` file (the email backend requires no extra
-  configuration).  See the
-  [section on Authentication](prod-authentication-methods.html) for
-  more detail on the available authentication backends and how to
-  configure them.
+- If desired, you can also configure additional
+  [authentication backends](prod-authentication-methods.html) while
+  you're editing /etc/zulip/settings.py.  Note, however, that the
+  default (email) backend must be enabled when you complete step 5
+  (creating an organization) below.
 
 ## Step 4: Initialize Zulip database
 
