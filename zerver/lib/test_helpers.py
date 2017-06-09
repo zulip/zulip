@@ -396,6 +396,7 @@ def write_instrumentation_reports(full_suite):
             # static content URLs, since the content they point to may
             # or may not exist.
             'coverage/(?P<path>.*)',
+            'node-coverage/(?P<path>.*)',
             'docs/(?P<path>.*)',
         ])
 

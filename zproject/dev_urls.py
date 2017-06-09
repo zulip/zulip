@@ -19,6 +19,10 @@ urls = [
         serve, {'document_root':
                 os.path.join(settings.DEPLOY_ROOT, 'var/coverage'),
                 'show_indexes': True}),
+    url(r'^node-coverage/(?P<path>.*)$',
+        serve, {'document_root':
+                os.path.join(settings.DEPLOY_ROOT, 'var/node-coverage/lcov-report'),
+                'show_indexes': True}),
     url(r'^docs/(?P<path>.*)$',
         serve, {'document_root':
                 os.path.join(settings.DEPLOY_ROOT, 'docs/_build/html')}),
