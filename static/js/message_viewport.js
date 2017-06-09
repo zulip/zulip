@@ -284,6 +284,7 @@ exports.user_initiated_animate_scroll = function (scroll_amount) {
 };
 
 exports.recenter_view = function (message, opts) {
+    blueslip.info('recenter_view', opts);
     opts = opts || {};
 
     // Barnowl-style recentering: if the pointer is too high, move it to
@@ -301,6 +302,9 @@ exports.recenter_view = function (message, opts) {
 
     var is_above = message_top < top_threshold;
     var is_below = message_bottom > bottom_threshold;
+    blueslip.info('is_above', is_above);
+    blueslip.info('is_below', is_below);
+    blueslip.info('viewport_info', viewport_info);
 
     if (opts.from_scroll) {
         // If the message you're trying to center on is already in view AND
