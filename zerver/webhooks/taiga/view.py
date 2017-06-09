@@ -19,7 +19,7 @@ subject of US/task should be in bold.
 """
 
 from __future__ import absolute_import
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Text, Union
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
@@ -250,7 +250,7 @@ def parse_message(message):
     return events
 
 def generate_content(data):
-    # type: (Mapping[str, Any]) -> str
+    # type: (Mapping[str, Any]) -> Union[str, HttpResponse]
     """ Gets the template string and formats it with parsed data. """
     try:
         return templates[data['type']][data['event']] % data['values']

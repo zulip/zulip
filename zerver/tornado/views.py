@@ -15,14 +15,14 @@ from zerver.tornado.event_queue import get_client_descriptor, \
     process_notification, fetch_events
 from django.core.handlers.base import BaseHandler
 
-from typing import Union, Optional, Iterable, Sequence, List, Text
+from typing import Union, Optional, Iterable, Sequence, List, Text, cast
 import time
 import ujson
 
 @internal_notify_view(True)
 def notify(request):
     # type: (HttpRequest) -> HttpResponse
-    process_notification(ujson.loads(request.POST['data']))
+    process_notification(ujson.loads(cast(Text, request.POST['data'])))
     return json_success()
 
 @has_request_variables

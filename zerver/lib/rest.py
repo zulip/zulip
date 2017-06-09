@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Dict
+from typing import Any, Dict, cast, Text
 
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
@@ -57,7 +57,7 @@ def rest_dispatch(request, **kwargs):
     # Override requested method if magic method=??? parameter exists
     method_to_use = request.method
     if request.POST and 'method' in request.POST:
-        method_to_use = request.POST['method']
+        method_to_use = cast(Text, request.POST['method'])
     if method_to_use == "SOCKET" and "zulip.emulated_method" in request.META:
         method_to_use = request.META["zulip.emulated_method"]
 

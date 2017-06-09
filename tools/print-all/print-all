@@ -106,8 +106,8 @@ for fil in sh.git('ls-files', _iter=True):
     try:
         filetype = extensions[os.path.basename(fil).split('.')[1]]
     except (KeyError, IndexError):
-        with open(fil, 'rb') as f:
-            header = f.readline()
+        with open(fil, 'rb') as file:
+            header = file.readline()
             if re.match(r'^#!.*\bpython', header):
                 filetype = 'python'
             elif re.match(r'^#!/.*\b(ba)?sh', header):
@@ -131,10 +131,10 @@ doc.write(r'''
 ''')
 doc.close()
 
-with open('tools/print-all/tex/epilogue.tex', 'w') as f:
+with open('tools/print-all/tex/epilogue.tex', 'w') as epilog:
     def print_list(title, xs):
         # type: (str, Iterable[str]) -> None
-        f.write('\\section*{%s}\n\n' % (title,))
+        epilog.write('\\section*{%s}\n\n' % (title,))
         for x in xs:
             f.write('%s\n\n' % (x.replace('_', r'\_'),))
 

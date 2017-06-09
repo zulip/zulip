@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Text
+from typing import cast, List, Dict, Optional, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -204,7 +204,7 @@ def accounts_register(request):
 
         timezone = u""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
-            timezone = request.POST['timezone']
+            timezone = cast(Text, request.POST['timezone'])
 
         # FIXME: sanitize email addresses and fullname
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
