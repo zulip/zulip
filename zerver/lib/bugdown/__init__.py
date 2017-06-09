@@ -709,7 +709,10 @@ def make_emoji(codepoint, display_string):
     elt.set('src', src)
     elt.set('class', 'emoji')
     elt.set("alt", display_string)
-    elt.set("title", display_string)
+    if display_string.startswith(":"):
+        display_string = display_string[1:-1]
+    # Replace underscore in emoji's title with space
+    elt.set("title", display_string.replace("_", " "))
     return elt
 
 def make_realm_emoji(src, display_string):
@@ -718,7 +721,7 @@ def make_realm_emoji(src, display_string):
     elt.set('src', src)
     elt.set('class', 'emoji')
     elt.set("alt", display_string)
-    elt.set("title", display_string)
+    elt.set("title", display_string[1:-1].replace("_", " "))
     return elt
 
 def unicode_emoji_to_codepoint(unicode_emoji):
