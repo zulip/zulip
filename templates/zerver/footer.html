@@ -40,6 +40,9 @@
             {% else %}
             <li><a href="{{ url('register') }}">{{ _("Register") }}</a></li>
             {% endif %}
+            {% if zilencer_enabled %}
+            <li><a href="{{ url('zilencer.views.register_remote_server') }}">{{ _('Register remote server') }}</a></li>
+            {% endif %}
             <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of Service") }}</a></li>
             <li><a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
         </ul>
