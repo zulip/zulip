@@ -41,7 +41,7 @@ def get_translate_result(original_content):
                         "@translate hello fr" or "@translate hello zh-CHT".'
         return help_message
     elif len(original_content.split()) < 3:
-        return 'Need language code'
+        return 'Too few tokens'
     elif len(original_content.split()) > 3:
         return 'Too many tokens'
     else:
@@ -57,8 +57,8 @@ def get_translate_result(original_content):
 class TranslateHandler(object):
     '''
     This plugin allows users to enter a word and a
-    country code in zulip and get the translation of
-    that word in their specified laguage sent back to
+    country code in Zulip and get the translation of
+    that word in their specified language sent back to
     the context (stream or private) in which it was sent.
     It looks for messages starting with @translate.
     '''
