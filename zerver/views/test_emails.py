@@ -69,7 +69,7 @@ def email_page(request):
             templates.append(template)
             try:
                 data.append(render_email(template, test_context))
-            except Exception as e:
+            except Exception as e:  # nocoverage
                 data.append({'template': template, 'failed': True, 'reason': e})
     return render(request, 'zerver/test_emails.html', {'emails': data})
 
