@@ -60,6 +60,7 @@ from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_set_realm_property,
     do_set_user_display_setting,
+    do_set_realm_notifications_stream,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
@@ -975,6 +976,25 @@ class EventsRegisterTest(ZulipTestCase):
                 lambda: do_set_realm_message_editing(self.user_profile.realm,
                                                      allow_message_editing,
                                                      message_content_edit_limit_seconds))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_notifications_stream(self):
+        # type: () -> None
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('notifications_stream_id')),
+            ('value', check_int),
+        ])
+
+        stream = get_stream("Rome", self.user_profile.realm)
+
+        for notifications_stream, notifications_stream_id in ((stream, stream.id), (None, -1)):
+            events = self.do_test(
+                lambda: do_set_realm_notifications_stream(self.user_profile.realm,
+                                                          notifications_stream,
+                                                          notifications_stream_id))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

@@ -491,6 +491,18 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_notifications_stream(realm, stream, stream_id):
+    # type: (Realm, Stream, int) -> None
+    realm.notifications_stream = stream
+    realm.save(update_fields=['notifications_stream'])
+    event = dict(
+        type="realm",
+        op="update",
+        property="notifications_stream_id",
+        value=stream_id
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """

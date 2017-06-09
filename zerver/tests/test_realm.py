@@ -152,6 +152,33 @@ class RealmTest(ZulipTestCase):
         do_deactivate_realm(realm)
         self.assertTrue(realm.deactivated)
 
+    def test_change_notifications_stream(self):
+        # type: () -> None
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        disabled_notif_stream_id = -1
+        req = dict(notifications_stream_id = ujson.dumps(disabled_notif_stream_id))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.notifications_stream, None)
+
+        new_notif_stream_id = 4
+        req = dict(notifications_stream_id = ujson.dumps(new_notif_stream_id))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
+
+        invalid_notif_stream_id = 1234
+        req = dict(notifications_stream_id = ujson.dumps(invalid_notif_stream_id))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid stream id')
+        realm = get_realm('zulip')
+        self.assertNotEqual(realm.notifications_stream.id, invalid_notif_stream_id)
+
     def test_change_realm_default_language(self):
         # type: () -> None
         new_lang = "de"
