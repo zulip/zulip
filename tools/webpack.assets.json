@@ -3,3 +3,4 @@
     "katex": ["./node_modules/katex/dist/katex.min.js"],
     "translations": "./static/js/translations.js"
 }
+
