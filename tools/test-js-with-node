@@ -132,6 +132,8 @@ if options.coverage and ret == 0:
     print()
 
 if ret == 0:
+    if options.coverage:
+        print("View coverage reports at http://127.0.0.1:9991/node-coverage/index.html")
     print("Test(s) passed. SUCCESS!")
 else:
     print("FAIL - Test(s) failed")
