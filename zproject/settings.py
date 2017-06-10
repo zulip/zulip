@@ -67,7 +67,8 @@ ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
 
 if 'DEBUG' not in globals():
-    # Uncomment end of next line to test JS/CSS minification.
+    # Uncomment end of next line to test CSS minification.
+    # For webpack JS minification use tools/run_dev.py --minify
     DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
 
 if DEBUG:
