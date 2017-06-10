@@ -45,6 +45,7 @@ function _setup_page() {
         language_list: page_params.language_list,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
+        realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         is_admin: page_params.is_admin,
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
