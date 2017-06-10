@@ -636,17 +636,16 @@ def do_start_email_change_process(user_profile, new_email):
                'new_email': new_email,
                }
 
-    with transaction.atomic():
-        obj = EmailChangeStatus.objects.create(new_email=new_email,
-                                               old_email=old_email,
-                                               user_profile=user_profile,
-                                               realm=user_profile.realm)
+    obj = EmailChangeStatus.objects.create(new_email=new_email,
+                                           old_email=old_email,
+                                           user_profile=user_profile,
+                                           realm=user_profile.realm)
 
-        EmailChangeConfirmation.objects.send_confirmation(
-            obj, 'zerver/emails/confirm_new_email', new_email,
-            additional_context=context,
-            host=user_profile.realm.host,
-        )
+    EmailChangeConfirmation.objects.send_confirmation(
+        obj, 'zerver/emails/confirm_new_email', new_email,
+        additional_context=context,
+        host=user_profile.realm.host,
+    )
 
 def compute_irc_user_fullname(email):
     # type: (NonBinaryStr) -> NonBinaryStr
