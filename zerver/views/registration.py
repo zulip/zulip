@@ -16,7 +16,7 @@ from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_realm, get_realm_by_email_domain
-from zerver.lib.send_email import send_email_to_user
+from zerver.lib.send_email import send_email, send_email_to_user
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
@@ -298,10 +298,11 @@ def send_registration_completion_email(email, request, realm_creation=False):
     can complete their registration.
     """
     prereg_user = create_preregistration_user(email, request, realm_creation)
-    confirmation = Confirmation.objects.send_confirmation(
-        prereg_user, 'zerver/emails/confirm_registration', email, host=request.get_host())
+    activation_url = Confirmation.objects.get_link_for_object(prereg_user, host=request.get_host())
+    send_email('zerver/emails/confirm_registration', email, from_email=settings.DEFAULT_FROM_EMAIL,
+               context={'activate_url': activation_url})
     if settings.DEVELOPMENT and realm_creation:
-        request.session['confirmation_key'] = {'confirmation_key': confirmation.confirmation_key}
+        request.session['confirmation_key'] = {'confirmation_key': activation_url.split('/')[-1]}
 
 def redirect_to_email_login_url(email):
     # type: (str) -> HttpResponseRedirect
