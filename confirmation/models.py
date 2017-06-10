@@ -36,15 +36,6 @@ def generate_key():
     # type: () -> Text
     return generate_random_token(40)
 
-def generate_activation_url(key, host=None):
-    # type: (Text, Optional[str]) -> Text
-    if host is None:
-        host = settings.EXTERNAL_HOST
-    return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                        host,
-                        reverse('confirmation.views.confirm',
-                                kwargs={'confirmation_key': key}))
-
 def generate_realm_creation_url():
     # type: () -> Text
     key = generate_key()
@@ -83,7 +74,12 @@ class ConfirmationManager(models.Manager):
 
     def get_activation_url(self, confirmation_key, host=None):
         # type: (Text, Optional[str]) -> Text
-        return generate_activation_url(confirmation_key, host=host)
+        if host is None:
+            host = settings.EXTERNAL_HOST
+        return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                            host,
+                            reverse('confirmation.views.confirm',
+                                    kwargs={'confirmation_key': confirmation_key}))
 
     def get_link_validity_in_days(self):
         # type: () -> int
