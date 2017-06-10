@@ -107,7 +107,7 @@ def response_listener(error_response):
     errmsg = ERROR_CODES[code]
     data = redis_client.hgetall(key)
     token = data['token']
-    user = get_user_profile_by_id(int(data['user_id']))
+    user_id = int(data['user_id'])
     b64_token = hex_to_b64(token)
 
     logging.warn("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
@@ -115,7 +115,7 @@ def response_listener(error_response):
         # Invalid Token, remove from our database
         logging.warn("APNS: Removing token from database due to above failure")
         try:
-            PushDeviceToken.objects.get(user=user, token=b64_token).delete()
+            PushDeviceToken.objects.get(user_id=user_id, token=b64_token).delete()
             return  # No need to check RemotePushDeviceToken
         except PushDeviceToken.DoesNotExist:
             pass
@@ -124,7 +124,7 @@ def response_listener(error_response):
             # Trying to delete from both models is a bit inefficient than
             # deleting from only one model but this method is very simple.
             try:
-                RemotePushDeviceToken.objects.get(user_id=user.id,
+                RemotePushDeviceToken.objects.get(user_id=user_id,
                                                   token=b64_token).delete()
             except RemotePushDeviceToken.DoesNotExist:
                 pass
