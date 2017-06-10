@@ -82,7 +82,6 @@ def email_on_new_login(sender, user, request, **kwargs):
 
         context = common_context(user)
         context['device_info'] = device_info
-        context['zulip_support'] = settings.ZULIP_ADMINISTRATOR
         context['user'] = user
 
         send_email_to_user('zerver/emails/notify_new_login', user, context=context)

@@ -199,7 +199,6 @@ class TemplateTestCase(ZulipTestCase):
                          "device_ip": "127.0.0.1",
                          "login_time": "9:33am NewYork, NewYork",
                          },
-            zulip_support="zulip-admin@example.com",
         )
 
         context.update(kwargs)
