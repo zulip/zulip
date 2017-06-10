@@ -632,7 +632,6 @@ def do_start_email_change_process(user_profile, new_email):
     user_profile.email = new_email
 
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
-               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
                'realm': user_profile.realm,
                'old_email': old_email,
                'new_email': new_email,
@@ -3055,8 +3054,7 @@ def do_send_confirmation_email(invitee, referrer, body):
     `referrer` is a UserProfile.
     """
     context = {'referrer': referrer,
-               'support_email': settings.ZULIP_ADMINISTRATOR,
-               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
+               'support_email': settings.ZULIP_ADMINISTRATOR}
 
     if referrer.realm.is_zephyr_mirror_realm:
         template_prefix = 'zerver/emails/invitation_mit'

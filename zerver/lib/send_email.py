@@ -19,6 +19,9 @@ def display_email(user):
 # Intended only for test code
 def build_email(template_prefix, to_email, from_email=None, reply_to_email=None, context={}):
     # type: (str, Text, Optional[Text], Optional[Text], Dict[str, Any]) -> EmailMultiAlternatives
+    context.update({
+        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+    })
     subject = loader.render_to_string(template_prefix + '.subject',
                                       context=context, using='Jinja2_plaintext').strip()
     message = loader.render_to_string(template_prefix + '.txt',

@@ -404,7 +404,6 @@ def enqueue_welcome_emails(email, name):
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
     context = common_context(user_profile)
     context.update({
-        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
         'unsubscribe_link': unsubscribe_link
     })
     send_future_email(

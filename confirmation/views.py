@@ -34,7 +34,6 @@ def confirm(request, confirmation_key):
         'key': confirmation_key,
         'full_name': request.GET.get("full_name", None),
         'support_email': settings.ZULIP_ADMINISTRATOR,
-        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
     }
     templates = [
         'confirmation/confirm.html',

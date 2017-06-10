@@ -308,8 +308,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
             template_prefix = 'zerver/emails/confirm_registration_mit'
 
     prereg_user = create_preregistration_user(email, request, realm_creation)
-    context = {'support_email': settings.ZULIP_ADMINISTRATOR,
-               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
+    context = {'support_email': settings.ZULIP_ADMINISTRATOR}
     return Confirmation.objects.send_confirmation(prereg_user, template_prefix, email,
                                                   additional_context=context,
                                                   host=request.get_host())
