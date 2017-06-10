@@ -8,13 +8,10 @@
             <p>Email failed to render: {{ email.reason }}</p>
         {% else %}
             <h4>Subject: {{email.subject}}</h4>
-            {% if email.text %}
-                <pre>{{ email.body }}</pre>
-            {% else %}
-                {% autoescape off %}
-                {{ email.body }}
-                {% endautoescape %}
-            {% endif %}
+            {% autoescape off %}
+            {{ email.html_message }}
+            {% endautoescape %}
+            <pre>{{ email.body }}</pre>
         {% endif %}
     {% endfor %}
 </div>

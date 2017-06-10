@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader, TemplateDoesNotExist
 
+from zerver.lib.send_email import build_email
 from zerver.models import get_realm
 
 import os
@@ -74,28 +75,13 @@ def email_page(request):
         if template not in templates and template not in ignore:
             templates.append(template)
             try:
-                data.append(render_email(template, test_context))
+                email = build_email('zerver/emails/' + template, 'recipient@acme.com', context=test_context)
+                email_data = {
+                    'template': template,
+                    'subject': email.subject,
+                    'body': email.body,
+                    'html_message': email.alternatives[0][0] if len(email.alternatives) > 0 else 'Missing HTML message'}
+                data.append(email_data)
             except Exception as e:  # nocoverage
                 data.append({'template': template, 'failed': True, 'reason': e})
     return render(request, 'zerver/test_emails.html', {'emails': data})
-
-def render_email(template_prefix, context):
-    # type: (str, Dict[str, Any]) -> Dict[str, Any]
-    email = {}  # type: Dict[str, Any]
-    email['template'] = template_prefix
-    email['subject'] = loader.render_to_string('zerver/emails/' + template_prefix + '.subject', context).strip()
-    message = loader.render_to_string('zerver/emails/' + template_prefix + '.txt', context)
-
-    try:
-        html_message = loader.render_to_string('/zerver/emails/' + template_prefix + '.html', context)
-    except TemplateDoesNotExist:
-        html_message = None
-
-    if html_message is not None:
-        email['body'] = html_message
-        email['text'] = False
-    else:
-        email['body'] = message
-        email['text'] = True
-
-    return email
