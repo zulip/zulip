@@ -397,6 +397,10 @@ def build_custom_checkers(by_lang):
          'description': "Period should be part of the translatable string."},
         {'pattern': '{{t ("|\') ',
          'description': 'Translatable strings should not have leading spaces.'},
+        {'pattern': "{{t '[^']+ ' }}",
+         'description': 'Translatable strings should not have trailing spaces.'},
+        {'pattern': '{{t "[^"]+ " }}',
+         'description': 'Translatable strings should not have trailing spaces.'},
     ]
     jinja2_rules = html_rules + [
         {'pattern': "{% endtrans %}[\.\?!]",
