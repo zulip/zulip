@@ -134,7 +134,7 @@ exports.toggle_emoji_popover = function (element, id) {
         $(".emoji-popover-emoji-map").perfectScrollbar({
             suppressScrollX: true,
             useKeyboard: false,
-            wheelSpeed: 25,
+            wheelSpeed: 3,
         });
         current_message_emoji_popover_elem = elt;
         exports.render_emoji_show_list();
@@ -225,6 +225,7 @@ function filter_emojis() {
         // Direct assignment to optimize and render the complete list emoji faster.
         emoji_show_list = complete_emoji_list;
     }
+    $('.emoji-popover-emoji-map').perfectScrollbar('update');
     emoji_show_list = order_emoji_show_list(emoji_show_list, search_term);
 }
 
