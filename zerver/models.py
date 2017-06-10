@@ -528,6 +528,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     since they can't be used to read messages.
     """
     INCOMING_WEBHOOK_BOT = 2
+    # This value is also being used in static/js/settings_bots.js. On updating it here, update it there as well.
     OUTGOING_WEBHOOK_BOT = 3
     """
     Embedded bots run within the Zulip server itself; events are added to the
@@ -539,6 +540,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     ALLOWED_BOT_TYPES = [
         DEFAULT_BOT,
         INCOMING_WEBHOOK_BOT,
+        OUTGOING_WEBHOOK_BOT,
     ]
 
     SERVICE_BOT_TYPES = [

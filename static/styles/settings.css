@@ -1212,3 +1212,7 @@ thead .actions {
 .required-text.thick:empty::after {
     width: 200%;
 }
+
+#payload_url_inputbox input[type=text] {
+    width: 340px;
+}

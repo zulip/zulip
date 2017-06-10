@@ -22,11 +22,12 @@ from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int
+from zerver.lib.validator import check_bool, check_string, check_int, check_url
 from zerver.lib.users import check_valid_bot_type, check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    email_allowed_for_realm, get_user_profile_by_id, get_user
+    email_allowed_for_realm, get_user_profile_by_id, get_user, Service
+from zerver.lib.create_user import random_api_key
 
 
 def deactivate_user_backend(request, user_profile, email):
@@ -229,13 +230,23 @@ def regenerate_bot_api_key(request, user_profile, email):
     )
     return json_success(json_result)
 
+def add_outgoing_webhook_service(name, user_profile, base_url, interface, token):
+    # type: (Text, UserProfile, Text, int, Text) -> None
+    Service.objects.create(name=name,
+                           user_profile=user_profile,
+                           base_url=base_url,
+                           interface=interface,
+                           token=token)
+
 @has_request_variables
 def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name=REQ(),
                     bot_type=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
+                    payload_url=REQ(validator=check_url, default=None),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    service_name = short_name
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
@@ -279,6 +290,14 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     if len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot_profile)
+
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        add_outgoing_webhook_service(name=service_name,
+                                     user_profile=bot_profile,
+                                     base_url=payload_url,
+                                     interface=1,
+                                     token=random_api_key())
+
     json_result = dict(
         api_key=bot_profile.api_key,
         avatar_url=avatar_url(bot_profile),
