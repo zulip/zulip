@@ -700,8 +700,10 @@ def render_incoming_message(message, content, message_users, realm):
 def get_recipient_user_profiles(recipient, sender_id):
     # type: (Recipient, int) -> List[UserProfile]
     if recipient.type == Recipient.PERSONAL:
-        recipients = list(set([get_user_profile_by_id(recipient.type_id),
-                               get_user_profile_by_id(sender_id)]))
+        # The sender and recipient may be the same id, so
+        # de-duplicate using a set.
+        user_ids = list({recipient.type_id, sender_id})
+        recipients = [get_user_profile_by_id(user_id) for user_id in user_ids]
         # For personals, you send out either 1 or 2 copies, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
