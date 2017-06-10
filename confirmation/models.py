@@ -90,14 +90,12 @@ class ConfirmationManager(models.Manager):
         # type: () -> int
         return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
 
-    def send_confirmation(self, obj, template_prefix, to_email, additional_context=None,
-                          host=None, custom_body=None):
-        # type: (ContentType, str, Text, Optional[Dict[str, Any]], Optional[str], Optional[str]) -> Confirmation
+    def send_confirmation(self, obj, template_prefix, to_email, additional_context=None, host=None):
+        # type: (ContentType, str, Text, Optional[Dict[str, Any]], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         activate_url = self.get_activation_url(confirmation_key, host=host)
         context = {
             'activate_url': activate_url,
-            'custom_body': custom_body,
         }
         if additional_context is not None:
             context.update(additional_context)

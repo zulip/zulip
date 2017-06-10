@@ -3053,12 +3053,12 @@ def do_send_confirmation_email(invitee, referrer, body):
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
-    context = {'referrer': referrer}
+    context = {'referrer': referrer, 'custom_body': body}
 
     template_prefix = 'zerver/emails/invitation'
     Confirmation.objects.send_confirmation(
         invitee, template_prefix, invitee.email, additional_context=context,
-        host=referrer.realm.host, custom_body=body)
+        host=referrer.realm.host)
 
 def is_inactive(email):
     # type: (Text) -> None
