@@ -22,3 +22,5 @@ chmod -R go-w "$n"
 cp "$ZULIP_PATH/../../scripts/setup/node-wrapper" /usr/local/bin/node
 sed -i "s|NODE_PATH|$NODE_BIN|" /usr/local/bin/node
 cp "$ZULIP_PATH/../../scripts/setup/npm-wrapper" /usr/local/bin/npm
+sed -i "s|NPM_PATH|$NODE_BIN|" /usr/local/bin/npm
+sed -i 's/\(.*\)node/\1npm/' /usr/local/bin/npm
