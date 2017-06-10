@@ -46,7 +46,7 @@ class DocPageTest(ZulipTestCase):
                            "https://my.pingdom.com/reports/integration/settings",
                        ])
             self._test('/devlogin/', 'Normal users')
-            self._test('/emails/', 'Zooly Zulipson invited you to join Zulip')
+            self._test('/emails/', 'Road Runner invited you to join Zulip')
             self._test('/register/', 'Sign up for Zulip')
 
             result = self.client_get('/new-user/')
