@@ -593,6 +593,11 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
+    // Prevent navigation in the background when the overlays are active.
+    if (overlays.is_active()) {
+        return false;
+    }
+
     // Navigation shortcuts
     switch (event_name) {
         case 'down_arrow':
