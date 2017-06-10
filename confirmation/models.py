@@ -94,14 +94,9 @@ class ConfirmationManager(models.Manager):
                           host=None, custom_body=None):
         # type: (ContentType, str, Text, Optional[Dict[str, Any]], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
-        current_site = Site.objects.get_current()
         activate_url = self.get_activation_url(confirmation_key, host=host)
         context = {
             'activate_url': activate_url,
-            'current_site': current_site,
-            'confirmation_key': confirmation_key,
-            'target': obj,
-            'days': getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10),
             'custom_body': custom_body,
         }
         if additional_context is not None:
