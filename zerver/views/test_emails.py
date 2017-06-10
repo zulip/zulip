@@ -58,6 +58,16 @@ def email_page(request):
         'unsubscribe_link': '%s/accounts/unsubscribe/<type>/cf88931365ef1b0f12eae8d488bbc7af3563d7f0' % (settings.SERVER_URI,),
     }
 
+    templates = [
+        'confirm_registration', 'invitation', 'invitation_reminder', 'confirm_registration_mit',
+        'invitation_mit', 'followup_day1', 'followup_day2', 'missed_message', 'digest', 'find_team',
+        'password_reset', 'confirm_new_email', 'notify_change_in_email', 'notify_new_login']
+
+    for f in os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')):
+        template = f.split('.')[0]
+        if template not in templates:
+            templates.append(template)
+
     # Do not render these templates,
     # as they are currently unsupported
     ignore = [
@@ -66,14 +76,9 @@ def email_page(request):
         'password_reset',
     ]
 
-    files = os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails'))
-    templates = []  # type: List[str]
     data = []  # type: List[Dict[str, Any]]
-
-    for f in files:
-        template = f.split('.')[0]
-        if template not in templates and template not in ignore:
-            templates.append(template)
+    for template in templates:
+        if template not in ignore:
             try:
                 email = build_email('zerver/emails/' + template, 'recipient@acme.com', context=test_context)
                 email_data = {
