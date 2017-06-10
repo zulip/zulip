@@ -236,6 +236,13 @@ You can instead use:
 {% trans %}This string will have {{ value }} inside.{% endtrans %}
 ```
 
+A string in Python can be marked for translation using the `_()` function,
+which can be imported as follows:
+
+```
+from django.utils.translation import ugettext as _
+```
+
 Zulip expects all the error messages to be translatable as well.  To
 ensure this, the error message passed to `json_error` and
 `JsonableError` should always be a literal string enclosed by `_()`
