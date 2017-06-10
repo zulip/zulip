@@ -29,6 +29,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_message_to_archive
+from zerver.lib.send_email import send_email
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -630,22 +631,14 @@ def do_start_email_change_process(user_profile, new_email):
     # type: (UserProfile, Text) -> None
     old_email = user_profile.email
     user_profile.email = new_email
+    obj = EmailChangeStatus.objects.create(new_email=new_email, old_email=old_email,
+                                           user_profile=user_profile, realm=user_profile.realm)
 
-    context = {'realm': user_profile.realm,
-               'old_email': old_email,
-               'new_email': new_email,
-               }
-
-    obj = EmailChangeStatus.objects.create(new_email=new_email,
-                                           old_email=old_email,
-                                           user_profile=user_profile,
-                                           realm=user_profile.realm)
-
-    EmailChangeConfirmation.objects.send_confirmation(
-        obj, 'zerver/emails/confirm_new_email', new_email,
-        additional_context=context,
-        host=user_profile.realm.host,
-    )
+    activation_url = EmailChangeConfirmation.objects.get_link_for_object(obj, host=user_profile.realm.host)
+    context = {'realm': user_profile.realm, 'old_email': old_email, 'new_email': new_email,
+               'activate_url': activation_url}
+    send_email('zerver/emails/confirm_new_email', new_email, from_email=settings.DEFAULT_FROM_EMAIL,
+               context=context)
 
 def compute_irc_user_fullname(email):
     # type: (NonBinaryStr) -> NonBinaryStr
@@ -3053,12 +3046,10 @@ def do_send_confirmation_email(invitee, referrer, body):
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
-    context = {'referrer': referrer, 'custom_body': body}
-
-    template_prefix = 'zerver/emails/invitation'
-    Confirmation.objects.send_confirmation(
-        invitee, template_prefix, invitee.email, additional_context=context,
-        host=referrer.realm.host)
+    activation_url = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
+    context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url}
+    send_email('zerver/emails/invitation', invitee.email, from_email=settings.DEFAULT_FROM_EMAIL,
+               context=context)
 
 def is_inactive(email):
     # type: (Text) -> None

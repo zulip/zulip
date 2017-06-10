@@ -55,7 +55,6 @@ def generate_realm_creation_url():
                                 kwargs={'creation_key': key}))
 
 class ConfirmationManager(models.Manager):
-
     def confirm(self, confirmation_key):
         # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
         if B16_RE.search(confirmation_key):
@@ -89,19 +88,6 @@ class ConfirmationManager(models.Manager):
     def get_link_validity_in_days(self):
         # type: () -> int
         return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
-
-    def send_confirmation(self, obj, template_prefix, to_email, additional_context=None, host=None):
-        # type: (ContentType, str, Text, Optional[Dict[str, Any]], Optional[str]) -> Confirmation
-        confirmation_key = generate_key()
-        activate_url = self.get_activation_url(confirmation_key, host=host)
-        context = {
-            'activate_url': activate_url,
-        }
-        if additional_context is not None:
-            context.update(additional_context)
-
-        send_email(template_prefix, to_email, from_email=settings.DEFAULT_FROM_EMAIL, context=context)
-        return self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=confirmation_key)
 
 class EmailChangeConfirmationManager(ConfirmationManager):
     def get_activation_url(self, key, host=None):
