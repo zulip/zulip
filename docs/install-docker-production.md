@@ -52,3 +52,16 @@ The default data volume location of the Zulip container on the host system is `/
 The default data volume location of the PostgreSQL server on the host system is `/opt/docker/zulip/postgresql`.
 The default data volume location of the Redis server on the host system is `/opt/docker/zulip/redis`.
 To change it modify the path(s) in the `docker-compose.yml`.
+
+**NOTE** To keep your data safe. Don't delete the data on the host system.
+A deletion of the data on the host system is a direct deletion of the data.
+
+Backups
+=======
+The Docker image has an in-built automatic backup mechanism.
+By default a backup will be created every day at 3:30am (`30 3 * * *`).
+The backups are stored in `/data/backups` directory. For example on your host
+(when using the default volume paths), the path to the backups would be `/opt/docker/zulip/zulip/backups`.
+
+To manually trigger a backup. Exec into the Zulip container and run `entrypoint.sh app:backup`.
+This will automatically create a backup in your backups directory.
