@@ -576,6 +576,11 @@ form#add_new_subscription {
     font-weight: 600;
 }
 
+.stream-creation-info {
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
 .stream-creation-body section.block {
     margin-bottom: 20px;
 }
@@ -589,6 +594,10 @@ form#add_new_subscription {
 .stream-creation-body #make-invite-only label span.icon-vector-lock {
     margin-left: 15px;
     margin-right: 11px;
+}
+
+.stream-creation-body #make-invite-only .radio {
+    margin-bottom: 10px;
 }
 
 #announce-new-stream {
