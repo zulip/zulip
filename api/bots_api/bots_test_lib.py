@@ -30,6 +30,28 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class BotTestCase(TestCase):
     bot_name = ''  # type: str
 
+    def get_bot_message_handler(self):
+        # type: () -> Any
+        # message_handler is of type 'Any', since it can contain any bot's
+        # handler class. Eventually, we want bot's handler classes to
+        # inherit from a common prototype specifying the handle_message
+        # function.
+        bot_module_path = os.path.join(
+            current_dir, "bots", self.bot_name, self.bot_name + ".py")
+        lib_module = get_lib_module(bot_module_path)
+        return lib_module.handler_class()
+
+    def setUp(self):
+        # type: () -> None
+        # Mocking BotHandlerApi
+        self.patcher = patch('bots_api.bot_lib.BotHandlerApi')
+        self.MockClass = self.patcher.start()
+        self.message_handler = self.get_bot_message_handler()
+
+    def tearDown(self):
+        # type: () -> None
+        self.patcher.stop()
+
     def check_expected_responses(self, expectations, expected_method='send_reply',
                                  email="foo_sender@zulip.com", recipient="foo", subject="foo",
                                  type="all"):
@@ -52,26 +74,14 @@ class BotTestCase(TestCase):
                            'subject': subject, 'sender_email': email}
                 self.assert_bot_response(message=message, response=response, expected_method=expected_method)
 
-    def get_bot_message_handler(self):
-        # type: () -> Any
-        # message_handler is of type 'Any', since it can contain any bot's
-        # handler class. Eventually, we want bot's handler classes to
-        # inherit from a common prototype specifying the handle_message
-        # function.
-        bot_module = os.path.join(current_dir, "bots",
-                                  self.bot_name, self.bot_name + ".py")
-        message_handler = self.bot_to_run(bot_module)
-        return message_handler
-
-    def call_request(self, message_handler, message, expected_method,
-                     MockClass, response):
-        # type: (Any, Dict[str, Any], str, Any, Dict[str, Any]) -> None
+    def call_request(self, message, expected_method, response):
+        # type: (Dict[str, Any], str, Dict[str, Any]) -> None
         # Send message to the concerned bot
-        message_handler.handle_message(message, MockClass(), StateHandler())
+        self.message_handler.handle_message(message, self.MockClass(), StateHandler())
 
         # Check if the bot is sending a message via `send_message` function.
         # Where response is a dictionary here.
-        instance = MockClass.return_value
+        instance = self.MockClass.return_value
         if expected_method == "send_message":
             instance.send_message.assert_called_with(response)
         else:
@@ -106,15 +116,6 @@ class BotTestCase(TestCase):
 
     def assert_bot_response(self, message, response, expected_method):
         # type: (Dict[str, Any], Dict[str, Any], str) -> None
-        message_handler = self.get_bot_message_handler()
-        # Mocking BotHandlerApi
-        with patch('bots_api.bot_lib.BotHandlerApi') as MockClass:
-            self.call_request(message_handler, message, expected_method,
-                              MockClass, response)
-
-    def bot_to_run(self, bot_module):
-        # Returning Any, same argument as in get_bot_message_handler function.
-        # type: (str) -> Any
-        lib_module = get_lib_module(bot_module)
-        message_handler = lib_module.handler_class()
-        return message_handler
+        # Strictly speaking, this function is not needed anymore,
+        # kept for now for legacy reasons.
+        self.call_request(message, expected_method, response)
