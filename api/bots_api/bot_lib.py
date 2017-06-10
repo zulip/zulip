@@ -7,6 +7,8 @@ import sys
 import time
 import re
 
+from six.moves import configparser
+
 if False:
     from mypy_extensions import NoReturn
 from typing import Any, Optional, List, Dict
@@ -93,6 +95,16 @@ class BotHandlerApi(object):
                 subject=message['subject'],
                 content=response,
             ))
+
+    def get_config_info(self, bot_name, section=None):
+        # type: (str, Optional[str]) -> Dict[str, Any]
+        conf_file_path = os.path.realpath(os.path.join(
+            our_dir, '..', 'bots', bot_name, bot_name + '.conf'))
+        section = section or bot_name
+        config = configparser.ConfigParser()
+        config.read(conf_file_path)
+        return dict(config.items(section))
+
 
 class StateHandler(object):
     def __init__(self):
