@@ -659,7 +659,7 @@ $(function () {
         $(".subscriptions-header").addClass("slide-left");
     });
 
-    $("#subscriptions_table").on("click", ".icon-vector-chevron-left", function () {
+    $("#subscriptions_table").on("click", ".fa-chevron-left", function () {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });
