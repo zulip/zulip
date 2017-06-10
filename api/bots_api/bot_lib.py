@@ -120,6 +120,8 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
     restricted_client = BotHandlerApi(client)
 
     message_handler = lib_module.handler_class()
+    if hasattr(message_handler, 'initialize'):
+        message_handler.initialize(bot_handler=restricted_client)
 
     state_handler = StateHandler()
 
