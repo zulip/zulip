@@ -33,6 +33,7 @@
                         <select name="bot_type" id="create_bot_type">
                             <option value="1">{{t "Generic bot" }}</option>
                             <option value="2">{{t "Incoming webhook" }}</option>
+                            <option value="3">{{t "Outgoing webhook" }}</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -49,6 +50,12 @@
                         <div>
                             <label for="create_bot_short_name" generated="true" class="text-error"></label>
                         </div>
+                    </div>
+                    <div class="input-group" id="payload_url_inputbox">
+                        <label for="create_payload_url">{{t "Outgoing webhook service base URL" }}</label>
+                        <input type="text" name="payload_url" id="create_payload_url"
+                            maxlength=100 placeholder="https://hostname.example.com/bots/followup" value="" />
+                        <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
                     </div>
                     <div class="input-group">
                         <div id="bot_avatar_file"></div>

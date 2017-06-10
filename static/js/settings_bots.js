@@ -75,6 +75,8 @@ exports.set_up = function () {
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
     $("#api_key_button_box").show();
+    $('#payload_url_inputbox').hide();
+    $('#create_payload_url').val('');
 
     $('#api_key_button').click(function () {
         if (page_params.realm_password_auth_enabled !== false) {
@@ -119,6 +121,8 @@ exports.set_up = function () {
 
 
     var create_avatar_widget = avatar.build_bot_create_widget();
+    var OUTGOING_WEBHOOK_BOT_TYPE = '3';
+    var GENERIC_BOT_TYPE = '1';
 
     $('#create_bot_form').validate({
         errorClass: 'text-error',
@@ -129,12 +133,18 @@ exports.set_up = function () {
             var bot_type = $('#create_bot_type :selected').val();
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
+            var payload_url = $('#create_payload_url').val();
             var formData = new FormData();
 
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('bot_type', bot_type);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
+
+            // If the selected bot_type is Outgoing webhook
+            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+                formData.append('payload_url', JSON.stringify(payload_url));
+            }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
@@ -149,6 +159,9 @@ exports.set_up = function () {
                     $('#bot_table_error').hide();
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
+                    $('#create_payload_url').val('');
+                    $('#payload_url_inputbox').hide();
+                    $('#create_bot_type').val(GENERIC_BOT_TYPE);
                     $('#create_bot_button').show();
                     create_avatar_widget.clear();
                 },
@@ -160,6 +173,18 @@ exports.set_up = function () {
                 },
             });
         },
+    });
+
+    $("#create_bot_type").on("change", function () {
+        var bot_type = $('#create_bot_type :selected').val();
+        // If the selected bot_type is Outgoing webhook
+        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            $('#payload_url_inputbox').show();
+            $('#create_payload_url').addClass('required');
+        } else {
+            $('#payload_url_inputbox').hide();
+            $('#create_payload_url').removeClass('required');
+        }
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {

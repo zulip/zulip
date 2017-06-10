@@ -157,6 +157,8 @@ def build_custom_checkers(by_lang):
               "return json_error(_(\"Email '%(email)s' not allowed for realm '%(realm)s'\") %"),
              ('zproject/settings.py',
               "'format': '%(asctime)s %(levelname)-8s %(message)s'"),
+             ('static/templates/settings/bot-settings.handlebars',
+              "'https://hostname.example.com/bots/followup'"),
          ]),
          'description': 'Missing space around "%"'},
         # This rule is constructed with + to avoid triggering on itself

@@ -13,7 +13,7 @@ from typing import Any, Dict, List
 
 from zerver.lib.actions import do_change_stream_invite_only
 from zerver.models import get_realm, get_stream, \
-    Realm, Stream, UserProfile, get_user
+    Realm, Stream, UserProfile, get_user, get_bot_services
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path, get_test_image_file, tornado_redirected_to_list,
@@ -911,3 +911,32 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch("/json/bots/nonexistent-bot@zulip.com", bot_info)
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
+
+    def test_create_outgoing_webhook_bot(self, **extras):
+        # type: (**Any) -> None
+        self.login(self.example_email('hamlet'))
+        bot_info = {
+            'full_name': 'Outgoing Webhook test bot',
+            'short_name': 'outgoingservicebot',
+            'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
+            'payload_url': ujson.dumps('http://127.0.0.1:5002/bots/followup'),
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "outgoingservicebot-bot@zulip.testserver"
+        bot_realm = get_realm('zulip')
+        bot = get_user(bot_email, bot_realm)
+        services = get_bot_services(bot.id)
+        service = services[0]
+
+        self.assertEqual(len(services), 1)
+        self.assertEqual(service.name, "outgoingservicebot")
+        self.assertEqual(service.base_url, "http://127.0.0.1:5002/bots/followup")
+        self.assertEqual(service.user_profile, bot)
+
+        # invalid URL test case.
+        bot_info['payload_url'] = ujson.dumps('http://127.0.0.:5002/bots/followup')
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "Enter a valid URL.")
