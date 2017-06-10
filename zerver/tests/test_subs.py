@@ -1720,19 +1720,19 @@ class SubscriptionAPITest(ZulipTestCase):
         Check users getting add_peer_event is correct
         """
         streams_to_sub = ['multi_user_stream']
-        users_to_subscribe = [self.test_email, self.example_email("othello")]
+        orig_emails_to_subscribe = [self.test_email, self.example_email("othello")]
         self.common_subscribe_to_streams(
             self.test_email,
             streams_to_sub,
-            dict(principals=ujson.dumps(users_to_subscribe)))
+            dict(principals=ujson.dumps(orig_emails_to_subscribe)))
 
-        new_users_to_subscribe = [self.example_email("iago"), self.example_email("cordelia")]
+        new_emails_to_subscribe = [self.example_email("iago"), self.example_email("cordelia")]
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             self.common_subscribe_to_streams(
                 self.test_email,
                 streams_to_sub,
-                dict(principals=ujson.dumps(new_users_to_subscribe)),
+                dict(principals=ujson.dumps(new_emails_to_subscribe)),
             )
 
         add_peer_events = [events[2], events[3]]
@@ -1740,15 +1740,16 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertEqual(add_peer_event['event']['type'], 'subscription')
             self.assertEqual(add_peer_event['event']['op'], 'peer_add')
             event_sent_to_ids = add_peer_event['users']
-            user_dict = [get_user_profile_by_id(user_id).email
-                         for user_id in event_sent_to_ids]
-            for user in new_users_to_subscribe:
+            sent_emails = [
+                get_user_profile_by_id(user_id).email
+                for user_id in event_sent_to_ids]
+            for email in new_emails_to_subscribe:
                 # Make sure new users subscribed to stream is not in
                 # peer_add event recipient list
-                self.assertNotIn(user, user_dict)
-            for old_user in users_to_subscribe:
+                self.assertNotIn(email, sent_emails)
+            for old_user in orig_emails_to_subscribe:
                 # Check non new users are in peer_add event recipient list.
-                self.assertIn(old_user, user_dict)
+                self.assertIn(old_user, sent_emails)
 
     def test_users_getting_remove_peer_event(self):
         # type: () -> None
