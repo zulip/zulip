@@ -20,7 +20,7 @@ function is_local_part(value, element) {
 // Note: These strings are mostly duplicates with a similar data set
 // in the bot-settings.handlebars.  We'll probably want to move this
 // map to be sent from the backend and shared.
-function type_id_to_string(type_id) {
+exports.type_id_to_string = function (type_id) {
     if (type_id === 1) {
         return i18n.t("Generic bot");
     } else if (type_id === 2) {
@@ -28,7 +28,7 @@ function type_id_to_string(type_id) {
     } else if (type_id === 3) {
         return i18n.t("Outgoing webhook");
     }
-}
+};
 
 function render_bots() {
     $('#active_bots_list').empty();
@@ -38,7 +38,7 @@ function render_bots() {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
-            type: type_id_to_string(elem.bot_type),
+            type: exports.type_id_to_string(elem.bot_type),
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,
