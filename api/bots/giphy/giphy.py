@@ -12,9 +12,10 @@ import re
 
 GIPHY_TRANSLATE_API = 'http://api.giphy.com/v1/gifs/translate'
 
-if not os.path.exists(os.environ['HOME'] + '/.giphy_config'):
-    print('Giphy bot config file not found, please set up it in ~/.giphy_config'
-          '\n\nUsing format:\n\n[giphy-config]\nkey=<giphy API key here>\n\n')
+if not os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'giphy.conf')):
+    print('Giphy bot config file not found, please set it up in this bot\'s folder '
+          'with the name \'giphy.conf\'\n\nUsing format:\n\n[giphy-config]\nkey=<giphy'
+          'API key here>\n\n')
     sys.exit(1)
 
 
@@ -33,6 +34,10 @@ class GiphyHandler(object):
             The bot responds also to private messages.
             '''
 
+    def initialize(self, bot_handler):
+        global config_info
+        config_info = bot_handler.get_config_info('giphy')
+
     def handle_message(self, message, bot_handler, state_handler):
         bot_response = get_bot_giphy_response(message, bot_handler)
         bot_handler.send_reply(message, bot_response)
@@ -40,13 +45,6 @@ class GiphyHandler(object):
 
 class GiphyNoResultException(Exception):
     pass
-
-
-def get_giphy_api_key_from_config():
-    config = SafeConfigParser()
-    with open(os.environ['HOME'] + '/.giphy_config', 'r') as config_file:
-        config.readfp(config_file)
-    return config.get("giphy-config", "key")
 
 
 def get_url_gif_giphy(keyword, api_key):
@@ -78,7 +76,7 @@ def get_bot_giphy_response(message, bot_handler):
     # The bot will post the appropriate message for the error.
     keyword = message['content']
     try:
-        gif_url = get_url_gif_giphy(keyword, get_giphy_api_key_from_config())
+        gif_url = get_url_gif_giphy(keyword, config_info['key'])
     except requests.exceptions.ConnectionError:
         return ('Uh oh, sorry :slightly_frowning_face:, I '
                 'cannot process your request right now. But, '

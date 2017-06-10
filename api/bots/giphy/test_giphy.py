@@ -22,7 +22,9 @@ class TestGiphyBot(BotTestCase):
                        '(https://media4.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif)' \
                        '[](/static/images/interactive-bot/giphy/powered-by-giphy.png)'
         # This message calls the `send_reply` function of BotHandlerApi
-        with self.mock_http_conversation('test_1'):
+        with self.mock_config_info({'key': '12345678'}), \
+                self.mock_http_conversation('test_1'):
+            self.initialize_bot()
             self.assert_bot_response(
                 message = {'content': 'Hello'},
                 response = {'content': bot_response},

@@ -52,6 +52,10 @@ class BotTestCase(TestCase):
         # type: () -> None
         self.patcher.stop()
 
+    def initialize_bot(self):
+        # type: () -> None
+        self.message_handler.initialize(self.MockClass())
+
     def check_expected_responses(self, expectations, expected_method='send_reply',
                                  email="foo_sender@zulip.com", recipient="foo", subject="foo",
                                  type="all"):
@@ -86,6 +90,13 @@ class BotTestCase(TestCase):
             instance.send_message.assert_called_with(response)
         else:
             instance.send_reply.assert_called_with(message, response['content'])
+
+    @contextmanager
+    def mock_config_info(self, config_info):
+        # type: (Dict[str, str]) -> Any
+        self.MockClass.return_value.get_config_info.return_value = config_info
+        yield
+        self.MockClass.return_value.get_config_info.return_value = None
 
     @contextmanager
     def mock_http_conversation(self, test_name):
