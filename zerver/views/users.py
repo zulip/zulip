@@ -341,6 +341,7 @@ def get_members_backend(request, user_profile):
                   "is_bot": profile.is_bot,
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
+                  "bot_type": profile.bot_type,
                   "email": profile.email,
                   "user_id": profile.id,
                   "avatar_url": avatar_url(profile)}

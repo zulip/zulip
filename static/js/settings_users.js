@@ -96,6 +96,8 @@ function populate_users(realm_people_data) {
     _.each(realm_people_data.members, function (user) {
         user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
+            // Convert bot type id to string for viewing to the users.
+            user.bot_type = settings_bots.type_id_to_string(user.bot_type);
             bots.push(user);
         } else if (user.is_active) {
             active_users.push(user);
