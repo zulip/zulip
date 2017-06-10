@@ -292,14 +292,16 @@ def accounts_home_with_realm_str(request, realm_str):
         return HttpResponseRedirect(reverse('zerver.views.registration.accounts_home'))
 
 def send_registration_completion_email(email, request, realm_creation=False):
-    # type: (str, HttpRequest, bool) -> Confirmation
+    # type: (str, HttpRequest, bool) -> None
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
     prereg_user = create_preregistration_user(email, request, realm_creation)
-    return Confirmation.objects.send_confirmation(
+    confirmation = Confirmation.objects.send_confirmation(
         prereg_user, 'zerver/emails/confirm_registration', email, host=request.get_host())
+    if settings.DEVELOPMENT and realm_creation:
+        request.session['confirmation_key'] = {'confirmation_key': confirmation.confirmation_key}
 
 def redirect_to_email_login_url(email):
     # type: (str) -> HttpResponseRedirect
@@ -324,9 +326,7 @@ def create_realm(request, creation_key=None):
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
-            if settings.DEVELOPMENT:
-                request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
+            send_registration_completion_email(email, request, realm_creation=True)
             if (creation_key is not None and check_key_is_valid(creation_key)):
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
