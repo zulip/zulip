@@ -174,7 +174,6 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             'referrer_name': referrer.full_name,
             'referrer_email': referrer.email,
             'referrer_realm_name': referrer.realm.name,
-            'support_email': settings.ZULIP_ADMINISTRATOR
         })
         send_future_email(
             "zerver/emails/invitation_reminder",

@@ -48,8 +48,7 @@ def confirm_email_change(request, confirmation_key):
 
         do_change_user_email(obj.user_profile, obj.new_email)
 
-        context = {'support_email': settings.ZULIP_ADMINISTRATOR,
-                   'realm': obj.realm,
+        context = {'realm': obj.realm,
                    'new_email': new_email,
                    }
         send_email('zerver/emails/notify_change_in_email', old_email,
@@ -57,7 +56,6 @@ def confirm_email_change(request, confirmation_key):
 
     ctx = {
         'confirmed': confirmed,
-        'support_email': settings.ZULIP_ADMINISTRATOR,
         'new_email': new_email,
         'old_email': old_email,
     }

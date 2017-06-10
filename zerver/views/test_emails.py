@@ -53,7 +53,6 @@ def email_page(request):
         'old_email': 'old_address@acme.com',
         'new_email': 'new_address@acme.com',
         'activate_url': '%s/accounts/do_confirm/5348720e4af7d2e8f296cbbd04d439489917ddc0' % (settings.SERVER_URI,),
-        'support_email': 'support@' + settings.EXTERNAL_HOST,
         'zulip_support': 'support@' + settings.EXTERNAL_HOST,
         'unsubscribe_link': '%s/accounts/unsubscribe/<type>/cf88931365ef1b0f12eae8d488bbc7af3563d7f0' % (settings.SERVER_URI,),
     }
