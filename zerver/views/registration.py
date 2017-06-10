@@ -297,19 +297,9 @@ def send_registration_completion_email(email, request, realm_creation=False):
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    template_prefix = 'zerver/emails/confirm_registration'
-    # Note: to make the following work in the non-subdomains case, you'll
-    # need to copy the logic from the beginning of accounts_register to
-    # figure out which realm the user is trying to sign up for, and then
-    # check if it is a zephyr mirror realm.
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        realm = get_realm(get_subdomain(request))
-        if realm and realm.is_zephyr_mirror_realm:
-            template_prefix = 'zerver/emails/confirm_registration_mit'
-
     prereg_user = create_preregistration_user(email, request, realm_creation)
-    return Confirmation.objects.send_confirmation(prereg_user, template_prefix, email,
-                                                  host=request.get_host())
+    return Confirmation.objects.send_confirmation(
+        prereg_user, 'zerver/emails/confirm_registration', email, host=request.get_host())
 
 def redirect_to_email_login_url(email):
     # type: (str) -> HttpResponseRedirect

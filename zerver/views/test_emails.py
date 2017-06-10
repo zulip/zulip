@@ -57,7 +57,7 @@ def email_page(request):
     }
 
     templates = [
-        'confirm_registration', 'invitation', 'invitation_reminder', 'confirm_registration_mit',
+        'confirm_registration', 'invitation', 'invitation_reminder',
         'invitation_mit', 'followup_day1', 'followup_day2', 'missed_message', 'digest', 'find_team',
         'password_reset', 'confirm_new_email', 'notify_change_in_email', 'notify_new_login']
 

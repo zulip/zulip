@@ -1510,32 +1510,6 @@ class UserSignUpTest(ZulipTestCase):
         mock_initialize.stop()
 
     @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
-    def test_registration_email_for_mirror_dummy_user(self, ignored):
-        # type: (Any) -> None
-        user_profile = self.mit_user("sipbtest")
-        email = user_profile.email
-        user_profile.is_mirror_dummy = True
-        user_profile.is_active = False
-        user_profile.save()
-
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            with patch('zerver.forms.get_subdomain', return_value='zephyr'):
-                with patch('zerver.views.registration.get_subdomain', return_value='zephyr'):
-                    result = self.client_post('/accounts/home/', {'email': email})
-                    self.assertEqual(result.status_code, 302)
-
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                # The main difference between the zephyr registation email
-                # and the normal one is this string
-                index = message.body.find('https://zephyr.zulipchat.com/zephyr')
-                if index >= 0:
-                    return
-        else:
-            raise AssertionError("Couldn't find the right confirmation email.")
-
-    @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
     def test_registration_of_mirror_dummy_user(self, ignored):
         # type: (Any) -> None
         password = "test"
