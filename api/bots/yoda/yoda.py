@@ -49,8 +49,8 @@ class YodaSpeakHandler(object):
             @mention-bot You will learn how to speak like me someday.
             '''
 
-    def handle_message(self, message, client, state_handler):
-        handle_input(message, client)
+    def handle_message(self, message, bot_handler, state_handler):
+        handle_input(message, bot_handler)
 
 handler_class = YodaSpeakHandler
 
@@ -86,11 +86,11 @@ def format_input(original_content):
     return sentence
 
 
-def handle_input(message, client):
+def handle_input(message, bot_handler):
 
     original_content = message['content']
     if is_help(original_content):
-        client.send_reply(message, HELP_MESSAGE)
+        bot_handler.send_reply(message, HELP_MESSAGE)
 
     else:
         sentence = format_input(original_content)
@@ -106,7 +106,7 @@ def handle_input(message, client):
                             '`readme.md` file?'
             logging.error(reply_message)
 
-        client.send_reply(message, reply_message)
+        bot_handler.send_reply(message, reply_message)
 
 
 def get_api_key():
@@ -117,9 +117,9 @@ def get_api_key():
     return api_key
 
 
-def send_message(client, message, stream, subject):
+def send_message(bot_handler, message, stream, subject):
     # function for sending a message
-    client.send_message(dict(
+    bot_handler.send_message(dict(
         type='stream',
         to=stream,
         subject=subject,

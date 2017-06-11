@@ -63,9 +63,9 @@ class ThesaurusHandler(object):
             preface messages with @mention-bot synonym or @mention-bot antonym.
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         original_content = message['content'].strip()
         new_content = get_thesaurus_result(original_content)
-        client.send_reply(message, new_content)
+        bot_handler.send_reply(message, new_content)
 
 handler_class = ThesaurusHandler

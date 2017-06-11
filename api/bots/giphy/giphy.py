@@ -33,9 +33,9 @@ class GiphyHandler(object):
             The bot responds also to private messages.
             '''
 
-    def handle_message(self, message, client, state_handler):
-        bot_response = get_bot_giphy_response(message, client)
-        client.send_reply(message, bot_response)
+    def handle_message(self, message, bot_handler, state_handler):
+        bot_response = get_bot_giphy_response(message, bot_handler)
+        bot_handler.send_reply(message, bot_response)
 
 
 class GiphyNoResultException(Exception):
@@ -73,7 +73,7 @@ def get_url_gif_giphy(keyword, api_key):
     return gif_url
 
 
-def get_bot_giphy_response(message, client):
+def get_bot_giphy_response(message, bot_handler):
     # Each exception has a specific reply should "gif_url" return a number.
     # The bot will post the appropriate message for the error.
     keyword = message['content']

@@ -23,7 +23,7 @@ class WeatherHandler(object):
             This plugin will give info about weather in a specified city
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         help_content = '''
             This bot returns weather info for specified city.
             You specify city in the following format:
@@ -44,7 +44,7 @@ class WeatherHandler(object):
             else:
                 response = format_response(r.text, message['content'], self.response_pattern)
 
-        client.send_reply(message, response)
+        bot_handler.send_reply(message, response)
 
 
 def format_response(text, city, response_pattern):

@@ -274,7 +274,7 @@ class ticTacToeHandler(object):
             message starts with @mention-bot.
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         command_list = message['content']
         command = ""
         for val in command_list:
@@ -313,7 +313,7 @@ class ticTacToeHandler(object):
 
         state_handler.set_state(mydict)
 
-        client.send_message(dict(
+        bot_handler.send_message(dict(
             type = 'private',
             to = original_sender,
             subject = message['sender_email'],

@@ -47,7 +47,7 @@ class IssueHandler(object):
             github_token = <oauth_token>   (The personal access token for the GitHub bot)
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
 
         original_content = message['content']
         original_sender = message['sender_email']
@@ -86,7 +86,7 @@ class IssueHandler(object):
 
         if r.ok:
             # sends the message onto the 'issues' stream so it can be seen by zulip users
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='stream',
                 to='issues',
                 subject=message['sender_email'],
@@ -96,7 +96,7 @@ class IssueHandler(object):
             return
             # This means that the issue has not been sent
             # sends the message onto the 'issues' stream so it can be seen by zulip users
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='stream',
                 to='issues',
                 subject=message['sender_email'],

@@ -47,11 +47,11 @@ class ConverterHandler(object):
                all supported units.
                '''
 
-    def handle_message(self, message, client, state_handler):
-        bot_response = get_bot_converter_response(message, client)
-        client.send_reply(message, bot_response)
+    def handle_message(self, message, bot_handler, state_handler):
+        bot_response = get_bot_converter_response(message, bot_handler)
+        bot_handler.send_reply(message, bot_response)
 
-def get_bot_converter_response(message, client):
+def get_bot_converter_response(message, bot_handler):
     content = message['content']
 
     words = content.lower().split()

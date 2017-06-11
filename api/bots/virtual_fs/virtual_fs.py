@@ -7,7 +7,7 @@ class VirtualFsHandler(object):
     def usage(self):
         return get_help()
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         command = message['content']
         if command == "":
             command = "help"
@@ -32,7 +32,7 @@ class VirtualFsHandler(object):
         state[recipient] = fs
         state_handler.set_state(state)
 
-        client.send_reply(message, msg)
+        bot_handler.send_reply(message, msg)
 
 
 def get_help():

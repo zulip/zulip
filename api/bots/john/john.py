@@ -115,9 +115,9 @@ class JohnHandler(object):
             mantain a conversation, joke and give useful information.
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         original_content = message['content']
         bot_response = str(bota.get_response(original_content))
-        client.send_reply(message, bot_response)
+        bot_handler.send_reply(message, bot_response)
 
 handler_class = JohnHandler

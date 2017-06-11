@@ -59,13 +59,13 @@ Example Inputs:
 
         return '\n'.join(format_venue(venue) for venue in venues)
 
-    def send_info(self, message, letter, client):
-        client.send_reply(message, letter)
+    def send_info(self, message, letter, bot_handler):
+        bot_handler.send_reply(message, letter)
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         words = message['content'].split()
         if "/help" in words:
-            self.send_info(message, self.help_info, client)
+            self.send_info(message, self.help_info, bot_handler)
             return
 
         # These are required inputs for the HTTP request.
@@ -96,19 +96,19 @@ Example Inputs:
         else:
             self.send_info(message,
                            "Invalid Request\nIf stuck, try '@mention-bot help'.",
-                           client)
+                           bot_handler)
             return
 
         if received_json['meta']['code'] == 200:
             response_msg = ('Food nearby ' + params['near'] +
                             ' coming right up:\n' +
                             self.format_json(received_json['response']['venues']))
-            self.send_info(message, response_msg, client)
+            self.send_info(message, response_msg, bot_handler)
             return
 
         self.send_info(message,
                        "Invalid Request\nIf stuck, try '@mention-bot help'.",
-                       client)
+                       bot_handler)
         return
 
 handler_class = FoursquareHandler

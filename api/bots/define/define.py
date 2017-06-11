@@ -21,11 +21,11 @@ class DefineHandler(object):
             messages with @mention-bot.
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         original_content = message['content'].strip()
         bot_response = self.get_bot_define_response(original_content)
 
-        client.send_reply(message, bot_response)
+        bot_handler.send_reply(message, bot_response)
 
     def get_bot_define_response(self, original_content):
         split_content = original_content.split(' ')

@@ -89,8 +89,8 @@ class CommuteHandler(object):
             return config.get('Google.com', 'api_key')
 
     # determines if bot will respond as a private message/ stream message
-    def send_info(self, message, letter, client):
-        client.send_reply(message, letter)
+    def send_info(self, message, letter, bot_handler):
+        bot_handler.send_reply(message, letter)
 
     def calculate_seconds(self, time_str):
         times = time_str.split(',')
@@ -114,7 +114,7 @@ class CommuteHandler(object):
         return
 
     # gets content for output and sends it to user
-    def get_send_content(self, rjson, params, message, client):
+    def get_send_content(self, rjson, params, message, bot_handler):
         try:
             # JSON list of output variables
             variable_list = rjson["rows"][0]["elements"][0]
@@ -126,14 +126,14 @@ class CommuteHandler(object):
             if no_result:
                 self.send_info(message,
                                "Zero results\nIf stuck, try '@commute help'.",
-                               client)
+                               bot_handler)
                 return
             elif not_found or invalid_request:
                 raise IndexError
         except IndexError:
             self.send_info(message,
                            "Invalid input, please see instructions."
-                           "\nIf stuck, try '@commute help'.", client)
+                           "\nIf stuck, try '@commute help'.", bot_handler)
             return
 
         # origin and destination strings
@@ -165,7 +165,7 @@ class CommuteHandler(object):
             output += '\n' + duration
 
         # bot sends commute information to user
-        self.send_info(message, output, client)
+        self.send_info(message, output, bot_handler)
 
     # creates parameters for HTTP request
     def parse_pair(self, content_list):
@@ -180,7 +180,7 @@ class CommuteHandler(object):
             result[key] = value
         return result
 
-    def receive_response(self, params, message, client):
+    def receive_response(self, params, message, bot_handler):
         def validate_requests(request):
             if request.status_code == 200:
                 return request.json()
@@ -189,30 +189,30 @@ class CommuteHandler(object):
                                "Something went wrong. Please try again." +
                                " Error: {error_num}.\n{error_text}"
                                .format(error_num=request.status_code,
-                                       error_text=request.text), client)
+                                       error_text=request.text), bot_handler)
                 return
         r = requests.get('https://maps.googleapis.com/maps/api/' +
                          'distancematrix/json', params=params)
         result = validate_requests(r)
         return result
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         original_content = message['content']
         query = original_content.split()
 
         if "help" in query:
-            self.send_info(message, self.help_info, client)
+            self.send_info(message, self.help_info, bot_handler)
             return
 
         params = self.parse_pair(query)
         params['key'] = self.api_key
         self.add_time_to_params(params)
 
-        rjson = self.receive_response(params, message, client)
+        rjson = self.receive_response(params, message, bot_handler)
         if not rjson:
             return
 
-        self.get_send_content(rjson, params, message, client)
+        self.get_send_content(rjson, params, message, bot_handler)
 
 handler_class = CommuteHandler
 handler = CommuteHandler()

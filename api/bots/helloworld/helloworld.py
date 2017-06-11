@@ -11,8 +11,8 @@ class HelloWorldHandler(object):
         sophisticated, bots.
         '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         content = 'beep boop'
-        client.send_reply(message, content)
+        bot_handler.send_reply(message, content)
 
 handler_class = HelloWorldHandler

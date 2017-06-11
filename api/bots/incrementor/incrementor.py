@@ -15,13 +15,13 @@ class IncrementorHandler(object):
         is @-mentioned, this number will be incremented in the same message.
         '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         self.number += 1
         if self.message_id is None:
-            result = client.send_reply(message, str(self.number))
+            result = bot_handler.send_reply(message, str(self.number))
             self.message_id = result['id']
         else:
-            client.update_message(dict(
+            bot_handler.update_message(dict(
                 message_id=self.message_id,
                 content=str(self.number),
             ))

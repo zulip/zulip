@@ -150,7 +150,7 @@ class MyBotHandler(object):
     def usage(self):
         return '''Your description of the bot'''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         # add your code here
 
 handler_class = MyBotHandler
@@ -163,7 +163,7 @@ handler_class = MyBotHandler
 
 * Every bot needs to implement the functions
     * `usage(self)`
-    * `handle_message(self, message, client)`
+    * `handle_message(self, message, bot_handler)`
 
 * These functions are documented in the [next section](#bot-api).
 
@@ -212,7 +212,7 @@ def usage(self):
 
 ### handle_message
 
-*handle_message(self, message, client)*
+*handle_message(self, message, bot_handler)*
 
 handles user message.
 
@@ -222,7 +222,7 @@ handles user message.
 
 * message - a dictionary describing a Zulip message
 
-* client - used to interact with the server, e.g. to send a message
+* bot_handler - used to interact with the server, e.g. to send a message
 
 * state_handler - used to save states/information of the bot **beta**
     * use `state_handler.set_state(state)` to set a state (any object)
@@ -235,22 +235,22 @@ None.
 #### Example implementation
 
  ```
-  def handle_message(self, message, client, state_handler):
+  def handle_message(self, message, bot_handler, state_handler):
      original_content = message['content']
      original_sender = message['sender_email']
      new_content = original_content.replace('@followup',
                                             'from %s:' % (original_sender,))
 
-     client.send_message(dict(
+     bot_handler.send_message(dict(
          type='stream',
          to='followup',
          subject=message['sender_email'],
          content=new_content,
      ))
  ```
-### client.send_message
+### bot_handler.send_message
 
-*client.send_message(message)*
+*bot_handler.send_message(message)*
 
 will send a message as the bot user.  Generally, this is less
 convenient than *send_reply*, but it offers additional flexibility
@@ -263,7 +263,7 @@ about where the message is sent to.
 ### Example implementation
 
 ```
-client.send_message(dict(
+bot_handler.send_message(dict(
     type='stream', # can be 'stream' or 'private'
     to=stream_name, # either the stream name or user's email
     subject=subject, # message subject
@@ -271,9 +271,9 @@ client.send_message(dict(
 ))
 ```
 
-### client.send_reply
+### bot_handler.send_reply
 
-*client.send_reply(message, response)*
+*bot_handler.send_reply(message, response)*
 
 will reply to the triggering message to the same place the original
 message was sent to, with the content of the reply being *response*.
@@ -284,9 +284,9 @@ message was sent to, with the content of the reply being *response*.
  (provided by `handle_message`).
 * response - Response message from the bot (string).
 
-### client.update_message
+### bot_handler.update_message
 
-*client.update_message(message)*
+*bot_handler.update_message(message)*
 
 will edit the content of a previously sent message.
 
@@ -299,7 +299,7 @@ will edit the content of a previously sent message.
 From `/zulip/api/bots/incrementor/incrementor.py`:
 
 ```
-client.update_message(dict(
+bot_handler.update_message(dict(
     message_id=self.message_id, # id of message to be updated
     content=str(self.number), # string with which to update message with
 ))

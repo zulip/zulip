@@ -39,11 +39,11 @@ class GitHubHandler(object):
             '<repository_owner>/<repository>/<issue_number>/<your_comment>'.
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         original_content = message['content']
         original_sender = message['sender_email']
 
-        handle_input(client, original_content, original_sender)
+        handle_input(bot_handler, original_content, original_sender)
 
 handler_class = GitHubHandler
 
@@ -77,7 +77,7 @@ def get_values_message(original_content):
         raise InputError
 
 
-def handle_input(client, original_content, original_sender):
+def handle_input(bot_handler, original_content, original_sender):
     try:
         params = get_values_message(original_content)
 
@@ -89,7 +89,7 @@ def handle_input(client, original_content, original_sender):
             reply_message = "You commented on issue number " + params['issue'] + " under " + \
                             params['repo_owner'] + "'s repository " + params['repo'] + "!"
 
-            send_message(client, reply_message, original_sender)
+            send_message(bot_handler, reply_message, original_sender)
 
         elif status_code == 404:
             # this error could be from an error with the OAuth token
@@ -98,7 +98,7 @@ def handle_input(client, original_content, original_sender):
                             params['repo_owner'] + "'s repository " + params['repo'] + \
                             ". Do you have the right OAuth token?"
 
-            send_message(client, reply_message, original_sender)
+            send_message(bot_handler, reply_message, original_sender)
 
         else:
             # sending info to github did not work
@@ -108,18 +108,18 @@ def handle_input(client, original_content, original_sender):
                             params['repo_owner'] + "'s repository " + params['repo'] + \
                             ". Did you enter the information in the correct format?"
 
-            send_message(client, reply_message, original_sender)
+            send_message(bot_handler, reply_message, original_sender)
     except InputError:
             message = "It doesn't look like the information was entered in the correct format." \
                       " Did you input it like this? " \
                       "'/<username>/<repository_owner>/<repository>/<issue_number>/<your_comment>'."
-            send_message(client, message, original_sender)
+            send_message(bot_handler, message, original_sender)
             logging.error('there was an error with the information you entered')
 
 
-def send_message(client, message, original_sender):
+def send_message(bot_handler, message, original_sender):
     # function for sending a message
-    client.send_message(dict(
+    bot_handler.send_message(dict(
         type='private',
         to=original_sender,
         content=message,

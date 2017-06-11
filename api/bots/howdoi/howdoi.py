@@ -81,11 +81,11 @@ class HowdoiHandler(object):
 
         return answer
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         question = message['content'].strip()
 
         if question.startswith('howdowe!'):
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
                 subject=message['subject'],
@@ -93,14 +93,14 @@ class HowdoiHandler(object):
             ))
 
         elif question.startswith('howdoi!'):
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='private',
                 to=message['sender_email'],
                 content=self.get_answer('howdoi!', question)
             ))
 
         elif question.startswith('howdowe'):
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
                 subject=message['subject'],
@@ -108,7 +108,7 @@ class HowdoiHandler(object):
             ))
 
         elif question.startswith('howdoi'):
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='private',
                 to=message['sender_email'],
                 content=self.get_answer('howdoi', question)

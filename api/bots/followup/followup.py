@@ -22,13 +22,13 @@ class FollowupHandler(object):
             called "followup" that your API user can send to.
             '''
 
-    def handle_message(self, message, client, state_handler):
+    def handle_message(self, message, bot_handler, state_handler):
         if message['content'] == '':
             bot_response = "Please specify the message you want to send to followup stream after @mention-bot"
-            client.send_reply(message, bot_response)
+            bot_handler.send_reply(message, bot_response)
         else:
             bot_response = self.get_bot_followup_response(message)
-            client.send_message(dict(
+            bot_handler.send_message(dict(
                 type='stream',
                 to='followup',
                 subject=message['sender_email'],

@@ -167,7 +167,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         if is_private_message or is_mentioned:
             message_handler.handle_message(
                 message=message,
-                client=restricted_client,
+                bot_handler=restricted_client,
                 state_handler=state_handler
             )
 
