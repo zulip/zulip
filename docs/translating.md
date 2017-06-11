@@ -58,7 +58,7 @@ capitalization in general.  This means that:
 We have a tool to check for the correct capitalization of the
 translatable strings; this tool will not allow the Travis builds to
 pass in case of errors. You can use our capitalization checker to
-validate your code by running `./tool/check-capitalization`. If you
+validate your code by running `./tools/check-capitalization`. If you
 think that you have a case where our capitalization checker tool
 wrongly categorizes a string as not capitalized, you can add an
 exception in the `tools.lib.capitalization.IGNORED_PHRASES` list to
