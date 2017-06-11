@@ -52,9 +52,9 @@ doesn't yet support push notifications, but it will by July 2017.
 
 [notification-settings]: https://zulipchat.com/help/configure-mobile-notifications
 
-Note that use of the push notification bouncer is subject to the Terms of
-Service at https://zulipchat.com/terms/. By using push notifications, you
-agree to those terms.
+Note that use of the push notification bouncer is subject to the
+[Zulipchat Terms of Service](https://zulipchat.com/terms/). By using push
+notifications, you agree to those terms.
 
 ## Why this is necessary
 
