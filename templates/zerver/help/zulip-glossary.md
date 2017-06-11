@@ -29,7 +29,7 @@ that can help you compose your message, such as the **Emojis**, **Attach files**
 
 **Customization** is the process of modifying Zulip's settings to fit a user's
 set of personal preferences. Users can customize their Zulip settings by
-clicking the cog (<i class="icon-vector-cog"></i>) icon in the upper right
+clicking the cog (<i class="icon-vector-cog"></i>) icon in the top right
 corner of the right sidebar and choose **Settings** from the dropdown menu.
 
 ### down chevron
