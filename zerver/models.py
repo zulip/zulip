@@ -1795,6 +1795,9 @@ class Service(models.Model):
     # Interface / API version of the service.
     interface = models.PositiveSmallIntegerField(default=1)  # type: int
 
+    class Meta(object):
+        unique_together = ('user_profile', 'name')
+
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _interfaces = {} # type: Dict[int, Text]
 
