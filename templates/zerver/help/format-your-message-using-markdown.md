@@ -9,7 +9,7 @@ Zulip uses a variant of
 To see a summary of message formatting in Zulip, click the A (<i
 class="icon-vector-font"></i>) icon located in the bottom left corner of
 your messaging box. You can alternatively click the cog (<i
-class="icon-vector-cog"></i>) icon in the upper right corner of the right
+class="icon-vector-cog"></i>) icon in the top right corner of the right
 sidebar and choose **Message formatting** from the dropdown menu that
 appears.
 

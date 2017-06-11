@@ -5,7 +5,7 @@ When you're done using Zulip, it's easy to log out of Zulip.
 ## Logging out on a browser
 
 1. Click on the cog (<i class="icon-vector-cog"></i>) icon in the top right
-corner.
+   corner of the right sidebar.
 
 2. Click the **Log out** option from the dropdown menu that appears.
 
