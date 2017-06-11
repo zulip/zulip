@@ -199,6 +199,20 @@ casper.then(function () {
 });
 
 casper.then(function () {
+    casper.test.info('Trying to create a duplicate alert word');
+    casper.sendKeys('#create_alert_word_name', 'some phrase');
+    casper.click('#create_alert_word_button');
+    casper.test.info('Checking that an error message is displayed');
+    casper.waitUntilVisible('#alert_word_status', function () {
+        casper.test.assertSelectorHasText('.alert_word_status_text', 'Alert word already exists!');
+        casper.test.info('Closing the status message');
+        casper.click('.close-alert-word-status');
+        casper.test.info('Checking the status message is hidden');
+        casper.test.assertNotVisible('#alert_word_status');
+    });
+});
+
+casper.then(function () {
     casper.test.info('Deleting alert word');
     casper.click('button.remove-alert-word');
     casper.test.info('Checking that a success message is displayed');

@@ -32,8 +32,12 @@ function update_alert_word_status(status_text, is_error) {
 }
 
 function add_alert_word(alert_word) {
-    if ($.trim(alert_word) === '') {
+    alert_word = $.trim(alert_word);
+    if (alert_word === '') {
         update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
+        return;
+    } else if (alert_words.words.indexOf(alert_word) !== -1) {
+        update_alert_word_status(i18n.t("Alert word already exists!"), true);
         return;
     }
 
