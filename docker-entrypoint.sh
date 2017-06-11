@@ -16,6 +16,7 @@ DB_PASSWORD="${DB_PASSWORD:-zulip}"
 DB_ROOT_USER="${DB_ROOT_USER:-postgres}"
 DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-$(echo $DB_PASSWORD)}"
 REMOTE_POSTGRES_SSLMODE="${REMOTE_POSTGRES_SSLMODE:-prefer}"
+unset DB_PASSWORD
 # RabbitMQ
 IGNORE_RABBITMQ_ERRORS="${IGNORE_RABBITMQ_ERRORS:-true}"
 SETTING_RABBITMQ_HOST="${SETTING_RABBITMQ_HOST:-127.0.0.1}"
@@ -49,8 +50,14 @@ export ZULIP_USER_PASS="${ZULIP_USER_PASS:-zulip}"
 AUTO_BACKUP_ENABLED="${AUTO_BACKUP_ENABLED:-True}"
 AUTO_BACKUP_INTERVAL="${AUTO_BACKUP_INTERVAL:-30 3 * * *}"
 # Zulip configuration function specific variable(s)
+<<<<<<< HEAD
 SPECIAL_SETTING_DETECTION_MODE="${SPECIAL_SETTING_DETECTION_MODE:-True}"
 MANUAL_CONFIGURATION="${MANUAL_CONFIGURATION:-false}"
+=======
+SPECIAL_SETTING_DETECTION_MODE="${SPECIAL_SETTING_DETECTION_MODE:-}"
+MANUAL_CONFIGURATION="${MANUAL_CONFIGURATION:-false}"
+LINK_SETTINGS_TO_DATA="${LINK_SETTINGS_TO_DATA:-false}"
+>>>>>>> Move certificate generation to separate script
 # entrypoint.sh specific variable(s)
 ZPROJECT_SETTINGS="/home/zulip/deployments/current/zproject/settings.py"
 SETTINGS_PY="/etc/zulip/settings.py"
@@ -80,6 +87,22 @@ prepareDirectories() {
     rm -rf /home/zulip/uploads
     ln -sfT "$DATA_DIR/uploads" /home/zulip/uploads
     chown zulip:zulip -R "$DATA_DIR/uploads"
+<<<<<<< HEAD
+=======
+    # Link settings folder
+    if [ "$LINK_SETTINGS_TO_DATA" = "True" ] || [ "$LINK_SETTINGS_TO_DATA" = "true" ]; then
+        # Create settings directories
+        if [ ! -d "$DATA_DIR/settings" ]; then
+            mkdir -p "$DATA_DIR/settings"
+        fi
+        if [ ! -d "$DATA_DIR/settings/etc-zulip" ]; then
+            cp -rf /etc/zulip "$DATA_DIR/settings/etc-zulip"
+        fi
+        # Link /etc/zulip/ settings folder
+        rm -rf /etc/zulip
+        ln -sfT "$DATA_DIR/settings/etc-zulip" /etc/zulip
+    fi
+>>>>>>> Move certificate generation to separate script
     echo "Prepared and linked the uploads directory."
 }
 setConfigurationValue() {
@@ -139,6 +162,7 @@ nginxConfiguration() {
 }
 configureCerts() {
     echo "Exectuing certificates configuration..."
+<<<<<<< HEAD
     if [ ! -f "$DATA_DIR/certs/zulip.key" ] && [ ! -f "$DATA_DIR/certs/zulip.combined-chain.crt" ]; then
         /root/zulip/scripts/setup/configure-certs
         mv /etc/ssl/private/zulip.key "$DATA_DIR/certs/zulip.key"
@@ -146,6 +170,46 @@ configureCerts() {
     fi
     ln -sfT "$DATA_DIR/certs/zulip.key" /etc/ssl/private/zulip.key
     ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
+=======
+    case "$ZULIP_AUTO_GENERATE_CERTS" in
+        [Tt][Rr][Uu][Ee])
+            ZULIP_AUTO_GENERATE_CERTS="True"
+        ;;
+        [Ff][Aa][Ll][Ss][Ee])
+            ZULIP_AUTO_GENERATE_CERTS="False"
+        ;;
+        *)
+            echo "Defaulting \"ZULIP_AUTO_GENERATE_CERTS\" to \"True\". Couldn't parse if \"True\" or \"False\"."
+            ZULIP_AUTO_GENERATE_CERTS="True"
+        ;;
+    esac
+    if [ -e "$DATA_DIR/certs/zulip.key" ] && [ -e "$DATA_DIR/certs/zulip.combined-chain.crt" ]; then
+        ln -sfT "$DATA_DIR/certs/zulip.key" /etc/ssl/private/zulip.key
+        ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
+    else
+        if [ "$ZULIP_AUTO_GENERATE_CERTS" = "True" ] || [ "$ZULIP_AUTO_GENERATE_CERTS" = "true" ]; then
+            if [ -z "$ZULIP_CERTIFICATE_SUBJ" ]; then
+                if [ -z "$ZULIP_CERTIFICATE_CN" ]; then
+                    if [ -z "$SETTING_EXTERNAL_HOST" ]; then
+                        echo "Certificates generation failed. \"ZULIP_CERTIFICATE_CN\" and as fallback \"SETTING_EXTERNAL_HOST\" not given."
+                        echo "Certificates configuration failed."
+                        exit 1
+                    fi
+                    ZULIP_CERTIFICATE_CN="$SETTING_EXTERNAL_HOST"
+                fi
+                ZULIP_CERTIFICATE_SUBJ="/C=$ZULIP_CERTIFICATE_C/ST=$ZULIP_CERTIFICATE_ST/L=$ZULIP_CERTIFICATE_L/O=$ZULIP_CERTIFICATE_O/CN=$ZULIP_CERTIFICATE_CN"
+            fi
+            export CERTIFICATE_SUBJ="$ZULIP_CERTIFICATE_SUBJ"
+            /root/zulip/scripts/setup/configure-certs
+            mv /etc/ssl/private/zulip.key "$DATA_DIR/certs/zulip.key"
+            mv /etc/ssl/certs/zulip.combined-chain.crt "$DATA_DIR/certs/zulip.combined-chain.crt"
+            ln -sfT "$DATA_DIR/certs/zulip.key" /etc/ssl/private/zulip.key
+            ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
+        else
+            echo "Certificate auto generation is disabled. Continuing"
+        fi
+    fi
+>>>>>>> Move certificate generation to separate script
     echo "Certificates configuration succeeded."
 }
 secretsConfiguration() {
