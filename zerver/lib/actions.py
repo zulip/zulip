@@ -1239,13 +1239,9 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                "tried to send a message to stream `%s`, but %s"
                "click the gear in the left-side stream list." %
                (sender.full_name, stream_name, error_msg))
-    message = internal_prep_private_message(
-        realm=realm,
-        sender=get_system_bot(settings.NOTIFICATION_BOT),
-        recipient_email=sender.bot_owner.email,
-        content=content)
 
-    do_send_messages([message])
+    internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
+                                  sender.bot_owner.email, content)
 
     sender.last_reminder = timezone_now()
     sender.save(update_fields=['last_reminder'])
@@ -1439,6 +1435,13 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
         return
 
     do_send_messages([msg])
+
+def internal_send_private_message(realm, sender, recipient_email, content):
+    # type: (Realm, UserProfile, Text, Text) -> None
+    message = internal_prep_private_message(realm, sender, recipient_email, content)
+    if message is None:
+        return
+    do_send_messages([message])
 
 def pick_color(user_profile):
     # type: (UserProfile) -> Text
