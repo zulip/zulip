@@ -31,7 +31,7 @@ from zerver.decorator import (
 )
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
-    check_variable_type, equals, check_none_or,
+    check_variable_type, equals, check_none_or, check_url,
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Client, Realm
@@ -545,6 +545,18 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_none_or(check_int)('x', x), None)
         x = 'x'
         self.assertEqual(check_none_or(check_int)('x', x), 'x is not an integer')
+
+    def test_check_url(self):
+        # type: () -> None
+        url = "http://127.0.0.1:5002/"  # type: Any
+        check_url('url', url)
+
+        url = "http://zulip-bots.example.com/"
+        check_url('url', url)
+
+        url = "http://127.0.0"
+        with self.assertRaises(JsonableError):
+            check_url('url', url)
 
 class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self):

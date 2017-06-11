@@ -28,7 +28,7 @@ for any particular type of object.
 from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
+from django.core.validators import validate_email, URLValidator
 import six
 from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar, Text
 
@@ -161,5 +161,13 @@ def validate_login_email(email):
     # type: (Text) -> None
     try:
         validate_email(email)
+    except ValidationError as err:
+        raise JsonableError(str(err.message))
+
+def check_url(var_name, val):
+    # type: (str, Text) -> None
+    validate = URLValidator()
+    try:
+        validate(val)
     except ValidationError as err:
         raise JsonableError(str(err.message))
