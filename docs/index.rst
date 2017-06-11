@@ -133,6 +133,7 @@ Contents:
    hashchange-system
    emoji
    full-text-search
+   email
    analytics
    translating
    client
