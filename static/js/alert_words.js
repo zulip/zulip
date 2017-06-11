@@ -4,6 +4,9 @@ var exports = {};
 
 exports.words = page_params.alert_words;
 
+// Delete the `page_params.alert_words` since we are its sole user.
+delete page_params.alert_words;
+
 // escape_user_regex taken from jquery-ui/autocomplete.js,
 // licensed under MIT license.
 function escape_user_regex(value) {
