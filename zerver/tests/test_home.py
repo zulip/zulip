@@ -327,7 +327,7 @@ class HomeTest(ZulipTestCase):
                                  get_user(user['email'], realm).id)
 
         cross_bots = page_params['cross_realm_bots']
-        self.assertEqual(len(cross_bots), 2)
+        self.assertEqual(len(cross_bots), 3)
         cross_bots.sort(key=lambda d: d['email'])
 
         notification_bot = self.notification_bot()
@@ -345,6 +345,13 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email=notification_bot.email,
                 full_name='Notification Bot',
+                is_bot=True
+            ),
+            dict(
+                user_id=get_user('welcome-bot@zulip.com', get_realm('zulip')).id,
+                is_admin=False,
+                email='welcome-bot@zulip.com',
+                full_name='Welcome Bot',
                 is_bot=True
             ),
         ])
