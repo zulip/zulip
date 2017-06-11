@@ -3,11 +3,11 @@ var alert_words_ui = (function () {
 var exports = {};
 
 exports.render_alert_words_ui = function () {
-    var alert_words = page_params.alert_words;
+    var words = alert_words.words;
     var word_list = $('#alert_words_list');
 
     word_list.find('.alert-word-item').remove();
-    _.each(alert_words, function (alert_word) {
+    _.each(words, function (alert_word) {
         var rendered_alert_word = templates.render('alert_word_settings_item',
                                                    {word: alert_word, editing: false});
         word_list.append(rendered_alert_word);
