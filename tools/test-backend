@@ -307,6 +307,8 @@ if __name__ == "__main__":
         suites = ["zerver.tests",
                   "zerver.webhooks",
                   "analytics.tests"]
+        if settings.ZILENCER_ENABLED:
+            suites.append("zilencer.tests")
     else:
         suites = args
 
