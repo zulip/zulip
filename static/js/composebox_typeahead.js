@@ -44,10 +44,6 @@ function get_last_recipient_in_pm(query_string) {
     return recipients[recipients.length-1];
 }
 
-function composebox_typeahead_highlighter(item) {
-    return typeahead_helper.highlight_with_escaping(this.query, item);
-}
-
 function query_matches_language(query, lang) {
     query = query.toLowerCase();
     return lang.indexOf(query) !== -1;
@@ -340,13 +336,16 @@ exports.compose_content_begins_typeahead = function (query) {
 
 exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
-        return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
+        return typeahead_helper.render_typeahead_item({
+            primary: item.emoji_name,
+            img_src: item.emoji_url,
+        });
     } else if (this.completing === 'mention') {
-        return typeahead_helper.render_person(this.token, item);
+        return typeahead_helper.render_person(item);
     } else if (this.completing === 'stream') {
-        return typeahead_helper.render_stream(this.token, item);
+        return typeahead_helper.render_stream(item);
     } else if (this.completing === 'syntax') {
-        return typeahead_helper.highlight_with_escaping(this.token, item);
+        return typeahead_helper.render_typeahead_item({ primary: item });
     }
 };
 
@@ -466,8 +465,7 @@ exports.initialize = function () {
         items: 3,
         fixed: true,
         highlighter: function (item) {
-            var query = this.query;
-            return typeahead_helper.highlight_with_escaping(query, item);
+            return typeahead_helper.render_typeahead_item({ primary: item });
         },
         matcher: function (item) {
             // The matcher for "stream" is strictly prefix-based,
@@ -484,7 +482,9 @@ exports.initialize = function () {
         },
         items: 3,
         fixed: true,
-        highlighter: composebox_typeahead_highlighter,
+        highlighter: function (item) {
+            return typeahead_helper.render_typeahead_item({ primary: item });
+        },
         sorter: function (items) {
             var sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
             if (sorted.length > 0 && sorted.indexOf(this.query) === -1) {
@@ -500,8 +500,7 @@ exports.initialize = function () {
         dropup: true,
         fixed: true,
         highlighter: function (item) {
-            var query = get_last_recipient_in_pm(this.query);
-            return typeahead_helper.render_person(query, item);
+            return typeahead_helper.render_person(item);
         },
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);

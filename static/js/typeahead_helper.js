@@ -69,34 +69,49 @@ exports.highlight_query_in_phrase = function (query, phrase) {
     return result;
 };
 
-function render_secondary(item) {
-    return '&nbsp;&nbsp;<small class = "autocomplete_secondary">' + item + '</small>';
-}
-
-exports.render_person = function (token, person) {
-    if (person.special_item_text) {
-        return person.special_item_text;
-    }
-
-    var full_name = exports.highlight_with_escaping(token, person.full_name);
-    var email = exports.highlight_with_escaping(token, person.email);
-
-    return full_name + render_secondary(email);
+exports.render_typeahead_item = function (args) {
+    args.has_image = args.img_src !== undefined;
+    args.has_secondary = args.secondary !== undefined;
+    return templates.render('typeahead_list_item', args);
 };
 
-exports.render_stream = function (token, stream) {
+var rendered = { persons: new Dict(), streams: new Dict() };
+
+exports.render_person = function (person) {
+    if (person.special_item_text) {
+        return exports.render_typeahead_item({ primary: person.special_item_text });
+    }
+
+    var html = rendered.persons.get(person.user_id);
+    if (html === undefined) {
+        html = exports.render_typeahead_item({
+            primary: person.full_name,
+            secondary: person.email,
+        });
+        rendered.persons.set(person.user_id, html);
+    }
+
+    return html;
+};
+
+exports.render_stream = function (stream) {
     var desc = stream.description;
     var short_desc = desc.substring(0, 35);
 
-    if (desc === short_desc) {
-        desc = exports.highlight_with_escaping(token, desc);
-    } else {
-        desc = exports.highlight_with_escaping(token, short_desc) + "...";
+    if (desc !== short_desc) {
+        desc = short_desc + "...";
     }
 
-    var name = exports.highlight_with_escaping(token, stream.name);
+    var html = rendered.streams.get(stream.stream_id);
+    if (html === undefined) {
+        html = exports.render_typeahead_item({
+            primary: stream.name,
+            secondary: desc,
+        });
+        rendered.streams.set(stream.stream_id, html);
+    }
 
-    return name + render_secondary(desc);
+    return html;
 };
 
 function split_by_subscribers(people, current_stream) {

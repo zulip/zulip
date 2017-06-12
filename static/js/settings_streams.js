@@ -174,7 +174,9 @@ exports.on_load_success = function (streams_data) {
         source: function () {
             return get_non_default_streams_names(all_streams);
         },
-        highlight: true,
+        highlighter: function (item) {
+            return typeahead_helper.render_typeahead_item({ primary: item });
+        },
         updater: function (stream_name) {
             make_stream_default(stream_name);
         },
