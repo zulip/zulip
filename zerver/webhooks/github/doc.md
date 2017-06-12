@@ -3,7 +3,7 @@ This webhook is based on the deprecated
 
 {!create-stream.md!}
 
-However, the integration will use the default stream `commits`
+The integration will use the default stream `commits`
 if no stream is supplied in the hook; you still need to create
 the stream even if you are using this default.
 
