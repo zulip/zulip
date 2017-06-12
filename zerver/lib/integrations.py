@@ -32,8 +32,9 @@ class Integration(object):
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
-    def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None, doc=None):
-        # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, client_name, logo=None, secondary_line_text=None,
+                 display_name=None, doc=None, stream_name=None):
+        # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -50,6 +51,10 @@ class Integration(object):
         if display_name is None:
             display_name = name.title()
         self.display_name = display_name
+
+        if stream_name is None:
+            stream_name = self.name
+        self.stream_name = stream_name
 
     def is_enabled(self):
         # type: () -> bool
@@ -82,11 +87,11 @@ class WebhookIntegration(Integration):
     DEFAULT_DOC_PATH = '{name}/doc.{ext}'
 
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None):
-        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None, stream_name=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name)
+        super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name, stream_name=stream_name)
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
@@ -135,13 +140,13 @@ class GithubIntegration(WebhookIntegration):
     We want to have one generic url with dispatch function for github service and github webhook.
     """
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None):
-        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None, stream_name=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         url = self.DEFAULT_URL.format(name='github')
 
         super(GithubIntegration, self).__init__(
             name, client_name, logo, secondary_line_text,
-            function, url, display_name, doc)
+            function, url, display_name, doc, stream_name)
 
     @property
     def url_object(self):
@@ -153,7 +158,12 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
     WebhookIntegration('basecamp'),
-    WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.svg', display_name='Bitbucket'),
+    WebhookIntegration(
+        'bitbucket2',
+        logo='static/images/integrations/logos/bitbucket.svg',
+        display_name='Bitbucket',
+        stream_name='bitbucket'
+    ),
     WebhookIntegration('bitbucket', display_name='Bitbucket', secondary_line_text='(Enterprise)'),
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
