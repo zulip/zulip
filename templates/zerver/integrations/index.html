@@ -38,47 +38,65 @@
             </h2>
         </div>
 
+        <div id="integration-search">
+            <div class="searchbar">
+                <div class="searchbar-reset">
+                    <i class="icon-vector-search" aria-hidden="true"></i>
+                    <input type="text" placeholder="{{ _('Search integrations') }}"/>
+                </div>
+            </div>
+        </div>
+
     <div id="integration-instruction-block" class="integration-instruction-block">
        <a href="#!" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
     </div>
     <div class="clear-float"></div>
 
-    <div class="integration-lozenges">
-      {% for integration in integrations_dict.values() %}
-        {% if integration.is_enabled() %}
-          <div class="integration-lozenge integration-{{ integration.name }}">
-             <a class="integration-link integration-{{ integration.name }}" href="#{{ integration.name }}">
-                 <div class="square-wrapper">
-                     <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.display_name }} logo" />
-                 </div>
-               {% if integration.secondary_line_text %}
-                 <span class="integration-label" style="padding-bottom: 0px;">{{ integration.display_name }}</span>
-                 <span class="integration-label-secondary">{{ integration.secondary_line_text }}</span>
-               {% else %}
-                 <span class="integration-label">{{ integration.display_name}}</span>
-               {% endif %}
-             </a>
-          </div>
-        {% endif %}
-      {% endfor %}
+    <div class="integration-categories-dropdown">
+        <div class="dropdown-toggle">
+            <h3>{% trans %}View all categories{% endtrans %}</h3>
+            <i class="icon-vector-angle-right" aria-hidden="true"></i>
+        </div>
+        <div class="dropdown-list">
+            <h4 class="selected">All</h4>
+            {% for category in categories_dict.values() %}
+                <h4>{{ category }}</h4>
+            {% endfor %}
+        </div>
     </div>
 
-    <div class="portico-page-header extra" id="hubot-integrations"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
-    <p class="extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
-    integration provides an extension point for additional Zulip integrations. </p><p class="extra"> A non-comprehensive list of integrations available through
-    <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a> follows below:</p>
-
-    <div class="integration-lozenges">
-    {% for integration in hubot_lozenges_dict.values() %}
-        <div class="integration-lozenge integration-{{ integration.name }}">
-           <a class="integration-link integration-{{ integration.name }}" href="{{ integration.git_url }}">
-               <div class="square-wrapper">
-                   <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.logo_alt }} logo" />
-               </div>
-               <span class="integration-label">{{ integration.display_name}}</span>
-           </a>
+    <div class="catalog">
+        <div class="integration-categories-sidebar">
+            <h3>{% trans %}Categories{% endtrans %}</h3>
+            <h4 class="selected">All</h4>
+            {% for category in categories_dict.values() %}
+                <h4>{{ category }}</h4>
+            {% endfor %}
         </div>
-      {% endfor %}
+
+        <div class="integration-lozenges">
+            {% for integration in integrations_dict.values() %}
+                {% if integration.is_enabled() %}
+                    <a href="#{{ integration.name }}" class="no-style">
+                        <div class="integration-lozenge integration-{{ integration.name }}"
+                            data-categories="{{ integration.categories }}"
+                            data-name="{{ integration.display_name }}">
+                            <img class="integration-logo" src="/{{ integration.logo }}"
+                                 alt="{{ integration.display_name }} logo"/>
+                            {% if integration.secondary_line_text %}
+                            <h3 class="integration-name with-secondary">{{ integration.display_name }}</h3>
+                            <h4 class="integration-secondary-line-text">
+                                {{ integration.secondary_line_text }}
+                            </h4>
+                            {% else %}
+                            <h3 class="integration-name">{{ integration.display_name }}</h3>
+                            {% endif %}
+                            <h4 class="integration-category">{{ integration.categories[0] }}</h4>
+                        </div>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
 
 <div id="integration-instructions-group">
@@ -96,7 +114,7 @@
         {% endif %}
     {% endfor %}
 </div>
-        
+
             </div> <!-- .inner-content -->
         </div> <!-- .padded-content -->
     </div> <!-- .main -->
