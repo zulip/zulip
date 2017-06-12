@@ -1056,6 +1056,23 @@ function render(template_name, args) {
     });
 }());
 
+(function typeahead_list_item() {
+    var args = {
+        primary: 'primary-text',
+        secondary: 'secondary-text',
+        img_src: 'https://zulip.org',
+        has_image: true,
+        has_secondary: true,
+    };
+
+    var html = '<div>' + render('typeahead_list_item', args) + '</div>';
+    global.write_handlebars_output('typeahead_list_item', html);
+
+    assert.equal($(html).find('.emoji').attr('src'), 'https://zulip.org');
+    assert.equal($(html).find('strong').text().trim(), 'primary-text');
+    assert.equal($(html).find('small').text().trim(), 'secondary-text');
+}());
+
 (function typing_notifications() {
     var args = {
         users: [{
