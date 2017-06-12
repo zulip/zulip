@@ -1172,6 +1172,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('bot', check_dict_only([
                 ('email', check_string),
                 ('user_id', check_int),
+                ('bot_type', check_int),
                 ('full_name', check_string),
                 ('is_active', check_bool),
                 ('api_key', check_string),
@@ -1311,6 +1312,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('bot', check_dict_only([
                 ('email', check_string),
                 ('user_id', check_int),
+                ('bot_type', check_int),
                 ('full_name', check_string),
                 ('is_active', check_bool),
                 ('api_key', check_string),

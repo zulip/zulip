@@ -618,7 +618,7 @@ input[type=checkbox].inline-block {
     position: relative;
     display: inline-block;
     width: calc(50% - 10px);
-    max-height: 180px;
+    max-height: 220px;
     margin: 5px;
 
     background-color: #fff;

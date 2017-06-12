@@ -1452,6 +1452,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
+             'bot_type': botdict['bot_type'],
              'is_active': botdict['is_active'],
              'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
