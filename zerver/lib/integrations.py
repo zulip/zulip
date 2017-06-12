@@ -164,7 +164,12 @@ WEBHOOK_INTEGRATIONS = [
         display_name='Bitbucket',
         stream_name='bitbucket'
     ),
-    WebhookIntegration('bitbucket', display_name='Bitbucket', secondary_line_text='(Enterprise)'),
+    WebhookIntegration(
+        'bitbucket',
+        display_name='Bitbucket',
+        secondary_line_text='(Enterprise)',
+        stream_name='commits'
+    ),
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
