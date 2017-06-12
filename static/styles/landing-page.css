@@ -1654,12 +1654,27 @@ a:not(.no-style):hover:before {
     font-size: 0.85em;
 }
 
-.portico-landing.integrations .portico-page-header {
-    padding-top: 0px;
+.portico-landing.integrations #integration-main-text {
+    padding: 0 15px;
 }
 
-.portico-landing.integrations .portico-page-header a {
+.portico-landing.integrations .portico-page-heading {
+    font-size: 2.5em;
+    font-weight: 300;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.portico-landing.integrations .portico-page-heading a {
     color: inherit;
+}
+
+.portico-landing.integrations .portico-page-subheading {
+    font-weight: 400;
+    font-size: 1.1em;
+    color: #aaa;
+    line-height: 1.2;
+    text-align: center;
 }
 
 .portico-landing.integrations .integration-lozenges {

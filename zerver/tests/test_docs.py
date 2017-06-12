@@ -39,12 +39,12 @@ class DocPageTest(ZulipTestCase):
             self._test('/hello/', 'productive group chat')
             self._test('/for/open-source/', 'for open source projects')
             self._test('/integrations/',
-                       'require creating a Zulip bot',
+                       'Over 60 native integrations.',
                        extra_strings=[
-                           # Ensure that the non-webhook integratins are in the HTML.
-                           "zulip_git_config.py",
-                           # Ensure that the webhook integrations are in the HTML.
-                           "https://my.pingdom.com/reports/integration/settings",
+                           'And hundreds more through',
+                           'Hubot',
+                           'Zapier',
+                           'IFTTT'
                        ])
             self._test('/devlogin/', 'Normal users')
             self._test('/devtools/', 'Useful development URLs')
