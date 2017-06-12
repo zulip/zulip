@@ -180,7 +180,8 @@ WEBHOOK_INTEGRATIONS = [
         'github',
         function='zerver.webhooks.github.view.api_github_landing',
         display_name='GitHub',
-        secondary_line_text='(deprecated)'
+        secondary_line_text='(deprecated)',
+        stream_name='commits'
     ),
     GithubIntegration(
         'github_webhook',
