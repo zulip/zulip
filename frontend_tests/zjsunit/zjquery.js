@@ -58,11 +58,11 @@ exports.make_zjquery = function () {
             },
             addClass: function (class_name) {
                 classes.set(class_name, true);
-                return self;
+                return self.wrapper;
             },
             removeClass: function (class_name) {
                 classes.del(class_name);
-                return self;
+                return self.wrapper;
             },
             hasClass: function (class_name) {
                 return classes.has(class_name);
@@ -108,7 +108,7 @@ exports.make_zjquery = function () {
                 return self;
             },
             on: function () {
-                return self;
+                return self.wrapper;
             },
             remove: function () {
                 if (my_parent) {
@@ -127,6 +127,7 @@ exports.make_zjquery = function () {
                 result[attr] = elem[attr];
             }
         }
+        elem.wrapper = result;
 
         return result;
     }
