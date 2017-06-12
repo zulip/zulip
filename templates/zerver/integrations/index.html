@@ -20,25 +20,23 @@
     <div class="main">
         <div class="padded-content">
             <div class="inner-content">
-    <div class="portico-page-header"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
 
-    <div id="integration-main-text">
-      <p>With Zulip integrations, your team
-        can stay up-to-date on code changes, issue tickets, build system
-        results, tweets about your project, and much more.</p>
-
-      <p>Many of these integrations require creating a Zulip bot. You
-        can do so on your {{ settings_html|safe }}. Be
-        sure to note its username and API key.</p>
-
-      <p>If an integration you want isn't available yet, you
-        can <a href="http://zulip.readthedocs.io/en/latest/integration-guide.html">contribute
-        an integration</a>
-        or <a href="https://github.com/zulip/zulip/issues/new">open an
-        issue on GitHub</a> and tag it with the "integrations" label
-        (so you can get notified when that integration becomes
-        available).</p>
-    </div>
+        <div id="integration-main-text">
+            <header>
+                <h1 class="portico-page-heading">
+                    {% trans %}Over 60 native integrations.{% endtrans %}
+                </h1>
+            </header>
+            <h2 class="portico-page-subheading">
+                {% trans %}
+                    And hundreds more through
+                    <a href="#hubot">Hubot</a>,
+                    <a href="#zapier">Zapier</a>,
+                    and
+                    <a href="#ifttt">IFTTT</a>.
+                {% endtrans %}
+            </h2>
+        </div>
 
     <div id="integration-instruction-block" class="integration-instruction-block">
        <a href="#!" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
@@ -98,6 +96,7 @@
         {% endif %}
     {% endfor %}
 </div>
+        
             </div> <!-- .inner-content -->
         </div> <!-- .padded-content -->
     </div> <!-- .main -->
