@@ -584,13 +584,13 @@ form#add_new_subscription {
     margin-bottom: 20px;
 }
 
-.stream-creation-body #make-invite-only label span.icon-vector-globe {
+.stream-creation-body #make-invite-only label span.fa-globe {
     margin-left: 14px;
     margin-right: 10px;
 }
 
 
-.stream-creation-body #make-invite-only label span.icon-vector-lock {
+.stream-creation-body #make-invite-only label span.fa-lock {
     margin-left: 15px;
     margin-right: 11px;
 }
@@ -599,7 +599,7 @@ form#add_new_subscription {
     margin-top: 5px;
 }
 
-.stream-creation-body #announce-new-stream div[class^="icon"] {
+.stream-creation-body #announce-new-stream div[class^="fa"] {
     margin-left: 3px;
     margin-right: 8px;
 }
