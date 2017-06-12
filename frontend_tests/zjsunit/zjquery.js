@@ -105,7 +105,7 @@ exports.make_zjquery = function () {
             },
             expectOne: function () {
                 // silently do nothing
-                return self;
+                return self.wrapper;
             },
             on: function () {
                 return self.wrapper;
