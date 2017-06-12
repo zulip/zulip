@@ -333,7 +333,7 @@ def active_user_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
     return u"active_user_dicts_in_realm:%s" % (realm.id,)
 
-bot_dict_fields = ['id', 'full_name', 'short_name', 'email',
+bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'is_active', 'default_sending_stream__name',
                    'realm_id',
                    'default_events_register_stream__name',

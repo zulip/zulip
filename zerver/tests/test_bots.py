@@ -32,6 +32,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
+            'bot_type': '1',
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
@@ -101,6 +102,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 op='add',
                 bot=dict(email='hambot-bot@zulip.testserver',
                          user_id=bot.id,
+                         bot_type=bot.bot_type,
                          full_name='The Bot of Hamlet',
                          is_active=True,
                          api_key=result['api_key'],
@@ -269,6 +271,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 bot=dict(email='hambot-bot@zulip.testserver',
                          user_id=profile.id,
                          full_name='The Bot of Hamlet',
+                         bot_type=profile.bot_type,
                          is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
@@ -338,6 +341,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 bot=dict(email='hambot-bot@zulip.testserver',
                          full_name='The Bot of Hamlet',
                          user_id=bot_profile.id,
+                         bot_type=bot_profile.bot_type,
                          is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
