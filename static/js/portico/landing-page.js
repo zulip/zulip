@@ -68,8 +68,9 @@ var integration_events = function () {
             $(".inner-content").removeClass("show");
             setTimeout(function () {
                 instructionbox.hide();
-                $(".integration-lozenges").addClass("hide");
-                $(".extra, #integration-main-text").hide();
+                $(".integration-categories-dropdown").css('display', 'none');
+                $(".integrations .catalog").addClass('hide');
+                $(".extra, #integration-main-text, #integration-search").css("display", "none");
 
                 instructionbox.append(currentblock);
                 instructionbox.show();
@@ -85,24 +86,28 @@ var integration_events = function () {
     function update_hash() {
         var hash = window.location.hash;
 
-        if (hash && hash !== '#hubot-integrations') {
+        if (hash && hash !== '#' && hash !== '#hubot-integrations') {
             scroll_top = $("body").scrollTop();
             show_integration(window.location.hash);
         } else if (currentblock && $lozenge_icon) {
             $(".inner-content").removeClass("show");
             setTimeout(function () {
                 $("#integration-list-link").css("display", "none");
-                $(".integration-lozenges").removeClass("hide");
-                $(".extra, #integration-main-text").show();
+                $(".extra, #integration-main-text, #integration-search").show();
                 instructionbox.hide();
                 $lozenge_icon.remove();
                 currentblock.appendTo("#integration-instructions-group");
+
                 $(".inner-content").addClass("show");
+                $(".integration-categories-dropdown").css('display', '');
+                $(".integrations .catalog").removeClass('hide');
 
                 $('html, body').animate({ scrollTop: scroll_top }, 0);
             }, 300);
         } else {
             $(".inner-content").addClass("show");
+            $(".integration-categories-dropdown").removeClass('hide');
+            $(".integrations .catalog").removeClass('hide');
         }
     }
 
@@ -117,6 +122,14 @@ var integration_events = function () {
         $("body").scrollTop(scroll_height);
 
         e.preventDefault();
+    });
+
+   $(window).scroll(function () {
+        if (document.body.scrollTop > 330) {
+            $('.integration-categories-sidebar').addClass('sticky');
+        } else {
+            $('.integration-categories-sidebar').removeClass('sticky');
+        }
     });
 };
 
@@ -226,6 +239,22 @@ var events = function () {
     if (detectPath() === "hello") {
         hello_events();
     }
+
+    $('.integration-categories-dropdown .dropdown-toggle').click(function () {
+        var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
+        $dropdown_list.toggle();
+
+        var $dropdown_icon = $('.integration-categories-dropdown i');
+        if ($dropdown_list.css('display') === 'none') {
+            $dropdown_icon
+                .removeClass('icon-vector-angle-down')
+                .addClass('icon-vector-angle-right');
+        } else {
+            $dropdown_icon
+                .removeClass('icon-vector-angle-right')
+                .addClass('icon-vector-angle-down');
+        }
+    });
 };
 
 // run this callback when the page is determined to have loaded.

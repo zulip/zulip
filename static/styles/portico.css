@@ -664,19 +664,6 @@ a.bottom-signup-button {
     border-radius: 20%;
 }
 
-.integration-lozenges {
-    text-align: center;
-}
-
-.integration-lozenge {
-    width: 125px;
-    background: hsl(0, 0%, 93%);
-    border-radius: 10px;
-    margin: 15px 5px 0px 5px;
-    display: inline-block;
-    vertical-align: top;
-}
-
 .integration-instruction-block .integration-lozenge {
     float: left;
     margin-top: 5px;
@@ -695,12 +682,6 @@ a.bottom-signup-button {
     text-decoration: none;
 }
 
-.integration-lozenge .integration-logo {
-    width: 125px;
-    height: auto;
-    display: block;
-}
-
 .integration-lozenge .integration-label {
     display: block;
     text-align: center;
@@ -708,17 +689,8 @@ a.bottom-signup-button {
     padding-top: 10px;
 }
 
-.integration-lozenge .integration-label-secondary {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    text-align: center;
-    padding-bottom: 5px;
-    color: hsl(0, 0%, 66%);
-}
-
 .integration-instructions {
-    margin-left: 150px;
+    margin-left: 180px;
 }
 
 #integration-instructions-group {
@@ -791,6 +763,7 @@ a.bottom-signup-button {
 .integration-instruction-block {
     position: relative;
     margin-top: 15px;
+    padding: 0 40px;
 }
 
 #integration-list-link {
