@@ -9,6 +9,22 @@ fi
 
 source "$NVM_DIR/nvm.sh"
 node_version=6.6.0
+npm_version=3.10.3
+# if the hashed_value is not changed then exit quickly
+script_hash=`cat scripts/lib/install-node scripts/setup/node-wrapper scripts/setup/npm-wrapper`
+hashed_value=`echo "${node_version}${npm_version}${script_hash}" | sha1sum | awk '{ print $1 }'`
+
+touch var/node_npm_version_hash
+old_hash=`cat var/node_npm_version_hash`
+
+if [ "$hashed_value" == "$old_hash" ]; then
+    echo "Node version "$node_version" and npm version "$npm_version" are already installed."
+    exit 0
+fi
+
+# write the new hash in file
+echo $hashed_value > var/node_npm_version_hash
+
 nvm install "$node_version" && nvm alias default "$node_version"
 export NODE_BIN="$(nvm which default)"
 
