@@ -150,10 +150,8 @@ var events = function () {
     $("body").click(function (e) {
         var $e = $(e.target);
 
-        var should_close = !$e.is("ul, .hamburger") && $e.closest("ul, .hamburger").length === 0;
 
-        // this means that it is in mobile sidebar mode.
-        if ($("nav ul").height() === window.innerHeight && should_close) {
+        if ($e.is("nav ul .exit")) {
             $("nav ul").removeClass("show");
         }
     });

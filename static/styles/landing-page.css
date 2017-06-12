@@ -165,6 +165,10 @@ nav ul {
     cursor: pointer;
 }
 
+nav ul .exit {
+    display: none;
+}
+
 nav ul li {
     position: relative;
     display: inline-block;
@@ -2028,6 +2032,17 @@ a:not(.no-style):hover:before {
 
     nav ul.show {
         transform: translate(0px, 0px);
+    }
+
+    nav ul .exit {
+        display: block;
+        position: absolute;
+        top: 10px;
+        right: 25px;
+
+        font-weight: 100;
+        font-size: 3em;
+        color: initial;
     }
 
     nav ul li:first-of-type {
