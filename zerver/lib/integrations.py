@@ -188,7 +188,8 @@ WEBHOOK_INTEGRATIONS = [
         display_name='GitHub',
         logo='static/images/integrations/logos/github.svg',
         secondary_line_text='(webhook)',
-        function='zerver.webhooks.github_webhook.view.api_github_webhook'
+        function='zerver.webhooks.github_webhook.view.api_github_webhook',
+        stream_name='github'
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('gogs'),
