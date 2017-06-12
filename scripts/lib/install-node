@@ -2,13 +2,24 @@
 set -e
 
 ZULIP_PATH=$(dirname "$0")
+ZULIP_ROOT=$(realpath "$ZULIP_PATH/../..")
+node_version=6.6.0
+npm_version=3.10.3
+
+current_node_version=$(node --version)
+current_npm_version=$(npm --version)
+
+if [ "$current_npm_version" = "$npm_version" ] && [ "$current_node_version" = "v$node_version" ]; then
+    echo "Node version $node_version and npm version $npm_version are already installed."
+    exit 0
+fi
+
 export NVM_DIR=/usr/local/nvm
 if ! [ -e "$NVM_DIR/nvm.sh" ]; then
     wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash
 fi
 
 source "$NVM_DIR/nvm.sh"
-node_version=6.6.0
 nvm install "$node_version" && nvm alias default "$node_version"
 export NODE_BIN="$(nvm which default)"
 export NPM_BIN=$(echo "$NODE_BIN" | sed 's/node$/npm/')
