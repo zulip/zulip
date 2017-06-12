@@ -174,7 +174,12 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
     WebhookIntegration('delighted', display_name='Delighted'),
-    WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
+    WebhookIntegration(
+        'deskdotcom',
+        logo='static/images/integrations/logos/deskcom.png',
+        display_name='Desk.com',
+        stream_name='desk'
+    ),
     WebhookIntegration('freshdesk'),
     GithubIntegration(
         'github',
