@@ -2232,23 +2232,6 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
         realm.notifications_stream = notifications_stream
         realm.save(update_fields=['notifications_stream'])
 
-        # Include a welcome message in this notifications stream
-        stream_name = notifications_stream.name
-        sender = get_system_bot(settings.WELCOME_BOT)
-        topic = "welcome"
-        content = """Hello, and welcome to Zulip!
-
-This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
-system-generated notifications.""" % (stream_name,)
-
-        msg = internal_prep_stream_message(
-            realm=realm,
-            sender=sender,
-            stream_name=stream_name,
-            topic=topic,
-            content=content)
-        do_send_messages([msg])
-
         # Log the event
         log_event({"type": "realm_created",
                    "string_id": string_id,
@@ -2330,12 +2313,24 @@ def do_set_user_display_setting(user_profile, setting_name, setting_value):
         send_event(dict(type='realm_user', op='update', person=payload),
                    active_user_ids(user_profile.realm))
 
-def create_streams_with_welcome_messages(realm, stream_dict):
+def create_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
 
     # Generally, we call this method as part of creating a realm,
-    # and we seed our default streams with a welcome message (but
-    # not the announce stream, which gets seeded elsewhere).
+    # when we explicitly do not want to seed our default streams
+    # with welcome messages.
+    for name, options in stream_dict.items():
+        stream, created = create_stream_if_needed(
+            realm,
+            name,
+            invite_only = options["invite_only"],
+            stream_description = options["description"],
+        )
+
+def create_streams_with_welcome_messages(realm, stream_dict):
+    # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
+
+    # Creates streams and seeds them with welcome messages.
     messages = []
 
     for name, options in stream_dict.items():
