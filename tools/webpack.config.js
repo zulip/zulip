@@ -27,9 +27,17 @@ module.exports =  {
             // Uses script-loader on minified files so we don't change global variables in them.
             // Also has the effect of making processing these files fast
             {
-                test: /(min)\.js/,
+                test: /(min|zxcvbn)\.js/,
                 use: [ 'script-loader' ],
             },
+            // Expose Global variables to webpack
+            {
+                test: require.resolve('../static/js/debug.js'),
+                use: [
+                    {loader: 'expose-loader', options: 'debug'},
+                ],
+            },
+
         ],
     },
     output: {

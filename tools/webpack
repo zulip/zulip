@@ -25,11 +25,14 @@ def run():
     subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
                           ['--config', 'tools/webpack.production.config.js', '-p'])
 
-def run_watch(port):
-    # type: (str) -> None
+def run_watch(port, minify):
+    # type: (str, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
-    subprocess.Popen(['node', 'node_modules/.bin/webpack-dev-server'] +
-                     ['--config', 'tools/webpack.dev.config.js', '--watch-poll', '--port', port])
+    webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
+    webpack_args += ['--config', 'tools/webpack.dev.config.js', '--watch-poll', '--port', port]
+    if minify:
+        webpack_args.append('--optimize-minimize')
+    subprocess.Popen(webpack_args)
 
 def run_test():
     # type: () -> None
@@ -63,11 +66,14 @@ parser.add_argument('--watch',
 parser.add_argument('--port',
                     action='store', dest='port',
                     default='9994', help='set the port for the webpack server to run on')
+parser.add_argument('--minify',
+                    action='store_true', dest='minify', default=False,
+                    help='Minify and optimize the assets (for development)')
 
 args = parser.parse_args()
 if args.test:
     run_test()
 elif args.watch:
-    run_watch(args.port)
+    run_watch(args.port, args.minify)
 else:
     run()

@@ -67,7 +67,8 @@ ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
 
 if 'DEBUG' not in globals():
-    # Uncomment end of next line to test JS/CSS minification.
+    # Uncomment end of next line to test CSS minification.
+    # For webpack JS minification use tools/run_dev.py --minify
     DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
 
 if DEBUG:
@@ -821,29 +822,12 @@ JS_SPECS = {
         ],
         'output_filename': 'min/common.js'
     },
-    'landing-page': {
-        'source_filenames': [
-            'js/portico/landing-page.js',
-        ],
-        'output_filename': 'min/landing.js'
-    },
     'signup': {
         'source_filenames': [
             'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
         ],
         'output_filename': 'min/signup.js'
-    },
-    'zxcvbn': {
-        'source_filenames': [],
-        'minifed_source_filenames': [
-            'node_modules/zxcvbn/dist/zxcvbn.js',
-        ],
-        'output_filename': 'min/zxcvbn.js'
-    },
-    'app_debug': {
-        'source_filenames': ['js/debug.js'],
-        'output_filename': 'min/app_debug.js'
     },
     'app': {
         'source_filenames': [
@@ -999,12 +983,6 @@ JS_SPECS = {
             'js/compose_ui.js',
         ],
         'output_filename': 'min/app.js'
-    },
-    'activity': {
-        'source_filenames': [
-            'third/sorttable/sorttable.js',
-        ],
-        'output_filename': 'min/activity.js'
     },
     'stats': {
         'source_filenames': [

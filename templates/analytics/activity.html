@@ -9,7 +9,7 @@
 
 {% block customhead %}
 {{ super() }}
-{{ minified_js('activity')|safe }}
+{{ render_bundle('activity') }}
 {% stylesheet 'activity' %}
 {% endblock %}
 
