@@ -218,6 +218,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
      expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title=":poop:"> message</p>'},
     {input: "\ud83d\udca9",
      expected: '<p><img alt="\ud83d\udca9" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="\ud83d\udca9"></p>'},
+    {input: '\u{1f937}',
+     expected: '<p>\u{1f937}</p>' },
     {input: 'This is a realm filter #1234 with text after it',
      expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
     {input: 'This is a realm filter with ZGROUP_123:45 groups',
@@ -229,6 +231,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: 'Test *italic*',
      expected: '<p>Test <em>italic</em></p>'},
   ];
+
+  // We remove one of the unicode emoji we put as input in one of the test
+  // cases (U+1F937), to verify that we display the emoji as it was input if it
+  // isn't present in emoji.emojis_by_unicode.
+  delete emoji.emojis_by_unicode['1f937'];
 
   test_cases.forEach(function (test_case) {
     var input = test_case.input;
