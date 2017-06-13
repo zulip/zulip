@@ -387,6 +387,31 @@ exports.content_typeahead_selected = function (item) {
     return beginning + rest;
 };
 
+exports.compose_content_matcher = function (item) {
+    if (this.completing === 'emoji') {
+        return query_matches_emoji(this.token, item);
+    } else if (this.completing === 'mention') {
+        return query_matches_person(this.token, item);
+    } else if (this.completing === 'stream') {
+        return query_matches_stream(this.token, item);
+    } else if (this.completing === 'syntax') {
+        return query_matches_language(this.token, item);
+    }
+};
+
+exports.compose_matches_sorter = function (matches) {
+    if (this.completing === 'emoji') {
+        return typeahead_helper.sort_emojis(matches, this.token);
+    } else if (this.completing === 'mention') {
+        return typeahead_helper.sort_recipients(matches, this.token,
+                                                compose_state.stream_name());
+    } else if (this.completing === 'stream') {
+        return typeahead_helper.sort_streams(matches, this.token);
+    } else if (this.completing === 'syntax') {
+        return typeahead_helper.sort_languages(matches, this.token);
+    }
+};
+
 exports.initialize_compose_typeahead = function (selector, completions) {
     completions = $.extend(
         {mention: false, emoji: false, stream: false, syntax: false}, completions);
@@ -397,29 +422,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
         fixed: true,
         source: exports.compose_content_begins_typeahead,
         highlighter: exports.content_highlighter,
-        matcher: function (item) {
-            if (this.completing === 'emoji') {
-                return query_matches_emoji(this.token, item);
-            } else if (this.completing === 'mention') {
-                return query_matches_person(this.token, item);
-            } else if (this.completing === 'stream') {
-                return query_matches_stream(this.token, item);
-            } else if (this.completing === 'syntax') {
-                return query_matches_language(this.token, item);
-            }
-        },
-        sorter: function (matches) {
-            if (this.completing === 'emoji') {
-                return typeahead_helper.sort_emojis(matches, this.token);
-            } else if (this.completing === 'mention') {
-                return typeahead_helper.sort_recipients(matches, this.token,
-                                                        compose_state.stream_name());
-            } else if (this.completing === 'stream') {
-                return typeahead_helper.sort_streams(matches, this.token);
-            } else if (this.completing === 'syntax') {
-                return typeahead_helper.sort_languages(matches, this.token);
-            }
-        },
+        matcher: exports.compose_content_matcher,
+        sorter: exports.compose_matches_sorter,
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
         completions: completions,
