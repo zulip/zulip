@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from flask import Flask, request, jsonify
 import os
 import sys
@@ -37,7 +38,12 @@ def load_lib_modules():
     # type: () -> None
     for bot in available_bots:
         path = "bots/" + str(bot) + "/" + str(bot) + ".py"
-        bots_lib_module[bot] = get_lib_module(path)
+        try:
+            bots_lib_module[bot] = get_lib_module(path)
+        except Exception:
+            print("\n ERROR: Bot \"{}\" doesn't exists. Please make sure you have set up the flaskbotrc "
+                  "file correctly.\n".format(bot))
+            sys.exit(1)
 
 app = Flask(__name__)
 
@@ -50,7 +56,11 @@ def handle_bot(bot):
     client = Client(email=bots_config[bot]["email"],
                     api_key=bots_config[bot]["key"],
                     site=bots_config[bot]["site"])
-    restricted_client = ExternalBotHandler(client)
+    try:
+        restricted_client = ExternalBotHandler(client)
+    except SystemExit:
+        return BadRequest("Cannot fetch user profile for bot {}, make sure you have set up the flaskbotrc "
+                          "file correctly.".format(bot))
     message_handler = bots_lib_module[bot].handler_class()
 
     # TODO: Handle stateful bots properly.
