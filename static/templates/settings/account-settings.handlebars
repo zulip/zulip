@@ -132,5 +132,47 @@
             </div>
         </div>
 
+        <hr class="settings_separator" />
+
+        <div class="form-horizontal" id="api_key_button_box">
+            <div class="input-group side-padded-container">
+                <p class="api-key-note">
+                    {{#tr this}}
+                    Creating a bot, and using the bot's account / API key, is the recommended way to use
+                    the Zulip API. However, you can also use your personal API key if you need to a way
+                    to automatically send and edit messages from your own account.
+                    {{/tr}}
+                </p>
+                <button class="button rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
+            </div>
+        </div>
+        <div id="get_api_key_box" class="side-padded-container">
+            <p>{{t "Please re-enter your password to confirm your identity." }}
+              <a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a></p>
+            <form action="/json/fetch_api_key" method="post" class="form-horizontal">
+                <div class="control-group">
+                    <label for="password" class="control-label">{{t "Current password" }}</label>
+                    <input type="password" autocomplete="off"
+                           name="password" id="get_api_key_password" value="" />
+                </div>
+                <div class="control-group">
+                    <input type="submit" name="view_api_key" value="{{t 'Get API key' }}"
+                           class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+        <div id="show_api_key_box" class="side-padded-container">
+            <p>{{t "Your API key:" }}</p>
+            <p><b><span id="api_key_value"></span></b></p>
+            <button type="submit" class="btn btn-primary regenerate_api_key">
+                {{t "Generate new API key" }}
+            </button>
+            <a id="download_zuliprc" download="{{zuliprc}}" class="btn btn-success">
+                {{t "Download .zuliprc" }}
+            </a>
+            <div id="user_api_key_error text-error">
+            </div>
+        </div>
+
     </div>
 </div>

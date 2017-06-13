@@ -83,22 +83,8 @@ exports.generate_flaskbotrc_content = function (email, api_key) {
 };
 
 exports.set_up = function () {
-    $("#api_key_value").text("");
-    $("#get_api_key_box").hide();
-    $("#show_api_key_box").hide();
-    $("#api_key_button_box").show();
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
-
-    $('#api_key_button').click(function () {
-        if (page_params.realm_password_auth_enabled !== false) {
-            $("#get_api_key_box").show();
-        } else {
-            // Skip the password prompt step
-            $("#get_api_key_box form").submit();
-        }
-        $("#api_key_button_box").hide();
-    });
 
     $('#download_flaskbotrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -114,27 +100,6 @@ exports.set_up = function () {
             }
         });
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
-    });
-
-    $("#get_api_key_box").hide();
-    $("#show_api_key_box").hide();
-    $("#get_api_key_box form").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr) {
-            var result = JSON.parse(xhr.responseText);
-            var settings_status = $('#account-settings-status').expectOne();
-
-            $("#get_api_key_password").val("");
-            $("#api_key_value").text(result.api_key);
-            $("#show_api_key_box").show();
-            $("#get_api_key_box").hide();
-            settings_status.hide();
-        },
-        error: function (xhr) {
-            ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
-            $("#show_api_key_box").hide();
-            $("#get_api_key_box").show();
-        },
     });
 
     // TODO: render bots xxxx
@@ -364,26 +329,6 @@ exports.set_up = function () {
         $(this).attr("href", exports.generate_zuliprc_uri(
             $.trim(email), $.trim(api_key)
         ));
-    });
-
-    $("#download_zuliprc").on("click", function () {
-        $(this).attr("href", exports.generate_zuliprc_uri(
-            people.my_current_email(),
-            $("#api_key_value").text()
-        ));
-    });
-
-    $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
-        channel.post({
-            url: '/json/users/me/api_key/regenerate',
-            idempotent: true,
-            success: function (data) {
-                $('#api_key_value').text(data.api_key);
-            },
-            error: function (xhr) {
-                $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
-            },
-        });
     });
 
     $("#bots_lists_navbar .active-bots-tab").click(function (e) {
