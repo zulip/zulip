@@ -4,7 +4,7 @@ var exports = {};
 
 var zoomed_stream = '';
 
-function update_count_in_dom(unread_count_elem, count) {
+exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
 
@@ -23,7 +23,8 @@ function update_count_in_dom(unread_count_elem, count) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
     }
     value_span.text(count);
-}
+};
+
 
 exports.stream_sidebar = (function () {
     var self = {};
@@ -260,7 +261,7 @@ function build_stream_sidebar_row(sub) {
 
     self.update_unread_count = function () {
         var count = unread.num_unread_for_stream(sub.stream_id);
-        update_count_in_dom(list_item, count);
+        exports.update_count_in_dom(list_item, count);
     };
 
     self.update_unread_count();
@@ -300,7 +301,7 @@ exports.redraw_stream_privacy = function (stream_name) {
 
 function set_count(type, name, count) {
     var unread_count_elem = get_filter_li(type, name);
-    update_count_in_dom(unread_count_elem, count);
+    exports.update_count_in_dom(unread_count_elem, count);
 }
 
 function set_stream_unread_count(stream_id, count) {
@@ -311,7 +312,7 @@ function set_stream_unread_count(stream_id, count) {
         blueslip.warn('stream id no longer in sidebar: ' + stream_id);
         return;
     }
-    update_count_in_dom(unread_count_elem, count);
+    exports.update_count_in_dom(unread_count_elem, count);
 }
 
 function rebuild_recent_topics(stream_name) {
