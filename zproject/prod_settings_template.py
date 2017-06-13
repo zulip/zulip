@@ -78,13 +78,16 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@example.com>"
 
 
+## OPTIONAL SETTINGS
+
+
 ### AUTHENTICATION SETTINGS
 #
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
 AUTHENTICATION_BACKENDS = (
-    # 'zproject.backends.EmailAuthBackend', # Email and password; just requires SMTP setup
+    'zproject.backends.EmailAuthBackend', # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
     # 'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
@@ -132,8 +135,6 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None # type: Optional[str]
 
-
-### OPTIONAL SETTINGS
 
 # Support for mobile push notifications.  Setting controls whether
 # push notifications will be forwarded through a Zulip push
