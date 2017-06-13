@@ -1242,9 +1242,13 @@ a:not(.no-style):hover:before {
     padding-bottom: 0px;
 }
 
+.portico-landing.apps .main .headline h1 {
+    font-size: 2.5em;
+}
+
 .portico-landing.apps .main .headline h3 {
     font-weight: 400;
-    font-size: 1em;
+    font-size: 1.1em;
     color: hsl(0, 0%, 66%);
 }
 
