@@ -2,7 +2,22 @@
 
 All notable changes to the Zulip server are documented in this file.
 
+
 ### Unreleased
+
+Please run these commands before upgrading to 1.7.0:
+
+```
+    CREATE INDEX CONCURRENTLY
+    zerver_usermessage_mentioned_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 8) != 0;
+
+    CREATE INDEX CONCURRENTLY
+    zerver_usermessage_starred_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 2) != 0;
+```
 
 ### 1.6.0 -- 2017-06-06
 
