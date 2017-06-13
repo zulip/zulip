@@ -9,7 +9,7 @@ if you already have an outgoing SMTP provider; just start reading from
 
 If you don't have an existing outgoing SMTP provider, don't worry!
 There are several SMTP providers with free tiers, such as
-[Mailgun](https://documentation.mailgun.com/quickstart-sending.html#send-via-smtp)
+[Mailgun](https://documentation.mailgun.com/en/latest/quickstart-sending.html#send-via-smtp)
 or
 [Amazon SES](http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html)
 (free for sending email from EC2), and dozens of products have free
