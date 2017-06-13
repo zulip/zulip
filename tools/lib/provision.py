@@ -170,6 +170,12 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
+def install_apt_deps():
+    # type: () -> None
+    # setup-apt-repo does an `apt-get update`
+    run(["sudo", "./scripts/lib/setup-apt-repo"])
+    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
+
 def main(options):
     # type: (Any) -> int
 
@@ -177,9 +183,12 @@ def main(options):
     # project.
     os.chdir(ZULIP_PATH)
 
-    # setup-apt-repo does an `apt-get update`
-    run(["sudo", "./scripts/lib/setup-apt-repo"])
-    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
+    try:
+        install_apt_deps()
+    except subprocess.CalledProcessError:
+        # Might be a failure due to network connection issues. Retrying...
+        print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+        install_apt_deps()
 
     if options.is_travis:
         if PY2:
