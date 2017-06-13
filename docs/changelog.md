@@ -4,6 +4,28 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+There are some significant database migrations that will be in the
+next release that can take a long time to run.  Fortunately, these can
+be run without downtime before the rest of the upgrade, by using the
+following postgres queries (run these inside `manage.py dbshell`):
+
+```
+    CREATE INDEX CONCURRENTLY
+    zerver_usermessage_mentioned_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 8) != 0;
+
+    CREATE INDEX CONCURRENTLY
+    zerver_usermessage_starred_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 2) != 0;
+```
+
+For context on the impact of running these migrations, creating these
+indexes took about 1 minute each with chat.zulip.org's 75M UserMessage
+rows (from `select COUNT(*) from zerver_usermessage;`), with no
+user-facing service disruption.
+
 ### 1.6.0 -- 2017-06-06
 
 Highlights:
