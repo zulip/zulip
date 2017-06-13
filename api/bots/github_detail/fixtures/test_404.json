@@ -1,0 +1,11 @@
+{
+  "request": {
+    "api_url": "https://api.github.com/repos/zulip/zulip/issues/0"
+  },
+  "response": {},
+  "response-headers": {
+    "status": 404,
+    "ok": false,
+    "content-type": "application/json; charset=utf-8"
+  }
+}

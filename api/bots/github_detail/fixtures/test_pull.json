@@ -1,0 +1,66 @@
+{
+  "request": {
+    "api_url": "https://api.github.com/repos/zulip/zulip/issues/5345"
+  },
+  "response": {
+    "url": "https://api.github.com/repos/zulip/zulip/issues/5345",
+    "repository_url": "https://api.github.com/repos/zulip/zulip",
+    "labels_url": "https://api.github.com/repos/zulip/zulip/issues/5345/labels{/name}",
+    "comments_url": "https://api.github.com/repos/zulip/zulip/issues/5345/comments",
+    "events_url": "https://api.github.com/repos/zulip/zulip/issues/5345/events",
+    "html_url": "https://github.com/zulip/zulip/pull/5345",
+    "id": 235340230,
+    "number": 5345,
+    "title": "[WIP] modal: Replace bootstrap modal with custom modal class",
+    "user": {
+      "login": "jackrzhang",
+      "id": 12771126,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/12771126?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jackrzhang",
+      "html_url": "https://github.com/jackrzhang",
+      "followers_url": "https://api.github.com/users/jackrzhang/followers",
+      "following_url": "https://api.github.com/users/jackrzhang/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jackrzhang/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jackrzhang/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jackrzhang/subscriptions",
+      "organizations_url": "https://api.github.com/users/jackrzhang/orgs",
+      "repos_url": "https://api.github.com/users/jackrzhang/repos",
+      "events_url": "https://api.github.com/users/jackrzhang/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jackrzhang/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 561830290,
+        "url": "https://api.github.com/repos/zulip/zulip/labels/needs%20review",
+        "name": "needs review",
+        "color": "fef2c0",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2017-06-12T19:27:26Z",
+    "updated_at": "2017-06-13T18:44:12Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/zulip/zulip/pulls/5345",
+      "html_url": "https://github.com/zulip/zulip/pull/5345",
+      "diff_url": "https://github.com/zulip/zulip/pull/5345.diff",
+      "patch_url": "https://github.com/zulip/zulip/pull/5345.patch"
+    },
+    "body": "An interaction bug (#4811)  between our settings UI and the bootstrap modals breaks hotkey support for `Esc` when multiple modals are open.\r\n\r\ntodo:\r\n[x] Create `Modal` class in `modal.js` (drafted by @brockwhittaker)\r\n[x] Reimplement change_email_modal utilizing `Modal` class\r\n[] Dump using bootstrap for the account settings modal and all other modals, replace with `Modal` class\r\n[] Add hotkey support for closing the top modal for `Esc`\r\n\r\nThis should also be a helpful step in removing dependencies from Bootstrap.",
+    "closed_by": null
+  },
+  "response-headers": {
+    "status": 200,
+    "ok": true,
+    "content-type": "application/json; charset=utf-8"
+  }
+}
