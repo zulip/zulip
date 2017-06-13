@@ -5,10 +5,12 @@ from __future__ import print_function
 
 import os
 import sys
-import unittest
+
+import json
 import logging
-import requests
 import mock
+import requests
+import unittest
 
 from mock import MagicMock, patch
 
@@ -76,23 +78,31 @@ class BotTestCase(TestCase):
             instance.send_reply.assert_called_with(message, response['content'])
 
     @contextmanager
-    def mock_http_conversation(self, http_request, http_response):
-        # type: (Dict[str, Any], Dict[str, Any]) -> Any
+    def mock_http_conversation(self, test_name):
+        # type: (str) -> Any
         """
         Use this context manager to mock and verify a bot's HTTP
         requests to the third-party API (and provide the correct
         third-party API response. This allows us to test things
         that would require the Internet without it).
         """
-        assert http_response is not None and http_request is not None
-        with patch('requests.get') as mock_get:
-            mock_result = mock.MagicMock()
-            mock_result.json.return_value = http_response
-            mock_result.ok.return_value = True
-            mock_get.return_value = mock_result
-            yield
-            mock_get.assert_called_with(http_request['api_url'],
-                                        params=http_request['params'])
+        assert test_name is not None
+        base_path = os.path.realpath(os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), '..', 'bots', self.bot_name, 'fixtures'))
+        http_request_path = os.path.join(base_path, '{}_request.json'.format(test_name))
+        http_response_path = os.path.join(base_path, '{}_response.json'.format(test_name))
+        with open(http_request_path, 'r') as http_request_file, \
+                open(http_response_path, 'r') as http_response_file:
+            http_request = json.load(http_request_file)
+            http_response = json.load(http_response_file)
+            with patch('requests.get') as mock_get:
+                mock_result = mock.MagicMock()
+                mock_result.json.return_value = http_response
+                mock_result.ok.return_value = True
+                mock_get.return_value = mock_result
+                yield
+                mock_get.assert_called_with(http_request['api_url'],
+                                            params=http_request['params'])
 
     def assert_bot_response(self, message, response, expected_method):
         # type: (Dict[str, Any], Dict[str, Any], str) -> None
