@@ -34,7 +34,7 @@ def set_alert_words(request, user_profile,
 def add_alert_words(request, user_profile,
                     alert_words=REQ(validator=check_list(check_string), default=[])):
     # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
-    do_set_alert_words(user_profile, clean_alert_words(alert_words))
+    do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success()
 
 @has_request_variables

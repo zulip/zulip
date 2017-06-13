@@ -3,11 +3,11 @@ var alert_words_ui = (function () {
 var exports = {};
 
 exports.render_alert_words_ui = function () {
-    var alert_words = page_params.alert_words;
+    var words = alert_words.words;
     var word_list = $('#alert_words_list');
 
     word_list.find('.alert-word-item').remove();
-    _.each(alert_words, function (alert_word) {
+    _.each(words, function (alert_word) {
         var rendered_alert_word = templates.render('alert_word_settings_item',
                                                    {word: alert_word, editing: false});
         word_list.append(rendered_alert_word);
@@ -31,38 +31,43 @@ function update_alert_word_status(status_text, is_error) {
     alert_word_status.show();
 }
 
-function update_alert_words() {
-    var words = _.map($('.alert-word-item'), function (e) {
-        return $(e).data('word').toString();
-    });
-    words = _.filter(words, function (word) {
-        return word !== "";
-    });
-    channel.post({
-        url: '/json/users/me/alert_words',
-        idempotent: true,
-        data: {alert_words: JSON.stringify(words)}});
-}
-
-function add_alert_word(word, event) {
-    if ($.trim(word) === '') {
-        update_alert_word_status(i18n.t("Alert words can't be empty!"), true);
+function add_alert_word(alert_word) {
+    alert_word = $.trim(alert_word);
+    if (alert_word === '') {
+        update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
+        return;
+    } else if (alert_words.words.indexOf(alert_word) !== -1) {
+        update_alert_word_status(i18n.t("Alert word already exists!"), true);
         return;
     }
-    var final_li = templates.render('alert_word_settings_item', {word: word, editing: false});
 
-    var li = $(event.target).parents('li');
-    li.replaceWith(final_li);
+    var words_to_be_added = [alert_word];
 
-    var new_word = templates.render('alert_word_settings_item', {word: '', editing: true});
-    var word_list = $('#alert_words_list');
-    word_list.append(new_word);
+     channel.put({
+        url: '/json/users/me/alert_words',
+        data: {alert_words: JSON.stringify(words_to_be_added)},
+        success: function () {
+            update_alert_word_status(i18n.t("Alert word added successfully!"), false);
+        },
+        error: function () {
+            update_alert_word_status(i18n.t("Error adding alert word!"), true);
+        },
+    });
+}
 
-    if (word_list.find('input').length > 0) {
-        word_list.find('input').focus();
-    }
+function remove_alert_word(alert_word) {
+    var words_to_be_removed = [alert_word];
 
-    update_alert_words();
+    channel.del({
+        url: '/json/users/me/alert_words',
+        data: {alert_words: JSON.stringify(words_to_be_removed)},
+        success: function () {
+            update_alert_word_status(i18n.t("Alert word removed successfully!"), false);
+        },
+        error: function () {
+            update_alert_word_status(i18n.t("Error removing alert word!"), true);
+        },
+    });
 }
 
 exports.set_up_alert_words = function () {
@@ -70,16 +75,14 @@ exports.set_up_alert_words = function () {
 
     exports.render_alert_words_ui();
 
-    $('#alert_words_list').on('click', '#create_alert_word_button', function (event) {
+    $('#alert_words_list').on('click', '#create_alert_word_button', function () {
         var word = $('#create_alert_word_name').val();
-        add_alert_word(word, event);
+        add_alert_word(word);
     });
 
     $('#alert_words_list').on('click', '.remove-alert-word', function (event) {
-        var li = $(event.currentTarget).parents('li');
-        li.remove();
-
-        update_alert_words();
+        var word = $(event.currentTarget).parents('li').find('.value').text();
+        remove_alert_word(word);
     });
 
     $('#alert_words_list').on('keypress', '#create_alert_word_name', function (event) {
@@ -89,7 +92,7 @@ exports.set_up_alert_words = function () {
             event.preventDefault();
 
             var word = $(event.target).val();
-            add_alert_word(word, event);
+            add_alert_word(word);
         }
     });
 
