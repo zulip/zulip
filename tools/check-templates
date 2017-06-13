@@ -39,7 +39,6 @@ def check_html_templates(templates, all_dups):
     # type: (Iterable[str], bool) -> None
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
-    # The file base.html has a bit of funny HTML that we can't parse here yet.
     #
     # We also have .html files that we vendored from Casper.
     # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
@@ -47,7 +46,7 @@ def check_html_templates(templates, all_dups):
     # so we exclude them from our linter.
     logging.basicConfig(format='%(levelname)s:%(message)s')
     templates = filter(
-        lambda fn: (('base.html' not in fn) and ('casperjs' not in fn)),
+        lambda fn: ('casperjs' not in fn),
         templates)
     templates = sorted(list(templates))
 
@@ -106,6 +105,7 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/hello.html',
             'templates/zerver/home.html',
             'templates/zerver/integrations/index.html',
+            'templates/zerver/integrations/codebase.html',
             'templates/zerver/login.html',
             'templates/zerver/markdown_help.html',
             'templates/zerver/register.html',
