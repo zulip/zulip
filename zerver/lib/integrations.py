@@ -213,7 +213,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('papertrail'),
     WebhookIntegration('pingdom'),
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
-    WebhookIntegration('semaphore'),
+    WebhookIntegration('semaphore', stream_name='builds'),
     WebhookIntegration('sentry'),
     WebhookIntegration('slack'),
     WebhookIntegration('solano', display_name='Solano Labs'),
