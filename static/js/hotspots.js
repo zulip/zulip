@@ -5,7 +5,7 @@ var exports = {};
 exports.show = function (hotspot_list) {
     $('.hotspot').hide();
     for (var i = 0; i < hotspot_list.length; i += 1) {
-        $("#hotspot_".concat(hotspot_list[i])).show();
+        $("#hotspot_".concat(hotspot_list[i].name)).show();
     }
 };
 
@@ -21,33 +21,18 @@ function mark_hotspot_as_read(hotspot) {
 }
 
 $(function () {
-    $("#hotspot_welcome").on('click', function (e) {
-        mark_hotspot_as_read("welcome");
+    $("#hotspot_click_to_reply").on('click', function (e) {
+        mark_hotspot_as_read("click_to_reply");
         e.preventDefault();
         e.stopPropagation();
     });
-    $("#hotspot_streams").on('click', function (e) {
-        mark_hotspot_as_read("streams");
+    $("#hotspot_new_topic_button").on('click', function (e) {
+        mark_hotspot_as_read("new_topic_button");
         e.preventDefault();
         e.stopPropagation();
     });
-    $("#hotspot_topics").on('click', function (e) {
-        mark_hotspot_as_read("topics");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#hotspot_narrowing").on('click', function (e) {
-        mark_hotspot_as_read("narrowing");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#hotspot_replying").on('click', function (e) {
-        mark_hotspot_as_read("replying");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#hotspot_get_started").on('click', function (e) {
-        mark_hotspot_as_read("get_started");
+    $("#hotspot_stream_settings").on('click', function (e) {
+        mark_hotspot_as_read("stream_settings");
         e.preventDefault();
         e.stopPropagation();
     });
