@@ -7,6 +7,7 @@ import json
 from typing import Any, Dict, Mapping, Union, List
 from werkzeug.exceptions import BadRequest
 from six.moves.configparser import SafeConfigParser
+import optparse
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -73,8 +74,38 @@ def handle_bot(bot):
     return "Success!"
 
 if __name__ == "__main__":
-    read_config_file(sys.argv[1])
+    usage = '''
+                zulip-bot-server --config-file <path to flaskbotrc> --hostname <address> --port <port>
+                Example: zulip-bot-server --config-file ~/flaskbotrc
+                (This program loads the bot configurations from the
+                config file (flaskbotrc here) and loads the bot modules.
+                It then starts the server and fetches the requests to the
+                above loaded modules and returns the success/failure result)
+                Please make sure you have a current flaskbotrc file with the
+                configurations of the required bots.
+                Hostname and Port are optional arguments. Default hostname is
+                127.0.0.1 and default port is 5002.
+                See lib/readme.md for more context.
+                '''
+
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('--config-file',
+                      action='store',
+                      help='(config file for the zulip bot server (flaskbotrc))')
+    parser.add_option('--hostname',
+                      action='store',
+                      default="127.0.0.1",
+                      help='(address on which you want to run the server)')
+    parser.add_option('--port',
+                      action='store',
+                      default=5002,
+                      help='(port on which you want to run the server)')
+    (options, args) = parser.parse_args()
+    if not options.config_file:  # if flaskbotrc is not given
+        parser.error('Flaskbotrc not given')
+
+    read_config_file(options.config_file)
     available_bots = list(bots_config.keys())
     load_lib_modules()
 
-    app.run(host="127.0.0.1", port=5002, debug=True)
+    app.run(host=options.hostname, port=options.port, debug=True)
