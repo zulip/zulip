@@ -4,7 +4,7 @@ import os
 import sys
 from os.path import dirname, abspath
 import subprocess
-from scripts.lib.zulip_tools import run
+from scripts.lib.zulip_tools import run, ENDC, WARNING
 from scripts.lib.hash_reqs import expand_reqs
 
 ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
@@ -34,6 +34,12 @@ VENV_DEPENDENCIES = [
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
 ]
+
+def install_venv_deps(requirements_file):
+    # type: (str) -> None
+    run(["pip", "install", "-U", "setuptools==35.0.2"])
+    run(["pip", "install", "--upgrade", "pip", "wheel"])
+    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
 
 def get_index_filename(venv_path):
     # type: (str) -> str
@@ -244,7 +250,10 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 
-    run(["pip", "install", "-U", "setuptools==35.0.2"])
-    run(["pip", "install", "--upgrade", "pip", "wheel"])
-    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
+    try:
+        install_venv_deps(requirements_file)
+    except subprocess.CalledProcessError:
+        # Might be a failure due to network connection issues. Retrying...
+        print(WARNING + "`pip install` failed; retrying..." + ENDC)
+        install_venv_deps(requirements_file)
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
