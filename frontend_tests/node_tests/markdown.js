@@ -282,6 +282,10 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
   markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
+
+  message = {type: "not-stream"};
+  markdown.add_subject_links(message);
+  assert.equal(message.subject_links.length, 0);
 }());
 
 (function test_message_flags() {
