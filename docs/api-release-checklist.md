@@ -9,7 +9,7 @@ the guidelines presented in the
 [Python Packaging User Guide](https://packaging.python.org/).
 
 The steps below assume that you are familiar with the material
-presented [here](https://packaging.python.org/installing/).
+presented [here](https://packaging.python.org/tutorials/installing-packages/).
 
 1. [Reconfigure the package][2], if need be (upgrade version
   number, development status, and so on).
@@ -36,8 +36,8 @@ made in the new release are minor and not disruptive enough to
 warrant extensive pretesting.
 
 [1]: https://pypi.python.org/pypi/zulip/0.3.1
-[2]: https://packaging.python.org/distributing/#configuring-your-project
-[3]: https://packaging.python.org/distributing/#source-distributions
-[4]: https://packaging.python.org/distributing/#pure-python-wheels
-[5]: https://packaging.python.org/distributing/#upload-your-distributions
+[2]: https://packaging.python.org/tutorials/distributing-packages/#configuring-your-project
+[3]: https://packaging.python.org/tutorials/distributing-packages/#source-distributions
+[4]: https://packaging.python.org/tutorials/distributing-packages/#pure-python-wheels
+[5]: https://packaging.python.org/tutorials/distributing-packages/#upload-your-distributions
 [6]: https://pypi.python.org/pypi/zulip-beta/0.2.5
