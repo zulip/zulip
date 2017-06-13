@@ -112,20 +112,24 @@ class BotTestCase(TestCase):
         assert test_name is not None
         base_path = os.path.realpath(os.path.join(os.path.dirname(
             os.path.abspath(__file__)), '..', 'bots', self.bot_name, 'fixtures'))
-        http_request_path = os.path.join(base_path, '{}_request.json'.format(test_name))
-        http_response_path = os.path.join(base_path, '{}_response.json'.format(test_name))
-        with open(http_request_path, 'r') as http_request_file, \
-                open(http_response_path, 'r') as http_response_file:
-            http_request = json.load(http_request_file)
-            http_response = json.load(http_response_file)
+        http_data_path = os.path.join(base_path, '{}.json'.format(test_name))
+        with open(http_data_path, 'r') as http_data_file:
+            http_data = json.load(http_data_file)
+            http_request = http_data.get('request')
+            http_response = http_data.get('response')
+            http_headers = http_data.get('response-headers')
             with patch('requests.get') as mock_get:
                 mock_result = mock.MagicMock()
                 mock_result.json.return_value = http_response
-                mock_result.ok.return_value = True
+                mock_result.status_code = http_headers.get('status', 200)
+                mock_result.ok.return_value = http_headers.get('ok', True)
                 mock_get.return_value = mock_result
                 yield
-                mock_get.assert_called_with(http_request['api_url'],
-                                            params=http_request['params'])
+                params = http_request.get('params', None)
+                if params is None:
+                    mock_get.assert_called_with(http_request['api_url'])
+                else:
+                    mock_get.assert_called_with(http_request['api_url'], params=params)
 
     def assert_bot_response(self, message, response, expected_method):
         # type: (Dict[str, Any], Dict[str, Any], str) -> None
