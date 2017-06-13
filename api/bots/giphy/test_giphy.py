@@ -13,48 +13,18 @@ sys.path.insert(0, os.path.normpath(os.path.join(our_dir)))
 if os.path.exists(os.path.join(our_dir, '..')):
     sys.path.insert(0, '..')
 from bots_test_lib import BotTestCase
-from bots.giphy import giphy
-
-def get_http_response_json(gif_url):
-    response_json = {
-        'meta': {
-            'status': 200
-        },
-        'data': {
-            'images': {
-                'original': {
-                    'url': gif_url
-                }
-            }
-        }
-    }
-    return response_json
-
-def get_bot_response(gif_url):
-    return ('[Click to enlarge](%s)'
-            '[](/static/images/interactive-bot/giphy/powered-by-giphy.png)'
-            % (gif_url))
-
-def get_http_request(keyword):
-    return {
-        'api_url': giphy.GIPHY_TRANSLATE_API,
-        'params': {
-            's': keyword,
-            'api_key': giphy.get_giphy_api_key_from_config()
-        }
-    }
 
 class TestGiphyBot(BotTestCase):
     bot_name = "giphy"
 
     def test_bot(self):
-        # This message calls `send_reply` function of BotHandlerApi
-        keyword = "Hello"
-        gif_url = "https://media4.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif"
-        with self.mock_http_conversation(get_http_request(keyword),
-                                         get_http_response_json(gif_url)):
+        bot_response = '[Click to enlarge]' \
+                       '(https://media4.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif)' \
+                       '[](/static/images/interactive-bot/giphy/powered-by-giphy.png)'
+        # This message calls the `send_reply` function of BotHandlerApi
+        with self.mock_http_conversation('test_1'):
             self.assert_bot_response(
-                message = {'content': keyword},
-                response = {'content': get_bot_response(gif_url)},
+                message = {'content': 'Hello'},
+                response = {'content': bot_response},
                 expected_method='send_reply'
             )

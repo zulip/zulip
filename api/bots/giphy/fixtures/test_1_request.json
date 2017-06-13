@@ -1,0 +1,7 @@
+{
+    "api_url": "http://api.giphy.com/v1/gifs/translate",
+    "params": {
+        "s": "Hello",
+        "api_key": "12345678"
+    }
+}
