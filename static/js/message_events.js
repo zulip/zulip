@@ -123,6 +123,7 @@ exports.update_messages = function update_messages(events) {
         msg.alerted = event.flags.indexOf("has_alert_word") !== -1;
         msg.mentioned = event.flags.indexOf("mentioned") !== -1 ||
                         event.flags.indexOf("wildcard_mentioned") !== -1;
+        msg.mentioned_me_directly = event.flags.indexOf("mentioned") !== -1;
 
         condense.un_cache_message_content_height(msg.id);
 
@@ -244,7 +245,7 @@ exports.update_messages = function update_messages(events) {
             home_msg_list.view.rerender_messages(msgs_to_rerender);
         }
     }
-    unread_ui.update_unread_counts();
+    message_util.do_unread_count_updates(msgs_to_rerender);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
 };

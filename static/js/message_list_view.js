@@ -831,6 +831,8 @@ MessageListView.prototype = {
 
         // Re-render just this one message
         this._add_msg_timestring(message_container);
+        message_container.contains_mention =
+            notifications.speaking_at_me(message_container.msg);
         this._maybe_format_me_message(message_container);
 
         var rendered_msg = $(this._get_message_template(message_container));
