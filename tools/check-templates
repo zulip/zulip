@@ -110,9 +110,6 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/markdown_help.html',
             'templates/zerver/register.html',
             'templates/zerver/search_operators.html',
-
-            'zerver/webhooks/deskdotcom/doc.html',
-            'zerver/webhooks/freshdesk/doc.html',
             'zerver/webhooks/taiga/doc.html',
             'zerver/webhooks/zendesk/doc.html',
         ]
@@ -140,10 +137,6 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/markdown_help.html',
         'templates/zerver/navbar.html',
         'templates/zerver/register.html',
-
-        'zerver/webhooks/deskdotcom/doc.html',
-        'zerver/webhooks/librato/doc.html',
-        'zerver/webhooks/splunk/doc.html',
         'zerver/webhooks/stripe/doc.html',
         'zerver/webhooks/wordpress/doc.html',
     ]
