@@ -1,0 +1,81 @@
+{
+  "request": {
+    "api_url": "https://api.github.com/repos/zulip/zulip/issues/5365"
+  },
+  "response": {
+    "url": "https://api.github.com/repos/zulip/zulip/issues/5365",
+    "repository_url": "https://api.github.com/repos/zulip/zulip",
+    "labels_url": "https://api.github.com/repos/zulip/zulip/issues/5365/labels{/name}",
+    "comments_url": "https://api.github.com/repos/zulip/zulip/issues/5365/comments",
+    "events_url": "https://api.github.com/repos/zulip/zulip/issues/5365/events",
+    "html_url": "https://github.com/zulip/zulip/issues/5365",
+    "id": 235630936,
+    "number": 5365,
+    "title": "frontend: Enable hot-reloading of CSS in development",
+    "user": {
+      "login": "timabbott",
+      "id": 2746074,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2746074?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/timabbott",
+      "html_url": "https://github.com/timabbott",
+      "followers_url": "https://api.github.com/users/timabbott/followers",
+      "following_url": "https://api.github.com/users/timabbott/following{/other_user}",
+      "gists_url": "https://api.github.com/users/timabbott/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/timabbott/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/timabbott/subscriptions",
+      "organizations_url": "https://api.github.com/users/timabbott/orgs",
+      "repos_url": "https://api.github.com/users/timabbott/repos",
+      "events_url": "https://api.github.com/users/timabbott/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/timabbott/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 419106932,
+        "url": "https://api.github.com/repos/zulip/zulip/labels/area:%20tooling",
+        "name": "area: tooling",
+        "color": "bfd4f2",
+        "default": false
+      },
+      {
+        "id": 265216831,
+        "url": "https://api.github.com/repos/zulip/zulip/labels/enhancement",
+        "name": "enhancement",
+        "color": "84b6eb",
+        "default": true
+      },
+      {
+        "id": 265216832,
+        "url": "https://api.github.com/repos/zulip/zulip/labels/help%20wanted",
+        "name": "help wanted",
+        "color": "159818",
+        "default": true
+      },
+      {
+        "id": 621149055,
+        "url": "https://api.github.com/repos/zulip/zulip/labels/priority:%20medium",
+        "name": "priority: medium",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2017-06-13T17:34:45Z",
+    "updated_at": "2017-06-13T17:34:46Z",
+    "closed_at": null,
+    "body": "There's strong interest among folks working on the frontend in being able to use the hot-reloading feature of webpack for managing our CSS.\r\n\r\nIn order to do this, step 1 is to move our CSS minification pipeline from django-pipeline to Webpack.  ",
+    "closed_by": null
+  },
+  "response-headers": {
+    "status": 200,
+    "ok": true,
+    "content-type": "application/json; charset=utf-8"
+  }
+}

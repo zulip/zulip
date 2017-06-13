@@ -56,13 +56,6 @@ class GithubHandler(object):
         except requests.exceptions.RequestException as e:
             logging.exception(e)
             return
-        if r.status_code == 404:
-            try:
-                r = requests.get(
-                    self.GITHUB_PULL_URL_TEMPLATE.format(owner=owner, repo=repo, id=number))
-            except requests.exceptions.RequestException as e:
-                logging.exception(e)
-                return
         if r.status_code != requests.codes.ok:
             return
         return r.json()
@@ -79,13 +72,9 @@ class GithubHandler(object):
     def handle_message(self, message, bot_handler, state_handler):
         # type: () -> None
         # Send help message
-        if message['content'] == '@**{}** help'.format(bot_handler.full_name):
-            bot_handler.send_message(dict(
-                type='stream',
-                to=message['display_recipient'],
-                subject=message['subject'],
-                content=self.usage(),
-            ))
+        if message['content'] == 'help':
+            bot_handler.send_reply(message, self.usage())
+            return
 
         # Capture owner, repo, id
         issue_prs = re.finditer(
