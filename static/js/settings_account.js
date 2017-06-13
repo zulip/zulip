@@ -21,6 +21,61 @@ function settings_change_success(message) {
 
 exports.set_up = function () {
     $("#account-settings-status").hide();
+    $("#api_key_value").text("");
+    $("#get_api_key_box").hide();
+    $("#show_api_key_box").hide();
+    $("#api_key_button_box").show();
+
+    $('#api_key_button').click(function () {
+        if (page_params.realm_password_auth_enabled !== false) {
+            $("#get_api_key_box").show();
+        } else {
+            // Skip the password prompt step
+            $("#get_api_key_box form").submit();
+        }
+        $("#api_key_button_box").hide();
+    });
+
+    $("#get_api_key_box").hide();
+    $("#show_api_key_box").hide();
+    $("#get_api_key_box form").ajaxForm({
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        success: function (resp, statusText, xhr) {
+            var result = JSON.parse(xhr.responseText);
+            var settings_status = $('#account-settings-status').expectOne();
+
+            $("#get_api_key_password").val("");
+            $("#api_key_value").text(result.api_key);
+            $("#show_api_key_box").show();
+            $("#get_api_key_box").hide();
+            settings_status.hide();
+        },
+        error: function (xhr) {
+            ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
+            $("#show_api_key_box").hide();
+            $("#get_api_key_box").show();
+        },
+    });
+
+    $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
+        channel.post({
+            url: '/json/users/me/api_key/regenerate',
+            idempotent: true,
+            success: function (data) {
+                $('#api_key_value').text(data.api_key);
+            },
+            error: function (xhr) {
+                $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
+            },
+        });
+    });
+
+    $("#download_zuliprc").on("click", function () {
+        $(this).attr("href", settings_bots.generate_zuliprc_uri(
+            people.my_current_email(),
+            $("#api_key_value").text()
+        ));
+    });
 
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
