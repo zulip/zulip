@@ -78,10 +78,10 @@ serve HTML.
 
 For example, the `/features` page (preview
 [here](https://zulipchat.com/features/)) gets translated in Chinese at
-`zh-cn/features/` (preview
-[here](https://zulipchat.com/zh-cn/features/)).
+`zh-hans/features/` (preview
+[here](https://zulipchat.com/zh-hans/features/)).
 
-Note the `zh-cn` prefix--that url pattern gets added by `i18n_patterns`.
+Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 
 ## API endpoints use [REST](http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
 
