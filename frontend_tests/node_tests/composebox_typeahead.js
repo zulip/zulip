@@ -874,3 +874,32 @@ global.people.add(deactivated_user);
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
 }());
+
+(function test_typeahead_results() {
+    function compose_typeahead_results(completing,items,token) {
+        // items -> emoji array, token -> simulates text in input
+        var matcher = ct.compose_content_matcher.bind({completing: completing, token: token});
+        var sorter = ct.compose_matches_sorter.bind({completing: completing, token: token});
+        var matches = [];
+        _.each(items, function (item) {
+            if (matcher(item)) {
+                matches.push(item);
+            }
+        });
+        var sorted_matches = sorter(matches);
+        return sorted_matches;
+    }
+
+    function assert_emoji_matches(input, expected) {
+        var returned = compose_typeahead_results('emoji', emoji_list, input);
+        assert.deepEqual(returned, expected);
+    }
+
+    assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD"},
+        {emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da_', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da ', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('notaemoji', []);
+}());
