@@ -91,7 +91,14 @@ class WebhookIntegration(Integration):
         # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name, stream_name=stream_name)
+        super(WebhookIntegration, self).__init__(
+            name,
+            client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            display_name=display_name,
+            stream_name=stream_name
+        )
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
@@ -132,7 +139,10 @@ class HubotLozenge(Integration):
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.git_url = git_url
-        super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
+        super(HubotLozenge, self).__init__(
+            name, name,
+            logo=logo, display_name=display_name
+        )
 
 class GithubIntegration(WebhookIntegration):
     """
@@ -145,8 +155,16 @@ class GithubIntegration(WebhookIntegration):
         url = self.DEFAULT_URL.format(name='github')
 
         super(GithubIntegration, self).__init__(
-            name, client_name, logo, secondary_line_text,
-            function, url, display_name, doc, stream_name)
+            name,
+            client_name=client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            function=function,
+            url=url,
+            display_name=display_name,
+            doc=doc,
+            stream_name=stream_name
+        )
 
     @property
     def url_object(self):
