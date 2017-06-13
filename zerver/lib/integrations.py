@@ -32,8 +32,9 @@ class Integration(object):
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
-    def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None, doc=None):
-        # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, client_name, logo=None, secondary_line_text=None,
+                 display_name=None, doc=None, stream_name=None):
+        # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -50,6 +51,10 @@ class Integration(object):
         if display_name is None:
             display_name = name.title()
         self.display_name = display_name
+
+        if stream_name is None:
+            stream_name = self.name
+        self.stream_name = stream_name
 
     def is_enabled(self):
         # type: () -> bool
@@ -82,11 +87,18 @@ class WebhookIntegration(Integration):
     DEFAULT_DOC_PATH = '{name}/doc.{ext}'
 
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None):
-        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None, stream_name=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name)
+        super(WebhookIntegration, self).__init__(
+            name,
+            client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            display_name=display_name,
+            stream_name=stream_name
+        )
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
@@ -127,7 +139,10 @@ class HubotLozenge(Integration):
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.git_url = git_url
-        super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
+        super(HubotLozenge, self).__init__(
+            name, name,
+            logo=logo, display_name=display_name
+        )
 
 class GithubIntegration(WebhookIntegration):
     """
@@ -135,13 +150,21 @@ class GithubIntegration(WebhookIntegration):
     We want to have one generic url with dispatch function for github service and github webhook.
     """
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None):
-        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None, stream_name=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         url = self.DEFAULT_URL.format(name='github')
 
         super(GithubIntegration, self).__init__(
-            name, client_name, logo, secondary_line_text,
-            function, url, display_name, doc)
+            name,
+            client_name=client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            function=function,
+            url=url,
+            display_name=display_name,
+            doc=doc,
+            stream_name=stream_name
+        )
 
     @property
     def url_object(self):
@@ -153,26 +176,43 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
     WebhookIntegration('basecamp'),
-    WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.svg', display_name='Bitbucket'),
-    WebhookIntegration('bitbucket', display_name='Bitbucket', secondary_line_text='(Enterprise)'),
+    WebhookIntegration(
+        'bitbucket2',
+        logo='static/images/integrations/logos/bitbucket.svg',
+        display_name='Bitbucket',
+        stream_name='bitbucket'
+    ),
+    WebhookIntegration(
+        'bitbucket',
+        display_name='Bitbucket',
+        secondary_line_text='(Enterprise)',
+        stream_name='commits'
+    ),
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
     WebhookIntegration('delighted', display_name='Delighted'),
-    WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
+    WebhookIntegration(
+        'deskdotcom',
+        logo='static/images/integrations/logos/deskcom.png',
+        display_name='Desk.com',
+        stream_name='desk'
+    ),
     WebhookIntegration('freshdesk'),
     GithubIntegration(
         'github',
         function='zerver.webhooks.github.view.api_github_landing',
         display_name='GitHub',
-        secondary_line_text='(deprecated)'
+        secondary_line_text='(deprecated)',
+        stream_name='commits'
     ),
     GithubIntegration(
         'github_webhook',
         display_name='GitHub',
         logo='static/images/integrations/logos/github.svg',
         secondary_line_text='(webhook)',
-        function='zerver.webhooks.github_webhook.view.api_github_webhook'
+        function='zerver.webhooks.github_webhook.view.api_github_webhook',
+        stream_name='github'
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('gogs'),
@@ -191,7 +231,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('papertrail'),
     WebhookIntegration('pingdom'),
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
-    WebhookIntegration('semaphore'),
+    WebhookIntegration('semaphore', stream_name='builds'),
     WebhookIntegration('sentry'),
     WebhookIntegration('slack'),
     WebhookIntegration('solano', display_name='Solano Labs'),
