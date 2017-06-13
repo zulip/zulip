@@ -222,3 +222,26 @@ var stream_list = require('js/stream_list.js');
     ]);
 
 }());
+
+(function test_update_count_in_dom() {
+    var count_span = $('count-span');
+    var value_span = $('value-span');
+    var unread_count_elem = $('unread-count-elem');
+    unread_count_elem.add_child('.count', count_span);
+    count_span.add_child('.value', value_span);
+    unread_count_elem.addClass('subscription_block');
+    unread_count_elem.addClass('stream-with-count');
+    assert(unread_count_elem.hasClass('stream-with-count'));
+
+    stream_list.update_count_in_dom(unread_count_elem, 0);
+    assert.equal(value_span.text(), '');
+    assert(!unread_count_elem.hasClass('stream-with-count'));
+
+    stream_list.update_count_in_dom(unread_count_elem, 99);
+    assert.equal(value_span.text(), '99');
+    assert(unread_count_elem.hasClass('stream-with-count'));
+
+    stream_list.update_count_in_dom(unread_count_elem, 0);
+    assert.equal(value_span.text(), '');
+    assert(!unread_count_elem.hasClass('stream-with-count'));
+}());
