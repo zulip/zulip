@@ -150,7 +150,7 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/markdown_help.html',
         'templates/zerver/navbar.html',
         'templates/zerver/register.html',
-        'templates/zerver/test_emails.html',
+
         'zerver/webhooks/deskdotcom/doc.html',
         'zerver/webhooks/librato/doc.html',
         'zerver/webhooks/splunk/doc.html',
