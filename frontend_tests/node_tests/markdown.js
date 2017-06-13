@@ -47,18 +47,17 @@ var doc = "";
 set_global('document', doc);
 
 set_global('$', function (obj) {
-  if (typeof obj === 'function') {
-    // Run on-load setup
-    obj();
-  } else if (typeof obj === 'string') {
-    // $(document).on usage
-    // Selector usage
-    return {on: function () {}};
-  }
+    if (typeof obj === 'function') {
+        // Run on-load setup
+        obj();
+    } else if (typeof obj === 'string') {
+        // $(document).on usage
+        // Selector usage
+        return {on: function () {}};
+    }
 });
 
 set_global('feature_flags', {local_echo: true});
-
 
 var people = global.people;
 
@@ -150,18 +149,18 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 }());
 
 (function test_marked_shared() {
-  var tests = bugdown_data.regular_tests;
-  tests.forEach(function (test) {
-    var message = {raw_content: test.input};
-    markdown.apply_markdown(message);
-    var output = message.content;
+    var tests = bugdown_data.regular_tests;
+    tests.forEach(function (test) {
+        var message = {raw_content: test.input};
+        markdown.apply_markdown(message);
+        var output = message.content;
 
-    if (test.bugdown_matches_marked) {
-      assert.equal(test.expected_output, output);
-    } else {
-      assert.notEqual(test.expected_output, output);
-    }
-  });
+        if (test.bugdown_matches_marked) {
+            assert.equal(test.expected_output, output);
+        } else {
+            assert.notEqual(test.expected_output, output);
+        }
+    });
 }());
 
 (function test_message_flags() {
@@ -179,154 +178,152 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 }());
 
 (function test_marked() {
-  var test_cases = [
-    {input: 'hello', expected: '<p>hello</p>'},
-    {input: 'hello there', expected: '<p>hello there</p>'},
-    {input: 'hello **bold** for you', expected: '<p>hello <strong>bold</strong> for you</p>'},
-    {input: '__hello__', expected: '<p>__hello__</p>'},
-    {input: '\n```\nfenced code\n```\n\nand then after\n',
-     expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},
-     {input: '\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n',
-     expected: '<div class="codehilite"><pre><span></span>    fenced code trailing whitespace\n</pre></div>\n\n\n<p>and then after</p>'},
-    {input: '* a\n* list \n* here',
-     expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
-    {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
-     expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
-    {input: '1. an\n2. ordered \n3. list',
-     expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
-    {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
-     expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
-    {input: 'This is a @**Cordelia Lear** mention',
-     expected: '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>'},
-    {input: 'These @ @**** are not mentions',
-     expected: '<p>These @ @<em>**</em> are not mentions</p>'},
-    {input: 'These # #**** are not mentions',
-     expected: '<p>These # #<em>**</em> are not mentions</p>'},
-    {input: 'These @* @*** are not mentions',
-     expected: '<p>These @* @*** are not mentions</p>'},
-    {input: 'These #* #*** are also not mentions',
-     expected: '<p>These #* #*** are also not mentions</p>'},
-    {input: 'This is a #**Denmark** stream link',
-     expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
-    {input: 'This is #**Denmark** and #**social** stream links',
-     expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
-    {input: 'And this is a #**wrong** stream link',
-     expected: '<p>And this is a #**wrong** stream link</p>'},
-    {input: 'mmm...:burrito:s',
-     expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title=":burrito:">s</p>'},
-    {input: 'This is an :poop: message',
-     expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title=":poop:"> message</p>'},
-    {input: "\ud83d\udca9",
-     expected: '<p><img alt="\ud83d\udca9" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="\ud83d\udca9"></p>'},
-    {input: '\u{1f937}',
-     expected: '<p>\u{1f937}</p>' },
-    {input: 'This is a realm filter #1234 with text after it',
-     expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
-    {input: 'This is a realm filter with ZGROUP_123:45 groups',
-     expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
-    {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
-     expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
-    {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
-     expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
-    {input: 'Test *italic*',
-     expected: '<p>Test <em>italic</em></p>'},
-  ];
+    var test_cases = [
+        {input: 'hello', expected: '<p>hello</p>'},
+        {input: 'hello there', expected: '<p>hello there</p>'},
+        {input: 'hello **bold** for you', expected: '<p>hello <strong>bold</strong> for you</p>'},
+        {input: '__hello__', expected: '<p>__hello__</p>'},
+        {input: '\n```\nfenced code\n```\n\nand then after\n',
+         expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},
+         {input: '\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n',
+         expected: '<div class="codehilite"><pre><span></span>    fenced code trailing whitespace\n</pre></div>\n\n\n<p>and then after</p>'},
+        {input: '* a\n* list \n* here',
+         expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
+        {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
+         expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
+        {input: '1. an\n2. ordered \n3. list',
+         expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
+        {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
+         expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
+        {input: 'This is a @**Cordelia Lear** mention',
+         expected: '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>'},
+        {input: 'These @ @**** are not mentions',
+         expected: '<p>These @ @<em>**</em> are not mentions</p>'},
+        {input: 'These # #**** are not mentions',
+         expected: '<p>These # #<em>**</em> are not mentions</p>'},
+        {input: 'These @* @*** are not mentions',
+         expected: '<p>These @* @*** are not mentions</p>'},
+        {input: 'These #* #*** are also not mentions',
+         expected: '<p>These #* #*** are also not mentions</p>'},
+        {input: 'This is a #**Denmark** stream link',
+         expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
+        {input: 'This is #**Denmark** and #**social** stream links',
+         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
+        {input: 'And this is a #**wrong** stream link',
+         expected: '<p>And this is a #**wrong** stream link</p>'},
+        {input: 'mmm...:burrito:s',
+         expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title=":burrito:">s</p>'},
+        {input: 'This is an :poop: message',
+         expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title=":poop:"> message</p>'},
+        {input: "\ud83d\udca9",
+         expected: '<p><img alt="\ud83d\udca9" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="\ud83d\udca9"></p>'},
+        {input: '\u{1f937}',
+         expected: '<p>\u{1f937}</p>' },
+        {input: 'This is a realm filter #1234 with text after it',
+         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+        {input: 'This is a realm filter with ZGROUP_123:45 groups',
+         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
+        {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
+         expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+        {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
+         expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+        {input: 'Test *italic*',
+         expected: '<p>Test <em>italic</em></p>'},
+    ];
 
-  // We remove one of the unicode emoji we put as input in one of the test
-  // cases (U+1F937), to verify that we display the emoji as it was input if it
-  // isn't present in emoji.emojis_by_unicode.
-  delete emoji.emojis_by_unicode['1f937'];
+    // We remove one of the unicode emoji we put as input in one of the test
+    // cases (U+1F937), to verify that we display the emoji as it was input if it
+    // isn't present in emoji.emojis_by_unicode.
+    delete emoji.emojis_by_unicode['1f937'];
 
-  test_cases.forEach(function (test_case) {
-    var input = test_case.input;
-    var expected = test_case.expected;
+    test_cases.forEach(function (test_case) {
+        var input = test_case.input;
+        var expected = test_case.expected;
 
-    var message = {raw_content: input};
-    markdown.apply_markdown(message);
-    var output = message.content;
+        var message = {raw_content: input};
+        markdown.apply_markdown(message);
+        var output = message.content;
 
-    assert.equal(expected, output);
-  });
-
+        assert.equal(expected, output);
+    });
 }());
 
 (function test_subject_links() {
-  var message = {type: 'stream', subject: "No links here"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, []);
+    var message = {type: 'stream', subject: "No links here"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, []);
 
-  message = {type: 'stream', subject: "One #123 link here"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, 1);
-  assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
+    message = {type: 'stream', subject: "One #123 link here"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, 1);
+    assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
 
-  message = {type: 'stream', subject: "Two #123 #456 link here"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, 2);
-  assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
-  assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
+    message = {type: 'stream', subject: "Two #123 #456 link here"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, 2);
+    assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
 
-  message = {type: 'stream', subject: "New ZBUG_123 link here"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, 1);
-  assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
+    message = {type: 'stream', subject: "New ZBUG_123 link here"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, 1);
+    assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
 
+    message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, 2);
+    assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
+    assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
 
-  message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, 2);
-  assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
-  assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
+    message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, 1);
+    assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
 
-  message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, 1);
-  assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
-
-  message = {type: "not-stream"};
-  markdown.add_subject_links(message);
-  assert.equal(message.subject_links.length, 0);
+    message = {type: "not-stream"};
+    markdown.add_subject_links(message);
+    assert.equal(message.subject_links.length, 0);
 }());
 
 (function test_message_flags() {
-  var input = "/me is testing this";
-  var message = {subject: "No links here", raw_content: input};
-  message.flags = ['read'];
-  markdown.apply_markdown(message);
-  markdown.add_message_flags(message);
+    var input = "/me is testing this";
+    var message = {subject: "No links here", raw_content: input};
+    message.flags = ['read'];
+    markdown.apply_markdown(message);
+    markdown.add_message_flags(message);
 
-  assert.equal(message.flags.length, 2);
-  assert(message.flags.indexOf('read') !== -1);
-  assert(message.flags.indexOf('is_me_message') !== -1);
+    assert.equal(message.flags.length, 2);
+    assert(message.flags.indexOf('read') !== -1);
+    assert(message.flags.indexOf('is_me_message') !== -1);
 
-  input = "testing this @**all** @**Cordelia Lear**";
-  message = {subject: "No links here", raw_content: input};
-  markdown.apply_markdown(message);
-  markdown.add_message_flags(message);
+    input = "testing this @**all** @**Cordelia Lear**";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    markdown.add_message_flags(message);
 
-  assert.equal(message.flags.length, 1);
-  assert(message.flags.indexOf('mentioned') !== -1);
+    assert.equal(message.flags.length, 1);
+    assert(message.flags.indexOf('mentioned') !== -1);
 
-  input = "test @all";
-  message = {subject: "No links here", raw_content: input};
-  markdown.apply_markdown(message);
-  markdown.add_message_flags(message);
-  assert.equal(message.flags.length, 1);
-  assert(message.flags.indexOf('mentioned') !== -1);
+    input = "test @all";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    markdown.add_message_flags(message);
+    assert.equal(message.flags.length, 1);
+    assert(message.flags.indexOf('mentioned') !== -1);
 
-  input = "test @any";
-  message = {subject: "No links here", raw_content: input};
-  markdown.apply_markdown(message);
-  markdown.add_message_flags(message);
-  assert.equal(message.flags.length, 0);
-  assert(message.flags.indexOf('mentioned') === -1);
+    input = "test @any";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    markdown.add_message_flags(message);
+    assert.equal(message.flags.length, 0);
+    assert(message.flags.indexOf('mentioned') === -1);
 }());
 
 (function test_python_to_js_filter() {
-  // The only way to reach python_to_js_filter is indirectly, hence the call
-  // to set_realm_filters.
-  markdown.set_realm_filters([[ '/a(?im)a/g'], [ '/a(?L)a/g' ]]);
-  var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
-  var expected_value = [ /\/aa\/g/gim, /\/aa\/g/g ];
-  assert.deepEqual(actual_value, expected_value);
+    // The only way to reach python_to_js_filter is indirectly, hence the call
+    // to set_realm_filters.
+    markdown.set_realm_filters([[ '/a(?im)a/g'], [ '/a(?L)a/g' ]]);
+    var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
+    var expected_value = [ /\/aa\/g/gim, /\/aa\/g/g ];
+    assert.deepEqual(actual_value, expected_value);
 }());
