@@ -6,6 +6,7 @@ import logging
 import argparse
 import platform
 import subprocess
+import glob
 import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -295,7 +296,29 @@ def main(options):
         else:
             print("No need to regenerate the test DB.")
 
-        run(["./manage.py", "compilemessages"])
+        # Check if translation files have been modified or not
+        sha1sum = hashlib.sha1()
+        paths = glob.glob('static/locale/*/LC_MESSAGES/*.po')
+        paths += glob.glob('static/locale/*/translations.json')
+
+        from zerver.lib.str_utils import force_bytes
+
+        for path in paths:
+            sha1sum.update(force_bytes(open(path, 'r').read()))
+        sha1sum.update(force_bytes(open('zerver/management/commands/compilemessages.py', 'r').read()))
+
+        new_compilemessages_hash = sha1sum.hexdigest()
+        run(['touch', 'var/last_compilemessages_hash'])
+        hash_file = open('var/last_compilemessages_hash', 'r+')
+        last_compilemessages_hash = hash_file.read()
+
+        if (new_compilemessages_hash != last_compilemessages_hash):
+            hash_file.seek(0)
+            hash_file.write(new_compilemessages_hash)
+            run(["./manage.py", "compilemessages"])
+        else:
+            print("No need to run compilemessage.")
+        hash_file.close()
 
     # Here we install nvm, node, and npm.
     run(["sudo", "scripts/lib/install-node"])
