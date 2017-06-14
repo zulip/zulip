@@ -47,16 +47,7 @@ add_dependencies({
 var doc = "";
 set_global('document', doc);
 
-set_global('$', function (obj) {
-    if (typeof obj === 'function') {
-        // Run on-load setup
-        obj();
-    } else if (typeof obj === 'string') {
-        // $(document).on usage
-        // Selector usage
-        return {on: function () {}};
-    }
-});
+set_global('$', global.make_zjquery());
 
 set_global('feature_flags', {local_echo: true});
 
