@@ -344,12 +344,9 @@ function finale(skip) {
     });
     deferred_work = [];
 
-    // We start you in a narrow so it's not overwhelming.
-    var newbie_stream = stream_data.get_newbie_stream();
-
-    if (newbie_stream) {
-        narrow.activate([{operator: "stream", operand: newbie_stream}]);
-    }
+    var sender_bot = "welcome-bot@zulip.com";
+    narrow.by('pm-with', sender_bot, {select_first_unread: true, trigger: 'sidebar'});
+    compose_actions.cancel();
 
     if (page_params.first_in_realm) {
         // 'engineering' is the best possible stream since we used it in the
