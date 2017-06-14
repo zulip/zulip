@@ -421,6 +421,7 @@ def write_instrumentation_reports(full_suite):
 
         if full_suite:
             print('INFO: URL coverage report is in %s' % (fn,))
+            print('INFO: View report at http://127.0.0.1:9991/coverage/index.html')
             print('INFO: Try running: ./tools/create-test-api-docs')
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
