@@ -39,7 +39,6 @@ add_dependencies({
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     hash_util: 'js/hash_util',
-    hashchange: 'js/hashchange',
     fenced_code: 'js/fenced_code.js',
     katex: 'node_modules/katex/dist/katex.min.js',
     util: 'js/util.js',
