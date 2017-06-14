@@ -104,6 +104,20 @@ var return_true = function () { return true; };
     var social_li = $('social-stub-html');
     var stream_id = social.stream_id;
 
+    var privacy_elem = $('privacy-stub');
+    social_li.add_child('.stream-privacy', privacy_elem);
+
+    social.invite_only = true;
+    social.color = '#222222';
+    global.templates.render = function (template_name, data) {
+        assert.equal(template_name, 'stream_privacy');
+        assert.equal(data.invite_only, true);
+        assert.equal(data.dark_background, 'dark_background');
+        return '<div>privacy-html';
+    };
+    stream_list.redraw_stream_privacy(social);
+    assert.equal(privacy_elem.html(), '<div>privacy-html');
+
     stream_list.set_in_home_view(stream_id, false);
     assert(social_li.hasClass('out_of_home_view'));
 

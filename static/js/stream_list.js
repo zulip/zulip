@@ -271,17 +271,15 @@ exports.create_sidebar_row = function (sub) {
     build_stream_sidebar_row(sub);
 };
 
-exports.redraw_stream_privacy = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
+exports.redraw_stream_privacy = function (sub) {
     var li = exports.get_stream_li(sub.stream_id);
     if (!li) {
-        blueslip.error('passed in bad stream: ' + stream_name);
+        blueslip.error('passed in bad stream: ' + sub.name);
         return;
     }
 
     var div = li.find('.stream-privacy');
-    var color = stream_data.get_color(stream_name);
-    var dark_background = stream_color.get_color_class(color);
+    var dark_background = stream_color.get_color_class(sub.color);
 
     var args = {
         invite_only: sub.invite_only,

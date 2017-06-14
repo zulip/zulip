@@ -284,7 +284,7 @@ function redraw_privacy_related_stuff(sub_row, sub) {
             .html("");
     }
 
-    stream_list.redraw_stream_privacy(sub.name);
+    stream_list.redraw_stream_privacy(sub);
 }
 
 function change_stream_privacy(e) {
