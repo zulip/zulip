@@ -335,6 +335,8 @@ non_html_template_engine_settings.update({
 })
 non_html_template_engine_settings['OPTIONS'].update({
     'autoescape': False,
+    'trim_blocks': True,
+    'lstrip_blocks': True,
 })
 
 # The order here is important; get_template and related/parent functions try
