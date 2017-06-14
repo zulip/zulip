@@ -4,12 +4,12 @@ set_global('templates', {});
 
 add_dependencies({
     colorspace: 'js/colorspace',
+    Filter: 'js/filter',
     hash_util: 'js/hash_util',
     narrow: 'js/narrow',
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     stream_sort: 'js/stream_sort',
-    topic_list: 'js/topic_list',
     unread: 'js/unread',
     unread_ui: 'js/unread_ui',
     util: 'js/util',
@@ -20,6 +20,8 @@ var stream_list = require('js/stream_list.js');
 var noop = function () {};
 var return_false = function () { return false; };
 var return_true = function () { return true; };
+
+set_global('topic_list', {});
 
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
@@ -144,7 +146,6 @@ var return_true = function () { return true; };
     assert(removed);
 }());
 
-
 function initialize_stream_data() {
     stream_data.clear_subscriptions();
 
@@ -153,11 +154,8 @@ function initialize_stream_data() {
         var row = {
             update_whether_active: function () {},
             get_li: function () {
-                return {
-                    get: function () {
-                        return 'stub-' + sub.name;
-                    },
-                };
+                var selector = 'stub-' + sub.name;
+                return $(selector);
             },
         };
         stream_list.stream_sidebar.set_row(sub.stream_id, row);
@@ -219,6 +217,84 @@ function initialize_stream_data() {
     };
     add_row(carSub);
 }
+
+(function test_narrowing() {
+    initialize_stream_data();
+
+    var document = 'document-stub';
+
+    set_global('document', document);
+    set_global('narrow_state', {
+        stream: function () { return 'devel'; },
+        topic: noop,
+    });
+
+    var pm_expanded;
+
+    set_global('pm_list', {
+        close: noop,
+        expand: function () { pm_expanded = true; },
+    });
+
+    topic_list.set_click_handlers = noop;
+    topic_list.is_zoomed = return_false;
+    topic_list.remove_expanded_topics = noop;
+    topic_list.rebuild = noop;
+    stream_list.scroll_element_into_container = noop;
+
+    assert(!$('stub-devel').hasClass('active-filter'));
+
+    stream_list.initialize();
+
+    function activate_filter(filter) {
+        var data = {
+            filter: filter,
+        };
+        $(document).trigger($.Event('narrow_activated.zulip', data));
+    }
+
+    var filter;
+
+    filter = new Filter([
+        {operator: 'stream', operand: 'devel'},
+    ]);
+    activate_filter(filter);
+    assert($('stub-devel').hasClass('active-filter'));
+
+    filter = new Filter([
+        {operator: 'stream', operand: 'cars'},
+        {operator: 'topic', operand: 'sedans'},
+    ]);
+    activate_filter(filter);
+    assert(!$("ul.filters li").hasClass('active-filter'));
+    assert(!$('stub-cars').hasClass('active-filter')); // false because of topic
+
+    assert(!pm_expanded);
+    filter = new Filter([
+        {operator: 'is', operand: 'private'},
+    ]);
+    activate_filter(filter);
+    assert(pm_expanded);
+
+    filter = new Filter([
+        {operator: 'is', operand: 'mentioned'},
+    ]);
+    activate_filter(filter);
+    assert(stream_list.get_global_filter_li('mentioned').hasClass('active-filter'));
+
+    filter = new Filter([
+        {operator: 'in', operand: 'home'},
+    ]);
+    activate_filter(filter);
+    assert(stream_list.get_global_filter_li('home').hasClass('active-filter'));
+
+    filter = new Filter([
+        {operator: 'stream', operand: 'cars'},
+    ]);
+    activate_filter(filter);
+    assert(!$("ul.filters li").hasClass('active-filter'));
+    assert($('stub-cars').hasClass('active-filter'));
+}());
 
 (function test_sort_streams() {
     stream_data.clear_subscriptions();
