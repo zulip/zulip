@@ -6,6 +6,7 @@ import logging
 import argparse
 import platform
 import subprocess
+import glob
 import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -277,6 +278,7 @@ def main(options):
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
+        from zerver.lib.str_utils import force_bytes
         from zerver.lib.test_fixtures import is_template_database_current
 
         if options.is_force or not is_template_database_current(
@@ -295,7 +297,28 @@ def main(options):
         else:
             print("No need to regenerate the test DB.")
 
-        run(["./manage.py", "compilemessages"])
+        # Consider updating generated translations data: both `.mo`
+        # files and `language-options.json`.
+        sha1sum = hashlib.sha1()
+        paths = ['zerver/management/commands/compilemessages.py']
+        paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
+        paths += glob.glob('static/locale/*/translations.json')
+
+        for path in paths:
+            with open(path, 'r') as file_to_hash:
+                sha1sum.update(force_bytes(file_to_hash.read()))
+
+        new_compilemessages_hash = sha1sum.hexdigest()
+        run(['touch', 'var/last_compilemessages_hash'])
+        with open('var/last_compilemessages_hash', 'r') as hash_file:
+            last_compilemessages_hash = hash_file.read()
+
+        if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
+            with open('var/last_compilemessages_hash', 'w') as hash_file:
+                hash_file.write(new_compilemessages_hash)
+            run(["./manage.py", "compilemessages"])
+        else:
+            print("No need to run `manage.py compilemessages`.")
 
     # Here we install nvm, node, and npm.
     run(["sudo", "scripts/lib/install-node"])
