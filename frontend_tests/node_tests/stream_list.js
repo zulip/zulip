@@ -17,6 +17,7 @@ var stream_list = require('js/stream_list.js');
 
 var noop = function () {};
 var return_false = function () { return false; };
+var return_true = function () { return true; };
 
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
@@ -27,7 +28,6 @@ var return_false = function () { return false; };
         stream_id: 100,
         color: 'blue',
         subscribed: true,
-        id: 5,
     };
     global.stream_data.add_sub('devel', devel);
 
@@ -36,7 +36,6 @@ var return_false = function () { return false; };
         stream_id: 200,
         color: 'green',
         subscribed: true,
-        id: 6,
     };
     global.stream_data.add_sub('social', social);
 
@@ -102,6 +101,31 @@ var return_false = function () { return false; };
 
     assert.deepEqual(appended_elems, expected_elems);
 
+    var social_li = $('social-stub-html');
+    var stream_id = social.stream_id;
+
+    stream_list.set_in_home_view(stream_id, false);
+    assert(social_li.hasClass('out_of_home_view'));
+
+    stream_list.set_in_home_view(stream_id, true);
+    assert(!social_li.hasClass('out_of_home_view'));
+
+    var row = stream_list.stream_sidebar.get_row(stream_id);
+    stream_data.is_active = return_true;
+    row.update_whether_active();
+    assert(!social_li.hasClass('inactive_stream'));
+
+    stream_data.is_active = return_false;
+    row.update_whether_active();
+    assert(social_li.hasClass('inactive_stream'));
+
+    var removed;
+    social_li.remove = function () {
+        removed = true;
+    };
+
+    row.remove();
+    assert(removed);
 }());
 
 
@@ -128,7 +152,6 @@ function initialize_stream_data() {
         name: 'devel',
         stream_id: 1000,
         color: 'blue',
-        id: 5,
         pin_to_top: true,
         subscribed: true,
     };
@@ -138,7 +161,6 @@ function initialize_stream_data() {
         name: 'Rome',
         stream_id: 2000,
         color: 'blue',
-        id: 6,
         pin_to_top: true,
         subscribed: true,
     };
@@ -148,7 +170,6 @@ function initialize_stream_data() {
         name: 'test',
         stream_id: 3000,
         color: 'blue',
-        id: 7,
         pin_to_top: true,
         subscribed: true,
     };
@@ -159,7 +180,6 @@ function initialize_stream_data() {
         name: 'announce',
         stream_id: 4000,
         color: 'green',
-        id: 8,
         pin_to_top: false,
         subscribed: true,
     };
@@ -169,7 +189,6 @@ function initialize_stream_data() {
         name: 'Denmark',
         stream_id: 5000,
         color: 'green',
-        id: 9,
         pin_to_top: false,
         subscribed: true,
     };
@@ -179,7 +198,6 @@ function initialize_stream_data() {
         name: 'cars',
         stream_id: 6000,
         color: 'green',
-        id: 10,
         pin_to_top: false,
         subscribed: true,
     };
