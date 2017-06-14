@@ -423,8 +423,6 @@ exports.initialize = function () {
         zoom_out: zoom_out,
     });
 
-    pm_list.set_click_handlers();
-
     $(document).on('narrow_activated.zulip', function (event) {
         deselect_top_left_corner_items();
         reset_to_unnarrowed(narrow_state.stream() === zoomed_stream);

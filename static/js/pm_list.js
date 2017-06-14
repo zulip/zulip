@@ -207,6 +207,9 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 
+exports.initialize = function () {
+    pm_list.set_click_handlers();
+};
 
 return exports;
 }());
