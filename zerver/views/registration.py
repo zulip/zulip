@@ -15,13 +15,13 @@ from django.core import validators
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain
+    get_realm, get_realm_by_email_domain, get_system_bot
 from zerver.lib.send_email import send_email, send_email_to_user
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     user_email_is_unique, create_streams_with_welcome_messages, \
-    compute_mit_user_fullname
+    compute_mit_user_fullname, internal_send_private_message
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
@@ -62,6 +62,16 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address,
                                domain=domain,
                                salt='zerver.views.auth')
     return response
+
+def send_initial_pms(user):
+    # type: (UserProfile) -> None
+    content = """Welcome to Zulip!
+
+This is a great place to test formatting, sending, and editing messages.
+Click anywhere on this message to reply. A compose box will open at the bottom of the screen."""
+
+    internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
+                                  user.email, content)
 
 @require_post
 def accounts_register(request):
@@ -225,6 +235,8 @@ def accounts_register(request):
 
         if first_in_realm:
             do_change_is_admin(user_profile, True)
+
+        send_initial_pms(user_profile)
 
         if realm_creation and settings.REALMS_HAVE_SUBDOMAINS:
             # Because for realm creation, registration happens on the
