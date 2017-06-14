@@ -30,6 +30,8 @@ set_global('page_params', {
     ],
 });
 
+set_global('blueslip', {});
+
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
     emoji_codes: 'generated/emoji/emoji_codes.js',
@@ -326,4 +328,16 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
     var expected_value = [ /\/aa\/g/gim, /\/aa\/g/g ];
     assert.deepEqual(actual_value, expected_value);
+}());
+
+(function test_katex_throws_unexpected_exceptions() {
+    katex.renderToString = function () { throw new Error('some-exception'); };
+    var blueslip_error_called = false;
+    blueslip.error = function (ex) {
+        assert.equal(ex.message, 'some-exception');
+        blueslip_error_called = true;
+    };
+    var message = { raw_content: '$$a$$' };
+    markdown.apply_markdown(message);
+    assert(blueslip_error_called);
 }());
