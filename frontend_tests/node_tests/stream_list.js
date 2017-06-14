@@ -9,7 +9,9 @@ add_dependencies({
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     stream_sort: 'js/stream_sort',
+    topic_list: 'js/topic_list',
     unread: 'js/unread',
+    unread_ui: 'js/unread_ui',
     util: 'js/util',
 });
 
@@ -272,26 +274,92 @@ function initialize_stream_data() {
 }());
 
 (function test_update_count_in_dom() {
-    var count_span = $('count-span');
-    var value_span = $('value-span');
-    var unread_count_elem = $('unread-count-elem');
-    unread_count_elem.add_child('.count', count_span);
-    count_span.add_child('.value', value_span);
-    unread_count_elem.addClass('subscription_block');
-    unread_count_elem.addClass('stream-with-count');
-    assert(unread_count_elem.hasClass('stream-with-count'));
+    function make_elem(elem_selector, count_selector, value_selector) {
+        var elem = $(elem_selector);
+        var count = $(count_selector);
+        var value = $(value_selector);
+        elem.add_child('.count', count);
+        count.add_child('.value', value);
 
-    stream_list.update_count_in_dom(unread_count_elem, 0);
-    assert.equal(value_span.text(), '');
-    assert(!unread_count_elem.hasClass('stream-with-count'));
+        return elem;
+    }
 
-    stream_list.update_count_in_dom(unread_count_elem, 99);
-    assert.equal(value_span.text(), '99');
-    assert(unread_count_elem.hasClass('stream-with-count'));
+    var stream_li = make_elem(
+        'stream-li',
+        'stream-count',
+        'stream-value'
+    );
 
-    stream_list.update_count_in_dom(unread_count_elem, 0);
-    assert.equal(value_span.text(), '');
-    assert(!unread_count_elem.hasClass('stream-with-count'));
+
+    stream_li.addClass('subscription_block');
+    stream_li.addClass('stream-with-count');
+    assert(stream_li.hasClass('stream-with-count'));
+
+    make_elem(
+        "#global_filters li[data-name='mentioned']",
+        'mentioned-count',
+        'mentioned-value'
+    );
+
+    make_elem(
+        "#global_filters li[data-name='home']",
+        'home-count',
+        'home-value'
+    );
+
+    unread_ui.set_count_toggle_button = noop;
+
+    var stream_count = new Dict();
+    var stream_id = 11;
+
+    var stream_row = {
+        get_li: function () { return stream_li; },
+    };
+
+    stream_list.stream_sidebar.set_row(stream_id, stream_row);
+
+    stream_count.set(stream_id, 0);
+    var counts = {
+        stream_count: stream_count,
+        subject_count: new Dict(),
+        mentioned_message_count: 222,
+        home_unread_messages: 333,
+    };
+
+    stream_list.update_dom_with_unread_counts(counts);
+    assert.equal($('stream-value').text(), '');
+    assert(!stream_li.hasClass('stream-with-count'));
+
+    assert.equal($('mentioned-value').text(), '222');
+    assert.equal($('home-value').text(), '333');
+
+    stream_count.set(stream_id, 99);
+
+    stream_list.update_dom_with_unread_counts(counts);
+    assert.equal($('stream-value').text(), '99');
+    assert(stream_li.hasClass('stream-with-count'));
+
+    var topic_results;
+
+    topic_list.set_count = function (stream_id, topic, count) {
+        topic_results = {
+            stream_id: stream_id,
+            topic: topic,
+            count: count,
+        };
+    };
+
+    var topic_count = new Dict({fold_case: true});
+    topic_count.set('lunch', '555');
+    counts.subject_count.set(stream_id, topic_count);
+
+    stream_list.update_dom_with_unread_counts(counts);
+
+    assert.deepEqual(topic_results, {
+        stream_id: stream_id,
+        topic: 'lunch',
+        count: 555,
+    });
 }());
 
 (function test_create_initial_sidebar_rows() {
