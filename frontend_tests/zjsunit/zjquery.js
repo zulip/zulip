@@ -15,6 +15,7 @@ exports.make_zjquery = function () {
         var children = new Dict();
         var my_parent;
         var classes = new Dict();
+        var on_functions = new Dict();
 
         var self = {
             val: function () {
@@ -29,7 +30,12 @@ exports.make_zjquery = function () {
             height: noop,
             removeAttr: noop,
             removeData: noop,
-            trigger: noop,
+            trigger: function (ev) {
+                var funcs = on_functions.get(ev.name) || [];
+                _.each(funcs, function (f) {
+                    f(ev.data);
+                });
+            },
             blur: function () {
                 focused = false;
             },
@@ -107,7 +113,9 @@ exports.make_zjquery = function () {
                 // silently do nothing
                 return self.wrapper;
             },
-            on: function () {
+            on: function (name, f) {
+                var funcs = on_functions.setdefault(name, []);
+                funcs.push(f);
                 return self.wrapper;
             },
             remove: function () {
@@ -177,7 +185,12 @@ exports.make_zjquery = function () {
         return res;
     };
 
-    zjquery.Event = noop;
+    zjquery.Event = function (name, data) {
+        return {
+            name: name,
+            data: data,
+        };
+    };
 
     return zjquery;
 };

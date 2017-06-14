@@ -115,6 +115,8 @@ function assert_hidden(sel) {
     opts = {
         content: 'hello',
     };
+
+    $('#new_message_content').trigger = noop;
     start('private', opts);
 
     assert_hidden('#stream-message');
