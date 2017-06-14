@@ -712,6 +712,8 @@ $(function () {
 
         $(".settings-section, .settings-wrapper").removeClass("show");
 
+        ui.update_scrollbar($("#settings_content"));
+
         if (is_org_section) {
             admin_sections.load_admin_section(section);
         } else {

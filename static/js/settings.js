@@ -47,6 +47,9 @@ $("body").ready(function () {
 
 
 function _setup_page() {
+    ui.set_up_scrollbar($("#settings_page .sidebar.left"));
+    ui.set_up_scrollbar($("#settings_content"));
+
     // only run once -- if the map has not already been initialized.
     if (!map_initialized) {
         map = {

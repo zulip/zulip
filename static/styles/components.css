@@ -321,6 +321,7 @@ a.no-underline {
     opacity: 0;
 
     transition: opacity 0.3s ease;
+    overflow: hidden;
 }
 
 .overlay.show {
