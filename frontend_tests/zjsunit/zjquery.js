@@ -116,6 +116,11 @@ exports.make_zjquery = function () {
                 }
             },
         };
+
+        if (selector[0] === '<') {
+            self.html(selector);
+        }
+
         return self;
     }
 
