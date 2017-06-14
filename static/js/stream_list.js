@@ -4,6 +4,11 @@ var exports = {};
 
 var zoomed_stream = '';
 
+exports.get_global_filter_li = function (filter_name) {
+    var selector = "#global_filters li[data-name='" + filter_name + "']";
+    return $(selector);
+};
+
 exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
@@ -124,18 +129,6 @@ exports.build_stream_list = function () {
 
     parent.append(elems);
 };
-
-function iterate_to_find(selector, name_to_find, context) {
-    var lowercase_name = name_to_find.toLowerCase();
-    var found = _.find($(selector, context), function (elem) {
-        return $(elem).attr('data-name').toLowerCase() === lowercase_name;
-    });
-    return found ? $(found) : $();
-}
-
-function get_filter_li(type, name) {
-    return iterate_to_find("#" + type + "_filters > li", name);
-}
 
 exports.get_stream_li = function (stream_id) {
     var row = exports.stream_sidebar.get_row(stream_id);
@@ -299,11 +292,6 @@ exports.redraw_stream_privacy = function (stream_name) {
     div.html(html);
 };
 
-function set_count(type, name, count) {
-    var unread_count_elem = get_filter_li(type, name);
-    exports.update_count_in_dom(unread_count_elem, count);
-}
-
 function set_stream_unread_count(stream_id, count) {
     var unread_count_elem = exports.get_stream_li(stream_id);
     if (!unread_count_elem) {
@@ -355,14 +343,17 @@ exports.update_dom_with_unread_counts = function (counts) {
         });
     });
 
-    // integer counts
-    set_count("global", "mentioned", counts.mentioned_message_count);
-    set_count("global", "home", counts.home_unread_messages);
+    // mentioned/home have simple integer counts
+    var mentioned_li = exports.get_global_filter_li('mentioned');
+    var home_li = exports.get_global_filter_li('home');
+
+    exports.update_count_in_dom(mentioned_li, counts.mentioned_message_count);
+    exports.update_count_in_dom(home_li, counts.home_unread_messages);
 
     unread_ui.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
                                       counts.home_unread_messages);
 
-    unread_ui.animate_mention_changes(get_filter_li('global', 'mentioned'),
+    unread_ui.animate_mention_changes(mentioned_li,
                                       counts.mentioned_message_count);
 };
 
@@ -440,22 +431,31 @@ exports.initialize = function () {
         deselect_top_left_corner_items();
         reset_to_unnarrowed(narrow_state.stream() === zoomed_stream);
 
+        var ops;
+        var filter_name;
+        var filter_li;
+
         // TODO: handle confused filters like "in:all stream:foo"
-        var op_in = event.filter.operands('in');
-        if (op_in.length !== 0) {
-            if (['all', 'home'].indexOf(op_in[0]) !== -1) {
-                $("#global_filters li[data-name='" + op_in[0] + "']").addClass('active-filter');
+        ops = event.filter.operands('in');
+        if (ops.length >= 1) {
+            filter_name = ops[0];
+            if (filter_name === 'home') {
+                filter_li = exports.get_global_filter_li(filter_name);
+                filter_li.addClass('active-filter');
             }
         }
-        var op_is = event.filter.operands('is');
-        if (op_is.length !== 0) {
-            if (['starred', 'mentioned'].indexOf(op_is[0]) !== -1) {
-                $("#global_filters li[data-name='" + op_is[0] + "']").addClass('active-filter');
+        ops = event.filter.operands('is');
+        if (ops.length >= 1) {
+            filter_name = ops[0];
+            if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
+                filter_li = exports.get_global_filter_li(filter_name);
+                filter_li.addClass('active-filter');
             }
         }
 
+        var op_is = event.filter.operands('is');
         var op_pm = event.filter.operands('pm-with');
-        if ((op_is.length !== 0 && _.contains(op_is, "private")) || op_pm.length !== 0) {
+        if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
             pm_list.expand(op_pm);
         } else {
             pm_list.close();
@@ -471,7 +471,9 @@ exports.initialize = function () {
         deselect_top_left_corner_items();
         reset_to_unnarrowed();
         pm_list.close();
-        $("#global_filters li[data-name='home']").addClass('active-filter');
+
+        var filter_li = exports.get_global_filter_li('home');
+        filter_li.addClass('active-filter');
     });
 
     $(document).on('subscription_add_done.zulip', function (event) {
