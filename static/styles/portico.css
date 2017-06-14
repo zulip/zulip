@@ -1628,3 +1628,12 @@ input.new-organization-button {
     font-size: .85rem;
     color: #AAA;
 }
+
+#devtools-wrapper {
+    text-align: right;
+}
+
+#devtools-page {
+    max-width: 800px;
+    margin: 0 auto;
+}

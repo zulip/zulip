@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from django.conf import settings
+from django.views.generic import TemplateView
 import os.path
 from django.views.static import serve
 import zerver.views.registration
@@ -34,6 +35,9 @@ urls = [
 
     # Page for testing email templates
     url(r'^emails/$', zerver.views.test_emails.email_page),
+
+    # Listing of useful URLs and various tools for development
+    url(r'^devtools/$', TemplateView.as_view(template_name='zerver/dev_tools.html')),
 ]
 
 i18n_urls = [
