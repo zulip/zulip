@@ -48,6 +48,7 @@ def email_page(request):
         },
         'referrer_name': 'Road Runner',
         'referrer_email': 'runner@acme.com',
+        'referrer_realm_name': 'Acme Corporation',
         'realm_uri': realm.uri,
         'server_uri': settings.SERVER_URI,
         'old_email': 'old_address@acme.com',
