@@ -55,6 +55,10 @@ Listed below are all Zulip search operators.
 * `pm-with:foo@bar.com` - This operator narrows the view to show only
   private messages sent from the user with the email address
   `foo@bar.com`.
+* `group-pm-with:foo@bar.com` - This operator narrows the view to show all
+  private messages from groups that contain both you and the user with
+  email address `foo@bar.com`. This operator does not show 1:1 private messages
+  between you and the user with email address `foo@bar.com`
 * `sender:foo@bar.com` - This operator narrows the view to show all
   messages sent by the user with the email address `foo@bar.com`.
 * `sender:me` - This operator narrows the view to show all messages sent by you.
