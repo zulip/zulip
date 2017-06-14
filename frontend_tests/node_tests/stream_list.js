@@ -15,6 +15,9 @@ add_dependencies({
 
 var stream_list = require('js/stream_list.js');
 
+var noop = function () {};
+var return_false = function () { return false; };
+
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
@@ -102,7 +105,7 @@ var stream_list = require('js/stream_list.js');
 }());
 
 
-(function test_sort_streams() {
+function initialize_stream_data() {
     stream_data.clear_subscriptions();
 
     function add_row(sub) {
@@ -181,7 +184,15 @@ var stream_list = require('js/stream_list.js');
         subscribed: true,
     };
     add_row(carSub);
+}
 
+(function test_sort_streams() {
+    stream_data.clear_subscriptions();
+
+    // Get coverage on early-exit.
+    stream_list.build_stream_list();
+
+    initialize_stream_data();
 
     global.stream_data.is_active = function (sub) {
         return sub.name !== 'cars';
@@ -221,6 +232,11 @@ var stream_list = require('js/stream_list.js');
         'cars',
     ]);
 
+    var denmark_sub = stream_data.get_sub('Denmark');
+    var stream_id = denmark_sub.stream_id;
+    assert(stream_list.stream_sidebar.has_row_for(stream_id));
+    stream_list.remove_sidebar_row(stream_id);
+    assert(!stream_list.stream_sidebar.has_row_for(stream_id));
 }());
 
 (function test_update_count_in_dom() {
@@ -244,4 +260,30 @@ var stream_list = require('js/stream_list.js');
     stream_list.update_count_in_dom(unread_count_elem, 0);
     assert.equal(value_span.text(), '');
     assert(!unread_count_elem.hasClass('stream-with-count'));
+}());
+
+(function test_create_initial_sidebar_rows() {
+    initialize_stream_data();
+
+    var html_dict = new Dict();
+
+    stream_list.stream_sidebar = {
+        has_row_for: return_false,
+        set_row: function (stream_id, widget) {
+            html_dict.set(stream_id, widget.get_li().html());
+        },
+    };
+
+    stream_list.update_count_in_dom = noop;
+
+    global.templates.render = function (template_name, data) {
+        assert.equal(template_name, 'stream_sidebar_row');
+        return '<div>stub-html-' + data.name;
+    };
+
+    // Test this code with stubs above...
+    stream_list.create_initial_sidebar_rows();
+
+    assert.equal(html_dict.get(1000), '<div>stub-html-devel');
+    assert.equal(html_dict.get(5000), '<div>stub-html-Denmark');
 }());
