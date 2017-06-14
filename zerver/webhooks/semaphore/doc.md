@@ -23,9 +23,7 @@ You should now see a form that looks like this:
 
 {!webhook-url-with-bot-email.md!}
 
-To specify the stream, you must explicitly append
-`&stream=stream_name` to the end of the above URL, where
-`stream_name` is the stream you want the notifications sent to.
+{!append-stream-name.md!}
 
 {!congrats.md!}
 
