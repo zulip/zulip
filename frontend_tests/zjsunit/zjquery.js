@@ -123,6 +123,11 @@ exports.make_zjquery = function () {
                     my_parent.remove_child(selector);
                 }
             },
+            get: function (idx) {
+                // We have some legacy code that does $('foo').get(0).
+                assert.equal(idx, 0);
+                return selector;
+            },
         };
 
         if (selector[0] === '<') {
