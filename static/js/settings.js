@@ -47,6 +47,12 @@ $("body").ready(function () {
 
 
 function _setup_page() {
+    $(".sidebar.left").perfectScrollbar({
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.5,
+    });
+
     // only run once -- if the map has not already been initialized.
     if (!map_initialized) {
         map = {
