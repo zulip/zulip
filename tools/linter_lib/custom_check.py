@@ -63,6 +63,7 @@ def build_custom_checkers(by_lang):
             if (max_length is not None and line_length > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
                 not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+                not re.match("`\{\{ external_api_uri_subdomain \}\}[^`]+`", line) and
                     "#ignorelongline" not in line and 'migrations' not in fn):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
                 failed = True
@@ -425,10 +426,7 @@ def build_custom_checkers(by_lang):
             "docs/readme-symlink.md",
             "README.md",
             "zerver/webhooks/helloworld/doc.md",
-            "zerver/webhooks/solano/doc.md",
             "zerver/webhooks/trello/doc.md",
-            "zerver/webhooks/papertrail/doc.md",
-            "templates/zerver/help/include/git-webhook-url-with-branches.md",
         }
         for fn in by_lang['md']:
             max_length = None
