@@ -118,6 +118,23 @@ There is detailed documentation on the
 [real-time push and event queue system](events-system.html); most of
 the code is in `zerver/tornado`.
 
+#### HTML templates, JavaScript, etc.
+
+Zulip's HTML is primarily implemented using two types of HTML
+templates: backend templates (powered by the [Jinja2][] template
+engine used for logged-out ("portico") pages and the webapp's base
+content) and frontend templates (powered by [Handlebars][]) used for
+live-rendering HTML from JavaScript for things like the main message
+feed.
+
+For more details on the frontend, see our documentation on
+[templates and translation](translating.html),
+[directory structure](directory-structure.html), and
+[the static asset pipeline](front-end-build-process.html).
+
+[Jinja2]: http://jinja.pocoo.org/
+[Handlebars]: http://handlebarsjs.com/
+
 ### nginx
 
 nginx is the front-end web server to all Zulip traffic; it serves static
