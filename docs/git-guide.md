@@ -62,6 +62,9 @@ can skip this section. Otherwise, read on!
 If you're not already using Git, you might need to [install][gitbook-install]
 and [configure][gitbook-setup] it.
 
+**If you are using Windows 10, make sure you [are running Git BASH as an
+administrator][git-bash-admin] at all times.**
+
 You'll also need a GitHub account, which you can sign up for
 [here][github-join]. We also recommend you create an ssh key if you don't
 already have one and [add it to your GitHub account][github-help-add-ssh-key].
@@ -1459,6 +1462,7 @@ Deleting local branch review-original-5156 (was 5a1e982)
 [zulip-rtd-dev-first-time]: dev-env-first-time-contributors.html
 [zulip-rtd-zulipbot-usage]: zulipbot-usage.html
 [gitgui-tower]: https://www.git-tower.com/
+[git-bash-admin]: dev-end-first-time-contributors.html#running-git-bash-as-an-administrator
 [gitgui-fork]: https://git-fork.com/
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/
 [gitgui-ghdesktop]: https://desktop.github.com/
