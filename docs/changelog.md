@@ -19,6 +19,11 @@ following postgres queries (run these inside `manage.py dbshell`):
     zerver_usermessage_starred_message_id
     ON zerver_usermessage (user_profile_id, message_id)
     WHERE (flags & 2) != 0;
+
+    CREATE INDEX CONCURRENTLY
+    zerver_usermessage_read_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 1) != 0;
 ```
 
 For context on the impact of running these migrations, creating these
