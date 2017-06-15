@@ -781,22 +781,29 @@ complicated rebase.
 
 ## Create a pull request
 
-When you're ready for feedback, submit a pull request. At Zulip we recommend
-submitting work-in-progress pull requests early and often. This allows you to
-get feedback and help with your bugfix or feature. Prefix work-in-progress pull
-requests with **[WIP]**: this will indicate to maintainers that your pull
-request is not yet ready to be merged, which will set expectations
-correctly for any feedback from other developers.
-
-Pull requests are a feature specific to GitHub. They provide a simpler,
-web-based way to submit your work (often called "patches") to a project. It's
-called a *pull request* because you're asking the project to *pull changes*
+When you're ready for feedback, submit a pull request. Pull requests
+are a feature specific to GitHub. They provide a simple, web-based way
+to submit your work (often called "patches") to a project. It's called
+a *pull request* because you're asking the project to *pull changes*
 from your fork.
 
-If you're unfamiliar with how to create a pull request, checkout GitHub's
-documentation on [creating a pull request from a
-fork][github-help-create-pr-fork]. You might also find GitHub's article [about
-pull requests][github-help-about-pr] helpful.
+If you're unfamiliar with how to create a pull request, you can check
+out GitHub's documentation on
+[creating a pull request from a fork][github-help-create-pr-fork]. You
+might also find GitHub's article
+[about pull requests][github-help-about-pr] helpful.  That all said,
+the tutorial below will walk you through the process.
+
+### Work in progress pull requests
+
+In the Zulip project, we encourage submitting work-in-progress pull
+requests early and often. This allows you to share your code to make
+it eaiser to get feedback and help with your changes. Prefix the
+titles of work-in-progress pull requests with **[WIP]**, which in our
+project means that you don't think your pull request is ready to be
+merged (e.g. it might not work or pass tests).  This sets expectations
+correctly for any feedback from other developers, and prevents your
+work from being merged before you're confident in it.
 
 ### Step 1: Update your branch with git rebase
 
