@@ -147,6 +147,10 @@ from outside.
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`). We use
     `zproject/wsgi.py` to implement uWSGI here (see
     `django.core.wsgi`).
+- By default (i.e. if `LOCAL_UPLOADS_DIR` is set), nginx will serve
+  user-uploaded content like avatars, custom emoji, and uploaded
+  files.  However, one can configure Zulip to store these in a cloud
+  storage service like Amazon S3 instead.
 
 ### Supervisor
 
