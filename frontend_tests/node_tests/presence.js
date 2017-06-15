@@ -4,6 +4,9 @@ add_dependencies({
 
 var presence = require('js/presence.js');
 
+set_global('server_events', {});
+set_global('blueslip', {});
+
 var OFFLINE_THRESHOLD_SECS = 140;
 
 var me = {
@@ -134,5 +137,18 @@ people.initialize_current_user(me.user_id);
     );
 
     assert(!presence.presence_info[bot.user_id]);
+
+    var unknown = {
+        email: 'unknown@zulip.com',
+        user_id: 42,
+        full_name: 'Unknown Name',
+    };
+    presences[unknown.email] = {};
+
+    server_events.suspect_offline = false;
+    blueslip.error = function (msg) {
+        assert.equal(msg, 'Unknown email in presence data: unknown@zulip.com');
+    };
+    presence.set_info(presences, base_time);
 }());
 
