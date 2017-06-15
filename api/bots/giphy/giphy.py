@@ -12,13 +12,6 @@ import re
 
 GIPHY_TRANSLATE_API = 'http://api.giphy.com/v1/gifs/translate'
 
-if not os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'giphy.conf')):
-    print('Giphy bot config file not found, please set it up in this bot\'s folder '
-          'with the name \'giphy.conf\'\n\nUsing format:\n\n[giphy-config]\nkey=<giphy'
-          'API key here>\n\n')
-    sys.exit(1)
-
-
 class GiphyHandler(object):
     '''
     This plugin posts a GIF in response to the keywords provided by the user.
