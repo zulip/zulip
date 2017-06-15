@@ -169,6 +169,8 @@ exports.MessageList.prototype = {
 
         var closest_id = this.closest_id(id);
 
+        var error_data;
+
         // The name "use_closest" option is a bit legacy.  We
         // are always gonna move to the closest visible id; the flag
         // just says whether we call blueslip.error or not.  The caller
@@ -176,7 +178,7 @@ exports.MessageList.prototype = {
         // pointer as needed, so only generate an error if the flag is
         // false.
         if (!opts.use_closest && closest_id !== id) {
-            var error_data = {
+            error_data = {
                 table_name: this.table_name,
                 id: id,
                 closest_id: closest_id,
@@ -186,7 +188,7 @@ exports.MessageList.prototype = {
         }
 
         if (closest_id === -1 && !opts.empty_ok) {
-            var error_data = {
+            error_data = {
                 table_name: this.table_name,
                 id: id,
                 items_length: this._items.length,
