@@ -63,8 +63,11 @@ class RegistrationForm(forms.Form):
                                         (Realm.CORPORATE, 'Corporate')),
                                        initial=Realm.COMMUNITY, required=False)
 
-    if settings.TERMS_OF_SERVICE:
-        terms = forms.BooleanField(required=True)
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        super(RegistrationForm, self).__init__(*args, **kwargs)
+        if settings.TERMS_OF_SERVICE:
+            self.fields['terms'] = forms.BooleanField(required=True)
 
     def clean_full_name(self):
         # type: () -> Text
