@@ -486,6 +486,30 @@ function get_containing_suggestions(last) {
         });
 }
 
+function get_operator_suggestions(last) {
+        if (!(last.operator === 'search')) {
+            return [];
+        }
+
+        var negated = false;
+        if (last.operand.indexOf("-") === 0) {
+            negated = true;
+            last.operand = last.operand.slice(1);
+        }
+
+        var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from'];
+        choices = _.filter(choices, function (choice) {
+            return phrase_match(choice, last.operand);
+        });
+
+        return _.map(choices, function (choice) {
+            var op = [{operator: choice, operand: '', negated: negated}];
+            var search_string = Filter.unparse(op);
+            var description = Filter.describe(op);
+            return {description: description, search_string: search_string};
+        });
+}
+
 function attach_suggestions(result, base, suggestions) {
     _.each(suggestions, function (suggestion) {
         if (base.description.length > 0) {
@@ -552,6 +576,9 @@ exports.get_suggestions = function (query) {
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_topic_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_operator_suggestions(last);
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_containing_suggestions(last);
