@@ -11,6 +11,7 @@ all related services will run.
 
 Contents:
 * [Requirements](#requirements)
+* [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
 * [Step 1: Install Prerequisites](#step-1-install-prerequisites)
 * [Step 2: Get Zulip code](#step-2-get-zulip-code)
 * [Step 3: Start the development environment](#step-3-start-the-development-environment)
@@ -44,7 +45,7 @@ connection throughout the entire installation processes. (See [Specifying a
 proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 
-- **All**: 2GB available RAM, Active broadband internet connection.
+- **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended), Git,
   [VirtualBox][vbox-dl], [Vagrant][vagrant-dl-macos].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
@@ -56,6 +57,14 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 Don't see your system listed above? See [Advanced setup][install-advanced] for
 details about installing for other Linux and UNIX platforms.
+
+### Step 0: Set up Git & GitHub
+
+Follow our [Git Guide][set-up-git] in order to install Git and set up a GitHub account.
+
+If you haven't already created an ssh key and added it to your GitHub account,
+you should do that now by following [these
+instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 ### Step 1: Install Prerequisites
 
@@ -243,10 +252,6 @@ winsymlinks:native
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 ### Step 2: Get Zulip Code
-
-If you haven't already created an ssh key and added it to your GitHub account,
-you should do that now by following [these
-instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 1. In your browser, visit <https://github.com/zulip/zulip>
    and click the `fork` button. You will need to be logged in to GitHub to
@@ -996,3 +1001,4 @@ for the IP address that means any IP address can connect to your development ser
 [rtd-using-dev-env]: using-dev-environment.html
 [rtd-dev-remote]: dev-remote.html
 [git-bash]: https://git-for-windows.github.io/
+[set-up-git]: git-guide.html#set-up-git
