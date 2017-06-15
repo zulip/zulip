@@ -148,9 +148,6 @@ function get_group_suggestions(all_people, last, operators) {
         return {description: description, search_string: search_string};
     });
 
-    if (!match_criteria(operators, [{operator: "is", operand: "private"}])) {
-        suggestions.push({description: "Private messages", search_string:"is:private"});
-    }
     return suggestions;
 }
 
@@ -210,12 +207,6 @@ function get_person_suggestions(all_people, last, operators, autocomplete_operat
         return {description: description, search_string: search_string};
     });
 
-    // If we've specified an operator, and we're not searching through group
-    // PMs (i.e. no comma), then add 'is:private' as a generic option
-    if (last.operator !== 'search' && last.operand.indexOf(",") === -1
-        && !match_criteria(operators, [{operator: "is", operand: "private"}])) {
-        objs.push({description: "Private messages", search_string:"is:private"});
-    }
     return objs;
 }
 
