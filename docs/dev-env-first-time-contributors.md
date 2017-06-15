@@ -190,10 +190,17 @@ sudo apt-get install build-essential git ruby lxc redir
 If you do, make sure to **install default required packages** along with
 **git**, **curl**, **openssh**, and **rsync** binaries.)
 
-After installing, you must run **Git BASH as an administrator**.
-
 Also, you must have hardware virtualization enabled (VT-X or AMD-V) in your
 computer's BIOS.
+
+#### Running Git BASH as an administrator
+
+It is important that you **always run Git BASH with administrator
+privileges** when working on Zulip code, as not doing so will cause
+errors in the development environment (such as symlink creation). You
+might wish to configure your Git BASH shortcut to always run with
+these privileges enabled (see this [guide][bash-admin-setup] for how
+to set this up).
 
 ##### Enable native symlinks
 
@@ -996,3 +1003,4 @@ for the IP address that means any IP address can connect to your development ser
 [rtd-using-dev-env]: using-dev-environment.html
 [rtd-dev-remote]: dev-remote.html
 [git-bash]: https://git-for-windows.github.io/
+[bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
