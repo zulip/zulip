@@ -145,15 +145,20 @@ def accounts_register(request):
                         ldap_full_name = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
                         request.session['authenticated_full_name'] = ldap_full_name
                         name_validated = True
-                        # We don't use initial= here, because if the form is
-                        # complete (that is, no additional fields need to be
-                        # filled out by the user) we want the form to validate,
-                        # so they can be directly registered without having to
-                        # go through this interstitial.
-                        form = RegistrationForm({'full_name': ldap_full_name})
-                        # FIXME: This will result in the user getting
-                        # validation errors if they have to enter a password.
-                        # Not relevant for ONLY_SSO, though.
+                        if realm_creation:
+                            # Using initial= here because we want to fill rest of
+                            # the fields related to realm.
+                            form = RegistrationForm(initial={'full_name': ldap_full_name})
+                        else:
+                            # We don't use initial= here, because if the form is
+                            # complete (that is, no additional fields need to be
+                            # filled out by the user) we want the form to validate,
+                            # so they can be directly registered without having to
+                            # go through this interstitial.
+                            form = RegistrationForm({'full_name': ldap_full_name})
+                            # FIXME: This will result in the user getting
+                            # validation errors if they have to enter a password.
+                            # Not relevant for ONLY_SSO, though.
                         break
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
