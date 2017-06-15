@@ -60,11 +60,14 @@ details about installing for other Linux and UNIX platforms.
 
 ### Step 0: Set up Git & GitHub
 
-Follow our [Git Guide][set-up-git] in order to install Git and set up a GitHub account.
+You can skip this step if you already have Git, GitHub, and SSH access
+to GitHub working on your machine.
 
-If you haven't already created an ssh key and added it to your GitHub account,
-you should do that now by following [these
-instructions](https://help.github.com/articles/generating-an-ssh-key/).
+Follow our [Git Guide][set-up-git] in order to install Git, set up a
+GitHub account, create an SSH key to access code on GitHub
+efficiently, etc.  Be sure to create an ssh key and add it to your
+GitHub account using
+[these instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 ### Step 1: Install Prerequisites
 
