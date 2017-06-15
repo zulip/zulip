@@ -19,12 +19,18 @@ following postgres queries (run these inside `manage.py dbshell`):
     zerver_usermessage_starred_message_id
     ON zerver_usermessage (user_profile_id, message_id)
     WHERE (flags & 2) != 0;
+
+    CREATE INDEX CONCURRENTLY
+    zerver_usermessage_unread_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 1) = 0;
 ```
 
-For context on the impact of running these migrations, creating these
-indexes took about 1 minute each with chat.zulip.org's 75M UserMessage
-rows (from `select COUNT(*) from zerver_usermessage;`), with no
-user-facing service disruption.
+For context on the impact of running these migrations, creating the
+first two indexes took about 1 minute each with chat.zulip.org's 75M
+UserMessage rows (from `select COUNT(*) from zerver_usermessage;`),
+with no user-facing service disruption.  The third index took more
+like 10 minutes.
 
 ### 1.6.0 -- 2017-06-06
 
