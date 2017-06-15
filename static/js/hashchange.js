@@ -135,9 +135,11 @@ function do_hashchange(from_reload) {
             change_hash:    false,  // already set
             trigger: 'hash change',
         };
-        if (from_reload && page_params.initial_narrow_pointer !== undefined) {
-            narrow_opts.from_reload = true;
-            narrow_opts.use_initial_narrow_pointer = true;
+        if (from_reload) {
+            blueslip.debug('We are narrowing as part of a reload.');
+            if (page_params.initial_narrow_pointer !== undefined) {
+                narrow_opts.use_initial_narrow_pointer = true;
+            }
         }
         narrow.activate(operators, narrow_opts);
         floating_recipient_bar.update();

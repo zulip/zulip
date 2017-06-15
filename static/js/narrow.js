@@ -84,7 +84,6 @@ exports.activate = function (raw_operators, opts) {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
         use_initial_narrow_pointer: false,
-        from_reload: false,
         change_hash: true,
         trigger: 'unknown',
     });
@@ -135,7 +134,7 @@ exports.activate = function (raw_operators, opts) {
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
     }
 
-    if (opts.use_initial_narrow_pointer && opts.from_reload) {
+    if (opts.use_initial_narrow_pointer) {
         then_select_id = page_params.initial_narrow_pointer;
         then_select_offset = page_params.initial_narrow_offset;
         opts.use_initial_narrow_pointer = false;
