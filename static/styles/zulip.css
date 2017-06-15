@@ -1495,6 +1495,7 @@ blockquote p {
     margin-right: 11px;
     background-size: 35px 35px;
     vertical-align: top;
+    border-radius: 4px;
 }
 
 .home-error-bar {
