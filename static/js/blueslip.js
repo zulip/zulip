@@ -6,6 +6,35 @@ var blueslip = (function () {
 
 var exports = {};
 
+var getLogRulesChecker = function (LOG_ALL, ALLOWED, BLOCKED) {
+    return function (msg, console_name) {
+        if (!page_params.debug_mode) {
+            return true; // log everything in production
+        }
+        if (["error", "warn"].indexOf(console_name) != -1) {
+            return true; // log all warnings and errors
+        }
+        // if a message type is both in the allowed as well as blocked list,
+        // it will get printed. If it is not in either list, the global
+        // LOG_ALL value decides.
+        if (ALLOWED.indexOf(msg) != -1) { //msg type is allowed
+            return true;
+        }
+        if (BLOCKED.indexOf(msg) != -1) { //msg type is blocked
+            return false;
+        }
+        return LOG_ALL;
+    };
+};
+
+ // Specify which log messages should be allowed or blocked.
+ // Parameters: getLogRulesChecker(LOG_ALL, ALLOWED, BLOCKED)
+var shouldWeLog = getLogRulesChecker(
+                    true,
+                    [],
+                    ["Narrowed","Unnarrowed"]
+                );
+
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -65,8 +94,7 @@ Logger.prototype = (function () {
             if (this._memory_log.length > 1000) {
                 this._memory_log.shift();
             }
-
-            if (console[name] !== undefined) {
+            if (console[name] !== undefined && shouldWeLog(arguments['0'], name)) {
                 return console[name].apply(console, arguments);
             }
             return undefined;
