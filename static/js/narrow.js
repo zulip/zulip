@@ -83,7 +83,7 @@ exports.activate = function (raw_operators, opts) {
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
-        first_unread_from_server: false,
+        use_initial_narrow_pointer: false,
         from_reload: false,
         change_hash: true,
         trigger: 'unknown',
@@ -97,7 +97,7 @@ exports.activate = function (raw_operators, opts) {
         opts.select_first_unread = false;
     }
 
-    if (opts.then_select_id === -1 && !opts.first_unread_from_server) {
+    if (opts.then_select_id === -1 && !opts.use_initial_narrow_pointer) {
         // According to old comments, this shouldn't happen anymore
         blueslip.warn("Setting then_select_id to page_params.pointer.");
         opts.then_select_id = page_params.pointer;
@@ -135,10 +135,10 @@ exports.activate = function (raw_operators, opts) {
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
     }
 
-    if (opts.first_unread_from_server && opts.from_reload) {
+    if (opts.use_initial_narrow_pointer && opts.from_reload) {
         then_select_id = page_params.initial_narrow_pointer;
         then_select_offset = page_params.initial_narrow_offset;
-        opts.first_unread_from_server = false;
+        opts.use_initial_narrow_pointer = false;
         opts.select_first_unread = false;
         home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
@@ -216,7 +216,7 @@ exports.activate = function (raw_operators, opts) {
         num_before: 50,
         num_after: 50,
         msg_list: message_list.narrowed,
-        use_first_unread_anchor: opts.first_unread_from_server,
+        use_first_unread_anchor: opts.use_initial_narrow_pointer,
         cont: function () {
             ui.hide_loading_more_messages_indicator();
             if (defer_selecting_closest) {
