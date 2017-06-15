@@ -9,13 +9,13 @@ var exports = {};
 // auto-completing code blocks missing a trailing close.
 
 // See backend fenced_code.py:71 for associated regexp
-var fencestr = "^(~{3,}|`{3,})"          + // Opening Fence
-               "[ ]*"                    + // Spaces
-               "("                       +
-                   "\\{?\\.?"            +
-                   "([a-zA-Z0-9_+-]*)"   + // Language
-                   "\\}?"                +
-               "[ ]*"                    + // Spaces
+var fencestr = "^(~{3,}|`{3,})"            + // Opening Fence
+               "[ ]*"                      + // Spaces
+               "("                         +
+                   "\\{?\\.?"              +
+                   "([a-zA-Z0-9_+-./#]*)"  + // Language
+                   "\\}?"                  +
+               "[ ]*"                      + // Spaces
                ")$";
 var fence_re = new RegExp(fencestr);
 
