@@ -102,7 +102,7 @@ class BotHandlerApi(object):
             our_dir, '..', 'bots', bot_name, bot_name + '.conf'))
         section = section or bot_name
         config = configparser.ConfigParser()
-        config.read(conf_file_path)
+        config.readfp(open(conf_file_path))
         return dict(config.items(section))
 
 
