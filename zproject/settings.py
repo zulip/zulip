@@ -822,13 +822,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/common.js'
     },
-    'signup': {
-        'source_filenames': [
-            'js/portico/signup.js',
-            'node_modules/jquery-validation/dist/jquery.validate.js',
-        ],
-        'output_filename': 'min/signup.js'
-    },
     'app': {
         'source_filenames': [
             'third/bootstrap-notify/js/bootstrap-notify.js',
