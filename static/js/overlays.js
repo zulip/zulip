@@ -44,6 +44,8 @@ exports.open_overlay = function (opts) {
         return;
     }
 
+    blueslip.debug('open overlay: ' + opts.name);
+
     // Our overlays are kind of crufty...we have an HTML id
     // attribute for them and then a data-overlay attribute for
     // them.  Make sure they match.
@@ -67,6 +69,13 @@ exports.close_overlay = function (name) {
         blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open." );
         return;
     }
+
+    if (name === undefined) {
+        blueslip.error('Undefined name was passed into close_overlay');
+        return;
+    }
+
+    blueslip.debug('close overlay: ' + name);
 
     active_overlay.removeClass("show");
 
