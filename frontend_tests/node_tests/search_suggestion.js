@@ -430,6 +430,7 @@ init();
     var expected = [
         "sender",
         "sender:bob@zulip.com",
+        "sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -438,6 +439,7 @@ init();
     expected = [
         "from",
         "from:bob@zulip.com",
+        "from:",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -756,6 +758,44 @@ init();
     expected = [
         'stream:Denmark is:alerted has:lin',
         'stream:Denmark is:alerted has:link',
+        'stream:Denmark is:alerted',
+        'stream:Denmark',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
+(function test_operator_suggestions() {
+    // Completed operator should return nothing
+    var query = 'stream:';
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        'stream:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'st';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'st',
+        'is:starred',
+        'stream:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-s';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        '-s',
+        '-stream:',
+        '-sender:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'stream:Denmark is:alerted -f';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'stream:Denmark is:alerted -f',
+        'stream:Denmark is:alerted -from:',
         'stream:Denmark is:alerted',
         'stream:Denmark',
     ];
