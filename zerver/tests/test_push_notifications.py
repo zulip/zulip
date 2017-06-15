@@ -564,7 +564,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": True,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
-            "sender_avatar_url": apn.avatar_url(message.sender),
+            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "stream": apn.get_display_recipient(message.recipient),
             "topic": message.subject,
@@ -586,7 +586,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
-            "sender_avatar_url": apn.avatar_url(message.sender),
+            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
             "recipient_type": "private",
         }
         self.assertDictEqual(payload, expected)

@@ -10,6 +10,7 @@ from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path, \
     user_avatar_path_from_ids
 from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 from zerver.models import get_user_profile_by_email
+from six.moves import urllib
 
 def avatar_url(user_profile, medium=False):
     # type: (UserProfile, bool) -> Text
@@ -59,3 +60,9 @@ def _get_unversioned_avatar_url(avatar_source, email=None, realm_id=None,
         return u"https://secure.gravatar.com/avatar/%s?d=identicon%s" % (hash_key, gravitar_query_suffix)
     else:
         return settings.DEFAULT_AVATAR_URI+'?x=x'
+
+def absolute_avatar_url(user_profile):
+    # type: (UserProfile) -> Text
+    """Absolute URLs are used to simplify logic for applications that
+    won't be served by browsers, such as rendering GCM notifications."""
+    return urllib.parse.urljoin(user_profile.realm.uri, avatar_url(user_profile))

@@ -9,7 +9,7 @@ from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_notifications, \
     receives_online_notifications
 from zerver.models import get_user_profile_by_id
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
@@ -331,7 +331,7 @@ def get_gcm_payload(user_profile, message):
         'content_truncated': content_truncated,
         'sender_email': message.sender.email,
         'sender_full_name': message.sender.full_name,
-        'sender_avatar_url': avatar_url(message.sender),
+        'sender_avatar_url': absolute_avatar_url(message.sender),
     }
 
     if message.recipient.type == Recipient.STREAM:
