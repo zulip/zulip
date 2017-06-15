@@ -180,7 +180,7 @@ def run():
 
         failed = run_parallel(lint_functions)
 
-    sys.exit(1 if failed else 0)
+    sys.exit(1)
 
 if __name__ == '__main__':
     run()
