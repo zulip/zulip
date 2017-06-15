@@ -113,12 +113,7 @@ class WebhookIntegration(Integration):
         self.url = url
 
         if doc is None:
-            path = os.path.join(settings.DEPLOY_ROOT, 'zerver', 'webhooks')
-            md_doc = self.DEFAULT_DOC_PATH.format(name=name, ext='md')
-            if os.path.exists(os.path.join(path, md_doc)):
-                doc = md_doc
-            else:
-                doc = self.DEFAULT_DOC_PATH.format(name=name, ext='html')
+            doc = self.DEFAULT_DOC_PATH.format(name=name, ext='md')
 
         self.doc = doc
 
