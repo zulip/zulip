@@ -7,7 +7,7 @@
 {% block content %}
 <div class="app portico-page">
 
-{{ minified_js('stats')|safe }}
+{{ render_bundle('stats') }}
 {% stylesheet 'stats' %}
 
 <div class="page-content">
