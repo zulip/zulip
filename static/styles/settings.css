@@ -1006,6 +1006,18 @@ input[type=checkbox].inline-block {
     border-radius: 0px;
 }
 
+#id_realm_notifications_stream .dropdown-search > input[type=text] {
+    margin: 9px;
+}
+
+#id_realm_notifications_stream .dropdown-list-body {
+    height: auto;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0;
+    display: block;
+}
+
 input[type=text]#settings_search {
     width: calc(100% - 10px - 2px);
     margin: 0px;

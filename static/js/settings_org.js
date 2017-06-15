@@ -107,6 +107,42 @@ exports.populate_auth_methods = function (auth_methods) {
     }
 };
 
+exports.render_notifications_stream_ui = function (stream_id) {
+    var currrent_notifications_stream = stream_data.get_sub_by_id(stream_id);
+    if (currrent_notifications_stream) {
+        $("#realm_notifications_stream_name").text(i18n.t("#__stream_name__",
+            { stream_name: currrent_notifications_stream.name })).removeClass("text-warning");
+    } else {
+        $("#realm_notifications_stream_name").text(i18n.t("Disabled")).addClass("text-warning");
+    }
+};
+
+exports.populate_notifications_stream_dropdown = function (stream_list) {
+    var dropdown_list_body = $("#id_realm_notifications_stream .dropdown-list-body").expectOne();
+    var search_input = $("#id_realm_notifications_stream .dropdown-search > input[type=text]");
+
+    list_render(dropdown_list_body, stream_list, {
+        name: "admin-realm-dropdown-stream-list",
+        modifier: function (item) {
+            return templates.render("admin-realm-dropdown-stream-list", { stream: item });
+        },
+        filter: {
+            element: search_input,
+            callback: function (item, value) {
+                return item.name.toLowerCase().match(value);
+            },
+        },
+    }).init();
+
+    $("#id_realm_notifications_stream .dropdown-search").click(function (e) {
+        e.stopPropagation();
+    });
+
+    $("#id_realm_notifications_stream .dropdown-toggle").click(function () {
+        search_input.val("").trigger("input");
+    });
+};
+
 function property_type_status_element(element) {
     return $("#admin-realm-" + element.split('_').join('-') + "-status").expectOne();
 }
@@ -115,6 +151,12 @@ function _set_up() {
     meta.loaded = true;
 
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
+
+    // Populate notifications stream modal
+    if (page_params.is_admin) {
+        exports.populate_notifications_stream_dropdown(stream_data.get_streams_for_settings_page());
+    }
+    exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id);
 
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
@@ -508,6 +550,52 @@ function _set_up() {
                 realm_domains_info.text(JSON.parse(xhr.responseText).msg);
             },
         });
+    });
+
+    var notifications_stream_status = $("#admin-realm-notifications-stream-status").expectOne();
+    function update_notifications_stream(new_notifications_stream_id) {
+        exports.render_notifications_stream_ui(new_notifications_stream_id);
+        notifications_stream_status.hide();
+
+        var url = "/json/realm";
+        var data = {
+            notifications_stream_id: JSON.stringify(parseInt(new_notifications_stream_id, 10)),
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+
+            success: function (response_data) {
+                if (response_data.notifications_stream_id !== undefined) {
+                    if (response_data.notifications_stream_id < 0) {
+                        ui_report.success(i18n.t("Notifications stream disabled!"), notifications_stream_status);
+                    } else {
+                        ui_report.success(i18n.t("Notifications stream changed!"), notifications_stream_status);
+                    }
+                }
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed to change notifications stream!"), xhr, notifications_stream_status);
+            },
+        });
+    }
+
+    var dropdown_menu = $("#id_realm_notifications_stream .dropdown-menu");
+    $("#id_realm_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
+        if (e.type === "keypress") {
+            if (e.which === 13) {
+               dropdown_menu.dropdown("toggle");
+            } else {
+                return;
+            }
+        }
+
+        update_notifications_stream($(this).attr("data-stream-id"));
+    });
+
+    $(".notifications-stream-disable").click(function () {
+        update_notifications_stream(-1);
     });
 
     function upload_realm_icon(file_input) {

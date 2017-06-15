@@ -119,6 +119,28 @@ function render(template_name, args) {
     global.write_handlebars_output("admin-realm-domains-list", html);
 }());
 
+(function admin_realm_dropdown_stream_list() {
+    var html = "<ul>";
+    var args = {
+        stream: {
+            name: "Italy",
+            subscriber_count: 9,
+            stream_id: 18,
+        },
+    };
+    html += render("admin-realm-dropdown-stream-list", args);
+    html += "</ul>";
+
+    var link = $(html).find("a");
+    var list_item = $(html).find("li");
+
+    assert.equal(link.text().trim(), "Italy");
+    assert(list_item.hasClass("stream_name"));
+    assert.equal(list_item.attr("data-stream-id"), "18");
+
+    global.write_handlebars_output("admin-realm-dropdown-stream-list", html);
+}());
+
 (function admin_default_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
