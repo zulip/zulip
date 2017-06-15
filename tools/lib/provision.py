@@ -6,6 +6,7 @@ import logging
 import argparse
 import platform
 import subprocess
+import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -183,12 +184,35 @@ def main(options):
     # project.
     os.chdir(ZULIP_PATH)
 
+    # setup-apt-repo does an `apt-get update`
+    # hash the apt dependencies
+    sha_sum = hashlib.sha1()
+
+    for apt_depedency in APT_DEPENDENCIES[codename]:
+        sha_sum.update(apt_depedency.encode('utf8'))
+    # hash the content of setup-apt-repo
+    sha_sum.update(open('scripts/lib/setup-apt-repo').read().encode('utf8'))
+
+    new_apt_dependencies_hash = sha_sum.hexdigest()
+    last_apt_dependencies_hash = None
+
     try:
-        install_apt_deps()
-    except subprocess.CalledProcessError:
-        # Might be a failure due to network connection issues. Retrying...
-        print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
-        install_apt_deps()
+        hash_file = open('var/apt_dependenices_hash', 'r+')
+        last_apt_dependencies_hash = hash_file.read()
+    except IOError:
+        run(['touch', 'var/apt_dependenices_hash'])
+        hash_file = open('var/apt_dependenices_hash', 'r+')
+
+    if (new_apt_dependencies_hash != last_apt_dependencies_hash):
+        try:
+            install_apt_deps()
+        except subprocess.CalledProcessError:
+            # Might be a failure due to network connection issues. Retrying...
+            print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+            install_apt_deps()
+        hash_file.write(new_apt_dependencies_hash)
+    else:
+        print("No need to apt operations.")
 
     if options.is_travis:
         if PY2:
