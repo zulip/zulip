@@ -8,6 +8,7 @@ import requests
 from zerver.lib.cache import cache_with_key, get_cache_with_key
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
+from django.utils.encoding import smart_text
 
 
 CACHE_NAME = "database"
@@ -22,7 +23,7 @@ link_regex = re.compile(
 
 def is_link(url):
     # type: (Text) -> Match[Text]
-    return link_regex.match(str(url))
+    return link_regex.match(smart_text(url))
 
 
 def cache_key_func(url):
