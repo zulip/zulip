@@ -156,6 +156,16 @@ exports.show_info_overlay = function (target) {
     }
 };
 
+exports.maybe_show_keyboard_shortcuts = function () {
+    if (overlays.is_active()) {
+        return;
+    }
+    if (popovers.any_active()) {
+        return;
+    }
+    ui.show_info_overlay("keyboard-shortcuts");
+};
+
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_more_messages_indicator = function () {
     if (! loading_more_messages_indicator_showing) {

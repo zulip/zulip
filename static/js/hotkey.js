@@ -564,7 +564,7 @@ exports.process_hotkey = function (e, hotkey) {
             gear_menu.open();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
-            ui.show_info_overlay("keyboard-shortcuts");
+            ui.maybe_show_keyboard_shortcuts();
             return true;
         case 'stream_cycle_backward':
             navigate.cycle_stream('backward');

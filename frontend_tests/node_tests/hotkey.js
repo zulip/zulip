@@ -200,7 +200,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('n', 'subs.new_stream_clicked');
     overlays.streams_open = return_false;
 
-    assert_mapping('?', 'ui.show_info_overlay');
+    assert_mapping('?', 'ui.maybe_show_keyboard_shortcuts');
     assert_mapping('/', 'search.initiate_search');
     assert_mapping('q', 'activity.initiate_search');
     assert_mapping('w', 'stream_list.initiate_search');
