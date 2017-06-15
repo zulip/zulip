@@ -1,7 +1,10 @@
 var ct = require('js/composebox_typeahead.js');
 
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
-                  {emoji_name: "moneybags", emoji_url: "TBD"}];
+                  {emoji_name: "moneybags", emoji_url: "TBD"},
+                  {emoji_name: "panda_face", emoji_url: "TBD"},
+                  {emoji_name: "see_no_evil", emoji_url: "TBD"},
+                  {emoji_name: "japanese_post_office", emoji_url: "TBD"}];
 var stream_list = ['Denmark', 'Sweden'];
 
 set_global('emoji', {emojis: emoji_list});
@@ -14,6 +17,8 @@ set_global('pygments_data', {langs:
 
 add_dependencies({
     people: 'js/people.js',
+    typeahead_helper: 'js/typeahead_helper.js',
+    util: 'js/util.js',
 });
 
 global.people.add_in_realm({
@@ -88,6 +93,10 @@ global.people.add({
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
+    assert_typeahead_equals("hi emoji :da_", emoji_list);
+    assert_typeahead_equals("hi emoji :da ", emoji_list);
+    assert_typeahead_equals("hi :see no", emoji_list);
+    assert_typeahead_equals("hi :japanese post of", emoji_list);
 
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test #D", stream_list);
@@ -123,4 +132,33 @@ global.people.add({
     assert.equal(ct.tokenize_compose_str(
         "foo @toomanycharactersisridiculoustocomplete"), "");
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
+}());
+
+(function test_typeahead_results() {
+    function compose_typeahead_results(completing,items,token) {
+        // items -> emoji array, token -> simulates text in input
+        var matcher = ct.compose_content_matcher.bind({completing: completing, token: token});
+        var sorter = ct.compose_matches_sorter.bind({completing: completing, token: token});
+        var matches = [];
+        _.each(items, function (item) {
+            if (matcher(item)) {
+                matches.push(item);
+            }
+        });
+        var sorted_matches = sorter(matches);
+        return sorted_matches;
+    }
+
+    function assert_emoji_matches(input, expected) {
+        var returned = compose_typeahead_results('emoji', emoji_list, input);
+        assert.deepEqual(returned, expected);
+    }
+
+    assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD"},
+        {emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da_', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da ', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('notaemoji', []);
 }());

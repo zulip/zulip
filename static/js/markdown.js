@@ -132,12 +132,12 @@ function handleEmoji(emoji_name) {
         emoji_url = emoji.realm_emojis[emoji_name].emoji_url;
         return '<img alt="' + input_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + input_emoji + '">';
+               ' title="' + input_emoji.split(":")[1].split("_").join(" ") + '">';
     } else if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
         emoji_url = emoji.emojis_by_name[emoji_name];
         return '<img alt="' + input_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + input_emoji + '">';
+               ' title="' + input_emoji.split(":")[1].split("_").join(" ") + '">';
     }
     return input_emoji;
 }

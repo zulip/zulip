@@ -491,7 +491,7 @@ class BugdownTest(ZulipTestCase):
         def emoji_img(name, file_name, realm_id):
             # type: (Text, Text, int) -> Text
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (
-                name, get_emoji_url(file_name, realm_id), name)
+                name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " "))
 
         realm = get_realm('zulip')
         check_add_realm_emoji(realm, "test", 'test.png')
