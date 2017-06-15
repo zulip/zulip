@@ -784,7 +784,8 @@ complicated rebase.
 When you're ready for feedback, submit a pull request. At Zulip we recommend
 submitting work-in-progress pull requests early and often. This allows you to
 get feedback and help with your bugfix or feature. Prefix work-in-progress pull
-requests with **[WIP]**.
+requests with **[WIP]**: this will indicate to maintainers that your pull
+request requires initial feedback, but is not yet ready to be merged.
 
 Pull requests are a feature specific to GitHub. They provide a simpler,
 web-based way to submit your work (often called "patches") to a project. It's
@@ -879,8 +880,10 @@ You'll see the *Open a pull request* page:
 
 ![images-create-pr]
 
-Provide a **title** and first comment for your pull request. When ready, click
-the green **Create pull request** to submit the pull request.
+Provide a **title** and first comment for your pull request. Remember to prefix
+your pull request title with [WIP] if it is a work-in-progress.
+
+When ready, click the green **Create pull request** to submit the pull request.
 
 Note: **Pull request titles are different from commit messages.** Commit
 messages can be edited with `git commit --amend`, `git rebase -i`, etc., while
