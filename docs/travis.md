@@ -55,6 +55,10 @@ our configuration, you'll want to look at these closely.
 
 ## Useful debugging tips and tools
 
+* Zulip uses the `ts` tool to log the current time on every line of
+  the output in our Travis CI scripts.  You can use this output to
+  determine which steps are actually consuming a lot of time.
+
 * For performance issues,
   [this statistics tool](https://scribu.github.io/travis-stats/#zulip/zulip/master)
   can give you test runtime history data that can help with
@@ -65,12 +69,6 @@ our configuration, you'll want to look at these closely.
 * You can [sign up your personal repo for Travis CI][travis-fork] so
   that every remote branch you push will be tested, which can be
   helpful when debugging something complicated.
-
-* You can
-  [use the ts tool](https://github.com/zulip/zulip/commit/da731c) to
-  get timing for every line of your Travis scripts (which can help
-  with performance debugging).  Note, however, that `ts` always return
-  exit code 0, so with that patch, Travis CI will always report success.
 
 [travis-fork]: git-guide.html#step-3-configure-travis-ci-continuous-integration
 
