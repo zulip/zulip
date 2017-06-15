@@ -57,7 +57,6 @@ class RegistrationForm(forms.Form):
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH,
                                required=False)
-    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH, required=False)
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
     realm_org_type = forms.ChoiceField(((Realm.COMMUNITY, 'Community'),
                                         (Realm.CORPORATE, 'Corporate')),
@@ -74,6 +73,9 @@ class RegistrationForm(forms.Form):
         super(RegistrationForm, self).__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE:
             self.fields['terms'] = forms.BooleanField(required=True)
+        self.fields['realm_name'] = forms.CharField(
+            max_length=Realm.MAX_REALM_NAME_LENGTH,
+            required=realm_creation)
 
     def clean_full_name(self):
         # type: () -> Text
