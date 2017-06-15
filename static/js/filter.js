@@ -443,7 +443,7 @@ Filter.operator_to_prefix = function (operator, negated) {
 
     case 'from':
     case 'sender':
-        return verb + 'messages sent by';
+        return verb + 'sent by';
 
     case 'pm-with':
         return verb + 'private messages with';

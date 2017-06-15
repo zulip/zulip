@@ -704,7 +704,7 @@ init();
     assert.equal(describe('pm-with:ted@zulip.com'),
         "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
     assert.equal(describe('sender:ted@zulip.com'),
-        "Messages sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
 
     suggestions = search.get_suggestions('Ted '); // note space
 
