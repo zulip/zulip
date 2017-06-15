@@ -38,8 +38,7 @@ Zulip development environment provisioning, and you can build the
 documentation using:
 
 ```
-cd docs/
-make html
+./tools/build-docs
 ```
 
 and then opening `http://127.0.0.1:9991/docs/index.html` in your

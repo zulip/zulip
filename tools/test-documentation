@@ -13,9 +13,9 @@ case $1 in
     ;;
 esac
 
-cd "$(dirname "$0")"/../docs
-make html
-cd ../tools/documentation_crawler
+cd "$(dirname "$0")"/..
+./tools/build-docs
+cd ./tools/documentation_crawler
 
 echo -en "\033[0;94m"
 echo "Testing links in documentation..."
