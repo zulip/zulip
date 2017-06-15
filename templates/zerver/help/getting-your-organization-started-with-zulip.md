@@ -70,6 +70,9 @@ effectively.
 - Topics really shine for asynchronous communication.
 - When starting a new conversation, use a new topic, just like you
   would when starting an email thread.
+- 5 topics per stream are displayed initially, unless you have more
+  with unread messages, in which case all topics with unread messages
+  are listed.
 
 ## Familiarize yourself with Zulip’s featureset
 
