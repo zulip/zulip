@@ -288,7 +288,14 @@ exports.MessageList.prototype = {
                 if (potential_idx < 0) {
                     return;
                 }
-                var potential_match = items[potential_idx].id;
+                var item = items[potential_idx];
+
+                if (item === undefined) {
+                    blueslip.warn('Invalid potential_idx: ' + potential_idx);
+                    return;
+                }
+
+                var potential_match = item.id;
                 // If the potential id is the closest to the requested, save that one
                 if (Math.abs(id - potential_match) < Math.abs(best_match - id)) {
                     best_match = potential_match;
