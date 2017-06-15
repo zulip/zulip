@@ -152,3 +152,16 @@ people.initialize_current_user(me.user_id);
     presence.set_info(presences, base_time);
 }());
 
+(function test_last_active_date() {
+    var unknown_id = 42;
+    presence.presence_info = {
+        1: { last_active: 500 }, // alice.user_id
+        2: {}, // fred.user_id
+    };
+    set_global('XDate', function (ms) { return {seconds: ms}; });
+
+    assert.equal(presence.last_active_date(unknown_id), undefined);
+    assert.equal(presence.last_active_date(fred.user_id), undefined);
+    assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
+}());
+
