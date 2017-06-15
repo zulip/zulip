@@ -791,14 +791,14 @@ If you're unfamiliar with how to create a pull request, you can check
 out GitHub's documentation on
 [creating a pull request from a fork][github-help-create-pr-fork]. You
 might also find GitHub's article
-[about pull requests][github-help-about-pr] helpful.  That all said,
+[about pull requests][github-help-about-pr] helpful. That all said,
 the tutorial below will walk you through the process.
 
 ### Work in progress pull requests
 
 In the Zulip project, we encourage submitting work-in-progress pull
 requests early and often. This allows you to share your code to make
-it eaiser to get feedback and help with your changes. Prefix the
+it easier to get feedback and help with your changes. Prefix the
 titles of work-in-progress pull requests with **[WIP]**, which in our
 project means that you don't think your pull request is ready to be
 merged (e.g. it might not work or pass tests).  This sets expectations
@@ -889,7 +889,7 @@ You'll see the *Open a pull request* page:
 ![images-create-pr]
 
 Provide a **title** and first comment for your pull request. Remember to prefix
-your pull request title with [WIP] if it is a work-in-progress.
+your pull request title with [WIP] if it is a [work-in-progress][wip-prs].
 
 When ready, click the green **Create pull request** to submit the pull request.
 
@@ -1497,3 +1497,4 @@ Deleting local branch review-original-5156 (was 5a1e982)
 [understanding-git]: http://web.mit.edu/nelhage/Public/git-slides-2009.pdf
 [edx-howto-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [tig]: http://jonas.nitro.dk/tig/
+[wip-prs]: #work-in-progress-pull-requests
