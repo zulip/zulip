@@ -98,7 +98,7 @@ FENCE_RE = re.compile(u"""
     (
         \\{?\\.?
         (?P<lang>
-            [a-zA-Z0-9_+-]*
+            [a-zA-Z0-9_+-./#]*
         ) # "py" or "javascript"
         \\}?
     ) # language, like ".py" or "{javascript}"
