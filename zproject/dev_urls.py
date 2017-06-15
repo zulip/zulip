@@ -38,6 +38,10 @@ urls = [
 
     # Listing of useful URLs and various tools for development
     url(r'^devtools/$', TemplateView.as_view(template_name='zerver/dev_tools.html')),
+
+    # Have easy access for error pages
+    url(r'^errors/404/$', TemplateView.as_view(template_name='404.html')),
+    url(r'^errors/5xx/$', TemplateView.as_view(template_name='500.html')),
 ]
 
 i18n_urls = [
