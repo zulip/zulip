@@ -1506,6 +1506,74 @@ class UserSignUpTest(ZulipTestCase):
                                              "newuser@zulip.com"],
                                             result)
 
+    def test_realm_creation_through_ldap(self):
+        # type: () -> None
+        password = "testing"
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+        realm_name = "Zulip"
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        mock_ldap.directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': ['New User Name']
+            }
+        }
+
+        with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
+            result = self.client_post('/register/', {'email': email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+        # Visit the confirmation link.
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_url = confirmation_link_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise AssertionError("Couldn't find a confirmation email.")
+
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_APPEND_DOMAIN='zulip.com',
+            AUTH_LDAP_BIND_PASSWORD='',
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
+            AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
+            TERMS_OF_SERVICE=False,
+        ):
+            result = self.client_get(confirmation_url)
+            self.assertEqual(result.status_code, 200)
+
+            key = find_key_by_email(email),
+            confirmation = Confirmation.objects.get(confirmation_key=key[0])
+            prereg_user = confirmation.content_object
+            prereg_user.realm_creation = True
+            prereg_user.save()
+
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   realm_name=realm_name,
+                                                   realm_subdomain=subdomain,
+                                                   from_confirmation='1',
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assert_in_success_response(["You're almost there.",
+                                             "newuser@zulip.com"],
+                                            result)
+
         mock_ldap.reset()
         mock_initialize.stop()
 
