@@ -110,10 +110,13 @@ class FencedBlockPreprocessorTest(TestCase):
             'hello()',
             '```',
             '',
-            '``` .py',
+            '```vb.net',
             'goodbye()',
             '```',
             '',
+            '```c#',
+            'weirdchar()',
+            '```',
             ''
         ]
         expected = [
@@ -122,8 +125,11 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '',
             '',
-            '**py:goodbye()**',
+            '**vb.net:goodbye()**',
             '',
+            '',
+            '',
+            '**c#:weirdchar()**',
             '',
             ''
         ]
