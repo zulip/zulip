@@ -2,6 +2,14 @@
 Mail sent to user when she was not logged in and received a PM or @-mention
 #}
 
+<span style="display:none">
+    {% for message_block in sender_block.content %}
+        <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
+            {{ message_block.html|safe }}
+        </div>
+    {% endfor %}
+</span>
+
 Hello {{ name }},
 
 <p>
