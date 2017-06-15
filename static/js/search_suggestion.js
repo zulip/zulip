@@ -455,7 +455,7 @@ function get_containing_suggestions(last) {
         });
 
         return _.map(choices, function (choice) {
-            var op = [{operator: 'has', operand: choice, negated: false}];
+            var op = [{operator: 'has', operand: choice, negated: last.negated}];
             var search_string = Filter.unparse(op);
             var description = Filter.describe(op);
             return {description: description, search_string: search_string};

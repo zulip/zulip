@@ -732,6 +732,14 @@ init();
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = '-has:im';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        '-has:im',
+        '-has:image',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = 'att';
     suggestions = search.get_suggestions(query);
     expected = [
