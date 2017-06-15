@@ -496,14 +496,14 @@ Filter.describe = function (operators) {
             } else if (operand === 'unread') {
                 return verb + 'unread messages';
             }
-        } else {
-            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
-                                                                elem.negated);
-            if (prefix_for_operator !== '') {
-                return prefix_for_operator + ' ' + operand;
-            }
+            return operand + ' messages';
         }
-        return "unknown operand";
+        var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
+                                                            elem.negated);
+        if (prefix_for_operator !== '') {
+            return prefix_for_operator + ' ' + operand;
+        }
+        return "unknown operator";
     });
     return parts.concat(more_parts).join(', ');
 };

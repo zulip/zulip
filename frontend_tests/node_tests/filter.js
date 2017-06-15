@@ -578,14 +578,14 @@ function make_sub(name, stream_id) {
     narrow = [
         {operator: 'is', operand: 'something_we_do_not_support'},
     ];
-    string = 'unknown operand';
+    string = 'something_we_do_not_support messages';
     assert.equal(Filter.describe(narrow), string);
 
     // this should be unreachable, but just in case
     narrow = [
         {operator: 'bogus', operand: 'foo'},
     ];
-    string = 'unknown operand';
+    string = 'unknown operator';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
