@@ -135,7 +135,8 @@ def accounts_register(request):
             # zephyr mirroring realm.
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
-                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
+                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""},
+                realm_creation=realm_creation)
             name_validated = True
         elif settings.POPULATE_PROFILE_VIA_LDAP:
             for backend in get_backends():
@@ -150,20 +151,22 @@ def accounts_register(request):
                         # filled out by the user) we want the form to validate,
                         # so they can be directly registered without having to
                         # go through this interstitial.
-                        form = RegistrationForm({'full_name': ldap_full_name})
+                        form = RegistrationForm({'full_name': ldap_full_name},
+                                                realm_creation=realm_creation)
                         # FIXME: This will result in the user getting
                         # validation errors if they have to enter a password.
                         # Not relevant for ONLY_SSO, though.
                         break
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
-                        form = RegistrationForm()
+                        form = RegistrationForm(realm_creation=realm_creation)
         elif 'full_name' in request.POST:
             form = RegistrationForm(
-                initial={'full_name': request.POST.get('full_name')}
+                initial={'full_name': request.POST.get('full_name')},
+                realm_creation=realm_creation
             )
         else:
-            form = RegistrationForm()
+            form = RegistrationForm(realm_creation=realm_creation)
     else:
         postdata = request.POST.copy()
         if name_changes_disabled(realm):
@@ -175,7 +178,7 @@ def accounts_register(request):
                 name_validated = True
             except KeyError:
                 pass
-        form = RegistrationForm(postdata)
+        form = RegistrationForm(postdata, realm_creation=realm_creation)
         if not password_auth_enabled(realm):
             form['password'].field.required = False
 

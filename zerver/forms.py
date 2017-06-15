@@ -65,6 +65,12 @@ class RegistrationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
+
+        # Since the superclass doesn't except random extra kwargs, we
+        # remove it from the kwargs dict before initializing.
+        realm_creation = kwargs['realm_creation']
+        del kwargs['realm_creation']
+
         super(RegistrationForm, self).__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE:
             self.fields['terms'] = forms.BooleanField(required=True)
