@@ -1468,7 +1468,7 @@ Deleting local branch review-original-5156 (was 5a1e982)
 [zulip-rtd-dev-first-time]: dev-env-first-time-contributors.html
 [zulip-rtd-zulipbot-usage]: zulipbot-usage.html
 [gitgui-tower]: https://www.git-tower.com/
-[git-bash-admin]: dev-end-first-time-contributors.html#running-git-bash-as-an-administrator
+[git-bash-admin]: dev-env-first-time-contributors.html#running-git-bash-as-an-administrator
 [gitgui-fork]: https://git-fork.com/
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/
 [gitgui-ghdesktop]: https://desktop.github.com/
