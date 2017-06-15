@@ -87,6 +87,15 @@ var social = {
 stream_data.add_sub('Denmark', denmark);
 stream_data.add_sub('social', social);
 
+// Check the default behavior of fenced code blocks
+// works properly before markdown is initialized.
+(function test_fenced_block_defaults() {
+    var input = '\n```\nfenced code\n```\n\nand then after\n';
+    var expected = '\n\n<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n\nand then after\n\n';
+    var output = fenced_code.process_fenced_code(input);
+    assert.equal(output, expected);
+}());
+
 var markdown = require('js/markdown.js');
 
 markdown.initialize();
@@ -181,6 +190,10 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<div class="codehilite"><pre><span></span>    fenced code trailing whitespace\n</pre></div>\n\n\n<p>and then after</p>'},
         {input: '* a\n* list \n* here',
          expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
+        {input: '\n```c#\nfenced code special\n```\n\nand then after\n',
+         expected: '<div class="codehilite"><pre><span></span>fenced code special\n</pre></div>\n\n\n<p>and then after</p>'},
+        {input: '\n```vb.net\nfenced code dot\n```\n\nand then after\n',
+         expected: '<div class="codehilite"><pre><span></span>fenced code dot\n</pre></div>\n\n\n<p>and then after</p>'},
         {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
          expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
         {input: '1. an\n2. ordered \n3. list',
