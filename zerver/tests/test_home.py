@@ -180,6 +180,7 @@ class HomeTest(ZulipTestCase):
         realm_bots_expected_keys = [
             'api_key',
             'avatar_url',
+            'bot_type',
             'default_all_public_streams',
             'default_events_register_stream',
             'default_sending_stream',

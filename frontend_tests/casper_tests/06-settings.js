@@ -105,6 +105,7 @@ casper.then(function create_bot() {
     casper.fill('#create_bot_form',{
         bot_name: 'Bot 1',
         bot_short_name: '1',
+        bot_type: '1',
     });
 
     casper.test.info('Submitting the create bot form');
