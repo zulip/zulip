@@ -176,8 +176,13 @@ exports.MessageList.prototype = {
         // pointer as needed, so only generate an error if the flag is
         // false.
         if (!opts.use_closest && closest_id !== id) {
+            var error_data = {
+                table_name: this.table_name,
+                id: id,
+                closest_id: closest_id,
+            };
             blueslip.error("Selected message id not in MessageList",
-                           {table_name: this.table_name, id: id});
+                           error_data);
         }
 
         if (closest_id === -1 && !opts.empty_ok) {
