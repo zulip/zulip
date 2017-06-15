@@ -5,6 +5,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.signals import get_device_browser, get_device_os
 from zerver.lib.actions import notify_new_user
 from zerver.models import Recipient, Stream
+from zerver.lib.initial_password import initial_password
 
 class SendLoginEmailTest(ZulipTestCase):
     """
@@ -21,12 +22,17 @@ class SendLoginEmailTest(ZulipTestCase):
         # type: () -> None
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
+            # we don't use the self.login method since we spoof the user-agent
             email = self.example_email('hamlet')
-            self.login(email)
+            password = initial_password(email)
+            firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+            self.client_post("/accounts/login/", info={"username": email, "password": password},
+                             HTTP_USER_AGENT=firefox_windows)
 
             # email is sent and correct subject
             self.assertEqual(len(mail.outbox), 1)
-            self.assertEqual(mail.outbox[0].subject, 'A new login to your Zulip account.')
+            subject = 'New login from Firefox on Windows'
+            self.assertEqual(mail.outbox[0].subject, subject)
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self):
         # type: () -> None
@@ -42,7 +48,8 @@ class SendLoginEmailTest(ZulipTestCase):
             self.register("test@zulip.com", "test")
 
             for email in mail.outbox:
-                self.assertNotEqual(email.subject, 'A new login to your Zulip account.')
+                subject = 'New login from an unknown browser on an unknown operating system'
+                self.assertNotEqual(email.subject, subject)
 
     def test_without_path_info_dont_send_login_emails_for_new_user_registration_logins(self):
         # type: () -> None
@@ -51,7 +58,8 @@ class SendLoginEmailTest(ZulipTestCase):
             self.submit_reg_form_for_user("orange@zulip.com", "orange", PATH_INFO='')
 
             for email in mail.outbox:
-                self.assertNotEqual(email.subject, 'A new login to your Zulip account.')
+                subject = 'New login from an unknown browser on an unknown operating system'
+                self.assertNotEqual(email.subject, subject)
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
 
