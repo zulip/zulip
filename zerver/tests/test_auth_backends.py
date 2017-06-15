@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
@@ -1185,9 +1186,11 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',),
+                       SEND_LOGIN_EMAILS=True)
     def test_google_oauth2_token_success(self):
         # type: () -> None
+        self.assertEqual(len(mail.outbox), 0)
         with mock.patch(
                 'apiclient.sample_tools.client.verify_id_token',
                 return_value={
@@ -1198,6 +1201,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                                       dict(username="google-oauth2-token",
                                            password="token"))
         self.assert_json_success(result)
+        self.assertEqual(len(mail.outbox), 1)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_oauth2_token_failure(self):
