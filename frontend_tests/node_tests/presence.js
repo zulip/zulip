@@ -208,3 +208,19 @@ people.initialize_current_user(me.user_id);
     assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
 }());
 
+(function test_set_user_status() {
+    var server_time = 500;
+    var info = {
+        website: {
+            status: "active",
+            timestamp: server_time,
+        },
+    };
+
+    presence.presence_info[alice.user_id] = undefined;
+    presence.set_user_status(alice.user_id, info, server_time);
+
+    var expected = { status: 'active', mobile: false, last_active: 500 };
+    assert.deepEqual(presence.presence_info[alice.user_id], expected);
+}());
+
