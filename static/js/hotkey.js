@@ -81,6 +81,7 @@ var keydown_either_mappings = {
 var keypress_mappings = {
     42: {name: 'star_message', message_view_only: true}, // '*'
     43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
+    45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
     47: {name: 'search', message_view_only: false}, // '/'
     58: {name: 'open_reactions', message_view_only: true}, // ':'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
@@ -664,6 +665,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'toggle_mute':
             muting_ui.toggle_mute(msg);
+            return true;
+        case 'toggle_message_collapse':
+            condense.toggle_collapse(msg);
             return true;
     }
 
