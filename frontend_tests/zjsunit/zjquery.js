@@ -14,6 +14,7 @@ exports.make_zjquery = function () {
         var focused = false;
         var children = new Dict();
         var my_parent;
+        var properties = new Dict();
         var classes = new Dict();
         var on_functions = new Dict();
 
@@ -127,6 +128,12 @@ exports.make_zjquery = function () {
                 // We have some legacy code that does $('foo').get(0).
                 assert.equal(idx, 0);
                 return selector;
+            },
+            prop: function (name, val) {
+                if (val === undefined) {
+                    return properties.get(name);
+                }
+                properties.set(name, val);
             },
         };
 
