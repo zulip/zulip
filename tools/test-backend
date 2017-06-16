@@ -236,7 +236,7 @@ if __name__ == "__main__":
             classname = suite.rsplit('.', 1)[0]
             rewrite_arguments(classname)
         elif suite[0].isupper():
-            rewrite_arguments(suite)
+            rewrite_arguments('class %s(' % (suite,))
 
     for suite in args:
         if suite.startswith('test'):
