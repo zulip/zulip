@@ -766,7 +766,7 @@ class GoogleOAuthTest(ZulipTestCase):
             return result
 
         # Now do the /google/send/ request
-        result = self.client_get(result.url)
+        result = self.client_get(result.url, **headers)
         self.assertEqual(result.status_code, 302)
         if 'google' not in result.url:
             return result
@@ -779,7 +779,7 @@ class GoogleOAuthTest(ZulipTestCase):
         with mock.patch("requests.post", return_value=token_response), (
                 mock.patch("requests.get", return_value=account_response)):
             result = self.client_get("/accounts/login/google/done/",
-                                     dict(state=csrf_state))
+                                     dict(state=csrf_state), **headers)
         return result
 
 class GoogleSubdomainLoginTest(GoogleOAuthTest):
