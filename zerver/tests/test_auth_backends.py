@@ -759,6 +759,7 @@ class GoogleOAuthTest(ZulipTestCase):
             headers['HTTP_HOST'] = subdomain + ".testserver"
         if mobile_flow_otp is not None:
             params['mobile_flow_otp'] = mobile_flow_otp
+            headers['HTTP_USER_AGENT'] = "ZulipAndroid"
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
@@ -828,7 +829,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+        self.assertEqual(len(mail.outbox), 0)
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
             result = self.google_oauth2_test(token_response, account_response, 'zulip',
                                              mobile_flow_otp="1234")
@@ -850,6 +853,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         self.assertEqual(self.example_user('hamlet').api_key,
                          otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Zulip on Android', mail.outbox[0].body)
 
     def test_log_into_subdomain(self):
         # type: () -> None
