@@ -247,6 +247,10 @@ def accounts_register(request):
         login(request, auth_result)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home.home'))
 
+    full_name_regex = "[^{}]{{{},{}}}".format(''.join(UserProfile.NAME_INVALID_CHARS),
+                                              UserProfile.MIN_NAME_LENGTH,
+                                              UserProfile.MAX_NAME_LENGTH)
+
     return render(
         request,
         'zerver/register.html',
@@ -261,8 +265,7 @@ def accounts_register(request):
                  'creating_new_team': realm_creation,
                  'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
                  'password_auth_enabled': password_auth_enabled(realm),
-                 'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
-                 'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
+                 'FULL_NAME_REGEX': full_name_regex,
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
                  'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
                  }
