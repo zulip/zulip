@@ -52,7 +52,7 @@ def email_is_not_mit_mailing_list(email):
 
 class RegistrationForm(forms.Form):
     MAX_PASSWORD_LENGTH = 100
-    full_name = forms.CharField(max_length=100)
+    full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH,
