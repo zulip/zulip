@@ -87,6 +87,8 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) ' +
                 'AppleWebKit/602.3.12 (KHTML, like Gecko) ' +
                 'Version/10.0.2 Safari/602.3.12', 'Safari', 'MacOS'),
+            ('ZulipAndroid/1.0', 'Zulip', 'Android'),
+            ('ZulipMobile/1.0', 'Zulip', None),
             ('', None, None),
         ]
 

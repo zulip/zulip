@@ -27,6 +27,8 @@ def get_device_browser(user_agent):
         return "Internet Explorer"
     elif "edge" in user_agent:
         return "Edge"
+    elif "zulip" in user_agent:
+        return "Zulip"
     else:
         return None
 
