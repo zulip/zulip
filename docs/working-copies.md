@@ -18,13 +18,13 @@ the various working copies.
 
 Sometimes you need to get commits.  Here are some scenarios:
 
-- You may fork the official Zulip repo to your Github fork.
+- You may fork the official Zulip repo to your GitHub fork.
 - You may fetch commits from the offical Zulip repo to your local copy.
 - You occasionally may fetch commits from your forked copy.
 
 Sometimes you want to publish commits.  Here are scenarios:
 
-- You push code from your local copy to your Github fork.  (You usually
+- You push code from your local copy to your GitHub fork.  (You usually
   want to put the commit on a feature branch.)
 - You submit a PR to the official Zulip repo.
 
@@ -32,7 +32,7 @@ Finally, the Zulip core team will occasionally want your changes!
 
 - The Zulip core team can accept your changes and add them to
   the official repo, usually on the master branch.
-  
+
 ## Names
 
 We call remote working copies of the repository by these short

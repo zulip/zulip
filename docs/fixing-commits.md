@@ -1,5 +1,7 @@
 # Fixing Commits
-This is mostly from https://help.github.com/articles/changing-a-commit-message/#rewriting-the-most-recent-commit-message
+This is mostly from
+[here](https://help.github.com/articles/changing-a-commit-message/#rewriting-the-most-recent-commit-message).
+
 ## Fixing the last commit
 ### Changing the last commit message
 1. `git commit --amend -m "New Message"`
