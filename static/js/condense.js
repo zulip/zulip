@@ -79,6 +79,19 @@ exports.collapse = function (row) {
     process_row(row);
     process_row(home_row);
 };
+
+exports.toggle_collapse = function (message) {
+    var row = current_msg_list.get_row(message.id);
+    if (!row) {
+        return;
+    }
+    if (message.collapsed) {
+        condense.uncollapse(row);
+    } else {
+        condense.collapse(row);
+    }
+};
+
 exports.clear_message_content_height_cache = function () {
     _message_content_height_cache = new Dict();
 };
