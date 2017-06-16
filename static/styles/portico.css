@@ -372,20 +372,28 @@ input.text-error {
     outline-color: red;
 }
 
-.header,
-.footer {
-    position: absolute;
-    z-index: 100;
-    width: 100%;
-    background-color: hsl(170, 47%, 54%);
+.portico-container {
+    position: relative;
+}
+
+.portico-wrap {
+    overflow: hidden;
+    min-height: 100vh;
 }
 
 .footer {
-    background-color: transparent;
+    position: absolute;
+    bottom: 0;
+    z-index: 100;
+    width: 100%;
 }
 
 .footer .footer-navigation {
     margin-left: 0px;
+}
+
+.header {
+    padding: 20px 0 15px;
 }
 
 .header-main .logo {
@@ -569,6 +577,7 @@ a.bottom-signup-button {
 .portico-page {
     /* height of the white portico navbar */
     min-height: calc(100% - 87px);
+    padding-bottom: 71px;
 }
 
 .signup-signature {
@@ -582,15 +591,6 @@ a.bottom-signup-button {
     padding-top: 0px;
     text-align: center;
     font-size: 16px;
-}
-
-.terms-page-container,
-.feature-page-container,
-.apps-page-container,
-.integrations-page-container,
-.portico-page-container,
-.api-page-container {
-    padding-top: 50px !important;
 }
 
 .portico-page-header {
