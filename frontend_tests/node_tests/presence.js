@@ -102,6 +102,43 @@ people.initialize_current_user(me.user_id);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 
+    info.Android = {
+        status: "offline",
+        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
+        pushable: true,
+    };
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS, info);
+    assert.equal(status.mobile, true);
+    assert.equal(status.status, "offline");
+
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
+    assert.equal(status.mobile, false);
+    assert.equal(status.status, "active"); // website
+
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
+    assert.equal(status.mobile, true);
+    assert.equal(status.status, "offline");
+
+    info.Android = {
+        status: "unknown",
+        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
+        pushable: true,
+    };
+    var called = false;
+    blueslip.error = function () {
+        assert.equal(arguments[0], 'Unexpected status');
+        assert.deepEqual(arguments[1].presence_object, info.Android);
+        assert.equal(arguments[2], undefined);
+        called = true;
+    };
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
+    assert.equal(status.mobile, false);
+    assert.equal(status.status, "active"); // website
+    assert(called);
 }());
 
 (function test_set_presence_info() {
