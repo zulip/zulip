@@ -251,6 +251,9 @@ def accounts_register(request):
                                               UserProfile.MIN_NAME_LENGTH,
                                               UserProfile.MAX_NAME_LENGTH)
 
+    realm_subdomain_regex = "[a-z0-9]{{1}}[a-z0-9-]{{{},{}}}[a-z0-9]{{1}}".format(Realm.MIN_REALM_SUBDOMAIN_LENGTH - 2,
+                                                                                  Realm.MAX_REALM_SUBDOMAIN_LENGTH - 2)
+
     return render(
         request,
         'zerver/register.html',
@@ -266,8 +269,8 @@ def accounts_register(request):
                  'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'FULL_NAME_REGEX': full_name_regex,
-                 'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
-                 'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+                 'REALM_SUBDOMAIN_REGEX': realm_subdomain_regex,
+                 'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH)
                  }
     )
 
