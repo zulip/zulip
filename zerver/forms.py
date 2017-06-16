@@ -88,7 +88,7 @@ class RegistrationForm(forms.Form):
         # type: () -> str
         if settings.REALMS_HAVE_SUBDOMAINS:
             error_strings = {
-                'too short': _("Subdomain needs to have length 3 or greater."),
+                'too short': _("Subdomain needs to have length %s or greater.") % (str(Realm.MIN_REALM_SUBDOMAIN_LENGTH),),
                 'extremal dash': _("Subdomain cannot start or end with a '-'."),
                 'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
                 'unavailable': _("Subdomain unavailable. Please choose a different one.")}
@@ -101,7 +101,7 @@ class RegistrationForm(forms.Form):
         subdomain = self.cleaned_data['realm_subdomain']
         if not subdomain:
             return ''
-        if len(subdomain) < 3:
+        if len(subdomain) < Realm.MIN_REALM_SUBDOMAIN_LENGTH:
             raise ValidationError(error_strings['too short'])
         if subdomain[0] == '-' or subdomain[-1] == '-':
             raise ValidationError(error_strings['extremal dash'])
