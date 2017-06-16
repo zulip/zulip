@@ -70,7 +70,7 @@ the selected message.
 * **Send message**: `Tab` then `Enter` (`Return`), `Ctrl` + `Enter` (`Return`) —
 Allows the user to send the message that they've written.
 
-* **Insert new line**: `Shift` + `Enter` (`Return`) — Allowsthe user to insert
+* **Insert new line**: `Shift` + `Enter` (`Return`) — Allows the user to insert
 a new line break in their message.
 
 * **Cancel compose**: `Esc` or `Ctrl + [` — Allows the user to cancel and
@@ -106,16 +106,17 @@ user sent in the current view (if any) in the compose box.
 * **Show message sender's profile**: `u` — Shows a popover with the profile of
 the user that sent the selected message.
 
-* **Show images in thread**: `v` — Opens any images or videos (if any) embedded
-in a message or previous messages within the thread using the lightbox viewer.
+* **Show images in thread**: `v` — Opens any images or videos (if
+any) embedded in a message or previous messages within the thread using the
+[lightbox viewer](/help/view-an-image-at-full-size).
 
 * **Edit selected message**: `i` then `Enter` (`Return`) — Allows the user to
 edit the selected message (outlined in blue) if the user authored the selected
 message. If the selected message was written by another user, this shortcut will
 enable the user to view the source code of the message.
 
-* **Star selected message**: `*` — Allows the user to star the selected message
-(outlined in blue).
+* **Star selected message**: `*` — Allows the user to
+[star](/help/star-a-message) the selected message (outlined in blue).
 
 * **React to selected message with <img alt=":thumbs_up:" class="emoji"
 src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
@@ -124,7 +125,11 @@ message (outlined in blue) with the <img alt=":thumbs_up:" class="emoji"
 src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
 title=":thumbs_up:"/> (`:thumbs_up:`) emoji.
 
-* **Toggle topic mute**: `M` — Allows the user to mute and unmuted the topic of
+* **Collapse/show selected message**: `-` — Allows the user to
+[collapse](/help/collapse-a-message) and uncollapse the contents of the
+selected message (outlined in blue).
+
+* **Toggle topic mute**: `M` — Allows the user to mute and unmute the topic of
 the selected message (outlined in blue).
 
 ## Menus
