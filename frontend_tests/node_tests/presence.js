@@ -138,6 +138,12 @@ people.initialize_current_user(me.user_id);
 
     assert(!presence.presence_info[bot.user_id]);
 
+    // Make it seem like realm has a lot of people
+    var get_realm_count = people.get_realm_count;
+    people.get_realm_count = function () { return 1000; };
+    assert.equal(presence.set_info(presences, base_time), undefined);
+    people.get_realm_count = get_realm_count;
+
     var unknown = {
         email: 'unknown@zulip.com',
         user_id: 42,
