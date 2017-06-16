@@ -898,7 +898,13 @@ You'll see the *Open a pull request* page:
 ![images-create-pr]
 
 Provide a **title** and first comment for your pull request. Remember to prefix
-your pull request title with [WIP] if it is a work-in-progress.
+your pull request title with [WIP] if it is a work-in-progress. 
+
+If your pull request has an effect on the visuals of a component, you might want
+to include a screenshot of this change or a GIF of the interaction in your first
+comment. This will allow reviewers to comment on your changes without having to
+checkout your branch; you can find a list of tools you can use for this over
+[here][screenshots-gifs].
 
 When ready, click the green **Create pull request** to submit the pull request.
 
@@ -1481,6 +1487,7 @@ Deleting local branch review-original-5156 (was 5a1e982)
 [gitgui-gitk]: https://git-scm.com/docs/gitk
 [travis-ci]: https://travis-ci.org/
 [travis-ci-profile]: https://travis-ci.org/profile
+[screenshots-gifs]: screenshot-and-gif-software.html
 [self-setup]: git-guide.html#setup-git
 [self-how-git-is-different]: git-guide.html#how-git-is-different
 [self-git-terms]: git-guide.html#important-git-terms
