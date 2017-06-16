@@ -20,7 +20,7 @@ Commands:
 - diff
     - `git diff`: display the changes you have made to all files
     - `git diff --cached`: display the changes you have made to staged files
-    - `git diff HEAD~2..`: display the 2 most recent changes you have made to files 
+    - `git diff HEAD~2..`: display the 2 most recent changes you have made to files
 - fetch
     - `git fetch origin`: fetch origin repository
     - `git fetch upstream`: fetch upstream repository
@@ -34,7 +34,7 @@ Commands:
     - `git push origin +branch-name`: push your commits to your origin repository
 - rebase
     - `git rebase -i HEAD~3`: interactive rebasing current branch with first three items on HEAD
-    - `git rebase -i master`: interactive rebasing current branch with master branch 
+    - `git rebase -i master`: interactive rebasing current branch with master branch
     - `git rebase upstream/master`: rebasing current branch with master branch from upstream repository
 - reflog
     - `git reflog | head -10`: manage reference logs for the past 10 commits
@@ -50,5 +50,5 @@ Commands:
     - `git show master`: display most recent commit on `master`
 - status
     - `git status`: show the working tree status, unstaged and staged files
-    
+
 [fix-commit]: fixing-commits.html

@@ -13,7 +13,7 @@ If you're using Windows,
 [these videos](https://www.youtube.com/playlist?list=PL6gx4Cwl9DGDV6SnbINlVUd0o2xT4JbMu)
 may be useful too, but keep in mind that the following tips only apply to
 Linux/macOS environments (Unix shells). You can also use a tool, for example
-[Cygwin](https://www.cygwin.com/), to have a Unix-like shell on Windows. 
+[Cygwin](https://www.cygwin.com/), to have a Unix-like shell on Windows.
 
 ## The prompt (`$`)
 

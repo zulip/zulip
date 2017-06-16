@@ -48,5 +48,5 @@ Commands:
     - `git show master`
 - status
     - `git status`
-    
+
 [fix-commit]: fixing-commits.html
