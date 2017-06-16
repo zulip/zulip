@@ -83,6 +83,7 @@ Contents:
    writing-views
    life-of-a-request
    reading-list
+   screenshot-and-gif-software
 
 .. _code-contribution-guide:
 
