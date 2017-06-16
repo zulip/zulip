@@ -30,10 +30,6 @@ html {
     margin: 10px;
 }
 
-.footer {
-    padding: 20px 0px 10px 0px;
-}
-
 .white-box {
     position: relative;
     padding: 30px;
@@ -144,10 +140,6 @@ html {
 
 .forgot-password-container form {
     margin-bottom: 0px;
-}
-
-.header {
-    padding: 15px 0px 15px 0px;
 }
 
 .header,
