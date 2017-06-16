@@ -107,14 +107,34 @@ exports.populate_auth_methods = function (auth_methods) {
     }
 };
 
-exports.render_notifications_stream_ui = function (stream_id) {
-    var currrent_notifications_stream = stream_data.get_sub_by_id(stream_id);
-    if (currrent_notifications_stream) {
-        $("#realm_notifications_stream_name").text(i18n.t("#__stream_name__",
-            { stream_name: currrent_notifications_stream.name })).removeClass("text-warning");
-    } else {
-        $("#realm_notifications_stream_name").text(i18n.t("Disabled")).addClass("text-warning");
+function maybe_get_stream_name(stream_id) {
+    // TODO: move to stream_data.js.
+    if (!stream_id) {
+        return;
     }
+    var stream = stream_data.get_sub_by_id(stream_id);
+
+    if (!stream) {
+        return;
+    }
+
+    return stream.name;
+}
+
+exports.render_notifications_stream_ui = function (stream_id) {
+    var elem = $('#realm_notifications_stream_name');
+
+    var name = maybe_get_stream_name(stream_id);
+
+    if (!name) {
+        elem.text(i18n.t("Disabled"));
+        elem.addClass("text-warning");
+        return;
+    }
+
+    // Happy path
+    elem.text('#' + name);
+    elem.removeClass('text-warning');
 };
 
 exports.populate_notifications_stream_dropdown = function (stream_list) {
