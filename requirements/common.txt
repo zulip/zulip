@@ -187,5 +187,5 @@ git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtua
 ijson==2.3
 
 # Needed for link preview
-beautifulsoup4==4.5.3
+beautifulsoup4==4.6.0
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
