@@ -3,29 +3,15 @@
 {% block content %}
     <p>Hi there!</p>
 
-    <p>Welcome to Zulip.</p>
+    <p>Welcome to Zulip!</p>
 
-    <p><a href="{{ server_uri }}/hello" style="color:#08c">{{ server_uri }}/hello</a> has a nice overview of what we're up to, but here are a few tips that'll help you get the most out of it:</p>
+    <p>Zulip is the workplace communication solution that actually improves your productivity, combining the real-time nature of chat with the subject organization of email.</p>
 
-    <ol>
-        <li>Zulip works best when it's always open, so <a href="{{ realm_uri }}/apps" style="color:#08c">grab our apps</a>! (Mac, Windows, Linux, Android, iOS)</li>
+    <p>If you have any feedback, or just want to see how we use Zulip while we develop Zulip, swing by <a href="chat.zulip.org" style="color:#08c">chat.zulip.org</a>.
 
-        <li>Want to <b>share files</b> in Zulip? No problem! Start a new message and click the paperclip, or just drag-and-drop the file into the textbox.</li>
+    <p>Thanks,<br/>The Zulip Team</p>
 
-        <li>Trying to <b>get someone's attention</b>? Type in an @-sign followed by their name to "mention" them. (Want more or fewer notifications? Select Settings under the gear menu to customize how and when Zulip notifies you of new messages.)</li>
-
-        <li>Bulleted lists, bold, code blocks, and more are all at your fingertips - just check out <b>"Message formatting"</b> in the gear menu.</li>
-
-        <li>Are you a keyboard power user? Learn about <b>keyboard shortcuts</b> in the "Keyboard shortcuts" tab under the gear icon. (Or press '?')</li>
-
-        <li><b>Emoji</b>. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="{{ realm_uri }}/static/generated/emoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
-    </ol>
-
-    {% if verbose_support_offers %}
-    <p>Zulip has a team of engineers standing by to respond to your feedback, so please let us know what you think! Click the "Send feedback" button inside Zulip, or just reply to this email.</p>
-    {% endif %}
-
-    <p>Thanks,<br/>Zulip</p>
+    <p>PS: Zulip is open-source software, so contributions from the community are always welcome!  Check us out on github at <a href="https://github.com/zulip" style="color:#08c">{{ server_uri }}/hello</a>.
 {% endblock %}
 
 {% block manage_preferences %}
