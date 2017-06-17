@@ -575,18 +575,12 @@ $(function () {
 
     $(document).on('peer_subscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        var sub_row = settings_for_sub(sub);
-        exports.prepend_subscriber(sub_row, data.user_email);
+        rerender_subscribers_list(sub);
     });
 
     $(document).on('peer_unsubscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-
-        var sub_row = settings_for_sub(sub);
-        var tr = sub_row.find("tr[data-subscriber-email='" +
-                              data.user_email +
-                              "']");
-        tr.remove();
+        rerender_subscribers_list(sub);
     });
 
 });
