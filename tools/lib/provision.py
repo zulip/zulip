@@ -244,22 +244,10 @@ def main(options):
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
         setup_node_modules()
 
-    if options.is_travis:
-        if PY2:
-            MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
-            setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, patch_activate_script=True,
-                             virtualenv_args=['-p', 'python3'])
-            DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
-            setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE, patch_activate_script=True)
-        else:
-            DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
-            setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
-                             virtualenv_args=['-p', 'python3'])
-    else:
-        # Import tools/setup_venv.py instead of running it so that we get an
-        # activated virtualenv for the rest of the provisioning process.
-        from tools.setup import setup_venvs
-        setup_venvs.main()
+    # Import tools/setup_venv.py instead of running it so that we get an
+    # activated virtualenv for the rest of the provisioning process.
+    from tools.setup import setup_venvs
+    setup_venvs.main(options.is_travis)
 
     # Put Python2 virtualenv activation in .bash_profile.
     setup_shell_profile('~/.bash_profile')
