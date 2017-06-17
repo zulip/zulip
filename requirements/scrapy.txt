@@ -1,6 +1,6 @@
 Scrapy==1.3.3
 cryptography==1.9
-parsel==1.1.0
+parsel==1.2.0
 pyOpenSSL==17.0.0
 w3lib==1.17.0
 PyDispatcher==2.0.5
