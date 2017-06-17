@@ -16,7 +16,7 @@ Pillow==4.1.1
 Pygments==2.2.0
 
 # Needed for building complex DB queries
-SQLAlchemy==1.1.9
+SQLAlchemy==1.1.10
 
 # Needed for password hashing
 argon2-cffi==16.3.0
