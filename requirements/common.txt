@@ -94,7 +94,7 @@ olefile==0.44
 ndg-httpsclient==0.4.2
 
 # Needed for mock>1.1.2
-pbr==3.0.0
+pbr==3.0.1
 
 # Needed to access rabbitmq
 pika==0.10.0
