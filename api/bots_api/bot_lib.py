@@ -100,13 +100,18 @@ class ExternalBotHandler(object):
         else:
             self._rate_limit.show_error_and_exit()
 
-    def get_config_info(self, bot_name, section=None):
-        # type: (str, Optional[str]) -> Dict[str, Any]
+    def get_config_info(self, bot_name, section=None, optional=False):
+        # type: (str, Optional[str], Optional[bool]) -> Dict[str, Any]
         conf_file_path = os.path.realpath(os.path.join(
             our_dir, '..', 'bots', bot_name, bot_name + '.conf'))
         section = section or bot_name
         config = configparser.ConfigParser()
-        config.readfp(open(conf_file_path))  # type: ignore
+        try:
+            config.readfp(open(conf_file_path))  # type: ignore
+        except IOError:
+            if optional:
+                return dict()
+            raise
         return dict(config.items(section))
 
 class StateHandler(object):
