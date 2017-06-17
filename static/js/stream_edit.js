@@ -14,6 +14,15 @@ function settings_for_sub(sub) {
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 }
 
+function get_email_of_subscribers(subscribers) {
+    var emails = [];
+    subscribers.each(function (o, i) {
+        var email = people.get_person_from_user_id(i).email;
+        emails.push(email);
+    });
+    return emails;
+}
+
 exports.collapse = function (sub) {
     // I am not sure whether this code is really correct; it was extracted
     // from subs.update_settings_for_unsubscribed() and possibly pre-dates
@@ -153,11 +162,7 @@ function show_subscription_settings(sub_row) {
     alerts.addClass("hide");
     list.empty();
 
-    var emails = [];
-    sub.subscribers.each(function (o, i) {
-        var email = people.get_person_from_user_id(i).email;
-        emails.push(email);
-    });
+    var emails = get_email_of_subscribers(sub.subscribers);
 
     list_render(list, emails.sort(), {
         name: "stream_subscribers/" + stream_id,
