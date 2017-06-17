@@ -36,8 +36,8 @@ class BotTestCase(TestCase):
         # handler class. Eventually, we want bot's handler classes to
         # inherit from a common prototype specifying the handle_message
         # function.
-        bot_module_path = os.path.join(
-            current_dir, "bots", self.bot_name, self.bot_name + ".py")
+        bot_module_path = os.path.normpath(os.path.join(
+            current_dir, '..', 'bots', self.bot_name, self.bot_name + '.py'))
         lib_module = get_lib_module(bot_module_path)
         return lib_module.handler_class()
 
