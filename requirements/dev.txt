@@ -25,7 +25,7 @@ gitlint==0.8.2
 
 # Needed for gitlint
 arrow==0.10.0
-sh==1.11
+sh==1.12.14
 
 # Needed to sync translations from transifex
 transifex-client==0.12.4
