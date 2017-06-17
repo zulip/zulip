@@ -23,6 +23,15 @@ function get_email_of_subscribers(subscribers) {
     return emails;
 }
 
+function rerender_subscribers_list(sub) {
+    var emails = get_email_of_subscribers(sub.subscribers);
+    var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+
+    // Changing the data clears the rendered list and the list needs to be re-rendered.
+    subscribers_list.data(emails);
+    subscribers_list.render();
+}
+
 exports.collapse = function (sub) {
     // I am not sure whether this code is really correct; it was extracted
     // from subs.update_settings_for_unsubscribed() and possibly pre-dates
