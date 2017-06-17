@@ -319,7 +319,6 @@ Now run these commands:
 ```
 sudo ./scripts/lib/install-node
 yarn install
-./tools/install-mypy
 sudo mkdir /srv/zulip-emoji-cache
 sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
