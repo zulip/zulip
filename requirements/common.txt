@@ -155,7 +155,7 @@ ujson==1.35
 uritemplate==3.0.0
 
 # Django extension for static asset pipeline
-django-pipeline==1.6.12
+django-pipeline==1.6.13
 
 # Django extension for serving webpack modules
 django-webpack-loader==0.5.0
