@@ -14,12 +14,16 @@ install:
   - mispipe "tools/travis/setup-$TEST_SUITE" ts
 
   # Clean any virtualenvs that are not in use to avoid our cache
-  # becoming huge.  TODO: Add similar cleanup code for the other caches.
+  # becoming huge.
   - mispipe "tools/clean-venv-cache --travis" ts
 
   # Clean any npm cache which was generated but not required anymore to avoid
   # our cache becoming huge.
   - mispipe "tools/clean-npm-cache --travis" ts
+
+  # Clean any emoji cache which was generated but not required anymore to avoid
+  # our cache becoming huge.
+  - mispipe "tools/clean-emoji-cache --travis" ts
 script:
   # We unset GEM_PATH here as a hack to work around Travis CI having
   # broken running their system puppet with Ruby.  See
