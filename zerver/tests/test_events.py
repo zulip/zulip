@@ -1015,8 +1015,19 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-    def do_set_user_display_settings_test(self, setting_name, values_list):
-        # type: (str, List[Union[bool, Text]]) -> None
+    def do_set_user_display_settings_test(self, setting_name):
+        # type: (str) -> None
+        """Test updating each setting in UserProfile.property_types dict."""
+
+        bool_change = [True, False, True]  # type: List[bool]
+        test_changes = dict(
+            twenty_four_hour_time = bool_change,
+            left_side_userlist = bool_change,
+            emoji_alt_code = bool_change,
+            emojiset = [u'apple', u'twitter'],
+            default_language = [u'es', u'de', u'en'],
+            timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
+        )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
@@ -1029,9 +1040,11 @@ class EventsRegisterTest(ZulipTestCase):
         num_events = 1
         if setting_name == "timezone":
             num_events = 2
-        if property_type == bool:
-            do_set_user_display_setting(self.user_profile, setting_name, False)
-        for value in values_list:
+        values = test_changes.get(setting_name)
+        if values is None:
+            raise AssertionError('No test created for %s' % (setting_name))
+
+        for value in values:
             events = self.do_test(lambda: do_set_user_display_setting(
                 self.user_profile, setting_name, value), num_events=num_events)
 
@@ -1056,29 +1069,10 @@ class EventsRegisterTest(ZulipTestCase):
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
 
-    def test_change_twenty_four_hour_time(self):
+    def test_set_user_display_settings(self):
         # type: () -> None
-        self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
-
-    def test_change_left_side_userlist(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("left_side_userlist", [True, False])
-
-    def test_change_emoji_alt_code(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("emoji_alt_code", [True, False])
-
-    def test_change_emojiset(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("emojiset", [u'apple', u'twitter'])
-
-    def test_change_default_language(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("default_language", [u'de', u'es', u'en'])
-
-    def test_change_timezone(self):
-        # type: () -> None
-        self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])
+        for prop in UserProfile.property_types:
+            self.do_set_user_display_settings_test(prop)
 
     def test_change_notification_settings(self):
         # type: () -> None
