@@ -493,6 +493,8 @@ Filter.describe = function (operators) {
                 return verb + '@-mentions';
             } else if (operand === 'alerted') {
                 return verb + 'alerted messages';
+            } else if (operand === 'unread') {
+                return verb + 'unread messages';
             }
         } else {
             var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
