@@ -29,9 +29,8 @@ the Yoda Speak API to. Click on the blue **GET THE KEYS** button.
 
 On the pop-up that comes up, click on the **COPY** button.
 This is your Mashape API key. It is used
-to authenticate. Store it in the `yoda.config` file.
-
-The `yoda.config` file should be located at `~/yoda.config`.
+to authenticate. Store it in the `yoda.conf` file in the bot's
+directory.
 
 Example input:
 
