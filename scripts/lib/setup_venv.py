@@ -37,7 +37,7 @@ VENV_DEPENDENCIES = [
 
 def install_venv_deps(requirements_file):
     # type: (str) -> None
-    run(["pip", "install", "-U", "setuptools==35.0.2"])
+    run(["pip", "install", "-U", "setuptools==36.0.1"])
     run(["pip", "install", "--upgrade", "pip", "wheel"])
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
 
