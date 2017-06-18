@@ -518,6 +518,13 @@ function make_sub(name, stream_id) {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
+        {operator: 'stream', operand: 'river'},
+        {operator: 'is', operand: 'unread'},
+    ];
+    string = 'stream river, unread messages';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'JS'},
     ];

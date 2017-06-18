@@ -179,11 +179,12 @@ global.stream_data.populate_stream_topics_for_tests({});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = 'from:ted';
+    query = 'is:unread from:ted';
     suggestions = search.get_suggestions(query);
     expected = [
-        "from:ted",
-        "from:ted@zulip.com",
+        "is:unread from:ted",
+        "is:unread from:ted@zulip.com",
+        "is:unread",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -388,6 +389,7 @@ init();
         "is:starred",
         "is:mentioned",
         "is:alerted",
+        "is:unread",
         "sender:bob@zulip.com",
         "stream:devel",
         "stream:office",
@@ -403,6 +405,7 @@ init();
     assert.equal(describe('is:starred'), 'Starred messages');
     assert.equal(describe('is:mentioned'), '@-mentions');
     assert.equal(describe('is:alerted'), 'Alerted messages');
+    assert.equal(describe('is:unread'), 'Unread messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
     assert.equal(describe('stream:devel'), 'Stream <strong>devel</strong>');
 }());

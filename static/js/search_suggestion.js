@@ -390,6 +390,13 @@ function get_special_filter_suggestions(last, operators) {
                 {operator: 'is', operand: 'alerted'},
             ],
         },
+        {
+            search_string: 'is:unread',
+            description: 'unread messages',
+            invalid: [
+                {operator: 'is', operand: 'unread'},
+            ],
+        },
     ];
 
     var last_string = Filter.unparse([last]).toLowerCase();
