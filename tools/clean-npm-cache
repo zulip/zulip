@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
+import os
+import subprocess
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.node_cache import generate_sha1sum_node_modules
+
+NPM_CACHE_PATH = "/srv/zulip-npm-cache"
+if "--travis" in sys.argv:
+    try:
+        subprocess.check_output(['npm', '--version'])
+    except OSError:
+        print('NPM not found. Most probably we are running static-analysis and '
+              'hence npm is not installed. Exiting without cleaning npm cache.')
+        sys.exit(0)
+    NPM_CACHE_PATH = os.path.join(os.environ["HOME"], "zulip-npm-cache")
+
+sha1sum = generate_sha1sum_node_modules()
+npm_cache = os.path.join(NPM_CACHE_PATH, sha1sum)
+cached_node_modules = os.path.join(npm_cache, 'node_modules')
+success_stamp = os.path.join(cached_node_modules, '.success-stamp')
+
+for cache_dir_base in os.listdir(NPM_CACHE_PATH):
+    npm_cache_dir = os.path.join(NPM_CACHE_PATH, cache_dir_base)
+    if npm_cache_dir != npm_cache or not os.path.exists(success_stamp):
+        print("Cleaning unused NPM cache dir %s" % (npm_cache_dir,))
+        subprocess.check_call(["sudo", "rm", "-rf", npm_cache_dir])
+    else:
+        print("Keeping used NPM cache dir %s" % (npm_cache_dir,))
