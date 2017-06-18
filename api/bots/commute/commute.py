@@ -2,11 +2,6 @@ from __future__ import print_function
 
 import datetime as dt
 import requests
-from os.path import expanduser
-from six.moves import configparser as cp
-
-home = expanduser('~')
-CONFIG_PATH = home + '/commute.config'
 
 class CommuteHandler(object):
     '''
@@ -15,8 +10,8 @@ class CommuteHandler(object):
     It looks for messages starting with @mention of the bot.
     '''
 
-    def __init__(self):
-        self.api_key = self.get_api_key()
+    def initialize(self, bot_handler):
+        self.api_key = bot_handler.get_config_info('commute', 'Google.com')['api_key']
 
     def usage(self):
         return '''
@@ -76,17 +71,6 @@ class CommuteHandler(object):
         Departure times and arrival times must be in the UTC timezone,
         you can use the timezone bot.
                 '''
-
-    # adds API Authentication Key to url request
-    def get_api_key(self):
-        # commute.config must be moved from
-        # ~/zulip/api/bots/commute/commute.config into
-        # ~/commute.config for program to work
-        # see readme.md for more information
-        with open(CONFIG_PATH) as settings:
-            config = cp.ConfigParser()
-            config.readfp(settings)
-            return config.get('Google.com', 'api_key')
 
     # determines if bot will respond as a private message/ stream message
     def send_info(self, message, letter, bot_handler):
@@ -227,15 +211,9 @@ def test_calculate_seconds():
     result = handler.calculate_seconds('2016,12,20,23,59,00')
     assert result == str(1482278340)
 
-def test_get_api_key():
-    # must change to your own api key for test to work
-    result = handler.get_api_key()
-    assert result == 'abcdefghijksm'
-
 def test_helper_functions():
     test_parse_pair()
     test_calculate_seconds()
-    test_get_api_key()
 
 if __name__ == '__main__':
     test_helper_functions()
