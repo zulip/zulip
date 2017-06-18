@@ -55,6 +55,8 @@ function message_matches_search_term(message, operator, operand) {
             return message.mentioned;
         } else if (operand === 'alerted') {
             return message.alerted;
+        } else if (operand === 'unread') {
+            return unread.message_unread(message);
         }
         return true; // is:whatever returns true
 
