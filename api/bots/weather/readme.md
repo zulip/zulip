@@ -10,7 +10,7 @@ city that does not exist, the bot displays a "Sorry, city not found"
 message.
 
 * Before using this bot, you have to generate an OpenWeatherMap API
-  key and replace the dummy value in .weather_config.
+  key and replace the dummy value in weather.conf.
 
 ![Example Usage](assets/screen1.png)
 ![Wrong City](assets/screen2.png)

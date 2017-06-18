@@ -2,21 +2,11 @@
 from __future__ import print_function
 import requests
 import json
-import os
-import sys
-from six.moves.configparser import SafeConfigParser
-
 
 class WeatherHandler(object):
-    def __init__(self):
-        self.directory = os.path.dirname(os.path.realpath(__file__)) + '/'
-        self.config_name = '.weather_config'
+    def initialize(self, bot_handler):
+        self.api_key = bot_handler.get_config_info('weather', 'weather-config')['key']
         self.response_pattern = 'Weather in {}, {}:\n{} F / {} C\n{}'
-        if not os.path.exists(self.directory + self.config_name):
-            print('Weather bot config file not found, please set it up in {} file in this bot main directory'
-                  '\n\nUsing format:\n\n[weather-config]\nkey=<OpenWeatherMap API key here>\n\n'.format(self.config_name))
-            sys.exit(1)
-        super(WeatherHandler, self).__init__()
 
     def usage(self):
         return '''
@@ -38,7 +28,7 @@ class WeatherHandler(object):
             response = help_content
         else:
             url = 'http://api.openweathermap.org/data/2.5/weather?q=' + message['content'] + '&APPID='
-            r = requests.get(url + get_weather_api_key_from_config(self.directory, self.config_name))
+            r = requests.get(url + self.api_key)
             if "city not found" in r.text:
                 response = "Sorry, city not found"
             else:
@@ -64,12 +54,5 @@ def to_celsius(temp_kelvin):
 
 def to_fahrenheit(temp_kelvin):
     return int(temp_kelvin) * 9 / 5 - 459.67
-
-
-def get_weather_api_key_from_config(directory, config_name):
-    config = SafeConfigParser()
-    with open(directory + config_name, 'r') as config_file:
-        config.readfp(config_file)
-    return config.get("weather-config", "key")
 
 handler_class = WeatherHandler
