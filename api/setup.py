@@ -62,6 +62,7 @@ package_info = dict(
             'zulip-bot-server=zulip.bot_server:main',
         ],
     },
+    test_suite='tests',
 )  # type: Dict[str, Any]
 
 setuptools_info = dict(
@@ -69,14 +70,15 @@ setuptools_info = dict(
                       'simplejson',
                       'six',
                       'typing>=3.5.2.2',
-                      'flask>=0.12.2'
+                      'flask>=0.12.2',
+                      'mock>=2.0.0',
                       ],
 )
 
 try:
     from setuptools import setup, find_packages
     package_info.update(setuptools_info)
-    package_info['packages'] = find_packages()
+    package_info['packages'] = find_packages(exclude=["tests"])
 
 except ImportError:
     from distutils.core import setup
