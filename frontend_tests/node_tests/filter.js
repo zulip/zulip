@@ -2,6 +2,7 @@ add_dependencies({
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     util: 'js/util.js',
+    unread: 'js/unread.js',
 });
 
 set_global('page_params', {});
@@ -255,6 +256,10 @@ function make_sub(name, stream_id) {
     predicate = get_predicate([['is', 'starred']]);
     assert(predicate({starred: true}));
     assert(!predicate({starred: false}));
+
+    predicate = get_predicate([['is', 'unread']]);
+    assert(predicate({flags: ''}));
+    assert(!predicate({flags: 'read'}));
 
     predicate = get_predicate([['is', 'alerted']]);
     assert(predicate({alerted: true}));
