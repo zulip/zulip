@@ -1,0 +1,34 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Zulip: the best group chat for open source projects</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing apps">
+    <div class="main">
+        <div class="padded-content headline">
+            <h1 class="center">{% trans %}The best choice for open source projects{% endtrans %}</h1>
+        </div>
+        <div class="padded-content">
+            <div class="inner-content">
+                {{ 'zerver/for/open-source.md'|render_markdown_path }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

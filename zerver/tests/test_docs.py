@@ -37,6 +37,7 @@ class DocPageTest(ZulipTestCase):
             self._test('/apps/', 'Appsolutely')
             self._test('/features/', 'Talk about multiple topics at once')
             self._test('/hello/', 'productive group chat')
+            self._test('/for/open-source/', 'for open source projects')
             self._test('/integrations/',
                        'require creating a Zulip bot',
                        extra_strings=[
