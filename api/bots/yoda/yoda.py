@@ -1,7 +1,6 @@
 # See readme.md for instructions on running this code.
 
 from __future__ import print_function
-import os
 import logging
 import ssl
 import sys
@@ -35,6 +34,9 @@ class YodaSpeakHandler(object):
     It looks for messages starting with '@mention-bot'.
     '''
 
+    def initialize(self, bot_handler):
+        self.api_key = bot_handler.get_config_info('yoda')['api_key']
+
     def usage(self):
         return '''
             This bot will allow users to translate a sentence into
@@ -43,8 +45,8 @@ class YodaSpeakHandler(object):
 
             Before running this, make sure to get a Mashape Api token.
             Instructions are in the 'readme.md' file.
-            Store it in the 'yoda.config' file.
-            The 'yoda.config' file should be located at '~/yoda.config'.
+            Store it in the 'yoda.conf' file.
+            The 'yoda.conf' file should be located in this bot's directory.
             Example input:
             @mention-bot You will learn how to speak like me someday.
             '''
@@ -95,7 +97,7 @@ def handle_input(message, bot_handler):
     else:
         sentence = format_input(original_content)
         try:
-            reply_message = send_to_yoda_api(sentence, get_api_key())
+            reply_message = send_to_yoda_api(sentence, handler_class.api_key)
 
         except ssl.SSLError or TypeError:
             reply_message = 'The service is temporarily unavailable, please try again.'
@@ -107,15 +109,6 @@ def handle_input(message, bot_handler):
             logging.error(reply_message)
 
         bot_handler.send_reply(message, reply_message)
-
-
-def get_api_key():
-    # function for getting Mashape api key
-    home = os.path.expanduser('~')
-    with open(home + '/yoda.config') as api_key_file:
-        api_key = api_key_file.read().strip()
-    return api_key
-
 
 def send_message(bot_handler, message, stream, subject):
     # function for sending a message
