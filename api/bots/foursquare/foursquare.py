@@ -4,26 +4,11 @@ from __future__ import absolute_import
 import datetime as dt
 import re
 import requests
-from os.path import expanduser
-from six.moves import configparser as cp
 from six.moves import range
 
-home = expanduser('~')
-CONFIG_PATH = home + '/zulip/api/bots/foursquare/foursquare.config'
-
-def get_api_key():
-    # foursquare.config must have been moved from
-    # ~/zulip/api/bots/foursquare/foursquare.config into
-    # ~/foursquare.config for program to work
-    # see readme.md for more information
-    with open(CONFIG_PATH) as settings:
-        config = cp.ConfigParser()
-        config.readfp(settings)
-        return config.get('Foursquare', 'api_key')
-
 class FoursquareHandler(object):
-    def __init__(self):
-        self.api_key = get_api_key()
+    def initialize(self, bot_handler):
+        self.api_key = bot_handler.get_config_info('foursquare', 'Foursquare')['api_key']
 
     def usage(self):
         return '''
@@ -112,12 +97,3 @@ Example Inputs:
         return
 
 handler_class = FoursquareHandler
-
-def test_get_api_key():
-    # must change to your own api key for test to work
-    result = get_api_key()
-    assert result == 'abcdefghijksm'
-
-if __name__ == '__main__':
-    test_get_api_key()
-    print('Success')
