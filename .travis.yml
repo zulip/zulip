@@ -27,6 +27,7 @@ script:
   - unset GEM_PATH
   - mispipe "./tools/travis/$TEST_SUITE" ts
 cache:
+  - timeout: 500
   - apt: false
   - directories:
     - $HOME/zulip-venv-cache
