@@ -372,6 +372,11 @@ exports.pm_with_operand_ids = function (operand) {
         return people_dict.get(email);
     });
 
+    // If your email is included in a PM group with other people, just ignore it
+    if (persons.length > 1) {
+        persons = _.without(persons, people_by_user_id_dict.get(my_user_id));
+    }
+
     if (!_.all(persons)) {
         return;
     }
