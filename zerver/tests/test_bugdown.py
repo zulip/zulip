@@ -396,6 +396,8 @@ class BugdownTest(ZulipTestCase):
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
+        emoji_in_tweet_html = """Zulip is <img alt=":hundred_points:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4af.png" title=":hundred_points:">% open-source!"""
+
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
             # type: (Text, Text, Text) -> Text
             ## As of right now, all previews are mocked to be the exact same tweet
@@ -487,6 +489,12 @@ class BugdownTest(ZulipTestCase):
                                          '<img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small">'
                                          '</a>'
                                          '</div>'))))
+
+        msg = 'http://twitter.com/wdaher/status/287977969287315460'
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('http://twitter.com/wdaher/status/287977969287315460'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 
     def test_fetch_tweet_data_settings_validation(self):
         # type: () -> None

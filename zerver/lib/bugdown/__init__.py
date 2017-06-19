@@ -455,15 +455,16 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # type: (Text, List[Dict[Text, Text]], List[Dict[Text, Any]], List[Dict[Text, Any]]) -> Element
         """
         Use data from the twitter API to turn links, mentions and media into A
-        tags.
+        tags. Also convert unicode emojis to images.
 
-        This works by using the urls, user_mentions and media data from the
-        twitter API.
+        This works by using the urls, user_mentions and media data from
+        the twitter API and searching for unicode emojis in the text using
+        `unicode_emoji_regex`.
 
-        The first step is finding the locations of the URLs, mentions and media
-        in the text. For each match we build a dictionary with the start
-        location, end location, the URL to link to, and the text to show in the
-        link.
+        The first step is finding the locations of the URLs, mentions, media and
+        emoji in the text. For each match we build a dictionary with type, the start
+        location, end location, the URL to link to, and the text(codepoint and title
+        in case of emojis) to be used in the link(image in case of emojis).
 
         Next we sort the matches by start location. And for each we add the
         text from the end of the last link to the start of the current link to
@@ -510,6 +511,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     'url': short_url,
                     'text': expanded_url,
                 })
+        # Build dicts for emojis
+        for match in re.finditer(unicode_emoji_regex, text, re.IGNORECASE):
+            orig_syntax = match.group('syntax')
+            codepoint = unicode_emoji_to_codepoint(orig_syntax)
+            if codepoint in codepoint_to_name:
+                display_string = ':' + codepoint_to_name[codepoint] + ':'
+                to_process.append({
+                    'type': 'emoji',
+                    'start': match.start(),
+                    'end': match.end(),
+                    'codepoint': codepoint,
+                    'title': display_string,
+                })
 
         to_process.sort(key=lambda x: x['start'])
         p = current_node = markdown.util.etree.Element('p')
@@ -533,8 +547,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # link
             set_text(text[current_index:item['start']])
             current_index = item['end']
-            current_node = a = url_to_a(item['url'], item['text'])
-            p.append(a)
+            if item['type'] != 'emoji':
+                current_node = elem = url_to_a(item['url'], item['text'])
+            else:
+                current_node = elem = make_emoji(item['codepoint'], item['title'])
+            p.append(elem)
 
         # Add any unused text
         set_text(text[current_index:])
