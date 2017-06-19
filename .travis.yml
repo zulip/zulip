@@ -8,7 +8,7 @@ install:
   - mispipe "mv ~/.nvm ~/.travis-nvm-disabled" ts
 
   # Install coveralls, the library for the code coverage reporting tool we use
-  - mispipe "pip install coveralls" ts
+  - mispipe "pip install codecov" ts
 
   # This is the main setup job for the test suite
   - mispipe "tools/travis/setup-$TEST_SUITE" ts
@@ -31,10 +31,6 @@ cache:
     - $HOME/node
 env:
   global:
-    - COVERAGE_FILE=var/.coverage
-    - COVERALLS_PARALLEL=true
-    - COVERALLS_SERVICE_NAME=travis-pro
-    - COVERALLS_REPO_TOKEN=hnXUEBKsORKHc8xIENGs9JjktlTb2HKlG
     - BOTO_CONFIG=/tmp/nowhere
 language: python
 # We run all of our test suites for both Python 2.7 and 3.4, with the
@@ -68,11 +64,10 @@ addons:
       - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
   postgresql: "9.3"
 after_success:
-  coveralls
+  - codecov
 notifications:
   webhooks:
     urls:
-      - https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
       - https://zulip.org/zulipbot/travis
     on_success: always
     on_failure: always
