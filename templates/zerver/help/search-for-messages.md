@@ -72,6 +72,8 @@ you.
 that you've received.
 * `is:starred` - This operator narrows the view to show all messages that you've
 starred.
+* `is:unread` - This operator narrows the view to show all messages that you
+haven't read.
 * `has:link` - This operator narrows the view to show all messages that contain
 any links.
 * `has:image` - This operator narrows the view to show all messages that contain
