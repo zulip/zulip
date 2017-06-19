@@ -310,6 +310,19 @@ function make_sub(name, stream_id) {
     }));
     assert(!predicate({type: 'stream'}));
 
+    predicate = get_predicate([['pm-with', 'Joe@example.com,steve@foo.com']]);
+    assert(predicate({
+        type: 'private',
+        display_recipient: [{user_id: joe.user_id}, {user_id: steve.user_id}],
+    }));
+
+    // Make sure your own email is ignored
+    predicate = get_predicate([['pm-with', 'Joe@example.com,steve@foo.com,me@example.com']]);
+    assert(predicate({
+        type: 'private',
+        display_recipient: [{user_id: joe.user_id}, {user_id: steve.user_id}],
+    }));
+
     predicate = get_predicate([['pm-with', 'nobody@example.com']]);
     assert(!predicate({
         type: 'private',
