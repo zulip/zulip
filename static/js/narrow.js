@@ -564,8 +564,14 @@ exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
             "/subject/" + hash_util.encodeHashComponent(message.subject) +
             "/near/" + hash_util.encodeHashComponent(message.id);
     }
+
+    // Include your own email in this URI if it's not there already
+    var all_emails = message.reply_to;
+    if (all_emails.indexOf(people.my_current_email()) === -1) {
+        all_emails += "," + people.my_current_email();
+    }
     return absolute_url + "#narrow/pm-with/" +
-        hash_util.encodeHashComponent(message.reply_to) +
+        hash_util.encodeHashComponent(all_emails) +
         "/near/" + hash_util.encodeHashComponent(message.id);
 };
 
