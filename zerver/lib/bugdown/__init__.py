@@ -473,13 +473,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         Finally we add any remaining text to the last node.
         """
 
-        to_linkify = []  # type: List[Dict[Text, Any]]
+        to_process = []  # type: List[Dict[Text, Any]]
         # Build dicts for URLs
         for url_data in urls:
             short_url = url_data["url"]
             full_url = url_data["expanded_url"]
             for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
-                to_linkify.append({
+                to_process.append({
+                    'type': 'url',
                     'start': match.start(),
                     'end': match.end(),
                     'url': short_url,
@@ -490,7 +491,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             screen_name = user_mention['screen_name']
             mention_string = u'@' + screen_name
             for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE):
-                to_linkify.append({
+                to_process.append({
+                    'type': 'mention',
                     'start': match.start(),
                     'end': match.end(),
                     'url': u'https://twitter.com/' + force_text(urllib.parse.quote(force_str(screen_name))),
@@ -501,14 +503,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             short_url = media_item['url']
             expanded_url = media_item['expanded_url']
             for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
-                to_linkify.append({
+                to_process.append({
+                    'type': 'media',
                     'start': match.start(),
                     'end': match.end(),
                     'url': short_url,
                     'text': expanded_url,
                 })
 
-        to_linkify.sort(key=lambda x: x['start'])
+        to_process.sort(key=lambda x: x['start'])
         p = current_node = markdown.util.etree.Element('p')
 
         def set_text(text):
@@ -522,15 +525,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 current_node.tail = text
 
         current_index = 0
-        for link in to_linkify:
+        for item in to_process:
             # The text we want to link starts in already linked text skip it
-            if link['start'] < current_index:
+            if item['start'] < current_index:
                 continue
             # Add text from the end of last link to the start of the current
             # link
-            set_text(text[current_index:link['start']])
-            current_index = link['end']
-            current_node = a = url_to_a(link['url'], link['text'])
+            set_text(text[current_index:item['start']])
+            current_index = item['end']
+            current_node = a = url_to_a(item['url'], item['text'])
             p.append(a)
 
         # Add any unused text
