@@ -53,6 +53,13 @@ stream_data.create_streams([
 
     // Sort languages by matching first letter, and then by popularity
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
+
+    // Test if popularity between two languages are the same
+    global.pygments_data.langs.php = 40;
+    test_langs = ["pascal", "perl", "php", "python", "javascript"];
+    test_langs = th.sort_languages(test_langs, "p");
+
+    assert.deepEqual(test_langs, ["php", "python", "pascal", "perl", "javascript"]);
 }());
 
 var matches = [
