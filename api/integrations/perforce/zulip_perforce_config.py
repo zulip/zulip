@@ -26,6 +26,11 @@ ZULIP_USER = "p4-bot@example.com"
 ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 ZULIP_SITE = "https://zulip.example.com"
 
+# Set this to True to silently drop messages if the destination stream
+# does not exist. This prevents the warnings from Zulip's Notification Bot
+# when commits are made on a branch for which no stream has been created.
+ZULIP_IGNORE_MISSING_STREAM = False
+
 # Set this to point at a p4web installation to get changelist IDs as links
 # P4_WEB = "https://p4web.example.com"
 P4_WEB = None
