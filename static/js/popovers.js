@@ -42,14 +42,15 @@ function load_medium_avatar(user_email) {
 }
 
 function user_last_seen_time_status(user_id) {
-    if (presence.get_status(user_id) === "active") {
+    var status = presence.get_status(user_id);
+    if (status === "active") {
         return i18n.t("Active now");
     }
-
-    if (people.get_person_from_user_id(user_id).is_bot) {
-        return i18n.t("Bot");
+    if (status === "unknown") {
+        // We are not using this anywhere right now as the user presence indicator
+        // is hidden for this case
+        return i18n.t("Unknown");
     }
-
     return timerender.last_seen_status_from_date(presence.last_active_date(user_id).clone());
 }
 
