@@ -58,8 +58,8 @@ class BotTestCase(TestCase):
 
     def check_expected_responses(self, expectations, expected_method='send_reply',
                                  email="foo_sender@zulip.com", recipient="foo", subject="foo",
-                                 type="all"):
-        # type: (Dict[str, Any], str, str, str, str, str) -> None
+                                 sender_id=0, sender_full_name="Foo Bar", type="all"):
+        # type: (Dict[str, Any], str, str, str, str, int, str, str) -> None
         # To test send_message, Any would be a Dict type,
         # to test send_reply, Any would be a str type.
         if type not in ["private", "stream", "all"]:
@@ -71,11 +71,13 @@ class BotTestCase(TestCase):
             response = {'content': r} if expected_method == 'send_reply' else r
             if type != "stream":
                 message = {'content': m, 'type': "private", 'display_recipient': recipient,
-                           'sender_email': email}
+                           'sender_email': email, 'sender_id': sender_id,
+                           'sender_full_name': sender_full_name}
                 self.assert_bot_response(message=message, response=response, expected_method=expected_method)
             if type != "private":
                 message = {'content': m, 'type': "stream", 'display_recipient': recipient,
-                           'subject': subject, 'sender_email': email}
+                           'subject': subject, 'sender_email': email, 'sender_id': sender_id,
+                           'sender_full_name': sender_full_name}
                 self.assert_bot_response(message=message, response=response, expected_method=expected_method)
 
     def call_request(self, message, expected_method, response):
