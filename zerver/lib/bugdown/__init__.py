@@ -1041,8 +1041,6 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             return (True, None)
 
         user = db_data['full_names'].get(name.lower(), None)
-        if user is None:
-            user = db_data['short_names'].get(name.lower(), None)
 
         return (False, user)
 
