@@ -37,8 +37,8 @@ VENV_DEPENDENCIES = [
 
 def install_venv_deps(requirements_file):
     # type: (str) -> None
-    run(["pip", "install", "-U", "setuptools==36.0.1"])
-    run(["pip", "install", "--upgrade", "pip", "wheel"])
+    pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
+    run(["pip", "install", "-U", "--requirement", pip_requirements])
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
 
 def get_index_filename(venv_path):
