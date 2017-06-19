@@ -72,9 +72,21 @@ except ValueError:
 metadata = git_p4.p4_describe(changelist)  # type: Dict[str, str]
 
 destination = config.commit_notice_destination(changeroot, changelist)  # type: Optional[Dict[str, str]]
+
 if destination is None:
     # Don't forward the notice anywhere
     sys.exit(0)
+
+ignore_missing_stream = None
+if hasattr(config, "ZULIP_IGNORE_MISSING_STREAM"):
+    ignore_missing_stream = config.ZULIP_IGNORE_MISSING_STREAM
+
+if ignore_missing_stream:
+    # Check if the destination stream exists yet
+    stream_state = client.get_stream_id(destination["stream"])
+    if stream_state["result"] == "error":
+        # Silently discard the message
+        sys.exit(0)
 
 change = metadata["change"]
 p4web = None
