@@ -95,6 +95,9 @@ what they're looking for.
 
 ## Invite users and onboard your community
 
+- If you wish to delete messages before starting onboarding, hover over a
+  message and click on the 'message actions' menu on the far right, then select
+  'delete message'.
 - Use the “#zulip” stream to share tips on how to use Zulip
   effectively.
 - If you have an existing chat tool, make sure everyone knows that the
