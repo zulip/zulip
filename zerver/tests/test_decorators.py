@@ -755,7 +755,9 @@ class InactiveUserTest(ZulipTestCase):
         do_deactivate_user(user_profile)
 
         result = self.login_with_return(self.example_email("hamlet"))
-        self.assert_in_response("Please enter a correct email and password", result)
+        self.assert_in_response(
+            "Sorry for the trouble, but your account has been deactivated",
+            result)
 
     def test_webhook_deactivated_user(self):
         # type: () -> None

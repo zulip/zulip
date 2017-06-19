@@ -257,6 +257,12 @@ Please contact %s to reactivate this group.""" % (
                 settings.ZULIP_ADMINISTRATOR)
             raise ValidationError(mark_safe(error_msg))
 
+        if not user_profile.is_active:
+            error_msg = (u"Sorry for the trouble, but your account has been "
+                         u"deactivated. Please contact %s to reactivate "
+                         u"it.") % (settings.ZULIP_ADMINISTRATOR,)
+            raise ValidationError(mark_safe(error_msg))
+
         if not check_subdomain(get_subdomain(self.request), user_profile.realm.subdomain):
             logging.warning("User %s attempted to password login to wrong subdomain %s" %
                             (user_profile.email, get_subdomain(self.request)))
