@@ -2,6 +2,16 @@ set_global("page_params", {
     realm_uri: "https://chat.example.com",
 });
 
+set_global("avatar", {});
+
+add_dependencies({
+    bot_data: 'js/bot_data.js',
+    upload_widget: 'js/upload_widget.js',
+});
+
+set_global('$', global.make_zjquery());
+set_global('document', {});
+
 var settings_bots = require("js/settings_bots.js");
 
 (function test_generate_zuliprc_uri() {
@@ -44,3 +54,20 @@ var settings_bots = require("js/settings_bots.js");
 
     assert.equal(content, expected);
 }());
+
+
+(function test_set_up() {
+    // bunch of stubs
+
+    $.validator = { addMethod: function () {} };
+
+    $("#get_api_key_box form").ajaxForm = function () {};
+
+    $("#create_bot_form").validate = function () {};
+
+    avatar.build_bot_create_widget = function () {};
+    avatar.build_bot_edit_widget = function () {};
+
+    settings_bots.set_up();
+}());
+
