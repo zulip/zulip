@@ -43,6 +43,9 @@ def build_narrow_filter(narrow):
             elif operator == "is" and operand in ["starred"]:
                 if operand not in flags:
                     return False
+            elif operator == "is" and operand == "unread":
+                if "read" in flags:
+                    return False
             elif operator == "is" and operand in ["alerted", "mentioned"]:
                 if "mentioned" not in flags:
                     return False
