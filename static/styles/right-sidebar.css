@@ -79,6 +79,10 @@
     border-color: gray;
 }
 
+.user_unknown .user-status-indicator {
+    display: none;
+}
+
 #user_presences a,
 #group-pms a {
     color: inherit;
