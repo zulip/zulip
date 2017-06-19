@@ -5,52 +5,55 @@ set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 add_dependencies({
     stream_data: 'js/stream_data.js',
     people: 'js/people.js',
-    typeahead_helper: 'js/typeahead_helper.js',
     util: 'js/util.js',
     Handlebars: 'handlebars',
 });
-
-var popular = {num_items: function () {
-    return 10;
-}};
-
-var unpopular = {num_items: function () {
-    return 2;
-}};
-
-var test_streams = [
-    {name: 'Dev', pin_to_top: false, subscribers: unpopular},
-    {name: 'Docs', pin_to_top: false, subscribers: popular},
-    {name: 'Derp', pin_to_top: false, subscribers: unpopular},
-    {name: 'Denmark', pin_to_top: true, subscribers: popular},
-    {name: 'dead', pin_to_top: false, subscribers: unpopular},
-];
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
     {name: 'Linux', subscribed: true, color: 'red', stream_id: 2},
 ]);
 
-global.stream_data.is_active = function (sub) {
-    return sub.name !== 'dead';
-};
+(function test_sort_streams() {
+    var popular = {num_items: function () {
+        return 10;
+    }};
 
-test_streams = typeahead_helper.sort_streams(test_streams, 'd');
-assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
-assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
-assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
-assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
-assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+    var unpopular = {num_items: function () {
+        return 2;
+    }};
 
-set_global('pygments_data', {langs:
-    {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
-});
+    var test_streams = [
+        {name: 'Dev', pin_to_top: false, subscribers: unpopular},
+        {name: 'Docs', pin_to_top: false, subscribers: popular},
+        {name: 'Derp', pin_to_top: false, subscribers: unpopular},
+        {name: 'Denmark', pin_to_top: true, subscribers: popular},
+        {name: 'dead', pin_to_top: false, subscribers: unpopular},
+    ];
 
-var test_langs = ["pascal", "perl", "php", "python", "javascript"];
-test_langs = typeahead_helper.sort_languages(test_langs, "p");
+    global.stream_data.is_active = function (sub) {
+        return sub.name !== 'dead';
+    };
 
-// Sort languages by matching first letter, and then by popularity
-assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
+    test_streams = th.sort_streams(test_streams, 'd');
+    assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
+    assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
+    assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
+    assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
+    assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+}());
+
+(function test_sort_languages() {
+    set_global('pygments_data', {langs:
+        {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
+    });
+
+    var test_langs = ["pascal", "perl", "php", "python", "javascript"];
+    test_langs = th.sort_languages(test_langs, "p");
+
+    // Sort languages by matching first letter, and then by popularity
+    assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
+}());
 
 var matches = [
     {
