@@ -8,7 +8,7 @@ overview, see the [new feature tutorial](new-feature-tutorial.html).
 ## Primary build process
 
 Most of the existing JS in Zulip is written
-in [IIFE](http://benalman.com/news/2010/11/immediately-invoked-function-expression/)-wrapped
+in [IIFE](https://www.google.com/#q=iife)-wrapped
 modules, one per file in the `static/js` directory. We will over time migrate
 this to Typescript modules. In development mode files are loaded using webpack
 eval with sourcemaps. In production mode (and when creating a release tarball
