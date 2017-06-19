@@ -18,6 +18,7 @@ exports.make_zjquery = function () {
         var attrs = new Dict();
         var classes = new Dict();
         var on_functions = new Dict();
+        var click_func;
 
         var self = {
             val: function () {
@@ -121,6 +122,15 @@ exports.make_zjquery = function () {
                 var funcs = on_functions.setdefault(name, []);
                 funcs.push(f);
                 return self.wrapper;
+            },
+            click: function (f) {
+                if (f) {
+                    assert.equal(typeof(f), "function");
+                    click_func = f;
+                } else {
+                    assert(click_func);
+                    click_func();
+                }
             },
             remove: function () {
                 if (my_parent) {
