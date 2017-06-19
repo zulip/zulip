@@ -261,7 +261,8 @@ class NarrowBuilder(object):
         if ',' in operand:
             # Huddle
             try:
-                emails = [e.strip() for e in operand.split(',')]
+                # Ignore our own email if it is in this list
+                emails = [e.strip() for e in operand.split(',') if e.strip() != self.user_profile.email]
                 recipient = recipient_for_emails(emails, False,
                                                  self.user_profile, self.user_profile)
             except ValidationError:
