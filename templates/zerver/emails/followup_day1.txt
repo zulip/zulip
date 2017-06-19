@@ -2,20 +2,16 @@ Hi there!
 
 Welcome to Zulip!
 
-Zulip is the workplace communication solution that actually improves your productivity, combining the real-time nature of chat with the topic-based organization of email.  Our mission to build the best tool for collaboration, and we're excited to have you with us.  Zulip is free and open source.  We believe that open source is the future of software, and by choosing Zulip, you are not locked in to a single vendor for team communication needs, and you have the ability to make any small tweaks you may need to.  
+Zulip is the workplace communication solution that actually improves your productivity, combining the real-time nature of chat with the topic-based organization of email.  Our mission to build the best tool for collaboration.  As an open-source software project, Zulip is about community, and we're happy to have you with us.
 
-Zulip has experienced incredible growth in its codebase and community these past few months, with over 150 contributors on our 1.6 release.
+You've come at an exciting time.  Zulip has experienced incredible growth in its codebase and developer community these past few months, with over 150 contributors on our 1.6 release (https://blog.zulip.org/2017/06/06/zulip-server-1-6-released/).  We're currently working on improving our bots and integrations framework to make it even easier to integrate Zulip into your workflow.  You should also check out our beta apps, a React Native mobile app for iOS/Android and an Electron app for Linux/Mac/Windows: {{ realm_uri }}/apps.
 
-Zulip is open-source software, which means you're not locked into 
-
-Check out our [alpha|beta] applications for Windows, Mac, iOS, and Android.
-
-If you have any feedback or want to see how we use Zulip while we develop Zulip, swing by chat.zulip.org.
+We hope you love using Zulip as much as we do.  If you have any feedback or want to see how we use Zulip for a large software project, swing by chat.zulip.org.
 
 Thanks,
 The Zulip Team
 
-PS: Check us out on github at https://github.com/zulip; contributions from the community are always welcome!
+PS: Check us out on Twitter @Zuliposs and on GitHub at https://github.com/zulip!
 ----
 Manage email preferences:
 {{ realm_uri }}/#settings
