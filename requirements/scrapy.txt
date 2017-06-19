@@ -5,3 +5,4 @@ pyOpenSSL==17.0.0
 w3lib==1.17.0
 PyDispatcher==2.0.5
 queuelib==1.4.2
+service_identity==17.0.0
