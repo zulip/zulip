@@ -27,7 +27,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, get_user_profile_by_email, REQ, human_users_only
+    JsonableError, get_user_profile_by_email, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
 from zerver.lib.timezone import get_all_timezones
@@ -63,7 +63,6 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address,
                                salt='zerver.views.auth')
     return response
 
-@human_users_only
 @require_post
 def accounts_register(request):
     # type: (HttpRequest) -> HttpResponse
