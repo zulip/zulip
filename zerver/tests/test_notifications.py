@@ -63,8 +63,8 @@ class TestMissedMessages(ZulipTestCase):
         for i in range(0, 11):
             self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, str(i))
         self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '11', subject='test2')
-        msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM, '@**hamlet**')
-        body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**'
+        msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM, '@**King Hamlet**')
+        body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**King Hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
@@ -76,8 +76,8 @@ class TestMissedMessages(ZulipTestCase):
 
         for i in range(0, 3):
             self.send_message(self.example_email('cordelia'), "Denmark", Recipient.STREAM, str(i))
-        msg_id = self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '@**hamlet**')
-        body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**hamlet**'
+        msg_id = self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '@**King Hamlet**')
+        body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**King Hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
@@ -178,7 +178,7 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM,
-                                   '@**hamlet** to be deleted')
+                                   '@**King Hamlet** to be deleted')
 
         hamlet = self.example_user('hamlet')
         email = self.example_email('othello')

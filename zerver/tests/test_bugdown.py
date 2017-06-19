@@ -716,20 +716,6 @@ class BugdownTest(ZulipTestCase):
                          '@King Hamlet</span></p>' % (self.example_email("hamlet"), user_id))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
-    def test_mention_shortname(self):
-        # type: () -> None
-        sender_user_profile = self.example_user('othello')
-        user_profile = self.example_user('hamlet')
-        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        user_id = user_profile.id
-
-        content = "@**hamlet**"
-        self.assertEqual(render_markdown(msg, content),
-                         '<p><span class="user-mention" '
-                         'data-user-email="%s" data-user-id="%s">'
-                         '@King Hamlet</span></p>' % (self.example_email("hamlet"), user_id))
-        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
-
     def test_mention_multiple(self):
         # type: () -> None
         sender_user_profile = self.example_user('othello')
@@ -737,7 +723,7 @@ class BugdownTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        content = "@**King Hamlet** and @**cordelia**, check this out"
+        content = "@**King Hamlet** and @**Cordelia Lear**, check this out"
         self.assertEqual(render_markdown(msg, content),
                          '<p>'
                          '<span class="user-mention" '
