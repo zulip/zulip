@@ -112,6 +112,16 @@ class NarrowBuilderTest(ZulipTestCase):
             term = dict(operator='is', operand=operand)
             self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
 
+    def test_add_term_using_is_operator_and_unread_operand(self):
+        # type: () -> None
+        term = dict(operator='is', operand='unread')
+        self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
+
+    def test_add_term_using_is_operator_and_unread_operand_and_negated(self):  # NEGATED
+        # type: () -> None
+        term = dict(operator='is', operand='unread', negated=True)
+        self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
+
     def test_add_term_using_is_operator_non_private_operand_and_negated(self):  # NEGATED
         # type: () -> None
         for operand in ['starred', 'mentioned', 'alerted']:
@@ -335,7 +345,7 @@ class BuildNarrowFilterTest(TestCase):
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      '../fixtures/narrow.json')
         scenarios = ujson.loads(open(fixtures_path, 'r').read())
-        self.assertTrue(len(scenarios) == 8)
+        self.assertTrue(len(scenarios) == 9)
         for scenario in scenarios:
             narrow = scenario['narrow']
             accept_events = scenario['accept_events']
@@ -372,6 +382,12 @@ class IncludeHistoryTest(ZulipTestCase):
         # History doesn't apply to PMs.
         narrow = [
             dict(operator='is', operand='private'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, realm))
+
+        # History doesn't apply to unread messages.
+        narrow = [
+            dict(operator='is', operand='unread'),
         ]
         self.assertFalse(ok_to_include_history(narrow, realm))
 

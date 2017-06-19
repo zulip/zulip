@@ -227,5 +227,27 @@
                 "mentioned"
             ]
         ]
+    },
+    {
+        "accept_events":[
+            {
+                "message":null,
+                "flags": [],
+            }
+        ],
+        "reject_events":[
+            {
+                "message":null,
+                "flags":[
+                    "read"
+                ]
+            }
+        ],
+        "narrow":[
+            [
+                "is",
+                "unread"
+            ]
+        ]
     }
 ]
