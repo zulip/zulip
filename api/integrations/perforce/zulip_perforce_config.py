@@ -26,6 +26,10 @@ ZULIP_USER = "p4-bot@example.com"
 ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 ZULIP_SITE = "https://zulip.example.com"
 
+# Set this to point at a p4web installation to get changelist IDs as links
+# P4_WEB = "https://p4web.example.com"
+P4_WEB = None
+
 # commit_notice_destination() lets you customize where commit notices
 # are sent to with the full power of a Python function.
 #

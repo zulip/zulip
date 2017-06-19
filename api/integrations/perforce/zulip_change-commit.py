@@ -76,6 +76,15 @@ if destination is None:
     # Don't forward the notice anywhere
     sys.exit(0)
 
+change = metadata["change"]
+p4web = None
+if hasattr(config, "P4_WEB"):
+    p4web = config.P4_WEB
+
+if p4web is not None:
+    # linkify the change number
+    change = '[{change}]({p4web}/{change}?ac=10)'.format(p4web=p4web, change=change)
+
 message = """**{user}** committed revision @{change} to `{path}`.
 
 ```quote
@@ -83,7 +92,7 @@ message = """**{user}** committed revision @{change} to `{path}`.
 ```
 """.format(
     user=metadata["user"],
-    change=metadata["change"],
+    change=change,
     path=changeroot,
     desc=metadata["desc"])  # type: str
 
