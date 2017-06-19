@@ -978,6 +978,13 @@ $ git checkout BRANCHNAME
 
 Now you work on this branch as you would any other.
 
+Note: you can use the scripts provided in the tools/ directory to fetch pull
+requests.
+```
+tools/fetch-rebase-pull-request <number>
+tools/fetch-pull-request <number>
+```
+
 ## Review changes
 
 ### Changes on (local) working tree
