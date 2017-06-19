@@ -76,11 +76,16 @@ if destination is None:
     # Don't forward the notice anywhere
     sys.exit(0)
 
-message = "**{0}** committed revision @{1} to `{2}`.\n\n> {3}".format(
-    metadata["user"],
-    metadata["change"],
-    changeroot,
-    metadata["desc"])  # type: str
+message = """**{user}** committed revision @{change} to `{path}`.
+
+```quote
+{desc}
+```
+""".format(
+    user=metadata["user"],
+    change=metadata["change"],
+    path=changeroot,
+    desc=metadata["desc"])  # type: str
 
 message_data = {
     "type": "stream",
