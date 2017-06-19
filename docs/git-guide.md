@@ -951,6 +951,11 @@ help you keep things organized.
 $ git checkout -b <username>/<branchname>
 ```
 
+You can choose to rename the branch if you prefer:
+```
+git checkout -b <custombranchname> <username>/<branchname>
+```
+
 ### Checkout a pull request locally
 
 Just as you can checkout any user's branch locally, you can also checkout any
