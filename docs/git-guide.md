@@ -948,7 +948,7 @@ the branch anything you want, but using both the username and branch name will
 help you keep things organized.
 
 ```
-$ git checkout -b <username>-<branchname>
+$ git checkout -b <username>/<branchname>
 ```
 
 ### Checkout a pull request locally
