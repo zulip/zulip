@@ -898,7 +898,7 @@ You'll see the *Open a pull request* page:
 ![images-create-pr]
 
 Provide a **title** and first comment for your pull request. Remember to prefix
-your pull request title with [WIP] if it is a work-in-progress. 
+your pull request title with [WIP] if it is a work-in-progress.
 
 If your pull request has an effect on the visuals of a component, you might want
 to include a screenshot of this change or a GIF of the interaction in your first
