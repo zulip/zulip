@@ -62,5 +62,7 @@ class Command(BaseCommand):
                 'protocol': 'https' if use_https else 'http',
             }
 
+            from_email = "Zulip Account Security <%s>" % (settings.DEFAULT_FROM_EMAIL.split()[1],)
+
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
-            send_email('zerver/emails/password_reset', user_profile.email, context=context)
+            send_email('zerver/emails/password_reset', user_profile.email, from_email, context=context)

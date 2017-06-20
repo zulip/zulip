@@ -51,8 +51,11 @@ def confirm_email_change(request, confirmation_key):
         context = {'realm': obj.realm,
                    'new_email': new_email,
                    }
+
+        from_email = "Zulip Account Security <%s>" % (settings.DEFAULT_FROM_EMAIL.split()[1],)
+        
         send_email('zerver/emails/notify_change_in_email', old_email,
-                   from_email=settings.DEFAULT_FROM_EMAIL, context=context)
+                   from_email, context=context)
 
     ctx = {
         'confirmed': confirmed,
