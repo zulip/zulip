@@ -125,7 +125,6 @@ function show_message_info_popover(element, id) {
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
     popovers.hide_all();
-    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -133,6 +132,7 @@ exports.toggle_actions_popover = function (element, id) {
         return;
     }
 
+    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
     current_msg_list.select_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
@@ -251,6 +251,7 @@ exports.actions_popped = function () {
 
 exports.hide_actions_popover = function () {
     if (popovers.actions_popped()) {
+        $('.has_popover').removeClass('has_popover has_actions_popover');
         current_actions_popover_elem.popover("destroy");
         current_actions_popover_elem = undefined;
     }
