@@ -3,6 +3,9 @@ set_global('page_params', {
     realm_users: [],
 });
 
+set_global('$', function () {
+});
+
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
     people: 'js/people.js',

@@ -21,6 +21,7 @@ exports.patch_builtin = function (name, val) {
 
 exports.add_dependencies = function (dct) {
     _.each(dct, function (fn, name) {
+        delete require.cache[require.resolve(fn)];
         var obj = require(fn);
         requires.push(fn);
         set_global(name, obj);
