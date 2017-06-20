@@ -23,8 +23,22 @@ set_global('pm_list', {
     update_private_messages: function () {},
 });
 
+set_global('narrow_state', {
+    update_email: function () {},
+});
+
+set_global('compose', {
+    update_email: function () {},
+});
+
+set_global('settings_account', {
+    update_email: function () {},
+});
+
 set_global('message_live_update', {
 });
+
+set_global('blueslip', {});
 
 var me = {
     email: 'me@example.com',
@@ -77,5 +91,55 @@ initialize();
     assert.equal(people.my_full_name(), 'Me V2');
     assert.equal(user_id, me.user_id);
     assert.equal(full_name, 'Me V2');
+
+    user_events.update_person({user_id: isaac.user_id, new_email: 'newton@example.com'});
+    person = people.get_person_from_user_id(isaac.user_id);
+    assert.equal(person.email, 'newton@example.com');
+    assert.equal(person.full_name, 'Sir Isaac');
+
+    user_events.update_person({user_id: me.user_id, new_email: 'meforu@example.com'});
+    person = people.get_person_from_user_id(me.user_id);
+    assert.equal(person.email, 'meforu@example.com');
+    assert.equal(person.full_name, 'Me V2');
+
+    var avatar_url;
+    global.message_live_update.update_avatar = function (user_id_arg, avatar_url_arg) {
+        user_id = user_id_arg;
+        avatar_url = avatar_url_arg;
+    };
+
+    user_events.update_person({user_id: isaac.user_id, full_name: 'Sir Isaac'});
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.full_name, 'Sir Isaac');
+    assert.equal(person.is_admin, true);
+    assert.equal(user_id, isaac.user_id);
+    assert.equal(full_name, 'Sir Isaac');
+
+    user_events.update_person({user_id: isaac.user_id, avatar_url: 'http://gravatar.com/123456'});
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.full_name, 'Sir Isaac');
+    assert.equal(user_id, isaac.user_id);
+    assert.equal(person.avatar_url, avatar_url);
+
+    user_events.update_person({user_id: me.user_id, avatar_url: 'http://gravatar.com/789456'});
+    person = people.get_by_email(me.email);
+    assert.equal(person.full_name, 'Me V2');
+    assert.equal(user_id, me.user_id);
+    assert.equal(person.avatar_url, avatar_url);
+
+    user_events.update_person({user_id: me.user_id, timezone: 'UTC'});
+    person = people.get_by_email(me.email);
+    assert(person.timezone);
+
+    var error_msg;
+    var error_details;
+    global.blueslip.error = function (error_message_arg, error_details_arg) {
+        error_msg = error_message_arg;
+        error_details = error_details_arg;
+    };
+
+    assert(!user_events.update_person({user_id: 29, full_name: 'Sir Isaac Newton'}));
+    assert.equal(error_msg, "Got update_person event for unexpected user");
+    assert.equal(error_details.email, 29);
 
 }());
