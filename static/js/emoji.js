@@ -4,6 +4,7 @@ var exports = {};
 
 exports.emojis = [];
 exports.realm_emojis = {};
+exports.active_realm_emojis = {};
 exports.emojis_by_name = {};
 exports.emojis_name_to_css_class = {};
 exports.emojis_by_unicode = {};
@@ -15,6 +16,7 @@ var zulip_emoji = {
     emoji_name: 'zulip',
     emoji_url: '/static/generated/emoji/images/emoji/unicode/zulip.png',
     is_realm_emoji: true,
+    deactivated: false,
 };
 
 _.each(emoji_codes.names, function (value) {
@@ -33,17 +35,23 @@ _.each(emoji_codes.codepoints, function (value) {
 exports.update_emojis = function update_emojis(realm_emojis) {
     // exports.realm_emojis is emptied before adding the realm-specific emoji to it.
     // This makes sure that in case of deletion, the deleted realm_emojis don't
-    //  persist in exports.realm_emojis.
+    // persist in exports.realm_emojis or exports.active_realm_emojis.
     exports.realm_emojis = {};
+    exports.active_realm_emojis = {};
+
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
         exports.emojis.push({emoji_name: name, emoji_url: data.source_url, is_realm_emoji: true});
         exports.realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
+        if (data.deactivated !== true) {
+            exports.active_realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
+        }
     });
     // Add the Zulip emoji to the realm emojis list
     exports.emojis.push(zulip_emoji);
     exports.realm_emojis.zulip = zulip_emoji;
+    exports.active_realm_emojis.zulip = zulip_emoji;
 
     exports.emojis_by_name = {};
     exports.emojis_name_to_css_class = {};
