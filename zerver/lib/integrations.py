@@ -273,7 +273,8 @@ INTEGRATIONS = {
         logo='static/images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
         display_name='JIRA',
-        doc='zerver/integrations/jira-plugin.md'
+        doc='zerver/integrations/jira-plugin.md',
+        stream_name='jira',
     ),
     'mercurial': Integration(
         'mercurial',
