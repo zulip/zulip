@@ -699,6 +699,11 @@ td.pointer {
     border-width: 0px;
     position: relative;
     text-decoration: none;
+    -webkit-touch-callout: all;
+    -webkit-user-select: all;
+    -moz-user-select: all;
+    -ms-user-select: all;
+    user-select: all;
 }
 
 .stream_label .invite-stream-icon {
@@ -753,6 +758,11 @@ td.pointer {
     margin-left: -5px;
     height: 17px;
     line-height: 17px;
+    -webkit-touch-callout: all;
+    -webkit-user-select: all;
+    -moz-user-select: all;
+    -ms-user-select: all;
+    user-select: all;
 }
 
 .recipient_row_date {
@@ -766,6 +776,11 @@ td.pointer {
     padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
+    -webkit-touch-callout: all;
+    -webkit-user-select: all;
+    -moz-user-select: all;
+    -ms-user-select: all;
+    user-select: all;
 }
 
 .recipient_row_date.hide-date {
@@ -1094,6 +1109,11 @@ td.pointer {
     line-height: 12px;
     font-size: 14px;
     margin-left: -3px;
+    -webkit-touch-callout: all;
+    -webkit-user-select: all;
+    -moz-user-select: all;
+    -ms-user-select: all;
+    user-select: all;
 }
 
 .sender-status {
@@ -1303,6 +1323,11 @@ div.focused_table {
     margin-left: 46px;
     display: block;
     position: relative;
+    -webkit-touch-callout: auto;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
 }
 
 .message_content:empty {
