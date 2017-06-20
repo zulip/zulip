@@ -7,7 +7,7 @@ install:
   # Disable Travis CI's built-in NVM installation
   - mispipe "mv ~/.nvm ~/.travis-nvm-disabled" ts
 
-  # Install coveralls, the library for the code coverage reporting tool we use
+  # Install codecov, the library for the code coverage reporting tool we use
   - mispipe "pip install codecov" ts
 
   # This is the main setup job for the test suite

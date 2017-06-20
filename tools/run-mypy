@@ -120,7 +120,7 @@ if args.quick:
 if python_files:
     rc = subprocess.call([mypy_command] + extra_args + python_files)
     if args.linecoverage_report:
-        # Move the coverage report to where coveralls will look for it.
+        # Move the coverage report to where codecov will look for it.
         try:
             os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
         except OSError:
