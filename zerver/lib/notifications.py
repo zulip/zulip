@@ -309,7 +309,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'realm_str': user_profile.realm.name,
     })
 
-    from_email = "Zulip Missed Messages %s" % settings.NOREPLY_EMAIL_ADDRESS.split()[1]
+    from_email = "Zulip Missed Messages %s" % (settings.NOREPLY_EMAIL_ADDRESS.split()[1],)
 
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
