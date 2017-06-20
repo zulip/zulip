@@ -129,9 +129,8 @@ function handleUnicodeEmoji(unicode_emoji) {
 function handleEmoji(emoji_name) {
     var input_emoji = ':' + emoji_name + ":";
     var emoji_url;
-    if (emoji.realm_emojis.hasOwnProperty(emoji_name) &&
-        emoji.realm_emojis[emoji_name].deactivated !== true) {
-        emoji_url = emoji.realm_emojis[emoji_name].emoji_url;
+    if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
+        emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
         return '<img alt="' + input_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + input_emoji + '">';
