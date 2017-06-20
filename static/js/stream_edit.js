@@ -209,8 +209,10 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
-            return (item.email.toLowerCase().indexOf(query) !== -1) ||
-                (item.full_name.toLowerCase().indexOf(query) !== -1);
+            var item_matches = (item.email.toLowerCase().indexOf(query) !== -1) ||
+                               (item.full_name.toLowerCase().indexOf(query) !== -1);
+            var is_subscribed = stream_data.user_is_subscribed(sub.name, item.email);
+            return item_matches && !is_subscribed;
         },
         sorter: function (matches) {
             var current_stream = compose_state.stream_name();
