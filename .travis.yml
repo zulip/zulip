@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/events-system.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
+group: edge
 before_install:
   - sudo apt-get install moreutils # To use 'ts' and 'mispipe' for timing logs.
 install:
