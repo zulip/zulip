@@ -183,6 +183,46 @@ _.each(matches, function (person) {
         'zman@test.net',
         'b_bot@example.com',
     ]);
+
+    people.deactivate(person);
+
+    // Test sort_recipients with pm counts
+    matches[0].pm_recipient_count = 50;
+    matches[1].pm_recipient_count = 2;
+    matches[2].pm_recipient_count = 32;
+    matches[3].pm_recipient_count = 42;
+    matches[4].pm_recipient_count = 0;
+    matches[5].pm_recipient_count = 1;
+
+    assert.deepEqual(get_typeahead_result("b", "Linux"), [
+        'b_user_2@zulip.net',
+        'b_user_1@zulip.net',
+        'b_bot@example.com',
+        'a_bot@zulip.com',
+        'a_user@zulip.org',
+        'zman@test.net',
+    ]);
+
+    // Test sort_recipients with duplicate people
+    matches.push(matches[0]);
+
+    var recipients = th.sort_recipients(matches, "b", "Linux");
+    var recipients_email = _.map(recipients, function (person) {
+        return person.email;
+    });
+    var expected = [
+        'b_user_2@zulip.net',
+        'b_user_1@zulip.net',
+        'b_bot@example.com',
+        'a_bot@zulip.com',
+        'a_bot@zulip.com',
+        'a_user@zulip.org',
+        'zman@test.net',
+    ];
+    assert.deepEqual(recipients_email, expected);
+
+    // Reset matches
+    matches.splice(matches.length-1, 1);
 }());
 
 (function test_highlight_with_escaping() {
