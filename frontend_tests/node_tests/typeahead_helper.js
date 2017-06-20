@@ -259,3 +259,18 @@ _.each(matches, function (person) {
     assert.equal(th.render_stream(stream), 'typeahead-item-stub');
     assert(rendered);
 }());
+
+(function test_sort_emojis() {
+    var emoji_list = [
+        { emoji_name: '+1' },
+        { emoji_name: 'thumbs_up' },
+        { emoji_name: 'pig' },
+        { emoji_name: 'thumbs_down' },
+    ];
+    assert.deepEqual(th.sort_emojis(emoji_list, 'thumbs'), [
+        { emoji_name: 'thumbs_up' },
+        { emoji_name: 'thumbs_down' },
+        { emoji_name: '+1' },
+        { emoji_name: 'pig' },
+    ]);
+}());
