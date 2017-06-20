@@ -301,7 +301,12 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
                          'scripts/lib/setup_venv.py']),
-         'description': 'Explicit python invocations should not include a version'}
+         'description': 'Explicit python invocations should not include a version'},
+        {'pattern': '(^|\s)open\s*\(',
+         'description': 'open() should not be used in Zulip\'s bots. Use functions'
+                        ' provided by the bots framework to access the filesystem.',
+         'include_only': set(['api/bots/']),
+         'exclude': set(['api/bots/john/john.py'])},
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
