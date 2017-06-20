@@ -8,6 +8,9 @@ var noop = function () {};
 var with_overrides = global.with_overrides;
 var people = global.people;
 
+set_global('$', global.make_zjquery());
+set_global('document', '');
+
 set_global('alert_words', {
     process_message: noop,
 });
@@ -25,9 +28,7 @@ set_global('page_params', {
     is_admin: true,
 });
 
-set_global('blueslip', {
-    error: noop,
-});
+set_global('blueslip', {});
 
 var me = {
     email: 'me@example.com',
@@ -59,8 +60,6 @@ people.add_in_realm(bob);
 people.add_in_realm(cindy);
 
 global.people.initialize_current_user(me.user_id);
-
-global.util.execute_early = noop;
 
 var message_store = require('js/message_store.js');
 
@@ -180,11 +179,22 @@ var message_store = require('js/message_store.js');
         type: 'private',
         display_recipient: [{user_id: 92714}],
     };
+
+    var blueslip_errors = 0;
+    blueslip.error = function () {
+        blueslip_errors += 1;
+    };
+
+    // Expect each to throw two blueslip errors
+    // One from message_store.js, one from person.js
     var emails = message_store.get_pm_emails(message);
     assert.equal(emails, '?');
+    assert.equal(blueslip_errors, 2);
 
+    blueslip_errors = 0;
     var names = message_store.get_pm_full_names(message);
     assert.equal(names, '?');
+    assert.equal(blueslip_errors, 2);
 
     message = {
         type: 'stream',
@@ -213,4 +223,49 @@ var message_store = require('js/message_store.js');
         var warn = stub.get_args("message");
         assert.equal(warn.message, "Unknown reply_to in message: ");
     });
+}());
+
+(function test_message_id_change() {
+    var message = {
+        sender_email: 'me@example.com',
+        sender_id: me.user_id,
+        type: 'private',
+        display_recipient: [me, bob, cindy],
+        flags: ['has_alert_word'],
+        id: 401,
+    };
+    message_store.add_message_metadata(message);
+
+    set_global('pointer', {
+        furthest_read: 401,
+    });
+
+    set_global('message_list', {});
+    set_global('home_msg_list', {});
+
+    var id_change_event = {
+        name: 'message_id_changed',
+        data: {
+            old_id: 401,
+            new_id: 402,
+        },
+    };
+
+    global.with_stub(function (stub) {
+        home_msg_list.change_message_id = stub.f;
+        $(document).trigger(id_change_event);
+        var msg_id = stub.get_args('old', 'new');
+        assert.equal(msg_id.old, 401);
+        assert.equal(msg_id.new, 402);
+    });
+
+    home_msg_list.view = {};
+    global.with_stub(function (stub) {
+        home_msg_list.view.change_message_id = stub.f;
+        $(document).trigger(id_change_event);
+        var msg_id = stub.get_args('old', 'new');
+        assert.equal(msg_id.old, 401);
+        assert.equal(msg_id.new, 402);
+    });
+
 }());
