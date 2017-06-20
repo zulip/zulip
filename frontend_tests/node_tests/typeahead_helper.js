@@ -149,6 +149,25 @@ _.each(matches, function (person) {
         'b_bot@example.com',
     ]);
 
+    // Test person email is "all" or "everyone"
+    var person = {
+        email: "all",
+        full_name: "All",
+        is_admin: false,
+        is_bot: false,
+        user_id: 42,
+    };
+    people.add_in_realm(person);
+
+    assert.deepEqual(get_typeahead_result("a", "Linux"), [
+        'all',
+        'a_user@zulip.org',
+        'a_bot@zulip.com',
+        'b_user_1@zulip.net',
+        'b_user_2@zulip.net',
+        'zman@test.net',
+        'b_bot@example.com',
+    ]);
 }());
 
 (function test_highlight_with_escaping() {
