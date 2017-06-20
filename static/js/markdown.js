@@ -118,9 +118,10 @@ function handleUnicodeEmoji(unicode_emoji) {
     var hex_value = unicode_emoji.codePointAt(0).toString(16);
     if (emoji.emojis_by_unicode.hasOwnProperty(hex_value)) {
         var emoji_url = emoji.emojis_by_unicode[hex_value];
-        return '<img alt="' + unicode_emoji + '"' +
+        var display_string = ':' + emoji_codes.codepoint_to_name[hex_value] + ':';
+        return '<img alt="' + display_string + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + unicode_emoji + '">';
+               ' title="' + display_string + '">';
     }
     return unicode_emoji;
 }

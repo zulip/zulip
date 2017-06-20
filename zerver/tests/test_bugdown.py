@@ -528,11 +528,20 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title=":coffee:"></p>')
 
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title=":coffee:"><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title=":coffee:"></p>')
+
+    def test_same_markup(self):
+        # type: () -> None
+        msg = u'\u2615'  # ☕
+        unicode_converted = bugdown_convert(msg)
+
+        msg = u':coffee:'  # ☕☕
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, unicode_converted)
 
     def test_realm_patterns(self):
         # type: () -> None

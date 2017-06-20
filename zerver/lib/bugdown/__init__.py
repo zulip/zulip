@@ -700,7 +700,10 @@ class Avatar(markdown.inlinepatterns.Pattern):
 
 path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
 name_to_codepoint = ujson.load(open(path_to_name_to_codepoint))
-unicode_emoji_list = set([name_to_codepoint[name] for name in name_to_codepoint])
+
+path_to_codepoint_to_name = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "codepoint_to_name.json")
+with open(path_to_codepoint_to_name) as codepoint_to_name_file:
+    codepoint_to_name = ujson.load(codepoint_to_name_file)
 
 def make_emoji(codepoint, display_string):
     # type: (Text, Text) -> Element
@@ -735,8 +738,9 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
         # type: (Match[Text]) -> Optional[Element]
         orig_syntax = match.group('syntax')
         codepoint = unicode_emoji_to_codepoint(orig_syntax)
-        if codepoint in unicode_emoji_list:
-            return make_emoji(codepoint, orig_syntax)
+        if codepoint in codepoint_to_name:
+            display_string = ':' + codepoint_to_name[codepoint] + ':'
+            return make_emoji(codepoint, display_string)
         else:
             return None
 
