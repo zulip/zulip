@@ -544,6 +544,12 @@ exports.register_click_handlers = function () {
         row.find(".alert-copied").css("display", "block");
         row.find(".alert-copied").delay(1000).fadeOut(300);
 
+        setTimeout(function () {
+            // The Cliboard library works by focusing to a hidden textarea.
+            // We unfocus this so keyboard shortcuts, etc., will work again.
+            $(":focus").blur();
+        }, 0);
+
         e.stopPropagation();
         e.preventDefault();
     });
