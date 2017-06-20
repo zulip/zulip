@@ -102,6 +102,7 @@ exports.update_stream_description = function (sub) {
     var stream_settings = settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
     stream_settings.find('.stream-description-editable').html(sub.rendered_description);
+    $('div[data-name="' + sub.name +'"]').find("a").attr("data-original-title", sub.rendered_description);
 };
 
 exports.prepend_subscriber = function (sub_row, email) {

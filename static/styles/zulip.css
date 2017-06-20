@@ -2693,3 +2693,10 @@ img.emoji {
     -webkit-user-select: none;
     -ms-user-select: none;
 }
+
+.right .tooltip-inner {
+    width: 600px;
+    max-height: 60px;
+    font-size: 12px;
+    word-break: break-all;
+}

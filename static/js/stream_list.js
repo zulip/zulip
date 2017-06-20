@@ -218,7 +218,13 @@ exports.set_in_home_view = function (stream_id, in_home) {
 
 function build_stream_sidebar_li(sub) {
     var name = sub.name;
+    var description = stream_data.get_sub_by_name(name).description;
+
+    description = marked(description);
+    description = description.replace("<p>", "").replace("</p>", "");
+
     var args = {name: name,
+                desc: description,
                 id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(sub.stream_id) === false),
@@ -259,6 +265,7 @@ function build_stream_sidebar_row(sub) {
 
     self.update_unread_count();
 
+    list_item.find('.stream-name').tooltip();
     exports.stream_sidebar.set_row(sub.stream_id, self);
 }
 
