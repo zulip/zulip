@@ -4,16 +4,14 @@ Mail sent to user when she was not logged in and received a PM or @-mention
 
 <span style="display:none">
     {% for recipient_block in messages %}
-            {% for sender_block in recipient_block.senders %}
-                {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
-                {% for message_block in sender_block.content %}
-                <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
-                    {{ message_block.html|safe }}
-                </div>
-                {% endfor %}
+        {% for sender_block in recipient_block.senders %}
+            {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
+            {% for message_block in sender_block.content %}
+            <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
+                {{ message_block.html|safe }}
+            </div>
             {% endfor %}
-        </div>
-    </div>
+        {% endfor %}
     {% endfor %}
 </span>
 
