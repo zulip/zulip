@@ -203,3 +203,40 @@ _.each(matches, function (person) {
     assert.equal(th.render_person(special_person), 'typeahead-item-stub');
     assert(rendered);
 }());
+
+(function test_render_stream() {
+    // Test render_stream with short description
+    var rendered = false;
+    var stream = {
+        description: 'This is a short description.',
+        stream_id: 42,
+        name: 'Short Description',
+    };
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, stream.name);
+        assert.equal(args.secondary, stream.description);
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_stream(stream), 'typeahead-item-stub');
+    assert(rendered);
+
+    // Test render_stream with long description
+    rendered = false;
+    stream = {
+        description: 'This is a very very very very very long description.',
+        stream_id: 43,
+        name: 'Long Description',
+    };
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, stream.name);
+        var short_desc = stream.description.substring(0, 35);
+        assert.equal(args.secondary, short_desc + "...");
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_stream(stream), 'typeahead-item-stub');
+    assert(rendered);
+}());
