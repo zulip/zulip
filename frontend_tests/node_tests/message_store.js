@@ -173,3 +173,44 @@ var message_store = require('js/message_store.js');
     assert.equal(message.always_visible_topic_edit, false);
     assert.equal(message.on_hover_topic_edit, false);
 }());
+
+(function test_errors() {
+    // Test a user that doesn't exist
+    var message = {
+        type: 'private',
+        display_recipient: [{user_id: 92714}],
+    };
+    var emails = message_store.get_pm_emails(message);
+    assert.equal(emails, '?');
+
+    var names = message_store.get_pm_full_names(message);
+    assert.equal(names, '?');
+
+    message = {
+        type: 'stream',
+        display_recipient: [{}],
+    };
+
+    // This should early return and not run pm_conversation.set_partner
+    var num_partner = 0;
+    set_global('pm_conversation', {
+        set_partner: function () {
+            num_partner += 1;
+        },
+    });
+    message_store.process_message_for_recent_private_messages(message);
+    assert.equal(num_partner, 0);
+
+    message = {
+        type: 'private',
+        display_recipient: [{}],
+    };
+
+    // Test edge case with no recipient
+    global.with_stub(function (stub) {
+        blueslip.warn = stub.f;
+        message_store.process_message_for_recent_private_messages(message);
+        var warn = stub.get_args("message");
+        assert.equal(warn.message, "Unknown reply_to in message: ");
+    });
+}());
