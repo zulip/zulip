@@ -53,7 +53,6 @@ def build_custom_checkers(by_lang):
             for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
                 if (fn, line_fully_stripped) in exclude_list:
                     continue
-
                 try:
                     line_to_check = line_fully_stripped
                     if rule.get('strip') is not None:
@@ -142,7 +141,7 @@ def build_custom_checkers(by_lang):
                          'static/js/debug.js']),
          'description': 'console.log and similar should not be used in webapp'},
         {'pattern': 'i18n[.]t',
-         'include_only': set(['static/js/portico']),
+         'include_only': set(['static/js/portico/']),
          'description': 'i18n.t is not available in portico pages yet'},
         {'pattern': '[.]text\(["\'][a-zA-Z]',
          'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization'},
@@ -215,7 +214,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '.*%s.* % \([a-zA-Z0-9_.]*\)$',
          'description': 'Used % comprehension without a tuple'},
         {'pattern': 'django.utils.translation',
-         'include_only': set(['test']),
+         'include_only': set(['test/']),
          'description': 'Test strings should not be tagged for translationx'},
         {'pattern': 'json_success\({}\)',
          'description': 'Use json_success() to return nothing'},
