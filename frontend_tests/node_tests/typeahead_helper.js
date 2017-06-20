@@ -329,3 +329,31 @@ _.each(matches, function (person) {
         { emoji_name: 'pig' },
     ]);
 }());
+
+(function test_sort_recipientbox_typeahead() {
+    var recipients = th.sort_recipientbox_typeahead("b, a", matches, "Dev"); // search "a"
+    var recipients_email = _.map(recipients, function (person) {
+        return person.email;
+    });
+    assert.deepEqual(recipients_email, [
+        'a_bot@zulip.com', // matches "a"
+        'a_user@zulip.org', // matches "a"
+        'b_user_2@zulip.net',
+        'b_user_1@zulip.net',
+        'zman@test.net',
+        'b_bot@example.com',
+    ]);
+
+    recipients = th.sort_recipientbox_typeahead("b, a, b", matches, "Dev"); // search "b"
+    recipients_email = _.map(recipients, function (person) {
+        return person.email;
+    });
+    assert.deepEqual(recipients_email, [
+        'b_user_2@zulip.net',
+        'b_user_1@zulip.net',
+        'b_bot@example.com',
+        'a_bot@zulip.com',
+        'a_user@zulip.org',
+        'zman@test.net',
+    ]);
+}());
