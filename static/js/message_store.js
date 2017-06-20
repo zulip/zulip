@@ -176,10 +176,6 @@ exports.add_message_metadata = function (message) {
     return message;
 };
 
-exports.clear = function clear() {
-    this.stored_messages = {};
-};
-
 util.execute_early(function () {
     $(document).on('message_id_changed', function (event) {
         var old_id = event.old_id;
