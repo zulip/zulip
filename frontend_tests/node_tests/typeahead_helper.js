@@ -1,6 +1,7 @@
 var th = require('js/typeahead_helper.js');
 
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
+set_global('templates', {});
 
 add_dependencies({
     stream_data: 'js/stream_data.js',
@@ -168,4 +169,37 @@ _.each(matches, function (person) {
     expected = "<strong>development h</strong>elp";
     result = th.highlight_with_escaping(query, item);
     assert.equal(result, expected);
+}());
+
+(function test_render_person() {
+    // Test render_person with regular person
+    var rendered = false;
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, matches[1].full_name);
+        assert.equal(args.secondary, matches[1].email);
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_person(matches[1]), 'typeahead-item-stub');
+    assert(rendered);
+
+    // Test render_person with special_item_text person
+    var special_person = {
+        email: "special@example.com",
+        full_name: "Special person",
+        is_admin: false,
+        is_bot: false,
+        user_id: 7,
+        special_item_text: "special_text",
+    };
+    rendered = false;
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, special_person.special_item_text);
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_person(special_person), 'typeahead-item-stub');
+    assert(rendered);
 }());
