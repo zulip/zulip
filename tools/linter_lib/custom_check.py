@@ -15,12 +15,12 @@ def build_custom_checkers(by_lang):
     def custom_check_file(fn, rules, skip_rules=None, max_length=None):
         # type: (str, RuleList, Optional[Any], Optional[int]) -> bool
         failed = False
-        lineFlag = False
+
+        line_tups = []
         for i, line in enumerate(open(fn)):
             line_newline_stripped = line.strip('\n')
             line_fully_stripped = line_newline_stripped.strip()
             skip = False
-            lineFlag = True
             for rule in skip_rules or []:
                 if re.match(rule, line):
                     skip = True
@@ -28,20 +28,32 @@ def build_custom_checkers(by_lang):
                 continue
             if skip:
                 continue
-            for rule in rules:
-                exclude_list = rule.get('exclude', set())
-                if fn in exclude_list or os.path.dirname(fn) in exclude_list:
+            tup = (i, line, line_newline_stripped, line_fully_stripped)
+            line_tups.append(tup)
+
+        rules_to_apply = []
+        fn_dirname = os.path.dirname(fn)
+        for rule in rules:
+            exclude_list = rule.get('exclude', set())
+            if fn in exclude_list or fn_dirname in exclude_list:
+                continue
+            if rule.get("include_only"):
+                found = False
+                for item in rule.get("include_only", set()):
+                    if item in fn:
+                        found = True
+                if not found:
                     continue
-                exclude_list = rule.get('exclude_line', set())
+            rules_to_apply.append(rule)
+
+        for rule in rules_to_apply:
+            exclude_list = rule.get('exclude_line', set())
+
+            pattern = rule['pattern']
+            for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
                 if (fn, line_fully_stripped) in exclude_list:
                     continue
-                if rule.get("include_only"):
-                    found = False
-                    for item in rule.get("include_only", set()):
-                        if item in fn:
-                            found = True
-                    if not found:
-                        continue
+
                 try:
                     line_to_check = line_fully_stripped
                     if rule.get('strip') is not None:
@@ -49,13 +61,16 @@ def build_custom_checkers(by_lang):
                             line_to_check = line_newline_stripped
                         else:
                             raise Exception("Invalid strip rule")
-                    if re.search(rule['pattern'], line_to_check):
+                    if re.search(pattern, line_to_check):
                         sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
                         print(line)
                         failed = True
                 except Exception:
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                     traceback.print_exc()
+
+        lastLine = None
+        for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
             if isinstance(line, bytes):
                 line_length = len(line.decode("utf-8"))
             else:
@@ -68,9 +83,11 @@ def build_custom_checkers(by_lang):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
                 failed = True
             lastLine = line
-        if lineFlag and '\n' not in lastLine:
+
+        if lastLine and ('\n' not in lastLine):
             print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
             failed = True
+
         return failed
 
     whitespace_rules = [
