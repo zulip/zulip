@@ -107,7 +107,6 @@ function generate_emoji_picker_content(id) {
 exports.toggle_emoji_popover = function (element, id) {
     var last_popover_elem = current_message_emoji_popover_elem;
     popovers.hide_all();
-    $(element).closest('.message_row').toggleClass('has_popover has_emoji_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -115,6 +114,7 @@ exports.toggle_emoji_popover = function (element, id) {
         return;
     }
 
+    $(element).closest('.message_row').toggleClass('has_popover has_emoji_popover');
     var elt = $(element);
     if (id !== undefined) {
         current_msg_list.select_id(id);
