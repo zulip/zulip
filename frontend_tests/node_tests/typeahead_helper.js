@@ -42,6 +42,21 @@ stream_data.create_streams([
     assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
     assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
     assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+
+    // Test sort streams with description
+    test_streams = [
+        {name: 'Dev', description: 'development help', subscribers: unpopular},
+        {name: 'Docs', description: 'writing docs', subscribers: popular},
+        {name: 'Derp', description: 'derping around', subscribers: unpopular},
+        {name: 'Denmark', description: 'visiting Denmark', subscribers: popular},
+        {name: 'dead', description: 'dead stream', subscribers: unpopular},
+    ];
+    test_streams = th.sort_streams(test_streams, 'wr');
+    assert.deepEqual(test_streams[0].name, "Docs"); // Description match
+    assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream
+    assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
+    assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
+    assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
 }());
 
 (function test_sort_languages() {
