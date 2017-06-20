@@ -73,7 +73,7 @@ So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
 Zulip is hoping to reach 100% of the codebase annotated with mypy
 static types, and then enforce that it stays that way.  Our current
 coverage is shown in
-[Coveralls](https://coveralls.io/github/zulip/zulip).
+[Codecov](https://codecov.io/gh/zulip/zulip).
 
 ## Installing mypy
 

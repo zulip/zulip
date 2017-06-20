@@ -18,8 +18,7 @@ participating in code review.
   commit](https://travis-ci.org/zulip/zulip/builds/144300899), at
   least one of which failed, and go to [one of the failing
   tests](https://travis-ci.org/zulip/zulip/jobs/144300901) to see the
-  error.) Since Coveralls's data on changes isn't always accurate, one
-  should look at the test coverage situation directly.
+  error.)
 
 * *Technical design.* There are a lot of considerations here:
   security, migration paths/backwards compatibility, cost of new
