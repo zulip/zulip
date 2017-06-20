@@ -20,6 +20,15 @@
         </a>
     </li>
 
+    {{#if should_display_blog_option}}
+    <li>
+        <a href="#" class="blog_message" data-msgid="{{message.id}}">
+            <i class="fa fa-sticky-note-o" aria-hidden="true"></i>
+            {{t "Blog" }}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if should_display_edit_history_option}}
     <li>
         <a href="#" class="view_edit_history" data-msgid="{{message.id}}">
@@ -28,6 +37,7 @@
         </a>
     </li>
     {{/if}}
+
     {{#if should_display_delete_option}}
     <li>
         <a href="#" class="delete_message" data-message-id="{{message.id}}">

@@ -24,6 +24,7 @@ import zerver.views.email_mirror
 import zerver.views.registration
 import zerver.views.zephyr
 import zerver.views.users
+import zerver.views.user_doc
 import zerver.views.unsubscribe
 import zerver.views.integrations
 import zerver.views.user_settings
@@ -379,6 +380,9 @@ v1_api_and_json_patterns = [
     url(r'^events$', rest_dispatch,
         {'GET': 'zerver.tornado.views.get_events_backend',
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
+
+    url(r'^user_doc/message/(?P<message_id>\d+)$', rest_dispatch,
+        {'POST': 'zerver.views.user_doc.message_to_user_doc'}),
 ]
 
 # Include the dual-use patterns twice
@@ -461,6 +465,12 @@ urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]
+
+    # user_docs
+urls += [
+    url(r'^user_doc/(?P<user_doc_id>\d+)$', rest_dispatch,
+        {'GET': 'zerver.views.user_doc.user_doc'}),
+]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls

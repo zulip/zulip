@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
+    Content, UserDoc, \
     Subscription, get_huddle, Realm, UserMessage, RealmDomain, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username, Service, get_user_profile_by_email
@@ -38,6 +39,16 @@ def create_users(realm, name_list, bot_type=None):
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
+
+def create_user_docs():
+    hamlet = UserProfile.objects.get(email="hamlet@zulip.com")
+    content = Content.objects.create(
+        raw_text='**hello world**'
+    )
+    UserDoc.objects.create(
+        owner=hamlet,
+        content=content
+    )
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -151,6 +162,9 @@ class Command(BaseCommand):
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
+
+            create_user_docs()
+
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
