@@ -44,7 +44,7 @@ import base64
 from datetime import timedelta
 from django.utils.timezone import now as timezone_now
 
-from moto import mock_s3
+from moto import mock_s3_deprecated
 
 from typing import Any, Callable, TypeVar, Text
 
@@ -972,7 +972,7 @@ FuncT = TypeVar('FuncT', bound=Callable[..., None])
 
 def use_s3_backend(method):
     # type: (FuncT) -> FuncT
-    @mock_s3
+    @mock_s3_deprecated
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args, **kwargs):
         # type: (*Any, **Any) -> Any
