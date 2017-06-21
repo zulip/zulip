@@ -440,6 +440,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPException("LDAP Authentication is not enabled")
             return user_profile, False
         except UserProfile.DoesNotExist:
+            if self._realm is None:
+                raise ZulipLDAPException("Realm is None")
             # No need to check for an inactive user since they don't exist yet
             if self._realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
