@@ -505,6 +505,23 @@ exports.incr_recipient_count = function (user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
+// Diacritic removal from:
+// https://stackoverflow.com/questions/18236208/perform-a-find-match-with-javascript-ignoring-special-language-characters-acce
+function remove_diacritics(s) {
+    if (/^[a-z]+$/.test(s)) {
+        return s;
+    }
+
+    return s
+            .replace(/[áàãâä]/g,"a")
+            .replace(/[éèëê]/g,"e")
+            .replace(/[íìïî]/g,"i")
+            .replace(/[óòöôõ]/g,"o")
+            .replace(/[úùüû]/g, "u")
+            .replace(/[ç]/g, "c")
+            .replace(/[ñ]/g, "n");
+}
+
 exports.filter_people_by_search_terms = function (users, search_terms) {
         var filtered_users = new Dict();
 
@@ -519,7 +536,12 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
                     return true;
                 }
                 return _.all(termlets, function (termlet) {
+                    var is_ascii = /^[a-z]+$/.test(termlet);
                     return _.any(names, function (name) {
+                        if (is_ascii) {
+                            // Only ignore diacritics if the query is plain ascii
+                            name = remove_diacritics(name);
+                        }
                         if (name.indexOf(termlet) === 0) {
                             return true;
                         }
