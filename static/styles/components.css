@@ -29,7 +29,7 @@
 }
 
 .box-shadow {
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
 .bg-white {
@@ -56,7 +56,7 @@
     background-color: #fff;
     color: inherit;
     outline: none;
-    border: 1px solid #CCC;
+    border: 1px solid hsl(0, 0%, 80%);
     border-radius: 2px;
 
     box-shadow: none;
@@ -81,11 +81,11 @@
 }
 
 .new-style .button.green {
-    background-color: #64ad89;
+    background-color: hsl(150, 31%, 53%);
 }
 
 .new-style .button.grey {
-    background-color: #aaa;
+    background-color: hsl(0, 0%, 66%);
 }
 
 .new-style .button.standalone {
@@ -104,59 +104,59 @@
 }
 
 .new-style .button.sea-green {
-    color: #5bb792;
-    border-color: #addcc9;
+    color: hsl(156, 39%, 54%);
+    border-color: hsl(156, 39%, 77%);
 }
 
 .new-style .button.btn-warning {
-    color: #de9b40;
-    border-color: #ffdfb1;
+    color: hsl(35, 70%, 56%);
+    border-color: hsl(35, 98%, 84%);
 }
 
 .new-style .button.btn-danger {
-    color: #e6898d;
-    border-color: #ecbdba;
+    color: hsl(357, 64%, 72%);
+    border-color: hsl(4, 56%, 82%);
 }
 
 /* -- button states -- */
 .new-style .button:hover {
-    border-color: #999;
+    border-color: hsl(0, 0%, 60%);
 }
 
 .new-style .button:active {
-    border-color: #999;
+    border-color: hsl(0, 0%, 60%);
     color: inherit;
-    background-color: #f4f4f4;
+    background-color: hsl(0, 0%, 95%);
 }
 
 .new-style .button.sea-green:hover {
-    border-color: #6ab094;
+    border-color: hsl(156, 30%, 55%);
 }
 
 .new-style .button.sea-green:active {
-    border-color: #6ab094;
-    color: #3e9f78;
-    background-color: #f2f9f6;
+    border-color: hsl(156, 30%, 55%);
+    color: hsl(156, 44%, 43%);
+    background-color: hsl(154, 33%, 96%);
 }
 
 .new-style .button.btn-danger:hover {
-    border-color: #d48d8a;
+    border-color: hsl(2, 46%, 68%);
 }
 
 .new-style .button.btn-danger:active {
-    color: #d56d72;
-    border-color: #d48d8a;
-    background-color: #fff7f6;
+    color: hsl(357, 55%, 63%);
+    border-color: hsl(2, 46%, 68%);
+    background-color: hsl(7, 82%, 98%);
 }
 
 .new-style .button.btn-warning:hover {
-    border-color: #debb8a;
+    border-color: hsl(35, 55%, 70%);
 }
 
 .new-style .button.btn-warning:active {
-    color: #bb7613;
-    border-color: #debb8a;
-    background-color: #faf5ef;
+    color: hsl(35, 82%, 40%);
+    border-color: hsl(35, 55%, 70%);
+    background-color: hsl(33, 48%, 96%);
 }
 
 
@@ -164,14 +164,14 @@
     cursor: not-allowed;
     -moz-filter: saturate(0);
     filter: saturate(0);
-    background-color: #eee;
-    color: #888181;
+    background-color: hsl(0, 0%, 93%);
+    color: hsl(0, 3%, 52%);
 }
 
 .new-style .button[disabled="disabled"]:hover {
-    background-color: #eee;
-    color: #5bb792;
-    border-color: #addcc9;
+    background-color: hsl(0, 0%, 93%);
+    color: hsl(156, 39%, 54%);
+    border-color: hsl(156, 39%, 77%);
 }
 
 /* -- tab switcher -- */
@@ -214,7 +214,7 @@
 }
 
 .new-style .tab-switcher .ind-tab:not(.selected) {
-    border: 1px solid #ccc;
+    border: 1px solid hsl(0, 0%, 80%);
 }
 
 .new-style .tab-switcher .ind-tab.first {
@@ -232,16 +232,16 @@
 
 .new-style .tab-switcher .ind-tab.selected {
     position: relative;
-    background: #888;
+    background: hsl(0, 0%, 53%);
     color: #fff;
-    border: 1px solid #777;
+    border: 1px solid hsl(0, 0%, 46%);
     z-index: 2;
 }
 
 .new-style .tab-switcher .ind-tab.disabled {
     pointer-events: none;
-    color: #CCC;
-    border-color: #DDD;
+    color: hsl(0, 0%, 80%);
+    border-color: hsl(0, 0%, 86%);
 }
 
 .new-style label.checkbox {
@@ -269,8 +269,8 @@
     line-height: 0.8;
     font-size: 1.3rem;
     text-align: center;
-    border: 2px solid #ccc;
-    color: #ccc;
+    border: 2px solid hsl(0, 0%, 80%);
+    color: hsl(0, 0%, 80%);
 
     border-radius: 4px;
     -webkit-filter: grayscale(1) brightness(0.7);
@@ -310,7 +310,7 @@
     overflow: auto;
     -webkit-overflow-scrolling: touch;
 
-    background-color: rgba(32,32,32,0.8);
+    background-color: hsla(0, 0%, 13%, 0.8);
     z-index: 105;
 
     pointer-events: none;
@@ -349,7 +349,7 @@
 }
 
 .clear_search_button:hover {
-    color: #000;
+    color: hsl(0, 0%, 0%);
 }
 
 .clear_search_button[disabled] {
@@ -367,7 +367,7 @@
     text-align: center;
     padding-top: 8px;
     padding-left: 4px;
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
     text-shadow: none;
     outline: none !important;
     box-shadow: none;
