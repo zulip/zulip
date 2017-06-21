@@ -2,11 +2,7 @@
 from __future__ import print_function
 import sys
 import logging
-try:
-    from PyDictionary import PyDictionary as Dictionary
-except ImportError:
-    logging.error("Dependency Missing!")
-    sys.exit(0)
+from PyDictionary import PyDictionary as Dictionary
 
 #Uses Python's Dictionary module
 #  pip install PyDictionary

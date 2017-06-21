@@ -53,6 +53,8 @@ if __name__ == '__main__':
 
     suites = []
     for bot_to_test in args.bots_to_test:
+        dep_path = os.path.join(bots_test_dir, bot_to_test, 'bot_dependencies')
+        sys.path.insert(0, dep_path)
         try:
             suites.append(loader.discover(start_dir = dir_join(bots_test_dir, bot_to_test),
                                           top_level_dir = root_dir))

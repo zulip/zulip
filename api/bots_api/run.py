@@ -7,6 +7,7 @@ import logging
 import optparse
 import os
 import sys
+import provision
 from types import ModuleType
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,8 +15,8 @@ sys.path.insert(0, our_dir)
 
 from bot_lib import run_message_handler_for_bot
 
-def get_lib_module(bots_fn):
-    # type: (str) -> ModuleType
+def validate_path(bots_fn):
+    # type: (str) -> None
     bots_fn = os.path.realpath(bots_fn)
     if not os.path.dirname(bots_fn).startswith(os.path.normpath(os.path.join(our_dir, "../bots"))):
         print('Sorry, we will only import code from api/bots.')
@@ -24,6 +25,9 @@ def get_lib_module(bots_fn):
     if not bots_fn.endswith('.py'):
         print('Please use a .py extension for library files.')
         sys.exit(1)
+
+def get_lib_module(bots_fn):
+    # type: (str) -> ModuleType
     base_bots_fn = os.path.basename(os.path.splitext(bots_fn)[0])
     sys.path.insert(1, os.path.dirname(bots_fn))
     module_name = base_bots_fn
@@ -51,14 +55,24 @@ def run():
     parser.add_option('--config-file',
                       action='store',
                       help='(alternate config file to ~/.zuliprc)')
+    parser.add_option('--provision',
+                      action='store_true',
+                      help='Install dependencies for the bot')
+    parser.add_option('--force',
+                      action='store_true',
+                      help='Try running the bot even if dependencies install fails.')
     (options, args) = parser.parse_args()
 
     if len(args) == 0:
         print('You must specify a library!')
         sys.exit(1)
+    bots_fn = args[0]
 
-    lib_module = get_lib_module(bots_fn=args[0])
-
+    validate_path(bots_fn)
+    if options.provision:
+        print("Provisioning")
+        provision.provision_bot(os.path.dirname(bots_fn), options.force)
+    lib_module = get_lib_module(bots_fn)
     if not options.quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
