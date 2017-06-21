@@ -97,7 +97,7 @@ label {
     vertical-align: top;
 
     border-radius: 4px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
 .admin-realm-description {
@@ -134,7 +134,7 @@ label {
 }
 
 .table tbody {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 .table-condensed td {
@@ -193,7 +193,7 @@ td .button {
 .settings-section .table-striped thead th {
     background-color: inherit;
     color: inherit;
-    border-top: 1px solid #dddddd !important;
+    border-top: 1px solid hsl(0, 0%, 86%) !important;
 }
 
 .settings-section input[type=text].search {
@@ -220,14 +220,14 @@ td .button {
 .settings-section .tip {
     position: relative;
     display: block;
-    background-color: #fbf7ea;
-    border: 1px solid #e0ddd0;
+    background-color: hsl(46, 63%, 95%);
+    border: 1px solid hsl(49, 20%, 84%);
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0px;
     font-size: 1rem;
     line-height: 1.5;
-    color: #666;
+    color: hsl(0, 0%, 40%);
 }
 
 .settings-section .tip::before {
@@ -243,7 +243,7 @@ td .button {
     display: inline-block;
     padding: 5px;
     background-color: #FFF;
-    border: 1px solid #CCC;
+    border: 1px solid hsl(0, 0%, 80%);
     border-radius: 3px;
     transition: box-shadow 0.3s ease;
     min-width: 208px;
@@ -251,7 +251,7 @@ td .button {
 
 .dynamic-input:hover {
     outline: none;
-    box-shadow: 0px 0px 4px rgba(56,177,232,1);
+    box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 1.0);
 }
 
 .dynamic-input div,
@@ -270,12 +270,12 @@ td .button {
 
 .dynamic-input div:empty::after {
     content: "username";
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 .dynamic-input.bot_user_name div:empty::after {
     content: "bot_user_name";
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 .button,
@@ -307,7 +307,7 @@ input[type=checkbox] + .inline-block {
 #user-settings-avatar,
 #realm-icon-section {
     border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
 input[type=checkbox].inline-block {
@@ -315,7 +315,7 @@ input[type=checkbox].inline-block {
 }
 
 #attachments_list .attachment-item {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
 }
 
 #attachments_list .attachment-item .list-container {
@@ -328,7 +328,7 @@ input[type=checkbox].inline-block {
     margin-top: 10px;
     margin-right: 5px;
     font-size: 1.2em;
-    color: #e29595;
+    color: hsl(0, 56%, 73%);
 }
 
 #attachments_list .attachment-item .list-container .file-icon {
@@ -341,8 +341,8 @@ input[type=checkbox].inline-block {
     font-weight: 600;
     color: #fff;
 
-    background: -webkit-linear-gradient(-45deg, #43C6AC , #70e6ce);
-    background: linear-gradient(-45deg, #43C6AC , #70e6ce);
+    background: -webkit-linear-gradient(-45deg, hsl(168, 53%, 52%), hsl(168, 69%, 67%));
+    background: linear-gradient(-45deg, hsl(168, 53%, 52%), hsl(168, 69%, 67%));
 
     box-sizing: border-box;
     border-radius: 4px;
@@ -378,7 +378,7 @@ input[type=checkbox].inline-block {
     border-radius: 4px;
     overflow: hidden;
 
-    border: 1px solid #aaa;
+    border: 1px solid hsl(0, 0%, 66%);
 
     transition: all 0.2s ease;
 }
@@ -390,20 +390,20 @@ input[type=checkbox].inline-block {
 
 #attachments_list .attachment-messages .ind-message .message-id {
     padding: 2px 4px 1px 4px;
-    background-color: #aaa;
+    background-color: hsl(0, 0%, 66%);
     color: #fff;
 }
 
 #attachments_list .attachment-messages .ind-message:hover {
-    border: 1px solid #888;
+    border: 1px solid hsl(0, 0%, 53%);
 }
 
 #attachments_list .attachment-messages .ind-message:hover .message-id {
-    background-color: #888;
+    background-color: hsl(0, 0%, 53%);
 }
 
 #attachments_list .attachment-messages .ind-message {
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     text-decoration: none;
 }
 
@@ -418,17 +418,17 @@ input[type=checkbox].inline-block {
 }
 
 .grey-bg {
-    background: #e3e3e3;
+    background: hsl(0, 0%, 89%);
     padding: 10px;
     width: 90%;
     margin: 15px auto;
-    box-shadow: 0px 0px 2px rgba(0,0,0,0.5);
+    box-shadow: 0px 0px 2px hsla(0, 0%, 0%, 0.5);
     position: relative;
     font-size: 14px;
 }
 
 .green-bg {
-    background-color: #cbe3cb;
+    background-color: hsl(120, 29%, 84%);
 }
 
 .new-default-stream-section-title {
@@ -497,7 +497,7 @@ input[type=checkbox].inline-block {
 }
 
 .control-label-disabled {
-    color: #d3d3d3;
+    color: hsl(0, 0%, 82%);
 }
 
 .disableable {
@@ -582,12 +582,12 @@ input[type=checkbox].inline-block {
 .bots_list .regenerate_bot_api_key {
     position: relative;
     margin-left: 5px;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     transition: all 0.3s ease;
 }
 
 .bots_list .regenerate_bot_api_key:hover {
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 .bots_list .edit-bot-buttons {
@@ -603,15 +603,15 @@ input[type=checkbox].inline-block {
 }
 
 .bots_list .edit-bot-buttons .sea-green {
-    color: #24cac2;
+    color: hsl(177, 70%, 46%);
 }
 
 .bots_list .edit-bot-buttons .blue {
-    color: #3ba4e6;
+    color: hsl(203, 77%, 56%);
 }
 
 .bots_list .edit-bot-buttons .danger-red {
-    color: #e29595;
+    color: hsl(0, 56%, 73%);
 }
 
 .bots_list .bot-information-box {
@@ -622,7 +622,7 @@ input[type=checkbox].inline-block {
     margin: 5px;
 
     background-color: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
     box-sizing: border-box;
 
@@ -635,7 +635,7 @@ input[type=checkbox].inline-block {
     width: 50px;
     border-radius: 4px;
     vertical-align: top;
-    box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
 }
 
 .bots_list .email {
@@ -668,7 +668,7 @@ input[type=checkbox].inline-block {
     font-weight: 300;
     text-transform: uppercase;
     font-weight: 600;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 .edit_bot h3 {
@@ -677,7 +677,7 @@ input[type=checkbox].inline-block {
 }
 
 #bots_lists_navbar .active a {
-    background-color: #FAFAFA;
+    background-color: hsl(0, 0%, 98%);
 }
 
 #inactive_bots_list .bot_info .reactivate_bot {
@@ -693,7 +693,7 @@ input[type=checkbox].inline-block {
 .edit_bot_form label {
     text-transform: uppercase;
     font-weight: 600;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     margin-top: 5px;
 }
 
@@ -779,7 +779,7 @@ input[type=checkbox].inline-block {
 
 #user-settings-avatar {
     border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 200px;
     height: 200px;
 
@@ -792,7 +792,7 @@ input[type=checkbox].inline-block {
 
 #realm-settings-icon {
     border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 100px;
     height: 100px;
 }
@@ -824,13 +824,13 @@ input[type=checkbox].inline-block {
     min-height: 550px;
     overflow-y: auto;
     border-top-left-radius: 4px;
-    border-right: 1px solid #eee;
+    border-right: 1px solid hsl(0, 0%, 93%);
 }
 
 #settings_page .sidebar .tab-container {
     background-color: #fff;
     padding: 6px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 #settings_page .sidebar .settings-list {
@@ -850,17 +850,17 @@ input[type=checkbox].inline-block {
 #settings_page .content-wrapper .settings-header {
     width: 100%;
     height: 43px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 #settings_page .content-wrapper .settings-header h1 .section {
     font-weight: 400;
-    color: #666;
+    color: hsl(0, 0%, 40%);
 }
 
 #settings_page .settings-header.mobile {
     display: none;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 .settings-header.mobile .icon-vector-chevron-left {
@@ -879,7 +879,7 @@ input[type=checkbox].inline-block {
     overflow-y: auto;
     overflow-x: hidden;
 
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 }
 
 #settings_page .table-striped thead th {
@@ -901,7 +901,7 @@ input[type=checkbox].inline-block {
     height: calc(100% - 45px);
 
     background-color: #fff;
-    border-left: 1px solid #ddd;
+    border-left: 1px solid hsl(0, 0%, 86%);
 
     pointer-events: none;
     transition: all 0.3s ease;
@@ -932,9 +932,9 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .form-sidebar .title {
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
     padding: 10px 20px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 #settings_page .form-sidebar .title h1 {
@@ -959,8 +959,8 @@ input[type=checkbox].inline-block {
     text-align: center;
     text-transform: uppercase;
 
-    background-color: #edefef;
-    border-bottom: 1px solid #DDD;
+    background-color: hsl(180, 6%, 93%);
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 #settings_page .settings-header {
@@ -980,7 +980,7 @@ input[type=checkbox].inline-block {
     position: absolute;
     top: 10px;
     right: 10px;
-    color: #AAA;
+    color: hsl(0, 0%, 66%);
     cursor: pointer;
 }
 
@@ -1000,8 +1000,8 @@ input[type=checkbox].inline-block {
 }
 
 #deactivate_self_modal {
-    box-shadow: 0px 0px 75px rgba(0,0,0,0.5);
-    outline: 10000px solid rgba(0,0,0,0.3);
+    box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
+    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
     border: none;
     border-radius: 0px;
 }
@@ -1022,19 +1022,19 @@ input[type=text]#settings_search {
     width: calc(100% - 10px - 2px);
     margin: 0px;
 
-    color: #555;
+    color: hsl(0, 0%, 33%);
     font-size: 0.9rem;
     padding: 3px 5px;
     outline: none;
-    border: 1px solid #DDD;
+    border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 }
 
 input[type=text]:focus#settings_search {
     box-shadow: none;
-    border: 1px solid #BBB;
+    border: 1px solid hsl(0, 0%, 73%);
 
-    border-bottom: 1px solid #DDD;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 input[type=text]#settings_search {
@@ -1053,7 +1053,7 @@ input[type=text]#settings_search {
     outline: none;
     cursor: pointer;
     transition: all 0.2s ease;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
 }
 
 #settings_page .sidebar li.no-border {
@@ -1061,7 +1061,7 @@ input[type=text]#settings_search {
 }
 
 #settings_page .sidebar li.active {
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
 }
 
 #settings_page .sidebar li.active {
@@ -1085,7 +1085,7 @@ input[type=text]#settings_search {
     margin: 10px 10px;
 
     font-size: 1.4em;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 
     background-size: cover;
     background-repeat: no-repeat;
@@ -1202,7 +1202,7 @@ thead .actions {
     display: block;
 
     font-style: italic;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 /* This is a hack; essentially the issue is that if the ::after element is on
