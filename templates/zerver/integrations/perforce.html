@@ -22,6 +22,13 @@
     <li>You should also change <code>ZULIP_SITE</code> to {{ external_api_path_subdomain }}</li>
 
     <li>
+        If you have a P4Web viewer set up, you may change <code>P4_WEB</code>
+        to point at the base URL of the server. If this is configured, then
+        the changelist number of each commit will be converted to a hyperlink
+        that displays the commit details on P4Web.
+    </li>
+
+    <li>
         Edit your
         <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html#d0e14583">trigger table</a>
         with <code>p4 triggers</code> and add an entry something like the
@@ -40,6 +47,18 @@
         to one stream, change it now in <code>zulip_perforce_config.py</code>.
         Make sure that everyone interested in getting these post-commit Zulips
         is subscribed to the relevant streams!
+    </li>
+
+    <li>
+        By default, this hook will send a message to Zulip even if the
+        destination stream does not yet exist. Messages to nonexistent
+        streams prompt the Zulip Notification Bot to inform the bot's
+        owner by private message that they may wish to create the stream.
+        If this behaviour is undesirable, for example with a large and busy
+        Perforce server, change the <code>ZULIP_IGNORE_MISSING_STREAM</code>
+        variable in <code>zulip_perforce_config.py</code> to <code>True</code>.
+        This will change the hook's behaviour to first check whether the
+        destination stream exists and silently drop messages if it does not.
     </li>
 </ol>
 
