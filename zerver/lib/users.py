@@ -18,6 +18,13 @@ def check_full_name(full_name_raw):
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
+def check_short_name(short_name_raw):
+    # type: (Text) -> Text
+    short_name = short_name_raw.strip()
+    if len(short_name) == 0:
+        raise JsonableError(_("Bad name or username"))
+    return short_name
+
 def check_change_full_name(user_profile, full_name_raw, acting_user):
     # type: (UserProfile, Text, UserProfile) -> Text
     """Verifies that the user's proposed full name is valid.  The caller

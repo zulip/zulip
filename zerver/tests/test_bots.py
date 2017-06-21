@@ -62,9 +62,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # type: () -> None
         self.login(self.example_email('hamlet'))
         self.assert_num_bots_equal(0)
+
+        # Invalid username
         bot_info = dict(
             full_name='My bot name',
             short_name='@',
+        )
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Bad name or username')
+        self.assert_num_bots_equal(0)
+
+        # Empty username
+        bot_info = dict(
+            full_name='My bot name',
+            short_name='',
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Bad name or username')
