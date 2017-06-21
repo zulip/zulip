@@ -4,6 +4,7 @@ import datetime
 import errno
 import os
 import pwd
+import re
 import shutil
 import subprocess
 import sys
@@ -24,6 +25,25 @@ FAIL = '\033[91m'
 ENDC = '\033[0m'
 BLACKONYELLOW = '\x1b[0;30;43m'
 WHITEONRED = '\x1b[0;37;41m'
+
+def get_deployment_version(extract_path):
+    # type: (str) -> str
+    version = '0.0.0'
+    for item in os.listdir(extract_path):
+        item_path = os.path.join(extract_path, item)
+        if item.startswith('zulip-server') and os.path.isdir(item_path):
+            with open(os.path.join(item_path, 'version.py')) as f:
+                result = re.search('ZULIP_VERSION = "(.*)"', f.read())
+                if result:
+                    version = result.groups()[0]
+            break
+    return version
+
+def is_invalid_upgrade(current_version, new_version):
+    # type: (str, str) -> bool
+    if new_version > '1.4.3' and current_version <= '1.3.10':
+        return True
+    return False
 
 def subprocess_text_output(args):
     # type: (Sequence[str]) -> str
