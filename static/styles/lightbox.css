@@ -1,5 +1,5 @@
 #lightbox_overlay {
-    background-color: #19203a;
+    background-color: hsl(227, 40%, 16%);
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -25,15 +25,15 @@
 
     background-color: #FFF;
     background-image:
-      -moz-linear-gradient(45deg, #CCC 25%, transparent 25%),
-      -moz-linear-gradient(-45deg, #CCC 25%, transparent 25%),
-      -moz-linear-gradient(45deg, transparent 75%, #000 75%),
-      -moz-linear-gradient(-45deg, transparent 75%, #000 75%);
+      -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+      -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+      -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
+      -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
     background-image:
-      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, #CCC), color-stop(.25, transparent)),
-      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, #CCC), color-stop(.25, transparent)),
-      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, #CCC)),
-      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #CCC));
+      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
+      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
 
     -moz-background-size: 20px 20px;
     background-size: 20px 20px;
@@ -45,7 +45,7 @@
 #lightbox_overlay .exit {
     float: right;
 
-    color: rgba(255,255,255,0.8);
+    color: hsla(0, 0%, 100%, 0.8);
     font-size: 2rem;
     font-weight: 200;
     margin: 24px 20px 0px 0px;
@@ -198,7 +198,7 @@
     height: 50px;
     margin: 0px 2px;
 
-    background-color: rgba(240, 240, 240, 0.2);
+    background-color: hsla(0, 0%, 94%, 0.2);
     opacity: 0.5;
 
     background-size: cover;
@@ -214,7 +214,7 @@
     font-size: 0.8rem;
     min-width: inherit;
     padding: 4px 10px;
-    border: 1px solid rgba(255,255,255,0.6);
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
     background-color: transparent;
     color: #fff;
     border-radius: 4px;
@@ -222,7 +222,7 @@
 
 .image-actions .button:hover {
     background-color: #fff;
-    color: #19203a;
+    color: hsl(227, 40%, 16%);
 }
 
 .image-actions a.button {
