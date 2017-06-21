@@ -1877,6 +1877,21 @@ class TestLDAP(ZulipTestCase):
                 backend.get_or_create_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_create_user_when_realm_is_none(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            backend._realm = None
+            with self.assertRaisesRegex(Exception, 'Realm is None'):
+                backend.get_or_create_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_when_domain_does_not_match(self):
         # type: () -> None
         backend = self.backend
