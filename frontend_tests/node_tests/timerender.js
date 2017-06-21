@@ -129,7 +129,7 @@ var timerender = require('js/timerender.js');
 
 (function test_get_full_time() {
     var timestamp = 1495091573; // 5/18/2017 7:12:53 AM (UTC+0)
-    var expected = '5/18/2017 7:12:53 AM (UTC+0)';
+    var expected = '2017-05-18T07:12:53Z'; // ISO 8601 date format
     var actual = timerender.get_full_time(timestamp);
     assert.equal(expected, actual);
 }());

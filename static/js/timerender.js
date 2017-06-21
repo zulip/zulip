@@ -202,19 +202,10 @@ exports.update_timestamps = function () {
 
 setInterval(exports.update_timestamps, 60 * 1000);
 
-// TODO: Remove the duplication with the below; it's a bit tricky
-// because the return type models are pretty different.
+// Transform a Unix timestamp into a ISO 8601 formatted date string.
+//   Example: 1978-10-31T13:37:42Z
 exports.get_full_time = function (timestamp) {
-    var time = new XDate(timestamp * 1000);
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    var tz_offset = -time.getTimezoneOffset() / 60;
-
-    var full_date_str = time.toLocaleDateString();
-    var full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
-    return full_date_str + ' ' + full_time_str;
+    return new XDate(timestamp * 1000).toISOString();
 };
 
 
