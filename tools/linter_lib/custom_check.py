@@ -47,11 +47,16 @@ def build_custom_checkers(by_lang):
             rules_to_apply.append(rule)
 
         for rule in rules_to_apply:
-            exclude_list = rule.get('exclude_line', set())
+            exclude_lines = {
+                line for
+                (exclude_fn, line) in rule.get('exclude_line', set())
+                if exclude_fn == fn
+            }
 
             pattern = rule['pattern']
             for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-                if (fn, line_fully_stripped) in exclude_list:
+                if line_fully_stripped in exclude_lines:
+                    exclude_lines.remove(line_fully_stripped)
                     continue
 
                 try:
@@ -68,6 +73,9 @@ def build_custom_checkers(by_lang):
                 except Exception:
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                     traceback.print_exc()
+
+            if exclude_lines:
+                print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
 
         lastLine = None
         for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
