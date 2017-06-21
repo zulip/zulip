@@ -18,7 +18,7 @@
 #streams_filter_icon,
 #join_unsub_stream {
     float: right;
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
     font-size: 13px;
     margin-top: 3px;
     margin-left: 10px;
@@ -27,7 +27,7 @@
 #streams_inline_cog:hover,
 #streams_filter_icon:hover,
 #join_unsub_stream:hover {
-    color: #555;
+    color: hsl(0, 0%, 33%);
 }
 
 #streams_header #join_unsub_stream {
@@ -91,11 +91,11 @@
 
 #global_filters li:hover,
 #stream_filters li:hover {
-    background-color: #e2e8dd;
+    background-color: hsl(93, 19%, 88%);
 }
 
 #stream_filters li.active-sub-filter:hover {
-    background-color: #ccd6cc;
+    background-color: hsl(120, 11%, 82%);
 }
 
 ul.filters {
@@ -104,7 +104,7 @@ ul.filters {
 }
 
 ul.filters a {
-    color: #333;
+    color: hsl(0, 0%, 20%);
 }
 
 ul.filters hr {
@@ -115,7 +115,7 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: #ddedf6;
+    background: hsl(202, 56%, 91%);
     position: relative;
 }
 
@@ -125,7 +125,7 @@ li.active-sub-filter {
 }
 
 .left-sidebar .sidebar-title:hover {
-    color: #555;
+    color: hsl(0, 0%, 33%);
 }
 
 li.hidden-filter {
@@ -181,7 +181,7 @@ li.hidden-filter {
     float: right;
     margin-top: 3px;
     line-height: 12px;
-    background: #80837f;
+    background: hsl(105, 2%, 50%);
     padding: 2px 4px 1px 4px;
     border-radius: 0px;
     color: #ffffff;
@@ -220,7 +220,7 @@ li.hidden-filter {
     line-height: 1em;
     top: 4px;
     padding: 2px 4px 1px 4px;
-    background: #a6ada4;
+    background: hsl(107, 5%, 66%);
     color: #ffffff;
     border-radius: 1px;
     font-size: 12px;
@@ -257,13 +257,13 @@ ul.filters .arrow {
 ul.filters li:hover .arrow {
     display: inline;
     cursor: pointer;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 ul.filters li .arrow:hover {
     display: inline;
     cursor: pointer;
-    color: #000;
+    color: hsl(0, 0%, 0%);
 }
 
 ul.filters .topic-sidebar-arrow {
@@ -275,13 +275,13 @@ ul.filters .topic-sidebar-arrow {
 li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline !important;
     cursor: pointer;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 li.topic-list-item .topic-sidebar-arrow:hover {
     display: inline;
     cursor: pointer;
-    color: #000;
+    color: hsl(0, 0%, 0%);
 }
 
 ul.filters li.muted_topic,
@@ -377,7 +377,7 @@ li.expanded_private_message a {
 }
 
 .show-all-streams a {
-    color: #333;
+    color: hsl(0, 0%, 20%);
 }
 
 .all-streams-padding {
@@ -412,7 +412,7 @@ li.expanded_private_message a {
 
 #topics_header,
 #sharethelove-header {
-    border-top: 1px solid #e2e2e2;
+    border-top: 1px solid hsl(0, 0%, 88%);
     margin-top: 5px;
     margin-right: 10px;
 }
