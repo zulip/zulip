@@ -9,7 +9,7 @@ html {
     width: 100vw;
     height: 100vh;
 
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 
     z-index: -1;
 }
@@ -40,7 +40,7 @@ html {
     min-width: 0px;
 
     background-color: #fff;
-    box-shadow: 0px 0px 100px rgba(0,0,0,0.2);
+    box-shadow: 0px 0px 100px hsla(0, 0%, 0%, 0.2);
 }
 
 .find-team-page-container #find_my_team i {
@@ -155,16 +155,16 @@ html {
 .header .darker {
     background: #fff;
 
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 .header .top-links a,
 .header .header-main .logo span {
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 .header .header-main .logo .brand-logo circle {
-    fill: #444 !important;
+    fill: hsl(0, 0%, 27%) !important;
 }
 
 .header .header-main .logo .brand-logo path {
@@ -262,7 +262,7 @@ html {
     background-color: transparent;
 
     border: none;
-    color: rgb(190, 88, 88);
+    color: hsl(0, 44%, 54%);
 
 }
 
@@ -281,7 +281,7 @@ html {
 
     width: 280px;
 
-    border: 2px solid #ddd;
+    border: 2px solid hsl(0, 0%, 86%);
     box-shadow: none;
     border-radius: 0px;
 
@@ -305,7 +305,7 @@ html {
     transform: translateY(35px) translateX(-50%);
     font-size: 1.2rem;
     font-weight: 500;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 
     pointer-events: none;
 }
@@ -314,13 +314,13 @@ html {
 .new-style .input-box input[type=email]:focus:invalid,
 .new-style .input-box input[type=password]:focus:invalid {
     box-shadow: none;
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 .new-style .input-box input[type=text]:focus,
 .new-style .input-box input[type=email]:focus,
 .new-style .input-box input[type=password]:focus {
-    border: 2px solid #888;
+    border: 2px solid hsl(0, 0%, 53%);
 }
 
 .new-style .input-box input[required] ~ .required:after {
@@ -330,7 +330,7 @@ html {
     right: 5px;
     transform: translateY(8px);
 
-    color: #d66a6a;
+    color: hsl(0, 56%, 63%);
     font-size: 2em;
     font-weight: 300;
     transition: all 0.3s ease;
@@ -378,14 +378,14 @@ html {
 
     font-size: 1rem;
     font-weight: 600;
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 .new-style .input-box p.text-error {
     display: block;
     padding: 0px;
 
-    color: #d26666;
+    color: hsl(0, 54%, 61%);
     font-size: 0.7em;
     font-weight: 600;
     height: 0;
@@ -398,7 +398,7 @@ html {
     display: block;
 
     top: 66px;
-    color: #d26666;
+    color: hsl(0, 54%, 61%);
     font-size: 0.7em;
     font-weight: 600;
     padding-left: 0px;
@@ -407,7 +407,7 @@ html {
 .new-style .get-started {
     font-size: 2.5rem;
     text-align: center;
-    color: #666;
+    color: hsl(0, 0%, 40%);
 }
 
 .new-style button {
@@ -422,7 +422,7 @@ html {
     box-sizing: border-box;
     outline: none;
     color: #fff;
-    background-color: #313e4e;
+    background-color: hsl(213, 23%, 25%);
 
     border: none;
 
@@ -430,11 +430,11 @@ html {
 }
 
 .new-style button:hover {
-    background-color: #354c69;
+    background-color: hsl(213, 33%, 31%);
 }
 
 .new-style button:active {
-    background-color: #1d2734;
+    background-color: hsl(214, 28%, 16%);
 }
 
 /* -- /accounts/register/ page -- */
@@ -444,7 +444,7 @@ html {
 
 .portico-page .pitch p {
     font-weight: 400;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 .register-account .pitch {
@@ -453,8 +453,8 @@ html {
 }
 
 .login-page-container input[type=submit] {
-    color: #aaa;
-    border: 2px solid #ddd;
+    color: hsl(0, 0%, 66%);
+    border: 2px solid hsl(0, 0%, 86%);
     border-radius: 0px;
     background: transparent;
 
@@ -462,18 +462,18 @@ html {
 }
 
 .login-page-container input[type=submit]:hover {
-    border-color: #888;
-    color: #444;
+    border-color: hsl(0, 0%, 53%);
+    color: hsl(0, 0%, 27%);
 }
 
 .login-page-container input[type=submit].btn-admin {
-    border-color: #54b8a7;
-    color: #54b8a7;
+    border-color: hsl(170, 41%, 52%);
+    color: hsl(170, 41%, 52%);
 }
 
 .login-page-container input[type=submit].btn-admin:hover {
-    color: #60daaa;
-    border-color: #60daaa;
+    color: hsl(156, 62%, 61%);
+    border-color: hsl(156, 62%, 61%);
 }
 
 .split-view .org-header {
@@ -520,7 +520,7 @@ html {
 
 .split-view .info-box .organization-path {
     font-weight: 500;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     margin-top: 10px;
 }
 
@@ -532,7 +532,7 @@ html {
     width: 328px;
     display: block;
     margin: 0 auto;
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
     font-weight: 600;
     text-align: center;
     text-transform: uppercase;
@@ -547,7 +547,7 @@ html {
     width: calc(149px);
     top: -3px;
 
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid hsl(0, 0%, 86%);
 
 }
 
@@ -581,20 +581,20 @@ button.login-github-button {
 button.login-google-button,
 button.login-github-button {
     background-color: #fff;
-    box-shadow: 0px 1px 3px rgba(0,0,0,0.3), 0px 0px 5px rgba(0,0,0,0.1);
-    color: #888;
+    box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
+    color: hsl(0, 0%, 53%);
 }
 
 button.login-google-button:hover,
 button.login-github-button:hover {
-    background-color: #fafafa;
-    box-shadow: 1px 2px 5px rgba(0,0,0,0.2);
+    background-color: hsl(0, 0%, 98%);
+    box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
 }
 
 button.login-google-button:active,
 button.login-github-button:active {
-    background-color: #eee;
-    box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
+    background-color: hsl(0, 0%, 93%);
+    box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
 }
 
 button.login-google-button {
@@ -607,7 +607,7 @@ button.login-google-button {
 
     font-family: "FontAwesome";
     font-size: 2rem;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     transform: translateX(15px) translateY(13px);
 }
 
@@ -617,7 +617,7 @@ button.login-google-button {
 }
 
 .split-view .actions a {
-    color: #54b8a7;
+    color: hsl(170, 41%, 52%);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.8em;
@@ -628,7 +628,7 @@ button.login-google-button {
 }
 
 .split-view .actions a:hover {
-    color: #60daaa;
+    color: hsl(156, 62%, 61%);
 }
 
 #registration .input-box {
@@ -660,7 +660,7 @@ button.login-google-button {
     font-weight: 400;
     font-size: 1.2rem;
 
-    background-color: #ddd;
+    background-color: hsl(0, 0%, 86%);
 }
 
 #registration .center-block .pitch {
@@ -688,13 +688,13 @@ button.login-google-button {
 
 .split-view .left-side {
     width: 500px;
-    border-right: 1px solid #eee;
+    border-right: 1px solid hsl(0, 0%, 93%);
     position: relative;
     left: -1px;
 }
 
 .split-view .left-side + .right-side {
-    border-left: 1px solid #eee;
+    border-left: 1px solid hsl(0, 0%, 93%);
     /* this is to make sure the borders of the left and right side overlap
        each other. */
     padding-left: 15px;
