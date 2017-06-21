@@ -1776,8 +1776,8 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-                user = self.backend.authenticate(self.example_email("hamlet"), 'wrong')
-                self.assertIs(user, None)
+            user = self.backend.authenticate(self.example_email("hamlet"), 'wrong')
+            self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_nonexistent_user(self):
@@ -1791,8 +1791,8 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-                user = self.backend.authenticate('nonexistent@zulip.com', 'testing')
-                self.assertIs(user, None)
+            user = self.backend.authenticate('nonexistent@zulip.com', 'testing')
+            self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_permissions(self):
