@@ -101,7 +101,7 @@ svg {
 }
 
 .button:hover {
-    background: #D8D8D8 !important;
+    background: hsl(0, 0%, 84%) !important;
 }
 
 .pie-button {
@@ -114,7 +114,7 @@ svg {
 }
 
 .pie-button:hover {
-    background: #D8D8D8 !important;
+    background: hsl(0, 0%, 84%) !important;
 }
 
 #button_container {
@@ -128,94 +128,94 @@ svg {
     font-size: 14px;
     margin-left: 40px;
     margin-top: 0px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #daily_button {
     padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-top: 0px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #weekly_button {
     padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-top: 0px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #cumulative_button {
     padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-top: 0px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #messages_by_client_realm_button {
     font-size: 14px;
-    background: #D8D8D8;
+    background: hsl(0, 0%, 84%);
 }
 
 #messages_by_client_user_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #messages_by_client_cumulative_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #messages_by_client_last_year_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #messages_by_client_last_month_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #messages_by_client_last_week_button {
     font-size: 14px;
     margin-left: 50px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
 }
 
 #messages_by_type_realm_button {
     font-size: 14px;
     margin-bottom: 100px;
-    background: #D8D8D8;
+    background: hsl(0, 0%, 84%);
 }
 
 #messages_by_type_user_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
     margin-bottom: 100px;
 }
 
 #messages_by_type_cumulative_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
     vertical-align: top;
 }
 
 #messages_by_type_last_year_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
     vertical-align: top;
 }
 
 #messages_by_type_last_month_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
     vertical-align: top;
 }
 
 #messages_by_type_last_week_button {
     font-size: 14px;
-    background: #F0F0F0;
+    background: hsl(0, 0%, 94%);
     vertical-align: top;
     margin-left: 50px;
 }
@@ -271,7 +271,7 @@ svg {
 
 .last-update {
     display: none;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     padding: 50px 0px;
     font-weight: bolder;
     font-size: 16px;
