@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../api')))
 
-from bots_api.bot_lib import ExternalBotHandler, EmbeddedBotHandler, StateHandler
+from bots_api.bot_lib import ExternalBotHandler, StateHandler
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
@@ -39,6 +39,7 @@ from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call
 from zerver.models import get_bot_services
 from zulip import Client
+from zerver.lib.bot_lib import EmbeddedBotHandler
 
 import os
 import sys
