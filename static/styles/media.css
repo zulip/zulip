@@ -32,9 +32,9 @@
     }
 
     .column-right.expanded .right-sidebar {
-        background: rgba(255,255,255,1);
-        box-shadow: 0px -2px 3px 0px rgba(0,0,0,0.1);
-        border-left: 1px solid #dddddd;
+        background: hsla(0, 0%, 100%, 1.0);
+        box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
+        border-left: 1px solid hsl(0, 0%, 86%);
         margin-top: 40px;
         padding-top: 10px;
         height: 100%;
@@ -74,9 +74,9 @@
 
     .nav .dropdown-menu {
         min-width: 180px;
-        -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-        -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+        -webkit-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+        -moz-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
     }
 
     .nav .dropdown-menu:after {
@@ -117,9 +117,9 @@
     }
 
     .column-left.expanded .left-sidebar {
-        background: rgba(255,255,255,1);
-        box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.1);
-        border-right: 1px solid #dddddd;
+        background: hsla(0, 0%, 100%, 1.0);
+        box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
+        border-right: 1px solid hsl(0, 0%, 86%);
         margin-top: 40px;
         padding-top: 10px;
         height: 100%;
