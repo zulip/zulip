@@ -213,11 +213,23 @@ initialize();
         user_id: 304,
         full_name: 'Linus Torvalds',
     };
+    var noah = {
+        email: 'emnoa@example.com',
+        user_id: 305,
+        full_name: 'Nöôáàh Ëmerson',
+    };
+    var plain_noah = {
+        email: 'otheremnoa@example.com',
+        user_id: 306,
+        full_name: 'Nooaah Emerson',
+    };
 
     people.add_in_realm(charles);
     people.add_in_realm(maria);
     people.add_in_realm(ashton);
     people.add_in_realm(linus);
+    people.add_in_realm(noah);
+    people.add_in_realm(plain_noah);
 
     var search_term = 'a';
     var users = people.get_rest_of_realm();
@@ -238,6 +250,18 @@ initialize();
     assert.equal(filtered_people.num_items(), 2);
     assert(filtered_people.has(charles.user_id));
     assert(filtered_people.has(maria.user_id));
+
+    // Test filtering of names with diacritics
+    // This should match Nöôáàh by ignoring diacritics, and also match Nooaah
+    filtered_people = people.filter_people_by_search_terms(users, ['noOa']);
+    assert.equal(filtered_people.num_items(), 2);
+    assert(filtered_people.has(noah.user_id));
+    assert(filtered_people.has(plain_noah.user_id));
+
+    // This should match ëmerson, but not emerson
+    filtered_people = people.filter_people_by_search_terms(users, ['ëm']);
+    assert.equal(filtered_people.num_items(), 1);
+    assert(filtered_people.has(noah.user_id));
 
     // Test filtering with undefined user
     var foo = {
@@ -609,4 +633,3 @@ initialize();
     assert.equal(global.page_params.realm_users, undefined);
     assert.equal(global.page_params.cross_realm_bots, undefined);
 }());
-
