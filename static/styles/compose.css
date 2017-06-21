@@ -1,6 +1,6 @@
 .compose-content {
     background-color: #fff;
-    border-top: 1px solid #eee;
+    border-top: 1px solid hsl(0, 0%, 93%);
     -webkit-transition: background-color 200ms linear;
     -moz-transition: background-color 200ms linear;
     -o-transition: background-color 200ms linear;
@@ -55,7 +55,7 @@
 }
 
 .compose_table .message_header_colorblock.message_header_private_message {
-    background: #444;
+    background: hsl(0, 0%, 27%);
 }
 
 .compose_table .right_part {
@@ -84,7 +84,7 @@
     padding-top: 0px;
     padding-bottom: 0px;
     width: 4em;
-    background: #444444;
+    background: hsl(0, 0%, 27%);
     color: #ffffff;
 }
 
@@ -115,7 +115,7 @@
 
 .compose_table .message_header {
     background: none;
-    background-color: #ececec;
+    background-color: hsl(0, 0%, 92%);
     border: none;
     border-radius: 0px;
     box-shadow: none !important;
@@ -181,8 +181,8 @@ table.compose_table {
     margin-right: 250px;
     position: relative;
 
-    border-left: 1px solid #eee;
-    border-right: 1px solid #eee;
+    border-left: 1px solid hsl(0, 0%, 93%);
+    border-right: 1px solid hsl(0, 0%, 93%);
 }
 
 #compose_close {
@@ -249,8 +249,8 @@ table.compose_table {
 }
 
 #out-of-view-notification {
-    background: #9bff8b;
-    background: rgba(163,211,147,0.95);
+    background: hsl(112, 98%, 77%);
+    background: hsla(105, 42%, 70%, 0.95);
     border-bottom: 1px solid #ffffff;
     border-right: 1px solid #ffffff;
     border-left: 1px solid #ffffff;
@@ -258,7 +258,7 @@ table.compose_table {
     font-weight: 400;
     font-size: 12px;
     display: inline-block;
-    box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.5);
+    box-shadow: 0px 0px 1px 0px hsla(0, 0%, 0%, 0.5);
     position: relative;
     top: -8px;
     width: 100%;
@@ -300,7 +300,7 @@ textarea.new_message_textarea {
 textarea.new_message_textarea,
 #subject.recipient_box,
 #stream.recipient_box {
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     box-shadow: none;
     -webkit-box-shadow: none;
     transition: border 0.2s ease;
@@ -309,7 +309,7 @@ textarea.new_message_textarea,
 textarea.new_message_textarea:focus,
 #subject.recipient_box:focus,
 #stream.recipient_box:focus {
-    border: 1px solid #AAA;
+    border: 1px solid hsl(0, 0%, 66%);
 }
 
 #stream.recipient_box:focus {
@@ -353,7 +353,7 @@ input.recipient_box {
 }
 
 #send_controls .compose_checkbox_label {
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     margin-right: 2px;
 }
 
@@ -368,13 +368,13 @@ input.recipient_box {
     padding-bottom: 2px;
     margin-right: 7px;
     font-weight: 600;
-    border: 1px solid #21af97;
-    background-color: #52c2af;
+    border: 1px solid hsl(170, 68%, 41%);
+    background-color: hsl(170, 47%, 54%);
     color: #fff;
 }
 
 #compose-send-button:focus {
-    box-shadow: 0px 0px 10px #52c2af, 0px 0px 5px #52c2af;
+    box-shadow: 0px 0px 10px hsl(170, 47%, 54%), 0px 0px 5px hsl(170, 47%, 54%);
 }
 
 #stream-message,
@@ -401,7 +401,7 @@ input.recipient_box {
 
 #compose a.message-control-button {
     display: block;
-    color: #777;
+    color: hsl(0, 0%, 46%);
     text-decoration: none;
     font-size: 14px;
     width: 14px;
@@ -413,7 +413,7 @@ input.recipient_box {
 }
 
 #compose a.message-control-button:hover {
-    color: #000;
+    color: hsl(0, 0%, 0%);
 }
 
 .drag {
@@ -446,9 +446,9 @@ input.recipient_box {
 
     margin-top: 5px;
 
-    border: 1px solid #aaa;
+    border: 1px solid hsl(0, 0%, 66%);
     border-radius: 4px;
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
     cursor: not-allowed;
 }
 
@@ -457,7 +457,7 @@ a#undo_markdown_preview {
     text-decoration: none;
     position: relative;
     font-size: 16px;
-    color: #777;
+    color: hsl(0, 0%, 46%);
 }
 
 #markdown_preview_spinner {
