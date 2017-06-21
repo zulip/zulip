@@ -113,7 +113,7 @@ ul.actions_popover i {
         width: 100vw;
         height: 100vh;
 
-        background-color: rgba(0,0,0,0.7);
+        background-color: hsla(0, 0%, 0%, 0.7);
         border-radius: 0px;
         border: none;
 
