@@ -10,21 +10,21 @@
     height: 19px;
     cursor: pointer;
     background-color: #ffffff;
-    border: 1px solid #c7dfe6;
+    border: 1px solid hsl(194, 37%, 84%);
     border-radius: 4px;
 }
 
 .private-message .message_reactions .message_reaction {
-    background-color: #f0f4f5;
+    background-color: hsl(192, 19%, 95%);
 }
 
 .message_reactions .message_reaction.reacted {
-    background-color: #eef7fa;
+    background-color: hsl(195, 50%, 95%);
 }
 
 .private-message .message_reactions .message_reaction.reacted {
-    background-color: #e4f2f7;
-    border-color: #96c3d0;
+    background-color: hsl(196, 51%, 93%);
+    border-color: hsl(193, 38%, 70%);
 }
 
 .message_reaction .emoji {
@@ -44,7 +44,7 @@
     font-size: 0.8em;
     display: inline-block;
     vertical-align: top;
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
     margin: 0px 1px 0px 0px;
     line-height: 1em;
 }
@@ -56,7 +56,7 @@
 .message_reactions i {
     font-size: 1.3em;
     float: left;
-    color: #555;
+    color: hsl(0, 0%, 33%);
 }
 
 .message_reactions .reaction_button:not(:only-child) {
@@ -66,8 +66,8 @@
 .message_reactions:hover .message_reaction + .reaction_button {
     visibility: visible;
     pointer-events: all;
-    background-color: #fafafa;
-    color: #bbb;
+    background-color: hsl(0, 0%, 98%);
+    color: hsl(0, 0%, 73%);
 }
 
 .message_reactions .reaction_button i {
@@ -76,11 +76,11 @@
 }
 
 .message_reactions .reaction_button:hover i {
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .message_reactions .message_reaction:hover {
-    border: 1px solid #0088CC;
+    border: 1px solid hsl(200, 100%, 40%);
 }
 
 .message_reactions .reaction_button:only-child {
@@ -95,27 +95,27 @@
     height: 14px;
     border-radius: 4px;
     padding-left: 0.3em;
-    border: 1px solid #bbb;
+    border: 1px solid hsl(0, 0%, 73%);
     padding-right: 0.3em;
     float: left;
 }
 
 .message_reactions .reaction_button:hover {
-    border: 1px solid #0088CC;
-    background-color: #eef7fa;
+    border: 1px solid hsl(200, 100%, 40%);
+    background-color: hsl(195, 50%, 95%);
     cursor: pointer;
     opacity: 1.0;
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .message_reactions .reaction_button .message_reaction_count {
     font-size: 1.1em;
-    color: #555;
+    color: hsl(0, 0%, 33%);
     margin-left: 3px;
 }
 
 .message_reactions .reaction_button:hover .message_reaction_count {
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .emoji-popover {
@@ -131,7 +131,7 @@
     display: inline-block;
     vertical-align: top;
     padding: 8px;
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
     cursor: pointer;
 }
 
@@ -166,8 +166,8 @@
 }
 
 .emoji-popover .reacted {
-    background-color: #eef7fa;
-    border-color: #add8e6;
+    background-color: hsl(195, 50%, 95%);
+    border-color: hsl(195, 52%, 79%);
 }
 
 .emoji_alt_code {
@@ -176,7 +176,7 @@
     font-size: 0.8em;
     display: inline-block;
     vertical-align: top;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     margin: 0px 1px 0px 0px;
     line-height: 1em;
 }
