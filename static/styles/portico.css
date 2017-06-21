@@ -42,13 +42,13 @@
 
     background: repeating-linear-gradient(
       75deg,
-      rgba(255,255,255,0) 0px,
-      rgba(255,255,255,0.06) 200px
+      hsla(0, 0%, 100%, 0.0) 0px,
+      hsla(0, 0%, 100%, 0.06) 200px
     );
 }
 
 .header .darker {
-    background: -webkit-linear-gradient(top left, transparent , rgba(0,0,0,0.3));
+    background: -webkit-linear-gradient(top left, transparent , hsla(0, 0%, 0%, 0.3));
 }
 
 .navbar.footer .nav > li {
@@ -121,7 +121,7 @@ body {
     vertical-align: top;
     padding: 3px 6.5px 3px 7.5px;
     margin-right: 5px;
-    background-color: #52c2af;
+    background-color: hsl(170, 47%, 54%);
     color: white;
     border-radius: 100%;
     font-size: 0.9em;
@@ -185,11 +185,11 @@ body {
     font-weight: 500;
     line-height: 1.2;
 
-    color: #444;
+    color: hsl(0, 0%, 27%);
 
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
-    background-color: #FAFAFA;
+    background-color: hsl(0, 0%, 98%);
 }
 
 .display-none {
@@ -206,7 +206,7 @@ body {
 }
 
 .help-inline.text-error {
-    color: #b94a48;
+    color: hsl(1, 44%, 50%);
 }
 
 a.title {
@@ -349,11 +349,11 @@ img.screenshot {
 }
 
 .shaded-background {
-    background-color: #ededed;
+    background-color: hsl(0, 0%, 93%);
 }
 
 .darker-background {
-    background-color: #474747;
+    background-color: hsl(0, 0%, 28%);
     color: white;
 }
 
@@ -377,7 +377,7 @@ input.text-error {
     position: absolute;
     z-index: 100;
     width: 100%;
-    background-color: #52c2af;
+    background-color: hsl(170, 47%, 54%);
 }
 
 .footer {
@@ -425,7 +425,7 @@ input.text-error {
 }
 
 .main-headline {
-    background-color: #bad2fa;
+    background-color: hsl(218, 84%, 85%);
     background: url("/static/images/landing-page/gg.jpg");
     background-position: center;
     background-size: cover;
@@ -448,7 +448,7 @@ input.text-error {
 
 .feature-block i {
     float: left;
-    color: #7e98ad;
+    color: hsl(207, 22%, 58%);
 }
 
 .feature-block p {
@@ -461,7 +461,7 @@ input.text-error {
 }
 
 .feature-line.dark {
-    background: #ddedf6;
+    background: hsl(202, 56%, 91%);
     color: black;
 }
 
@@ -554,7 +554,7 @@ a.bottom-signup-button {
 
 .feature-image.shadow {
     border-radius: 6px;
-    box-shadow: 0px 0px 4px rgba(0,0,0,0.4);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.4);
 }
 
 .login-page,
@@ -607,7 +607,7 @@ a.bottom-signup-button {
 
 .portico-page-header a,
 .portico-page-header a:hover {
-    color: #000;
+    color: hsl(0, 0%, 0%);
     text-decoration: none;
     display: inline-block;
 }
@@ -640,8 +640,8 @@ a.bottom-signup-button {
 }
 
 .authors_row td:hover {
-    color: #00796B;
-    box-shadow: 0px 0px 30px #B2DFDB;
+    color: hsl(173, 100%, 24%);
+    box-shadow: 0px 0px 30px hsl(175, 41%, 78%);
 }
 
 .authors_row .avatar {
@@ -670,7 +670,7 @@ a.bottom-signup-button {
 
 .integration-lozenge {
     width: 125px;
-    background: #ededed;
+    background: hsl(0, 0%, 93%);
     border-radius: 10px;
     margin: 15px 5px 0px 5px;
     display: inline-block;
@@ -688,7 +688,7 @@ a.bottom-signup-button {
 
 .integration-lozenge-static:hover {
     box-shadow: none;
-    background: #ededed;
+    background: hsl(0, 0%, 93%);
 }
 
 .integration-lozenge .integration-link:hover {
@@ -714,7 +714,7 @@ a.bottom-signup-button {
     font-weight: 500;
     text-align: center;
     padding-bottom: 5px;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 .integration-instructions {
@@ -833,16 +833,16 @@ a.bottom-signup-button {
 
 .btn-user {
     background-color: #ffffff;
-    border-color: #55bdaa;
+    border-color: hsl(169, 44%, 54%);
     border-style: solid;
-    color: #3f9486;
+    color: hsl(170, 40%, 41%);
 }
 
 .btn-admin {
     background-color: #ffffff;
-    border-color: #00a9f4;
+    border-color: hsl(198, 100%, 48%);
     border-style: solid;
-    color: #2196f3;
+    color: hsl(207, 89%, 54%);
 }
 
 .feature-page-header {
@@ -1006,14 +1006,14 @@ input.new-organization-button {
 .footer-navigation li a {
     display: inline-block;
     vertical-align: middle;
-    color: #888;
+    color: hsl(0, 0%, 53%);
     font-size: 0.9em;
     font-weight: 400;
     cursor: pointer;
 }
 
 .footer-navigation li:hover a {
-    color: #444;
+    color: hsl(0, 0%, 27%);
     text-decoration: none;
 }
 
@@ -1050,8 +1050,8 @@ input.new-organization-button {
 
 .top-links a:hover {
     text-decoration: none;
-    background-color: rgba(255,255,255,1);
-    color: #339a89;
+    background-color: hsla(0, 0%, 100%, 1.0);
+    color: hsl(170, 50%, 40%);
 }
 
 .centered-button {
@@ -1061,7 +1061,7 @@ input.new-organization-button {
 .button-muted {
     display: block;
     font-size: 12px;
-    color: #ddd;
+    color: hsl(0, 0%, 86%);
 }
 
 /* -- password reset container -- */
@@ -1193,15 +1193,15 @@ input.new-organization-button {
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
-    color: #666;
+    color: hsl(0, 0%, 40%);
 
     -webkit-font-smoothing: antialiased;
-    outline: 10000px solid rgba(240,240,240,0.5);
-    box-shadow: 0px 0px 30px rgba(0,0,0,0.2);
+    outline: 10000px solid hsla(0, 0%, 94%, 0.5);
+    box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.2);
 }
 
 .markdown a {
-    color: #399993;
+    color: hsl(176, 46%, 41%);
     font-weight: 600;
 }
 
@@ -1238,7 +1238,7 @@ input.new-organization-button {
 
 .markdown img {
     vertical-align: top;
-    box-shadow: 0px 0px 40px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 40px hsla(0, 0%, 0%, 0.1);
 }
 
 .markdown img.inline {
@@ -1250,16 +1250,16 @@ input.new-organization-button {
 .markdown .tip {
     position: relative;
     display: block;
-    background-color: #f5f7f9;
-    border: 1px solid #eee;
+    background-color: hsl(210, 22%, 96%);
+    border: 1px solid hsl(0, 0%, 93%);
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
 }
 
 .markdown .tip {
-    background-color: #fbf7ea;
-    border: 1px solid #e0ddd0;
+    background-color: hsl(46, 63%, 95%);
+    border: 1px solid hsl(49, 20%, 84%);
 }
 
 .markdown .warn p,
@@ -1292,21 +1292,21 @@ input.new-organization-button {
 }
 
 .markdown .indicator.grey {
-    border: 1px solid #CCC;
+    border: 1px solid hsl(0, 0%, 80%);
 }
 
 .markdown .indicator.orange {
-    border: 1px solid #ec7e18;
-    background: linear-gradient(to bottom,rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%);
+    border: 1px solid hsl(29, 84%, 51%);
+    background: linear-gradient(to bottom,hsla(0, 0%, 100%, 0.0) 50%,hsla(29, 84%, 51%, 1.0) 50%);
 }
 
 .markdown .indicator.green {
-    border: 1px solid #44c21d;
-    background-color: rgba(68,194,29,0.3);
+    border: 1px solid hsl(106, 74%, 44%);
+    background-color: hsla(106, 74%, 44%, 0.3);
 }
 
 .markdown .indicator.green.solid {
-    background-color: #44c21d;
+    background-color: hsl(106, 74%, 44%);
 }
 
 /* make sure that it doesn't wrap and disappear around the line.. odd bug. */
@@ -1543,7 +1543,7 @@ input.new-organization-button {
 
 .input-group.grid {
     padding: 10px 0px;
-    border-bottom: 1px solid #DDD;
+    border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
 label.label-title {
@@ -1575,7 +1575,7 @@ input.new-organization-button {
 
     font-weight: 400;
 
-    background-color: #478fca;
+    background-color: hsl(207, 55%, 53%);
     color: #FFF;
     outline: none;
     border: none;
@@ -1599,7 +1599,7 @@ input.new-organization-button {
 }
 
 .button-new.sea-green {
-    background-color: #24cac2;
+    background-color: hsl(177, 70%, 46%);
     color: #fff;
 }
 
@@ -1622,7 +1622,7 @@ input.new-organization-button {
 
 .documentation-footer {
     font-size: .85rem;
-    color: #AAA;
+    color: hsl(0, 0%, 66%);
 }
 
 #devtools-wrapper {
