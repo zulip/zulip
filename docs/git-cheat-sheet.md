@@ -1,5 +1,6 @@
-See also
-[fixing commits](https://github.com/zulip/zulip-gci/blob/master/docs/fixing-commits.md)
+# Git Cheat Sheet
+
+See also [fixing commits][fix-commit]
 
 Commands:
 
@@ -48,4 +49,4 @@ Commands:
 - status
     - `git status`
     
-
+[fix-commit]: fixing-commits.html

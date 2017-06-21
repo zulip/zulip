@@ -1,4 +1,4 @@
-## Intro
+# Working copies
 
 When you work on Zulip code, there are three working copies
 of the Zulip git repo that you are generally concerned with:
@@ -48,7 +48,6 @@ working copies:
 
 - `git fetch`: This grabs code from another repo to your local copy.
 - `git push`: This pushes code from your local repo to one of the remotes.
-- `git remote`: This helps you configure short names for remotes.  (Your
-  mentor can help you with this.)
+- `git remote`: This helps you configure short names for remotes.
 - `git pull`: **Do not use this, please**!
 

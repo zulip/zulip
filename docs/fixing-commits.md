@@ -29,5 +29,5 @@ Sometimes, you want to make one commit out of a bunch of commits. To do this,
 1. `git rebase -i HEAD~n` where `n` is the number of commits you are interested in
 2. Reorder the lines containing the commits and save
 
-# Pushing commits after tidying them
+## Pushing commits after tidying them
 1. `git push origin +my-feature-branch`  (Note the `+` there and substitute your actual branch name.)

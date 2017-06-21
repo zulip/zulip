@@ -4,7 +4,7 @@ The *shell* is a **command line interpreter**. To use it you can open a
 *terminal* (sometimes called a *console*). This is how most terminal windows
 look like:
 
-![An example shell window](shell-screenshot.png)
+![An example shell window](images/shell-screenshot.png)
 
 If you haven't used it before, you should probably take a look at
 [this tutorial](http://linuxcommand.org/lc3_learning_the_shell.php).
@@ -329,7 +329,10 @@ extremely useful and even easy to use (at least the 99% of the time).
 To learn more about how to use it, read
 [our docs](http://zulip.readthedocs.io/en/latest/git-guide.html) on Git and
 Github.
-[This cheatsheet](https://github.com/zulip/zulip-gci/blob/master/docs/git-cheat-detailed.md)
+
+[This cheatsheet][git-cheat-detailed]
 will be useful in your journey, as well.
 
 ![Git - XKCD 1597](https://imgs.xkcd.com/comics/git.png)
+
+[git-cheat-detailed]: git-cheat-sheet-detailed.html
