@@ -934,10 +934,10 @@ MessageListView.prototype = {
     },
 
     render_trailing_bookend: function MessageListView_render_trailing_bookend(
-                                trailing_bookend_content, subscribed) {
+                                trailing_bookend_content, subscribed, show_button) {
         var rendered_trailing_bookend = $(templates.render('bookend', {
             bookend_content: trailing_bookend_content,
-            trailing: true,
+            trailing: show_button,
             subscribed: subscribed,
         }));
         rows.get_table(this.table_name).append(rendered_trailing_bookend);

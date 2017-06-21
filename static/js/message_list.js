@@ -384,18 +384,22 @@ exports.MessageList.prototype = {
             return;
         }
         var trailing_bookend_content;
+        var show_button = true;
         var subscribed = stream_data.is_subscribed(stream);
         if (subscribed) {
             trailing_bookend_content = this.subscribed_bookend_content(stream);
         } else {
             if (!this.last_message_historical) {
                 trailing_bookend_content = this.unsubscribed_bookend_content(stream);
+
+                // For invite only streams, hide the resubscribe button
+                show_button = !stream_data.get_sub(stream).invite_only;
             } else {
                 trailing_bookend_content = this.not_subscribed_bookend_content(stream);
             }
         }
         if (trailing_bookend_content !== undefined) {
-            this.view.render_trailing_bookend(trailing_bookend_content, subscribed);
+            this.view.render_trailing_bookend(trailing_bookend_content, subscribed, show_button);
         }
     },
 
