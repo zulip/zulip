@@ -97,9 +97,9 @@ p.n-margin {
     left: calc(50vw - 220px);
     padding: 15px;
 
-    background-color: #FAFAFA;
+    background-color: hsl(0, 0%, 98%);
     border-radius: 5px;
-    box-shadow: 0px 0px 30px rgba(0,0,0,0.25);
+    box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.25);
     z-index: 110;
 
     animation-name: pulse;
@@ -121,13 +121,13 @@ p.n-margin {
 
 @keyframes pulse {
     0% {
-        box-shadow: 0px 0px 30px rgba(0,0,0,0.35);
+        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
     }
     50% {
-        box-shadow: 0px 0px 30px rgba(0,0,0,0.15);
+        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.15);
     }
     100% {
-        box-shadow: 0px 0px 30px rgba(0,0,0,0.35);
+        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
     }
 }
 
@@ -145,14 +145,14 @@ p.n-margin {
 
 #unmute_muted_topic_notification .btn {
     background-color: transparent;
-    border: 1px solid #444;
+    border: 1px solid hsl(0, 0%, 27%);
     outline: none;
     transition: all 0.2s ease;
 }
 
 #unmute_muted_topic_notification .btn:hover {
-    background-color: #444;
-    color: #FAFAFA;
+    background-color: hsl(0, 0%, 27%);
+    color: hsl(0, 0%, 98%);
 }
 
 #unmute_muted_topic_notification .exit-me {
@@ -167,7 +167,7 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     background: #ffffff;
-    border-bottom: 1px solid #dadada;
+    border-bottom: 1px solid hsl(0, 0%, 85%);
     height: 40px;
 }
 
@@ -416,18 +416,18 @@ pre {
 pre::-webkit-scrollbar {
     height: 8px;
 
-    background-color: rgba(0,0,0,0.05);
+    background-color: hsla(0, 0%, 0%, 0.05);
 }
 
 pre::-webkit-scrollbar-thumb {
-    background-color: rgba(0,0,0,0.3);
+    background-color: hsla(0, 0%, 0%, 0.3);
     border-radius: 20px;
 
     transition: all 0.2s ease;
 }
 
 pre::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(0,0,0,0.6);
+    background-color: hsla(0, 0%, 0%, 0.6);
 }
 
 pre code {
@@ -438,13 +438,13 @@ pre code {
 /* Style inline code inside a link
    to look more like a normal link */
 a code {
-    color: #08C;
-    border-color: #08C;
+    color: hsl(200, 100%, 40%);
+    border-color: hsl(200, 100%, 40%);
 }
 
 a:hover code {
-    color: #005580;
-    border-color: #005580;
+    color: hsl(200, 100%, 25%);
+    border-color: hsl(200, 100%, 25%);
 }
 
 .preserve_spaces {
@@ -473,14 +473,14 @@ a:hover code {
 
 .sidebar-title {
     font-size: 1em;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     font-weight: normal;
     display: inline;
 }
 
 #message_edit_tooltip {
     float: right;
-    color: #000;
+    color: hsl(0, 0%, 0%);
     font-size: 13px;
     margin-top: 3px;
     margin-left: 6px;
@@ -504,7 +504,7 @@ a:hover code {
 }
 
 .message_header_stream a.message_label_clickable {
-    color: #333;
+    color: hsl(0, 0%, 20%);
 }
 
 li.actual-dropdown-menu i {
@@ -558,7 +558,7 @@ td.pointer {
 
 .message_edit_notice {
     font-size: 10px;
-    color: #a1a1a1;
+    color: hsl(0, 0%, 63%);
     font-weight: 300;
     line-height: 0px;
     text-align: right;
@@ -583,7 +583,7 @@ td.pointer {
 .message_time {
     display: block;
     font-size: 12px;
-    color: #b1b1b1;
+    color: hsl(0, 0%, 69%);
     vertical-align: middle;
     padding: 1px;
     font-weight: 400;
@@ -604,7 +604,7 @@ td.pointer {
     position: absolute;
     right: -110px;
     font-size: 14px;
-    color: #52c2af;
+    color: hsl(170, 47%, 54%);
     background-color: white;
     z-index: 999;
     padding-left: 20px;
@@ -614,7 +614,7 @@ td.pointer {
 }
 
 .private-message .alert-copied {
-    background-color: #f0f4f5;
+    background-color: hsl(192, 19%, 95%);
 }
 
 .include-sender .alert-copied {
@@ -675,14 +675,14 @@ td.pointer {
 }
 
 .message_list .recipient_row {
-    background: #f1f1f1;
-    border-bottom: 1px solid #e2e2e2;
-    border-top: 1px solid #e2e2e2;
+    background: hsl(0, 0%, 94%);
+    border-bottom: 1px solid hsl(0, 0%, 88%);
+    border-top: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
 
 .floating_recipient .recipient_row {
-    border-top: 1px solid #e2e2e2;
+    border-top: 1px solid hsl(0, 0%, 88%);
 }
 
 .stream_label {
@@ -691,11 +691,11 @@ td.pointer {
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    border-top-color: rgba(0, 0, 0, 0);
-    border-right-color: rgba(0, 0, 0, 0);
-    border-bottom-color: rgba(0, 0, 0, 0);
-    background-color: #e2e2e2;
-    border-left-color: #e2e2e2;
+    border-top-color: hsla(0, 0%, 0%, 0.0);
+    border-right-color: hsla(0, 0%, 0%, 0.0);
+    border-bottom-color: hsla(0, 0%, 0%, 0.0);
+    background-color: hsl(0, 0%, 88%);
+    border-left-color: hsl(0, 0%, 88%);
     border-width: 0px;
     position: relative;
     text-decoration: none;
@@ -742,7 +742,7 @@ td.pointer {
     margin-top: -14px;
     border-style: solid;
     border-width: 14px 0 14px 6px;
-    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
     z-index: 1;
     -moz-transform: scale(.9999);
 }
@@ -760,7 +760,7 @@ td.pointer {
     right: 0;
     top: 0;
 
-    color: #888;
+    color: hsl(0, 0%, 53%);
     font-size: 12px;
     font-weight: 600;
     padding: 3px 11px 2px 10px;
@@ -802,7 +802,9 @@ td.pointer {
 
 .summary_row.last_message .message_header {
     border-bottom-right-radius: 3px;
-    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
+    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%),
+        inset -2px 0px 1px -2px hsl(0, 0%, 20%),
+        inset 0px -2px 1px -2px hsl(0, 0%, 20%);
 }
 
 .summary_row.last_message .summary_colorblock {
@@ -825,12 +827,12 @@ td.pointer {
 
 .message_header_colorblock {
     border-radius: 3px 0px 0px 0px;
-    /* box-shadow: 0px 2px 3px #ccc; */
-    box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
+    /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
+    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%), inset 2px 0px 1px -2px hsl(0, 0%, 20%) !important;
 }
 
 .summary_row_private_message .summary_colorblock {
-    background: #000;
+    background: hsl(0, 0%, 0%);
 }
 
 .messages-expand,
@@ -959,16 +961,16 @@ td.pointer {
     height: 3px;
     background-color: #fff;
     border-radius: 0px 0px 3px 0px;
-    /* box-shadow: 0px 2px 2px -1px #ccc; */
-    border: 1px solid #c1dbd5;
+    /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
+    border: 1px solid hsl(166, 26%, 80%);
     border-top: none;
     border-left: none;
 }
 
 .messagebox-bottom-colorblock {
     border-radius: 0px 0px 0px 3px;
-    /* box-shadow: 0px 2px 2px -1px #ccc; */
-    border: 1px solid #c1dbd5;
+    /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
+    border: 1px solid hsl(166, 26%, 80%);
     border-top: none;
     border-right: none;
 }
@@ -979,14 +981,14 @@ td.pointer {
 }
 
 .message_header_private_message .message_label_clickable {
-    background-color: #444444;
+    background-color: hsl(0, 0%, 27%);
     display: inline-block;
     padding: 3px 4px 2px 4px;
     font-weight: normal;
     font-size: 14px;
     height: 17px;
     line-height: 17px;
-    border-left-color: #444;
+    border-left-color: hsl(0, 0%, 27%);
 }
 
 /* Base color backgrounds for messageboxes,
@@ -999,15 +1001,15 @@ td.pointer {
 
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
-    background-color: #f0f4f5;
+    background-color: hsl(192, 19%, 95%);
 }
 
 .message-header-contents {
-    border-right: 1px solid #e2e2e2;
+    border-right: 1px solid hsl(0, 0%, 88%);
 }
 
 .mention .messagebox-content {
-    background-color: #ffe4e0;
+    background-color: hsl(8, 94%, 94%);
 }
 
 .messagebox .message_top_line {
@@ -1034,7 +1036,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background: #2b8213;
+    background: hsl(107, 74%, 29%);
     width: 3px;
     height: 100%;
     box-shadow: inset 0px -1px 0px 0px #ffffff;
@@ -1071,11 +1073,11 @@ td.pointer {
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px #4577bc,
-                     -1px -1px 0px 0px #4577bc,
-                      1px 1px 0px 0px #4577bc,
-                     -1px 1px 0px 0px #4577bc,
-                      1px -1px 0px 0px #4577bc;
+    box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+                     -1px -1px 0px 0px hsl(215, 47%, 50%),
+                      1px 1px 0px 0px hsl(215, 47%, 50%),
+                     -1px 1px 0px 0px hsl(215, 47%, 50%),
+                      1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
 .message_sender {
@@ -1085,7 +1087,7 @@ td.pointer {
 }
 
 .sender_name {
-    color: #333;
+    color: hsl(0, 0%, 20%);
     display: inline-block;
     font-weight: 700;
     vertical-align: top;
@@ -1117,11 +1119,11 @@ td.pointer {
 
 .sender_name_hovered .sender_name,
 .sender_name_hovered .sender_name-in-status {
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .sender_name_hovered .inline_profile_picture {
-    border-color: #0088CC;
+    border-color: hsl(200, 100%, 40%);
 }
 
 .message_sender .bot-icon {
@@ -1139,7 +1141,7 @@ td.pointer {
 }
 
 .actions_hover:hover {
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .message_failed,
@@ -1157,7 +1159,7 @@ td.pointer {
 
 a.message_label_clickable:hover {
     cursor: pointer;
-    color: #08C;
+    color: hsl(200, 100%, 40%);
 }
 
 .on_hover_topic_edit {
@@ -1187,22 +1189,22 @@ a.message_label_clickable:hover {
     width: 12px;
     display: inline-block;
     position: relative;
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
 }
 
 .edit_content:hover {
     cursor: pointer;
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .reactions_hover {
     display: inline-block;
     position: relative;
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
 }
 
 .reactions_hover:hover {
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 }
 
 .message_hovered .reactions_hover,
@@ -1225,7 +1227,7 @@ a.dark_background:hover,
 }
 
 .dark_background a.message_label_clickable:hover {
-    color: #3BF;
+    color: hsl(200, 99%, 60%);
 }
 
 .message_top_line {
@@ -1255,7 +1257,7 @@ a.dark_background:hover,
 
 .actions_hovered .message_time,
 .actions_hovered .info {
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
     cursor: pointer;
 }
 
@@ -1263,7 +1265,7 @@ a.dark_background:hover,
     display: inline-block;
     position: relative;
     font-size: 15px;
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
 }
 
 .actions_hovered .actions_link {
@@ -1279,8 +1281,8 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid #e2e2e2;
-    border-right: 1px solid #e2e2e2;
+    border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 88%);
 }
 
 .message_row.selected_message {
@@ -1316,12 +1318,12 @@ div.focused_table {
 .message_edit_countdown_timer {
     text-align: right;
     display: inline;
-    color: #a1a1a1;
+    color: hsl(0, 0%, 63%);
 }
 
 .message_edit_tooltip {
     display: inline;
-    color: #a1a1a1;
+    color: hsl(0, 0%, 63%);
 }
 
 .message-edit-timer-control-group {
@@ -1349,7 +1351,7 @@ div.focused_table {
     font-size: 14px;
 
     border-radius: 0px;
-    border: 1px solid #afbfca;
+    border: 1px solid hsl(204, 20%, 74%);
     box-shadow: none;
 }
 
@@ -1393,7 +1395,7 @@ div.focused_table {
 .message_length_controller {
     display: none;
     text-align: center;
-    color: #0088CC;
+    color: hsl(200, 100%, 40%);
 
     /* to match .message_content */
     margin-left: 5px;
@@ -1413,7 +1415,7 @@ div.message_content table {
 }
 
 div.message_content thead {
-    background-color: #EFEFEF;
+    background-color: hsl(0, 0%, 93%);
 }
 
 div.message_content div {
@@ -1422,13 +1424,13 @@ div.message_content div {
 }
 
 div.message_content div {
-    border: 1px solid #cccccc;
+    border: 1px solid hsl(0, 0%, 80%);
     padding: 4px;
     text-align: left;
 }
 
 div.message_content div {
-    border: 1px solid #cccccc;
+    border: 1px solid hsl(0, 0%, 80%);
     padding: 4px;
 }
 
@@ -1467,7 +1469,7 @@ blockquote p {
 .messagebox blockquote {
     padding-left: 5px;
     margin-left: 10px;
-    border-left-color: #ddd;
+    border-left-color: hsl(0, 0%, 86%);
 }
 
 .bookend {
@@ -1550,7 +1552,7 @@ blockquote p {
     display: inline-block;
     position: relative;
     font-weight: 300;
-    background-color: #f9f9f9;
+    background-color: hsl(0, 0%, 97%);
     margin: 0px;
     padding: 0px;
     text-overflow: ellipsis;
@@ -1558,11 +1560,11 @@ blockquote p {
 }
 
 #tab_list li.inactive {
-    border-top-color: rgba(0, 0, 0, 0);
-    border-right-color: rgba(0, 0, 0, 0);
-    border-bottom-color: rgba(0, 0, 0, 0);
-    background-color: #e2e2e2;
-    border-left-color: #e2e2e2;
+    border-top-color: hsla(0, 0%, 0%, 0.0);
+    border-right-color: hsla(0, 0%, 0%, 0.0);
+    border-bottom-color: hsla(0, 0%, 0%, 0.0);
+    background-color: hsl(0, 0%, 88%);
+    border-left-color: hsl(0, 0%, 88%);
     border-width: 0px;
 }
 
@@ -1597,7 +1599,7 @@ blockquote p {
     margin-top: -28px;
     border-style: solid;
     border-width: 28px 0 28px 14px;
-    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
     z-index: 1;
     -moz-transform: scale(.9999);
 }
@@ -1618,7 +1620,7 @@ blockquote p {
 #tab_list li.active {
     padding-left: 17px;
     padding-right: 10px;
-    background-color: #e2e2e2;
+    background-color: hsl(0, 0%, 88%);
     max-width: 120px;
     white-space: nowrap;
     overflow: hidden;
@@ -1630,18 +1632,18 @@ blockquote p {
 }
 
 #tab_list li.private_message {
-    border-top-color: rgba(0, 0, 0, 0);
-    border-right-color: rgba(0, 0, 0, 0);
-    border-bottom-color: rgba(0, 0, 0, 0);
-    background-color: #111111;
-    border-left-color: #111111;
+    border-top-color: hsla(0, 0%, 0%, 0.0);
+    border-right-color: hsla(0, 0%, 0%, 0.0);
+    border-bottom-color: hsla(0, 0%, 0%, 0.0);
+    background-color: hsl(0, 0%, 7%);
+    border-left-color: hsl(0, 0%, 7%);
     color: #ffffff;
     border-width: 0px;
 }
 
 #tab_list .root {
-    border-color: #e2e2e2;
-    background-color: #e2e2e2;
+    border-color: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
     margin: 0px;
 }
 
@@ -1652,13 +1654,13 @@ blockquote p {
 }
 
 #tab_list li.root a {
-    color: #858585;
+    color: hsl(0, 0%, 52%);
     padding-right: 2px;
 }
 
 
 #tab_list .root a:hover {
-    color: #000000;
+    color: hsl(0, 0%, 0%);
 }
 
 #tab_bar_underpadding {
@@ -1688,15 +1690,15 @@ blockquote p {
     left: 0px;
     text-align: center;
     vertical-align: middle;
-    border-right: 2px solid #afbfca;
+    border-right: 2px solid hsl(204, 20%, 74%);
 }
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: #858585;
+    color: hsl(0, 0%, 52%);
     display: block;
     position: relative;
-    background-color: #e4e4e4;
+    background-color: hsl(0, 0%, 89%);
     width: 40px;
     height: 19px;
     padding-top: 12px;
@@ -1710,11 +1712,11 @@ blockquote p {
     height: 12px;
     min-width: 12px;
     line-height: 12px;
-    background: #670000;
+    background: hsl(0, 100%, 20%);
     top: 4px;
     right: 4px;
-    border: 1px solid #eee;
-    box-shadow: 0px 0px 1px rgba(0,0,0,0.2);
+    border: 1px solid hsl(0, 0%, 93%);
+    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
     padding: 1px 1px 1px 1px;
     font-size: 9px;
@@ -1728,9 +1730,9 @@ blockquote p {
     right: 0px;
     top: 30px;
     min-width: 180px;
-    -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+    -moz-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
 }
 
 .nav .dropdown-menu:after {
@@ -1741,7 +1743,7 @@ blockquote p {
     right: 10px;
     display: inline-block;
     border-right: 7px solid transparent;
-    border-bottom: 7px solid #aaa;
+    border-bottom: 7px solid hsl(0, 0%, 66%);
     border-left: 7px solid transparent;
     content: '';
     z-index: 10;
@@ -1750,7 +1752,7 @@ blockquote p {
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle {
     font-size: 20px;
-    color: #858585;
+    color: hsl(0, 0%, 52%);
     text-shadow: none;
     padding-left: 0px !important;
     background-color: inherit;
@@ -1765,12 +1767,12 @@ blockquote p {
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle:hover {
-    color: #111111;
+    color: hsl(0, 0%, 7%);
 }
 
 #navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
     background: none;
-    color: #111111;
+    color: hsl(0, 0%, 7%);
     text-shadow: none;
 }
 
@@ -1818,7 +1820,7 @@ nav .column-left .company-name {
     margin-left: 8px;
     font-size: 1.2rem;
     font-weight: 600;
-    color: #52c2af;
+    color: hsl(170, 47%, 54%);
     letter-spacing: 0.1em;
     cursor: pointer;
 }
@@ -1832,7 +1834,7 @@ nav a .no-style {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid #dadada;
+    border-right: 1px solid hsl(0, 0%, 85%);
     height: 40px;
 }
 
@@ -1841,11 +1843,11 @@ nav a .no-style {
     font-size: 18px;
     height: 40px;
     padding: 0px;
-    color: #222;
-    box-shadow: inset 2px 0px 0px 0px #afbfca;
+    color: hsl(0, 0%, 13%);
+    box-shadow: inset 2px 0px 0px 0px hsl(204, 20%, 74%);
     padding-left: 35px;
     padding-right: 20px;
-    background: rgb(255,255,255); /* Old browsers */
+    background: hsl(0, 0%, 100%); /* Old browsers */
     border: none;
     border-radius: 0px;
     font-family: 'Humbug';
@@ -1855,7 +1857,7 @@ nav a .no-style {
 
 
 #search_query:focus {
-    box-shadow: inset 0px 0px 0px 2px #afbfca;
+    box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
 }
 
 #searchbox .search_button,
@@ -1869,7 +1871,7 @@ nav a .no-style {
     height: 30px;
     text-align: center;
     padding: 4px;
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
     font-size: 18px;
     box-shadow: none;
     -webkit-box-shadow: none;
@@ -1879,7 +1881,7 @@ nav a .no-style {
 }
 
 #searchbox .search_button:hover {
-    color: #000;
+    color: hsl(0, 0%, 0%);
 }
 
 #searchbox .search_button[disabled] {
@@ -1887,28 +1889,28 @@ nav a .no-style {
 }
 
 #searchbox a.search_icon {
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
     text-decoration: none;
 }
 
 #searchbox a.search_icon:hover {
-    color: #000;
+    color: hsl(0, 0%, 0%);
     text-decoration: none;
 }
 
 .highlight {
-    background-color: #FCEA81;
+    background-color: hsl(51, 94%, 74%);
 }
 
 .highlight_text_inserted {
-    color: #158318;
-    background-color: #E9FBE9;
+    color: hsl(122, 72%, 30%);
+    background-color: hsl(120, 64%, 95%);
 }
 
 .highlight_text_deleted {
-    color: #BBBBBB;
+    color: hsl(0, 0%, 73%);
     text-decoration: line-through;
-    background-color: #FEDFDB;
+    background-color: hsl(7, 90%, 92%);
 }
 
 #search_arrows {
@@ -1938,7 +1940,7 @@ div.floating_recipient {
 }
 
 .message-header-contents {
-    background: #e2e2e2;
+    background: hsl(0, 0%, 88%);
 }
 
 .recipient_row.sticky {
@@ -2148,7 +2150,7 @@ div.floating_recipient {
 }
 
 .table-striped thead th {
-    background-color: #444;
+    background-color: hsl(0, 0%, 27%);
     color: white;
 }
 
@@ -2199,7 +2201,7 @@ div.floating_recipient {
 }
 
 button.primary {
-    background-color: #89a0b3;
+    background-color: hsl(207, 21%, 62%);
     padding: 2px;
     color: #fff;
     border: none;
@@ -2207,7 +2209,7 @@ button.primary {
 }
 
 button.primary:hover {
-    background-color: #91aabe;
+    background-color: hsl(207, 25%, 65%);
 }
 
 button.primary:focus {
@@ -2246,7 +2248,7 @@ button.topic_edit_cancel {
 
 #invite-user .modal-header {
     padding: 7px 15px;
-    border-color: #ddd;
+    border-color: hsl(0, 0%, 86%);
 }
 
 #invite-user .modal-header .exit {
@@ -2257,7 +2259,7 @@ button.topic_edit_cancel {
     position: absolute;
     top: 6px;
     right: 5px;
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 #invitee_emails {
@@ -2361,7 +2363,7 @@ img.emoji {
 }
 
 .twitter-tweet {
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     padding: .5em .75em;
     margin-bottom: 0.25em;
     word-break: break-word;
@@ -2377,7 +2379,7 @@ img.emoji {
 .star {
     display: inline-block;
     font-size: 14px;
-    color: #2c8211;
+    color: hsl(106, 77%, 29%);
 }
 
 .star:not(.empty-star) {
@@ -2386,17 +2388,17 @@ img.emoji {
 }
 
 .empty-star {
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
 }
 
 .empty-star:hover {
     cursor: pointer;
-    color: #565656;
+    color: hsl(0, 0%, 34%);
 }
 
 .star:hover {
     cursor: pointer;
-    color: #0d7245;
+    color: hsl(153, 80%, 25%);
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
@@ -2430,7 +2432,7 @@ img.emoji {
     display: inline-block;
     vertical-align: middle;
     width: 33%;
-    border-top: 1px solid #e2e2e2;
+    border-top: 1px solid hsl(0, 0%, 88%);
     border-bottom: 1px solid #fff;
     margin: 0px 5px 0px 5px;
 }
@@ -2443,7 +2445,7 @@ img.emoji {
     overflow: hidden;
     text-transform: uppercase;
     font-size: 0.8em;
-    color: #bbb;
+    color: hsl(0, 0%, 73%);
     text-shadow: 1px 1px 0px #fff;
 }
 
@@ -2462,7 +2464,7 @@ img.emoji {
     vertical-align: middle;
     width: 50%;
     height: 0px;
-    border-top: 1px solid #e2e2e2;
+    border-top: 1px solid hsl(0, 0%, 88%);
     border-bottom: 1px solid #fff;
 }
 
@@ -2509,7 +2511,7 @@ img.emoji {
 
 #message_edit_form a.message-control-button {
     display: inline;
-    color: #777;
+    color: hsl(0, 0%, 46%);
     text-decoration: none;
     font-size: 12px;
     width: 12px;
@@ -2528,7 +2530,7 @@ img.emoji {
     display: inline-block;
     margin: 0 0 0 0;
     height: 22px;
-    background: #e2e2e2;
+    background: hsl(0, 0%, 88%);
     padding-left: 20px;
     padding-right: 3px;
     line-height: 22px;
@@ -2543,28 +2545,28 @@ img.emoji {
 }
 
 .user-mention {
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
     border-radius: 3px;
     padding: 0 0.2em;
-    box-shadow: 0px 0px 0px 1px #ccc;
+    box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
     margin-right: 2px;
     white-space: nowrap;
-    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0)));
-    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
-    background-image: -o-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
-    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
+    background-image: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background-image: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background-image: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background-image: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background-image: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
     display: inline-block;
     margin-bottom: 1px;
 }
 
 .user-mention-me {
-    background-color: #c9fcc1;
+    background-color: hsl(112, 88%, 87%);
 }
 
 .alert-word {
-    background-color: #c9fcc1;
+    background-color: hsl(112, 88%, 87%);
 }
 
 #organization h1,
@@ -2591,7 +2593,7 @@ img.emoji {
     position: absolute;
     left: 0;
     top: 0;
-    background: #000;
+    background: hsl(0, 0%, 0%);
     z-index: 20000;
 }
 
@@ -2626,7 +2628,7 @@ img.emoji {
     position: relative;
     margin: 5px 0px;
     border: none;
-    border-left: 3px solid #eee;
+    border-left: 3px solid hsl(0, 0%, 93%);
     height: 70px;
     padding: 5px;
     z-index: 1;
