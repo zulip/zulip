@@ -2,7 +2,7 @@
     display: none;
     margin-left: 10px;
     font-style: italic;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 #typing_notification_list {
