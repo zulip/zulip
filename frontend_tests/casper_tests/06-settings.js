@@ -57,6 +57,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#account-settings-status', function () {
         casper.test.assertSelectorHasText('#account-settings-status', 'Updated settings!');
+        casper.click('#api_key_button');
     });
 });
 
@@ -101,7 +102,6 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#account-settings-status', function () {
         casper.click('[data-section="your-bots"]');
-        casper.click('#api_key_button');
     });
 });
 
