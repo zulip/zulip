@@ -58,9 +58,9 @@
             <i class="icon-vector-angle-right" aria-hidden="true"></i>
         </div>
         <div class="dropdown-list">
-            <h4 class="selected">All</h4>
+            <h4 class="integration-category selected" data-category="All">All</h4>
             {% for category in categories_dict.values() %}
-                <h4>{{ category }}</h4>
+                <h4 class="integration-category" data-category="{{ category }}">{{ category }}</h4>
             {% endfor %}
         </div>
     </div>
@@ -68,9 +68,9 @@
     <div class="catalog">
         <div class="integration-categories-sidebar">
             <h3>{% trans %}Categories{% endtrans %}</h3>
-            <h4 class="selected">All</h4>
+            <h4 data-category="All" class="integration-category selected">All</h4>
             {% for category in categories_dict.values() %}
-                <h4>{{ category }}</h4>
+                <h4 data-category="{{ category }}" class="integration-category">{{ category }}</h4>
             {% endfor %}
         </div>
 

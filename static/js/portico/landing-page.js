@@ -1,3 +1,5 @@
+import fuzzysearch from 'fuzzysearch';
+
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
 // (as specified like `scroll-to='0px'`).
@@ -26,6 +28,7 @@ var detectPath = function (pathname) {
 // these are events that are only to run on the integrations page.
 // check if the page location is integrations.
 var integration_events = function () {
+    var integrations = $('.integration-lozenges').children().toArray();
     var scroll_top = 0;
 
     $("a.title")
@@ -124,14 +127,87 @@ var integration_events = function () {
         e.preventDefault();
     });
 
-   $(window).scroll(function () {
-        if (document.body.scrollTop > 330) {
-            $('.integration-categories-sidebar').addClass('sticky');
-        } else {
-            $('.integration-categories-sidebar').removeClass('sticky');
+    $('#integration-search input[type="text"]').keypress(function (e) {
+        if (e.which === 13 && e.target.value !== '') {
+            for (var i = 0; i < integrations.length; i += 1) {
+                var integration = $(integrations[i]).find('.integration-lozenge');
+
+                if ($(integration).css('display') !== 'none') {
+                    $(integration).closest('a')[0].click();
+                    break;
+                }
+            }
+        }
+    });
+
+    $(window).scroll(function () {
+         if (document.body.scrollTop > 330) {
+             $('.integration-categories-sidebar').addClass('sticky');
+         } else {
+             $('.integration-categories-sidebar').removeClass('sticky');
         }
     });
 };
+
+
+function integration_search() {
+    var integrations = $('.integration-lozenges').children().toArray();
+    var current_category = 'All';
+    var current_query = '';
+
+    function update_categories() {
+        $('.integration-category').removeClass('selected');
+        $('[data-category="' + current_category + '"]').addClass('selected');
+    }
+
+    var update_integrations = _.debounce(function () {
+        integrations.forEach(function (integration) {
+            var $integration = $(integration).find('.integration-lozenge');
+
+            var display =
+                fuzzysearch(current_query, $integration.data('name').toLowerCase()) &&
+                ($integration.data('categories').indexOf(current_category) !== -1 ||
+                 current_category === 'All');
+
+            if (display) {
+                $integration.css('display', 'inline-block');
+            } else {
+                $integration.css('display', 'none');
+            }
+        });
+    }, 50);
+
+    function change_category(category) {
+        $('.integration-lozenges').css('opacity', 0);
+
+        current_category = category;
+        update_categories();
+        update_integrations();
+
+        $('.integration-lozenges').animate(
+            { opacity: 1 },
+            { duration: 400 }
+        );
+    }
+
+    function run_search(query) {
+        current_query = query.toLowerCase();
+        update_integrations();
+    }
+
+    $('.integrations .integration-category').on('click', function (e) {
+        var category = $(e.target).data('category');
+
+        if (category !== current_category) {
+            change_category(category);
+        }
+    });
+
+    $(".integrations .searchbar input[type='text']").on('input', function (e) {
+        run_search(e.target.value);
+    });
+}
+
 
 var hello_events = function () {
     var counter = 0;
@@ -234,6 +310,7 @@ var events = function () {
 
     if (detectPath() === "integrations") {
         integration_events();
+        integration_search();
     }
 
     if (detectPath() === "hello") {
@@ -257,6 +334,7 @@ var events = function () {
     });
 };
 
+
 // run this callback when the page is determined to have loaded.
 var load = function () {
     // show the .portico-landing when the document is loaded.
@@ -270,7 +348,7 @@ var load = function () {
         $("x-grad").addClass("show");
     }, 1000);
 
-    // Set events.
+    // Set up events / categories / search
     events();
 };
 
