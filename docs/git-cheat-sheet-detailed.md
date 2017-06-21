@@ -1,5 +1,7 @@
+# Git Cheat Sheet (Detailed)
+
 See also
-[fixing commits](https://github.com/zulip/zulip-gci/blob/master/docs/fixing-commits.md)
+[fixing commits][fix-commit]
 
 Commands:
 
@@ -11,7 +13,7 @@ Commands:
     - `git checkout master`: switch to your `master` branch
     - `git checkout old-branch-name`: switch to an existing branch `old-branch-name`
 - commit
-    - `git commit --amend`: changing the last commit message. Read more [here](https://github.com/zulip/zulip-gci/blob/master/docs/fixing-commits.md)
+    - `git commit --amend`: changing the last commit message. Read more [here][fix-commit]
 - config
     - `git config --global core.editor nano`: set core editor to `nano` (you can set this to `vim` or others)
     - `git config --global core.symlinks true`: allow symbolic links
@@ -49,4 +51,4 @@ Commands:
 - status
     - `git status`: show the working tree status, unstaged and staged files
     
-
+[fix-commit]: fixing-commits.html
