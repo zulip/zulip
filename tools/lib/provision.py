@@ -272,14 +272,25 @@ def main(options):
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
     if not options.is_production_travis:
-        # These won't be used anyway
-        run(["scripts/setup/configure-rabbitmq"])
-        # Need to set up Django before using is_template_database_current.
+        # Need to set up Django before using is_template_database_current
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
+
         from zerver.lib.str_utils import force_bytes
         from zerver.lib.test_fixtures import is_template_database_current
+
+        try:
+            from zerver.lib.queue import SimpleQueueClient
+            SimpleQueueClient()
+            rabbitmq_is_configured = True
+        except Exception:
+            rabbitmq_is_configured = False
+
+        if options.is_force or not rabbitmq_is_configured:
+            run(["scripts/setup/configure-rabbitmq"])
+        else:
+            print("RabbitMQ is already configured.")
 
         if options.is_force or not is_template_database_current(
                 migration_status="var/migration_status_dev",
