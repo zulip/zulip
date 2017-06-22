@@ -353,6 +353,7 @@ exports.content_typeahead_selected = function (item) {
     var pieces = exports.split_at_cursor(this.query, this.$element);
     var beginning = pieces[0];
     var rest = pieces[1];
+    var textbox = this.$element;
 
     if (this.completing === 'emoji') {
         // leading and trailing spaces are required for emoji, except if it begins a message.
@@ -378,7 +379,7 @@ exports.content_typeahead_selected = function (item) {
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(function () {
-        $('#new_message_content').caret(beginning.length, beginning.length);
+        textbox.caret(beginning.length, beginning.length);
         // Also, trigger autosize to check if compose box needs to be resized.
         compose_ui.autosize_textarea();
     }, 0);
