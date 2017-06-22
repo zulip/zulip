@@ -4,7 +4,6 @@
 **[Installing for production](#running-zulip-in-production)** |
 **[Ways to contribute](#ways-to-contribute)** |
 **[How to get involved](#how-to-get-involved-with-contributing-to-zulip)** |
-**[License](#license)**
 
 # Zulip overview
 
