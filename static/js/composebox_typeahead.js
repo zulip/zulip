@@ -357,7 +357,9 @@ exports.content_typeahead_selected = function (item) {
 
     if (this.completing === 'emoji') {
         // leading and trailing spaces are required for emoji, except if it begins a message.
-        if (beginning.lastIndexOf(":") === 0 || beginning.charAt(beginning.lastIndexOf(":") - 1) === " ") {
+        if (beginning.lastIndexOf(":") === 0 ||
+            beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
+            beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n") {
             beginning = beginning.replace(/:\S+$/, "") + ":" + item.emoji_name + ": ";
         } else {
             beginning = beginning.replace(/:\S+$/, "") + " :" + item.emoji_name + ": ";
