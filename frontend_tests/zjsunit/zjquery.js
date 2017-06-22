@@ -18,7 +18,16 @@ exports.make_zjquery = function () {
         var attrs = new Dict();
         var classes = new Dict();
         var on_functions = new Dict();
-        var click_func;
+
+        function generic_event(event_name, arg) {
+            if (typeof(arg) === 'function') {
+                on_functions.set(event_name, arg);
+            } else {
+                var handler = on_functions.get(event_name);
+                assert(handler);
+                handler(arg);
+            }
+        }
 
         var self = {
             val: function () {
@@ -123,14 +132,8 @@ exports.make_zjquery = function () {
                 funcs.push(f);
                 return self.wrapper;
             },
-            click: function (f) {
-                if (f) {
-                    assert.equal(typeof(f), "function");
-                    click_func = f;
-                } else {
-                    assert(click_func);
-                    click_func();
-                }
+            click: function (arg) {
+                generic_event('click', arg);
             },
             remove: function () {
                 if (my_parent) {
