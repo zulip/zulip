@@ -287,13 +287,13 @@ exports.compose_content_begins_typeahead = function (query) {
             return false;
         }
 
-        current_token = q.substring(q.lastIndexOf('@') + 1);
+        current_token = current_token.substring(1);
         if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
             return false;
         }
 
         this.completing = 'mention';
-        this.token = current_token.substring(current_token.indexOf("@") + 1);
+        this.token = current_token;
         var all_item = {
             special_item_text: "all (Notify everyone)",
             email: "all",
@@ -317,10 +317,11 @@ exports.compose_content_begins_typeahead = function (query) {
             return false;
         }
 
-        current_token = q.substring(q.lastIndexOf('#') + 1);
-        if (current_token.length < 1) {
+        if (current_token.length === 1) {
             return false;
         }
+
+        current_token = current_token.substring(1);
 
         // Don't autocomplete if there is a space following a '#'
         if (current_token[0] === " ") {
@@ -328,7 +329,7 @@ exports.compose_content_begins_typeahead = function (query) {
         }
 
         this.completing = 'stream';
-        this.token = current_token.substring(current_token.indexOf("#")+1);
+        this.token = current_token;
         return stream_data.subscribed_subs();
     }
     return false;
