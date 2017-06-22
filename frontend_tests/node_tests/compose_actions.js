@@ -64,7 +64,9 @@ set_global('unread_ops', {
     mark_message_as_read: noop,
 });
 
-set_global('status_classes', 'status_classes');
+set_global('common', {
+    status_classes: 'status_classes',
+});
 
 function stub_selected_message(msg) {
     set_global('current_msg_list', {

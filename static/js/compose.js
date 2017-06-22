@@ -154,7 +154,7 @@ function create_message_object() {
 exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
-    $('#send-status').removeClass(status_classes)
+    $('#send-status').removeClass(common.status_classes)
                .addClass('alert-error')
                .stop(true).fadeTo(0, 1);
     $('#error-msg').html(error_text);

@@ -1,10 +1,14 @@
-var status_classes = 'alert-error alert-success alert-info';
+var common = (function () {
 
-function autofocus(selector) {
+var exports = {};
+
+exports.status_classes = 'alert-error alert-success alert-info';
+
+exports.autofocus = function (selector) {
     $(function () {
         $(selector)[0].focus();
     });
-}
+};
 
 // Return a boolean indicating whether the password is acceptable.
 // Also updates a Bootstrap progress bar control (a jQuery object)
@@ -14,7 +18,7 @@ function autofocus(selector) {
 //
 // This is in common.js because we want to use it from the signup page
 // and also from the in-app password change interface.
-function password_quality(password, bar, password_field) {
+exports.password_quality = function (password, bar, password_field) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
     if (typeof zxcvbn === 'undefined') {
         return undefined;
@@ -56,10 +60,12 @@ function password_quality(password, bar, password_field) {
     }
 
     return acceptable;
-}
+};
+
+return exports;
+
+}());
 
 if (typeof module !== 'undefined') {
-    module.exports.status_classes = status_classes;
-    module.exports.autofocus = autofocus;
-    module.exports.password_quality = password_quality;
+    module.exports = common;
 }

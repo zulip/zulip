@@ -76,7 +76,7 @@ function show_box(msg_type, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#send-status").removeClass(status_classes).hide();
+    $("#send-status").removeClass(common.status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $(".new_message_textarea").css("min-height", "3em");
 

@@ -23,8 +23,6 @@
         "DynamicText": false,
         "bridge": false,
         "page_params": false,
-        "status_classes": false,
-        "password_quality": false,
         "attachments_ui": false,
         "csrf_token": false,
         "typeahead_helper": false,
@@ -153,7 +151,8 @@
         "Clipboard": false,
         "emoji_picker": false,
         "hotspots": false,
-        "compose_ui": false
+        "compose_ui": false,
+        "common": false
     },
     "rules": {
         "array-callback-return": "error",
