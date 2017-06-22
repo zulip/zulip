@@ -284,7 +284,8 @@ INTEGRATIONS = {
         'mercurial',
         'mercurial',
         display_name='Mercurial (hg)',
-        doc='zerver/integrations/mercurial.md'
+        doc='zerver/integrations/mercurial.md',
+        stream_name='commits',
     ),
     'nagios': Integration('nagios', 'nagios', doc='zerver/integrations/nagios.md'),
     'openshift': Integration(
