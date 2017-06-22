@@ -329,22 +329,6 @@ html {
     opacity: 0;
 }
 
-.new-style .input-box input[required] ~ .valid {
-    position: absolute;
-    top: 42px;
-    right: 15px;
-    width: 15px;
-    transform: translateX(10px);
-    opacity: 0;
-
-    transition: all 0.3s ease;
-}
-
-.new-style .input-box input[required]:valid ~ .valid {
-    opacity: 1;
-    transform: translateX(0);
-}
-
 .new-style .input-box label,
 .new-style .input-box input[type=text]:focus + label,
 .new-style .input-box input[type=email]:focus + label,
