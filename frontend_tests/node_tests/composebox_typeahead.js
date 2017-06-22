@@ -83,33 +83,79 @@ global.people.add(deactivated_user);
 
     assert_typeahead_equals("test", false);
     assert_typeahead_equals("test one two", false);
+    assert_typeahead_equals("*", false);
+    assert_typeahead_equals("* ", false);
+    assert_typeahead_equals(" *", false);
     assert_typeahead_equals("test *", false);
 
+    // Make sure that the last token is the one we read.
+    assert_typeahead_equals("~~~ @zulip", people_with_all);
+    assert_typeahead_equals("@zulip :ta", emoji_list);
+    assert_typeahead_equals(":tada: #foo", stream_list);
+    assert_typeahead_equals("#foo\n~~~py", lang_list);
+
+    assert_typeahead_equals("@", false);
+    assert_typeahead_equals(" @", false);
+    assert_typeahead_equals("test @**o", false);
     assert_typeahead_equals("test @", false);
     assert_typeahead_equals("test no@o", false);
+    assert_typeahead_equals("@ ", people_with_all);
+    assert_typeahead_equals("test\n@i", people_with_all);
+    assert_typeahead_equals("test\n @l", people_with_all);
     assert_typeahead_equals("@zuli", people_with_all);
+    assert_typeahead_equals("@ zuli", people_with_all);
+    assert_typeahead_equals(" @zuli", people_with_all);
     assert_typeahead_equals("test @o", people_with_all);
     assert_typeahead_equals("test @z", people_with_all);
 
+    assert_typeahead_equals(":", false);
+    assert_typeahead_equals(": ", false);
+    assert_typeahead_equals(" :", false);
     assert_typeahead_equals("test :-P", false);
     assert_typeahead_equals("hi emoji :", false);
+    assert_typeahead_equals("hi emoj:i", false);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
+    assert_typeahead_equals("hi emoji\n:da", emoji_list);
+    assert_typeahead_equals("hi emoji\n :ra", emoji_list);
+    assert_typeahead_equals(":la", emoji_list);
+    assert_typeahead_equals(" :lee", emoji_list);
 
+    assert_typeahead_equals("#", false);
+    assert_typeahead_equals("# ", false);
+    assert_typeahead_equals(" #", false);
+    assert_typeahead_equals("# s", false);
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test # a", false);
+    assert_typeahead_equals("test no#o", false);
     assert_typeahead_equals("#s", stream_list);
+    assert_typeahead_equals(" #s", stream_list);
     assert_typeahead_equals("test #D", stream_list);
+    assert_typeahead_equals("test #**v", stream_list);
 
+    assert_typeahead_equals("```", false);
     assert_typeahead_equals("``` ", false);
+    assert_typeahead_equals(" ```", false);
+    assert_typeahead_equals("test ```", false);
     assert_typeahead_equals("test ``` py", false);
     assert_typeahead_equals("test ```a", false);
+    assert_typeahead_equals("test\n```", false);
     assert_typeahead_equals("``c", false);
     assert_typeahead_equals("```b", lang_list);
     assert_typeahead_equals("``` d", lang_list);
+    assert_typeahead_equals("test\n``` p", lang_list);
+    assert_typeahead_equals("test\n```  p", lang_list);
+    assert_typeahead_equals("~~~", false);
+    assert_typeahead_equals("~~~ ", false);
+    assert_typeahead_equals(" ~~~", false);
+    assert_typeahead_equals(" ~~~ g", false);
     assert_typeahead_equals("test ~~~", false);
+    assert_typeahead_equals("test ~~~p", false);
+    assert_typeahead_equals("test\n~~~", false);
     assert_typeahead_equals("~~~e", lang_list);
     assert_typeahead_equals("~~~ f", lang_list);
+    assert_typeahead_equals("test\n~~~ p", lang_list);
+    assert_typeahead_equals("test\n~~~  p", lang_list);
 }());
 
 (function test_tokenizing() {
