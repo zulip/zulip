@@ -193,6 +193,17 @@ exports.make_zjquery = function () {
             // so we just call it right away.
             arg();
             return;
+        } else if (typeof arg === "object") {
+            // If somebody is passing us an element, we return
+            // the element itself if it's been created with
+            // zjquery.
+            // This may happen in cases like $(this).
+            if (arg.debug) {
+                var this_selector = arg.debug().selector;
+                if (elems[this_selector]) {
+                    return arg;
+                }
+            }
         }
 
         var selector = arg;
