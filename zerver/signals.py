@@ -13,7 +13,9 @@ from zerver.models import UserProfile
 def get_device_browser(user_agent):
     # type: (str) -> Optional[str]
     user_agent = user_agent.lower()
-    if "chrome" in user_agent and "chromium" not in user_agent:
+    if "edge" in user_agent:
+        return "Edge"
+    elif "chrome" in user_agent and "chromium" not in user_agent:
         return 'Chrome'
     elif "firefox" in user_agent and "seamonkey" not in user_agent and "chrome" not in user_agent:
         return "Firefox"
@@ -25,8 +27,6 @@ def get_device_browser(user_agent):
         return "Opera"
     elif "msie" in user_agent or "trident" in user_agent:
         return "Internet Explorer"
-    elif "edge" in user_agent:
-        return "Edge"
     elif "zulip" in user_agent:
         return "Zulip"
     else:
