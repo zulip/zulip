@@ -22,10 +22,10 @@ Reusing existing connection to localhost:443.
   HTTP/1.1 200 OK
   Server: nginx/1.4.6 (Ubuntu)
   Content-Type: text/html; charset=utf-8
-  Content-Length: 6205
+  Content-Length: 6107
   Connection: keep-alive
   Strict-Transport-Security: max-age=15768000
-Length: 6205 (6.1K) [text/html]
+Length: 6107 (6.0K) [text/html]
 Saving to: ‘/tmp/index.html’
 
 
