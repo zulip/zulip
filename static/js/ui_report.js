@@ -19,10 +19,10 @@ exports.message = function (response, status_box, cls, type) {
     }
 
     if (type === 'subscriptions-status') {
-        status_box.removeClass(status_classes).addClass(cls).children('#response')
+        status_box.removeClass(common.status_classes).addClass(cls).children('#response')
               .text(response).stop(true).fadeTo(0, 1);
     } else {
-        status_box.removeClass(status_classes).addClass(cls)
+        status_box.removeClass(common.status_classes).addClass(cls)
               .text(response).stop(true).fadeTo(0, 1);
     }
 

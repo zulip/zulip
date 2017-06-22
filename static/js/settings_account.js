@@ -106,7 +106,7 @@ exports.set_up = function () {
 
     $('#new_password').on('change keyup', function () {
         var field = $('#new_password');
-        password_quality(field.val(), $('#pw_strength .bar'), field);
+        common.password_quality(field.val(), $('#pw_strength .bar'), field);
     });
 
     $("form.your-account-settings").ajaxForm({
@@ -118,7 +118,7 @@ exports.set_up = function () {
                 var field = $('#new_password');
                 var new_pw = $('#new_password').val();
                 if (new_pw !== '') {
-                    var password_ok = password_quality(new_pw, undefined, field);
+                    var password_ok = common.password_quality(new_pw, undefined, field);
                     if (password_ok === undefined) {
                         // zxcvbn.js didn't load, for whatever reason.
                         settings_change_error(

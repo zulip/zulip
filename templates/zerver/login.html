@@ -14,9 +14,9 @@
 {% if password_auth_enabled %}
 <script type="text/javascript">
 {% if email %}
-autofocus('#id_password');
+common.autofocus('#id_password');
 {% else %}
-autofocus('#id_username');
+common.autofocus('#id_username');
 {% endif %}
 </script>
 {% endif %}
