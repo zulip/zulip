@@ -40,7 +40,10 @@ global.people.add({
     ct.add_topic('denmark', 'Acceptance');
     ct.add_topic('Denmark', 'With Twisted Metal');
 
-    assert.deepEqual(ct.topics_seen_for('Denmark'), ['With Twisted Metal', 'acceptance', 'civil fears']);
+    assert.deepEqual(
+        ct.topics_seen_for('Denmark'),
+        ['With Twisted Metal', 'acceptance', 'civil fears']
+    );
 }());
 
 (function test_begins_typeahead() {
@@ -51,7 +54,9 @@ global.people.add({
         emoji: true, mention: true, stream: true, syntax: true}}};
 
     function assert_typeahead_equals(input, reference) {
-        var returned = ct.compose_content_begins_typeahead.call(begin_typehead_this, input);
+        var returned = ct.compose_content_begins_typeahead.call(
+            begin_typehead_this, input
+        );
         assert.deepEqual(returned, reference);
     }
 
