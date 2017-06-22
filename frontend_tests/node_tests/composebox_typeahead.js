@@ -16,22 +16,25 @@ add_dependencies({
     people: 'js/people.js',
 });
 
-global.people.add_in_realm({
+var othello = {
     email: 'othello@zulip.com',
     user_id: 101,
     full_name: "Othello, Moor of Venice",
-});
-global.people.add_in_realm({
+};
+var cordelia = {
     email: 'cordelia@zulip.com',
     user_id: 102,
     full_name: "Cordelia Lear",
-});
-
-global.people.add({
+};
+var deactivated_user = {
     email: 'other@zulip.com',
     user_id: 103,
     full_name: "Deactivated User",
-});
+};
+
+global.people.add_in_realm(othello);
+global.people.add_in_realm(cordelia);
+global.people.add(deactivated_user);
 
 (function test_add_topic() {
     ct.add_topic('Denmark', 'civil fears');
