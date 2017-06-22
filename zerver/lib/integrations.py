@@ -298,7 +298,7 @@ INTEGRATIONS = {
     'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.html'),
     'phabricator': Integration('phabricator', 'phabricator', doc='zerver/integrations/phabricator.md'),
     'puppet': Integration('puppet', 'puppet', doc='zerver/integrations/puppet.md'),
-    'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.html'),
+    'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.md'),
     'rss': Integration('rss', 'rss', display_name='RSS', doc='zerver/integrations/rss.md'),
     'svn': Integration(
         'svn', 'svn',
