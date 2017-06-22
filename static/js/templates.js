@@ -8,7 +8,7 @@ exports.render = function (name, arg) {
     }
     if (Handlebars.templates[name] === undefined) {
         throw new Error("Cannot find a template with this name: " + name
-              + ". If you are developing a new feature, this likely"
+              + ". If you are developing a new feature, this likely "
               + "means you need to add the file static/templates/"
               + name + ".handlebars");
     }
