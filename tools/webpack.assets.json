@@ -10,7 +10,7 @@
                "./node_modules/moment/min/moment.min.js",
                "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"
               ],
-    "katex": ["./node_modules/katex/dist/katex.min.js"],
+    "katex": "./node_modules/katex/dist/katex.min.js",
     "landing-page": "./static/js/portico/landing-page.js",
     "signup": [
                "./static/js/portico/signup.js",
