@@ -57,7 +57,11 @@ exports.open_overlay = function (opts) {
     open_overlay_name = opts.name;
     active_overlay = opts.overlay;
     opts.overlay.addClass('show');
-    opts.overlay.attr("aria-hidden","false");
+
+    opts.overlay.attr("aria-hidden", "false");
+    $('.app').attr("aria-hidden", "true");
+    $('.fixed-app').attr("aria-hidden", "true");
+    $('.header').attr("aria-hidden", "true");
 
     close_handler = function () {
         opts.on_close();
@@ -79,7 +83,11 @@ exports.close_overlay = function (name) {
     blueslip.debug('close overlay: ' + name);
 
     active_overlay.removeClass("show");
-    active_overlay.attr("aria-hidden","true");
+
+    active_overlay.attr("aria-hidden", "true");
+    $('.app').attr("aria-hidden", "false");
+    $('.fixed-app').attr("aria-hidden", "false");
+    $('.header').attr("aria-hidden", "false");
 
     if (!close_handler) {
         blueslip.error("Overlay close handler for " + name + " not properly setup." );
