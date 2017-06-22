@@ -23,7 +23,7 @@ def set_subdomain_of_default_realm(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0028_userprofile_tos_version'),
+        ('zerver', '0001_initial'),
     ]
 
     operations = [
