@@ -1,23 +1,18 @@
-First, create the stream you’d like to use for Trac notifications, and
-subscribe all interested parties to this stream. The integration will
-use the default stream `trac` if no stream is supplied in the hook;
-you still need to create the stream even if you are using this
-default.
+{!create-stream.md!}
 
-{! download-python-bindings.md !}
+{!download-python-bindings.md!}
 
-Next, open `integrations/trac/zulip_trac_config.py` in your favorite
-editor, and change the following lines to specify your bot’s email
-address, API key, and where you’d like your notification messages to
-go (by default, stream `trac`):
+{!change-zulip-config-file.md!}
+
+Also, change the following lines:
 
 ```
-ZULIP_USER = "trac-notifications-bot@example.com"
-ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 STREAM_FOR_NOTIFICATIONS = "trac"
 TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
-{% if api_site_required %}ZULIP_SITE ="{{ external_api_uri_subdomain }}"{% endif %}
 ```
+
+Set `STREAM_FOR_NOTIFICATIONS` to the name of the stream
+you'd like the notifications to be sent to.
 
 Copy `integrations/trac/zulip_trac.py` and
 `integrations/trac/zulip_trac_config.py` into your Trac installation’s
@@ -33,11 +28,11 @@ zulip_trac = enabled
 You may then need to restart Trac (or Apache) so that Trac will load
 our plugin.
 
-When people open new tickets (or edit existing tickets), you’ll see a
-message like the following, to the stream `trac` (or whatever you
-configured above) with a topic that matches the ticket name
+When people open new tickets (or edit existing tickets), notifications
+will be sent to the stream `trac` (or whatever you
+configured above) with a topic that matches the ticket name.
 
-{! congrats.md !}
+{!congrats.md!}
 
 ![](/static/images/integrations/trac/001.png)
 
