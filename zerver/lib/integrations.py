@@ -313,7 +313,8 @@ INTEGRATIONS = {
         logo='static/images/integrations/logos/trello.svg',
         secondary_line_text='(legacy)',
         display_name='Trello',
-        doc='zerver/integrations/trello-plugin.html'
+        doc='zerver/integrations/trello-plugin.md',
+        stream_name='trello',
     ),
     'twitter': Integration('twitter', 'twitter', doc='zerver/integrations/twitter.md'),
 
