@@ -295,7 +295,7 @@ INTEGRATIONS = {
         doc='zerver/integrations/openshift.md',
         stream_name='deployments',
     ),
-    'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.html'),
+    'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.md'),
     'phabricator': Integration('phabricator', 'phabricator', doc='zerver/integrations/phabricator.md'),
     'puppet': Integration('puppet', 'puppet', doc='zerver/integrations/puppet.md'),
     'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.md'),

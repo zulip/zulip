@@ -458,6 +458,7 @@ def build_custom_checkers(by_lang):
             "README.md",
             "zerver/webhooks/helloworld/doc.md",
             "zerver/webhooks/trello/doc.md",
+            "templates/zerver/integrations/perforce.md",
         }
         for fn in by_lang['md']:
             max_length = None
