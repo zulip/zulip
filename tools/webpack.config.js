@@ -37,7 +37,18 @@ module.exports =  {
                     {loader: 'expose-loader', options: 'debug'},
                 ],
             },
-
+            {
+                test: require.resolve('../static/js/blueslip.js'),
+                use: [
+                    {loader: 'expose-loader', options: 'blueslip'},
+                ],
+            },
+            {
+                test: require.resolve('../static/js/common.js'),
+                use: [
+                    {loader: 'expose-loader', options: 'common'},
+                ],
+            },
         ],
     },
     output: {
