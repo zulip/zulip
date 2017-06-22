@@ -269,7 +269,7 @@ INTEGRATIONS = {
         'jenkins',
         'jenkins',
         secondary_line_text='(or Hudson)',
-        doc='zerver/integrations/jenkins.html'
+        doc='zerver/integrations/jenkins.md'
     ),
     'jira-plugin': Integration(
         'jira-plugin',
