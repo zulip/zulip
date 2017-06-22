@@ -7,6 +7,7 @@
   "dependencies": {
     "clipboard": "1.5.16",
     "expose-loader": "0.7.3",
+    "fuzzysearch": "1.0.3",
     "handlebars": "4.0.6",
     "i18next": "3.4.4",
     "i18next-browser-languagedetector": "0.3.0",
