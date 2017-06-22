@@ -1,7 +1,10 @@
 {!download-python-bindings.md!}
-Once you've done that, you'll use the `zulip-send` utility to notify you when certain events happen.
 
-Here's some example code for sending a Zulip notification after a deployment has completed:
+Once you've done that, you'll use the `zulip-send` utility to
+notify you when certain events happen.
+
+Here's some example code for sending a Zulip notification after
+a deployment has completed:
 
 ```bash
 after 'deploy', 'notify:humbug'
@@ -21,13 +24,19 @@ end
 
 Some notes:
 
-*   If you prefer not to use `--user` and `--api-key` above, you can fill out `~/.zuliprc` on your Capistrano
-machine. For instructions on how to write that file, see [the API page](/api).
-*   You may need to change the `deploy` above to another step of your deployment process, if you'd like the
-notification to fire at a different time.
+* If you prefer not to use `--user` and `--api-key` above, you
+  can fill out `~/.zuliprc` on your Capistrano machine. For
+  instructions on how to write that file, see
+  [the API page](/api).
 
-{! congrats.md !}
+* You may need to change the `deploy` above to another step of
+  your deployment process, if you'd like the notification to fire
+  at a different time.
+
+{!congrats.md!}
 
 ![](/static/images/integrations/capistrano/001.png)
 
-###### Thanks to Wes of TurboVote for [submitting this integration](https://gist.github.com/cap10morgan/5100822)!
+###### Thanks to Wes of TurboVote for [submitting this integration][1]!
+
+[1]: https://gist.github.com/cap10morgan/5100822
