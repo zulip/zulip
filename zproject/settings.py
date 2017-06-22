@@ -812,18 +812,6 @@ PIPELINE = {
 # Useful reading on how this works is in
 # https://zulip.readthedocs.io/en/latest/front-end-build-process.html
 JS_SPECS = {
-    'common': {
-        'source_filenames': [
-            'node_modules/jquery/dist/jquery.js',
-            'node_modules/underscore/underscore.js',
-            'js/blueslip.js',
-            'third/bootstrap/js/bootstrap.js',
-            'js/common.js',
-            'node_modules/moment/moment.js',
-            'node_modules/moment-timezone/builds/moment-timezone-with-data.js',
-        ],
-        'output_filename': 'min/common.js'
-    },
     'app': {
         'source_filenames': [
             'third/bootstrap-notify/js/bootstrap-notify.js',
