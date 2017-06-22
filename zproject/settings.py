@@ -382,7 +382,6 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'confirmation',
-    'guardian',
     'pipeline',
     'webpack_loader',
     'zerver',
