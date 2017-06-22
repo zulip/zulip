@@ -19,7 +19,7 @@ add_dependencies({
 var othello = {
     email: 'othello@zulip.com',
     user_id: 101,
-    full_name: "Othello, Moor of Venice",
+    full_name: "Othello, the Moor of Venice",
 };
 var cordelia = {
     email: 'cordelia@zulip.com',
