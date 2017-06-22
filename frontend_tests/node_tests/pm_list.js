@@ -22,8 +22,11 @@ set_global('stream_popover', {
 });
 set_global('unread', {});
 set_global('unread_ui', {});
+set_global('blueslip', {});
+set_global('popovers', {
+    hide_all: function () {},
+});
 
-// TODO: move pm_list-related tests to their own module
 var pm_list = require('js/pm_list.js');
 
 global.compile_template('sidebar_private_message_list');
@@ -48,10 +51,29 @@ global.people.add_in_realm(bob);
 global.people.add_in_realm(me);
 global.people.initialize_current_user(me.user_id);
 
-(function test_build_private_messages_list() {
-    var active_conversation = "alice@zulip.com,bob@zulip.com";
-    var max_conversations = 5;
+(function test_get_conversation_li() {
+    var test_conversation = 'foo@example.com,bar@example.com';
+    var error_msg;
+    global.blueslip.warn = function (error) {
+        error_msg = error;
+    };
+    pm_list.get_conversation_li(test_conversation);
+    assert.equal(error_msg, 'Unknown conversation: ' + test_conversation);
+}());
 
+(function test_close() {
+    var collapsed;
+    $('ul.expanded_private_messages').remove = function () {
+        collapsed = true;
+    };
+    pm_list.close();
+    assert(collapsed);
+}());
+
+(function test_build_private_messages_list() {
+    var active_conversation_1 = "alice@zulip.com,bob@zulip.com";
+    var active_conversation_2 = 'me@zulip.com,alice@zulip.com';
+    var max_conversations = 5;
 
     var conversations = {user_ids_string: '101,102',
                          timestamp: 0 };
@@ -68,7 +90,7 @@ global.people.initialize_current_user(me.user_id);
         template_data = data;
     };
 
-    pm_list._build_private_messages_list(active_conversation, max_conversations);
+    pm_list._build_private_messages_list(active_conversation_1, max_conversations);
 
     var expected_data = {
         messages: [
@@ -87,6 +109,26 @@ global.people.initialize_current_user(me.user_id);
 
     assert.deepEqual(template_data, expected_data);
 
+    max_conversations = 0;
+    global.unread.num_unread_for_person = function () {
+        return 0;
+    };
+    pm_list._build_private_messages_list(active_conversation_2, max_conversations);
+    expected_data.messages[0].unread = 0;
+    expected_data.messages[0].is_zero = true;
+    expected_data.messages[0].zoom_out_hide = true;
+    expected_data.want_show_more_messages_links = true;
+    assert.deepEqual(template_data, expected_data);
+
+    $('#global_filters').on = function (action, selector, f) {
+        var e = { preventDefault: function () {}, stopPropagation: function () {}};
+        f(e);
+    };
+    pm_list.initialize();
+    expected_data.zoom_class = "zoomed-in";
+    expected_data.want_show_more_messages_links = false;
+    pm_list._build_private_messages_list(active_conversation_2, max_conversations);
+    assert.deepEqual(template_data, expected_data);
 }());
 
 (function test_expand_and_update_private_messages() {
@@ -112,10 +154,19 @@ global.people.initialize_current_user(me.user_id);
         dom = html;
     };
 
+    pm_list.expand([alice.email, bob.email]);
+    assert.equal(dom, 'fake-dom-for-pm-list');
+    assert(collapsed);
+    assert(!alice_li.hasClass('active-sub-filter'));
+
     pm_list.expand([alice.email]);
     assert.equal(dom, 'fake-dom-for-pm-list');
     assert(collapsed);
     assert(alice_li.hasClass('active-sub-filter'));
+
+    pm_list.expand([]);
+    assert.equal(dom, 'fake-dom-for-pm-list');
+    assert(collapsed);
 
     // Next, simulate clicking on Bob.
     narrow_state.active = function () { return true; };
@@ -125,6 +176,44 @@ global.people.initialize_current_user(me.user_id);
             operands: function (operand) {
                 if (operand === 'is') {
                     return 'private';
+                }
+                assert.equal(operand, 'pm-with');
+                return [bob.email, alice.email];
+            },
+        };
+    };
+
+    collapsed = false;
+
+    pm_list.update_private_messages();
+
+    assert(collapsed);
+    assert(!bob_li.hasClass('active-sub-filter'));
+
+    narrow_state.filter = function () {
+        return {
+            operands: function (operand) {
+                if (operand === 'is') {
+                    return ['private'];
+                }
+                assert.equal(operand, 'pm-with');
+                return [];
+            },
+        };
+    };
+
+    collapsed = false;
+
+    pm_list.update_private_messages();
+
+    assert(collapsed);
+    assert(!bob_li.hasClass('active-sub-filter'));
+
+    narrow_state.filter = function () {
+        return {
+            operands: function (operand) {
+                if (operand === 'is') {
+                    return ['private'];
                 }
                 assert.equal(operand, 'pm-with');
                 return [bob.email];
@@ -138,6 +227,10 @@ global.people.initialize_current_user(me.user_id);
 
     assert(collapsed);
     assert(bob_li.hasClass('active-sub-filter'));
+
+    narrow_state.active = function () { return false; };
+    pm_list.update_private_messages();
+
 }());
 
 (function test_update_dom_with_unread_counts() {
@@ -176,4 +269,33 @@ global.people.initialize_current_user(me.user_id);
     assert(toggle_button_set);
     assert.equal(child_value.text(), '7');
     assert.equal(total_value.text(), '10');
+
+    pm_count.set(user_ids_string, 0);
+    counts = {
+        private_message_count: 0,
+        pm_count: pm_count,
+    };
+    toggle_button_set = false;
+    unread_ui.set_count_toggle_button = function (elt, count) {
+        toggle_button_set = true;
+        assert.equal(count, 0);
+    };
+    pm_list.update_dom_with_unread_counts(counts);
+
+    assert(toggle_button_set);
+    assert.equal(child_value.text(), '');
+    assert.equal(total_value.text(), '');
+
+    var pm_li = pm_list.get_conversation_li("alice@zulip.com,bob@zulip.com");
+    pm_li.find = function (sel) {
+        assert.equal(sel, '.private_message_count');
+        return {find: function (sel) {
+            assert.equal(sel, '.value');
+            return [];
+        }};
+    };
+    pm_list.update_dom_with_unread_counts(counts);
+    assert(toggle_button_set);
+    assert.equal(child_value.text(), '');
+    assert.equal(total_value.text(), '');
 }());
