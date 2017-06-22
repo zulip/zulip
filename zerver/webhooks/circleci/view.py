@@ -46,7 +46,7 @@ def get_body(payload):
 def get_status(payload):
     # type: (Dict[str, Any]) -> Text
     status = payload['status']
-    if payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
+    if payload['previous'] and payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
         return u'is still failing'
     if status == 'success':
         return u'succeeded'
