@@ -511,11 +511,6 @@ exports.initialize = function () {
             if (!current_recipient) {
                 return false;
             }
-            // If the name is only whitespace (does not contain any non-whitespace),
-            // we're between typing names; don't autocomplete anything for us.
-            if (! current_recipient.match(/\S/)) {
-                return false;
-            }
             var recipients = util.extract_pm_recipients(this.query);
             if (recipients.indexOf(item.email) > -1) {
                 return false;
