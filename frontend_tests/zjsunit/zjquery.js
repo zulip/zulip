@@ -35,6 +35,7 @@ exports.make_zjquery = function () {
                     return value || '';
                 }
                 value = arguments[0];
+                return self.wrapper;
             },
             css: noop,
             data: noop,
@@ -42,6 +43,7 @@ exports.make_zjquery = function () {
             height: noop,
             removeAttr: function (name) {
                 attrs.del(name);
+                return self.wrapper;
             },
             removeData: noop,
             trigger: function (ev) {
@@ -49,32 +51,37 @@ exports.make_zjquery = function () {
                 _.each(funcs, function (f) {
                     f(ev.data);
                 });
+                return self.wrapper;
             },
             blur: function () {
                 focused = false;
+                return self.wrapper;
             },
             html: function (arg) {
                 if (arg !== undefined) {
                     html = arg;
-                } else {
-                    return html;
+                    return self.wrapper;
                 }
+                return html;
             },
             text: function (arg) {
                 if (arg !== undefined) {
                     text = arg;
-                } else {
-                    return text;
+                    return self.wrapper;
                 }
+                return text;
             },
             focus: function () {
                 focused = true;
+                return self.wrapper;
             },
             show: function () {
                 shown = true;
+                return self.wrapper;
             },
             hide: function () {
                 shown = false;
+                return self.wrapper;
             },
             addClass: function (class_name) {
                 classes.set(class_name, true);
@@ -134,20 +141,25 @@ exports.make_zjquery = function () {
             },
             click: function (arg) {
                 generic_event('click', arg);
+                return self.wrapper;
             },
             keydown: function (arg) {
                 generic_event('keydown', arg);
+                return self.wrapper;
             },
             keyup: function (arg) {
                 generic_event('keyup', arg);
+                return self.wrapper;
             },
             select: function (arg) {
                 generic_event('select', arg);
+                return self.wrapper;
             },
             remove: function () {
                 if (my_parent) {
                     my_parent.remove_child(selector);
                 }
+                return self.wrapper;
             },
             get: function (idx) {
                 // We have some legacy code that does $('foo').get(0).
@@ -159,12 +171,14 @@ exports.make_zjquery = function () {
                     return attrs.get(name);
                 }
                 attrs.set(name, val);
+                return self.wrapper;
             },
             prop: function (name, val) {
                 if (val === undefined) {
                     return properties.get(name);
                 }
                 properties.set(name, val);
+                return self.wrapper;
             },
         };
 
