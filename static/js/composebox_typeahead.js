@@ -174,23 +174,6 @@ function select_on_focus(field_id) {
     });
 }
 
-function autocomplete_checks(q, char) {
-    // Don't autocomplete more than this many characters.
-    var max_chars = 30;
-    var last_at = q.lastIndexOf(char);
-    if (last_at === -1 || last_at < q.length - 1 - max_chars) {
-        return false;  // char doesn't appear, or too far back
-    }
-
-    // Only match if the char follows a space, various punctuation,
-    // or is at the beginning of the string.
-    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
-        return false;
-    }
-
-    return true;
-}
-
 exports.split_at_cursor = function (query, input) {
     var cursor = input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
@@ -283,10 +266,6 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     if (this.options.completions.mention && current_token[0] === '@') {
-        if (!autocomplete_checks(q, '@')) {
-            return false;
-        }
-
         current_token = current_token.substring(1);
         if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
             return false;
@@ -313,10 +292,6 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {
-        if (!autocomplete_checks(q, '#')) {
-            return false;
-        }
-
         if (current_token.length === 1) {
             return false;
         }
