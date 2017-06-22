@@ -141,6 +141,9 @@ exports.make_zjquery = function () {
             keyup: function (arg) {
                 generic_event('keyup', arg);
             },
+            select: function (arg) {
+                generic_event('select', arg);
+            },
             remove: function () {
                 if (my_parent) {
                     my_parent.remove_child(selector);
