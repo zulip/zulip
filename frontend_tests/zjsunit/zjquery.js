@@ -232,6 +232,10 @@ exports.make_zjquery = function () {
         };
     };
 
+    zjquery.extend = function (content, container) {
+        return _.extend(content, container);
+    };
+
     return zjquery;
 };
 
