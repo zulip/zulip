@@ -1,10 +1,9 @@
-First, create the stream you’d like to use for Nagios notifications,
-and subscribe all interested parties to this stream. The integration
-will use the default stream `nagios` if no stream is supplied in the
-configuration; you still need to create the stream even if you are
-using this default.
+{!create-stream.md!}
 
-{! download-python-bindings.md !}
+{!download-python-bindings.md!}
+
+Next, on your {{ settings_html|safe }}, create a bot for
+{{ integration_display_name }}.
 
 Next, open `integrations/nagios/zuliprc.example` in your favorite
 editor, and change the following lines to specify the email address
@@ -41,18 +40,19 @@ following, to the stream `nagios` (to change this, edit the arguments
 to `nagios-notify-zulip` in `/etc/nagios3/conf.d/zulip_nagios.cfg`)
 with a topic indicating the service with an issue.
 
-{! congrats.md !}
+{!congrats.md!}
 
 ![](/static/images/integrations/nagios/001.png)
 
 **Testing**
 
-If you have
-[external commands enabled in Nagios](http://nagios.sourceforge.net/docs/3_0/extcommands.html),
-you can generate a test notice from your Nagios instance by visiting
-using the `Send custom service notification` command in the `Service
-Commands` section of any individual service’s page on your Nagios
-instance.
+If you have [external commands enabled in Nagios][1],
+you can generate a test notice from your Nagios instance by
+using the `Send custom service notification` command in the
+`Service Commands` section of any individual service’s page
+on your Nagios instance.
+
+[1]: http://nagios.sourceforge.net/docs/3_0/extcommands.html
 
 **Troubleshooting**
 
