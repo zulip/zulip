@@ -57,6 +57,7 @@ exports.open_overlay = function (opts) {
     open_overlay_name = opts.name;
     active_overlay = opts.overlay;
     opts.overlay.addClass('show');
+    opts.overlay.attr("aria-hidden","false");
 
     close_handler = function () {
         opts.on_close();
@@ -78,6 +79,7 @@ exports.close_overlay = function (name) {
     blueslip.debug('close overlay: ' + name);
 
     active_overlay.removeClass("show");
+    active_overlay.attr("aria-hidden","true");
 
     if (!close_handler) {
         blueslip.error("Overlay close handler for " + name + " not properly setup." );
