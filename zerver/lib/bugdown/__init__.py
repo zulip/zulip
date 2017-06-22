@@ -1162,7 +1162,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             # we find to the set current_message.alert_words.
 
             realm_words = db_data['possible_words']
-
+            realm_slash_commands = db_data['realm_slash_commands']
             content = '\n'.join(lines).lower()
 
             allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\".,\';\[\*`>]'])
@@ -1177,6 +1177,14 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
                 if re.search(match_re, content):
                     current_message.alert_words.add(word)
 
+            for command in realm_slash_commands:
+                escaped = re.escape(("/" + command).lower())
+                match_re = re.compile(u'(?:%s)%s(?:%s)' %
+                                      (allowed_before_punctuation,
+                                       escaped,
+                                       allowed_after_punctuation))
+                if re.search(match_re, content):
+                    current_message.triggered_slash_commands.add(command)
         return lines
 
 # This prevents realm_filters from running on the content of a
@@ -1448,8 +1456,8 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
+def do_convert(content, message=None, message_realm=None, possible_words=None, realm_slash_commands=None, sent_by_bot=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
@@ -1496,7 +1504,11 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         if possible_words is None:
             possible_words = set()  # Set[Text]
 
+        if realm_slash_commands is None:
+            realm_slash_commands = set()  # Set[Text]
+
         db_data = {'possible_words': possible_words,
+                   'realm_slash_commands': realm_slash_commands,
                    'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
                    'by_email': dict((user['email'].lower(), user) for user in realm_users),
@@ -1556,9 +1568,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
+def convert(content, message=None, message_realm=None, possible_words=None, realm_slash_commands=None, sent_by_bot=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[Set[Text]], Optional[bool]) -> Text
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
+    ret = do_convert(content, message, message_realm, possible_words, realm_slash_commands, sent_by_bot)
     bugdown_stats_finish()
     return ret
