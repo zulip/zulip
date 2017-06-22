@@ -979,10 +979,10 @@ $ git checkout BRANCHNAME
 Now you work on this branch as you would any other.
 
 Note: you can use the scripts provided in the tools/ directory to fetch pull
-requests.
+requests. You can read more about what they do [here][tools-PR].
 ```
-tools/fetch-rebase-pull-request <number>
-tools/fetch-pull-request <number>
+tools/fetch-rebase-pull-request <PR-number>
+tools/fetch-pull-request <PR-number>
 ```
 
 ## Review changes
@@ -1520,6 +1520,7 @@ Deleting local branch review-original-5156 (was 5a1e982)
 [self-travisci]: git-guide.html#step-3-configure-travis-ci-continuous-integration
 [self-multiple-computers]: git-guide.html#working-from-multiple-computers
 [self-git-terms]: git-guide.html#important-git-terms
+[tools-PR]: #fetch-a-pull-request-and-rebase
 [images-gui-stage]: _images/zulip-gui-stage.gif
 [images-gui-hist]: _images/zulip-gui-hist-tower.png
 [images-create-pr]: images/zulip-open-pr.png
