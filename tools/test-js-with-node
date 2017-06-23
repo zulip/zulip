@@ -146,6 +146,27 @@ if options.coverage and ret == 0:
     print("=============================================================================")
     print()
 
+    print("=============================================================================")
+    print("Checking for fully covered files that are not enforced yet...")
+    ok = True
+    for path in coverage_json:
+        if '/static/js/' in path:
+            relative_path = os.path.relpath(path, ROOT_DIR)
+            line_coverage = coverage_json[path]['s']
+            line_mapping = coverage_json[path]['statementMap']
+            if check_line_coverage(line_coverage, line_mapping, log=False) \
+                    and not (relative_path in enforce_fully_covered):
+                ok = False
+                print("ERROR: %s has complete node test coverage and is not enforced." % (relative_path,))
+    if ok:
+        print("Success: There are no fully covered files that are not enforced yet!")
+    else:
+        print("There are one or more fully covered files that are not enforced.")
+        print("Add the file(s) to enforce_fully_covered in `tools/test-js-with-node`.")
+        ret = 1
+    print("=============================================================================")
+    print()
+
 if ret == 0:
     if options.coverage:
         print("View coverage reports at http://127.0.0.1:9991/node-coverage/index.html")
