@@ -48,10 +48,6 @@ matrix:
   include:
     - python: "3.4"
       env: TEST_SUITE=static-analysis
-    - python: "3.4"
-      env: TEST_SUITE=production
-    - python: "2.7"
-      env: TEST_SUITE=production
     - python: "2.7"
       env: TEST_SUITE=frontend
     - python: "3.4"
@@ -60,6 +56,10 @@ matrix:
       env: TEST_SUITE=backend
     - python: "3.4"
       env: TEST_SUITE=backend
+    - python: "2.7"
+      env: TEST_SUITE=production
+    - python: "3.4"
+      env: TEST_SUITE=production
 sudo: required
 services:
 - docker
