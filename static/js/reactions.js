@@ -316,9 +316,9 @@ exports.get_message_reactions = function (message) {
             title: generate_title(emoji_name, user_ids),
             emoji_alt_code: page_params.emoji_alt_code,
         };
-        if (emoji.realm_emojis[reaction.emoji_name]) {
+        if (emoji.all_realm_emojis[reaction.emoji_name]) {
             reaction.is_realm_emoji = true;
-            reaction.url = emoji.realm_emojis[reaction.emoji_name].emoji_url;
+            reaction.url = emoji.all_realm_emojis[reaction.emoji_name].emoji_url;
         }
         if (user_ids.indexOf(page_params.user_id) !== -1) {
             reaction.class = "message_reaction reacted";

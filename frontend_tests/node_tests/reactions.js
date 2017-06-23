@@ -15,8 +15,18 @@ set_global('emoji', {
         alien: '1f47d',
         smile: '1f604',
     },
-    realm_emojis: {
-        realm_emoji: 'whatever',
+    all_realm_emojis: {
+        realm_emoji: {
+            emoji_name: 'realm_emoji',
+            emoji_url: 'TBD',
+            deactivated: false,
+        },
+    },
+    active_realm_emojis: {
+        realm_emoji: {
+            emoji_name: 'realm_emoji',
+            emoji_url: 'TBD',
+        },
     },
 });
 
