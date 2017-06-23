@@ -46,19 +46,23 @@ language: python
 # against both Python versions).
 matrix:
   include:
+    # Travis will actually run the jobs in the order they're listed here;
+    # that doesn't seem to be documented, but it's what we see empirically.
+    # We only get 4 jobs running at a time, so we try to make the first few
+    # the most likely to break.
     - python: "3.4"
       env: TEST_SUITE=static-analysis
-    - python: "2.7"
-      env: TEST_SUITE=frontend
     - python: "3.4"
       env: TEST_SUITE=frontend
-    - python: "2.7"
-      env: TEST_SUITE=backend
     - python: "3.4"
       env: TEST_SUITE=backend
-    - python: "2.7"
+    - python: "3.4"
       env: TEST_SUITE=production
-    - python: "3.4"
+    - python: "2.7"
+      env: TEST_SUITE=frontend
+    - python: "2.7"
+      env: TEST_SUITE=backend
+    - python: "2.7"
       env: TEST_SUITE=production
 sudo: required
 services:
