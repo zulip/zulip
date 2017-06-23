@@ -50,12 +50,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
         </div>
 
-        <div class="input-box full-width">
-            <div class="help-box">
-                {{ _('Zulip has full unicode support, so you can spell your name exactly how you want it to appear.') }}
-            </div>
-        </div>
-
         {% if password_auth_enabled %}
         <div class="input-box">
             <input id="id_password" class="required" type="password" name="password"
@@ -98,7 +92,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
 
             <div class="help-box margin-top">
-                {{ _('This can be changed later on the settings page.') }}
+                {{ _('Shorter is better than longer.') }}
             </div>
         </div>
 
@@ -131,7 +125,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% if realms_have_subdomains %}
                     {{ _("The address you'll use to sign in to your organization.") }}
                 {% else %}
-                    {{ _("A short, unique name for your organization, lowercase with no spaces.") }}
+                    {{ _("a-z, 0-9, and - only.") }}
                 {% endif %}
             </div>
         </div>
