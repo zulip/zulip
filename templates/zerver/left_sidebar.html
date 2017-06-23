@@ -48,10 +48,15 @@
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Subscribed streams') }}"><a href="">{{ _('STREAMS') }}</a></h4>
                 <a href="#streams">
                     <i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
+                    <span class="ariahide">{{ _('Manage streams button') }}</span>
                 </a>
-                <a href=""><i id='streams_filter_icon' class='icon-vector-search' data-toggle="tooltip" title="{{ _('Filter streams') }} (w)"></i></a>
+                <a href="">
+                    <i id='streams_filter_icon' class='icon-vector-search' data-toggle="tooltip" title="{{ _('Filter streams')}} (w)"></i>
+                    <span class="ariahide">{{ _('Streams filter button') }}</span>
+                </a>
                 <a href="" id="join_unsub_stream">
                     <i class="icon-vector-plus" title="{{ _('Join stream')}}" data-toggle="tooltip"></i>
+                    <span class="ariahide">{{ _('Join or unsub from stream button') }}</span>
                 </a>
             </div>
             <div id="topics_header">

@@ -1711,6 +1711,14 @@ blockquote p {
     padding-bottom: 9px;
 }
 
+.ariahide {
+    height: 1px;
+    width: 1px;
+    position: absolute;
+    overflow: hidden;
+    top: -10px;
+}
+
 #streamlist-toggle-unreadcount,
 #userlist-toggle-unreadcount {
     position: absolute;
