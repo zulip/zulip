@@ -40,7 +40,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% else %}
                 <input id="id_full_name" class="required" type="text" name="full_name"
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                maxlength={{ MAX_NAME_LENGTH }} required />
+                maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
                 <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
@@ -79,7 +79,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <div class="input-box">
             <div class="inline-block relative">
                 <input id="id_team_name" class="required" type="text"
-                    placeholder="Acme"
+                    placeholder="Acme or Aκμή"
                     value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
                     name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
                 <div class="required"></div>

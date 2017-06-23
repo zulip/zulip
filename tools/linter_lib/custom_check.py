@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -351,7 +353,7 @@ def build_custom_checkers(by_lang):
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
-                          ('templates/zerver/register.html', 'placeholder="Acme"'),
+                          ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"'),
                           ('static/templates/settings/realm-domains-modal.handlebars',
                            '<td><input type="text" class="new-realm-domain" placeholder="acme.com"></input></td>')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
