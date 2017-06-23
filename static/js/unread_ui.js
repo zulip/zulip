@@ -93,7 +93,7 @@ function consider_bankruptcy() {
     }
 }
 
-exports.initialize = function initialize() {
+function _initialize() {
     // No matter how the bankruptcy modal is closed, show unread counts after.
     $("#bankruptcy").on("hide", function () {
         unread_ui.enable();
@@ -108,8 +108,11 @@ exports.initialize = function initialize() {
     });
 
     consider_bankruptcy();
-};
+}
 
+exports.initialize = function () {
+    i18n.ensure_i18n(_initialize);
+};
 
 return exports;
 }());
