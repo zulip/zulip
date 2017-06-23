@@ -279,9 +279,8 @@ def accounts_register(request):
                  }
     )
 
-def create_preregistration_user(email, request, realm_creation=False):
-    # type: (Text, HttpRequest, bool) -> HttpResponse
-    realm_str = request.session.pop('realm_str', None)
+def create_preregistration_user(email, request, realm_creation=False, realm_str=None):
+    # type: (Text, HttpRequest, bool, Optional[str]) -> HttpResponse
     if realm_str is not None:
         # realm_str was set in accounts_home_with_realm_str.
         # The user is trying to sign up for a completely open realm,
@@ -297,21 +296,20 @@ def accounts_home_with_realm_str(request, realm_str):
     if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm(realm_str)):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
-        # URL. We store this information in the session rather than
-        # elsewhere because we don't have control over URL or form
-        # data for folks registering through OpenID.
-        request.session["realm_str"] = realm_str
-        return accounts_home(request)
+        # URL. This information is passed along during the authentication
+        # process in querystring.
+        return accounts_home(request, realm_str=realm_str)
     else:
         return HttpResponseRedirect(reverse('zerver.views.registration.accounts_home'))
 
-def send_registration_completion_email(email, request, realm_creation=False):
-    # type: (str, HttpRequest, bool) -> None
+def send_registration_completion_email(email, request, realm_creation=False, realm_str=None):
+    # type: (str, HttpRequest, bool, Optional[str]) -> None
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(email, request, realm_creation)
+    prereg_user = create_preregistration_user(email, request, realm_creation,
+                                              realm_str=realm_str)
     activation_url = Confirmation.objects.get_link_for_object(prereg_user, host=request.get_host())
     send_email('zerver/emails/confirm_registration', email, from_email=settings.ZULIP_ADMINISTRATOR,
                context={'activate_url': activation_url})
@@ -370,14 +368,17 @@ def get_realm_from_request(request):
         realm_str = request.session.get("realm_str")
     return get_realm(realm_str)
 
-def accounts_home(request):
-    # type: (HttpRequest) -> HttpResponse
-    realm = get_realm_from_request(request)
+def accounts_home(request, realm_str=None):
+    # type: (HttpRequest, Optional[str]) -> HttpResponse
+    if realm_str is not None:
+        realm = get_realm(realm_str)
+    else:
+        realm = get_realm_from_request(request)
     if request.method == 'POST':
         form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
             email = form.cleaned_data['email']
-            send_registration_completion_email(email, request)
+            send_registration_completion_email(email, request, realm_str=realm_str)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
