@@ -7,6 +7,12 @@ import sys
 import time
 import re
 
+from threading import Thread
+try:
+    from queue import PriorityQueue
+except ImportError:  # if we're using python 2 for some reason?
+    from Queue import PriorityQueue
+
 from six.moves import configparser
 
 if False:
@@ -119,6 +125,34 @@ class StateHandler(object):
         # type: () -> Any
         return self.state
 
+#  The PriorityQueue of timers stores tuples of the format:
+#  index 0: Unix time of of the event's scheduled firing time
+#  index 1: 0 if the event should not repeat, the repeat interval if it should
+#  index 2: The function to call when the event fires
+class EventTimer(object):
+    def __init__(self):
+        self.timers = PriorityQueue()
+        self.t = Thread(target=self.run)
+        self.t.daemon = True
+        self.t.start()
+
+    def schedule(self, function, task_time, repeat=False):
+        repeat_time = task_time if repeat else 0
+        self.timers.put((time.time() + task_time, repeat_time, function))
+
+    def run(self):
+        while True:
+            task = self.timers.get()  # Blocks until there is a task
+
+            time.sleep(1)
+            if task[0] > time.time():  # If the task isn't done, add it back
+                self.timers.put(task)
+                continue
+
+            task[2]()
+            if task[1]:  # If the function repeats, add it back
+                self.schedule(task[2], task[1], repeat=True)
+
 def run_message_handler_for_bot(lib_module, quiet, config_file):
     # type: (Any, bool, str) -> Any
     #
@@ -136,6 +170,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         message_handler.initialize(bot_handler=restricted_client)
 
     state_handler = StateHandler()
+    event_timer = EventTimer()
 
     if not quiet:
         print(message_handler.usage())
@@ -182,7 +217,8 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
             message_handler.handle_message(
                 message=message,
                 bot_handler=restricted_client,
-                state_handler=state_handler
+                state_handler=state_handler,
+                event_timer=event_timer,
             )
 
     signal.signal(signal.SIGINT, exit_gracefully)
