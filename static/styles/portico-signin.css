@@ -597,6 +597,7 @@ button.login-google-button {
 
 #registration .input-box {
     margin: 10px;
+    padding-bottom: 10px;
 }
 
 #registration {
