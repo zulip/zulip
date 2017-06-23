@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import ujson
+from typing import Dict
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -99,6 +100,21 @@ except OSError:
     print('Bad command: %s' % (command,))
     raise
 
+def check_line_coverage(line_coverage, line_mapping, log=True):
+    # type: (Dict, Dict, bool) -> bool
+    missing_lines = []
+    for line in line_coverage:
+        if line_coverage[line] == 0:
+            actual_line = line_mapping[line]
+            missing_lines.append(str(actual_line["start"]["line"]))
+    if missing_lines:
+        if log:
+            print("ERROR: %s no longer has complete node test coverage" % (relative_path,))
+            print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
+            print()
+        return False
+    return True
+
 NODE_COVERAGE_PATH = 'var/node-coverage/coverage.json'
 
 if options.coverage and ret == 0:
@@ -119,22 +135,13 @@ if options.coverage and ret == 0:
             continue
         line_coverage = coverage_json[path]['s']
         line_mapping = coverage_json[path]['statementMap']
-        missing_lines = []
-        for line in line_coverage:
-            if line_coverage[line] == 0:
-                actual_line = line_mapping[line]
-                missing_lines.append(str(actual_line["start"]["line"]))
-        if len(missing_lines):
-            print("ERROR: %s no longer has complete node test coverage" % (relative_path,))
-            print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
-            print()
+        if not check_line_coverage(line_coverage, line_mapping):
             ret = 1
     if ret:
         print("It looks like your changes lost 100% test coverage in one or more files.")
         print("Usually, the right fix for this is to add some tests.")
         print("But also check out the include/exclude lists in `tools/test-js-with-node`.")
         print("To run this check locally, use `test-js-with-node --coverage`.")
-        print()
     else:
         print("All enforced fully covered files still have 100% test coverage!")
     print("=============================================================================")
