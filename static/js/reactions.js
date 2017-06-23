@@ -4,7 +4,7 @@ var exports = {};
 exports.view = {}; // function namespace
 
 function send_reaction_ajax(message_id, emoji_name, operation) {
-    if (!emoji.emojis_by_name[emoji_name] && !emoji.realm_emojis[emoji_name]) {
+    if (!emoji.emojis_by_name[emoji_name] && !emoji.active_realm_emojis[emoji_name]) {
         // Emoji doesn't exist
         return;
     }
@@ -192,9 +192,9 @@ exports.view.insert_new_reaction = function (opts) {
 
     var new_title = generate_title(emoji_name, user_list);
 
-    if (emoji.realm_emojis[emoji_name]) {
+    if (emoji.active_realm_emojis[emoji_name]) {
         context.is_realm_emoji = true;
-        context.url = emoji.realm_emojis[emoji_name].emoji_url;
+        context.url = emoji.active_realm_emojis[emoji_name].emoji_url;
     }
 
     context.count = 1;
