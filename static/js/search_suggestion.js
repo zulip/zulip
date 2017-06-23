@@ -21,10 +21,6 @@ function phrase_match(phrase, q) {
     return false;
 }
 
-function person_matches_query(person, q) {
-    return phrase_match(person.full_name, q) || phrase_match(person.email, q);
-}
-
 function stream_matches_query(stream_name, q) {
     return phrase_match(stream_name, q);
 }
@@ -83,7 +79,7 @@ function get_stream_suggestions(last, operators) {
     return objs;
 }
 
-function get_group_suggestions(all_people, last, operators) {
+function get_group_suggestions(all_persons, last, operators) {
     if (last.operator !== 'pm-with' ) {
         return [];
     }
@@ -118,21 +114,21 @@ function get_group_suggestions(all_people, last, operators) {
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
     var parts = all_but_last_part.split(',');
-    var people = _.filter(all_people, function (person) {
+    var persons = _.filter(all_persons, function (person) {
         if (_.contains(parts, person.email)) {
             return false;
         }
-        return (last_part === '') || person_matches_query(person, last_part);
+        return (last_part === '') || people.person_matches_query(person, last_part);
     });
 
-    people.sort(typeahead_helper.compare_by_pms);
+    persons.sort(typeahead_helper.compare_by_pms);
 
-    // Take top 15 people, since they're ordered by pm_recipient_count.
-    people = people.slice(0, 15);
+    // Take top 15 persons, since they're ordered by pm_recipient_count.
+    persons = persons.slice(0, 15);
 
     var prefix = Filter.operator_to_prefix('pm-with', negated);
 
-    var suggestions = _.map(people, function (person) {
+    var suggestions = _.map(persons, function (person) {
         var term = {
             operator: 'pm-with',
             operand: all_but_last_part + ',' + person.email,
@@ -152,7 +148,7 @@ function get_group_suggestions(all_people, last, operators) {
 }
 
 // Possible args for autocomplete_operator: pm-with, sender, from
-function get_person_suggestions(all_people, last, operators, autocomplete_operator) {
+function get_person_suggestions(all_persons, last, operators, autocomplete_operator) {
     if (last.operator === "is" && last.operand === "private") {
         // Interpret 'is:private' as equivalent to 'pm-with:'
         last = {operator: "pm-with", operand: "", negated: false};
@@ -182,15 +178,15 @@ function get_person_suggestions(all_people, last, operators, autocomplete_operat
         return [];
     }
 
-    var people = _.filter(all_people, function (person) {
-        return person_matches_query(person, query);
+    var persons = _.filter(all_persons, function (person) {
+        return people.person_matches_query(person, query);
     });
 
-    people.sort(typeahead_helper.compare_by_pms);
+    persons.sort(typeahead_helper.compare_by_pms);
 
     var prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
 
-    var objs = _.map(people, function (person) {
+    var objs = _.map(persons, function (person) {
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
         var terms = [{
