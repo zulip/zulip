@@ -123,9 +123,9 @@ $(document).ready(function () {
         name: "info-overlay-toggle",
         selected: 0,
         values: [
-            { label: "Keyboard shortcuts", key: "keyboard-shortcuts" },
-            { label: "Message formatting", key: "markdown-help" },
-            { label: "Search operators", key: "search-operators" },
+            { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
+            { label: i18n.t("Message formatting"), key: "markdown-help" },
+            { label: i18n.t("Search operators"), key: "search-operators" },
         ],
         callback: function (name, key) {
             $(".overlay-modal").hide();
