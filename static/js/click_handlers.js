@@ -665,8 +665,8 @@ $(function () {
         var settings_toggle = components.toggle({
             name: "settings-toggle",
             values: [
-                { label: "Settings", key: "settings" },
-                { label: "Organization", key: "organization" },
+                { label: i18n.t("Settings"), key: "settings" },
+                { label: i18n.t("Organization"), key: "organization" },
             ],
             callback: function (name, key) {
                 $(".sidebar li").hide();

@@ -7,7 +7,7 @@ var exports = {};
         name: String toggle_name,
         selected: Integer selected_index,
         values: Array<Object> [
-            { label: String title }
+            { label: i18n.t(String title) }
         ],
         callback: function () {
             // .. on value change.
