@@ -368,6 +368,13 @@ def get_realm_from_request(request):
         realm_str = request.session.get("realm_str")
     return get_realm(realm_str)
 
+def get_realm_str_url_suffix(realm_str):
+    # type: (str) -> str
+    realm_str_url_suffix = ''
+    if realm_str:
+        realm_str_url_suffix = "?realm_str=" + realm_str
+    return realm_str_url_suffix
+
 def accounts_home(request, realm_str=None):
     # type: (HttpRequest, Optional[str]) -> HttpResponse
     if realm_str is not None:
@@ -388,9 +395,13 @@ def accounts_home(request, realm_str=None):
             return redirect_to_email_login_url(email)
     else:
         form = HomepageForm(realm=realm)
+
     return render(request,
                   'zerver/accounts_home.html',
-                  context={'form': form, 'current_url': request.get_full_path},
+                  context={'form': form,
+                           'current_url': request.get_full_path,
+                           'realm_str_url_suffix': get_realm_str_url_suffix(realm_str),
+                           },
                   )
 
 def generate_204(request):

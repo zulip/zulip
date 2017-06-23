@@ -83,7 +83,7 @@ $(function () {
 
                         {% if github_auth_enabled %}
                         <div class="login-github">
-                            <a href="{{ url('signup-social', args=('github',)) }}"
+                            <a href="{{ url('signup-social', args=('github',)) }}{{ realm_str_url_suffix }}"
                                 class="github-wrapper">
                                 <button class="login-github-button github">
                                     <span>{{ _('Sign up with GitHub') }}</span>

@@ -30,7 +30,7 @@ from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
-    redirect_and_log_into_subdomain
+    redirect_and_log_into_subdomain, get_realm_str_url_suffix
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled
@@ -44,8 +44,8 @@ import requests
 import time
 import ujson
 
-def maybe_send_to_registration(request, email, full_name=''):
-    # type: (HttpRequest, Text, Text) -> HttpResponse
+def maybe_send_to_registration(request, email, full_name='', realm_str=None):
+    # type: (HttpRequest, Text, Text, Optional[str]) -> HttpResponse
     form = HomepageForm({'email': email}, realm=get_realm_from_request(request))
     request.verified_email = None
     if form.is_valid():
@@ -74,8 +74,11 @@ def maybe_send_to_registration(request, email, full_name=''):
         url = reverse('register')
         return render(request,
                       'zerver/accounts_home.html',
-                      context={'form': form, 'current_url': lambda: url},
-                      )
+                      context={
+                          'form': form,
+                          'current_url': lambda: url,
+                          'realm_str_url_suffix': get_realm_str_url_suffix(realm_str),
+                      })
 
 def redirect_to_subdomain_login_url():
     # type: () -> HttpResponseRedirect
@@ -85,7 +88,7 @@ def redirect_to_subdomain_login_url():
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
                                   invalid_subdomain=False, mobile_flow_otp=None,
-                                  is_signup=False):
+                                  is_signup=False, realm_str=None):
     # type: (HttpRequest, Text, Optional[UserProfile], Text, bool, Optional[str], bool) -> HttpResponse
     if invalid_subdomain:
         # Show login page with an error message
@@ -97,7 +100,8 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         # associated Zulip user account.
         if is_signup:
             # If they're trying to sign up, send them over to the PreregistrationUser flow.
-            return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
+            return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name,
+                                              realm_str=realm_str)
 
         # Otherwise, we send them to a special page that asks if they
         # want to register or provided the wrong email and want to go back.
@@ -213,8 +217,8 @@ def start_google_oauth2(request):
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
     return redirect_to_main_site(request, url)
 
-def redirect_to_main_site(request, url, is_signup=False):
-    # type: (HttpRequest, Text, bool) -> HttpResponse
+def redirect_to_main_site(request, url, is_signup=False, realm_str=None):
+    # type: (HttpRequest, Text, bool, Optional[str]) -> HttpResponse
     main_site_uri = ''.join((
         settings.EXTERNAL_URI_SCHEME,
         settings.EXTERNAL_HOST,
@@ -223,6 +227,7 @@ def redirect_to_main_site(request, url, is_signup=False):
     params = {
         'subdomain': get_subdomain(request),
         'is_signup': '1' if is_signup else '0',
+        'realm_str': realm_str if realm_str else '',
     }
 
     # mobile_flow_otp is a one-time pad provided by the app that we
@@ -243,11 +248,14 @@ def start_social_login(request, backend):
 def start_social_signup(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
-    return redirect_to_main_site(request, backend_url, is_signup=True)
+    realm_str = request.GET.get('realm_str')
+    return redirect_to_main_site(request, backend_url, is_signup=True,
+                                 realm_str=realm_str)
 
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')
+    realm_str = request.GET.get('realm_str', '')
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
 
     if settings.REALMS_HAVE_SUBDOMAINS:
@@ -404,6 +412,7 @@ def log_into_subdomain(request):
     email_address = data['email']
     full_name = data['name']
     is_signup = data['is_signup']
+    realm_str = data.get('realm_str')
     if is_signup:
         # If we are signing up, user_profile should be None. In case
         # email_address already exists, user will get an error message.
@@ -414,7 +423,7 @@ def log_into_subdomain(request):
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
-                                         is_signup=is_signup)
+                                         is_signup=is_signup, realm_str=realm_str)
 
 def get_dev_users(extra_users_count=10):
     # type: (int) -> List[UserProfile]
