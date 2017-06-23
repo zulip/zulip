@@ -20,7 +20,7 @@ but hosting on zulipchat.com is free for open source projects.
   provides a focused view on that conversation.
 
 * **Easy custom linkification:** Want to refer to issues or code
-  reviews with short notation like `#1234`, `T1234` -- or any other
+  reviews with short notation like `#1234`, `T1234` — or any other
   style of your own?  Set up any regex as a [custom linkification
   filter](/help/add-a-custom-linkification-filter) for your
   organization.
@@ -65,7 +65,7 @@ but hosting on zulipchat.com is free for open source projects.
 
 * **Walls optional:** Take down the barrier to participation created
   by making people interested in your community ask for an invitation
-  before they can enter -- use [one
+  before they can enter — use [one
   checkbox](/help/allow-anyone-to-join-without-an-invitation) to open
   your Zulip organization for anyone to join.
 
@@ -77,7 +77,7 @@ but hosting on zulipchat.com is free for open source projects.
 
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
-* **Scale:** Zulip scales well to large communities -- it's loved by
+* **Scale:** Zulip scales well to large communities — it's loved by
   communities as large as 1000 users and beyond.
 
 ## Zulip ❤​ open source
@@ -89,7 +89,7 @@ but hosting on zulipchat.com is free for open source projects.
   zulipchat.com is free for open source communities.  [Sign up
   today!](https://zulipchat.com/beta/))
 
-<!--- This needs better -- any! -- documentation. -->
+<!--- This needs better — any! — documentation. -->
 * **Your data is yours:** Zulip's high-quality export and import tools
   enable migrating a community smoothly from one host to another.
   So if you start out running on zulipchat.com, you can always choose
@@ -99,7 +99,7 @@ but hosting on zulipchat.com is free for open source projects.
   chat option, with far more contributor momentum than any other.
   Some numbers:
 
-    * Over 300 contributors in the Zulip server project alone -- a
+    * Over 300 contributors in the Zulip server project alone — a
       figure reached in only 18 months.
 
     * 75 people working on Zulip at the PyCon sprints in Portland in
