@@ -7,7 +7,6 @@ from argparse import ArgumentParser
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from django.utils.translation import ugettext as _
 from zerver.models import get_realm, can_add_realm_domain, \
     Realm, RealmDomain, get_realm_domains
 from zerver.lib.domains import validate_domain
@@ -57,13 +56,13 @@ class Command(BaseCommand):
         if options["op"] == "add":
             try:
                 if not can_add_realm_domain(domain):
-                    print(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
+                    print("The domain %(domain)s belongs to another organization." % {'domain': domain})
                     sys.exit(1)
                 RealmDomain.objects.create(realm=realm, domain=domain,
                                            allow_subdomains=options["allow_subdomains"])
                 sys.exit(0)
             except IntegrityError:
-                print(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
+                print("The domain %(domain)s is already a part of your organization." % {'domain': domain})
                 sys.exit(1)
         elif options["op"] == "remove":
             try:
