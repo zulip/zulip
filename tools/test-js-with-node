@@ -15,9 +15,10 @@ from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
 USAGE = '''
-    tools/test-js-with-node                      - to run all tests
-    tools/test-js-with-node util.js activity.js  - to run just a couple tests
-    tools/test-js-with-node --coverage           - to generage coverage report
+    test-js-with-node                           - to run all tests
+    test-js-with-node util.js activity.js       - to run just a couple tests
+    test-js-with-node --coverage                - to generage coverage report
+    test-js-with-node --check-enforced          - to check for fully covered files that should be enforced
     '''
 
 enforce_fully_covered = {
@@ -57,6 +58,9 @@ parser.add_option('--coverage', dest='coverage',
 parser.add_option('--force', dest='force',
                   action="store_true",
                   default=False, help='Run tests despite possible problems.')
+parser.add_option('--check-enforced', dest='check_enforced',
+                  action="store_true",
+                  default=False, help='Check for fully covered files that should be enforced.')
 (options, args) = parser.parse_args()
 
 from tools.lib.test_script import get_provisioning_status
@@ -68,10 +72,63 @@ if not options.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
+NODE_COVERAGE_PATH = 'var/node-coverage/coverage.json'
+INDEX_JS = 'frontend_tests/zjsunit/index.js'
+
 os.environ['NODE_PATH'] = 'static'
 os.environ['TZ'] = 'UTC'
 
-INDEX_JS = 'frontend_tests/zjsunit/index.js'
+if options.check_enforced:
+    coverage_json = None
+    print()
+    print("=============================================================================")
+    print("Checking for fully covered files that are not enforced yet...")
+    print("Running `test-js-with-node --coverage` first.")
+    print()
+
+    if args:
+        print('BAD ARGS! Coverage reports run against all files.')
+        sys.exit(1)
+
+    istanbul = os.path.join(ROOT_DIR, 'node_modules/.bin/istanbul')
+    command = [istanbul, 'cover', INDEX_JS, '--dir', 'var/node-coverage']
+
+    try:
+        ret = subprocess.check_call(command)
+    except OSError:
+        print('Bad command: %s' % (command,))
+        raise
+
+    try:
+        with open(NODE_COVERAGE_PATH, 'r') as f:
+            coverage_json = ujson.load(f)
+    except IOError:
+        print(NODE_COVERAGE_PATH + " doesn't exist.")
+        raise
+
+    print()
+    ok = True
+    for path in coverage_json:
+        if '/static/js/' in path:
+            relative_path = path[len(ROOT_DIR)+1:]
+            line_coverage = coverage_json[path]['s']
+            missing = False
+            for line in line_coverage:
+                if line_coverage[line] == 0:
+                    missing = True
+            if not missing and not (relative_path in enforce_fully_covered):
+                ok = False
+                print("%s has complete node test coverage and is not enforced." % (relative_path,))
+    if ok:
+        print("Success: There are no fully covered files that are not enforced yet!")
+        print()
+        sys.exit(0)
+    else:
+        print()
+        print("Warning: There are one or more fully files that are not enforced.")
+        print("Add the files to enforce_fully_covered in `tools/test-js-with-node`.")
+        print()
+        sys.exit(1)
 
 # The index.js test runner is the real "driver" here, and we launch
 # with either istanbul or node, depending on whether we want coverage
@@ -96,8 +153,6 @@ try:
 except OSError:
     print('Bad command: %s' % (command,))
     raise
-
-NODE_COVERAGE_PATH = 'var/node-coverage/coverage.json'
 
 if options.coverage and ret == 0:
     coverage_json = None
