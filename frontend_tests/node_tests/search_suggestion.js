@@ -622,10 +622,8 @@ init();
 }());
 
 (function test_stream_completion() {
-    var query = 'stream:of';
-
     global.stream_data.subscribed_streams = function () {
-        return ['office'];
+        return ['office', 'dev help'];
     };
 
     global.narrow_state.stream = function () {
@@ -634,13 +632,20 @@ init();
 
     global.stream_data.populate_stream_topics_for_tests({});
 
+    var query = 'stream:of';
     var suggestions = search.get_suggestions(query);
-
     var expected = [
         "stream:of",
         "stream:office",
     ];
+    assert.deepEqual(suggestions.strings, expected);
 
+    query = 'hel';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "hel",
+        "stream:dev+help",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 }());
 
@@ -664,7 +669,7 @@ init();
     var bob = {
         email: 'bob@zulip.com',
         user_id: 202,
-        full_name: 'Bob Terry',
+        full_name: 'Bob Térry',
     };
 
     var alice = {
@@ -689,7 +694,7 @@ init();
 
     var expected = [
         "te",
-        "pm-with:bob@zulip.com", // bob TErry
+        "pm-with:bob@zulip.com", // bob térry
         "pm-with:ted@zulip.com",
         "sender:bob@zulip.com",
         "sender:ted@zulip.com",
