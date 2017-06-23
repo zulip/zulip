@@ -527,34 +527,34 @@ function remove_diacritics(s) {
             .replace(/[ñ]/g, "n");
 }
 
+exports.person_matches_query = function (user, query) {
+    var email = user.email.toLowerCase();
+    var names = user.full_name.toLowerCase().split(' ');
+
+    var termlets = query.toLowerCase().split(/\s+/);
+    termlets = _.map(termlets, function (termlet) {
+        return termlet.trim();
+    });
+
+    if (email.indexOf(query.trim()) === 0) {
+        return true;
+    }
+    return _.all(termlets, function (termlet) {
+        var is_ascii = /^[a-z]+$/.test(termlet);
+        return _.any(names, function (name) {
+            if (is_ascii) {
+                // Only ignore diacritics if the query is plain ascii
+                name = remove_diacritics(name);
+            }
+            if (name.indexOf(termlet) === 0) {
+                return true;
+            }
+        });
+    });
+};
+
 exports.filter_people_by_search_terms = function (users, search_terms) {
         var filtered_users = new Dict();
-
-        var matchers = _.map(search_terms, function (search_term) {
-            var termlets = search_term.toLowerCase().split(/\s+/);
-            termlets = _.map(termlets, function (termlet) {
-                return termlet.trim();
-            });
-
-            return function (email, names) {
-                if (email.indexOf(search_term.trim()) === 0) {
-                    return true;
-                }
-                return _.all(termlets, function (termlet) {
-                    var is_ascii = /^[a-z]+$/.test(termlet);
-                    return _.any(names, function (name) {
-                        if (is_ascii) {
-                            // Only ignore diacritics if the query is plain ascii
-                            name = remove_diacritics(name);
-                        }
-                        if (name.indexOf(termlet) === 0) {
-                            return true;
-                        }
-                    });
-                });
-            };
-        });
-
 
         // Loop through users and populate filtered_users only
         // if they include search_terms
@@ -565,18 +565,9 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
                 return;
             }
 
-            var email = user.email.toLowerCase();
-
-            // Remove extra whitespace
-            var names = person.full_name.toLowerCase().split(/\s+/);
-            names = _.map(names, function (name) {
-                return name.trim();
-            });
-
-
             // Return user emails that include search terms
-            var match = _.any(matchers, function (matcher) {
-                return matcher(email, names);
+            var match = _.any(search_terms, function (search_term) {
+                return exports.person_matches_query(user, search_term);
             });
 
             if (match) {
