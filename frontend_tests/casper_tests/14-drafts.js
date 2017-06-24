@@ -100,6 +100,7 @@ casper.then(function () {
             subject: 'tests',
             content: 'Test Stream Message',
         }, "Stream message box filled with draft content");
+        casper.test.assertSelectorHasText('title', 'tests - Zulip Dev - Zulip', 'Narrowed to topic');
     });
 });
 
@@ -136,6 +137,7 @@ casper.then(function () {
             recipient: 'cordelia@zulip.com, hamlet@zulip.com',
             content: 'Test Private Message',
         }, "Private message box filled with draft content");
+        casper.test.assertSelectorHasText('title', 'private - Zulip Dev - Zulip', 'Narrowed to huddle');
     });
 });
 
@@ -174,6 +176,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.test.info('Finished reloading; now opening drafts again');
+    // Reloading into a narrow opens compose box automatically
+    casper.click("#compose_close");
     casper.waitUntilVisible('.drafts-link', function () {
         casper.click('.drafts-link');
     });
