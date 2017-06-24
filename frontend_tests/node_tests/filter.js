@@ -442,6 +442,26 @@ function make_sub(name, stream_id) {
     ];
     _test();
 
+    string = 'stream:"with quoted space" topic:and separate';
+    operators = [
+        {operator: 'stream', operand: 'with quoted space'},
+        {operator: 'topic', operand: 'and'},
+        {operator: 'search', operand: 'separate'},
+    ];
+    _test();
+
+    string = 'stream:"unclosed quote';
+    operators = [
+        {operator: 'stream', operand: 'unclosed quote'},
+    ];
+    _test();
+
+    string = 'stream:""';
+    operators = [
+        {operator: 'stream', operand: ''},
+    ];
+    _test();
+
     string = 'https://www.google.com';
     operators = [
         {operator: 'search', operand: 'https://www.google.com'},
