@@ -128,6 +128,19 @@ exports.restore_draft = function (draft_id) {
                               draft_copy);
     }
 
+    if (draft.type === "stream") {
+        if (draft.stream !== "") {
+            narrow.activate([{operator: "stream", operand: draft.stream},
+                             {operator: "topic", operand: draft.subject}],
+                             {select_first_unread: true, trigger: "restore draft"});
+        }
+    } else {
+        if (draft.private_message_recipient !== "") {
+            narrow.activate([{operator: "pm-with", operand: draft.private_message_recipient}],
+                             {select_first_unread: true, trigger: "restore draft"});
+        }
+    }
+
     overlays.close_overlay("drafts");
     compose_fade.clear_compose();
     if (draft.type === "stream" && draft.stream === "") {
