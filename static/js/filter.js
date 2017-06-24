@@ -212,14 +212,16 @@ Filter.canonicalize_term = function (opts) {
 function encodeOperand(operand) {
     return operand.replace(/%/g,  '%25')
                   .replace(/\+/g, '%2B')
-                  .replace(/ /g,  '+');
+                  .replace(/ /g,  '+')
+                  .replace(/"/g,  '%22');
 }
 
 function decodeOperand(encoded, operator) {
+    encoded = encoded.replace(/"/g, '');
     if (operator !== 'pm-with' && operator !== 'sender' && operator !== 'from') {
         encoded = encoded.replace(/\+/g, ' ');
     }
-    return util.robust_uri_decode(encoded);
+    return util.robust_uri_decode(encoded).trim();
 }
 
 // Parse a string into a list of operators (see below).
@@ -231,7 +233,9 @@ Filter.parse = function (str) {
     var operand;
     var term;
 
-    var matches = str.match(/"[^"]+"|\S+/g);
+    // Match all operands that either have no spaces, or are surrounded by
+    // quotes, preceded by an optional operator that may have a space after it.
+    var matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
     if (matches === null) {
         return operators;
     }
