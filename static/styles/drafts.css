@@ -90,7 +90,7 @@
     line-height: 1;
     padding-top: 10px;
     padding-bottom: 10px;
-    padding-left: 0px;
+    margin-left: 0px;
 }
 
 .draft-row .draft-info-box .draft_controls {
