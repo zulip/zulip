@@ -45,6 +45,8 @@ exports.codepoints = %(codepoints)s;
 
 exports.name_to_codepoint = %(name_to_codepoint)s;
 
+exports.codepoint_to_name = %(codepoint_to_name)s;
+
 exports.emoji_catalog = %(emoji_catalog)s;
 
 exports.patched_css_classes = %(patched_css_classes)s;
@@ -308,10 +310,13 @@ def dump_emojis(cache_path):
                 if name in emoji_map:
                     patched_css_classes[str(name)] = str(emoji['unified'].lower())
 
+    codepoint_to_name = generate_codepoint_to_name_map(names, unified_reactions_data)
+
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
         'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map},
+        'codepoint_to_name': codepoint_to_name,
         'emoji_catalog': emoji_catalog,
         'patched_css_classes': patched_css_classes
     })
@@ -325,7 +330,6 @@ def dump_emojis(cache_path):
 
     CODEPOINT_TO_NAME_PATH = os.path.join(cache_path, 'codepoint_to_name.json')
     codepoint_to_name_file = open(CODEPOINT_TO_NAME_PATH, 'w')
-    codepoint_to_name = generate_codepoint_to_name_map(names, unified_reactions_data)
 
     codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
     codepoint_to_name_file.close()
