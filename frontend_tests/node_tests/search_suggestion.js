@@ -467,7 +467,6 @@ init();
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('is:unread'), 'Unread messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
-    assert.equal(describe('stream:devel'), 'Stream <strong>devel</strong>');
 }());
 
 (function test_sent_by_me_suggestions() {

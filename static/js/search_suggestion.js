@@ -97,7 +97,7 @@ function get_stream_suggestions(last, operators) {
 
     var objs = _.map(streams, function (stream) {
         var prefix = 'stream';
-        var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
+        var highlighted_stream = typeahead_helper.highlight_with_escaping(query, stream);
         var description = prefix + ' ' + highlighted_stream;
         var term = {
             operator: 'stream',
