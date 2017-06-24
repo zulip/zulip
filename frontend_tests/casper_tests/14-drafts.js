@@ -48,7 +48,6 @@ casper.then(function () {
     casper.click('body');
     casper.page.sendEvent('keypress', "c");
     casper.waitUntilVisible('#stream-message', function () {
-        casper.test.info('Creating Private Message Draft');
         casper.fill('form#send_message_form', {
             stream: 'all',
             subject: 'tests',
@@ -195,7 +194,10 @@ casper.then(function () {
     casper.click("#drafts_table .message_row.private-message .restore-draft");
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#private-message');
-        casper.click('#compose-send-button');
+        casper.click("#enter_sends");
+        casper.waitUntilVisible('#compose-send-button', function () {
+            casper.click('#compose-send-button');
+        });
     });
 });
 
