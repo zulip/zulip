@@ -55,6 +55,22 @@ var settings_bots = require("js/settings_bots.js");
     assert.equal(content, expected);
 }());
 
+function test_create_bot_type_input_box_toggle(f) {
+    var create_payload_url = $('#create_payload_url');
+    var payload_url_inputbox = $('#payload_url_inputbox');
+    var OUTGOING_WEBHOOK_BOT_TYPE = '3';
+    var GENERIC_BOT_TYPE = '1';
+
+    $('#create_bot_type :selected').val(OUTGOING_WEBHOOK_BOT_TYPE);
+    f.apply();
+    assert(create_payload_url.hasClass('required'));
+    assert(payload_url_inputbox.visible());
+
+    $('#create_bot_type :selected').val(GENERIC_BOT_TYPE);
+    f.apply();
+    assert(!(create_payload_url.hasClass('required')));
+    assert(!payload_url_inputbox.visible());
+}
 
 (function test_set_up() {
     // bunch of stubs
@@ -64,6 +80,12 @@ var settings_bots = require("js/settings_bots.js");
     $("#get_api_key_box form").ajaxForm = function () {};
 
     $("#create_bot_form").validate = function () {};
+
+    $('#create_bot_type').on = function (action, f) {
+        if (action === 'change') {
+            test_create_bot_type_input_box_toggle(f);
+        }
+    };
 
     avatar.build_bot_create_widget = function () {};
     avatar.build_bot_edit_widget = function () {};
