@@ -1,7 +1,7 @@
 # Getting your organization started with Zulip
 
 This comprehensive guide explains in detail everything that the
-administrator of new Zulip organizations needs ot know to get off to a
+administrator of a new Zulip organization needs to know to get off to a
 great start with Zulip.
 
 ## Configure your Zulip organization
@@ -133,7 +133,7 @@ you use!  A few recommendations:
 
 ## Bonus things to setup
 
-- [Link to your Zulip instance from](/help/join-zulip-chat-badge) your
+- [Link to your Zulip instance](/help/join-zulip-chat-badge) from your
   GitHub or wiki page with a nice badge.
 - [Automatically linkify](/help/add-a-custom-linkification-filter)
   issue numbers and commit IDs.
