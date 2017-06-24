@@ -20,6 +20,9 @@ set_global('i18n', {
 });
 
 set_global('XDate', require("xdate"));
+set_global('blueslip', function () {});
+set_global('channel', {});
+set_global('compose_actions', {});
 
 add_dependencies({
     Handlebars: 'handlebars',
@@ -41,6 +44,7 @@ var presence = global.presence;
 set_global('resize', {
     resize_page_components: function () {},
 });
+set_global('window', {});
 
 var me = {
     email: 'me@zulip.com',
@@ -101,6 +105,7 @@ activity.update_huddles = function () {};
 
 global.compile_template('user_presence_row');
 global.compile_template('user_presence_rows');
+global.compile_template('group_pms');
 
 var presence_info = {};
 presence_info[alice.user_id] = { status: 'inactive' };
@@ -333,6 +338,45 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     assert.equal(value.text(), '');
 }());
 
+// Mock the jquery is func
+$('.user-list-filter').is = function (sel) {
+    if (sel === ':focus') {
+        return $('.user-list-filter').is_focused();
+    }
+};
+
+(function test_maybe_select_person() {
+    var e = {
+        keyCode: 13,
+        stopPropagation: function () {},
+        preventDefault: function () {},
+    };
+    $('#user_presences li.user_sidebar_entry').first = function () {
+        return {
+            attr: function (attr) {
+                assert.equal(attr, 'data-user-id');
+                return 1;
+            },
+        };
+    };
+    $(".user-list-filter").expectOne().val('ali');
+    narrow.by = function (method, email) {
+      assert.equal(email, 'alice@zulip.com');
+    };
+    compose_actions.start = function () {};
+
+    var event = $.Event('keydown', e);
+    $(".user-list-filter").trigger(event);
+}());
+
+(function test_focus_user_filter() {
+    var e = {
+        stopPropagation: function () {},
+    };
+    var event = $.Event('click', e);
+    $(".user-list-filter").trigger(event);
+}());
+
 presence.presence_info = {};
 presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
 presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
@@ -465,6 +509,7 @@ set_global('$', global.make_zjquery());
 
 (function test_realm_presence_disabled() {
     page_params.realm_presence_disabled = true;
+    unread.suppress_unread_counts = false;
 
     activity.insert_user_into_list();
     activity.build_user_sidebar();
@@ -472,3 +517,159 @@ set_global('$', global.make_zjquery());
     real_update_huddles();
 }());
 
+// Mock the jquery is func
+$('.user-list-filter').is = function (sel) {
+    if (sel === ':focus') {
+        return $('.user-list-filter').is_focused();
+    }
+};
+
+(function test_clear_search() {
+    $('.user-list-filter').val('somevalue');
+    $('#clear_search_people_button').removeAttr('disabled');
+    $('.user-list-filter').focus();
+    activity.clear_search();
+    assert.equal($('.user-list-filter').val(), '');
+    assert.equal($('.user-list-filter').is_focused(), false);
+    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+}());
+
+(function test_blur_search() {
+    $('.user-list-filter').val('somevalue');
+    $('.user-list-filter').focus();
+    $('#clear_search_people_button').attr('disabled', 'disabled');
+    activity.blur_search();
+    assert.equal($('.user-list-filter').is_focused(), false);
+    assert.equal($('#clear_search_people_button').attr('disabled'), undefined);
+    $('.user-list-filter').val('');
+    activity.blur_search();
+    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+}());
+
+(function test_initiate_search() {
+    $('.user-list-filter').blur();
+    activity.initiate_search();
+    assert.equal($('.user-list-filter').is_focused(), true);
+}());
+
+(function test_escape_search() {
+    $('.user-list-filter').val('');
+    activity.escape_search();
+    assert.equal($('.user-list-filter').is_focused(), false);
+    $('.user-list-filter').val('foobar');
+    $('#clear_search_people_button').removeAttr('disabled');
+    activity.escape_search();
+    assert.equal($('.user-list-filter').val(), '');
+    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+    $('.user-list-filter').focus();
+    $('.user-list-filter').val('foobar');
+    activity.escape_search();
+    assert.equal($('#clear_search_people_button').attr('disabled'), undefined);
+}());
+
+(function test_searching() {
+    $('.user-list-filter').focus();
+    assert.equal(activity.searching(), true);
+    $('.user-list-filter').blur();
+    assert.equal(activity.searching(), false);
+}());
+
+(function test_update_huddles_and_redraw() {
+    var value = $('alice-fred-value');
+    var count = $('alice-fred-count');
+    var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
+    var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
+    var li = $(li_selector);
+    count.add_child('.value', value);
+    li.add_child('.count', count);
+    var real_get_huddles = activity.get_huddles;
+    activity.get_huddles = function () {
+        return ['1,2'];
+    };
+    activity.update_huddles = real_update_huddles;
+    activity.redraw();
+    assert.equal($('#group-pm-list').hasClass('show'), false);
+    page_params.realm_presence_disabled = false;
+    activity.redraw();
+    assert.equal($('#group-pm-list').hasClass('show'), true);
+    activity.get_huddles = function () {
+        return [];
+    };
+    activity.redraw();
+    assert.equal($('#group-pm-list').hasClass('show'), false);
+    activity.get_huddles = real_get_huddles;
+    activity.update_huddles = function () {};
+}());
+
+(function test_set_user_status() {
+    var server_time = 500;
+    var info = {
+        website: {
+            status: "active",
+            timestamp: server_time,
+        },
+    };
+    var alice_li = $('alice-li');
+
+    $('#user_presences').add_child('[data-user-id="1"]', alice_li);
+
+    $('#user_presences').append = function () {};
+
+    $.stub_selector('#user_presences li', {
+        toArray: function () {
+            return [];
+        },
+    });
+    presence.presence_info[alice.user_id] = undefined;
+    activity.set_user_status(me.email, info, server_time);
+    assert.equal(presence.presence_info[alice.user_id], undefined);
+    activity.set_user_status(alice.email, info, server_time);
+    var expected = { status: 'active', mobile: false, last_active: 500 };
+    assert.deepEqual(presence.presence_info[alice.user_id], expected);
+    activity.set_user_status(alice.email, info, server_time);
+    blueslip.warn = function (msg) {
+        assert.equal(msg, 'unknown email: foo@bar.com');
+    };
+    blueslip.error = function () {};
+    activity.set_user_status('foo@bar.com', info, server_time);
+}());
+
+(function test_initialize() {
+  $.stub_selector('html', {
+      on: function (name, func) {
+          func();
+      },
+  });
+  $(window).focus = function (func) {
+      func();
+  };
+  $(window).idle = function () {};
+
+  channel.post = function (payload) {
+      payload.success({});
+  };
+  global.server_events = {
+      check_for_unsuspend: function () {},
+  };
+  activity.has_focus = false;
+  activity.initialize();
+  assert(!activity.new_user_input);
+  assert(!$('#zephyr-mirror-error').hasClass('show'));
+  assert.equal(page_params.presences, undefined);
+  assert(activity.has_focus);
+  $(window).idle = function (params) {
+      params.onIdle();
+  };
+  channel.post = function (payload) {
+      payload.success({
+          zephyr_mirror_active: false,
+      });
+  };
+  global.setInterval = function (func) {
+      func();
+  };
+  activity.initialize();
+  assert($('#zephyr-mirror-error').hasClass('show'));
+  assert(!activity.new_user_input);
+  assert(!activity.has_focus);
+}());
