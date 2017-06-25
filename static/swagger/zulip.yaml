@@ -167,6 +167,41 @@ paths:
                   enum:
                     - ''
 
+  /get_stream_id:
+    get:
+      description: Fetch a stream's ID from its name.
+      operationId: zerver.views.streams.json_get_stream_id
+      parameters:
+      - name: stream
+        in: query
+        description: The name of the stream whose ID to fetch.
+        required: true
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - properties:
+                stream_id:
+                  type: integer
+                  example: 42
+                msg:
+                  enum:
+                    - ''
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - Invalid stream name '<stream>'
+
   /messages:
     get:
       description: |
@@ -238,7 +273,7 @@ paths:
           schema:
             $ref: '#/definitions/MessageResponse'
 
-  /messages/{message_id}/:
+  /messages/{message_id}:
     get:
       description: Retrieve the content of a message.
       parameters:
