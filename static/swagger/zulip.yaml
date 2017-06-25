@@ -694,9 +694,11 @@ definitions:
       - result
       - msg
     - properties:
+        result:
+          enum:
+          - success
         msg:
           type: string
-          default: success
 
   JsonError:
     allOf:
@@ -705,9 +707,11 @@ definitions:
       - result
       - msg
     - properties:
+        result:
+          enum:
+          - error
         msg:
           type: string
-          default: error
 
   # /register
   RegisterResponse:
