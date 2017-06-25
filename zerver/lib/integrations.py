@@ -68,12 +68,7 @@ class Integration(object):
     def help_content(self):
         # type: () -> Text
         doc_context = self.doc_context or {}
-
-        if self.doc.endswith('.md'):
-            return render_markdown_path(self.doc, doc_context)
-        else:
-            template = loader.get_template(self.doc)
-            return mark_safe(template.render(doc_context))
+        return render_markdown_path(self.doc, doc_context)
 
 class EmailIntegration(Integration):
     def is_enabled(self):
