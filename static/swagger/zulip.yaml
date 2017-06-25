@@ -88,29 +88,28 @@ paths:
                    posterior to the specified `anchor`.
       operationId: zerver.views.messages.get_messages_backend
       parameters:
-        - name: anchor
-          in: query
-          description: A message ID.
-          required: true
-          type: integer
-        - name: num_before
-          in: query
-          description: The number of messages to retrieve before the anchor value.
-          required: true
-          type: integer
-        - name: num_after
-          in: query
-          description: The number of messages to retrieve after the anchor value.
-          required: true
-          type: integer
+      - name: anchor
+        in: query
+        description: A message ID.
+        required: true
+        type: integer
+      - name: num_before
+        in: query
+        description: The number of messages to retrieve before the anchor value.
+        required: true
+        type: integer
+      - name: num_after
+        in: query
+        description: The number of messages to retrieve after the anchor value.
+        required: true
+        type: integer
       security:
-        - basicAuth: []
+      - basicAuth: []
       responses:
         '200':
           description: Success.
           schema:
             $ref: '#/definitions/MessagesResponse'
-
     post:
       description: Send a message
       operationId: zerver.views.messages.send_message_backend
@@ -257,7 +256,6 @@ paths:
                      your client in your client code. For most applications, one
                      is only interested in messages, so one specifies:
                      `event_types=["message"]`
-
         required: false
         type: string
       - name: apply_markdown
@@ -367,7 +365,6 @@ paths:
                        * `twenty_four_hour_time`:
 
                        * `unsubscribed`:
-
           schema:
             $ref: '#/definitions/RegisterResponse'
 
