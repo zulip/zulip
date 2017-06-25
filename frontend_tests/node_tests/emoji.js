@@ -27,3 +27,16 @@ var emoji = require('js/emoji.js');
     emoji.build_emoji_upload_widget();
     assert(build_widget_stub);
 }());
+
+(function test_initialize() {
+    var image_stub = false;
+    class Image {
+        set src(data) {
+            assert.equal(data, '/static/generated/emoji/sheet_google_32.png');
+            image_stub = true;
+        }
+    }
+    set_global('Image', Image);
+    emoji.initialize();
+    assert(image_stub);
+}());
