@@ -39,6 +39,48 @@ produces:
 
 paths:
 
+  /events:
+    get:
+      description: Get new events from an events queue
+      operationId: getEvents
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via `POST /api/v1/register`.
+        required: true
+        type: string
+      - name: last_event_id
+        in: query
+        description: |
+                     The highest event ID in this queue that you've received and
+                     wish to acknowledge. See the code for `call_on_each_event` in
+                     the zulip Python module for an example implementation of
+                     correctly processing each event exactly once.
+        required: true
+        type: string
+      - name: dont_block
+        in: query
+        description: |
+                     Set to `true` if the client is requesting a
+                     nonblocking reply. If not specified, the request will block
+                     until either a new event is available or a few minutes have
+                     passed, in which case the server will send the client a
+                     heartbeat event.
+        required: false
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: |
+                       * `events`: An array (possibly zero-length if `dont_block` is
+                       set) of events with IDs newer than `last_event_id`.
+
+                       Event IDs are guaranted to be increasing, but they are not
+                       guaranteed to be consecutive.
+          schema:
+            $ref: '#/definitions/EventsResponse'
+
   /messages:
     get:
       description: |
@@ -110,6 +152,85 @@ paths:
                        * `id`: The ID of the newly created message.
           schema:
             $ref: '#/definitions/MessageResponse'
+
+  /messages/{message_id}/:
+    get:
+      description: Retrieve the content of a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: ID of the message to be retrieved.
+        type: integer
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - result
+            - raw_content
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              raw_content:
+                type: string
+                description: Body of the queried message.
+    patch:
+      description: Edit a message that has already been sent.
+      parameters:
+      - name: message_id
+        in: path
+        description: ID of the message to be edited.
+        type: integer
+        required: true
+      - name: subject
+        in: query
+        description: Message's new topic.
+        type: string
+      - name: propagate_mode
+        in: query
+        description: |
+                     Which message(s) should be edited: just
+                     the one indicated in `message_id`, messages in the
+                     same topic that had been sent after this one, or all of
+                     them.
+        type: string
+        enum:
+        - change_one
+        - change_later
+        - change_all
+        default: change_one
+      - name: content
+        in: query
+        description: Message's new body.
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/JsonSuccess'
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  type: string
+                  enum:
+                  - Your organization has turned off message editing
+                  - You don't have permission to edit this message
+                  - The time limit for editing this message has past
+                  - Nothing to change
+                  - Topic can't be empty
 
   /register:
     post:
@@ -250,47 +371,57 @@ paths:
           schema:
             $ref: '#/definitions/RegisterResponse'
 
-  /events:
+  /streams:
     get:
-      description: Get new events from an events queue
-      operationId: getEvents
-      parameters:
-      - name: queue_id
-        in: query
-        description: The ID of a queue that you registered via `POST /api/v1/register`.
-        required: true
-        type: string
-      - name: last_event_id
-        in: query
-        description: |
-                     The highest event ID in this queue that you've received and
-                     wish to acknowledge. See the code for `call_on_each_event` in
-                     the zulip Python module for an example implementation of
-                     correctly processing each event exactly once.
-        required: true
-        type: string
-      - name: dont_block
-        in: query
-        description: |
-                     Set to `true` if the client is requesting a
-                     nonblocking reply. If not specified, the request will block
-                     until either a new event is available or a few minutes have
-                     passed, in which case the server will send the client a
-                     heartbeat event.
-        required: false
-        type: string
+      description: Gets a list of streams available to a user on the server.
+      operationId: zerver.views.streams.get_streams_backend
       security:
       - basicAuth: []
+      parameters:
+      - name: include_public
+        in: query
+        description: |
+                     Set to `false` if the response should not include
+                     public streams.
+        type: string
+        default: true
+      - name: include_all_active
+        in: query
+        description: |
+                     Set to `true` if the response should include all active
+                     streams, including private ones. This requires
+                     API super user access.
+        type: string
+        default: false
+      - name: include_default
+        in: query
+        description: |
+                     Set to `true` if the response should include all the
+                     streams to which new users are subscribed by default.
+        type: string
+        default: false
+      - name: include_subscribed
+        in: query
+        description: |
+                     Set to `false` if response should not include streams
+                     where user is considered subscribed.
+        type: string
+        default: true
       responses:
         '200':
-          description: |
-                       * `events`: An array (possibly zero-length if `dont_block` is
-                       set) of events with IDs newer than `last_event_id`.
-
-                       Event IDs are guaranted to be increasing, but they are not
-                       guaranteed to be consecutive.
+          description: Success.
           schema:
-            $ref: '#/definitions/EventsResponse'
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - description: |
+                           `stream` is an array (that can be zero-length
+                           depending on the parameters set) of available
+                           streams for the authenticated user.
+            - properties:
+                streams:
+                  type: array
+                  items:
+                    $ref: '#/definitions/stream'
 
   /users/{user}/presence:
     get:
@@ -537,137 +668,6 @@ paths:
                 type: string
               uri:
                 type: string
-
-  /messages/{message_id}/:
-    get:
-      description: Retrieve the content of a message.
-      parameters:
-      - name: message_id
-        in: path
-        description: ID of the message to be retrieved.
-        type: integer
-        required: true
-      security:
-      - basicAuth: []
-      responses:
-        '200':
-          description: Success.
-          schema:
-            type: object
-            required:
-            - msg
-            - result
-            - raw_content
-            properties:
-              msg:
-                type: string
-              result:
-                type: string
-              raw_content:
-                type: string
-                description: Body of the queried message.
-    patch:
-      description: Edit a message that has already been sent.
-      parameters:
-      - name: message_id
-        in: path
-        description: ID of the message to be edited.
-        type: integer
-        required: true
-      - name: subject
-        in: query
-        description: Message's new topic.
-        type: string
-      - name: propagate_mode
-        in: query
-        description: |
-                     Which message(s) should be edited: just
-                     the one indicated in `message_id`, messages in the
-                     same topic that had been sent after this one, or all of
-                     them.
-        type: string
-        enum:
-        - change_one
-        - change_later
-        - change_all
-        default: change_one
-      - name: content
-        in: query
-        description: Message's new body.
-        type: string
-      security:
-      - basicAuth: []
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/JsonSuccess'
-        '400':
-          description: Bad request.
-          schema:
-            allOf:
-            - $ref: '#/definitions/JsonError'
-            - properties:
-                msg:
-                  type: string
-                  enum:
-                  - Your organization has turned off message editing
-                  - You don't have permission to edit this message
-                  - The time limit for editing this message has past
-                  - Nothing to change
-                  - Topic can't be empty
-
-  /streams:
-    get:
-      description: Gets a list of streams available to a user on the server.
-      operationId: zerver.views.streams.get_streams_backend
-      security:
-      - basicAuth: []
-      parameters:
-      - name: include_public
-        in: query
-        description: |
-                     Set to `false` if the response should not include
-                     public streams.
-        type: string
-        default: true
-      - name: include_all_active
-        in: query
-        description: |
-                     Set to `true` if the response should include all active
-                     streams, including private ones. This requires
-                     API super user access.
-        type: string
-        default: false
-      - name: include_default
-        in: query
-        description: |
-                     Set to `true` if the response should include all the
-                     streams to which new users are subscribed by default.
-        type: string
-        default: false
-      - name: include_subscribed
-        in: query
-        description: |
-                     Set to `false` if response should not include streams
-                     where user is considered subscribed.
-        type: string
-        default: true
-      responses:
-        '200':
-          description: Success.
-          schema:
-            allOf:
-            - $ref: '#/definitions/JsonSuccess'
-            - description: |
-                           `stream` is an array (that can be zero-length
-                           depending on the parameters set) of available
-                           streams for the authenticated user.
-            - properties:
-                streams:
-                  type: array
-                  items:
-                    $ref: '#/definitions/stream'
 
 #######################
 # Security definitions
