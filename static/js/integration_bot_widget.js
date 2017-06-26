@@ -68,7 +68,7 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
 // This is the main function to be called to set the integration bot url.
 exports.set_integration_bot_url = function (
     external_api_uri_subdomain, integration_url, bot_full_name,
-    bot_short_name, bot_avatar_file, bot_owner, stream_name
+    bot_short_name, bot_avatar_file, stream_name
 ) {
     create_bot(bot_full_name, bot_short_name, bot_avatar_file,
                stream_name, external_api_uri_subdomain, integration_url, on_create_bot_success);
