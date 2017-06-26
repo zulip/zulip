@@ -36,7 +36,7 @@ from zerver.lib.actions import (
     get_stream,
     do_create_realm,
 )
-from zerver.lib.send_email import display_email, send_email, send_future_email
+from zerver.lib.send_email import display_email, send_email, send_future_email, FromAddress
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
@@ -743,7 +743,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_future_email(
                 "zerver/emails/invitation_reminder", data["email"],
-                from_address=settings.ZULIP_ADMINISTRATOR.split()[-1], context=context)
+                from_address=FromAddress.SUPPORT, context=context)
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
             scheduled_timestamp__lte=timezone_now())

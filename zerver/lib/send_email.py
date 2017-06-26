@@ -10,6 +10,10 @@ import ujson
 
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
+class FromAddress(object):
+    SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
+    NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
+
 def display_email(user):
     # type: (UserProfile) -> Text
     # Change to '%s <%s>' % (user.full_name, user.email) once
@@ -33,7 +37,7 @@ def build_email(template_prefix, to_email, from_name=None, from_address=None,
     if from_name is None:
         from_name = "Zulip"
     if from_address is None:
-        from_address = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
+        from_address = FromAddress.NOREPLY
     from_email = formataddr((from_name, from_address))
     reply_to = None
     if reply_to_email is not None:

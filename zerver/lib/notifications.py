@@ -8,7 +8,7 @@ from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.decorator import statsd_increment
 from zerver.lib.send_email import send_future_email, display_email, \
-    send_email_from_dict
+    send_email_from_dict, FromAddress
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
@@ -26,6 +26,7 @@ from zerver.models import (
 )
 
 import datetime
+from email.utils import formataddr
 import re
 import subprocess
 import ujson
@@ -398,7 +399,7 @@ def enqueue_welcome_emails(email, name):
         from_address = settings.WELCOME_EMAIL_SENDER['email']
     else:
         from_name = None
-        from_address = settings.ZULIP_ADMINISTRATOR.split()[-1]
+        from_address = FromAddress.SUPPORT
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
