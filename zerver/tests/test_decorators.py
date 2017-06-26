@@ -166,7 +166,7 @@ class DecoratorTestCase(TestCase):
         request.POST['numbers'] = 'bad_value'
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
-        self.assertEqual(str(cm.exception), 'argument "numbers" is not valid json.')
+        self.assertEqual(str(cm.exception), 'Argument "numbers" is not valid JSON.')
 
         request.POST['numbers'] = ujson.dumps([1, 2, "what?", 4, 5, 6])
         with self.assertRaises(JsonableError) as cm:

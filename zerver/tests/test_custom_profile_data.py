@@ -31,7 +31,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.login(self.example_email("iago"))
         data = {"name": u"Phone", "field_type": "text id"}  # type: Dict[str, Any]
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, u'argument "field_type" is not valid json.')
+        self.assert_json_error(result, u'Argument "field_type" is not valid JSON.')
 
         data["name"] = ""
         data["field_type"] = 100
