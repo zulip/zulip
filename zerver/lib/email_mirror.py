@@ -17,6 +17,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
 from zerver.lib.str_utils import force_text
+from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_recipient, \
     Message, Realm, UserProfile, get_system_bot
@@ -105,7 +106,7 @@ def create_missed_message_address(user_profile, message):
     if settings.EMAIL_GATEWAY_PATTERN == '':
         logging.warning("EMAIL_GATEWAY_PATTERN is an empty string, using "
                         "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
-        return settings.NOREPLY_EMAIL_ADDRESS
+        return "Zulip <%s>" % (FromAddress.NOREPLY,)
 
     if message.recipient.type == Recipient.PERSONAL:
         # We need to reply to the sender so look up their personal recipient_id

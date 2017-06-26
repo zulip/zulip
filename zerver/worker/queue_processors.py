@@ -27,7 +27,7 @@ from zerver.lib.actions import do_send_confirmation_email, \
     render_incoming_message, do_update_embedded_data
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
-from zerver.lib.send_email import send_future_email, send_email_from_dict
+from zerver.lib.send_email import send_future_email, send_email_from_dict, FromAddress
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
@@ -180,7 +180,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         send_future_email(
             "zerver/emails/invitation_reminder",
             data["email"],
-            from_email=settings.ZULIP_ADMINISTRATOR,
+            from_address=FromAddress.SUPPORT,
             context=context,
             delay=datetime.timedelta(days=2))
 
