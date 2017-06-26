@@ -52,7 +52,7 @@ paths:
 
                    **This endpoint is only for development environments!**
                    It will not work if `settings.PRODUCTION` is set to `False`.
-      operationId: zerver.views.auth.api_fetch_api_key
+      operationId: zerver.views.auth.api_dev_fetch_api_key
       parameters:
       - name: username
         in: formData
