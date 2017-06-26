@@ -160,7 +160,7 @@ def get_managed_member_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_comment_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'text': get_action_data(payload).get('text'),
     }
