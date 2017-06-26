@@ -86,7 +86,7 @@ while backoff.keep_going():
 error_message = """
 ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs.
 This is often caused by failing to maintain unexpired Kerberos tickets
-or AFS tokens.  See https://zulip.com/zephyr for documentation on how to
+or AFS tokens.  See https://zulipchat.com/zephyr for documentation on how to
 maintain unexpired Kerberos tickets and AFS tokens.
 """
 print(error_message)
