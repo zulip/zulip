@@ -274,7 +274,11 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         })
 
     from zerver.lib.email_mirror import create_missed_message_address
-    address = create_missed_message_address(user_profile, missed_messages[0])
+    reply_to_address = create_missed_message_address(user_profile, missed_messages[0])
+    if reply_to_address == FromAddress.NOREPLY:
+        reply_to_name = None
+    else:
+        reply_to_name = "Zulip"
 
     senders = list(set(m.sender for m in missed_messages))
     if (missed_messages[0].recipient.type == Recipient.HUDDLE):
@@ -323,12 +327,13 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             'reply_warning': False,
             'reply_to_zulip': False,
         })
+
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
         'to_email': display_email(user_profile),
         'from_name': from_name,
         'from_address': from_address,
-        'reply_to_email': address,
+        'reply_to_email': formataddr((reply_to_name, reply_to_address)),
         'context': context}
     queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
 

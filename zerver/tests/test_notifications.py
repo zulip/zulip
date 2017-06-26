@@ -18,6 +18,7 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.actions import render_incoming_message, do_update_message
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.send_email import FromAddress
 from zerver.models import (
     Recipient,
     UserMessage,
@@ -41,17 +42,18 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
+            reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
         else:
-            reply_to_addresses = ["noreply@zulip.example.com"]
+            reply_to_emails = ["noreply@zulip.example.com"]
         msg = mail.outbox[0]
-        from_email = formataddr(("Zulip", settings.NOREPLY_EMAIL_ADDRESS))
+        from_email = formataddr(("Zulip", FromAddress.NOREPLY))
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = '"%s" <%s>' % (othello.full_name, othello.email)
         self.assertEqual(msg.from_email, from_email)
         self.assertEqual(msg.subject, subject)
         self.assertEqual(len(msg.reply_to), 1)
-        self.assertIn(msg.reply_to[0], reply_to_addresses)
+        self.assertIn(msg.reply_to[0], reply_to_emails)
         self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
