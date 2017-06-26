@@ -743,7 +743,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_future_email(
                 "zerver/emails/invitation_reminder", data["email"],
-                from_email=settings.ZULIP_ADMINISTRATOR, context=context)
+                from_address=settings.ZULIP_ADMINISTRATOR.split()[-1], context=context)
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
             scheduled_timestamp__lte=timezone_now())

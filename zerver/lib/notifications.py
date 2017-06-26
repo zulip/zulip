@@ -309,8 +309,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'realm_str': user_profile.realm.name,
     })
 
-    from_email = None
-
+    from_name, from_address = None, None
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
         # missed message emails directly back to the original sender.
@@ -318,16 +317,16 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         # record for the domain, or there will be spam/deliverability
         # problems.
         sender = senders[0]
-        from_email = '"%s" <%s>' % (sender.full_name, sender.email)
+        from_name, from_address = (sender.full_name, sender.email)
         context.update({
             'reply_warning': False,
             'reply_to_zulip': False,
         })
-
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
         'to_email': display_email(user_profile),
-        'from_email': from_email,
+        'from_name': from_name,
+        'from_address': from_address,
         'reply_to_email': address,
         'context': context}
     queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
@@ -395,10 +394,11 @@ def enqueue_welcome_emails(email, name):
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
         # line break to avoid triggering lint rule
-        from_email = '%(name)s <%(email)s>' % \
-                     settings.WELCOME_EMAIL_SENDER
+        from_name = settings.WELCOME_EMAIL_SENDER['name']
+        from_address = settings.WELCOME_EMAIL_SENDER['email']
     else:
-        from_email = settings.ZULIP_ADMINISTRATOR
+        from_name = None
+        from_address = settings.ZULIP_ADMINISTRATOR.split()[-1]
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
@@ -407,11 +407,11 @@ def enqueue_welcome_emails(email, name):
         'unsubscribe_link': unsubscribe_link
     })
     send_future_email(
-        "zerver/emails/followup_day1", '%s <%s>' % (name, email),
-        from_email=from_email, context=context, delay=datetime.timedelta(hours=1))
+        "zerver/emails/followup_day1", '%s <%s>' % (name, email), from_name=from_name,
+        from_address=from_address, context=context, delay=datetime.timedelta(hours=1))
     send_future_email(
-        "zerver/emails/followup_day2", '%s <%s>' % (name, email),
-        from_email=from_email, context=context, delay=datetime.timedelta(days=1))
+        "zerver/emails/followup_day2", '%s <%s>' % (name, email), from_name=from_name,
+        from_address=from_address, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html):
     # type: (Text) -> Text

@@ -640,7 +640,7 @@ def do_start_email_change_process(user_profile, new_email):
     activation_url = EmailChangeConfirmation.objects.get_link_for_object(obj, host=user_profile.realm.host)
     context = {'realm': user_profile.realm, 'old_email': old_email, 'new_email': new_email,
                'activate_url': activation_url}
-    send_email('zerver/emails/confirm_new_email', new_email, from_email=settings.ZULIP_ADMINISTRATOR,
+    send_email('zerver/emails/confirm_new_email', new_email, from_address=settings.ZULIP_ADMINISTRATOR.split()[-1],
                context=context)
 
 def compute_irc_user_fullname(email):
@@ -3054,7 +3054,7 @@ def do_send_confirmation_email(invitee, referrer, body):
     """
     activation_url = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
     context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url}
-    send_email('zerver/emails/invitation', invitee.email, from_email=settings.ZULIP_ADMINISTRATOR,
+    send_email('zerver/emails/invitation', invitee.email, from_address=settings.ZULIP_ADMINISTRATOR.split()[-1],
                context=context)
 
 def is_inactive(email):
