@@ -109,6 +109,15 @@ function generate_emoji_picker_content(id) {
     return templates.render('emoji_popover_content', args);
 }
 
+function add_scrollbar(element) {
+    $(element).perfectScrollbar({
+        suppressScrollX: true,
+        useKeyboard: false,
+        // Picked so that each mousewheel bump moves 1 emoji down.
+        wheelSpeed: 0.68,
+    });
+}
+
 exports.toggle_emoji_popover = function (element, id) {
     var last_popover_elem = current_message_emoji_popover_elem;
     popovers.hide_all();
@@ -136,12 +145,7 @@ exports.toggle_emoji_popover = function (element, id) {
         elt.popover("show");
         elt.prop('title', 'Add reaction...');
         $('.emoji-popover-filter').focus();
-        $(".emoji-popover-emoji-map").perfectScrollbar({
-            suppressScrollX: true,
-            useKeyboard: false,
-            // Picked so that each mousewheel bump moves 1 emoji down.
-            wheelSpeed: 0.68,
-        });
+        add_scrollbar($(".emoji-popover-emoji-map"));
         current_message_emoji_popover_elem = elt;
         exports.render_emoji_show_list();
         complete_emoji_list = $('.emoji-popover-emoji').toArray();
