@@ -58,9 +58,6 @@ class RegistrationForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH,
                                required=False)
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
-    realm_org_type = forms.ChoiceField(((Realm.COMMUNITY, 'Community'),
-                                        (Realm.CORPORATE, 'Corporate')),
-                                       initial=Realm.CORPORATE, required=False)
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
