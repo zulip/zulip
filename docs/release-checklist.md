@@ -29,6 +29,7 @@ preparing a new release.
 
 * Do final updates to `changelog.md`.
 * Update `ZULIP_VERSION` in `version.py`.
+* Update `version` and/or `release` in `docs/conf.py` (ReadTheDocs meta tags).
 * Use `build-release-tarball` to generate a final release tarball.
 * Post the release tarball on zulip.org and update zulip.org.
 * Create a git tag and push the tag.
