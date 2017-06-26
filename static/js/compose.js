@@ -91,13 +91,6 @@ function update_fade() {
     compose_fade.update_faded_messages();
 }
 
-$(function () {
-    $('#stream,#subject,#private_message_recipient').bind({
-         keyup: update_fade,
-         change: update_fade,
-    });
-});
-
 exports.abort_xhr = function () {
     $("#compose-send-button").removeAttr("disabled");
     var xhr = $("#compose").data("filedrop_xhr");
@@ -418,13 +411,6 @@ exports.finish = function () {
     return true;
 };
 
-$(function () {
-    $("#compose form").on("submit", function (e) {
-       e.preventDefault();
-       compose.finish();
-    });
-});
-
 exports.update_email = function (user_id, new_email) {
     var reply_to = compose_state.recipient();
 
@@ -617,7 +603,17 @@ exports.validate = function () {
     return validate_stream_message();
 };
 
-$(function () {
+exports.initialize = function () {
+    $('#stream,#subject,#private_message_recipient').bind({
+         keyup: update_fade,
+         change: update_fade,
+    });
+
+    $("#compose form").on("submit", function (e) {
+       e.preventDefault();
+       compose.finish();
+    });
+
     resize.watch_manual_resize("#new_message_content");
 
     // Run a feature test and decide whether to display
@@ -950,7 +946,7 @@ $(function () {
                 _.extend({}, exports.send_times_data[event.old_id], value);
         }
     });
-});
+};
 
 return exports;
 }());
