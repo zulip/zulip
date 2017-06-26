@@ -1495,9 +1495,9 @@ blockquote p {
     width: 35px;
     height: 35px;
     margin-right: 11px;
-    background-size: 35px 35px;
     vertical-align: top;
     border-radius: 4px;
+    overflow: hidden;
 }
 
 .home-error-bar {
@@ -1806,10 +1806,7 @@ nav .column-left .nav-logo {
     margin-top: 8px;
     width: 25px;
     height: 25px;
-    background-image: url(../images/logo/zulip-icon-128x128.png);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center center;
+
 }
 
 nav .column-left .company-name {
@@ -2696,4 +2693,13 @@ img.emoji {
         max-width: 100%;
         margin-top: 10px;
     }
+}
+
+.no-drag {
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
