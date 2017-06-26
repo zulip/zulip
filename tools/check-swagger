@@ -1,9 +1,32 @@
-var SwaggerParser = require('swagger-parser');
+var SwaggerParser = require('swagger-parser'),
+    _             = require('underscore');
 
-function validateSwagger(file) {
+function check_duplicate_operationids(api) {
+    var operation_ids = [];
+
+    _.each(api.paths, function(endpoint) {
+        _.each(endpoint, function(value) {
+            var operation_id = value.operationId;
+            if(operation_id !== undefined) {
+                if(operation_ids.indexOf(operation_id) >= 0) {
+                    console.error('In', file + ':');
+                    console.error('Duplicate operationId:', operation_id);
+                    process.exitCode = 1;
+                } else {
+                    operation_ids.push(operation_id);
+                }
+            }
+        });
+    });
+}
+
+function validate_swagger(file) {
     SwaggerParser.validate(file)
-        .then(function() {
-            // The validation passed, no need to say anything
+        .then(function(api) {
+            // Let's make sure that there aren't any duplicate operationids,
+            // until this issue is fixed:
+            // https://github.com/BigstickCarpet/swagger-parser/issues/68
+            check_duplicate_operationids(api);
             return;
         })
         .catch(function(err) {
@@ -21,6 +44,6 @@ for(var i = 2; i < process.argv.length; i++) {
     var file = process.argv[i];
     // Run the validator only for YAML files inside static/swagger
     if(file.startsWith('static/swagger')) {
-        validateSwagger(file);
+        validate_swagger(file);
     }
 }
