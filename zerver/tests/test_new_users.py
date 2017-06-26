@@ -87,6 +87,18 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) ' +
                 'AppleWebKit/602.3.12 (KHTML, like Gecko) ' +
                 'Version/10.0.2 Safari/602.3.12', 'Safari', 'MacOS'),
+            ('ZulipAndroid/1.0', 'Zulip', 'Android'),
+            ('ZulipMobile/1.0', 'Zulip', None),
+            ('Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, '
+             'like Gecko) Ubuntu/11.10 Chromium/16.0.912.77 '
+             'Chrome/16.0.912.77 Safari/535.7', 'Chromium', 'Linux'),
+            ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 '
+             '(KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 '
+             'OPR/15.0.1147.100', 'Opera', 'Windows'),
+            ('Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/'
+             '<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari'
+             '/<WebKit Rev> Edge/<EdgeHTML Rev>.'
+             '<Windows Build>', 'Edge', 'Windows'),
             ('', None, None),
         ]
 

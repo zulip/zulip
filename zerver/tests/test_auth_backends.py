@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
@@ -758,6 +759,7 @@ class GoogleOAuthTest(ZulipTestCase):
             headers['HTTP_HOST'] = subdomain + ".testserver"
         if mobile_flow_otp is not None:
             params['mobile_flow_otp'] = mobile_flow_otp
+            headers['HTTP_USER_AGENT'] = "ZulipAndroid"
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
@@ -766,7 +768,7 @@ class GoogleOAuthTest(ZulipTestCase):
             return result
 
         # Now do the /google/send/ request
-        result = self.client_get(result.url)
+        result = self.client_get(result.url, **headers)
         self.assertEqual(result.status_code, 302)
         if 'google' not in result.url:
             return result
@@ -779,7 +781,7 @@ class GoogleOAuthTest(ZulipTestCase):
         with mock.patch("requests.post", return_value=token_response), (
                 mock.patch("requests.get", return_value=account_response)):
             result = self.client_get("/accounts/login/google/done/",
-                                     dict(state=csrf_state))
+                                     dict(state=csrf_state), **headers)
         return result
 
 class GoogleSubdomainLoginTest(GoogleOAuthTest):
@@ -827,7 +829,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+        self.assertEqual(len(mail.outbox), 0)
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
             result = self.google_oauth2_test(token_response, account_response, 'zulip',
                                              mobile_flow_otp="1234")
@@ -849,6 +853,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         self.assertEqual(self.example_user('hamlet').api_key,
                          otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Zulip on Android', mail.outbox[0].body)
 
     def test_log_into_subdomain(self):
         # type: () -> None
@@ -1185,9 +1191,11 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',),
+                       SEND_LOGIN_EMAILS=True)
     def test_google_oauth2_token_success(self):
         # type: () -> None
+        self.assertEqual(len(mail.outbox), 0)
         with mock.patch(
                 'apiclient.sample_tools.client.verify_id_token',
                 return_value={
@@ -1198,6 +1206,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                                       dict(username="google-oauth2-token",
                                            password="token"))
         self.assert_json_success(result)
+        self.assertEqual(len(mail.outbox), 1)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_oauth2_token_failure(self):

@@ -31,6 +31,7 @@ from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
+from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled
 from version import ZULIP_VERSION
@@ -125,6 +126,12 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
         response = HttpResponse(status=302)
         response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+        # Maybe sending 'user_logged_in' signal is the better approach:
+        #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
+        # Not doing this only because over here we don't add the user information
+        # in the session. If the signal receiver assumes that we do then that
+        # would cause problems.
+        email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
         return response
 
     login(request, user_profile)
@@ -552,6 +559,13 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                               data={"reason": "unregistered"}, status=403)
         return json_error(_("Your username or password is incorrect."),
                           data={"reason": "incorrect_creds"}, status=403)
+
+    # Maybe sending 'user_logged_in' signal is the better approach:
+    #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
+    # Not doing this only because over here we don't add the user information
+    # in the session. If the signal receiver assumes that we do then that
+    # would cause problems.
+    email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 def get_auth_backends_data(request):
