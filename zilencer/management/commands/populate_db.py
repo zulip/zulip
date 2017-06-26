@@ -430,7 +430,7 @@ def create_simple_community_realm():
     # type: () -> None
     simple_realm = Realm.objects.create(
         string_id="simple", name="Simple Realm", restricted_to_domain=False,
-        invite_required=False, org_type=Realm.COMMUNITY)
+        invite_required=False, org_type=Realm.CORPORATE)
 
     names = [
         ("alice", "alice@example.com"),

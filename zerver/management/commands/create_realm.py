@@ -36,14 +36,14 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
                             dest='org_type',
                             action="store_const",
                             const=Realm.CORPORATE,
-                            help='Is a corporate org_type')
+                            default=None,
+                            help='Is a corporate org_type. Is the default.')
 
         parser.add_argument('--community',
                             dest='org_type',
                             action="store_const",
                             const=Realm.COMMUNITY,
-                            default=None,
-                            help='Is a community org_type. Is the default.')
+                            help='Is a community org_type.')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

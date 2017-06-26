@@ -135,7 +135,7 @@ class Realm(ModelReprMixin, models.Model):
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
     COMMUNITY = 2
-    org_type = models.PositiveSmallIntegerField(default=COMMUNITY) # type: int
+    org_type = models.PositiveSmallIntegerField(default=CORPORATE) # type: int
 
     date_created = models.DateTimeField(default=timezone_now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE) # type: Optional[Stream]
