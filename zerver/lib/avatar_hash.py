@@ -21,21 +21,23 @@ def gravatar_hash(email):
     # not error out on it.
     return make_safe_digest(email.lower(), hashlib.md5)
 
-# WARNING: If this method is changed, you may need to do a
-# corresponding update to zerver/migrations/0060_move_avatars_to_be_uid_based.py
 def user_avatar_hash(uid):
     # type: (Text) -> Text
-    # Salting the user_key may be overkill, but it prevents us from
-    # basically mimicking Gravatar's hashing scheme, which could lead
-    # to some abuse scenarios like folks using us as a free Gravatar
-    # replacement.
+
+    # WARNING: If this method is changed, you may need to do a migration
+    # similar to zerver/migrations/0060_move_avatars_to_be_uid_based.py .
+
+    # The salt probably doesn't serve any purpose now.  In the past we
+    # used a hash of the email address, not the user ID, and we salted
+    # it in order to make the hashing scheme different from Gravatar's.
     user_key = uid + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 
-# WARNING: If this method is changed, you will may to do a
-# corresponding update to zerver/migrations/0060_move_avatars_to_be_uid_based.py
 def user_avatar_path(user_profile):
     # type: (UserProfile) -> Text
+
+    # WARNING: If this method is changed, you may need to do a migration
+    # similar to zerver/migrations/0060_move_avatars_to_be_uid_based.py .
     return user_avatar_path_from_ids(user_profile.id, user_profile.realm_id)
 
 def user_avatar_path_from_ids(user_profile_id, realm_id):
