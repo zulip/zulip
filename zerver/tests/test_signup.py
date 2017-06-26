@@ -911,7 +911,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(get_user(email, realm).realm, realm)
 
             # Check defaults
-            self.assertEqual(realm.org_type, Realm.COMMUNITY)
+            self.assertEqual(realm.org_type, Realm.CORPORATE)
             self.assertEqual(realm.restricted_to_domain, False)
             self.assertEqual(realm.invite_required, True)
 
@@ -1132,7 +1132,7 @@ class UserSignUpTest(ZulipTestCase):
                  'realm_name': 'Zulip Test',
                  'realm_subdomain': 'zuliptest',
                  'key': find_key_by_email(email),
-                 'realm_org_type': Realm.COMMUNITY,
+                 'realm_org_type': Realm.CORPORATE,
                  'terms': True})
 
         # User should now be logged in.
@@ -1167,7 +1167,7 @@ class UserSignUpTest(ZulipTestCase):
              'realm_name': 'Zulip Test',
              'realm_subdomain': 'zuliptest',
              'key': find_key_by_email(email),
-             'realm_org_type': Realm.COMMUNITY,
+             'realm_org_type': Realm.CORPORATE,
              'terms': True,
              'from_confirmation': '1'})
         self.assert_in_success_response(["You're almost there."], result)
@@ -1199,7 +1199,7 @@ class UserSignUpTest(ZulipTestCase):
              'realm_name': 'Zulip Test',
              'realm_subdomain': 'zuliptest',
              'key': find_key_by_email(email),
-             'realm_org_type': Realm.COMMUNITY,
+             'realm_org_type': Realm.CORPORATE,
              'terms': True,
              'full_name': "New Guy",
              'from_confirmation': '1'})
@@ -1240,7 +1240,7 @@ class UserSignUpTest(ZulipTestCase):
                      'realm_name': 'Zulip Test',
                      'realm_subdomain': 'zuliptest',
                      'key': find_key_by_email(email),
-                     'realm_org_type': Realm.COMMUNITY,
+                     'realm_org_type': Realm.CORPORATE,
                      'terms': True})
         mock_error.assert_called_once()
         self.assertEqual(result.status_code, 302)
