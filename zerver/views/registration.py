@@ -202,8 +202,7 @@ def accounts_register(request):
         if realm_creation:
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
-            org_type = int(form.cleaned_data['realm_org_type'])
-            realm = do_create_realm(string_id, realm_name, org_type=org_type)[0]
+            realm = do_create_realm(string_id, realm_name)[0]
 
             stream_info = settings.DEFAULT_NEW_REALM_STREAMS
 
