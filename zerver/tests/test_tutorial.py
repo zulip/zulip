@@ -57,7 +57,7 @@ class TutorialTests(ZulipTestCase):
         self.assert_json_error(result, "Missing 'type' argument")
 
         result = self.client_post("/json/tutorial_send_message", raw_params)
-        self.assert_json_error(result, 'argument "type" is not valid json.')
+        self.assert_json_error(result, 'Argument "type" is not valid JSON.')
 
         raw_params = dict(
             type='INVALID',
