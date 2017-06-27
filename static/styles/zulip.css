@@ -1891,6 +1891,9 @@ nav a .no-style {
 #searchbox a.search_icon {
     color: hsl(0, 0%, 80%);
     text-decoration: none;
+    display: block;
+    width: 1px;
+    height: 1px;
 }
 
 #searchbox a.search_icon:hover {
