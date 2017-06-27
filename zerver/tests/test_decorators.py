@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpRequest
 from django.test.client import RequestFactory
 from django.conf import settings
 
+from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
@@ -758,6 +759,49 @@ class InactiveUserTest(ZulipTestCase):
         self.assert_in_response(
             "Sorry for the trouble, but your account has been deactivated",
             result)
+
+    def test_login_deactivated_mirror_dummy(self):
+        # type: () -> None
+        """
+        logging in fails with an inactive user
+
+        """
+        user_profile = self.example_user('hamlet')
+        user_profile.is_mirror_dummy = True
+        user_profile.save()
+
+        password = initial_password(user_profile.email)
+        request = mock.MagicMock()
+        request.get_host.return_value = 'testserver'
+
+        # Test a mirror-dummy active user.
+        form = OurAuthenticationForm(request,
+                                     data={'username': user_profile.email,
+                                           'password': password})
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
+            self.assertTrue(form.is_valid())
+
+        # Test a mirror-dummy deactivated user.
+        do_deactivate_user(user_profile)
+        user_profile.save()
+
+        form = OurAuthenticationForm(request,
+                                     data={'username': user_profile.email,
+                                           'password': password})
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
+            self.assertFalse(form.is_valid())
+            self.assertIn("Please enter a correct email", str(form.errors))
+
+        # Test a non-mirror-dummy deactivated user.
+        user_profile.is_mirror_dummy = False
+        user_profile.save()
+
+        form = OurAuthenticationForm(request,
+                                     data={'username': user_profile.email,
+                                           'password': password})
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
+            self.assertFalse(form.is_valid())
+            self.assertIn("your account has been deactivated", str(form.errors))
 
     def test_webhook_deactivated_user(self):
         # type: () -> None

@@ -256,7 +256,7 @@ Please contact %s to reactivate this group.""" % (
                 FromAddress.SUPPORT)
             raise ValidationError(mark_safe(error_msg))
 
-        if not user_profile.is_active:
+        if not user_profile.is_active and not user_profile.is_mirror_dummy:
             error_msg = (u"Sorry for the trouble, but your account has been "
                          u"deactivated. Please contact %s to reactivate "
                          u"it.") % (FromAddress.SUPPORT,)
