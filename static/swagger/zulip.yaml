@@ -344,7 +344,6 @@ paths:
             - $ref: '#/definitions/JsonError'
             - properties:
                 msg:
-                  type: string
                   enum:
                   - Your organization has turned off message editing
                   - You don't have permission to edit this message
