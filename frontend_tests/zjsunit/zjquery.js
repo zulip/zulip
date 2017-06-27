@@ -30,70 +30,31 @@ exports.make_zjquery = function () {
         }
 
         var self = {
-            val: function () {
-                if (arguments.length === 0) {
-                    return value || '';
+            add_child: function (child_selector, child_elem) {
+                child_elem.set_parent(self);
+                children.set(child_selector, child_elem);
+            },
+            addClass: function (class_name) {
+                classes.set(class_name, true);
+                return self.wrapper;
+            },
+            attr: function (name, val) {
+                if (val === undefined) {
+                    return attrs.get(name);
                 }
-                value = arguments[0];
-                return self.wrapper;
-            },
-            css: noop,
-            data: noop,
-            empty: noop,
-            height: noop,
-            removeAttr: function (name) {
-                attrs.del(name);
-                return self.wrapper;
-            },
-            removeData: noop,
-            trigger: function (ev) {
-                var funcs = on_functions.get(ev.name) || [];
-                _.each(funcs, function (f) {
-                    f(ev.data);
-                });
+                attrs.set(name, val);
                 return self.wrapper;
             },
             blur: function () {
                 focused = false;
                 return self.wrapper;
             },
-            html: function (arg) {
-                if (arg !== undefined) {
-                    html = arg;
-                    return self.wrapper;
-                }
-                return html;
-            },
-            text: function (arg) {
-                if (arg !== undefined) {
-                    text = arg;
-                    return self.wrapper;
-                }
-                return text;
-            },
-            focus: function () {
-                focused = true;
+            click: function (arg) {
+                generic_event('click', arg);
                 return self.wrapper;
             },
-            show: function () {
-                shown = true;
-                return self.wrapper;
-            },
-            hide: function () {
-                shown = false;
-                return self.wrapper;
-            },
-            addClass: function (class_name) {
-                classes.set(class_name, true);
-                return self.wrapper;
-            },
-            removeClass: function (class_name) {
-                classes.del(class_name);
-                return self.wrapper;
-            },
-            hasClass: function (class_name) {
-                return classes.has(class_name);
-            },
+            css: noop,
+            data: noop,
             debug: function () {
                 return {
                     value: value,
@@ -101,13 +62,10 @@ exports.make_zjquery = function () {
                     selector: selector,
                 };
             },
-            visible: function () {
-                return shown;
-            },
-            is_focused: function () {
-                // is_focused is not a jQuery thing; this is
-                // for our testing
-                return focused;
+            empty: noop,
+            expectOne: function () {
+                // silently do nothing
+                return self.wrapper;
             },
             find: function (child_selector) {
                 var child = children.get(child_selector);
@@ -117,31 +75,34 @@ exports.make_zjquery = function () {
 
                 throw Error("Cannot find " + child_selector + " in " + selector);
             },
-            add_child: function (child_selector, child_elem) {
-                child_elem.set_parent(self);
-                children.set(child_selector, child_elem);
-            },
-            remove_child: function (child_selector) {
-                children.del(child_selector);
-            },
-            set_parent: function (parent_elem) {
-                my_parent = parent_elem;
-            },
-            parent: function () {
-                return my_parent;
-            },
-            expectOne: function () {
-                // silently do nothing
+            focus: function () {
+                focused = true;
                 return self.wrapper;
             },
-            on: function (name, f) {
-                var funcs = on_functions.setdefault(name, []);
-                funcs.push(f);
+            get: function (idx) {
+                // We have some legacy code that does $('foo').get(0).
+                assert.equal(idx, 0);
+                return selector;
+            },
+            hasClass: function (class_name) {
+                return classes.has(class_name);
+            },
+            height: noop,
+            hide: function () {
+                shown = false;
                 return self.wrapper;
             },
-            click: function (arg) {
-                generic_event('click', arg);
-                return self.wrapper;
+            html: function (arg) {
+                if (arg !== undefined) {
+                    html = arg;
+                    return self.wrapper;
+                }
+                return html;
+            },
+            is_focused: function () {
+                // is_focused is not a jQuery thing; this is
+                // for our testing
+                return focused;
             },
             keydown: function (arg) {
                 generic_event('keydown', arg);
@@ -151,8 +112,30 @@ exports.make_zjquery = function () {
                 generic_event('keyup', arg);
                 return self.wrapper;
             },
-            select: function (arg) {
-                generic_event('select', arg);
+            on: function (name, f) {
+                var funcs = on_functions.setdefault(name, []);
+                funcs.push(f);
+                return self.wrapper;
+            },
+            parent: function () {
+                return my_parent;
+            },
+            prop: function (name, val) {
+                if (val === undefined) {
+                    return properties.get(name);
+                }
+                properties.set(name, val);
+                return self.wrapper;
+            },
+            removeAttr: function (name) {
+                attrs.del(name);
+                return self.wrapper;
+            },
+            remove_child: function (child_selector) {
+                children.del(child_selector);
+            },
+            removeClass: function (class_name) {
+                classes.del(class_name);
                 return self.wrapper;
             },
             remove: function () {
@@ -161,24 +144,41 @@ exports.make_zjquery = function () {
                 }
                 return self.wrapper;
             },
-            get: function (idx) {
-                // We have some legacy code that does $('foo').get(0).
-                assert.equal(idx, 0);
-                return selector;
-            },
-            attr: function (name, val) {
-                if (val === undefined) {
-                    return attrs.get(name);
-                }
-                attrs.set(name, val);
+            removeData: noop,
+            select: function (arg) {
+                generic_event('select', arg);
                 return self.wrapper;
             },
-            prop: function (name, val) {
-                if (val === undefined) {
-                    return properties.get(name);
-                }
-                properties.set(name, val);
+            show: function () {
+                shown = true;
                 return self.wrapper;
+            },
+            set_parent: function (parent_elem) {
+                my_parent = parent_elem;
+            },
+            text: function (arg) {
+                if (arg !== undefined) {
+                    text = arg;
+                    return self.wrapper;
+                }
+                return text;
+            },
+            trigger: function (ev) {
+                var funcs = on_functions.get(ev.name) || [];
+                _.each(funcs, function (f) {
+                    f(ev.data);
+                });
+                return self.wrapper;
+            },
+            val: function () {
+                if (arguments.length === 0) {
+                    return value || '';
+                }
+                value = arguments[0];
+                return self.wrapper;
+            },
+            visible: function () {
+                return shown;
             },
         };
 
