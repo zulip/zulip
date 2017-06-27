@@ -127,6 +127,8 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/api.html',
         'templates/zerver/apps.html',
         'templates/zerver/compose.html',
+        'templates/zerver/emails/digest.html',
+        'templates/zerver/emails/missed_message.html',
         'templates/zerver/hello.html',
         'templates/zerver/home.html',
         'templates/zerver/index.html',

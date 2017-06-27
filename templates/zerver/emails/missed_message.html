@@ -1,7 +1,9 @@
+{% extends "zerver/emails/email_base_messages.html" %}
 {#
 Mail sent to user when they were not logged in and received a PM or @-mention
 #}
 
+{% block content %}
 Hello {{ name }},
 
 <p>
@@ -43,5 +45,8 @@ Hello {{ name }},
     <br></br>
     The Zulip Team
 </p>
+{% endblock %}
 
+{% block manage_preferences %}
 <p><a href="{{ realm_uri }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>
+{% endblock %}
