@@ -540,6 +540,90 @@ paths:
                   items:
                     $ref: '#/definitions/stream'
 
+  /streams/{stream_id}:
+    patch:
+      description: Update a stream's name, description or privacy setting.
+      operationId: zerver.views.streams.update_stream_backend
+      parameters:
+      - name: stream_id
+        in: path
+        description: The ID of the stream to modify.
+        required: true
+        type: integer
+      - name: new_name
+        in: formData
+        description: |
+                     New name for the stream.
+
+                     Must be a valid JSON string (enclosed in double quotes and
+                     special characters escaped with backslashes).
+        type: string
+      - name: description
+        in: formData
+        description: |
+                     New description for the stream.
+
+                     Must be a valid JSON string (enclosed in double quotes and
+                     special characters escaped with backslashes).
+        type: string
+      - name: is_private
+        in: formData
+        description: New privacy setting for the stream.
+        type: boolean
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/JsonSuccess'
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - Argument "new_name" is not valid JSON.
+                  - Argument "description" is not valid JSON.
+                  - '"new_name" is not a string'
+                  - '"description" is not a string'
+                  - '"is_private" is not a boolean'
+                  - Stream already has that name!
+                  # API_FIXME: There's no error for when the stream already has
+                  # the specified description or privacy setting.
+    delete:
+      description: |
+                   Delete a stream.
+
+                   The result is the stream deactivation; its messages will
+                   remain in the database, but they won't be recoverable
+                   through the API.
+      operationId: zerver.views.streams.deactivate_stream_backend
+      parameters:
+      - name: stream_id
+        in: path
+        description: The ID of the stream to delete.
+        required: true
+        type: integer
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/JsonSuccess'
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - 'Invalid stream id'
+
   /users/{user}/presence:
     get:
       description: Get presence data for another user.
