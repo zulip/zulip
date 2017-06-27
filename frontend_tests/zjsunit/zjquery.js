@@ -67,6 +67,7 @@ exports.make_zjquery = function () {
                 // silently do nothing
                 return self.wrapper;
             },
+            fadeTo: noop,
             find: function (child_selector) {
                 var child = children.get(child_selector);
                 if (child) {
