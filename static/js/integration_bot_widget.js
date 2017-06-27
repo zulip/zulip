@@ -41,13 +41,12 @@ function on_create_bot_success(result, stream_name, external_api_uri_subdomain, 
     update_integration_bot_url(integration_bot_url);
 }
 
-function create_bot(full_name, short_name, bot_avatar_file, stream_name,
-                    external_api_uri_subdomain, integration_url, on_success) {
+function create_bot(bot, on_success) {
     var formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrf_token);
-    formData.append('full_name', full_name);
-    formData.append('short_name', short_name);
-    formData.append('file-'+0, bot_avatar_file);
+    formData.append('full_name', bot.full_name);
+    formData.append('short_name', bot.short_name);
+    formData.append('file-'+0, bot.bot_avatar_file);
     channel.post({
         url: '/json/bots',
         data: formData,
@@ -56,7 +55,8 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
         contentType: false,
         success: function (resp, statusText, xhr) {
             var result = JSON.parse(xhr.responseText);
-            on_success(result, stream_name, external_api_uri_subdomain, integration_url);
+            on_success(result, bot.stream_name, bot.external_api_uri_subdomain,
+                       bot.integration_url);
         },
         error: function (xhr) {
             // UI yet to be created with this div id
@@ -66,12 +66,19 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
 }
 
 // This is the main function to be called to set the integration bot url.
-exports.set_integration_bot_url = function (
-    external_api_uri_subdomain, integration_url, bot_full_name,
-    bot_short_name, bot_avatar_file, stream_name
-) {
-    create_bot(bot_full_name, bot_short_name, bot_avatar_file,
-               stream_name, external_api_uri_subdomain, integration_url, on_create_bot_success);
+exports.set_integration_bot_url = function (bot) {
+/*
+   bot has the following structure
+    var bot = {
+        bot_full_name: bot_full_name,
+        bot_short_name: bot_short_name,
+        bot_avatar_file: bot_avatar_file,
+        stream_name: stream_name,
+        external_api_uri_subdomain: external_api_uri_subdomain,
+        integration_url: integration_url,
+    };
+*/
+    create_bot(bot, on_create_bot_success);
 };
 
 return exports;
