@@ -28,8 +28,12 @@ function rerender_subscribers_list(sub) {
     var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
 
     // Changing the data clears the rendered list and the list needs to be re-rendered.
-    subscribers_list.data(emails);
-    subscribers_list.render();
+    // Perform re-rendering only when the stream settings form of the corresponding
+    // stream is open.
+    if (subscribers_list) {
+        subscribers_list.data(emails);
+        subscribers_list.render();
+    }
 }
 
 exports.collapse = function (sub) {
