@@ -157,6 +157,9 @@ exports.make_zjquery = function () {
             set_parent: function (parent_elem) {
                 my_parent = parent_elem;
             },
+            stop: function () {
+                return self.wrapper;
+            },
             text: function (arg) {
                 if (arg !== undefined) {
                     text = arg;
