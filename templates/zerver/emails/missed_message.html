@@ -2,6 +2,22 @@
 Mail sent to user when she was not logged in and received a PM or @-mention
 #}
 
+{% extends "zerver/emails/email_missed_message_base.html" %}
+
+{% block preheader %}
+    While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+    {% for recipient_block in messages %}
+        {{ recipient_block.header.html|safe }}
+        {% for sender_block in recipient_block.senders %}
+            {% if sender_block.sender %}{{ sender_block.sender }}{% endif %}
+            {% for message_block in sender_block.content %}
+            {{ message_block.html|safe }}
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
 Hello {{ name }},
 
 <p>
@@ -43,5 +59,8 @@ Hello {{ name }},
     <br></br>
     The Zulip Team
 </p>
+{% endblock %}
 
+{% block manage_preferences %}
 <p><a href="{{ realm_uri }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>
+{% endblock %}

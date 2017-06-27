@@ -2,6 +2,45 @@
 Mail sent to a user who hasn't logged in for 24 hours.
 #}
 
+{% extends "zerver/emails/email_missed_message_base.html" %}
+
+{% block preheader %}
+    {% if unread_pms %}
+        {% for recipient_block in unread_pms %}
+            {% for sender_block in recipient_block.senders %}
+                {% if sender_block.sender %}{{ sender_block.sender }}{% endif %}
+                {% for message_block in sender_block.content %}
+                {{ message_block.html|safe }}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    {% if hot_conversations %}
+        {% for convo in hot_conversations %}
+            {% for recipient_block in convo.first_few_messages %}
+                {{ recipient_block.header.html|safe }}
+                {% for sender_block in recipient_block.senders %}
+                    {% if sender_block.sender %}{{ sender_block.sender }}{% endif %}
+                    {% for message_block in sender_block.content %}
+                    {{ message_block.html|safe }}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    {% if new_streams.html %}
+        {% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:
+        {{ new_streams.html|display_list(4)|safe }}.
+    {% endif %}
+
+    {% if new_users %}
+        {% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!
+    {% endif %}
+{% endblock %}
+
+{% block content %}
 Hello {{ name }},
 
 <p>A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}">Visit Zulip</a> to catch up.</p>
@@ -92,8 +131,11 @@ Hello {{ name }},
 
 <p>Cheers,<br />
 The Zulip Team</p>
+{% endblock %}
 
+{% block manage_preferences %}
 <p>
     <a href="{{ realm_uri }}/#settings">Manage email preferences</a> |
     <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
 </p>
+{% endblock %}
