@@ -25,6 +25,7 @@ enforce_fully_covered = {
     'static/js/activity.js',
     'static/js/alert_words.js',
     'static/js/bot_data.js',
+    'static/js/channel.js',
     'static/js/colorspace.js',
     'static/js/common.js',
     'static/js/compose_state.js',
