@@ -86,10 +86,6 @@ def create_single_page(pattern, out_dir, href, calls):
             f.write(call['method'] + '<br>\n')
             f.write('status code: %s<br>\n' % (call['status_code'],))
             f.write('<br>')
-            if call['info']:
-                f.write('info: %s<br>\n' % (encode_info(call['info']),))
-            if call['kwargs']:
-                f.write('kwargs: %s<br>\n' % (encode_info(call['kwargs']),))
             f.write('</div>')
 
 def create_user_docs():
