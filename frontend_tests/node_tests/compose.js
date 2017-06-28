@@ -46,6 +46,15 @@ people.initialize_current_user(me.user_id);
 people.add(alice);
 people.add(bob);
 
+(function test_validate_stream_message_address_info() {
+    var sub = {
+        stream_id: 101,
+        name: 'social',
+        subscribed: true,
+    };
+    stream_data.add_sub('social', sub);
+    assert(compose.validate_stream_message_address_info('social'));
+}());
 
 (function test_validate() {
     $("#compose-send-button").removeAttr('disabled');
