@@ -8,6 +8,7 @@ set_global('document', {
     location: {
     },
 });
+set_global('channel', {});
 
 var i18n = global.i18n;
 var noop = function () {};
@@ -59,6 +60,44 @@ people.add(bob);
     $('#stream').select(noop);
     assert(!compose.validate_stream_message_address_info('foobar'));
     assert.equal($('#error-msg').html(), "<p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+
+    sub.subscribed = false;
+    stream_data.add_sub('social', sub);
+    assert(!compose.validate_stream_message_address_info('social'));
+    assert.equal($('#error-msg').html(), "<p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+
+    global.page_params.narrow_stream = false;
+    channel.post = function (payload) {
+        assert.equal(payload.data.stream, 'social');
+        payload.data.subscribed = true;
+        payload.success(payload.data);
+    };
+    assert(compose.validate_stream_message_address_info('social'));
+
+    sub.name = 'Frontend';
+    sub.stream_id = 102;
+    stream_data.add_sub('Frontend', sub);
+    channel.post = function (payload) {
+        assert.equal(payload.data.stream, 'Frontend');
+        payload.data.subscribed = false;
+        payload.success(payload.data);
+    };
+    assert(!compose.validate_stream_message_address_info('Frontend'));
+    assert.equal($('#error-msg').html(), "<p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+
+    channel.post = function (payload) {
+        assert.equal(payload.data.stream, 'Frontend');
+        payload.error({status: 404});
+    };
+    assert(!compose.validate_stream_message_address_info('Frontend'));
+    assert.equal($('#error-msg').html(), "<p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+
+    channel.post = function (payload) {
+        assert.equal(payload.data.stream, 'social');
+        payload.error({status: 500});
+    };
+    assert(!compose.validate_stream_message_address_info('social'));
+    assert.equal($('#error-msg').html(), i18n.t("Error checking subscription"));
 }());
 
 (function test_validate() {
