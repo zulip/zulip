@@ -236,7 +236,7 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      # case, it seems worth having in this list
                      ("SECRET_KEY", ""),
                      ("AUTHENTICATION_BACKENDS", ()),
-                     ("NOREPLY_EMAIL_ADDRESS", "Zulip <noreply@example.com>"),
+                     ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
                      ]
 
 if ADMINS == "":
