@@ -443,14 +443,11 @@ exports.get_invalid_recipient_emails = function () {
     return invalid_recipients;
 };
 
-function check_stream_for_send(stream_name, autosubscribe) {
+function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     var stream_obj = stream_data.get_sub(stream_name);
     var result;
     if (!stream_obj) {
         return "does-not-exist";
-    }
-    if (stream_obj.subscribed) {
-        return "subscribed";
     }
     if (!autosubscribe) {
         return "not-subscribed";
@@ -515,7 +512,8 @@ exports.validate_stream_message_address_info = function (stream_name) {
 
     var response;
 
-    switch (check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
+    switch (check_unsubscribed_stream_for_send(stream_name,
+                                               page_params.narrow_stream !== undefined)) {
     case "does-not-exist":
         response = "<p>The stream <b>" +
             Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
