@@ -244,6 +244,21 @@ exports.remove_reaction = function (event) {
     // Compute the new user list for this reaction.
     var user_list = get_user_list_for_message_reaction(message, emoji_name);
 
+    exports.view.remove_reaction({
+        message_id: message_id,
+        emoji_name: emoji_name,
+        user_list: user_list,
+        user_id: user_id,
+    });
+};
+
+exports.view.remove_reaction = function (opts) {
+
+    var message_id = opts.message_id;
+    var emoji_name = opts.emoji_name;
+    var user_list = opts.user_list;
+    var user_id = opts.user_id;
+
     var reaction = exports.find_reaction(message_id, emoji_name);
 
     if (user_list.length === 0) {
