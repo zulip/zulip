@@ -44,7 +44,6 @@ EXTERNAL_HOST = '127.0.0.1'
 ZULIP_ADMINISTRATOR = 'zulip-travis-admin@travis.example.com'
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
 NOREPLY_EMAIL_ADDRESS = 'noreply@travis.example.com'
-DEFAULT_FROM_EMAIL = "Zulip <zulip@travis.example.com>"
 ALLOWED_HOSTS = []
 EOF
 

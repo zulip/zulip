@@ -237,7 +237,6 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("SECRET_KEY", ""),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ("NOREPLY_EMAIL_ADDRESS", "Zulip <noreply@example.com>"),
-                     ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
                      ]
 
 if ADMINS == "":
@@ -1219,6 +1218,9 @@ SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 ########################################################################
 # EMAIL SETTINGS
 ########################################################################
+
+# Django setting. Not used in the Zulip codebase.
+DEFAULT_FROM_EMAIL = ZULIP_ADMINISTRATOR
 
 if EMAIL_BACKEND is not None:
     # If the server admin specified a custom email backend, use that.
