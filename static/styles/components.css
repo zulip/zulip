@@ -108,14 +108,30 @@
     border-color: hsl(156, 39%, 77%);
 }
 
+.high-contrast .new-style .button.sea-green {
+    color: hsl(127, 100%, 23%);
+}
+
 .new-style .button.btn-warning {
     color: hsl(35, 70%, 56%);
     border-color: hsl(35, 98%, 84%);
 }
 
+.high-contrast .new-style .button.btn-warning {
+    color: hsl(39, 100%, 31%);
+}
+
 .new-style .button.btn-danger {
     color: hsl(357, 64%, 72%);
     border-color: hsl(4, 56%, 82%);
+}
+
+.high-contrast .new-style .button.btn-danger {
+    color: hsl(355, 100%, 37%);
+}
+
+.high-contrast #do_delete_message_button {
+    color: hsl(355, 100%, 37%);
 }
 
 /* -- button states -- */
@@ -236,6 +252,10 @@
     color: #fff;
     border: 1px solid hsl(0, 0%, 46%);
     z-index: 2;
+}
+
+.high-contrast .new-style .tab-switcher .ind-tab.selected {
+    background: hsl(0, 0%, 34%);
 }
 
 .new-style .tab-switcher .ind-tab.disabled {
@@ -379,4 +399,20 @@ a.no-underline {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     z-index: 5;
+}
+
+.high-contrast #id_realm_invite_by_admins_only_label {
+    color: hsl(0, 0%, 45%);
+}
+
+.high-contrast #download_zuliprc {
+    color: hsl(201, 100%, 19%);
+}
+
+.high-contrast a {
+    color: hsl(200, 100%, 36%);
+}
+
+.high-contrast .btn-primary {
+    background-color: hsl(201, 100%, 28%);
 }

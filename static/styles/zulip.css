@@ -480,6 +480,10 @@ a:hover code {
     display: inline;
 }
 
+.high-contrast .sidebar-title {
+    color: hsl(0, 0%, 46%);
+}
+
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
@@ -554,6 +558,10 @@ td.pointer {
     width: auto;
 }
 
+.high-contrast .include-sender .message_edit_notice {
+    color: hsl(0, 0%, 34%);
+}
+
 .sender-status .message_edit_notice {
     line-height: 18px;
 }
@@ -568,6 +576,10 @@ td.pointer {
     position: absolute;
     left: 0px;
     top: 16px;
+}
+
+.high-contrast .message_edit_notice {
+    color: hsl(0, 0%, 34%);
 }
 
 .include-sender .message_edit_notice:before {
@@ -597,6 +609,10 @@ td.pointer {
     -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     transition: background-color 2.7s ease-in, color 2.7s ease-in;
+}
+
+.high-contrast .message_time {
+    color: hsl(0, 0%, 35%);
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -768,6 +784,10 @@ td.pointer {
     padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
+}
+
+.high-contrast .recipient_row_date {
+    color: hsl(0, 0%, 28%);
 }
 
 .recipient_row_date.hide-date {
@@ -1178,6 +1198,11 @@ a.message_label_clickable:hover {
     opacity: .1;
 }
 
+.high-contrast .on_hover_topic_mute,
+.high-contrast .on_hover_topic_edit {
+    opacity: .3;
+}
+
 .on_hover_topic_mute:hover {
     cursor: pointer;
     opacity: 1.0;
@@ -1266,6 +1291,22 @@ a.dark_background:hover,
     color: hsl(0, 0%, 73%);
 }
 
+.high-contrast .info,
+.high-contrast .empty-star,
+.high-contrast .reactions_hover,
+.high-contrast .actions_hover,
+.high-contrast .edit_content {
+    color: hsl(0, 0%, 34%);
+}
+
+.high-contrast .info:hover,
+.high-contrast .star:hover,
+.high-contrast .actions_hover:hover,
+.high-contrast .reactions_hover:hover,
+.high-contrast .edit_content:hover {
+    color: hsl(200, 100%, 40%);
+}
+
 .actions_hovered .actions_link {
     text-decoration: underline;
 }
@@ -1317,6 +1358,10 @@ div.focused_table {
     text-align: right;
     display: inline;
     color: hsl(0, 0%, 63%);
+}
+
+.high-contrast .message_edit_countdown_timer {
+    color: hsl(0, 0%, 34%);
 }
 
 .message_edit_tooltip {
@@ -1820,6 +1865,10 @@ nav .column-left .company-name {
     cursor: pointer;
 }
 
+.high-contrast nav .column-left .company-name {
+    color: hsl(161, 100%, 25%);
+}
+
 nav a .no-style {
     text-decoration: none;
 }
@@ -1905,10 +1954,21 @@ nav a .no-style {
     background-color: hsl(120, 64%, 95%);
 }
 
+.high-contrast .highlight_text_inserted {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(120, 100%, 27%);
+}
+
+
 .highlight_text_deleted {
     color: hsl(0, 0%, 73%);
     text-decoration: line-through;
     background-color: hsl(7, 90%, 92%);
+}
+
+.high-contrast .highlight_text_deleted {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(0, 83%, 51%);
 }
 
 #search_arrows {
@@ -2234,6 +2294,10 @@ button.topic_edit_cancel {
     margin-bottom: 0px;
 }
 
+.high-contrast .modal-header .close {
+    opacity: 0.6;
+}
+
 #invite-user {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -2322,6 +2386,11 @@ button.topic_edit_cancel {
 
 .empty_feed_notice h4 {
     text-align: center;
+}
+
+.high-contrast .empty_feed_compose_stream,
+.high-contrast .empty_feed_compose_private {
+    color: hsl(200, 100%, 36%);
 }
 
 .notification {
@@ -2415,6 +2484,10 @@ img.emoji {
 .date_row {
     text-align: center;
     margin-bottom: 10px;
+}
+
+.high-contrast .date_row span {
+    color: hsl(0, 0%, 34%);
 }
 
 .date_row .date-direction {
@@ -2667,6 +2740,10 @@ img.emoji {
     border: none;
 }
 
+.high-contrast .alert-success {
+    color: hsl(120, 100%, 17%);
+}
+
 @media (max-width: 600px) {
     .message_content .message_embed {
         height: auto;
@@ -2696,4 +2773,3 @@ img.emoji {
 #lightbox_overlay[aria-hidden="true"] {
     visibility: hidden;
 }
-

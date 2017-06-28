@@ -159,6 +159,10 @@
     z-index: 3;
 }
 
+.high-contrast .emoji-popover-top .icon-vector-search {
+    color: hsl(0, 0%, 34%);
+}
+
 .emoji-popover-top .emoji-popover-filter {
     margin: auto;
     padding-left: 22px;

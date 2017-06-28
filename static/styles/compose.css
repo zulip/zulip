@@ -192,6 +192,10 @@ table.compose_table {
     top: 5px;
 }
 
+.high-contrast #compose_close {
+    opacity: .6;
+}
+
 #compose_invite_users {
     /* Don't overlap into the compose_close × */
     margin-right: 10px;
@@ -240,6 +244,10 @@ table.compose_table {
     opacity: .2;
     filter: alpha(opacity=20);
     float: right;
+}
+
+.high-contrast .send-status-close {
+    opacity: .6;
 }
 
 .send-status-close:hover {
@@ -357,6 +365,10 @@ input.recipient_box {
     margin-right: 2px;
 }
 
+.high-contrast #send_controls .compose_checkbox_label {
+    color: hsl(0, 0%, 34%);
+}
+
 #send_controls .compose_checkbox_label input {
     position: relative;
     top: -3px;
@@ -387,6 +399,10 @@ input.recipient_box {
     margin-right: 1em;
     margin-left: 5px;
     top: 2px;
+}
+
+.high-contrast .compose_table .drafts-link {
+    color: hsl(200, 100%, 36%);
 }
 
 #sending-indicator {
@@ -462,4 +478,8 @@ a#undo_markdown_preview {
 
 #markdown_preview_spinner {
     margin: auto;
+}
+
+.high-contrast .restore-draft a {
+    color: hsl(200, 100%, 34%);
 }

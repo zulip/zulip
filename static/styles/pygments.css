@@ -210,3 +210,7 @@
 .codehilite .il {
     color: #666666;
 } /* Literal.Number.Integer.Long */
+
+.high-contrast .codehilite .s {
+    color: #3e6300;
+}

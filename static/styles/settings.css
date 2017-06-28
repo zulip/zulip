@@ -402,6 +402,10 @@ input[type=checkbox].inline-block {
     transition: all 0.2s ease;
 }
 
+.high-contrast #attachments_list .attachment-messages .ind-message {
+    color: hsl(0, 0%, 34%);
+}
+
 #attachments_list .attachment-messages .ind-message > div {
     display: inline-block;
     vertical-align: top;
@@ -411,6 +415,10 @@ input[type=checkbox].inline-block {
     padding: 2px 4px 1px 4px;
     background-color: hsl(0, 0%, 66%);
     color: #fff;
+}
+
+.high-contrast #attachments_list .attachment-messages .ind-message .message-id {
+    background-color: hsl(0, 0%, 34%);
 }
 
 #attachments_list .attachment-messages .ind-message:hover {
@@ -565,6 +573,11 @@ input[type=checkbox].inline-block {
     margin: 20px 0 0 0;
 }
 
+.high-contrast #admin-filter-pattern-status,
+.high-contrast #admin-filter-format-status {
+    color: hsl(1, 53%, 46%);
+}
+
 .progressive-table-wrapper {
     max-height: calc(95vh - 200px);
     overflow: auto;
@@ -712,6 +725,10 @@ input[type=checkbox].inline-block {
     font-weight: 600;
     color: hsl(0, 0%, 66%);
     margin-top: 5px;
+}
+
+.high-contrast .edit_bot_form label {
+    color: hsl(0, 0%, 34%);
 }
 
 .edit_bot_form .buttons {
@@ -1000,6 +1017,10 @@ input[type=checkbox].inline-block {
     cursor: pointer;
 }
 
+.high-contrast #settings_page .settings-header .exit {
+    color: hsl(0, 0%, 46%);
+}
+
 #settings_page .settings-header .exit-sign {
     float: right;
     position: relative;
@@ -1239,4 +1260,16 @@ thead .actions {
 
 #payload_url_inputbox input[type=text] {
     width: 340px;
+}
+
+.high-contrast .modal-body a {
+    color: hsl(200, 100%, 36%);
+}
+
+.high-contrast .bot-settings-form a {
+    color: hsl(200, 100%, 35%);
+}
+
+.high-contrast #admin-streams-list a {
+    color: hsl(200, 100%, 35%);
 }

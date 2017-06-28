@@ -44,6 +44,10 @@
     cursor: pointer;
 }
 
+.high-contrast .drafts-container .exit-sign {
+    color: hsl(0, 0%, 46%);
+}
+
 .drafts-list {
     overflow: auto;
     height: calc(100% - 55px);
@@ -59,6 +63,10 @@
     color: hsl(0, 0%, 66%);
     pointer-events: none;
     -webkit-font-smoothing: antialiased;
+}
+
+.high-contrast .drafts-list .no-drafts {
+    color: hsl(0, 0%, 46%);
 }
 
 .draft-row {

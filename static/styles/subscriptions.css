@@ -479,6 +479,10 @@ form#add_new_subscription {
     cursor: pointer;
 }
 
+.high-contrast .subscriptions-container .exit-sign {
+    color: hsl(0, 0%, 46%);
+}
+
 .subscriptions-container .left,
 .subscriptions-container .right {
     position: relative;
@@ -501,6 +505,10 @@ form#add_new_subscription {
     color: hsl(0, 0%, 66%);
     pointer-events: none;
     -webkit-font-smoothing: antialiased;
+}
+
+.high-contrast .subscriptions-container .right .nothing-selected {
+    color: hsl(0, 0%, 34%);
 }
 
 .subscriptions-container .left {
@@ -701,6 +709,11 @@ form#add_new_subscription {
 .stream-row .sub-info-box .top-bar .subscriber-count {
     float: right;
     color: hsl(0, 0%, 66%);
+}
+
+.high-contrast .stream-row .sub-info-box .top-bar .message-count,
+.high-contrast .stream-row .sub-info-box .top-bar .subscriber-count {
+    color: hsl(0, 0%, 34%);
 }
 
 .stream-row .sub-info-box .top-bar .subscriber-count {

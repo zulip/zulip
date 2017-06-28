@@ -191,6 +191,11 @@ li.hidden-filter {
     border-radius: 4px;
 }
 
+.high-contrast #global_filters .count,
+.high-contrast #stream_filters .count {
+    background: hsl(112, 4%, 34%);
+}
+
 #global_filters .count {
     margin-right: 20px;
     margin-top: 2px;
@@ -231,6 +236,11 @@ li.hidden-filter {
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
+}
+
+.high-contrast .topic-unread-count,
+.high-contrast .private_message_count {
+    background: hsl(112, 4%, 34%);
 }
 
 .topic-unread-count {
@@ -464,4 +474,8 @@ li.show-more-private-messages a {
 
 .show-all-streams .icon-vector-chevron-left {
     text-decoration: none;
+}
+
+.high-contrast .zero_count .value {
+    background-color: hsl(108, 6%, 44%);
 }

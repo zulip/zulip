@@ -28,6 +28,10 @@
     margin: 1px 15px;
 }
 
+.high-contrast .informational-overlays .overlay-tabs .exit {
+    color: hsl(0, 0%, 34%);
+}
+
 .informational-overlays .overlay-modal {
     padding-bottom: 10px;
 }

@@ -63,6 +63,10 @@
     transition: all 0.2s ease;
 }
 
+.high-contrast #lightbox_overlay .exit {
+    color: hsl(0, 0%, 46%);
+}
+
 #lightbox_overlay.show .exit {
     pointer-events: auto;
     opacity: 1;
@@ -142,6 +146,10 @@
 
 #lightbox_overlay .image-actions .icon .text {
     font-size: 0.9rem;
+}
+
+.high-contrast #lightbox_overlay .image-actions .icon .text {
+    color: hsl(0, 0%, 66%);
 }
 
 #lightbox_overlay .image-actions span:nth-of-type(2) {
@@ -225,6 +233,10 @@
 
     opacity: 0.5;
     transition: all 0.3s ease;
+}
+
+.high-contrast #lightbox_overlay .center .arrow {
+    color: hsl(0, 0%, 100%);
 }
 
 #lightbox_overlay .center .arrow:hover {
