@@ -307,6 +307,151 @@ set_global('message_store', {
 
 }());
 
+(function test_with_view_stubs() {
+    // This function tests reaction events by mocking out calls to
+    // the view.
+
+    var message = {
+        id: 2001,
+        reactions: [],
+    };
+
+    message_store.get = function () {
+        return message;
+    };
+
+    function test_view_calls(test_params) {
+        var calls = [];
+
+        function add_call_func(name) {
+            return function (opts) {
+                calls.push({
+                    name: name,
+                    opts: opts,
+                });
+            };
+        }
+
+        reactions.view = {
+            insert_new_reaction: add_call_func('insert_new_reaction'),
+            update_existing_reaction: add_call_func('update_existing_reaction'),
+            remove_reaction: add_call_func('remove_reaction'),
+        };
+
+        test_params.run_code();
+
+        assert.deepEqual(calls, test_params.expected_view_calls);
+    }
+
+    var alice_8ball_event = {
+        message_id: 2001,
+        emoji_name: '8ball',
+        user: {
+            user_id: alice.user_id,
+        },
+    };
+
+    var bob_8ball_event = {
+        message_id: 2001,
+        emoji_name: '8ball',
+        user: {
+            user_id: bob.user_id,
+        },
+    };
+
+    var cali_airplane_event = {
+        message_id: 2001,
+        emoji_name: 'airplane',
+        user: {
+            user_id: cali.user_id,
+        },
+    };
+
+    test_view_calls({
+        run_code: function () {
+            reactions.add_reaction(alice_8ball_event);
+        },
+        expected_view_calls: [
+            {
+                name: 'insert_new_reaction',
+                opts: {
+                    message_id: 2001,
+                    emoji_name: '8ball',
+                    user_id: alice.user_id,
+                },
+            },
+        ],
+    });
+
+    test_view_calls({
+        run_code: function () {
+            reactions.add_reaction(bob_8ball_event);
+        },
+        expected_view_calls: [
+            {
+                name: 'update_existing_reaction',
+                opts: {
+                    message_id: 2001,
+                    emoji_name: '8ball',
+                    user_id: bob.user_id,
+                    user_list: [alice.user_id, bob.user_id],
+                },
+            },
+        ],
+    });
+
+    test_view_calls({
+        run_code: function () {
+            reactions.add_reaction(cali_airplane_event);
+        },
+        expected_view_calls: [
+            {
+                name: 'insert_new_reaction',
+                opts: {
+                    message_id: 2001,
+                    emoji_name: 'airplane',
+                    user_id: cali.user_id,
+                },
+            },
+        ],
+    });
+
+    test_view_calls({
+        run_code: function () {
+            reactions.remove_reaction(bob_8ball_event);
+        },
+        expected_view_calls: [
+            {
+                name: 'remove_reaction',
+                opts: {
+                    message_id: 2001,
+                    emoji_name: '8ball',
+                    user_id: bob.user_id,
+                    user_list: [alice.user_id],
+                },
+            },
+        ],
+    });
+
+    test_view_calls({
+        run_code: function () {
+            reactions.remove_reaction(alice_8ball_event);
+        },
+        expected_view_calls: [
+            {
+                name: 'remove_reaction',
+                opts: {
+                    message_id: 2001,
+                    emoji_name: '8ball',
+                    user_id: alice.user_id,
+                    user_list: [],
+                },
+            },
+        ],
+    });
+
+}());
+
 (function test_initialize() {
     var my_event = {
         old_id: 5,
