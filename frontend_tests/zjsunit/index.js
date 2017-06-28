@@ -42,6 +42,9 @@ global.append_test_output = output.append_test_output;
 // Set up fake jQuery
 global.make_zjquery = require('./zjquery.js').make_zjquery;
 
+// Set up fake translation
+global.i18n = require('./i18n.js');
+
 var noop = function () {};
 
 output.start_writing();
