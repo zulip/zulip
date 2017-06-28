@@ -161,6 +161,19 @@ people.add(bob);
     assert.equal($('#error-msg').html(), i18n.t('Please specify a topic'));
 }());
 
+(function test_get_invalid_recipient_emails() {
+    var feedback_bot = {
+        email: 'feedback@example.com',
+        user_id: 124,
+        full_name: 'Feedback Bot',
+    };
+    global.page_params.cross_realm_bots = [feedback_bot];
+    global.page_params.user_id = 30;
+    people.initialize();
+    compose_state.recipient('feedback@example.com');
+    assert.deepEqual(compose.get_invalid_recipient_emails(), []);
+}());
+
 (function test_validate_stream_message() {
     // This test is in kind of continuation to test_validate but since it is
     // primarly used to get coverage over functions called from validate()
