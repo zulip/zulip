@@ -137,7 +137,12 @@ exports.add_reaction = function (event) {
     var user_list = get_user_list_for_message_reaction(message, emoji_name);
 
     if (user_list.length > 1) {
-        exports.update_existing_reaction(event, user_list);
+        exports.view.update_existing_reaction({
+            message_id: event.message_id,
+            emoji_name: event.emoji_name,
+            user_list: user_list,
+            user_id: event.user.id,
+        });
     } else {
         exports.view.insert_new_reaction({
             message_id: event.message_id,
@@ -147,13 +152,15 @@ exports.add_reaction = function (event) {
     }
 };
 
-exports.update_existing_reaction = function (event, user_list) {
+exports.view.update_existing_reaction = function (opts) {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
 
-    var message_id = event.message_id;
-    var emoji_name = event.emoji_name;
+    var message_id = opts.message_id;
+    var emoji_name = opts.emoji_name;
+    var user_list = opts.user_list;
+    var user_id = opts.user_id;
 
     var reaction = exports.find_reaction(message_id, emoji_name);
 
@@ -162,7 +169,7 @@ exports.update_existing_reaction = function (event, user_list) {
     var new_title = generate_title(emoji_name, user_list);
     reaction.prop('title', new_title);
 
-    if (event.user.id === page_params.user_id) {
+    if (user_id === page_params.user_id) {
         reaction.addClass("reacted");
     }
 };
