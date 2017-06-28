@@ -172,7 +172,6 @@ set_global('message_store', {
         assert.equal(data.class, 'message_reaction reacted');
         assert(!data.is_realm_emoji);
         assert.equal(data.message_id, 1001);
-        assert.equal(data.user.user_id, alice.user_id);
         assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
         return 'new-reaction-html-stub';
     };

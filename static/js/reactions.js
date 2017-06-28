@@ -128,7 +128,6 @@ exports.add_reaction = function (event) {
         return;
     }
 
-    event.emoji_name_css_class = emoji.emojis_name_to_css_class[emoji_name];
     event.user.id = event.user.user_id;
 
     message.reactions.push(event);
@@ -171,24 +170,30 @@ exports.insert_new_reaction = function (event, user_list) {
     var message_id = event.message_id;
     var emoji_name = event.emoji_name;
 
+    var context = {
+        message_id: message_id,
+        emoji_name: emoji_name,
+    };
+
     var new_title = generate_title(emoji_name, user_list);
 
     if (emoji.realm_emojis[emoji_name]) {
-        event.is_realm_emoji = true;
-        event.url = emoji.realm_emojis[emoji_name].emoji_url;
+        context.is_realm_emoji = true;
+        context.url = emoji.realm_emojis[emoji_name].emoji_url;
     }
 
-    event.count = 1;
-    event.title = new_title;
-    event.emoji_alt_code = page_params.emoji_alt_code;
+    context.count = 1;
+    context.title = new_title;
+    context.emoji_alt_code = page_params.emoji_alt_code;
+    context.emoji_name_css_class = emoji.emojis_name_to_css_class[emoji_name];
 
     if (event.user.id === page_params.user_id) {
-        event.class = "message_reaction reacted";
+        context.class = "message_reaction reacted";
     } else {
-        event.class = "message_reaction";
+        context.class = "message_reaction";
     }
 
-    var new_reaction = $(templates.render('message_reaction', event));
+    var new_reaction = $(templates.render('message_reaction', context));
 
     // Now insert it before the add button.
     var reaction_button_element = exports.get_add_reaction_button(message_id);
