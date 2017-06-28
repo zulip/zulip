@@ -96,6 +96,7 @@ Contents:
    :maxdepth: 2
    :caption: Code contribution guide
 
+   contributing
    git-guide
    version-control
    code-style

@@ -147,9 +147,9 @@ Some useful tips for your translating journey:
 
 ## Testing translations
 
-This section assumes you have a
-[Zulip development environment](readme-symlink.html#installing-the-zulip-development-environment)
-setup.
+This section assumes you have a [Zulip development environment][dev-env] setup.
+
+[dev-env]: CONTRIBUTING.html#installing-the-zulip-development-environment
 
 First of all, download the updated resource files from Transifex using the
 `tx pull -a --mode=developer` command (it will require some
