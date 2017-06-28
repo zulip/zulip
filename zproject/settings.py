@@ -1240,7 +1240,7 @@ if vars().get("AUTH_LDAP_BIND_PASSWORD") is None:
 
 # Set the sender email address for Django traceback error reporting
 if SERVER_EMAIL is None:
-    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+    SERVER_EMAIL = ZULIP_ADMINISTRATOR
 
 ########################################################################
 # MISC SETTINGS

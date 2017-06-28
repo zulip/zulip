@@ -52,7 +52,7 @@ def confirm_email_change(request, confirmation_key):
                    'new_email': new_email,
                    }
         send_email('zerver/emails/notify_change_in_email', old_email,
-                   from_email=settings.DEFAULT_FROM_EMAIL, context=context)
+                   from_email=settings.ZULIP_ADMINISTRATOR, context=context)
 
     ctx = {
         'confirmed': confirmed,
