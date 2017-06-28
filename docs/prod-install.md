@@ -78,7 +78,7 @@ These settings include:
   maintaining this installation and who will get support and error
   emails.
 
-- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
+- `EMAIL_*` and `NOREPLY_EMAIL_ADDRESS`:
   credentials for an outgoing SMTP server so Zulip can send emails
   when needed (don't forget to set `email_password` in the
   `zulip-secrets.conf` file!).  We highly recommend reading our

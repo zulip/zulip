@@ -52,7 +52,7 @@ To configure outgoing SMTP, you will need to complete the following steps:
 
 1. Fill out the outgoing email sending configuration block in
 `/etc/zulip/settings.py`, including `EMAIL_HOST`, `EMAIL_HOST_USER`,
-`DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`.  You may also need
+and `NOREPLY_EMAIL_ADDRESS`.  You may also need
 to set `EMAIL_PORT` if your provider doesn't use the standard
 SMTP submission port (587).
 

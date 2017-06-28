@@ -35,8 +35,11 @@ EXTERNAL_HOST = 'zulip.example.com'
 # Note that these should just be hostnames, without port numbers.
 ALLOWED_HOSTS = [EXTERNAL_HOST.split(":")[0]]
 
-# The email address for the person or team who maintain the Zulip
-# Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
+# The email address for the person or team who maintains the Zulip
+# installation. Note that this is a public-facing email address; it may
+# appear on 404 pages, is used as the sender's address for many automated
+# emails, and is advertised as a support address. An email address like
+# support@example.com is totally reasonable, as is admin@example.com.
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
 # Configure the outgoing SMTP server below. You will need working
@@ -71,8 +74,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# The email From address to be used for automatically generated emails
-DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 # The noreply address to be used as Reply-To for certain generated emails.
 # Messages sent to this address should not be delivered anywhere.
 NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@example.com>"
