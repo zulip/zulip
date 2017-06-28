@@ -13,12 +13,6 @@ set_global('document', {
     },
 });
 
-set_global('i18n', {
-    t: function (string) {
-        return string;
-    },
-});
-
 set_global('XDate', require("xdate"));
 set_global('blueslip', function () {});
 set_global('channel', {});
