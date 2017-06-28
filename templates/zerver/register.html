@@ -42,14 +42,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <input id="id_full_name" class="required" type="text" name="full_name"
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
                 maxlength={{ MAX_NAME_LENGTH }} required />
+                <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
+                        <p class="help-inline text-error">{{ error }}</p>
                     {% endfor %}
                 {% endif %}
             {% endif %}
-            <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
-            <div class="required"></div>
             <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
         </div>
 
@@ -75,9 +74,9 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </span>
             {% endif %}
             {% if form.password.errors %}
-            {% for error in form.password.errors %}
-            <div class="help-inline text-error">{{ error }}</div>
-            {% endfor %}
+                {% for error in form.password.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                {% endfor %}
             {% endif %}
 
             <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
@@ -93,15 +92,15 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     placeholder="Acme"
                     value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
                     name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
-                    {% if form.realm_name.errors %}
-                        {% for error in form.realm_name.errors %}
-                            <div class="help-inline text-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
                 <div class="required"></div>
                 <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
             </div>
             <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+            {% if form.realm_name.errors %}
+                {% for error in form.realm_name.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
 
             <div class="help-box margin-top">
                 {{ _('This can be changed later on the settings page.') }}
@@ -128,11 +127,11 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% if realms_have_subdomains %}
                 <div class="inline-block external-host"> .{{ external_host }}</div>
                 {% endif %}
-                    {% if form.realm_subdomain.errors %}
-                        {% for error in form.realm_subdomain.errors %}
-                            <div class="help-inline text-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
+                {% if form.realm_subdomain.errors %}
+                    {% for error in form.realm_subdomain.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
             </div>
             <div class="help-box margin-top">
                 {% if realms_have_subdomains %}
