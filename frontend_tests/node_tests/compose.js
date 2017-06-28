@@ -10,6 +10,7 @@ set_global('document', {
     },
 });
 set_global('channel', {});
+set_global('templates', {});
 
 var noop = function () {};
 
@@ -158,6 +159,49 @@ people.add(bob);
     $("#subject").select(noop);
     assert(!compose.validate());
     assert.equal($('#error-msg').html(), i18n.t('Please specify a topic'));
+}());
+
+(function test_validate_stream_message() {
+    // This test is in kind of continuation to test_validate but since it is
+    // primarly used to get coverage over functions called from validate()
+    // we are seperating it up in different test. Though their relative position
+    // of execution should not be changed.
+    global.page_params.realm_mandatory_topics = false;
+    var sub = {
+        stream_id: 101,
+        name: 'social',
+        subscribed: true,
+    };
+    stream_data.add_sub('social', sub);
+    compose_state.stream_name('social');
+    assert(compose.validate());
+    assert(!$("#compose-all-everyone").visible());
+    assert(!$("#send-status").visible());
+
+    stream_data.get_subscriber_count = function (stream_name) {
+        assert.equal(stream_name, 'social');
+        return 16;
+    };
+    global.templates.render = function (template_name, data) {
+        assert.equal(template_name, 'compose_all_everyone');
+        assert.equal(data.count, 16);
+        return 'compose_all_everyone_stub';
+    };
+    $('#compose-all-everyone').is = function (sel) {
+        if (sel === ':visible') {
+            return $('#compose-all-everyone').visible();
+        }
+    };
+    var compose_content;
+    $('#compose-all-everyone').append = function (data) {
+        compose_content = data;
+    };
+    compose_state.message_content('Hey @all');
+    assert(!compose.validate());
+    assert.equal($("#compose-send-button").attr('disabled'), undefined);
+    assert(!$("#send-status").visible());
+    assert.equal(compose_content, 'compose_all_everyone_stub');
+    assert($("#compose-all-everyone").visible());
 }());
 
 (function test_set_focused_recipient() {
