@@ -509,29 +509,29 @@ function validate_stream_message_mentions(stream_name) {
 }
 
 exports.validate_stream_message_address_info = function (stream_name) {
-    var response;
-
-    if (!stream_data.is_subscribed(stream_name)) {
-        switch (check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
-        case "does-not-exist":
-            response = "<p>The stream <b>" +
-                Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
-                "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
-            compose_error(response, $('#stream'));
-            return false;
-        case "error":
-            compose_error(i18n.t("Error checking subscription"), $("#stream"));
-            return false;
-        case "not-subscribed":
-            response = "<p>You're not subscribed to the stream <b>" +
-                Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-                "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
-            compose_error(response, $('#stream'));
-            return false;
-        }
+    if (stream_data.is_subscribed(stream_name)) {
+        return true;
     }
 
-    return true;
+    var response;
+
+    switch (check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
+    case "does-not-exist":
+        response = "<p>The stream <b>" +
+            Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
+            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        compose_error(response, $('#stream'));
+        return false;
+    case "error":
+        compose_error(i18n.t("Error checking subscription"), $("#stream"));
+        return false;
+    case "not-subscribed":
+        response = "<p>You're not subscribed to the stream <b>" +
+            Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
+            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        compose_error(response, $('#stream'));
+        return false;
+    }
 };
 
 function validate_stream_message() {
