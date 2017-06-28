@@ -239,7 +239,7 @@ exports.absolute_time = (function () {
         var date = new Date(timestamp);
         var H_24 = page_params.twenty_four_hour_time;
 
-        return MONTHS[date.getMonth()] + " " + date.getDate() + ", " + fmt_time(date, H_24);
+        return MONTHS[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear() + " " + fmt_time(date, H_24);
     };
 }());
 
