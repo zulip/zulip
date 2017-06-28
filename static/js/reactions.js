@@ -116,6 +116,28 @@ exports.set_reaction_count = function (reaction, count) {
     count_element.html(count);
 };
 
+var single_reactions = new Dict();
+
+function update_single_reaction(message) {
+    var emoji_name;
+    var reaction;
+    if (message.reactions.length === 1) {
+        emoji_name = message.reactions[0].emoji_name;
+        reaction = exports.find_reaction(message.id, emoji_name);
+        exports.set_reaction_count(reaction, message.reactions[0].user.full_name);
+        single_reactions.set(message.id, emoji_name);
+    } else {
+        emoji_name = single_reactions.get(message.id);
+        if (!emoji_name) {
+            return;
+        }
+        var user_list = get_user_list_for_message_reaction(message, emoji_name);
+        reaction = exports.find_reaction(message.id, emoji_name);
+        exports.set_reaction_count(reaction, user_list.length);
+        single_reactions.del(message.id);
+    }
+}
+
 exports.add_reaction = function (event) {
     var message_id = event.message_id;
     var emoji_name = event.emoji_name;
@@ -149,6 +171,7 @@ exports.update_existing_reaction = function (event, user_list) {
 
     var message_id = event.message_id;
     var emoji_name = event.emoji_name;
+    var message = message_store.get(message_id);
 
     var reaction = exports.find_reaction(message_id, emoji_name);
 
@@ -157,6 +180,7 @@ exports.update_existing_reaction = function (event, user_list) {
     var new_title = generate_title(emoji_name, user_list);
     reaction.prop('title', new_title);
 
+    update_single_reaction(message);
     if (event.user.id === page_params.user_id) {
         reaction.addClass("reacted");
     }
@@ -170,6 +194,7 @@ exports.insert_new_reaction = function (event, user_list) {
 
     var message_id = event.message_id;
     var emoji_name = event.emoji_name;
+    var message = message_store.get(message_id);
 
     var new_title = generate_title(emoji_name, user_list);
 
@@ -193,6 +218,7 @@ exports.insert_new_reaction = function (event, user_list) {
     // Now insert it before the add button.
     var reaction_button_element = exports.get_add_reaction_button(message_id);
     new_reaction.insertBefore(reaction_button_element);
+    update_single_reaction(message);
 };
 
 exports.remove_reaction = function (event) {
@@ -230,6 +256,7 @@ exports.remove_reaction = function (event) {
         // If this user was the only one reacting for this emoji, we simply
         // remove the reaction and exit.
         reaction.remove();
+        update_single_reaction(message);
         return;
     }
 
@@ -241,6 +268,7 @@ exports.remove_reaction = function (event) {
     reaction.prop('title', new_title);
 
     exports.set_reaction_count(reaction, user_list.length);
+    update_single_reaction(message);
 
     if (user_id === page_params.user_id) {
         reaction.removeClass("reacted");
@@ -292,6 +320,9 @@ exports.get_message_reactions = function (message) {
         }
         return reaction;
     });
+    if (message.reactions.length === 1) {
+        reactions[0].count = message.reactions[0].user.full_name;
+    }
     return reactions;
 };
 

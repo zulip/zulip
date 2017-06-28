@@ -330,6 +330,208 @@ set_global('message_store', {
     assert.equal(new_attr, 99);
 }());
 
+message = {
+    id: 1001,
+    reactions: [{
+        emoji_name: 'smile',
+        user: {
+            id: bob.user_id,
+            full_name: bob.full_name,
+        },
+    }],
+};
+
+(function test_single_reaction() {
+    // Main idea here:
+    // 1. Alice reacts with 8ball. 8ball reaction count: 'Alice'
+    // 2. Bob reacts with 8ball. 8ball reaction count: 2
+    // 3. Alice removes 8ball. 8ball reaction count: 'Bob van Roberts'
+    // 4. Cali reacts with realm emoji. 8ball: 1, realm: 1
+    // 5. Bob removes 8ball. realm: 'Cali'
+    // Single reactions are a pain :)
+
+    var result = reactions.get_message_reactions(message);
+    // Test get_message_reactions update with single reaction.
+    assert.equal(result[0].count, 'Bob van Roberts');
+    message = {id: 1001, reactions: []};
+
+    // Insert 8ball for Alice, which is a single reaction.
+    var alice_event = {
+        message_id: 1001,
+        emoji_name: '8ball',
+        user: {
+            user_id: alice.user_id,
+            full_name: alice.full_name,
+        },
+    };
+
+    var message_reactions = $('our-reactions');
+    var message_row = $('our-message-row');
+    var message_table = $('.message_table');
+    var eight_count_element = $('eight-count-element');
+    var eight_reaction_element = $('eight-reaction-element');
+    eight_reaction_element.add_child('.message_reaction_count', eight_count_element);
+
+    message_table.add_child("[zid='1001']", message_row);
+    message_row.add_child('.message_reactions', message_reactions);
+
+    message_reactions.find = function (selector) {
+        if (selector === '[data-emoji-name=\'8ball\']') {
+            // when update_single_reaction is called,
+            // it also calls find_reaction, which returns
+            // the eight reaction element.
+            return eight_reaction_element;
+        }
+        assert.equal(selector, '.reaction_button');
+        return 'reaction-button-stub';
+    };
+
+    var template_called;
+    global.templates.render = function (template_name, data) {
+        template_called = true;
+        assert.equal(template_name, 'message_reaction');
+        assert.equal(data.class, 'message_reaction reacted');
+        assert(!data.is_realm_emoji);
+        assert.equal(data.message_id, 1001);
+        assert.equal(data.user.user_id, alice.user_id);
+        assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
+        return 'new-reaction-html-stub';
+    };
+
+    var insert_called;
+    $('new-reaction-html-stub').insertBefore = function (element) {
+        assert.equal(element, 'reaction-button-stub');
+        insert_called = true;
+    };
+
+    reactions.add_reaction(alice_event);
+
+    assert(template_called);
+    assert(insert_called);
+    assert.equal(eight_count_element.html(), 'Alice'); // single reaction!
+
+    // Now, have Bob react to the same emoji (update)
+    // which should get rid of single reaction.
+
+    var bob_event = {
+        message_id: 1001,
+        emoji_name: '8ball',
+        user: {
+            user_id: bob.user_id,
+            full_name: bob.full_name,
+        },
+    };
+
+    var title_set;
+    eight_reaction_element.prop = function (prop_name, value) {
+        assert.equal(prop_name, 'title');
+        var expected_msg = 'You (click to remove)' +
+            ' and Bob van Roberts reacted with :8ball:';
+        assert.equal(value, expected_msg);
+        title_set = true;
+    };
+
+    message_reactions.find = function (selector) {
+        assert.equal(selector, "[data-emoji-name='8ball']");
+        return eight_reaction_element;
+    };
+
+    reactions.add_reaction(bob_event);
+    assert(title_set);
+    assert.equal(eight_count_element.html(), '2'); // not a single reaction
+
+    // Now, remove Alice's 8ball emoji. The event has the same exact
+    // structure as the add event. This should leave a single reaction
+    // for Bob.
+    title_set = false;
+    eight_reaction_element.prop = function (prop_name, value) {
+        assert.equal(prop_name, 'title');
+        var expected_msg = 'Bob van Roberts reacted with :8ball:';
+        assert.equal(value, expected_msg);
+        title_set = true;
+    };
+
+    reactions.remove_reaction(alice_event);
+    assert(title_set);
+    assert.equal(eight_count_element.html(), 'Bob van Roberts'); // single reaction!
+
+    var current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
+    assert.deepEqual(current_emojis, []); // Alice should have no reactions
+
+    var realm_count_element = $('realm-count-element');
+    var realm_reaction_element = $('realm-reaction-element');
+    realm_reaction_element.add_child('.message_reaction_count', realm_count_element);
+
+    // Now add Cali's realm_emoji reaction.
+    var cali_event = {
+        message_id: 1001,
+        emoji_name: 'realm_emoji',
+        user: {
+            user_id: cali.user_id,
+            full_name: cali.full_name,
+        },
+    };
+
+    template_called = false;
+    global.templates.render = function (template_name, data) {
+        assert.equal(data.class, 'message_reaction');
+        assert(data.is_realm_emoji);
+        template_called = true;
+        realm_count_element.html(data.count);
+        return 'new-reaction-html-stub';
+    };
+
+    message_reactions.find = function (selector) {
+        if (selector === '[data-emoji-name=\'8ball\']') {
+            // when update_single_reaction is called,
+            // it also calls find_reaction, which returns
+            // the eight reaction element.
+            return eight_reaction_element;
+        }
+        assert.equal(selector, '.reaction_button');
+        return 'reaction-button-stub';
+    };
+
+    insert_called = false;
+    $('new-reaction-html-stub').insertBefore = function (element) {
+        assert.equal(element, 'reaction-button-stub');
+        insert_called = true;
+    };
+
+    reactions.add_reaction(cali_event);
+    assert(template_called);
+    assert(insert_called);
+    assert(!eight_reaction_element.hasClass('reacted'));
+    assert.equal(eight_count_element.html(), 1);
+    assert.equal(realm_count_element.html(), 1);
+
+    // Now, remove Bob's 8ball emoji. The event has the same exact
+    // structure as the add event. This should leave a single reaction
+    // for Cali.
+    var removed;
+    eight_reaction_element.remove = function () {
+        removed = true;
+    };
+
+    message_reactions.find = function (selector) {
+        if (selector === '[data-emoji-name=\'realm_emoji\']') {
+            // when update_single_reaction is called,
+            // it also calls find_reaction, which returns
+            // the realm reaction element.
+            return realm_reaction_element;
+        } else if (selector === '[data-emoji-name=\'8ball\']') {
+            // when remove is called return eight element
+            return eight_reaction_element;
+        }
+        assert.equal(selector, '.reaction_button');
+        return 'reaction-button-stub';
+    };
+
+    reactions.remove_reaction(bob_event);
+    assert(removed);
+    assert.equal(realm_count_element.html(), 'Cali');
+}());
+
 (function test_error_handling() {
     var error_msg;
 
