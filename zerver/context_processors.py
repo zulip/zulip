@@ -87,7 +87,6 @@ def zulip_default_context(request):
         'register_link_disabled': register_link_disabled,
         'login_link_disabled': login_link_disabled,
         'about_link_disabled': about_link_disabled,
-        'zulip_admin': settings.ZULIP_ADMINISTRATOR,
         'terms_of_service': settings.TERMS_OF_SERVICE,
         'privacy_policy': settings.PRIVACY_POLICY,
         'login_url': settings.HOME_NOT_LOGGED_IN,
