@@ -49,6 +49,15 @@ people.initialize_current_user(me.user_id);
 people.add(alice);
 people.add(bob);
 
+(function test_update_email() {
+    compose_state.recipient('');
+    assert.equal(compose.update_email(), undefined);
+
+    compose_state.recipient('bob@example.com');
+    compose.update_email(32, 'bob_alias@example.com');
+    assert.equal(compose_state.recipient(), 'bob_alias@example.com');
+}());
+
 (function test_validate_stream_message_address_info() {
     var sub = {
         stream_id: 101,
