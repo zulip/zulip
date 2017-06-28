@@ -1,6 +1,8 @@
 var reactions = (function () {
 var exports = {};
 
+exports.view = {}; // function namespace
+
 function send_reaction_ajax(message_id, emoji_name, operation) {
     if (!emoji.emojis_by_name[emoji_name] && !emoji.realm_emojis[emoji_name]) {
         // Emoji doesn't exist
@@ -137,7 +139,11 @@ exports.add_reaction = function (event) {
     if (user_list.length > 1) {
         exports.update_existing_reaction(event, user_list);
     } else {
-        exports.insert_new_reaction(event, user_list);
+        exports.view.insert_new_reaction({
+            message_id: event.message_id,
+            emoji_name: event.emoji_name,
+            user_id: event.user.id,
+        });
     }
 };
 
@@ -161,14 +167,16 @@ exports.update_existing_reaction = function (event, user_list) {
     }
 };
 
-exports.insert_new_reaction = function (event, user_list) {
+exports.view.insert_new_reaction = function (opts) {
     // Our caller ensures we are the first user to react to this
     // message with this emoji, and it populates user_list for
     // us.  We then render the emoji/title/count and insert it
     // before the add button.
 
-    var message_id = event.message_id;
-    var emoji_name = event.emoji_name;
+    var message_id = opts.message_id;
+    var emoji_name = opts.emoji_name;
+    var user_id = opts.user_id;
+    var user_list = [user_id];
 
     var context = {
         message_id: message_id,
@@ -187,7 +195,7 @@ exports.insert_new_reaction = function (event, user_list) {
     context.emoji_alt_code = page_params.emoji_alt_code;
     context.emoji_name_css_class = emoji.emojis_name_to_css_class[emoji_name];
 
-    if (event.user.id === page_params.user_id) {
+    if (opts.user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
     } else {
         context.class = "message_reaction";
