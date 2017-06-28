@@ -141,13 +141,13 @@ var timerender = require('js/timerender.js');
 
     // timestamp with hour > 12
     var timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
-    var expected = 'Apr 12, 05:52 PM';
+    var expected = 'Apr 12, 2019 05:52 PM';
     var actual = timerender.absolute_time(timestamp);
     assert.equal(expected, actual);
 
     // timestamp with hour < 12
     timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
-    expected = 'May 18, 07:12 AM';
+    expected = 'May 18, 2017 07:12 AM';
     actual = timerender.absolute_time(timestamp);
     assert.equal(expected, actual);
 }());
@@ -159,13 +159,13 @@ var timerender = require('js/timerender.js');
 
     // timestamp with hour > 12
     var timestamp = 1555091573000; // 4/12/2019 17:52:53 (UTC+0)
-    var expected = 'Apr 12, 17:52';
+    var expected = 'Apr 12, 2019 17:52';
     var actual = timerender.absolute_time(timestamp);
     assert.equal(expected, actual);
 
     // timestamp with hour < 12
     timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
-    expected = 'May 18, 07:12';
+    expected = 'May 18, 2017 07:12';
     actual = timerender.absolute_time(timestamp);
     assert.equal(expected, actual);
 }());
