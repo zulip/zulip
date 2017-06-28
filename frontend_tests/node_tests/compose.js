@@ -15,6 +15,7 @@ var noop = function () {};
 add_dependencies({
     common: 'js/common',
     compose_state: 'js/compose_state',
+    Handlebars: 'handlebars',
     people: 'js/people',
     stream_data: 'js/stream_data',
     util: 'js/util',
@@ -54,6 +55,10 @@ people.add(bob);
     };
     stream_data.add_sub('social', sub);
     assert(compose.validate_stream_message_address_info('social'));
+
+    $('#stream').select(noop);
+    assert(!compose.validate_stream_message_address_info('foobar'));
+    assert.equal($('#error-msg').html(), "<p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 }());
 
 (function test_validate() {
