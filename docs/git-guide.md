@@ -897,14 +897,10 @@ You'll see the *Open a pull request* page:
 
 ![images-create-pr]
 
-Provide a **title** and first comment for your pull request. Remember to prefix
-your pull request title with [WIP] if it is a [work-in-progress][wip-prs].
-
-If your pull request has an effect on the visuals of a component, you might want
-to include a screenshot of this change or a GIF of the interaction in your first
-comment. This will allow reviewers to comment on your changes without having to
-checkout your branch; you can find a list of tools you can use for this over
-[here][screenshots-gifs].
+In the pull request body form, you'll see Zulip's [pull request
+template][pr-template]. The template serves as a quick checklist you can follow
+to help your changes be merged quickly. Fill out the template accordingly. You
+can read more about the template [here](pull-request-template.html).
 
 When ready, click the green **Create pull request** to submit the pull request.
 
@@ -1527,4 +1523,4 @@ Deleting local branch review-original-5156 (was 5a1e982)
 [understanding-git]: http://web.mit.edu/nelhage/Public/git-slides-2009.pdf
 [edx-howto-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [tig]: http://jonas.nitro.dk/tig/
-[wip-prs]: #work-in-progress-pull-requests
+[pr-template]: https://github.com/zulip/zulip/blob/master/.github/PULL_REQUEST_TEMPLATE.md

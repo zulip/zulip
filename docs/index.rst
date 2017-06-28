@@ -101,6 +101,7 @@ Contents:
    version-control
    code-style
    mypy
+   pull-request-template
    code-reviewing
    chat-zulip-org
    zulipbot-usage
