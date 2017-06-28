@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Text
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from django.core.mail import send_mail, BadHeaderError
 from zerver.forms import PasswordResetForm
 from zerver.models import UserProfile, get_user_profile_by_email, get_realm
 from django.template import loader
