@@ -508,7 +508,7 @@ function validate_stream_message_mentions(stream_name) {
     return true;
 }
 
-function validate_stream_message_address_info(stream_name) {
+exports.validate_stream_message_address_info = function (stream_name) {
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
@@ -532,7 +532,7 @@ function validate_stream_message_address_info(stream_name) {
     }
 
     return true;
-}
+};
 
 function validate_stream_message() {
     var stream_name = compose_state.stream_name();
@@ -549,7 +549,7 @@ function validate_stream_message() {
         }
     }
 
-    if (!validate_stream_message_address_info(stream_name) ||
+    if (!exports.validate_stream_message_address_info(stream_name) ||
         !validate_stream_message_mentions(stream_name)) {
         return false;
     }
