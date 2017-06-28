@@ -530,6 +530,7 @@ exports.validate_stream_message_address_info = function (stream_name) {
         compose_error(response, $('#stream'));
         return false;
     }
+    return true;
 };
 
 function validate_stream_message() {
