@@ -69,8 +69,8 @@ exports.update_starred = function (message_id, starred) {
         } else {
             elt.removeClass("icon-vector-star").addClass("icon-vector-star-empty").addClass("empty-star");
         }
-        var title_state = message.starred ? "Unstar" : "Star";
-        elt.attr("title", title_state + " this message");
+        var title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
+        elt.attr("title", i18n.t("__starred_status__ this message", {starred_status: title_state}));
     });
 };
 
