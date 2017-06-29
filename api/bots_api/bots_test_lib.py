@@ -12,7 +12,7 @@ import mock
 import requests
 import unittest
 
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from run import get_lib_module
 from bot_lib import StateHandler
@@ -22,8 +22,10 @@ from six.moves import zip
 from contextlib import contextmanager
 from unittest import TestCase
 
-from typing import List, Dict, Any, Optional, Callable
+from typing import List, Dict, Any, Optional, Callable, Tuple, Union
 from types import ModuleType
+
+from itertools import chain, repeat
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -65,33 +67,58 @@ class BotTestCase(TestCase):
         if type not in ["private", "stream", "all"]:
             logging.exception("check_expected_response expects type to be 'private', 'stream' or 'all'")
         for m, r in expectations.items():
-            # For calls with send_reply, r is a string (the content of a message),
-            # so we need to add it to a Dict as the value of 'content'.
-            # For calls with send_message, r is already a Dict.
-            response = {'content': r} if expected_method == 'send_reply' else r
             if type != "stream":
                 message = {'content': m, 'type': "private", 'display_recipient': recipient,
                            'sender_email': email, 'sender_id': sender_id,
                            'sender_full_name': sender_full_name}
-                self.assert_bot_response(message=message, response=response, expected_method=expected_method)
+                self.assert_bot_response(message, (r, expected_method))
             if type != "private":
                 message = {'content': m, 'type': "stream", 'display_recipient': recipient,
                            'subject': subject, 'sender_email': email, 'sender_id': sender_id,
                            'sender_full_name': sender_full_name}
-                self.assert_bot_response(message=message, response=response, expected_method=expected_method)
+                self.assert_bot_response(message, (r, expected_method))
 
-    def call_request(self, message, expected_method, response):
-        # type: (Dict[str, Any], str, Dict[str, Any]) -> None
-        # Send message to the concerned bot
-        self.message_handler.handle_message(message, self.MockClass(), StateHandler())
-
-        # Check if the bot is sending a message via `send_message` function.
-        # Where response is a dictionary here.
+    def call_request(self, message, result, *response_list):
+        # type: (Dict[str, Any], Dict[str, Any], *Union[Tuple[Dict[str, Any], str], Tuple[Dict[str, Any], str, Dict[str, Any]]]) -> None
+        # Expand response_list into responses, where each element has 3 entries
+        responses = [(x[0], x[1], (x[2] if len(x) > 2 else result)) for x in response_list]
+        # Mock 'client'; get instance
+        bot_handler = self.MockClass()
         instance = self.MockClass.return_value
-        if expected_method == "send_message":
-            instance.send_message.assert_called_with(response)
-        else:
-            instance.send_reply.assert_called_with(message, response['content'])
+        # Set requested return values for each set of calls, followed by infinitely more
+        instance.send_message.side_effect = chain(
+            [r[2] for r in responses if r[1] == 'send_message'], repeat(result))
+        instance.send_reply.side_effect = chain(
+            [r[2] for r in responses if r[1] == 'send_reply'], repeat(result))
+        # Send message to the bot
+        try:
+            self.message_handler.handle_message(message, bot_handler, StateHandler())
+        except KeyError as key_err:
+            raise Exception("Message tested likely requires key {} to be added".format(key_err))
+        # Determine which messaging functions are expected
+        send_messages = [call(r[0]) for r in responses if r[1] == 'send_message']
+        send_replies = [call(message, r[0]) for r in responses if r[1] == 'send_reply']
+        # Test that calls are of correct numbers and that they match
+        fail_template = "\nMESSAGE:\n{}\nACTUAL CALLS:\n{}\nEXPECTED:\n{}\n"
+        functions_to_test = [['send_message', instance.send_message, send_messages],
+                             ['send_reply', instance.send_reply, send_replies]]
+        for fn in functions_to_test:
+            err = None
+            try:
+                assert(len(fn[2]) == fn[1].call_count)
+            except AssertionError:
+                err = ("Numbers of {} called do not match those expected ({} calls, {} expected)" +
+                       fail_template).format(fn[0], fn[1].call_count, len(fn[2]), message, fn[1].call_args_list, fn[2])
+            else:
+                try:
+                    if len(fn[2]) > 0:
+                        fn[1].assert_has_calls(fn[2])  # any_order = True FIXME
+                except AssertionError:
+                    err = ("Calls to {} do not match those expected" +
+                           fail_template).format(fn[0], message, fn[1].call_args_list, fn[2])
+            if err is not None:
+                raise AssertionError(err)
+            fn[1].reset_mock()  # Ensure the call details are reset
 
     @contextmanager
     def mock_config_info(self, config_info):
@@ -131,8 +158,9 @@ class BotTestCase(TestCase):
                 else:
                     mock_get.assert_called_with(http_request['api_url'], params=params)
 
-    def assert_bot_response(self, message, response, expected_method):
-        # type: (Dict[str, Any], Dict[str, Any], str) -> None
+    def assert_bot_response(self, message, *response_list, **kwargs):
+        # type: (Dict[str, Any], *Union[Tuple[Dict[str, Any], str], Tuple[Dict[str, Any], str, Dict[str, Any]]], **Dict[str, Any]) -> None
         # Strictly speaking, this function is not needed anymore,
         # kept for now for legacy reasons.
-        self.call_request(message, expected_method, response)
+        result = kwargs.pop('result', {'result': 'success', 'id': 5})
+        self.call_request(message, result, *response_list)
