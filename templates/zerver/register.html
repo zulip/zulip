@@ -67,8 +67,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                    data-min-length="{{password_min_length}}"
                    data-min-quality="{{password_min_quality}}" required />
             <label for="id_password" class="inline-block">{{ _('Password') }}</label>
-            <div class="required"></div>
-            <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
             {% if full_name %}
             <span class="help-inline">
               {{ _('This is used for mobile applications and other tools that require a password.') }}
