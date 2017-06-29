@@ -137,6 +137,18 @@ exports.update_subscribers_count = function (sub) {
     sub.subscriber_count = count;
 };
 
+exports.get_subscriber_count = function (stream_name) {
+    var sub = exports.get_sub_by_name(stream_name);
+    if (sub === undefined) {
+        blueslip.warn('We got a get_subscriber_count count call for a non-existent stream.');
+        return;
+    }
+    if (!sub.subscribers) {
+        return 0;
+    }
+    return sub.subscribers.num_items();
+};
+
 exports.render_stream_description = function (sub) {
     if (sub.description) {
         sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
