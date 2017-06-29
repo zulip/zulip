@@ -177,10 +177,13 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             'referrer_email': referrer.email,
             'referrer_realm_name': referrer.realm.name,
         })
+
+        from_email = "%s via Zulip <%s>" % (referrer.full_name, settings.DEFAULT_FROM_EMAIL.split()[1])
+
         send_future_email(
             "zerver/emails/invitation_reminder",
             data["email"],
-            from_email=settings.ZULIP_ADMINISTRATOR,
+            from_email,
             context=context,
             delay=datetime.timedelta(days=2))
 

@@ -209,4 +209,6 @@ def handle_digest_email(user_profile_id, cutoff):
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledJob
-        send_future_email('zerver/emails/digest', display_email(user_profile), context=context)
+        from_email = "Zulip Digest %s" % (settings.DEFAULT_FROM_EMAIL.split()[1],)
+        send_future_email('zerver/emails/digest', display_email(user_profile),
+                          from_email, context=context)

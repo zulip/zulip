@@ -3052,8 +3052,9 @@ def do_send_confirmation_email(invitee, referrer, body):
     """
     activation_url = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
     context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url}
-    send_email('zerver/emails/invitation', invitee.email, from_email=settings.DEFAULT_FROM_EMAIL,
-               context=context)
+
+    from_email = "%s <%s>" % (referrer.full_name, settings.DEFAULT_FROM_EMAIL.split()[1])
+    send_email('zerver/emails/invitation', invitee.email, from_email, context=context)
 
 def is_inactive(email):
     # type: (Text) -> None
