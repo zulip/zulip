@@ -1,7 +1,5 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', {
-    t: function (str) { return 'translated: ' + str; },
-});
+set_global('i18n', global.stub_i18n);
 
 add_dependencies({
     XDate: 'node_modules/xdate/src/xdate.js',
