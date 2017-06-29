@@ -282,6 +282,11 @@ people.add(bob);
     assert(set_timeout_called);
 }());
 
+(function test_mark_rendered_content_disparity() {
+    compose.mark_rendered_content_disparity(13, true);
+    assert.deepEqual(compose.send_times_data[13], { rendered_content_disparity: true });
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
