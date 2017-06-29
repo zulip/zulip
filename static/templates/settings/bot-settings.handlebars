@@ -12,7 +12,8 @@
         </div>
 
         <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
-            <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
+            <li class="active add-a-new-bot-tab"><a>{{t "Add a new bot" }}</a></li>
+            <li class="active-bots-tab"><a>{{t "Active bots" }}</a></li>
             <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
         </ul>
 
@@ -24,9 +25,8 @@
 
         <div id="bot_table_error" class="alert alert-error hide"></div>
 
-        <div class="add-new-bot-box grey-bg">
+        <div id="add-a-new-bot-form">
             <form id="create_bot_form" class="form-horizontal no-padding">
-                <h4 class="new-bot-section-title light no-margin">{{t "Add a new bot" }}</h4>
                 <div class="new-bot-form">
                     <div class="input-group">
                         <label for="bot_type">
@@ -64,13 +64,13 @@
                     <div class="input-group">
                         <div id="bot_avatar_file"></div>
                         <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
-                        <button class="button rounded small btn-danger display-none" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
-                        <button class="button rounded" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
+                        <button class="button white rounded small btn-danger display-none" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+                        <button class="button white rounded" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
                     </div>
                     <p>
                         <div id="bot_avatar_file_input_error" class="text-error"></div>
                     </p>
-                    <button type="submit" class="button rounded sea-green" id="create_bot_button">
+                    <button type="submit" class="button white rounded sea-green" id="create_bot_button">
                         {{t 'Create bot' }}
                     </button>
                 </div>
