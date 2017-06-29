@@ -109,7 +109,7 @@ people.add(bob);
     assert(!$("#sending-indicator").visible());
     assert(!$("#compose-send-button").is_focused());
     assert.equal($("#compose-send-button").attr('disabled'), undefined);
-    assert.equal($('#error-msg').html(), 'You have nothing to send!');
+    assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
 
     $("#new_message_content").val('foobarfoobar');
     var zephyr_checked = false;
@@ -122,13 +122,13 @@ people.add(bob);
     };
     assert(!compose.validate());
     assert(zephyr_checked);
-    assert.equal($('#error-msg').html(), 'You need to be running Zephyr mirroring in order to send messages!');
+    assert.equal($('#error-msg').html(), i18n.t('You need to be running Zephyr mirroring in order to send messages!'));
 
     compose_state.set_message_type('private');
     compose_state.recipient('');
     $("#private_message_recipient").select(noop);
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), 'Please specify at least one recipient');
+    assert.equal($('#error-msg').html(), i18n.t('Please specify at least one recipient'));
 
     compose_state.recipient('foo@zulip.com');
     global.page_params.realm_is_zephyr_mirror_realm = true;
@@ -150,14 +150,14 @@ people.add(bob);
     compose_state.stream_name('');
     $("#stream").select(noop);
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), 'Please specify a stream');
+    assert.equal($('#error-msg').html(), i18n.t('Please specify a stream'));
 
     compose_state.stream_name('Denmark');
     global.page_params.realm_mandatory_topics = true;
     compose_state.subject('');
     $("#subject").select(noop);
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), 'Please specify a topic');
+    assert.equal($('#error-msg').html(), i18n.t('Please specify a topic'));
 }());
 
 (function test_set_focused_recipient() {
