@@ -46,10 +46,16 @@ function render_bots() {
         });
     });
 
-    if ($("#bots_lists_navbar .active-bots-tab").hasClass("active")) {
+    if ($("#bots_lists_navbar .add-a-new-bot-tab").hasClass("active")) {
+        $("#add-a-new-bot-form").show();
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").hide();
+    } else if ($("#bots_lists_navbar .active-bots-tab").hasClass("active")) {
+        $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
     } else {
+        $("#add-a-new-bot-form").hide();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
     }
@@ -331,12 +337,26 @@ exports.set_up = function () {
         ));
     });
 
+    $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#bots_lists_navbar .add-a-new-bot-tab").addClass("active");
+        $("#bots_lists_navbar .active-bots-tab").removeClass("active");
+        $("#bots_lists_navbar .inactive-bots-tab").removeClass("active");
+        $("#add-a-new-bot-form").show();
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").hide();
+    });
+
     $("#bots_lists_navbar .active-bots-tab").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
 
+        $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
         $("#bots_lists_navbar .active-bots-tab").addClass("active");
         $("#bots_lists_navbar .inactive-bots-tab").removeClass("active");
+        $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
     });
@@ -345,8 +365,10 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
 
+        $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
         $("#bots_lists_navbar .active-bots-tab").removeClass("active");
         $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
+        $("#add-a-new-bot-form").hide();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
     });
