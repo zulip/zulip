@@ -26,7 +26,7 @@ function update_buttons_with_focus(focused) {
     if (focused
         || search_query.val()
         || narrow_state.active()) {
-        $('.search_button').removeAttr('disabled');
+        $('.search_button').prop('disabled', false);
     } else {
         $('.search_button').attr('disabled', 'disabled');
     }

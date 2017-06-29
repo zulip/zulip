@@ -77,10 +77,10 @@ exports.set_up = function () {
 
     $("#enable_desktop_notifications").change(function () {
         if (this.checked) {
-            $("#pm_content_in_desktop_notifications").removeAttr("disabled");
+            $("#pm_content_in_desktop_notifications").prop("disabled", false);
             $("#pm_content_in_desktop_notifications_label").parent().removeClass("control-label-disabled");
         } else {
-            $("#pm_content_in_desktop_notifications").attr("disabled", true);
+            $("#pm_content_in_desktop_notifications").prop("disabled", true);
             $("#pm_content_in_desktop_notifications_label").parent().addClass("control-label-disabled");
         }
     });

@@ -91,7 +91,7 @@ function update_fade() {
 }
 
 exports.abort_xhr = function () {
-    $("#compose-send-button").removeAttr("disabled");
+    $("#compose-send-button").prop("disabled", false);
     var xhr = $("#compose").data("filedrop_xhr");
     if (xhr !== undefined) {
         xhr.abort();
@@ -150,7 +150,7 @@ function compose_error(error_text, bad_input) {
                .addClass('alert-error')
                .stop(true).fadeTo(0, 1);
     $('#error-msg').html(error_text);
-    $("#compose-send-button").removeAttr('disabled');
+    $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
     if (bad_input !== undefined) {
         bad_input.focus().select();
@@ -279,7 +279,7 @@ function clear_compose_box() {
     drafts.delete_draft_after_send();
     compose_ui.autosize_textarea();
     $("#send-status").hide(0);
-    $("#compose-send-button").removeAttr('disabled');
+    $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
     resize.resize_bottom_whitespace();
 }
@@ -457,7 +457,7 @@ function validate_stream_message_mentions(stream_name) {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings();
 
-            $("#compose-send-button").removeAttr('disabled');
+            $("#compose-send-button").prop('disabled', false);
             $("#sending-indicator").hide();
             return false;
         }
@@ -799,7 +799,7 @@ exports.initialize = function () {
         var msg;
         $("#send-status").addClass("alert-error")
                         .removeClass("alert-info");
-        $("#compose-send-button").removeAttr("disabled");
+        $("#compose-send-button").prop("disabled", false);
         switch (err) {
         case 'BrowserNotSupported':
             msg = i18n.t("File upload is not yet available for your browser.");
@@ -849,7 +849,7 @@ exports.initialize = function () {
             textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
         }
         compose_ui.autosize_textarea();
-        $("#compose-send-button").removeAttr("disabled");
+        $("#compose-send-button").prop("disabled", false);
         $("#send-status").removeClass("alert-info")
                          .hide();
 

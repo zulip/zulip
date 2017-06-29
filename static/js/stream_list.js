@@ -537,7 +537,7 @@ exports.initiate_search = function () {
     var filter = $('.stream-list-filter').expectOne();
     filter.parent().removeClass('notdisplayed');
     filter.focus();
-    $('#clear_search_stream_button').removeAttr('disabled');
+    $('#clear_search_stream_button').prop('disabled', false);
 };
 
 exports.clear_and_hide_search = function () {

@@ -334,7 +334,7 @@ function test_change_message_editing(change_message_editing) {
 
     change_message_editing.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), undefined);
+    assert.equal($('#id_realm_message_content_edit_limit_minutes').prop('disabled'), false);
 }
 
 function test_change_invite_required(change_invite_required) {
@@ -348,7 +348,7 @@ function test_change_invite_required(change_invite_required) {
 
     change_invite_required.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), undefined);
+    assert.equal($('#id_realm_invite_by_admins_only').prop('disabled'), false);
 }
 
 function test_disable_notifications_stream(disable_notifications_stream) {
@@ -506,7 +506,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     $('#full_name').attr('disabled', 'disabled');
     settings_org.toggle_name_change_display();
-    assert.equal($('#full_name').attr('disabled'), undefined);
+    assert.equal($('#full_name').prop('disabled'), false);
     assert(name_toggled);
 
     settings_org.toggle_name_change_display();

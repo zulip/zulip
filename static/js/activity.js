@@ -494,7 +494,7 @@ function update_clear_search_button() {
 
     // Show button iff the search input is focused, or has non-empty contents
     if (focused || $('.user-list-filter').val()) {
-        $('#clear_search_people_button').removeAttr('disabled');
+        $('#clear_search_people_button').prop('disabled', false);
     } else {
         $('#clear_search_people_button').attr('disabled', 'disabled');
     }

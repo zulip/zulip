@@ -49,7 +49,7 @@ exports.toggle_name_change_display = function () {
     }
 
     if ($('#full_name').attr('disabled')) {
-        $('#full_name').removeAttr('disabled');
+        $('#full_name').prop('disabled', false);
     } else {
         $('#full_name').attr('disabled', 'disabled');
     }
@@ -311,7 +311,7 @@ function _set_up() {
 
     $("#id_realm_invite_required").change(function () {
         if (this.checked) {
-            $("#id_realm_invite_by_admins_only").removeAttr("disabled");
+            $("#id_realm_invite_by_admins_only").prop("disabled", false);
             $("#id_realm_invite_by_admins_only_label").parent().removeClass("control-label-disabled");
         } else {
             $("#id_realm_invite_by_admins_only").attr("disabled", true);
@@ -321,7 +321,7 @@ function _set_up() {
 
     $("#id_realm_allow_message_editing").change(function () {
         if (this.checked) {
-            $("#id_realm_message_content_edit_limit_minutes").removeAttr("disabled");
+            $("#id_realm_message_content_edit_limit_minutes").prop("disabled", false);
             $("#id_realm_message_content_edit_limit_minutes_label").parent().removeClass("control-label-disabled");
         } else {
             $("#id_realm_message_content_edit_limit_minutes").attr("disabled", true);

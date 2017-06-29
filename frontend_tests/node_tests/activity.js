@@ -522,7 +522,7 @@ $('.user-list-filter').is = function (sel) {
 
 (function test_clear_search() {
     $('.user-list-filter').val('somevalue');
-    $('#clear_search_people_button').removeAttr('disabled');
+    $('#clear_search_people_button').prop('disabled', false);
     $('.user-list-filter').focus();
     activity.clear_search();
     assert.equal($('.user-list-filter').val(), '');
@@ -536,7 +536,7 @@ $('.user-list-filter').is = function (sel) {
     $('#clear_search_people_button').attr('disabled', 'disabled');
     activity.blur_search();
     assert.equal($('.user-list-filter').is_focused(), false);
-    assert.equal($('#clear_search_people_button').attr('disabled'), undefined);
+    assert.equal($('#clear_search_people_button').prop('disabled'), false);
     $('.user-list-filter').val('');
     activity.blur_search();
     assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
@@ -553,14 +553,14 @@ $('.user-list-filter').is = function (sel) {
     activity.escape_search();
     assert.equal($('.user-list-filter').is_focused(), false);
     $('.user-list-filter').val('foobar');
-    $('#clear_search_people_button').removeAttr('disabled');
+    $('#clear_search_people_button').prop('disabled', false);
     activity.escape_search();
     assert.equal($('.user-list-filter').val(), '');
     assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
     $('.user-list-filter').focus();
     $('.user-list-filter').val('foobar');
     activity.escape_search();
-    assert.equal($('#clear_search_people_button').attr('disabled'), undefined);
+    assert.equal($('#clear_search_people_button').prop('disabled'), false);
 }());
 
 (function test_searching() {
