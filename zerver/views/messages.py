@@ -75,6 +75,27 @@ ConditionTransform = Any  # TODO: should be Callable[[ColumnElement], ColumnElem
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
+    '''
+    Build up a SQLAlchemy query to find messages matching a narrow.
+    '''
+
+    # This class has an important security invariant:
+    #
+    #   None of these methods ever *add* messages to a query's result.
+    #
+    # That is, the `add_term` method, and its helpers the `by_*` methods,
+    # are passed a Query object representing a query for messages; they may
+    # call some methods on it, and then they return a resulting Query
+    # object.  Things these methods may do to the queries they handle
+    # include
+    #  * add conditions to filter out rows (i.e., messages), with `query.where`
+    #  * add columns for more information on the same message, with `query.column`
+    #  * add a join for more information on the same message
+    #
+    # Things they may not do include
+    #  * anything that would pull in additional rows, or information on
+    #    other messages.
+
     def __init__(self, user_profile, msg_id_column):
         # type: (UserProfile, str) -> None
         self.user_profile = user_profile
@@ -82,6 +103,17 @@ class NarrowBuilder(object):
 
     def add_term(self, query, term):
         # type: (Query, Dict[str, Any]) -> Query
+        """
+        Extend the given query to one narrowed by the given term, and return the result.
+
+        This method satisfies an important security property: the returned
+        query never includes a message that the given query didn't.  In
+        particular, if the given query will only find messages that a given
+        user can legitimately see, then so will the returned query.
+        """
+        # To maintain the security property, we hold all the `by_*`
+        # methods to the same criterion.  See the class's block comment
+        # for details.
 
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
@@ -124,6 +156,7 @@ class NarrowBuilder(object):
     def by_is(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         if operand == 'private':
+            # The `.select_from` method extends the query with a join.
             query = query.select_from(join(query.froms[0], table("zerver_recipient"),
                                            column("recipient_id") ==
                                            literal_column("zerver_recipient.id")))
