@@ -1245,6 +1245,16 @@ To fix, open all the files with conflicts in your editor and decide which edits
 should be applied. Git uses standard conflict-resolution (`<<<<<<<`, `=======`,
 and `>>>>>>>`) markers to indicate where in files there are conflicts.
 
+Tip: You can see recent changes made to a file by running the following
+commands:
+```
+git fetch upstream
+git log -p upstream/master -- /path/to/file
+```
+You can use this to compare the changes that you have made to a file with the
+ones in upstream, helping you avoid undoing changes from a previous commit when
+you are rebasing.
+
 Once you've done that, save the file(s), stage them with `git add` and then
 continue the rebase with `git rebase --continue`:
 
