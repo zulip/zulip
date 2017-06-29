@@ -256,7 +256,7 @@ function stream_home_view_clicked(e) {
     if (sub.in_home_view) {
         sub_settings.find(".mute-note").addClass("hide-mute-note");
         notification_checkboxes.removeClass("muted-sub");
-        notification_checkboxes.find("input[type='checkbox']").removeAttr("disabled");
+        notification_checkboxes.find("input[type='checkbox']").prop("disabled", false);
     } else {
         sub_settings.find(".mute-note").removeClass("hide-mute-note");
         notification_checkboxes.addClass("muted-sub");

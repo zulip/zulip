@@ -138,14 +138,14 @@ people.add(bob);
 }());
 
 (function test_validate() {
-    $("#compose-send-button").removeAttr('disabled');
+    $("#compose-send-button").prop('disabled', false);
     $("#compose-send-button").focus();
     $("#sending-indicator").hide();
     $("#new_message_content").select(noop);
     assert(!compose.validate());
     assert(!$("#sending-indicator").visible());
     assert(!$("#compose-send-button").is_focused());
-    assert.equal($("#compose-send-button").attr('disabled'), undefined);
+    assert.equal($("#compose-send-button").prop('disabled'), false);
     assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
 
     $("#new_message_content").val('foobarfoobar');
@@ -247,7 +247,7 @@ people.add(bob);
     };
     compose_state.message_content('Hey @all');
     assert(!compose.validate());
-    assert.equal($("#compose-send-button").attr('disabled'), undefined);
+    assert.equal($("#compose-send-button").prop('disabled'), false);
     assert(!$("#send-status").visible());
     assert.equal(compose_content, 'compose_all_everyone_stub');
     assert($("#compose-all-everyone").visible());
@@ -286,7 +286,7 @@ people.add(bob);
     assert.equal($("#new_message_content").val(), '');
     assert($("#new_message_content").is_focused());
     assert(!$("#send-status").visible());
-    assert.equal($("#compose-send-button").attr('disabled'), undefined);
+    assert.equal($("#compose-send-button").prop('disabled'), false);
     assert(!$("#sending-indicator").visible());
     assert.equal(_.keys(compose.send_times_data).length, 1);
     assert.equal(compose.send_times_data[12].start.getTime(), new Date(test_date).getTime());
@@ -417,7 +417,7 @@ people.add(bob);
         assert.equal($("#new_message_content").val(), '');
         assert($("#new_message_content").is_focused());
         assert(!$("#send-status").visible());
-        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($("#compose-send-button").prop('disabled'), false);
         assert(!$("#sending-indicator").visible());
     }());
 
@@ -527,13 +527,13 @@ people.add(bob);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
         assert(!echo_error_msg_checked);
-        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($("#compose-send-button").prop('disabled'), false);
         assert.equal($('#error-msg').html(),
                        'Error sending message: Server says 408');
         assert.equal($("#new_message_content").val(), 'foobarfoobar');
         assert($("#new_message_content").is_focused());
         assert($("#send-status").visible());
-        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($("#compose-send-button").prop('disabled'), false);
         assert(!$("#sending-indicator").visible());
     }());
 }());
@@ -564,7 +564,7 @@ people.add(bob);
 (function test_finish() {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
-        $("#compose-send-button").removeAttr('disabled');
+        $("#compose-send-button").prop('disabled', false);
         $("#compose-send-button").focus();
         $("#sending-indicator").hide();
         $("#new_message_content").select(noop);
@@ -574,7 +574,7 @@ people.add(bob);
         assert(!$("#compose_invite_users").visible());
         assert(!$("#sending-indicator").visible());
         assert(!$("#compose-send-button").is_focused());
-        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($("#compose-send-button").prop('disabled'), false);
         assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
     }());
 
@@ -1051,7 +1051,7 @@ function test_with_mock_socket(test_params) {
         };
         var invite_err_sel = '.compose_invite_user_error';
         container.set_find_results(invite_err_sel, $(invite_err_sel));
-        target.removeAttr('disabled');
+        target.prop('disabled', false);
         $(invite_err_sel).hide();
 
         handler(event);
@@ -1281,7 +1281,7 @@ function test_with_mock_socket(test_params) {
 }());
 
 (function test_upload_started() {
-    $("#compose-send-button").removeAttr('disabled');
+    $("#compose-send-button").prop('disabled', false);
     $("#send-status").removeClass("alert-info").hide();
     $(".send-status-close").one = function (ev_name, handler) {
         assert.equal(ev_name, 'click');
@@ -1326,7 +1326,7 @@ function test_with_mock_socket(test_params) {
     function assert_side_effects(msg) {
         assert($("#send-status").hasClass("alert-error"));
         assert(!$("#send-status").hasClass("alert-info"));
-        assert.equal($("#compose-send-button").attr("disabled"), undefined);
+        assert.equal($("#compose-send-button").prop("disabled"), false);
         assert.equal($("#error-msg").text(), msg);
     }
 
@@ -1400,7 +1400,7 @@ function test_with_mock_socket(test_params) {
             if (response.uri) {
                 assert(compose_actions_start_checked);
                 assert(compose_ui_autosize_textarea_checked);
-                assert.equal($("#compose-send-button").attr('disabled'), undefined);
+                assert.equal($("#compose-send-button").prop('disabled'), false);
                 assert(!$('#send-status').hasClass('alert-info'));
                 assert(!$('#send-status').visible());
                 assert(clear_out_file_input_triggered);

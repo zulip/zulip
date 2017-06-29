@@ -281,7 +281,7 @@ $.fn.ajaxSubmit = function(options) {
                 if ( useProp )
                     el.prop('disabled', false);
                 else
-                    el.removeAttr('disabled');
+                    el.prop('disabled', false);
             }
         }
 
