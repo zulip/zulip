@@ -66,7 +66,7 @@ var exports = {};
     }
 
     $(function () {
-        $('#main_div').delegate('.inline-subscribe-button', 'click', function (e) {
+        $('#main_div').on('click', '.inline-subscribe-button', function (e) {
             var $button = $(e.target);
             var stream_name = $button.closest('.inline-subscribe').attr('data-stream-name');
             var $status_message = $button.siblings('.inline-subscribe-error');
