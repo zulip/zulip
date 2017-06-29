@@ -143,6 +143,19 @@ set_global('message_store', {
     assert.equal(count_element.html(), '5');
 }());
 
+(function test_get_reaction_section() {
+    var message_table = $('.message_table');
+    var message_row = $('some-message-row');
+    var message_reactions = $('our-reactions-section');
+
+    message_table.add_child("[zid='555']", message_row);
+    message_row.add_child('.message_reactions', message_reactions);
+
+    var section = reactions.get_reaction_section(555);
+
+    assert.equal(section, message_reactions);
+}());
+
 (function test_add_and_remove_reaction() {
     // Insert 8ball for Alice.
     var alice_event = {
@@ -154,11 +167,11 @@ set_global('message_store', {
     };
 
     var message_reactions = $('our-reactions');
-    var message_row = $('our-message-row');
-    var message_table = $('.message_table');
 
-    message_table.add_child("[zid='1001']", message_row);
-    message_row.add_child('.message_reactions', message_reactions);
+    reactions.get_reaction_section = function (message_id) {
+        assert.equal(message_id, 1001);
+        return message_reactions;
+    };
 
     message_reactions.find = function (selector) {
         assert.equal(selector, '.reaction_button');
