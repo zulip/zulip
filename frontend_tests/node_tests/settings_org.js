@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global('i18n', global.stub_i18n);
 
 add_dependencies({
     stream_data: 'js/stream_data',
@@ -7,11 +8,6 @@ add_dependencies({
 var settings_org = require('js/settings_org.js');
 
 var noop = function () {};
-
-set_global('i18n', {
-    ensure_i18n: function (f) { f(); },
-    t: function (s) { return 'translated: ' + s; },
-});
 
 set_global('loading', {
     make_indicator: noop,
@@ -419,7 +415,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     success_callback();
     assert.equal(info.text(),
-                 'translated: Update successful: Subdomains allowed for __domain__');
+                 'translated: Update successful: Subdomains allowed for example.com');
     assert(info.hasClass('text-success'));
 
     var xhr = {
@@ -435,7 +431,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     change_allow_subdomains.apply('elem-stub', [ev]);
     success_callback();
     assert.equal(info.text(),
-                 'translated: Update successful: Subdomains no longer allowed for __domain__');
+                 'translated: Update successful: Subdomains no longer allowed for example.com');
 }
 
 (function test_set_up() {
