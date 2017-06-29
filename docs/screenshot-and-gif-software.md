@@ -26,6 +26,8 @@ to checkout your branch.
 ## GIF tools by platform
 ### Browser
 - [GIPHY](https://giphy.com)
+- [Chrome Capture](https://chrome.google.com/webstore/detail/chrome-capture/ggaabchcecdbomdcnbahdfddfikjmphe?hl=en)
+(Tip: Use Alt+i to interact with the page while recording)
 
 ### MacOS
 - [GIPHY](https://giphy.com/apps/giphycapture)
