@@ -506,6 +506,13 @@ function make_sub(name, stream_id) {
     string = '';
     operators = [];
     _test();
+
+    string = 'stream: separated topic: "with space"';
+    operators = [
+        {operator: 'stream', operand: 'separated'},
+        {operator: 'topic', operand: 'with space'},
+    ];
+    _test();
 }());
 
 (function test_unparse() {
