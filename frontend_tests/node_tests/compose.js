@@ -14,9 +14,22 @@ set_global('templates', {});
 
 var noop = function () {};
 
+set_global('blueslip', {});
+set_global('drafts', {
+    delete_draft_after_send: noop,
+});
+set_global('resize', {
+    resize_bottom_whitespace: noop,
+});
+set_global('feature_flags', {
+    resize_bottom_whitespace: noop,
+});
+set_global('echo', {});
+
 add_dependencies({
     common: 'js/common',
     compose_state: 'js/compose_state',
+    compose_ui: 'js/compose_ui.js',
     Handlebars: 'handlebars',
     people: 'js/people',
     stream_data: 'js/stream_data',
@@ -224,6 +237,49 @@ people.add(bob);
     assert(!$("#send-status").visible());
     assert.equal(compose_content, 'compose_all_everyone_stub');
     assert($("#compose-all-everyone").visible());
+}());
+
+(function test_send_message_success() {
+    blueslip.error = noop;
+    blueslip.log = noop;
+    $("#new_message_content").val('foobarfoobar');
+    $("#new_message_content").blur();
+    $("#send-status").show();
+    $("#compose-send-button").attr('disabled', 'disabled');
+    $("#sending-indicator").show();
+    global.feature_flags.log_send_times = true;
+    global.feature_flags.collect_send_times = true;
+    var set_timeout_called = false;
+    global.patch_builtin('setTimeout', function (func, delay) {
+        assert.equal(delay, 5000);
+        func();
+        set_timeout_called = true;
+    });
+    var server_events_triggered;
+    global.server_events = {
+        restart_get_events: function () {
+            server_events_triggered = true;
+        },
+    };
+    var reify_message_id_checked;
+    echo.reify_message_id = function (local_id, message_id) {
+        assert.equal(local_id, 1001);
+        assert.equal(message_id, 12);
+        reify_message_id_checked = true;
+    };
+    var test_date = 'Wed Jun 28 2017 22:12:48 GMT+0000 (UTC)';
+    compose.send_message_success(1001, 12, new Date(test_date), false);
+    assert.equal($("#new_message_content").val(), '');
+    assert($("#new_message_content").is_focused());
+    assert(!$("#send-status").visible());
+    assert.equal($("#compose-send-button").attr('disabled'), undefined);
+    assert(!$("#sending-indicator").visible());
+    assert.equal(_.keys(compose.send_times_data).length, 1);
+    assert.equal(compose.send_times_data[12].start.getTime(), new Date(test_date).getTime());
+    assert(!compose.send_times_data[12].locally_echoed);
+    assert(reify_message_id_checked);
+    assert(server_events_triggered);
+    assert(set_timeout_called);
 }());
 
 (function test_set_focused_recipient() {
