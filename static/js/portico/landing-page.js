@@ -282,7 +282,7 @@ var events = function () {
             $(".portico-landing").removeClass("show");
             setTimeout(function () {
                 window.location.href = $(this).attr("href");
-            }.bind(this), 500);
+            }.on(this), 500);
         }
     });
 

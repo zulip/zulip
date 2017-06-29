@@ -141,7 +141,7 @@ function copy_handler() {
 }
 
 $(function () {
-    $(document).bind('copy', copy_handler);
+    $(document).on('copy', copy_handler);
 });
 
 
