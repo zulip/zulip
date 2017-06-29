@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global('i18n', global.stub_i18n);
 
 set_global('page_params', {
     use_websockets: false,
@@ -10,7 +11,6 @@ set_global('document', {
 });
 set_global('channel', {});
 
-var i18n = global.i18n;
 var noop = function () {};
 
 add_dependencies({
