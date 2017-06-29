@@ -5,7 +5,7 @@ i18n.t = function (str, context) {
     // of key value pairs and string will be having substitution for keywords
     // like these "__keyword__".
     if (context === undefined) {
-        return str;
+        return 'translated: ' + str;
     }
     var keyword_regex = /__(\w)+__/g;
     var keys_in_str = str.match(keyword_regex);
