@@ -480,8 +480,7 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 }
 
 function validate_stream_message_mentions(stream_name) {
-    var current_stream = stream_data.get_sub(stream_name);
-    var stream_count = current_stream.subscribers.num_items();
+    var stream_count = stream_data.get_subscriber_count(stream_name) || 0;
 
     // check if @all or @everyone is in the message
     if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
