@@ -455,7 +455,15 @@ MessageListView.prototype = {
         // all messages lists. To prevent having both list views overwriting
         // each others data we will make a new message object to add data to
         // for rendering.
-        message_containers = _.map(messages, function (message) { return {msg: message}; });
+        message_containers = _.map(messages, function (message) {
+            if (message.starred) {
+                message.starred_status = i18n.t("Unstar");
+            } else {
+                message.starred_status = i18n.t("Star");
+            }
+
+            return {msg: message};
+        });
 
         function save_scroll_position() {
             if (orig_scrolltop_offset === undefined && self.selected_row().length > 0) {
