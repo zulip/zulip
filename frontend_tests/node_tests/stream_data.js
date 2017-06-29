@@ -452,3 +452,32 @@ var people = global.people;
     assert(!stream_data.get_sub('Canada'));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
 }());
+
+(function test_get_subscriber_count() {
+    var india = {
+        stream_id: 102,
+        name: 'India',
+        subscribed: true,
+    };
+    stream_data.clear_subscriptions();
+    assert.equal(stream_data.get_subscriber_count('India'), undefined);
+    stream_data.add_sub('India', india);
+    assert.equal(stream_data.get_subscriber_count('India'), 0);
+
+    var fred = {
+        email: 'fred@zulip.com',
+        full_name: 'Fred',
+        user_id: 101,
+    };
+    people.add(fred);
+    stream_data.add_subscriber('India', 102);
+    assert.equal(stream_data.get_subscriber_count('India'), 1);
+    var george = {
+        email: 'george@zulip.com',
+        full_name: 'George',
+        user_id: 103,
+    };
+    people.add(george);
+    stream_data.add_subscriber('India', 103);
+    assert.equal(stream_data.get_subscriber_count('India'), 2);
+}());
