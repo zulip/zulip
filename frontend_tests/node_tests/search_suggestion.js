@@ -384,7 +384,6 @@ init();
 
     var expected = [
         "",
-        "in:all",
         "is:private",
         "is:starred",
         "is:mentioned",
@@ -400,7 +399,6 @@ init();
     function describe(q) {
         return suggestions.lookup_table[q].description;
     }
-    assert.equal(describe('in:all'), 'All messages');
     assert.equal(describe('is:private'), 'Private messages');
     assert.equal(describe('is:starred'), 'Starred messages');
     assert.equal(describe('is:mentioned'), '@-mentions');

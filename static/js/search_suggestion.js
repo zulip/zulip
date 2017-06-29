@@ -345,16 +345,6 @@ function get_operator_subset_suggestions(operators) {
 function get_special_filter_suggestions(last, operators) {
     var suggestions = [
         {
-            search_string: 'in:all',
-            description: 'all messages',
-            invalid: [
-                {operator: 'in'},
-                {operator: 'stream'},
-                {operator: 'pm-with'},
-                {operator: 'is', operand: 'private'},
-            ],
-        },
-        {
             search_string: 'is:private',
             description: 'private messages',
             invalid: [
