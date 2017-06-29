@@ -635,6 +635,7 @@ function render(template_name, args) {
             content: 'This is message one.',
             last_edit_timestr: '11:00',
             starred: true,
+            starred_status: "Unstar",
         },
     };
 
