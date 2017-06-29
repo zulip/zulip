@@ -287,6 +287,36 @@ people.add(bob);
     assert.deepEqual(compose.send_times_data[13], { rendered_content_disparity: true });
 }());
 
+(function test_report_as_received() {
+    var msg = {
+        id: 12,
+        sent_by_me: true,
+    };
+    var set_timeout_called = false;
+    global.patch_builtin('setTimeout', function (func, delay) {
+        assert.equal(delay, 0);
+        func();
+        set_timeout_called = true;
+    });
+    compose.send_times_data[12].locally_echoed = true;
+    channel.post = function (payload) {
+        assert.equal(payload.url, '/json/report_send_time');
+        assert.equal(typeof(payload.data.time), 'string');
+        assert(payload.data.locally_echoed);
+        assert(!payload.data.rendered_content_disparity);
+    };
+    compose.report_as_received(msg);
+    assert.equal(typeof(compose.send_times_data[12].received), 'object');
+    assert.equal(typeof(compose.send_times_data[12].displayed), 'object');
+    assert(set_timeout_called);
+
+    delete compose.send_times_data[13];
+    msg.id = 13;
+    compose.report_as_received(msg);
+    assert.equal(typeof(compose.send_times_data[13].received), 'object');
+    assert.equal(typeof(compose.send_times_data[13].displayed), 'object');
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
