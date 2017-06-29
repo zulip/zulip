@@ -1,10 +1,13 @@
 $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
+    var password_field = $('#id_password, #id_new_password1');
 
     $.validator.addMethod('password_strength', function (value) {
-        return common.password_quality(value, undefined, $('#id_password, #id_new_password1'));
-    }, "Password is too weak.");
+        return common.password_quality(value, undefined, password_field);
+    }, function () {
+        return common.password_warning(password_field.val(), password_field);
+    });
 
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
@@ -35,7 +38,7 @@ $(function () {
         unhighlight: highlight('success'),
     });
 
-    $('#id_password, #id_new_password1').on('change keyup', function () {
+    password_field.on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.
         common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
