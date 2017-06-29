@@ -43,8 +43,7 @@ function clear_out_file_list(jq_file_list) {
 }
 
 function show_all_everyone_warnings() {
-    var current_stream = stream_data.get_sub(compose_state.stream_name());
-    var stream_count = current_stream.subscribers.num_items();
+    var stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
     var all_everyone_template = templates.render("compose_all_everyone", {count: stream_count});
     var error_area_all_everyone = $("#compose-all-everyone");
