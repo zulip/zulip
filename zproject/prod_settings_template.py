@@ -74,8 +74,9 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# The noreply address to be used as Reply-To for certain generated emails.
-# Messages sent to this address should not be delivered anywhere.
+# The noreply address to be used as the sender for certain generated emails.
+# Messages sent to this address could contain sensitive user data and should
+# not be delivered anywhere.
 NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@example.com>"
 
 
