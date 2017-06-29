@@ -370,7 +370,7 @@ EVENT_FUNCTION_MAPPER = {
     'fork': get_fork_body,
     'gollum': get_wiki_pages_body,
     'issue_comment': get_issue_comment_body,
-    'issue': get_issue_body,
+    'issues': get_issue_body,
     'member': get_member_body,
     'membership': get_membership_body,
     'opened_or_update_pull_request': get_opened_or_update_pull_request_body,

@@ -134,7 +134,7 @@ class GithubWebhookTest(WebhookTestCase):
     def test_issue_msg(self):
         # type: () -> None
         expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2)\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
-        self.send_and_test_stream_message('issue', self.EXPECTED_SUBJECT_ISSUE_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='issue')
+        self.send_and_test_stream_message('issue', self.EXPECTED_SUBJECT_ISSUE_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='issues')
 
     def test_membership_msg(self):
         # type: () -> None
