@@ -80,10 +80,12 @@ class BotTestCase(TestCase):
                            'sender_full_name': sender_full_name}
                 self.assert_bot_response(message=message, response=response, expected_method=expected_method)
 
-    def call_request(self, message, expected_method, response):
-        # type: (Dict[str, Any], str, Dict[str, Any]) -> None
+    def call_request(self, message, expected_method, response, state_handler):
+        # type: (Dict[str, Any], str, Dict[str, Any], Optional[StateHandler]) -> None
+        if state_handler is None:
+            state_handler = StateHandler()
         # Send message to the concerned bot
-        self.message_handler.handle_message(message, self.MockClass(), StateHandler())
+        self.message_handler.handle_message(message, self.MockClass(), state_handler)
 
         # Check if the bot is sending a message via `send_message` function.
         # Where response is a dictionary here.
@@ -131,8 +133,8 @@ class BotTestCase(TestCase):
                 else:
                     mock_get.assert_called_with(http_request['api_url'], params=params)
 
-    def assert_bot_response(self, message, response, expected_method):
-        # type: (Dict[str, Any], Dict[str, Any], str) -> None
+    def assert_bot_response(self, message, response, expected_method, state_handler = None):
+        # type: (Dict[str, Any], Dict[str, Any], str, Optional[StateHandler]) -> None
         # Strictly speaking, this function is not needed anymore,
         # kept for now for legacy reasons.
-        self.call_request(message, expected_method, response)
+        self.call_request(message, expected_method, response, state_handler)
