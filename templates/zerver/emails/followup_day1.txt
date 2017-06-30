@@ -1,29 +1,27 @@
-Hi there!
+Hi there,
 
-Welcome to Zulip.
+Welcome to Zulip!
 
-{{ server_uri }}/hello has a nice overview of what we're up to, but here are a couple tips that'll help you get the most out of it:
+Zulip is the team communication solution that combines the real-time ease of
+chat with the threaded organization of email. At its core, Zulip is about
+productivity -- making communication fun and easy, while avoiding the
+distracting and disorganized conversations of chatrooms.
 
-1. Zulip works best when it's always open, so grab our apps! (Mac, Windows, Linux, Android, iOS)
-   {{ realm_uri }}/apps
+We hope you love using Zulip as much as we do. Zulip works best when it's
+always open, so we suggest pinning a browser tab or downloading our desktop
+and mobile apps (https://zulipchat.com/apps). If you're new to Zulip's
+threading, we recommend starting with the desktop or browser experience, and
+using mobile for notifications on the go.
 
-2. Want to share files in Zulip? No problem! Start a new message and click the paperclip, or just drag-and-drop the file into the textbox.
+If you have any feedback, or want to see how we use Zulip for managing the
+Zulip project itself, swing by https://chat.zulip.org and say hi!
 
-3. Trying to get someone's attention? Type in an @-sign followed by their name to "mention" them. (Want more or fewer notifications? Select Settings under the gear menu to customize how and when Zulip notifies you of new messages.)
+Cheers,
+Team Zulip
 
-4. Bulleted lists, bold, code blocks, and more are all at your fingertips - just check out "Message formatting" in the gear menu.
+PS: Check us out on Twitter (@zuliposs) or star us on GitHub
+(https://github.com/zulip/zulip)!
 
-5. Are you a keyboard power user? Learn about keyboard shortcuts in the "Keyboard shortcuts" tab under the gear icon. (Or press '?')
-
-6. Emoji. Because :ramen:
-{% if verbose_support_offers %}
-Zulip has a team of engineers standing by to respond to your feedback, so please let us know what you think! Click the "Send feedback" button inside Zulip, or just reply to this email.
-{% endif %}
-Thanks,
-Zulip
-----
-Manage email preferences:
-{{ realm_uri }}/#settings
-
-Unsubscribe from welcome emails (but there's only one more and aren't you a little curious?):
+Unsubscribe from welcome emails (but there's only one more and aren't you a
+little curious?):
 {{ unsubscribe_link }}
