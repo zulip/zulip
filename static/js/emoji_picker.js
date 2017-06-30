@@ -16,6 +16,11 @@ var emoji_catalog_last_coordinates = {
 var current_section = 0;
 var current_index = 0;
 
+exports.get_complete_catalog = function () {
+    // only used for unit tests now
+    return complete_emoji_catalog;
+};
+
 function compute_placement(elt) {
     var approx_popover_height = 400;
     var approx_popover_width = 400;
