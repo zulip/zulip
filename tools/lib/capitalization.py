@@ -14,6 +14,7 @@ IGNORED_PHRASES = [
     # Proper nouns and acronyms
     r"Android",
     r"API",
+    r"App Store",
     r"Cookie Bot",
     r"Dropbox",
     r"GitHub",
@@ -29,6 +30,7 @@ IGNORED_PHRASES = [
     r"MiB",
     r"OTP",
     r"Pivotal",
+    r"Play Store",
     r'REMOTE_USER',
     r'Slack',
     r"SSO",
