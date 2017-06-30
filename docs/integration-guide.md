@@ -205,54 +205,5 @@ ZulipMobile/0.5.4 (Android; 4.2; maguro)
 
 ## Documenting your integration
 
-Every Zulip integration must be documented in
-`zerver/webhooks/mywebhook/doc.html` (or
-`templates/zerver/integrations/<integration_name>.html`, for non-webhook integrations).
-Usually, this involves a few steps:
-
-* Add text explaining all of the steps required to setup the
-  integration, including what URLs to use, etc.  If there are any
-  screens in the product involved, take a few screenshots with the
-  input fields filled out with sample values in order to make the
-  instructions really easy to follow.  For the screenshots, use a bot
-  with a name like "GitHub Bot", an email address for the bot like
-  `github-bot@zulip.example.com`, and an obviously fake API key like
-  `abcdef123456790`.
-
-* Make sure you've added your integration to
-  `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.
-
-* You'll need to add a SVG graphic
-  of your integration's logo under the
-  `static/images/integrations/logos/<name>.svg`, where `<name>` is the
-  name of the integration, all in lower case; you can usually find them in the
-  product branding or press page. Make sure to optimize the SVG graphic by
-  running `svgo -f path-to-file`.
-
-  If you cannot find a SVG graphic of the logo, please find and include a PNG
-  image of the logo instead.
-
-* Finally, generate a message sent by the integration and take a
-  screenshot of the message to provide an example message in the
-  documentation. If your new integration is a webhook integration,
-  you can generate such a message from your test fixtures
-  using `send_webhook_fixture_message`:
-
-  ```
-  ./manage.py send_webhook_fixture_message \
-       --fixture=zerver/webhooks/pingdom/fixtures/imap_down_to_up.json \
-       '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
-  ```
-
-  When generating the screenshot of a sample message, give your test
-  bot a nice name like "GitHub Bot", use the project's logo as the
-  bot's avatar, and take the screenshots showing the stream/topic bar
-  for the message, not just the message body.
-
-When writing documentation for your integration, be sure to use the
-`{{ external_api_uri }}` template variable, so that your integration
-documentation will provide the correct URL for whatever server it is
-deployed on.  If special configuration is required to set the SITE
-variable, you should document that too, inside an `{% if
-api_site_required %}` check.
+See
+[our guide for writing integration documentation](integration-docs-guide.html).
