@@ -205,8 +205,16 @@ class NarrowBuilder(object):
             raise BadNarrowOperator('unknown stream ' + operand)
 
         if self.user_profile.realm.is_zephyr_mirror_realm:
-            # MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
-            # (unsocial, ununsocial, social.d, etc)
+            # MIT users expect narrowing to "social" to also show messages to
+            # /^(un)*social(.d)*$/ (unsocial, ununsocial, social.d, ...).
+
+            # In `ok_to_include_history`, we assume that a non-negated
+            # `stream` term for a public stream will limit the query to
+            # that specific stream.  So it would be a bug to hit this
+            # codepath after relying on this term there.  But all streams in
+            # a Zephyr realm are private, so that doesn't happen.
+            assert(not stream.is_public())
+
             m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
             # Since the regex has a `.+` in it and "" is invalid as a
             # stream name, this will always match
@@ -584,14 +592,22 @@ def get_messages_backend(request, user_profile,
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
+        # The initial query in this case doesn't use `zerver_usermessage`,
+        # and isn't yet limited to messages the user is entitled to see!
+        #
+        # This is OK only because we've made sure this is a narrow that
+        # will cause us to limit the query appropriately later.
+        # See `ok_to_include_history` for details.
         query = select([column("id").label("message_id")], None, table("zerver_message"))
         inner_msg_id_col = literal_column("zerver_message.id")
     elif narrow is None and not use_first_unread_anchor:
+        # This is limited to messages the user received, as recorded in `zerver_usermessage`.
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
                        table("zerver_usermessage"))
         inner_msg_id_col = column("message_id")
     else:
+        # This is limited to messages the user received, as recorded in `zerver_usermessage`.
         # TODO: Don't do this join if we're not doing a search
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
@@ -1147,13 +1163,8 @@ def messages_in_narrow_backend(request, user_profile,
                                narrow = REQ(converter=narrow_parameter)):
     # type: (HttpRequest, UserProfile, List[int], Optional[List[Dict[str, Any]]]) -> HttpResponse
 
-    # Note that this function will only work on messages the user
-    # actually received
-
-    # TODO: We assume that the narrow is a search.  For now this works because
-    # the browser only ever calls this function for searches, since it can't
-    # apply that narrow operator itself.
-
+    # This query is limited to messages the user has access to because they
+    # actually received them, as reflected in `zerver_usermessage`.
     query = select([column("message_id"), column("subject"), column("rendered_content")],
                    and_(column("user_profile_id") == literal(user_profile.id),
                         column("message_id").in_(msg_ids)),
