@@ -253,7 +253,11 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name = check_short_name(short_name_raw)
     service_name = short_name
-    short_name += "-bot"
+
+    if bot_type == UserProfile.SLASH_COMMANDS:
+        short_name += "-command"
+    else:
+        short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
     form = CreateUserForm({'full_name': full_name, 'email': email})
