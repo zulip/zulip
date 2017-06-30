@@ -90,6 +90,7 @@ function _setup_page() {
         zuliprc: 'zuliprc',
         flaskbotrc: 'flaskbotrc',
         timezones: moment.tz.names(),
+        server_uri: page_params.server_uri,
     });
 
     $(".settings-box").html(settings_tab);
