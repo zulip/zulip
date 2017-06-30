@@ -28,4 +28,12 @@ class zulip::dockervoyager {
     mode    => "0644",
     source  => "puppet:///modules/zulip/supervisor/conf.d/nginx.conf",
   }
+  file { "/etc/supervisor/conf.d/zulip_postsetup.conf":
+    ensure  => file,
+    require => Package[supervisor],
+    owner   => "root",
+    group   => "root",
+    mode    => "0644",
+    source  => "puppet:///modules/zulip/supervisor/conf.d/zulip_postsetup.conf",
+  }
 }
