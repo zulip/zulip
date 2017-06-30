@@ -203,7 +203,7 @@ class GithubWebhookTest(WebhookTestCase):
 
     def test_status_msg(self):
         # type: () -> None
-        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed it's status to success"
+        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success"
         self.send_and_test_stream_message('status', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='status')
 
     def test_pull_request_review_msg(self):

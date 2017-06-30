@@ -270,7 +270,7 @@ def get_status_body(payload):
         )
     else:
         status = payload['state']
-    return u"[{}]({}) changed it's status to {}".format(
+    return u"[{}]({}) changed its status to {}".format(
         payload['sha'][:7],  # TODO
         payload['commit']['html_url'],
         status
