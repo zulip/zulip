@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
+
+from typing import List, Text
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import json
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
+
+def find_handlebars(translatable_strings):
+    # type: (List[Text]) -> List[Text]
+    errored = []
+    for string in translatable_strings:
+        if '{{' in string:
+            errored.append(string)
+    return errored
+
+if __name__ == '__main__':
+    with open('static/locale/en/translations.json') as f:
+        data = json.load(f)
+
+    found = find_handlebars(list(data.keys()))
+    if found:
+        print(WARNING + "Translation strings contain handlebars:" + ENDC)
+        print('\n'.join(found))
+
+        print(WARNING +
+              "See http://zulip.readthedocs.io/en/latest/translating.html#frontend-translations "
+              "on how you can insert variables in the frontend translatable "
+              "strings." +
+              ENDC)
+        print(FAIL + "Failed!" + ENDC)
+        sys.exit(1)
+    else:
+        sys.exit(0)

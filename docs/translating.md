@@ -326,6 +326,16 @@ The rules for plurals are same as for JavaScript files. You just have
 to declare the appropriate keys in the resource file and then include
 the `count` in the context.
 
+Note: Make sure that you don't use handlebars within the block of text
+enclosed by `{{#tr}}{{/tr}}`. The reason is that in most templating
+languages, handlebars are used as variable placeholders. Due to this,
+translatable the string becomes different when the correct value of the
+variable is substituted. The translatable strings are captured by a
+preprocessor and doesn't substitude variables with values. We also have
+a linter, tools/check-frontend-i18n, to disallow such patterns, so the
+Travis build will not pass if the linter finds this pattern.
+
+
 ## Transifex config
 
 The config file that maps the resources from Zulip to Transifex is
