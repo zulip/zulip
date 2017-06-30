@@ -91,7 +91,7 @@
                                     </p>
                                 </div>
                                 <a href="https://zulip.org/dist/apps/mac/Zulip-latest.dmg" download>
-                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download Now') }}</button>
+                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download now') }}</button>
                                 </a>
                             </div>
                         </div>
@@ -112,7 +112,7 @@
                                     </p>
                                 </div>
                                 <a href="https://github.com/zulip/zulip-electron/releases/download/v1.0.0-beta/Zulip-Web-Setup-1.0.0-beta.exe" download>
-                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download Now') }}</button>
+                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download now') }}</button>
                                 </a>
                             </div>
                         </div>
@@ -141,9 +141,13 @@ sudo apt-get install zulip-desktop
 </pre>
                         </div>
                         <div class="platform">
-                            <h2>{{ _('Other Platforms') }}</h2>
+                            <h2>{{ _('Other platforms') }}</h2>
                             <div class="instructions">
-                                <p>{% trans %}We provide a <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
+                                <p>
+                                    {% trans %}We provide a
+                                    <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>binary tarball</a>
+                                    of the Zulip application, built for 64-bit
+                                    systems.{% endtrans %}
                                 </p>
                                 <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>
                                     <img src="/static/images/landing-page/tar.gz.svg" alt="{{ _('Download') }}" />
