@@ -328,51 +328,50 @@ There are two parts to the end-user documentation on this page.
 The first is the lozenge in the grid of integrations, showing your
 integration logo and name, which links to the full documentation.
 This is generated automatically once you've registered the integration
-in WEBHOOK_INTEGRATIONS in `zerver/lib/integrations.py`, and supports
+in `WEBHOOK_INTEGRATIONS` in `zerver/lib/integrations.py`, and supports
 some customization via options to the `WebhookIntegration` class.
 
 Second, you need to write the actual documentation content in
-`zerver/webhooks/mywebhook/doc.html`.
+`zerver/webhooks/mywebhook/doc.md`.
 
 ```
-<p>Learn how Zulip integrations work with this simple Hello World example!</p>
+Learn how Zulip integrations work with this simple Hello World example!
 
-<p>
-    The Hello World webhook will use the <code>test</code> stream, which is
-    created by default in the Zulip development environment. If you are running
-    Zulip in production, you should make sure this stream exists.
-</p>
+The Hello World webhook will use the `test` stream, which is
+created by default in the Zulip dev environment. If you are running
+Zulip in production, you should make sure that this stream exists.
 
-<p>
-    Next, on your {{ settings_html|safe }}, create a Hello World bot. Construct the
-    URL for the Hello World bot using the API key and stream name:
-    <code>{{ external_api_uri_subdomain }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
-</p>
+Next, on your {{ settings_html|safe }}, create a Hello World bot.
+Construct the URL for the Hello World bot using the API key and
+stream name:
 
-<p>
-    To trigger a notication using this webhook, use `send_webhook_fixture_message`
-    from the Zulip command line:
-</p>
-<div class="codehilite">
-      <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
-./manage.py send_webhook_fixture_message \
-> --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
-> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
-      </pre>
-</div>
+`{{ external_api_uri_subdomain }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
 
-<p>Or, use curl:</p>
-<div class="codehilite">
-    <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=&lt;api_key&gt;</pre>
-</div>
 
-<p><b>Congratulations! You're done!</b><br/> Your messages may look like:</p>
+To trigger a notification using this webhook, use
+`send_webhook_fixture_message` from the Zulip command line:
 
-<img class="screenshot" src="/static/images/integrations/helloworld/001.png"/>
+    (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+    ./manage.py send_webhook_fixture_message \
+    > --fixture=zerver/fixtures/helloworld/hello.json \
+    > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
+
+Or, use curl:
+
+    curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=&lt;api_key&gt;
+
+{!congrats.md!}
+
+![](/static/images/integrations/helloworld/001.png)
+
 ```
 
-See [Documenting your integration](integration-guide.html#documenting-your-integration) for further
-details, including how to easily create the message screenshot.
+`{!congrats.md!}` is an example of a Markdown macro. Zulip has a macro-based
+Markdown/Jinja2 framework that includes macros for common instructions in
+Zulip's webhooks/integrations documentation.
+
+See [Documenting your integration](integration-guide.html#documenting-your-integration)
+for further details, including how to easily create the message screenshot.
 
 ## Step 5: Preparing a pull request to zulip/zulip
 
