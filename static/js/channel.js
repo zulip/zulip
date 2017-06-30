@@ -69,12 +69,6 @@ function call(args, idempotent) {
     return jqXHR;
 }
 
-exports.abort_all = function () {
-    _.each(pending_requests, function (jqXHR) {
-        jqXHR.abort();
-    });
-};
-
 exports.get = function (options) {
     var args = _.extend({type: "GET", dataType: "json"}, options);
     return call(args, options.idempotent);
