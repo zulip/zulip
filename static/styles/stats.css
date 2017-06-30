@@ -6,90 +6,111 @@
 
 body {
     font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    background-color: #fafafa;
+
+    -webkit-font-smoothing: antialiased;
 }
 
 p {
     margin-bottom: 0px;
 }
 
-svg {
-    -webkit-font-smoothing: antialiased;
+.svg-container {
+    margin: 20px;
+}
+
+.center-charts {
+    margin: 30px auto;
+    width: 790px; /* chart = 750px + 20px padding */
+}
+
+.chart-container {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 10px 0px;
+    padding: 20px;
+
+    border: 2px solid #eee;
+    background-color: #fff;
+}
+
+.analytics-page-header {
+    margin-left: 10px;
+}
+
+hr {
+    border-width: 2px;
+}
+
+.rangeselector text {
+    font-weight: 400;
+}
+
+.pie-chart .number-stat {
+    float: left;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.chart-container:not(.pie-chart) .number-stat {
+    position: relative;
+    top: -30px;
+}
+
+.buttons button {
+    background-color: #f0f0f0;
+}
+
+.buttons button.selected {
+    background-color: #d8d8d8;
+}
+
+.pie-chart .buttons {
+    float: right;
+}
+
+.pie-chart .buttons button {
+    padding: 2px 6px;
+}
+
+.chart-container.pie-chart hr {
+    margin-bottom: 8px;
+}
+
+.chart-container button {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-container h1 {
+    margin-top: 0px;
+    font-size: 1.5em;
+}
+
+.chart-container .button-container {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-container .button-container label {
+    margin: 3px;
+}
+
+.chart-container .button-container > * {
+    display: inline-block;
+    vertical-align: top;
 }
 
 .alert {
     display: none;
 }
 
-.analytics-page-header {
-    margin-top: 30px;
-    margin-bottom: 50px;
-    text-align: center;
-    font-size: 36px;
-}
-
-.page-content {
-    width: 100%;
-    overflow: auto;
-    display: inline-block;
-    vertical-align: top;
-}
-
-.center-container {
-    min-height: 0px;
-}
-
-.graph-title {
-    text-align: center;
-    font-size: 20px;
-    margin-bottom: 30px;
-}
-
-#graph_container {
-    position: relative;
-}
-
-#button_label {
-    font-size: 15px;
-    margin-left: 40px;
-    margin-bottom: 0px;
-}
-
-#hoverinfo {
-    position: relative;
-    top: -33px;
-    height: 0;
-    width: 400px;
-    z-index: 1;
-    font-size: 14px;
-    margin-left: 40px;
-}
-
-#id_messages_sent_over_time {
-    user-select: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
-
 #id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
     opacity: 0.5;
 }
 
-#hover_date {
-    font-weight: 400;
-}
-
-#hover_human {
-    font-weight: 400;
-    margin-left: 10px;
-    display: none;
-}
-
-#hover_me,
-#hover_bot {
-    font-weight: 400;
-    margin-left: 8px;
+#users_hover_info, #hoverinfo {
     display: none;
 }
 
@@ -104,181 +125,8 @@ svg {
     background: hsl(0, 0%, 84%) !important;
 }
 
-.pie-button {
-    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
-    font-weight: inherit;
-    border: none;
-    border-radius: 4px;
-    padding: 0px 5px 0px 5px;
-    margin: 5px 0px 0px 0px;
-}
-
-.pie-button:hover {
-    background: hsl(0, 0%, 84%) !important;
-}
-
-#button_container {
-    position: absolute;
-    top: -12px;
-    z-index: 1;
-}
-
-#hourly_button {
-    padding: 0px 5px 0px 5px;
-    font-size: 14px;
-    margin-left: 40px;
-    margin-top: 0px;
-    background: hsl(0, 0%, 94%);
-}
-
-#daily_button {
-    padding: 0px 5px 0px 5px;
-    font-size: 14px;
-    margin-top: 0px;
-    background: hsl(0, 0%, 94%);
-}
-
-#weekly_button {
-    padding: 0px 5px 0px 5px;
-    font-size: 14px;
-    margin-top: 0px;
-    background: hsl(0, 0%, 94%);
-}
-
-#cumulative_button {
-    padding: 0px 5px 0px 5px;
-    font-size: 14px;
-    margin-top: 0px;
-    background: hsl(0, 0%, 94%);
-}
-
-#messages_by_client_realm_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 84%);
-}
-
-#messages_by_client_user_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-}
-
-#messages_by_client_cumulative_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-}
-
-#messages_by_client_last_year_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-}
-
-#messages_by_client_last_month_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-}
-
-#messages_by_client_last_week_button {
-    font-size: 14px;
-    margin-left: 50px;
-    background: hsl(0, 0%, 94%);
-}
-
-#messages_by_type_realm_button {
-    font-size: 14px;
-    margin-bottom: 100px;
-    background: hsl(0, 0%, 84%);
-}
-
-#messages_by_type_user_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-    margin-bottom: 100px;
-}
-
-#messages_by_type_cumulative_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-    vertical-align: top;
-}
-
-#messages_by_type_last_year_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-    vertical-align: top;
-}
-
-#messages_by_type_last_month_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-    vertical-align: top;
-}
-
-#messages_by_type_last_week_button {
-    font-size: 14px;
-    background: hsl(0, 0%, 94%);
-    vertical-align: top;
-    margin-left: 50px;
-}
-
-#pie_container {
-    text-align: center;
-}
-
-#pie_messages_sent_by_client {
-    display: inline-block;
-    vertical-align: top;
-    margin: 100px 40px 0px 0px;
-}
-
-#pie_messages_sent_by_type {
-    display: inline-block;
-    vertical-align: top;
-    margin: 100px 0px 0px 0px;
-}
-
-#pie_messages_sent_by_client_total {
-    font-size: 14px;
-    text-align: left;
-    margin: 0px 0px 5px 45px;
-}
-
-#pie_messages_sent_by_type_total {
-    font-size: 14px;
-    text-align: left;
-    margin: 0px 0px 5px 53px;
-}
-
-#users_hover_info {
-    position: relative;
-    top: -65px;
-    height: 0;
-    width: 400px;
-    z-index: 1;
-    font-size: 14px;
-    margin-left: 20px;
-}
-
-#users_hover_date {
-    font-weight: 400;
-    margin-left: 18px;
-}
-
-#users_hover_humans {
-    font-weight: 400;
-    margin-left: 18px;
-    display: none;
-}
-
-.last-update {
-    display: none;
-    color: hsl(0, 0%, 66%);
-    padding: 50px 0px;
-    font-weight: bolder;
-    font-size: 16px;
-}
-
-.last-update .icon-vector-question-sign {
-    margin-left: 5px;
+.button[data-user="realm"] {
+    margin-right: 10px;
 }
 
 .tooltip-inner {
@@ -291,9 +139,49 @@ svg {
     line-height: 1.4;
 }
 
-@media (max-width: 1127px) {
-    #pie_messages_sent_by_client {
-        margin-right: 0px;
-        margin-bottom: 40px;
+.last-update {
+    margin: 0px 0px 30px 0px;
+
+    font-size: 0.8em;
+    font-weight: 400;
+    text-align: center;
+    color: #aaa;
+}
+
+#users_hover_info,
+#hoverinfo {
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+#users_hover_humans,
+#hover_human {
+    margin-left: 10px;
+}
+
+#hoverinfo,
+#users_hover_info {
+    position: relative;
+    height: 0px;
+    top: -35px;
+    left: 40px;
+}
+
+#users_hover_info {
+    left: 25px;
+    top: -40px;
+}
+
+@media (min-width: 1680px) {
+    .center-charts {
+        width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
+    }
+    .center-charts .left,
+    .center-charts .right {
+        display: inline-block;
+        vertical-align: top;
+        margin: 0px 10px;
+
+        width: 790px;
     }
 }

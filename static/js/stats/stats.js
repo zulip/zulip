@@ -3,20 +3,16 @@ var font_14pt = {
     size: 14,
     color: '#000000',
 };
-var button_selected = '#D8D8D8';
-var button_unselected = '#F0F0F0';
+
 var last_full_update = Math.min();
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
-    var count = 0;
-    var cumulative = [];
-
-    for (var i = 0; i < array.length; i += 1) {
-        count += array[i];
-        cumulative[i] = count;
-    }
-    return cumulative;
+    var accumulator = 0;
+    return array.map(function (o) {
+        accumulator += o;
+        return accumulator;
+    });
 }
 
 // Assumes date is a round number of hours
@@ -34,24 +30,17 @@ function floor_to_local_week(date) {
 }
 
 function format_date(date, include_hour) {
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
     var month_str = months[date.getMonth()];
     var year = date.getFullYear();
     var day = date.getDate();
     if (include_hour) {
         var hour = date.getHours();
-        var hour_str;
-        if (hour === 0) {
-            hour_str = '12 AM';
-        } else if (hour === 12) {
-            hour_str = '12 PM';
-        } else if (hour < 12) {
-            hour_str = hour + ' AM';
-        } else {
-            hour_str = (hour-12) + ' PM';
-        }
-        return month_str + ' ' + day + ', ' + hour_str;
+
+        var str = hour >= 12 ? "PM" : "AM";
+
+        return month_str + " " + day + ", " + (hour % 12) + ":00" + str;
     }
     return month_str + ' ' + day + ', ' + year;
 }
@@ -143,6 +132,7 @@ function populate_messages_sent_over_time(data) {
 
     function add_hover_handler() {
         document.getElementById('id_messages_sent_over_time').on('plotly_hover', function (data) {
+            $("#hoverinfo").show();
             document.getElementById('hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             var values = [null, null, null];
@@ -251,10 +241,7 @@ function populate_messages_sent_over_time(data) {
     var clicked_cumulative = false;
 
     function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
-        $('#daily_button').css('background', button_unselected);
-        $('#weekly_button').css('background', button_unselected);
-        $('#hourly_button').css('background', button_unselected);
-        $('#cumulative_button').css('background', button_unselected);
+        $('#daily_button, #weekly_button, #hourly_button, #cumulative_button').removeClass("selected");
         if (initial_draw) {
             traces.human.visible = true;
             traces.bot.visible = 'legendonly';
@@ -281,36 +268,36 @@ function populate_messages_sent_over_time(data) {
     // Click handlers for aggregation buttons
     $('#hourly_button').click(function () {
         draw_or_update_plot(hourly_rangeselector, hourly_traces, false, false);
-        $(this).css('background', button_selected);
+        $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
     $('#daily_button').click(function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
-        $(this).css('background', button_selected);
+        $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
     $('#weekly_button').click(function () {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
-        $(this).css('background', button_selected);
+        $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
     $('#cumulative_button').click(function () {
         clicked_cumulative = false;
         draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
-        $(this).css('background', button_selected);
+        $(this).addClass("selected");
         clicked_cumulative = true;
     });
 
     // Initial drawing of plot
     if (weekly_traces.human.x.length < 12) {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
-        $('#daily_button').css('background', button_selected);
+        $('#daily_button').addClass("selected");
     } else {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, true);
-        $('#weekly_button').css('background', button_selected);
+        $('#weekly_button').addClass("selected");
     }
 }
 
@@ -336,8 +323,15 @@ function round_to_percentages(values, total) {
             return '0%';
         }
         var unrounded = x/total*100;
-        var precision = Math.min(6, Math.max(2, Math.floor(
-                -Math.log(100-unrounded)/Math.log(10)) + 3));
+
+        var precision = Math.min(
+            6, // this is the max precision (two #, 4 decimal points; 99.9999%).
+            Math.max(
+                2, // the minimum amount of precision (40% or 6.0%).
+                Math.floor(-Math.log10(100 - unrounded)) + 3
+            )
+        );
+
         return unrounded.toPrecision(precision) + '%';
     });
 }
@@ -462,23 +456,18 @@ function populate_messages_sent_by_client(data) {
     var time_button;
     if (data.end_times.length >= 30) {
         time_button = 'month';
-        $('#messages_by_client_last_month_button').css('background', button_selected);
+        $('#messages_by_client_last_month_button').addClass("selected");
     } else {
         time_button = 'cumulative';
-        $('#messages_by_client_cumulative_button').css('background', button_selected);
-    }
-
-    function remove_button(button_id) {
-        var elem = document.getElementById(button_id);
-        elem.parentNode.removeChild(elem);
+        $('#messages_by_client_cumulative_button').addClass("selected");
     }
 
     if (data.end_times.length < 365) {
-        remove_button('messages_by_client_last_year_button');
+        $("#pie_messages_sent_by_client button[data-time='year']").remove();
         if (data.end_times.length < 30) {
-            remove_button('messages_by_client_last_month_button');
+            $("#pie_messages_sent_by_client button[data-time='month']").remove();
             if (data.end_times.length < 7) {
-                remove_button('messages_by_client_last_week_button');
+                $("#pie_messages_sent_by_client button[data-time='week']").remove();
             }
         }
     }
@@ -497,52 +486,24 @@ function populate_messages_sent_by_client(data) {
 
     // Click handlers
     function set_user_button(button) {
-        $('#messages_by_client_realm_button').css('background', button_unselected);
-        $('#messages_by_client_user_button').css('background', button_unselected);
-        button.css('background', button_selected);
+        $("#pie_messages_sent_by_client button[data-user]").removeClass("selected");
+        button.addClass("selected");
     }
 
     function set_time_button(button) {
-        $('#messages_by_client_cumulative_button').css('background', button_unselected);
-        $('#messages_by_client_last_year_button').css('background', button_unselected);
-        $('#messages_by_client_last_month_button').css('background', button_unselected);
-        $('#messages_by_client_last_week_button').css('background', button_unselected);
-        button.css('background', button_selected);
+        $("#pie_messages_sent_by_client button[data-time]").removeClass("selected");
+        button.addClass("selected");
     }
 
-    $('#messages_by_client_realm_button').click(function () {
-        set_user_button($(this));
-        user_button = 'realm';
-        draw_plot();
-    });
-
-    $('#messages_by_client_user_button').click(function () {
-        set_user_button($(this));
-        user_button = 'user';
-        draw_plot();
-    });
-
-    $('#messages_by_client_cumulative_button').click(function () {
-        set_time_button($(this));
-        time_button = 'cumulative';
-        draw_plot();
-    });
-
-    $('#messages_by_client_last_year_button').click(function () {
-        set_time_button($(this));
-        time_button = 'year';
-        draw_plot();
-    });
-
-    $('#messages_by_client_last_month_button').click(function () {
-        set_time_button($(this));
-        time_button = 'month';
-        draw_plot();
-    });
-
-    $('#messages_by_client_last_week_button').click(function () {
-        set_time_button($(this));
-        time_button = 'week';
+    $("#pie_messages_sent_by_client button").click(function () {
+        if ($(this).attr("data-user")) {
+            set_user_button($(this));
+            user_button = $(this).attr("data-user");
+        }
+        if ($(this).attr("data-time")) {
+            set_time_button($(this));
+            time_button = $(this).attr("data-time");
+        }
         draw_plot();
     });
 
@@ -578,7 +539,7 @@ $.get({
 function populate_messages_sent_by_message_type(data) {
     var layout = {
         margin: { l: 90, r: 0, b: 0, t: 0 },
-        width: 550,
+        width: 750,
         height: 300,
         font: font_14pt,
     };
@@ -605,7 +566,7 @@ function populate_messages_sent_by_message_type(data) {
                     colors: ['#68537c', '#be6d68', '#b3b348'],
                 },
             },
-            total_str: "Total messages: " + plot_data.total.toString().
+            total_str: "<b>Total messages:</b> " + plot_data.total.toString().
                 replace(/\B(?=(\d{3})+(?!\d))/g, ","),
         };
     }
@@ -629,24 +590,19 @@ function populate_messages_sent_by_message_type(data) {
     var time_button;
     if (data.end_times.length >= 30) {
         time_button = 'month';
-        $('#messages_by_type_last_month_button').css('background', button_selected);
+        $('#messages_by_type_last_month_button').addClass("selected");
     } else {
         time_button = 'cumulative';
-        $('#messages_by_type_cumulative_button').css('background', button_selected);
+        $('#messages_by_type_cumulative_button').addClass("selected");
     }
     var totaldiv = document.getElementById('pie_messages_sent_by_type_total');
 
-    function remove_button(button_id) {
-        var elem = document.getElementById(button_id);
-        elem.parentNode.removeChild(elem);
-    }
-
     if (data.end_times.length < 365) {
-        remove_button('messages_by_type_last_year_button');
+        $("#pie_messages_sent_by_type button[data-time='year']").remove();
         if (data.end_times.length < 30) {
-            remove_button('messages_by_type_last_month_button');
+            $("#pie_messages_sent_by_type button[data-time='month']").remove();
             if (data.end_times.length < 7) {
-                remove_button('messages_by_type_last_week_button');
+                $("#pie_messages_sent_by_type button[data-time='week']").remove();
             }
         }
     }
@@ -663,52 +619,24 @@ function populate_messages_sent_by_message_type(data) {
 
     // Click handlers
     function set_user_button(button) {
-        $('#messages_by_type_realm_button').css('background', button_unselected);
-        $('#messages_by_type_user_button').css('background', button_unselected);
-        button.css('background', button_selected);
+        $("#pie_messages_sent_by_type button[data-user]").removeClass("selected");
+        button.addClass("selected");
     }
 
     function set_time_button(button) {
-        $('#messages_by_type_cumulative_button').css('background', button_unselected);
-        $('#messages_by_type_last_year_button').css('background', button_unselected);
-        $('#messages_by_type_last_month_button').css('background', button_unselected);
-        $('#messages_by_type_last_week_button').css('background', button_unselected);
-        button.css('background', button_selected);
+        $("#pie_messages_sent_by_type button[data-time]").removeClass("selected");
+        button.addClass("selected");
     }
 
-    $('#messages_by_type_realm_button').click(function () {
-        set_user_button($(this));
-        user_button = 'realm';
-        draw_plot();
-    });
-
-    $('#messages_by_type_user_button').click(function () {
-        set_user_button($(this));
-        user_button = 'user';
-        draw_plot();
-    });
-
-    $('#messages_by_type_cumulative_button').click(function () {
-        set_time_button($(this));
-        time_button = 'cumulative';
-        draw_plot();
-    });
-
-    $('#messages_by_type_last_year_button').click(function () {
-        set_time_button($(this));
-        time_button = 'year';
-        draw_plot();
-    });
-
-    $('#messages_by_type_last_month_button').click(function () {
-        set_time_button($(this));
-        time_button = 'month';
-        draw_plot();
-    });
-
-    $('#messages_by_type_last_week_button').click(function () {
-        set_time_button($(this));
-        time_button = 'week';
+    $("#pie_messages_sent_by_type button").click(function () {
+        if ($(this).attr("data-user")) {
+            set_user_button($(this));
+            user_button = $(this).attr("data-user");
+        }
+        if ($(this).attr("data-time")) {
+            set_time_button($(this));
+            time_button = $(this).attr("data-time");
+        }
         draw_plot();
     });
 }
@@ -737,7 +665,7 @@ function populate_number_of_users(data) {
             fixedrange: true,
             rangeselector: {
                 x: 0.808,
-                y: -0.2,
+                y: -0.33,
                 buttons: [
                     {
                         count: 30,
@@ -763,9 +691,7 @@ function populate_number_of_users(data) {
         return new Date(timestamp*1000);
     });
 
-    var text = end_dates.map(function (date) {
-        return format_date(date, false);
-    });
+    var text = end_dates.map(format_date);
 
     var trace = {
         x: end_dates,
@@ -780,10 +706,10 @@ function populate_number_of_users(data) {
     Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
 
     document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
-        document.getElementById('users_hover_date').innerText =
-            data.points[0].data.text[data.points[0].pointNumber];
-        document.getElementById('users_hover_humans').style.display = 'inline';
-        document.getElementById('users_hover_humans_value').innerText = data.points[0].y;
+        $("#users_hover_info").show();
+        $("#users_hover_date").text(data.points[0].data.text[data.points[0].pointNumber]);
+        $("#users_hover_humans").css("display", "inline");
+        $("#users_hover_humans_value").text(data.points[0].y);
     });
 }
 
