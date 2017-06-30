@@ -78,6 +78,7 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
+   integration-docs-guide
    webhook-walkthrough
    new-feature-tutorial
    writing-views
