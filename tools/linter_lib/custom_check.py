@@ -385,12 +385,6 @@ def build_custom_checkers(by_lang):
          'description': "Period should be part of the translatable string."},
         {'pattern': "{{/tr}}[\.\?!]",
          'description': "Period should be part of the translatable string."},
-        {'pattern': "{{#tr.*}}.*{{.*{{/tr}}",
-         'exclude_line': set([
-             ('static/templates/subscription_settings.handlebars',
-              '{{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>'),
-         ]),
-         'description': "Translated messages should not contain handlebars."},
     ]
     jinja2_rules = html_rules + [
         {'pattern': "{% endtrans %}[\.\?!]",
