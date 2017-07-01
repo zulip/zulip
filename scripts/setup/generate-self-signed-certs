@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+if [ -z "${1:-}" ]; then
+    echo "Usage: $0 <Zulip server name>" >&2
+    exit 1
+fi
+
+SERVER_NAME="$1"
+
+echo "Executing certificates configuration..."
+if [ ! -e /etc/ssl/private/zulip.key ] && [ ! -e /etc/ssl/certs/zulip.combined-chain.crt ]; then
+    echo "SSL certificates for Zulip not found in /etc/ssl/."
+    echo "Autogenerating certificates ..."
+    apt-get install -y openssl
+    openssl genrsa -des3 -passout pass:x -out /tmp/server.pass.key 4096
+    openssl rsa -passin pass:x -in /tmp/server.pass.key -out /etc/ssl/private/zulip.key
+    openssl req -new -nodes -subj "/O=$SERVER_NAME" -key /etc/ssl/private/zulip.key -out /tmp/server.csr
+    openssl x509 -req -days 365 -in /tmp/server.csr -signkey /etc/ssl/private/zulip.key -out /etc/ssl/certs/zulip.combined-chain.crt
+    rm -f /tmp/server.csr /tmp/server.pass.key
+    echo "Generated new self-signed SSL certificates for Zulip."
+else
+    echo "SSL certificates for Zulip already exist in /etc/ssl/.  Skipping."
+fi
+echo "SSL certificate configuration succeeded."
