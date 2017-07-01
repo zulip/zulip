@@ -461,6 +461,8 @@ exports.initialize = function () {
         if (stream_li) {
             exports.scroll_to_active_stream(stream_li);
         }
+        // Update scrollbar size.
+        $("#stream-filters-container").perfectScrollbar("update");
     });
 
     $(document).on('narrow_deactivated.zulip', function () {
