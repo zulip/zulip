@@ -14,7 +14,7 @@ from jinja2 import Markup as mark_safe
 from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
-from zerver.lib.send_email import send_email
+from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
@@ -219,8 +219,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if not check_subdomain(user_realm.subdomain, attempted_subdomain):
             context['attempted_realm'] = get_realm(attempted_subdomain)
 
-        send_email('zerver/emails/password_reset', to_email, from_email=from_email,
-                   context=context)
+        send_email('zerver/emails/password_reset', to_email,
+                   from_address=FromAddress.NOREPLY, context=context)
 
     def save(self, *args, **kwargs):
         # type: (*Any, **Any) -> None

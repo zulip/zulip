@@ -31,7 +31,7 @@ from zerver.lib.email_mirror import (
 )
 
 from zerver.lib.digest import handle_digest_email
-
+from zerver.lib.send_email import FromAddress
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
 )
@@ -253,7 +253,7 @@ class TestEmptyGatewaySetting(ZulipTestCase):
         usermessage = most_recent_usermessage(user_profile)
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
             mm_address = create_missed_message_address(user_profile, usermessage.message)
-            self.assertEqual(mm_address, settings.NOREPLY_EMAIL_ADDRESS)
+            self.assertEqual(mm_address, "Zulip <%s>" % (FromAddress.NOREPLY,))
 
     def test_encode_email_addr(self):
         # type: () -> None
