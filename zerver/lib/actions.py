@@ -524,6 +524,7 @@ def do_deactivate_realm(realm):
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
+        clear_followup_emails_queue(user.email)
 
 def do_reactivate_realm(realm):
     # type: (Realm) -> None
@@ -539,6 +540,7 @@ def do_deactivate_user(user_profile, _cascade=True):
     user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
+    clear_followup_emails_queue(user_profile.email)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
