@@ -10,15 +10,17 @@ from zerver.lib.actions import get_emails_from_user_ids, do_deactivate_user, \
     do_reactivate_user, do_change_is_admin
 from zerver.lib.avatar import avatar_url
 from zerver.models import UserProfile, Recipient, Realm, RealmDomain, \
-    UserActivity, get_user, get_realm, get_client, get_stream, \
+    UserActivity, ScheduledJob, get_user, get_realm, get_client, get_stream, \
     Message, get_context_for_message
 from zerver.lib.email_mirror import create_missed_message_address
+from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured, simulated_empty_cache, \
     tornado_redirected_to_list, most_recent_message, make_client, \
     avatar_disk_path, get_test_image_file
 from zerver.lib.test_runner import slow
 
+import datetime
 import os
 import sys
 import time
@@ -325,6 +327,14 @@ class ActivateTest(ZulipTestCase):
         # Can not reactivate a user
         result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_error(result, 'Insufficient permission')
+
+    def test_clear_scheduled_jobs(self):
+        # type: () -> None
+        user = self.example_user('hamlet')
+        send_future_email('template_prefix', user.email, delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledJob.objects.count(), 1)
+        do_deactivate_user(user)
+        self.assertEqual(ScheduledJob.objects.count(), 0)
 
 class GetProfileTest(ZulipTestCase):
 
