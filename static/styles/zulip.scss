@@ -2786,3 +2786,8 @@ div.message_content table.tictactoe {
 td.tictactoe {
     width: 15px;
 }
+
+#zuliprc_textarea {
+    width: calc(100% - 15px);
+    height: 100px;
+}
