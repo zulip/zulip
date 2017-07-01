@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+EXTERNAL_HOST="${EXTERNAL_HOST:-localhost}"
+ZULIP_ADMINISTRATOR="${ZULIP_ADMINISTRATOR:-zulip-admin@$EXTERNAL_HOST}"
+ZULIP_USER_EMAIL="${ZULIP_USER_EMAIL:-$ZULIP_ADMINISTRATOR}"
+ZULIP_USER_PASS="swallowed by vacuum"
+ZULIP_USER_FULLNAME="Quin Qubitdiddle"
+
+ZULIP_PATH="$(realpath $(dirname $0)/../..)"
+
+# 1. Configure certificates
+
+"$ZULIP_PATH"/scripts/setup/generate-self-signed-certs "Zulip server name"
+
+# 2. If you are installing from the git repo, uncomment these lines
+
+# if ! ./tools/build-release-tarball latest; then
+#     echo "Attempting to output failure logging data"
+#     cat /tmp/tmp.*/update-prod-static.log || true
+#     exit 1
+# fi
+# mv /tmp/tmp.*/zulip-server-latest.tar.gz ./
+
+cd $(mktemp -d)
+wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+tar -xf zulip-server-latest.tar.gz
+./zulip-server-*/scripts/setup/install --hostname=$EXTERNAL_HOST --email=$ZULIP_ADMINISTRATOR
+
+# 3. Configure Zulip
+
+sed -i "s/^EMAIL_HOST =.*/EMAIL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
+sed -i "s/^EMAIL_HOST_USER =.*/EMAIL_HOST_USER = 'zulip-admin'/" /etc/zulip/settings.py
+
+# This is set so that an SMTP server is not a strict requirement
+echo "EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'" >> /etc/zulip/settings.py
+echo "EMAIL_FILE_PATH = '/var/log/zulip/emails'" >> /etc/zulip/settings.py
+
+# 4. Initialize Zulip database
+
+su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+
+# 5. Create a Zulip organization and admin
+
+su zulip -c "/home/zulip/deployments/current/manage.py create_user --this-user-has-accepted-the-tos --realm $ZULIP_USER_DOMAIN --password '$ZULIP_USER_PASS' $ZULIP_USER_EMAIL '$ZULIP_USER_FULLNAME'"
+su zulip -c "/home/zulip/deployments/current/manage.py changepassword $ZULIP_ADMINISTRATOR"
+su zulip -c "/home/zulip/deployments/current/manage.py knight $ZULIP_ADMINISTRATOR -f"
