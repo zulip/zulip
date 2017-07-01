@@ -76,8 +76,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 # The noreply address to be used as the sender for certain generated emails.
 # Messages sent to this address could contain sensitive user data and should
-# not be delivered anywhere.
-NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@example.com>"
+# not be delivered anywhere. (e.g. "Zulip <noreply@example.com>")
+NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@" + EXTERNAL_HOST.split(":")[0] + ">"
 
 
 ## OPTIONAL SETTINGS
