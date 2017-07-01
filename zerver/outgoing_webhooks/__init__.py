@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 from typing import Any, Dict, Text
 
+from zerver.models import GENERIC_INTERFACE, Service, SLACK_INTERFACE
 from zerver.outgoing_webhooks.generic import GenericOutgoingWebhookService
-from zerver.models import GENERIC_INTERFACE, Service
+from zerver.outgoing_webhooks.slack import SlackOutgoingWebhookService
 
 AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
-    GENERIC_INTERFACE: GenericOutgoingWebhookService
+    GENERIC_INTERFACE: GenericOutgoingWebhookService,
+    SLACK_INTERFACE: SlackOutgoingWebhookService,
 }   # type: Dict[Text, Any]
 
 def get_service_interface_class(interface):
