@@ -3,18 +3,12 @@ var _ = global._;
 
 var noop = function () {};
 
-// The next section of cruft will go away when we can pull out
-// dispatcher from server_events.
-(function work_around_server_events_loading_issues() {
-    add_dependencies({
-        util: 'js/util.js',
-    });
-    set_global('document', {});
-    set_global('window', {
-        addEventListener: noop,
-    });
-    global.stub_out_jquery();
-}());
+set_global('document', 'document-stub');
+set_global('$', function () {
+    return {
+        trigger: noop,
+    };
+});
 
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
@@ -38,10 +32,6 @@ set_global('markdown', {
     set_realm_filters: noop,
 });
 
-// To support popovers object referenced in server_events.js
-add_dependencies({emoji_picker: 'js/emoji_picker.js'});
-add_dependencies({popovers: 'js/popovers.js'});
-
 // page_params is highly coupled to dispatching now
 set_global('page_params', {test_suite: false});
 var page_params = global.page_params;
@@ -52,9 +42,6 @@ add_dependencies({alert_words: 'js/alert_words.js'});
 
 // contains the main event dispatching function
 add_dependencies({server_events_dispatch: 'js/server_events_dispatch.js'});
-
-// we also directly write to pointer
-set_global('pointer', {});
 
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
@@ -72,27 +59,10 @@ set_global('blueslip', {
     },
 });
 
-var server_events = require('js/server_events.js');
+var sed = require('js/server_events_dispatch.js');
 
-// This also goes away if we can isolate the dispatcher.  We
-// have to call it after doing the require on server_events.js,
-// so that it can set a private variable for us that bypasses
-// code that queue up events and early-exits.
-server_events.home_view_loaded();
-
-// This jQuery shim can go away when we remove $.each from
-// server_events.js.  (It's a simple change that just
-// requires some manual testing.)
-$.each = function (data, f) {
-    _.each(data, function (value, key) {
-        f(key, value);
-    });
-};
-
-// Set up our dispatch function to point to _get_events_success
-// now.
 function dispatch(ev) {
-    server_events._get_events_success([ev]);
+    sed.dispatch_normal_event(ev);
 }
 
 
@@ -132,22 +102,9 @@ var event_fixtures = {
         hotspots: ['nice', 'chicken'],
     },
 
-    message: {
-        type: 'message',
-        message: {
-            content: 'hello',
-        },
-        flags: [],
-    },
-
     muted_topics: {
         type: 'muted_topics',
         muted_topics: [['devel', 'js'], ['lunch', 'burritos']],
-    },
-
-    pointer: {
-        type: 'pointer',
-        pointer: 999,
     },
 
     presence: {
@@ -502,18 +459,6 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // message
-    var event = event_fixtures.message;
-
-    global.with_stub(function (stub) {
-        override('message_events.insert_new_messages', stub.f);
-        dispatch(event);
-        var args = stub.get_args('messages');
-        assert_same(args.messages[0].content, event.message.content);
-    });
-});
-
-with_overrides(function (override) {
     // muted_topics
     var event = event_fixtures.muted_topics;
 
@@ -523,17 +468,6 @@ with_overrides(function (override) {
         var args = stub.get_args('muted_topics');
         assert_same(args.muted_topics, event.muted_topics);
     });
-});
-
-with_overrides(function () {
-    // pointer
-    var event = event_fixtures.pointer;
-    global.pointer.furthest_read = 0;
-    global.pointer.server_furthest_read = 0;
-    dispatch(event);
-    assert_same(global.pointer.furthest_read, event.pointer);
-    assert_same(global.pointer.server_furthest_read, event.pointer);
-
 });
 
 with_overrides(function (override) {
