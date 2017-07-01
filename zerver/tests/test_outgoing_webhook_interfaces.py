@@ -8,7 +8,9 @@ import json
 
 from requests.models import Response
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Service
 from zerver.outgoing_webhooks.generic import GenericOutgoingWebhookService
+from zerver.outgoing_webhooks.slack import SlackOutgoingWebhookService
 
 class Test_GenericOutgoingWebhookService(ZulipTestCase):
 
@@ -37,7 +39,6 @@ class Test_GenericOutgoingWebhookService(ZulipTestCase):
 
     def test_process_success(self):
         # type: () -> None
-
         response = mock.Mock(spec=Response)
         response.text = json.dumps({"response_not_required": True})
         success_response = self.handler.process_success(response, self.event)
@@ -50,6 +51,71 @@ class Test_GenericOutgoingWebhookService(ZulipTestCase):
         response.text = json.dumps({})
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, "")
+
+    def test_process_failure(self):
+        # type: () -> None
+        response = mock.Mock(spec=Response)
+        response.text = 'test_content'
+        success_response = self.handler.process_failure(response, self.event)
+        self.assertEqual(success_response, 'test_content')
+
+mock_service = Service()
+
+class Test_SlackOutgoingWebhookService(ZulipTestCase):
+
+    def setUp(self):
+        # type: () -> None
+        self.event = {
+            u'command': '@**test**',
+            u'user_profile_id': 12,
+            u'service_name': 'test-service',
+            u'trigger': 'mention',
+            u'message': {
+                'content': 'test_content',
+                'type': 'stream',
+                'sender_realm_str': 'zulip',
+                'sender_email': 'sampleuser@zulip.com',
+                'stream_id': '123',
+                'display_recipient': 'integrations',
+                'timestamp': 123456,
+                'sender_id': 21,
+                'sender_full_name': 'Sample User',
+            }
+        }
+        self.handler = SlackOutgoingWebhookService(base_url='http://example.domain.com',
+                                                   token="abcdef",
+                                                   user_profile=None,
+                                                   service_name='test-service')
+
+    @mock.patch('zerver.outgoing_webhooks.slack.get_service_profile', return_value=mock_service)
+    def test_process_event(self, mock_get_service_profile):
+        # type: (mock.Mock) -> None
+        rest_operation, request_data = self.handler.process_event(self.event)
+
+        self.assertEqual(rest_operation['base_url'], 'http://example.domain.com')
+        self.assertEqual(rest_operation['method'], 'POST')
+        self.assertEqual(request_data[0][1], "abcdef")  # token
+        self.assertEqual(request_data[1][1], "zulip")  # team_id
+        self.assertEqual(request_data[2][1], "zulip.com")  # team_domain
+        self.assertEqual(request_data[3][1], "123")  # channel_id
+        self.assertEqual(request_data[4][1], "integrations")  # channel_name
+        self.assertEqual(request_data[5][1], 123456)  # timestamp
+        self.assertEqual(request_data[6][1], 21)  # user_id
+        self.assertEqual(request_data[7][1], "Sample User")  # user_name
+        self.assertEqual(request_data[8][1], "@**test**")  # text
+        self.assertEqual(request_data[9][1], "mention")  # trigger_word
+        self.assertEqual(request_data[10][1], mock_service.id)  # service_id
+
+    def test_process_success(self):
+        # type: () -> None
+        response = mock.Mock(spec=Response)
+        response.text = json.dumps({"response_not_required": True})
+        success_response = self.handler.process_success(response, self.event)
+        self.assertEqual(success_response, "")
+
+        response.text = json.dumps({"text": 'test_content'})
+        success_response = self.handler.process_success(response, self.event)
+        self.assertEqual(success_response, 'test_content')
 
     def test_process_failure(self):
         # type: () -> None
