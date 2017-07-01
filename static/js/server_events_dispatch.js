@@ -81,7 +81,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.message_retention_days = event.value;
             settings_org.update_message_retention_days();
         } else if (event.op === 'update_dict' && event.property === 'default') {
-            $.each(event.data, function (key, value) {
+            _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
             });
             if (event.data.authentication_methods !== undefined) {
