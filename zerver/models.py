@@ -1787,6 +1787,7 @@ class CustomProfileFieldValue(models.Model):
 # They provide additional functionality like parsing message to obtain query url, data to be sent to url,
 # and parsing the response.
 GENERIC_INTERFACE = u'GenericService'
+SLACK_INTERFACE = u'SlackOutgoingWebhookService'
 
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
 # The type of Service is determined by the bot_type field of the referenced
@@ -1813,15 +1814,18 @@ class Service(models.Model):
     # Interface / API version of the service.
     interface = models.PositiveSmallIntegerField(default=1)  # type: int
 
-    # Valid interfaces are {generic}
+    # Valid interfaces are {generic, zulip_bot_service, slack}
     GENERIC = 1
+    SLACK = 2
 
     ALLOWED_INTERFACE_TYPES = [
         GENERIC,
+        SLACK,
     ]
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _interfaces = {
         GENERIC: GENERIC_INTERFACE,
+        SLACK: SLACK_INTERFACE,
     }  # type: Dict[int, Text]
 
     def interface_name(self):
