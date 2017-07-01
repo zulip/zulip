@@ -221,7 +221,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'This is an :poop: message',
          expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title=":poop:"> message</p>'},
         {input: "\ud83d\udca9",
-         expected: '<p><img alt="\ud83d\udca9" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="\ud83d\udca9"></p>'},
+         expected: '<p><img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title=":poop:"></p>'},
         {input: '\u{1f937}',
          expected: '<p>\u{1f937}</p>' },
         {input: 'This is a realm filter #1234 with text after it',

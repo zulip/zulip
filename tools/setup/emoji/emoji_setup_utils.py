@@ -256,3 +256,14 @@ def emoji_is_universal(emoji_dict):
         if not emoji_dict['has_img_' + emoji_set]:
             return False
     return True
+
+def generate_codepoint_to_name_map(names, unified_reactions_data):
+    # type: (List[str], Dict[Text, Text]) -> Dict[str, str]
+    # TODO: Decide canonical names. For now, using the names
+    # generated for emoji picker. In case of multiple names
+    # for the same emoji, lexicographically greater name is
+    # used, for example, `thumbs_up` is used and not `+1`.
+    codepoint_to_name = {}  # type: Dict[str, str]
+    for name in names:
+        codepoint_to_name[str(unified_reactions_data[name])] = str(name)
+    return codepoint_to_name
