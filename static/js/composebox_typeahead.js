@@ -349,9 +349,20 @@ exports.content_typeahead_selected = function (item) {
                 + '#**' + item.name + '** ');
         $(document).trigger('streamname_completed.zulip', {stream: item});
     } else if (this.completing === 'syntax') {
-        rest = "\n" + beginning.substring(beginning.length - this.token.length - 4,
-                beginning.length - this.token.length).trim() + rest;
-        beginning = beginning.substring(0, beginning.length - this.token.length) + item + "\n";
+        // Isolate the end index of the triple backticks/tildes, including
+        // possibly a space afterward
+        var backticks = beginning.length - this.token.length;
+        if (rest === '') {
+            // If cursor is at end of input ("rest" is empty), then
+            // complete the token before the cursor, and add a closing fence
+            // after the cursor
+            beginning = beginning.substring(0, backticks) + item + '\n';
+            rest = "\n" + beginning.substring(backticks - 4, backticks).trim() + rest;
+        } else {
+            // If more text after the input, then complete the token, but don't touch
+            // "rest" (i.e. do not add a closing fence)
+            beginning = beginning.substring(0, backticks) + item;
+        }
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to

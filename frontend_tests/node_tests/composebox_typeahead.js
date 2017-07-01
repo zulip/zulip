@@ -191,6 +191,16 @@ global.people.add(deactivated_user);
     expected_value = '```python\n\n```';
     assert.equal(actual_value, expected_value);
 
+    // Test special case to not close code blocks if there is text afterward
+    fake_this.query = '```p\nsome existing code';
+    fake_this.token = 'p';
+    fake_this.$element.caret = function () {
+        return 4; // Put cursor right after ```p
+    };
+    actual_value = ct.content_typeahead_selected.call(fake_this, 'python');
+    expected_value = '```python\nsome existing code';
+    assert.equal(actual_value, expected_value);
+
     fake_this.completing = 'something-else';
 
     fake_this.query = 'foo';
