@@ -1,22 +1,18 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import ujson
-
 from django.http import HttpResponse
-from mock import patch
-from typing import Any, Dict, List, Text, Union
 
-from zerver.lib.actions import (
-    do_change_is_admin,
-    do_set_realm_property,
-    do_deactivate_realm,
-)
-
+from zerver.lib.actions import do_change_is_admin, do_set_realm_property, \
+    do_deactivate_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.models import get_realm, Realm, UserProfile
 
+from mock import patch
+import ujson
+
+from typing import Any, Dict, List, Text, Union
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile, new_realm_name):
