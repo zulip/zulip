@@ -1,6 +1,7 @@
 var integration_bot_widget = (function () {
 
 var exports = {};
+var INCOMING_WEBHOOK_BOT_TYPE = '2';
 
 // This function subscribes the newly created bot to the stream specified by the user.
 function subscribe_to_stream(bot_email, stream_name) {
@@ -47,6 +48,8 @@ function create_bot(bot, on_success) {
     formData.append('full_name', bot.full_name);
     formData.append('short_name', bot.short_name);
     formData.append('file-'+0, bot.bot_avatar_file);
+    formData.append('bot_type', INCOMING_WEBHOOK_BOT_TYPE);
+
     channel.post({
         url: '/json/bots',
         data: formData,
