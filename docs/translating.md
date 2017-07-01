@@ -262,14 +262,14 @@ To mark a string translatable in JavaScript files, pass it to the
 
 ```
 i18n.t('English Text', context);
-i18n.t('English text with a __variable__', {'variable': 'Variable value'});
 ```
 
-Note: In the second example above, instead of enclosing the variable
-with handlebars, `{{ }}`, we enclose it with `__` because we need to
-differentiate the variable from the Handlebar tags. The symbol which
-is used to enclose the variables can be changed in
-`/static/js/src/main.js`.
+Variables in a translated frontend string are enclosed in
+double-underscores, like `__variable__`:
+
+```
+i18n.t('English text with a __variable__', {'variable': 'Variable value'});
+```
 
 `i18next` also supports plural translations. To support plurals make
 sure your resource file contains the related keys:
@@ -302,8 +302,10 @@ i18n.t('keyWithCount', {count: 100}); // output: '100 items'
 
 For further reading on plurals, read the [official] documentation.
 
-To mark the strings as translatable in the Handlebar templates, Zulip
-registers two Handlebar [helpers][]. The syntax for simple strings is:
+### Handlebars templates
+
+For translations in Handlebars templates we also use `i18n.t`, through two
+Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
 
 ```
 {{t 'English Text' }}
@@ -322,18 +324,20 @@ var context = {'variable': 'variable value'};
 {{/tr}}
 ```
 
+Just like in JavaScript code, variables are enclosed in double
+underscores `__`.
+
+Handlebars expressions like `{{variable}}` or blocks like
+`{{#if}}...{{/if}}` aren't permitted inside a `{{#tr}}...{{/tr}}`
+translated block, because they don't work properly with translation.
+The Handlebars expression would be evaluated before the string is
+processed by `i18n.t`, so that the string to be translated wouldn't be
+constant.  We have a linter to enforce that translated blocks don't
+contain handlebars.
+
 The rules for plurals are same as for JavaScript files. You just have
 to declare the appropriate keys in the resource file and then include
 the `count` in the context.
-
-Note: Make sure that you don't use handlebars within the block of text
-enclosed by `{{#tr}}{{/tr}}`. The reason is that in most templating
-languages, handlebars are used as variable placeholders. Due to this,
-translatable the string becomes different when the correct value of the
-variable is substituted. The translatable strings are captured by a
-preprocessor and doesn't substitude variables with values. We also have
-a linter, tools/check-frontend-i18n, to disallow such patterns, so the
-Travis build will not pass if the linter finds this pattern.
 
 
 ## Transifex config
