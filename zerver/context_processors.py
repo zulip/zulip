@@ -15,6 +15,7 @@ from zproject.backends import (
     AUTH_BACKEND_NAME_MAP
 )
 from zerver.lib.bugdown import convert
+from zerver.lib.send_email import FromAddress
 from zerver.lib.utils import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 
@@ -111,7 +112,7 @@ def zulip_default_context(request):
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
         'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
         'development_environment': settings.DEVELOPMENT,
-        'support_email': settings.ZULIP_ADMINISTRATOR,
+        'support_email': FromAddress.SUPPORT,
         'find_team_link_disabled': find_team_link_disabled,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_quality': settings.PASSWORD_MIN_ZXCVBN_QUALITY,

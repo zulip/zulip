@@ -25,7 +25,7 @@ def build_email(template_prefix, to_email, from_name=None, from_address=None,
                 reply_to_email=None, context={}):
     # type: (str, Text, Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> EmailMultiAlternatives
     context.update({
-        'support_email': settings.ZULIP_ADMINISTRATOR,
+        'support_email': FromAddress.SUPPORT,
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
     })
     subject = loader.render_to_string(template_prefix + '.subject',

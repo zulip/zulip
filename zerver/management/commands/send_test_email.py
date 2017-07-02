@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.mail import mail_admins, mail_managers, send_mail
 from django.core.management.commands import sendtestemail
 
+from zerver.lib.send_email import FromAddress
+
 class Command(sendtestemail.Command):
     def handle(self, *args, **kwargs):
         # type: (*Any, **str) -> None
@@ -13,7 +15,7 @@ class Command(sendtestemail.Command):
         message = ("Success!  If you receive this message, you've "
                    "successfully configured sending email from your "
                    "Zulip server.")
-        sender = settings.ZULIP_ADMINISTRATOR
+        sender = FromAddress.SUPPORT
         send_mail(subject, message, sender, kwargs['email'])
 
         if kwargs['managers']:

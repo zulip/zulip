@@ -14,7 +14,7 @@ from jinja2 import Markup as mark_safe
 from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
-from zerver.lib.send_email import send_email
+from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
@@ -34,7 +34,7 @@ MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="mailto:support@zulipchat.com">contact us</a>.'
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
-                        "Please contact %s with any questions!" % (settings.ZULIP_ADMINISTRATOR,)
+                        "Please contact %s with any questions!" % (FromAddress.SUPPORT,)
 
 def email_is_not_mit_mailing_list(email):
     # type: (Text) -> None
@@ -253,13 +253,13 @@ class OurAuthenticationForm(AuthenticationForm):
 
 Please contact %s to reactivate this group.""" % (
                 user_profile.realm.name,
-                settings.ZULIP_ADMINISTRATOR)
+                FromAddress.SUPPORT)
             raise ValidationError(mark_safe(error_msg))
 
         if not user_profile.is_active:
             error_msg = (u"Sorry for the trouble, but your account has been "
                          u"deactivated. Please contact %s to reactivate "
-                         u"it.") % (settings.ZULIP_ADMINISTRATOR,)
+                         u"it.") % (FromAddress.SUPPORT,)
             raise ValidationError(mark_safe(error_msg))
 
         if not check_subdomain(get_subdomain(self.request), user_profile.realm.subdomain):
