@@ -12,6 +12,7 @@
         <div class="alert" id="admin-realm-message-editing-status"></div>
         <div class="alert" id="admin-realm-name-changes-disabled-status"></div>
         <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
+        <div class="alert" id="admin-realm-require-topics-message-status"></div>
 
         <div class="m-10 inline-block organization-permissions-parent">
             <div class="input-group admin-restricted-to-domain">
@@ -167,6 +168,19 @@
                   value="{{ realm_message_retention_days }}"/>
             </div>
             {{/if}}
+
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_require_topics_message" name="realm_require_topics_message"
+                           {{#if realm_require_topics_message}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_require_topics_message" id="id_realm_require_topics_message_label" class="inline-block"
+                    title="{{t 'If checked, topics message is required.'}}">
+                    {{t "Require a topic" }}
+                </label>
+            </div>
 
             {{#if is_admin }}
             <div class="input-group organization-submission">

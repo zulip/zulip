@@ -106,7 +106,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
         state['realm_uri'] = user_profile.realm.uri
         state['realm_presence_disabled'] = user_profile.realm.presence_disabled
-        state['realm_mandatory_topics'] = user_profile.realm.mandatory_topics
+        state['realm_require_topics_message'] = user_profile.realm.require_topics_message
         state['realm_show_digest_email'] = user_profile.realm.show_digest_email
         state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
         state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)

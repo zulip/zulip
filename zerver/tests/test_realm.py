@@ -250,6 +250,7 @@ class RealmAPITest(ZulipTestCase):
             name=[u'Zulip', u'New Name'],
             name_changes_disabled=bool_tests,
             restricted_to_domain=bool_tests,
+            require_topics_message=bool_tests,
             waiting_period_threshold=[10, 20],
         ) # type: Dict[str, Any]
         vals = test_values.get(name)
