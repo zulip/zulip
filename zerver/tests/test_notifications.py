@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
+from email.utils import formataddr
 from mock import patch, MagicMock
 from six.moves import range
 from typing import Any, Dict, List, Text
@@ -41,10 +42,9 @@ class TestMissedMessages(ZulipTestCase):
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         else:
-            reply_to_addresses = ["Zulip <noreply@zulip.example.com>"]
+            reply_to_addresses = ["noreply@zulip.example.com"]
         msg = mail.outbox[0]
-        sender = settings.NOREPLY_EMAIL_ADDRESS
-        from_email = sender
+        from_email = formataddr(("Zulip", settings.NOREPLY_EMAIL_ADDRESS))
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = '"%s" <%s>' % (othello.full_name, othello.email)
