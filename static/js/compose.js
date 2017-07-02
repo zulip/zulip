@@ -537,15 +537,13 @@ function validate_stream_message() {
         compose_error(i18n.t("Please specify a stream"), $("#stream"));
         return false;
     }
-
-    if (page_params.realm_mandatory_topics) {
+    if (page_params.realm_require_topics_message) {
         var topic = compose_state.subject();
         if (topic === "") {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;
         }
     }
-
     if (!exports.validate_stream_message_address_info(stream_name) ||
         !validate_stream_message_mentions(stream_name)) {
         return false;

@@ -246,6 +246,11 @@ function _set_up() {
                 checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
                 unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
             },
+            require_topics_message: {
+                type: 'bool',
+                checked_msg: i18n.t("Users have to set a topic in message thread"),
+                unchecked_msg: i18n.t("Users do not have to set a topic in message thread"),
+            },
         },
     };
 

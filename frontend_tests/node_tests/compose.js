@@ -176,7 +176,7 @@ people.add(bob);
     assert.equal($('#error-msg').html(), i18n.t('Please specify a stream'));
 
     compose_state.stream_name('Denmark');
-    global.page_params.realm_mandatory_topics = true;
+    global.page_params.realm_require_topics_message = true;
     compose_state.subject('');
     $("#subject").select(noop);
     assert(!compose.validate());

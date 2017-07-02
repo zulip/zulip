@@ -861,6 +861,7 @@ class EventsRegisterTest(ZulipTestCase):
             name_changes_disabled=bool_tests,
             restricted_to_domain=bool_tests,
             waiting_period_threshold=[10, 20],
+            require_topics_message=bool_tests,
         )  # type: Dict[str, Any]
 
         property_type = Realm.property_types[name]

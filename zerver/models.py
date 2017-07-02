@@ -121,11 +121,11 @@ class Realm(ModelReprMixin, models.Model):
     inline_url_embed_preview = models.BooleanField(default=True) # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False) # type: bool
-    mandatory_topics = models.BooleanField(default=False) # type: bool
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
     email_changes_disabled = models.BooleanField(default=False) # type: bool
     description = models.TextField(null=True) # type: Optional[Text]
+    require_topics_message = models.BooleanField(default=False) # type: bool
 
     allow_message_editing = models.BooleanField(default=True) # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js
@@ -160,6 +160,7 @@ class Realm(ModelReprMixin, models.Model):
         name=Text,
         name_changes_disabled=bool,
         restricted_to_domain=bool,
+        require_topics_message=bool,
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
