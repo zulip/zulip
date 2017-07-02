@@ -118,7 +118,7 @@ class TrelloHookTests(WebhookTestCase):
 
     def test_trello_webhook_when_description_was_changed_on_card(self):
         # type: () -> None
-        expected_message = u"Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) from\n>New Description\n\nto\n>Changed Description\n\n."
+        expected_message = u"Marco Matarazzo changed description for [New Card](https://trello.com/c/P2r0z66z) from\n>New Description\n\nto\n>Changed Description\n\n."
         self.send_and_test_stream_message('changing_description_on_card', u"Welcome Board.", expected_message)
 
     def test_trello_webhook_when_card_was_moved_up_in_list(self):
