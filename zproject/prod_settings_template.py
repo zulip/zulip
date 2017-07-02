@@ -159,10 +159,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
 
-# By default, the feedback button will submit feedback to the Zulip
-# developers.  If you set FEEDBACK_EMAIL to be an email address
-# (e.g. ZULIP_ADMINISTRATOR), feedback sent by your users will instead
-# be sent to that email address.
+# Feedback sent by your users will be sent to this email address.
 FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 
 # Controls whether or not error reports (tracebacks) are emailed to the
