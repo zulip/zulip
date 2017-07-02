@@ -12,7 +12,7 @@ from zerver.lib.send_email import send_future_email, \
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
-    ScheduledJob,
+    ScheduledEmail,
     UserMessage,
     Stream,
     get_display_recipient,
@@ -398,7 +398,7 @@ def clear_followup_emails_queue(email):
     """
     Clear out queued emails that would otherwise be sent to a specific email address.
     """
-    items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
+    items = ScheduledEmail.objects.filter(address__iexact=email)
     items.delete()
 
 def log_digest_event(msg):

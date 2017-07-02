@@ -209,7 +209,7 @@ def handle_digest_email(user_profile_id, cutoff):
     if enough_traffic(context["unread_pms"], context["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
-        # Send now, as a ScheduledJob
+        # Send now, as a ScheduledEmail
         send_future_email('zerver/emails/digest', to_user_id=user_profile.id,
                           from_name="Zulip Digest", from_address=FromAddress.NOREPLY,
                           context=context)

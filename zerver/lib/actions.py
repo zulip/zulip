@@ -43,7 +43,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, get_owned_bot_dicts, \
+    get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
