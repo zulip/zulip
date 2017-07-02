@@ -77,7 +77,7 @@ ALL_ZERVER_TABLES = [
     'zerver_realmemoji',
     'zerver_realmfilter',
     'zerver_recipient',
-    'zerver_scheduledjob',
+    'zerver_scheduledemail',
     'zerver_stream',
     'zerver_subscription',
     'zerver_useractivity',
@@ -96,7 +96,7 @@ NON_EXPORTED_TABLES = [
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
     'zerver_pushdevicetoken',
-    'zerver_scheduledjob',
+    'zerver_scheduledemail',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
 ]

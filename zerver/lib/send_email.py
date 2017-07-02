@@ -2,7 +2,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, ScheduledJob, get_user_profile_by_id
+from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
+    EMAIL_TYPES
 
 import datetime
 from email.utils import parseaddr, formataddr
@@ -59,6 +60,8 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
 class EmailNotDeliveredException(Exception):
     pass
 
+# When changing the arguments to this function, you may need to write a
+# migration to change or remove any emails in ScheduledEmail.
 def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                from_address=None, reply_to_email=None, context={}):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> None
@@ -82,6 +85,9 @@ def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name
         to_user_id = None
     email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
-    ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=parseaddr(to_email)[1],
-                                data=ujson.dumps(email_fields),
-                                scheduled_timestamp=timezone_now() + delay)
+    template_name = template_prefix.split('/')[-1]
+    ScheduledEmail.objects.create(
+        address=parseaddr(to_email)[1],
+        type=EMAIL_TYPES[template_name],
+        scheduled_timestamp=timezone_now() + delay,
+        data=ujson.dumps(email_fields))

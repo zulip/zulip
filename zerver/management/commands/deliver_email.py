@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from django.utils.html import format_html
 
-from zerver.models import ScheduledJob
+from zerver.models import ScheduledEmail
 from zerver.lib.context_managers import lockfile
 from zerver.lib.send_email import send_email, EmailNotDeliveredException
 
@@ -58,8 +58,7 @@ Usage: ./manage.py deliver_email
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
-                email_jobs_to_deliver = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                                    scheduled_timestamp__lte=timezone_now())
+                email_jobs_to_deliver = ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
                         try:

@@ -1687,18 +1687,33 @@ class DefaultStream(models.Model):
     class Meta(object):
         unique_together = ("realm", "stream")
 
-class ScheduledJob(models.Model):
-    scheduled_timestamp = models.DateTimeField(auto_now_add=False, null=False)  # type: datetime.datetime
-    type = models.PositiveSmallIntegerField()  # type: int
-    # Valid types are {email}
-    # for EMAIL, filter_string is recipient_email
-    EMAIL = 1
-
-    # JSON representation of the job's data. Be careful, as we are not relying on Django to do validation
+class AbstractScheduledJob(models.Model):
+    scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
+    # JSON representation of arguments to consumer
     data = models.TextField()  # type: Text
-    # Kind if like a ForeignKey, but table is determined by type.
-    filter_id = models.IntegerField(null=True)  # type: Optional[int]
-    filter_string = models.CharField(max_length=100)  # type: Text
+
+    class Meta(object):
+        abstract = True
+
+class ScheduledEmail(AbstractScheduledJob):
+    # Exactly one of user or address should be set. These are used to
+    # filter the set of ScheduledEmails.
+    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: UserProfile
+    # Just the address part of a full "name <address>" email address
+    address = models.EmailField(null=True, db_index=True)  # type: Text
+
+    # Valid types are below
+    WELCOME = 1
+    DIGEST = 2
+    INVITATION_REMINDER = 3
+    type = models.PositiveSmallIntegerField()  # type: int
+
+EMAIL_TYPES = {
+    'followup_day1': ScheduledEmail.WELCOME,
+    'followup_day2': ScheduledEmail.WELCOME,
+    'digest': ScheduledEmail.DIGEST,
+    'invitation_reminder': ScheduledEmail.INVITATION_REMINDER,
+}
 
 class RealmAuditLog(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
