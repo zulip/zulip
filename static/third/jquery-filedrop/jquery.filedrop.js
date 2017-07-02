@@ -51,8 +51,6 @@
  */
 ;(function($) {
 
-  jQuery.event.props.push("dataTransfer");
-
   var default_opts = {
       fallback_id: '',
       url: '',
@@ -113,6 +111,11 @@
     });
 
     function drop(e) {
+      if (!e.originalEvent.dataTransfer) {
+        return;
+      }
+
+      files = e.originalEvent.dataTransfer.files;
 
       function has_type(dom_stringlist, type) {
         var j;
@@ -124,19 +127,18 @@
         return false;
       }
 
-      if (e.dataTransfer.files.length === 0) {
+      if (files.length === 0) {
         var i;
         for (i = 0; i < opts.raw_droppable.length; i++) {
           var type = opts.raw_droppable[i];
-          if (has_type(e.dataTransfer.types, type)) {
-            opts.rawDrop(e.dataTransfer.getData(type));
+          if (has_type(e.originalEvent.dataTransfer.types, type)) {
+            opts.rawDrop(e.originalEvent.dataTransfer.getData(type));
             return false;
           }
         }
       }
 
       if( opts.drop.call(this, e) === false ) return false;
-      files = e.dataTransfer.files;
       if (files === null || files === undefined || files.length === 0) {
         opts.error(errors[0]);
         return false;
