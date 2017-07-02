@@ -47,8 +47,13 @@ function create_bot(bot, on_success) {
     formData.append('csrfmiddlewaretoken', csrf_token);
     formData.append('full_name', bot.full_name);
     formData.append('short_name', bot.short_name);
-    formData.append('file-'+0, bot.bot_avatar_file);
     formData.append('bot_type', INCOMING_WEBHOOK_BOT_TYPE);
+
+    // Will need to set the value of #bot_avatar_file_input (name can be changed) before calling
+    // this function.
+    jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
+        formData.append('file-'+i, file);
+    });
 
     channel.post({
         url: '/json/bots',
@@ -75,7 +80,6 @@ exports.set_integration_bot_url = function (bot) {
     var bot = {
         bot_full_name: bot_full_name,
         bot_short_name: bot_short_name,
-        bot_avatar_file: bot_avatar_file,
         stream_name: stream_name,
         external_api_uri_subdomain: external_api_uri_subdomain,
         integration_url: integration_url,
