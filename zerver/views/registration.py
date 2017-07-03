@@ -204,10 +204,12 @@ def accounts_register(request):
             org_type = int(form.cleaned_data['realm_org_type'])
             realm = do_create_realm(string_id, realm_name, org_type=org_type)[0]
 
+            # Eventually, picking the names, descriptions, and welcome messages will be
+            # done in the realm creation UI, and this data will be coming from a form.
             stream_info = {
-                "social": {"description": "For socializing", "invite_only": False},
-                "general": {"description": "For general stuff", "invite_only": False},
-                "zulip": {"description": "For zulip stuff", "invite_only": False}
+                "social": {"description": "For socializing", "invite_only": False, "welcome_message": None},
+                "general": {"description": "For general stuff", "invite_only": False, "welcome_message": None},
+                "zulip": {"description": "For zulip stuff", "invite_only": False, "welcome_message": None}
             }  # type: Dict[Text, Dict[Text, Any]]
 
             create_streams_with_welcome_messages(realm, stream_info)

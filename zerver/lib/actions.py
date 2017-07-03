@@ -2353,7 +2353,11 @@ def create_streams_with_welcome_messages(realm, stream_dict):
         )
 
         if created:
-            message = prep_stream_welcome_message(stream)
+            default_welcome_message = options.get('welcome_message')
+            if default_welcome_message is None:
+                message = prep_stream_welcome_message(stream)
+            else:
+                message = default_welcome_message
             messages.append(message)
 
     if messages:
