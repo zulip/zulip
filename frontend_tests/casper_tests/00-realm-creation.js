@@ -75,7 +75,7 @@ casper.then(function () {
 
 casper.then(function () {
     // The user is logged in to the newly created realm
-    this.test.assertTitle('home - ' + organization_name + ' - Zulip');
+    this.test.assertTitle('(1) home - ' + organization_name + ' - Zulip');
 });
 
 common.then_log_out();
