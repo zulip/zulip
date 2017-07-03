@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import do_change_full_name
 from zerver.lib.request import JsonableError
-from zerver.models import UserProfile
+from zerver.models import UserProfile, Service
 
 def check_full_name(full_name_raw):
     # type: (Text) -> Text
@@ -39,3 +39,8 @@ def check_valid_bot_type(bot_type):
     # type: (int) -> None
     if bot_type not in UserProfile.ALLOWED_BOT_TYPES:
         raise JsonableError(_('Invalid bot type'))
+
+def check_valid_interface_type(interface_type):
+    # type: (int) -> None
+    if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
+        raise JsonableError(_('Invalid interface type'))

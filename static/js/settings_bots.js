@@ -123,6 +123,8 @@ exports.set_up = function () {
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
     var GENERIC_BOT_TYPE = '1';
 
+    var GENERIC_INTERFACE = '1';
+
     $('#create_bot_form').validate({
         errorClass: 'text-error',
         success: function () {
@@ -133,6 +135,7 @@ exports.set_up = function () {
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var payload_url = $('#create_payload_url').val();
+            var interface_type = $('#create_interface_type').val();
             var formData = new FormData();
 
             formData.append('csrfmiddlewaretoken', csrf_token);
@@ -143,6 +146,7 @@ exports.set_up = function () {
             // If the selected bot_type is Outgoing webhook
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
                 formData.append('payload_url', JSON.stringify(payload_url));
+                formData.append('interface_type', interface_type);
             }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
@@ -162,6 +166,7 @@ exports.set_up = function () {
                     $('#payload_url_inputbox').hide();
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
                     $('#create_bot_button').show();
+                    $('#create_interface_type').val(GENERIC_INTERFACE);
                     create_avatar_widget.clear();
                     $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
                     $("#bots_lists_navbar .active-bots-tab").addClass("active");

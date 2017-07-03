@@ -24,7 +24,7 @@ from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url
 from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
-    check_full_name, check_short_name
+    check_full_name, check_short_name, check_valid_interface_type
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
@@ -246,10 +246,11 @@ def add_outgoing_webhook_service(name, user_profile, base_url, interface, token)
 def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name_raw=REQ("short_name"),
                     bot_type=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
                     payload_url=REQ(validator=check_url, default=None),
+                    interface_type=REQ(validator=check_int, default=Service.GENERIC),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name = check_short_name(short_name_raw)
     service_name = short_name
     short_name += "-bot"
@@ -265,6 +266,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     except UserProfile.DoesNotExist:
         pass
     check_valid_bot_type(bot_type)
+    check_valid_interface_type(interface_type)
 
     if len(request.FILES) == 0:
         avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
@@ -300,7 +302,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
         add_outgoing_webhook_service(name=service_name,
                                      user_profile=bot_profile,
                                      base_url=payload_url,
-                                     interface=1,
+                                     interface=interface_type,
                                      token=random_api_key())
 
     json_result = dict(
