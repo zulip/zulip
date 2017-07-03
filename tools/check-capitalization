@@ -26,9 +26,14 @@ if __name__ == '__main__':
                         action='store_true', dest='show_ignored', default=False,
                         help='Show strings that passed the check because they '
                              'contained ignored phrases.')
+    parser.add_argument('--no-generate',
+                        action='store_true', dest='no_generate', default=False,
+                        help="Don't run makemessages command.")
     args = parser.parse_args()
 
-    subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'], stderr=subprocess.STDOUT)
+    if not args.no_generate:
+        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
+                        stderr=subprocess.STDOUT)
 
     with open('static/locale/en/translations.json') as f:
         data = json.load(f)
