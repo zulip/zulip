@@ -7,6 +7,7 @@ from typing import List, Text
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
+import argparse
 import json
 import os
 import sys
@@ -24,7 +25,15 @@ def find_handlebars(translatable_strings):
     return errored
 
 if __name__ == '__main__':
-    subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'], stderr=subprocess.STDOUT)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--no-generate',
+                        action='store_true', dest='no_generate', default=False,
+                        help="Don't run makemessages command.")
+    args = parser.parse_args()
+
+    if not args.no_generate:
+        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
+                        stderr=subprocess.STDOUT)
 
     with open('static/locale/en/translations.json') as f:
         data = json.load(f)
