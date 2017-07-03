@@ -25,3 +25,9 @@ at the following link:</p>
 
 <p>Thanks for using Zulip!</p>
 {% endblock %}
+
+{% block manage_preferences %}
+<p>
+    <a href="{{ user_profile.realm.uri }}/#settings">Manage email preferences</a>
+</p>
+{% endblock %}
