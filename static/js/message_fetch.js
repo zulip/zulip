@@ -156,7 +156,7 @@ exports.load_more_messages = function load_more_messages(msg_list) {
     });
 };
 
-util.execute_early(function () {
+exports.initialize = function () {
     // get the initial message list
     function load_more(messages) {
 
@@ -213,7 +213,7 @@ util.execute_early(function () {
     } else {
         server_events.home_view_loaded();
     }
-});
+};
 
 
 return exports;
