@@ -701,7 +701,7 @@ td.pointer {
     text-decoration: none;
     -webkit-touch-callout: all;
     -webkit-user-select: all;
-    -moz-user-select: all;
+    -moz-user-select: text; /* Value "all" doesn't work properly in Morzilla. */ 
     -ms-user-select: all;
     user-select: all;
 }
@@ -760,7 +760,7 @@ td.pointer {
     line-height: 17px;
     -webkit-touch-callout: all;
     -webkit-user-select: all;
-    -moz-user-select: all;
+    -moz-user-select: text; /* Value "all" doesn't work properly in Morzilla. */ 
     -ms-user-select: all;
     user-select: all;
 }
@@ -778,7 +778,7 @@ td.pointer {
     line-height: 17px;
     -webkit-touch-callout: all;
     -webkit-user-select: all;
-    -moz-user-select: all;
+    -moz-user-select: text; /* Value "all" doesn't work properly in Morzilla. */ 
     -ms-user-select: all;
     user-select: all;
 }
@@ -1111,7 +1111,7 @@ td.pointer {
     margin-left: -3px;
     -webkit-touch-callout: all;
     -webkit-user-select: all;
-    -moz-user-select: all;
+    -moz-user-select: text; /* Value "all" doesn't work properly in Morzilla. */ 
     -ms-user-select: all;
     user-select: all;
 }
