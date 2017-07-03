@@ -10,6 +10,7 @@ sanity_check.check_venv(__file__)
 import json
 import os
 import sys
+import subprocess
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
@@ -23,6 +24,8 @@ def find_handlebars(translatable_strings):
     return errored
 
 if __name__ == '__main__':
+    subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'], stderr=subprocess.STDOUT)
+
     with open('static/locale/en/translations.json') as f:
         data = json.load(f)
 
