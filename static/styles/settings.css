@@ -194,6 +194,11 @@ td .button {
     background-color: inherit;
     color: inherit;
     border-top: 1px solid hsl(0, 0%, 86%) !important;
+    border-bottom: 1px solid hsl(0, 0%, 86%) !important;
+}
+
+#admin-user-list .table tr:first-of-type td {
+    border-top: none;
 }
 
 .settings-section input[type=text].search {

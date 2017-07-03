@@ -2,16 +2,18 @@
     <input type="text" class="search" placeholder="{{t 'Filter users' }}" />
     <div class="clear-float"></div>
 
+    <table class="table table-condensed table-striped wrapped-table">
+        <thead>
+            <th class="wrapped-cell">{{t "Name" }}</th>
+            <th>{{t "Email" }}</th>
+            <th class="last_active">{{t "Last active" }}</th>
+            {{#if is_admin}}
+            <th class="actions">{{t "Actions" }}</th>
+            {{/if}}
+        </thead>
+    </table>
     <div class="progressive-table-wrapper">
         <table class="table table-condensed table-striped wrapped-table">
-            <thead>
-                <th class="wrapped-cell">{{t "Name" }}</th>
-                <th>{{t "Email" }}</th>
-                <th class="last_active">{{t "Last active" }}</th>
-                {{#if is_admin}}
-                <th class="actions">{{t "Actions" }}</th>
-                {{/if}}
-            </thead>
             <tbody id="admin_users_table" class="admin_user_table required-text thick"
                    data-empty="{{t 'No users match your current filter.' }}"></tbody>
         </table>
