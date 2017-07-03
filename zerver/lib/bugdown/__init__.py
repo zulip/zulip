@@ -145,6 +145,7 @@ def add_a(root, url, link, title=None, desc=None,
         a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
+    img.set("alt", "")
     if class_attr == "message_inline_ref":
         summary_div = markdown.util.etree.SubElement(div, "div")
         title_div = markdown.util.etree.SubElement(summary_div, "div")
