@@ -1211,10 +1211,12 @@ class FetchAPIKeyTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_oauth2_token_failure(self):
         # type: () -> None
-        result = self.client_post("/api/v1/fetch_api_key",
-                                  dict(username="google-oauth2-token",
-                                       password="token"))
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        payload = dict(email_verified=False)
+        with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username="google-oauth2-token",
+                                           password="token"))
+            self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_oauth2_token_unregistered(self):
