@@ -19,7 +19,8 @@ set -x
 ./tools/test-documentation
 ./tools/test-help-documentation.py
 ./tools/test-api
-python -W ignore tools/check-capitalization
-python -W ignore tools/check-frontend-i18n
+python manage.py makemessages --locale en
+python -W ignore tools/check-capitalization --no-generate
+python -W ignore tools/check-frontend-i18n --no-generate
 # Some test suites disabled in CI for being flaky
 #./tools/test-queue-worker-reload
