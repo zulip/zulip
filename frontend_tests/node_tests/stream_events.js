@@ -1,6 +1,7 @@
 var assert = require('assert');
 var noop = function () {};
 set_global('$', global.make_zjquery());
+set_global('document', '');
 
 set_global('colorspace', {
     sRGB_to_linear: noop,
@@ -17,7 +18,7 @@ var stream_events = require('js/stream_events.js');
 var with_overrides = global.with_overrides;
 
 var frontend = {
-    subscribed: true,
+    subscribed: false,
     color: 'yellow',
     name: 'frontend',
     stream_id: 1,
@@ -107,5 +108,136 @@ stream_data.add_sub('Frontend', frontend);
         stream_events.update_property(1, 'pin_to_top', true);
         checkbox = $('#pinstream-1');
         assert.equal(checkbox.prop('checked'), true);
+    });
+
+}());
+
+(function test_marked_subscribed() {
+    // Test undefined error
+    with_overrides(function (override) {
+        var errors = 0;
+        override('blueslip.error', function () {
+            errors += 1;
+        });
+        stream_events.mark_subscribed(undefined, [], 'yellow');
+        assert.equal(errors, 1);
+    });
+
+    // Test early return if subscribed
+    with_overrides(function (override) {
+        var completed = false;
+        override('message_util.do_unread_count_updates', function () {
+            completed = true; // This gets run if we continue and don't early return
+        });
+        var subscribed = {subscribed: true};
+        stream_events.mark_subscribed(subscribed, [], 'yellow');
+        assert.equal(completed, false);
+    });
+
+    set_global('message_list', {
+        all: {
+            all_messages: function () { return ['msg']; },
+        },
+    });
+
+    set_global('stream_data', {
+        subscribe_myself: noop,
+        set_subscriber_emails: noop,
+        get_colors: noop,
+    });
+    set_global('subs', { update_settings_for_subscribed: noop });
+    set_global('narrow_state', { is_for_stream_id: noop });
+
+    // Test unread count update
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('message_util.do_unread_count_updates', stub.f);
+            stream_events.mark_subscribed(frontend, [], '');
+            var args = stub.get_args('messages');
+            assert.deepEqual(args.messages, ['msg']);
+        });
+    });
+
+    set_global('message_util', { do_unread_count_updates: noop });
+
+    // Test jQuery event
+    global.with_stub(function (stub) {
+        $(document).on('subscription_add_done.zulip', stub.f);
+        stream_events.mark_subscribed(frontend, [], '');
+        var args = stub.get_args('event');
+        assert.equal(args.event.sub.stream_id, 1);
+    });
+
+    // Test bookend update
+    with_overrides(function (override) {
+        override('narrow_state.is_for_stream_id', function () {
+            return true;
+        });
+        var updated = false;
+        override('current_msg_list.update_trailing_bookend', function () {
+            updated = true;
+        });
+        stream_events.mark_subscribed(frontend, [], '');
+        assert.equal(updated, true);
+    });
+
+    // reset overriden value
+    set_global('narrow_state', { is_for_stream_id: noop });
+
+    // Test setting color
+    stream_events.mark_subscribed(frontend, [], 'blue');
+    assert.equal(frontend.color, 'blue');
+
+    // Test assigning generated color
+    with_overrides(function (override) {
+        frontend.color = undefined;
+        override('stream_color.pick_color', function () {
+            return 'green';
+        });
+        var warnings = 0;
+        override('blueslip.warn', function () {
+            warnings += 1;
+        });
+
+        global.with_stub(function (stub) {
+            override('subs.set_color', stub.f);
+            stream_events.mark_subscribed(frontend, [], undefined);
+            var args = stub.get_args('id', 'color');
+            assert.equal(args.id, 1);
+            assert.equal(args.color, 'green');
+            assert.equal(warnings, 1);
+        });
+    });
+
+    // Test assigning subscriber emails
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('stream_data.set_subscriber_emails', stub.f);
+            var emails = [
+                'me@example.com',
+                'you@example.com',
+                'zooly@zulip.com',
+            ];
+            stream_events.mark_subscribed(frontend, emails, '');
+            var args = stub.get_args('sub', 'subscribers');
+            assert.deepEqual(frontend, args.sub);
+            assert.deepEqual(emails, args.subscribers);
+        });
+
+        // assign self as well
+        global.with_stub(function (stub) {
+            override('stream_data.subscribe_myself', stub.f);
+            stream_events.mark_subscribed(frontend, [], '');
+            var args = stub.get_args('sub');
+            assert.deepEqual(frontend, args.sub);
+        });
+
+        // and finally update subscriber settings
+        global.with_stub(function (stub) {
+            override('subs.update_settings_for_subscribed', stub.f);
+            stream_events.mark_subscribed(frontend, [], '');
+            var args = stub.get_args('sub');
+            assert.deepEqual(frontend, args.sub);
+        });
     });
 }());
