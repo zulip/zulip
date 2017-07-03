@@ -28,7 +28,7 @@ if __name__ == '__main__':
                              'contained ignored phrases.')
     args = parser.parse_args()
 
-    subprocess.call(['./manage.py', 'makemessages'], stderr=subprocess.STDOUT)
+    subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'], stderr=subprocess.STDOUT)
 
     with open('static/locale/en/translations.json') as f:
         data = json.load(f)
