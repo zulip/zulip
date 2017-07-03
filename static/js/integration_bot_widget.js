@@ -51,7 +51,7 @@ function create_bot(bot, on_success) {
 
     // Will need to set the value of #bot_avatar_file_input (name can be changed) before calling
     // this function.
-    jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
+    _.each($('#bot_avatar_file_input')[0].files, function (i, file) {
         formData.append('file-'+i, file);
     });
 
@@ -61,14 +61,14 @@ function create_bot(bot, on_success) {
         cache: false,
         processData: false,
         contentType: false,
-        success: function (resp, statusText, xhr) {
+        success: function (xhr) {
             var result = JSON.parse(xhr.responseText);
             on_success(result, bot.stream_name, bot.external_api_uri_subdomain,
                        bot.integration_url);
         },
         error: function (xhr) {
             // UI yet to be created with this div id
-            $('#bot_widget_error').text(JSON.parse(xhr.responseText).msg).show();
+            $('#bot_widget_error').text(JSON.parse(xhr.responseText).msg);
         },
     });
 }
