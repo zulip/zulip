@@ -10,10 +10,7 @@ set_global('colorspace', {
 });
 
 add_dependencies({
-    stream_events: 'js/stream_events.js',
     stream_data: 'js/stream_data.js',
-    stream_color: 'js/stream_color.js',
-    util: 'js/util.js',
 });
 
 var stream_events = require('js/stream_events.js');
@@ -64,5 +61,51 @@ stream_data.add_sub('Frontend', frontend);
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, true);
         });
+    });
+
+    // Test desktop notifications
+    stream_events.update_property(1, 'desktop_notifications', true);
+    assert.equal(frontend.desktop_notifications, true);
+    var checkbox = $(".subscription_settings[data-stream-id='1'] #sub_desktop_notifications_setting .sub_setting_control");
+    assert.equal(checkbox.prop('checked'), true);
+
+    // Tests audible notifications
+    stream_events.update_property(1, 'audible_notifications', true);
+    assert.equal(frontend.audible_notifications, true);
+    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_audible_notifications_setting .sub_setting_control");
+    assert.equal(checkbox.prop('checked'), true);
+
+    // Test name change
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.update_stream_name', stub.f);
+            stream_events.update_property(1, 'name', 'the frontend');
+            var args = stub.get_args('sub', 'val');
+            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.val, 'the frontend');
+        });
+    });
+
+    // Test description change
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.update_stream_description', stub.f);
+            stream_events.update_property(1, 'description', 'we write code');
+            var args = stub.get_args('sub', 'val');
+            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.val, 'we write code');
+        });
+    });
+
+    // Test email address change
+    stream_events.update_property(1, 'email_address', 'zooly@zulip.com');
+    assert.equal(frontend.email_address, 'zooly@zulip.com');
+
+    // Test pin to top
+    with_overrides(function (override) {
+        override('stream_list.refresh_pinned_or_unpinned_stream', noop);
+        stream_events.update_property(1, 'pin_to_top', true);
+        checkbox = $('#pinstream-1');
+        assert.equal(checkbox.prop('checked'), true);
     });
 }());
