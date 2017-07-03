@@ -241,3 +241,64 @@ stream_data.add_sub('Frontend', frontend);
         });
     });
 }());
+
+(function test_mark_unsubscribed() {
+    var removed_sub = false;
+    $(document).on('subscription_remove_done.zulip', function () {
+        removed_sub = true;
+    });
+
+    // take no action if no sub specified
+    stream_events.mark_unsubscribed();
+    assert.equal(removed_sub, false);
+
+    // take no action if already unsubscribed
+    frontend.subscribed = false;
+    stream_events.mark_unsubscribed(frontend);
+    assert.equal(removed_sub, false);
+
+    // Test unsubscribe
+    frontend.subscribed = true;
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('stream_data.unsubscribe_myself', stub.f);
+            override('subs.update_settings_for_unsubscribed', noop);
+            stream_events.mark_unsubscribed(frontend);
+            var args = stub.get_args('sub');
+            assert.deepEqual(args.sub, frontend);
+        });
+    });
+
+    // Test update settings after unsubscribe
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.update_settings_for_unsubscribed', stub.f);
+            override('stream_data.unsubscribe_myself', noop);
+            stream_events.mark_unsubscribed(frontend);
+            var args = stub.get_args('sub');
+            assert.deepEqual(args.sub, frontend);
+        });
+    });
+
+    // Test update bookend and remove done event
+    with_overrides(function (override) {
+        override('stream_data.unsubscribe_myself', noop);
+        override('subs.update_settings_for_unsubscribed', noop);
+        override('narrow_state.is_for_stream_id', function () {
+            return true;
+        });
+        global.with_stub(function (stub) {
+            $(document).on('subscription_remove_done.zulip', stub.f);
+
+            var updated = false;
+            override('current_msg_list.update_trailing_bookend', function () {
+                updated = true;
+            });
+
+            stream_events.mark_unsubscribed(frontend);
+            var args = stub.get_args('event');
+            assert.equal(updated, true);
+            assert.deepEqual(args.event.sub, frontend);
+        });
+    });
+}());
