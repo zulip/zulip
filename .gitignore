@@ -32,3 +32,4 @@ var/*
 tools/conf.ini
 tools/custom_provision
 api/bots/john/assets/var/database.db
+static/locale/en
