@@ -242,6 +242,11 @@ function initialize_stream_data() {
     topic_list.rebuild = noop;
     stream_list.scroll_element_into_container = noop;
 
+    var scrollbar_updated = false;
+    $.stub_selector("#stream-filters-container", {
+        perfectScrollbar: function () { scrollbar_updated = true; },
+    });
+
     assert(!$('stub-devel').hasClass('active-filter'));
 
     stream_list.initialize();
@@ -260,7 +265,9 @@ function initialize_stream_data() {
     ]);
     activate_filter(filter);
     assert($('stub-devel').hasClass('active-filter'));
+    assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
+    scrollbar_updated = false;
     filter = new Filter([
         {operator: 'stream', operand: 'cars'},
         {operator: 'topic', operand: 'sedans'},
@@ -268,6 +275,7 @@ function initialize_stream_data() {
     activate_filter(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert(!$('stub-cars').hasClass('active-filter')); // false because of topic
+    assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
     assert(!pm_expanded);
     filter = new Filter([
