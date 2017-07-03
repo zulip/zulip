@@ -120,7 +120,7 @@ class EmailChangeTestCase(ZulipTestCase):
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
-            '[Zulip] Confirm your new email address for Zulip Dev'
+            'Verify your new email address'
         )
         body = email_message.body
         self.assertIn('We received a request to change the email', body)
@@ -159,7 +159,7 @@ class EmailChangeTestCase(ZulipTestCase):
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
-            '[Zulip] Confirm your new email address for Zulip Dev'
+            'Verify your new email address'
         )
         body = email_message.body
         self.assertIn('We received a request to change the email', body)

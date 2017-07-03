@@ -3053,7 +3053,8 @@ def do_send_confirmation_email(invitee, referrer, body):
     `referrer` is a UserProfile.
     """
     activation_url = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
-    context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url}
+    context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url,
+               'referrer_realm_name': referrer.realm.name}
     send_email('zerver/emails/invitation', invitee.email, from_email=settings.ZULIP_ADMINISTRATOR,
                context=context)
 
