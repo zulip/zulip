@@ -103,26 +103,6 @@ var _ = global._;
     assert(!util.same_recipient(undefined, undefined));
 }());
 
-(function test_execute_early() {
-    var doc = $(document);
-    doc.one = function (event_name, f) {
-        assert.equal(event_name, 'phantom_page_loaded');
-        f();
-    };
-
-    var called = false;
-    var func = function () { called = true; };
-
-    global.page_params.test_suite = true;
-    util.execute_early(func);
-    assert(called);
-
-    called = false;
-    global.page_params.test_suite = false;
-    util.execute_early(func);
-    assert(called);
-}());
-
 (function test_robust_uri_decode() {
     assert.equal(util.robust_uri_decode('xxx%3Ayyy'), 'xxx:yyy');
     assert.equal(util.robust_uri_decode('xxx%3'), 'xxx');
