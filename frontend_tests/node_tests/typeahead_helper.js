@@ -8,6 +8,10 @@ add_dependencies({
     people: 'js/people.js',
     util: 'js/util.js',
     Handlebars: 'handlebars',
+    recent_senders: 'js/recent_senders.js',
+    pm_conversations: 'js/pm_conversations.js',
+    message_store: 'js/message_store.js',
+    typeahead_helper: 'js/typeahead_helper.js',
 });
 
 stream_data.create_streams([
@@ -104,17 +108,23 @@ var matches = [
         is_bot: false,
         user_id: 4,
     }, {
+        email: "b_user_3@zulip.net",
+        full_name: "Bob 3",
+        is_admin: false,
+        is_bot: false,
+        user_id: 5,
+    }, {
         email: "b_bot@example.com",
         full_name: "B bot",
         is_admin: false,
         is_bot: true,
-        user_id: 5,
+        user_id: 6,
     }, {
         email: "zman@test.net",
         full_name: "Zman",
         is_admin: false,
         is_bot: false,
-        user_id: 6,
+        user_id: 7,
     },
 ];
 
@@ -123,45 +133,106 @@ _.each(matches, function (person) {
 });
 
 (function test_sort_recipients() {
-    function get_typeahead_result(query, current_stream) {
+    function get_typeahead_result(query, current_stream, current_topic) {
         var result = th.sort_recipients(
             global.people.get_realm_persons(),
             query,
-            current_stream
+            current_stream,
+            current_topic
         );
         return _.map(result, function (person) {
             return person.email;
         });
     }
 
+    // Typeahead for recipientbox [query, "", undefined]
     assert.deepEqual(get_typeahead_result("b", ""), [
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
+        'b_user_3@zulip.net',
         'b_bot@example.com',
         'a_user@zulip.org',
         'zman@test.net',
         'a_bot@zulip.com',
      ]);
 
-    var subscriber_email = "b_user_2@zulip.net";
-    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email));
-    assert.deepEqual(get_typeahead_result("b", "Dev"), [
-        subscriber_email,
-        'b_user_1@zulip.net',
-        'b_bot@example.com',
+    // Typeahead for private message [query, "", ""]
+    assert.deepEqual(get_typeahead_result("a", "", ""), [
         'a_user@zulip.org',
+        'a_bot@zulip.com',
+        'b_user_1@zulip.net',
+        'b_user_2@zulip.net',
+        'b_user_3@zulip.net',
         'zman@test.net',
+        'b_bot@example.com',
+     ]);
+
+    var subscriber_email_1 = "b_user_2@zulip.net";
+    var subscriber_email_2 = "b_user_3@zulip.net";
+    var subscriber_email_3 = "b_bot@example.com";
+    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_1));
+    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_2));
+    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_3));
+
+    // For spliting based on whether a PM was sent
+    global.pm_conversations.set_partner(5);
+    global.pm_conversations.set_partner(6);
+    global.pm_conversations.set_partner(2);
+    global.pm_conversations.set_partner(7);
+
+    // For splitting based on recency
+    global.recent_senders.process_message_for_senders({
+        sender_id : 7,
+        stream_id : 1,
+        subject : "Dev Topic",
+        timestamp : _.uniqueId(),
+    });
+    global.recent_senders.process_message_for_senders({
+        sender_id : 5,
+        stream_id : 1,
+        subject : "Dev Topic",
+        timestamp : _.uniqueId(),
+    });
+    global.recent_senders.process_message_for_senders({
+        sender_id : 6,
+        stream_id : 1,
+        subject : "Dev Topic",
+        timestamp : _.uniqueId(),
+    });
+
+    // Typeahead for stream message [query, stream-name, topic-name]
+    assert.deepEqual(get_typeahead_result("b", "Dev", "Dev Topic"), [
+        subscriber_email_3,
+        subscriber_email_2,
+        subscriber_email_1,
+        'b_user_1@zulip.net',
+        'zman@test.net',
+        'a_user@zulip.org',
         'a_bot@zulip.com',
     ]);
 
+    global.recent_senders.process_message_for_senders({
+        sender_id : 5,
+        stream_id : 2,
+        subject : "Linux Topic",
+        timestamp : _.uniqueId(),
+    });
+    global.recent_senders.process_message_for_senders({
+        sender_id : 7,
+        stream_id : 2,
+        subject : "Linux Topic",
+        timestamp : _.uniqueId(),
+    });
+
     // No match
-    assert.deepEqual(get_typeahead_result("h", "Linux"), [
+    assert.deepEqual(get_typeahead_result("h", "Linux", "Linux Topic"), [
+        'zman@test.net',
+        'b_user_3@zulip.net',
         'a_user@zulip.org',
+        'b_bot@example.com',
+        'a_bot@zulip.com',
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
-        'zman@test.net',
-        'a_bot@zulip.com',
-        'b_bot@example.com',
     ]);
 
     // Test person email is "all" or "everyone"
@@ -174,14 +245,15 @@ _.each(matches, function (person) {
     };
     people.add_in_realm(person);
 
-    assert.deepEqual(get_typeahead_result("a", "Linux"), [
+    assert.deepEqual(get_typeahead_result("a", "Linux", "Linux Topic"), [
         'all',
         'a_user@zulip.org',
         'a_bot@zulip.com',
+        'zman@test.net',
+        'b_user_3@zulip.net',
+        'b_bot@example.com',
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
-        'zman@test.net',
-        'b_bot@example.com',
     ]);
 
     people.deactivate(person);
@@ -194,35 +266,89 @@ _.each(matches, function (person) {
     matches[4].pm_recipient_count = 0;
     matches[5].pm_recipient_count = 1;
 
-    assert.deepEqual(get_typeahead_result("b", "Linux"), [
-        'b_user_2@zulip.net',
-        'b_user_1@zulip.net',
+    assert.deepEqual(get_typeahead_result("b", "Linux", "Linux Topic"), [
+        'b_user_3@zulip.net',
         'b_bot@example.com',
-        'a_bot@zulip.com',
-        'a_user@zulip.org',
+        'b_user_1@zulip.net',
+        'b_user_2@zulip.net',
         'zman@test.net',
+        'a_user@zulip.org',
+        'a_bot@zulip.com',
     ]);
 
     // Test sort_recipients with duplicate people
     matches.push(matches[0]);
 
-    var recipients = th.sort_recipients(matches, "b", "Linux");
+    var recipients = th.sort_recipients(matches, "b", "", "");
     var recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     var expected = [
+        'b_bot@example.com',
+        'b_user_3@zulip.net',
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
-        'b_bot@example.com',
-        'a_bot@zulip.com',
-        'a_bot@zulip.com',
         'a_user@zulip.org',
         'zman@test.net',
+        'a_bot@zulip.com',
+        'a_bot@zulip.com',
     ];
     assert.deepEqual(recipients_email, expected);
 
     // Reset matches
     matches.splice(matches.length-1, 1);
+
+    // full_name starts with same character but emails are 'all'
+    var small_matches = [
+        {
+            email: "all",
+            full_name: "All 1",
+            is_admin: false,
+            is_bot: false,
+            user_id: 43,
+        }, {
+            email: "all",
+            full_name: "All 2",
+            is_admin: false,
+            is_bot: false,
+            user_id: 44,
+        },
+    ];
+
+    recipients = th.sort_recipients(small_matches, "a", "Linux", "Linux Topic");
+    recipients_email = _.map(recipients, function (person) {
+        return person.email;
+    });
+    expected = [
+        'all',
+        'all',
+    ];
+    assert.deepEqual(recipients_email, expected);
+
+    // matches[3] is a subscriber and matches[2] is not.
+    small_matches = [matches[3], matches[2]];
+    recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
+    recipients_email = _.map(recipients, function (person) {
+        return person.email;
+    });
+    expected = [
+        'b_user_2@zulip.net',
+        'b_user_1@zulip.net',
+    ];
+    assert.deepEqual(recipients_email, expected);
+
+    // matches[4] is a pm partner and matches[3] is not and
+    // both are not subscribered to the stream Linux.
+    small_matches = [matches[4], matches[3]];
+    recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
+    recipients_email = _.map(recipients, function (person) {
+        return person.email;
+    });
+    expected = [
+        'b_user_3@zulip.net',
+        'b_user_2@zulip.net',
+    ];
+    assert.deepEqual(recipients_email, expected);
 }());
 
 (function test_highlight_with_escaping() {
@@ -331,29 +457,31 @@ _.each(matches, function (person) {
 }());
 
 (function test_sort_recipientbox_typeahead() {
-    var recipients = th.sort_recipientbox_typeahead("b, a", matches, "Dev"); // search "a"
+    var recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
     var recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     assert.deepEqual(recipients_email, [
-        'a_bot@zulip.com', // matches "a"
         'a_user@zulip.org', // matches "a"
+        'a_bot@zulip.com', // matches "a"
+        'b_bot@example.com',
+        'b_user_3@zulip.net',
+        'zman@test.net',
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
-        'zman@test.net',
-        'b_bot@example.com',
     ]);
 
-    recipients = th.sort_recipientbox_typeahead("b, a, b", matches, "Dev"); // search "b"
+    recipients = th.sort_recipientbox_typeahead("b, a, b", matches, ""); // search "b"
     recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     assert.deepEqual(recipients_email, [
+        'b_bot@example.com',
+        'b_user_3@zulip.net',
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
-        'b_bot@example.com',
-        'a_bot@zulip.com',
         'a_user@zulip.org',
         'zman@test.net',
+        'a_bot@zulip.com',
     ]);
 }());

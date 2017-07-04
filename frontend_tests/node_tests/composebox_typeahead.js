@@ -42,6 +42,8 @@ add_dependencies({
     people: 'js/people.js',
     stream_data: 'js/stream_data',
     templates: 'js/templates',
+    pm_conversations: 'js/pm_conversations.js',
+    recent_senders: 'js/recent_senders.js',
     typeahead_helper: 'js/typeahead_helper.js',
     ui_util: 'js/ui_util.js',
     util: 'js/util.js',

@@ -114,28 +114,6 @@ exports.render_stream = function (stream) {
     return html;
 };
 
-function split_by_subscribers(people, current_stream) {
-    var subscribers = [];
-    var non_subscribers = [];
-
-    if (!stream_data.get_sub(current_stream)) {
-        // If there is no stream specified, everyone is considered as a subscriber.
-        return {subscribers: people, non_subscribers: []};
-    }
-
-    _.each(people, function (person) {
-        if (person.email === "all" || person.email === "everyone") {
-            subscribers.push(person);
-        } else if (stream_data.user_is_subscribed(current_stream, person.email)) {
-            subscribers.push(person);
-        } else {
-            non_subscribers.push(person);
-        }
-    });
-
-    return {subscribers: subscribers, non_subscribers: non_subscribers};
-}
-
 exports.sorter = function (query, objs, get_item) {
    var results = util.prefix_sort(query, objs, get_item);
    return results.matches.concat(results.rest);
@@ -167,12 +145,74 @@ exports.compare_by_pms = function (user_a, user_b) {
     return 1;
 };
 
-exports.sort_for_at_mentioning = function (objs, current_stream) {
-    var objs_split = split_by_subscribers(objs, current_stream);
+function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current_stream) {
+    // give preference to "all" or "everyone"
+    if (person_a.email === "all" || person_a.email === "everyone") {
+        return -1;
+    } else if (person_b.email === "all" || person_b.email === "everyone") {
+        return 1;
+    }
 
-    var subs_sorted = objs_split.subscribers.sort(exports.compare_by_pms);
-    var non_subs_sorted = objs_split.non_subscribers.sort(exports.compare_by_pms);
-    return subs_sorted.concat(non_subs_sorted);
+    // give preference to subscribed users first
+    if (current_stream !== undefined) {
+        var a_is_sub = stream_data.user_is_subscribed(current_stream, person_a.email);
+        var b_is_sub = stream_data.user_is_subscribed(current_stream, person_b.email);
+
+        if (a_is_sub && !b_is_sub) {
+            return -1;
+        } else if (!a_is_sub && b_is_sub) {
+            return 1;
+        }
+    }
+
+    // give preference to pm partners if both (are)/(are not) subscribers
+    var a_is_partner = pm_conversations.is_partner(person_a.user_id);
+    var b_is_partner = pm_conversations.is_partner(person_b.user_id);
+
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+
+    return tertiary_compare(person_a, person_b);
+}
+
+exports.sort_for_at_mentioning = function (objs, current_stream_name, current_subject) {
+    // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
+    var current_stream = false;
+    if (current_stream_name) {
+        current_stream = stream_data.get_sub(current_stream_name);
+    }
+    if (!current_stream) {
+        objs.sort(function (person_a, person_b) {
+            return compare_for_at_mentioning(
+                person_a,
+                person_b,
+                exports.compare_by_pms
+            );
+        });
+    } else {
+        var stream_id = current_stream.stream_id;
+
+        objs.sort(function (person_a, person_b) {
+            return compare_for_at_mentioning(
+                person_a,
+                person_b,
+                function (user_a, user_b) {
+                    return recent_senders.compare_by_recency(
+                        user_a,
+                        user_b,
+                        stream_id,
+                        current_subject
+                    );
+                },
+                current_stream.name
+            );
+        });
+    }
+
+    return objs;
 };
 
 exports.compare_by_popularity = function (lang_a, lang_b) {
@@ -193,18 +233,20 @@ exports.sort_languages = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_recipients = function (matches, query, current_stream) {
+exports.sort_recipients = function (matches, query, current_stream, current_subject) {
     var name_results =  util.prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = util.prefix_sort(query, name_results.rest,
         function (x) { return x.email; });
 
     var matches_sorted = exports.sort_for_at_mentioning(
         name_results.matches.concat(email_results.matches),
-        current_stream
+        current_stream,
+        current_subject
     );
     var rest_sorted = exports.sort_for_at_mentioning(
         email_results.rest,
-        current_stream
+        current_stream,
+        current_subject
     );
     return matches_sorted.concat(rest_sorted);
 };
