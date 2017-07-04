@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ -z "$CERTIFICATE_SUBJ" ]; then
+    echo "No certificate subject given, env var CERTIFICATE_SUBJ."
+    exit 2
+fi
+
+echo "Exectuing certificates configuration..."
+if [ ! -e /etc/ssl/private/zulip.key ] && [ ! -e /etc/ssl/certs/zulip.combined-chain.crt ]; then
+    echo "No certs exist."
+    echo "Autogenerating certificates ..."
+    openssl genrsa -des3 -passout pass:x -out /tmp/server.pass.key 4096
+    openssl rsa -passin pass:x -in /tmp/server.pass.key -out /etc/ssl/private/zulip.key
+    openssl req -new -nodes -subj "$CERTIFICATE_SUBJ" -key /etc/ssl/private/zulip.key -out /tmp/server.csr
+    openssl x509 -req -days 365 -in /tmp/server.csr -signkey /etc/ssl/private/zulip.key -out /etc/ssl/certs/zulip.combined-chain.crt
+    rm -f /tmp/server.csr /tmp/server.pass.key
+    echo "Certificate autogeneration succeeded."
+else
+    echo "Certificates already exist. No need to generate them. Continuing."
+fi
+echo "Certificates configuration succeeded."

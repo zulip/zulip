@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if ([ "$ZULIP_USER_CREATION_ENABLED" == "True" ] && [ "$ZULIP_USER_CREATION_ENABLED" == "true" ]) && ([ -z "$ZULIP_USER_DOMAIN" ] || [ -z "$ZULIP_USER_EMAIL" ] || [ -z "$ZULIP_USER_FULLNAME" ] || [ -z "$ZULIP_USER_PASS" ]); then
+    echo "No zulip user configuration given."
+    exit 1
+fi
+set +e
+# Doing everything in python, even I never coded in python #YOLO
+sudo -H -u zulip -g zulip bash <<BASH
+/home/zulip/deployments/current/manage.py create_realm --string_id="$ZULIP_USER_DOMAIN" --name="$ZULIP_USER_DOMAIN"
+/home/zulip/deployments/current/manage.py create_user --this-user-has-accepted-the-tos --realm "$ZULIP_USER_DOMAIN" --password "$ZULIP_USER_PASS" "$ZULIP_USER_EMAIL" "$ZULIP_USER_FULLNAME"
+/home/zulip/deployments/current/manage.py knight "$ZULIP_USER_EMAIL" -f
+BASH

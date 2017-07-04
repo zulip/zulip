@@ -58,6 +58,12 @@ matrix:
       env: TEST_SUITE=backend
     - python: "3.4"
       env: TEST_SUITE=production
+    - python: "3.4"
+      before_install:
+        - docker build -t user/zulipprod .
+        - docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipprod /bin/bash
+        - /srv/zulip/tools/provision --docker
+      env: TEST_SUITE=backend
     - python: "2.7"
       env: TEST_SUITE=frontend
     - python: "2.7"

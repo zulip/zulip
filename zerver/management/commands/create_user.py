@@ -37,6 +37,11 @@ Omit both <email> and <full name> for interactive user creation.
                             dest='string_id',
                             type=str,
                             help='The name of the existing realm to which to add the user.')
+        parser.add_argument('--password',
+                            dest='password',
+                            type=str,
+                            default='',
+                            help='password of new user')
         parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
                             help='email address of new user')
         parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
@@ -78,7 +83,8 @@ parameters, or specify no parameters for interactive user creation.""")
                 full_name = input("Full name: ")
 
         try:
-            notify_new_user(do_create_user(email, initial_password(email),
+            pw = options.get('password', initial_password(email))
+            notify_new_user(do_create_user(email, pw,
                                            realm, full_name, email_to_username(email)),
                             internal=True)
         except IntegrityError:

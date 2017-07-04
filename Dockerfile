@@ -1,19 +1,25 @@
-FROM ubuntu:trusty
+FROM quay.io/sameersbn/ubuntu:latest
+MAINTAINER Alexander Trost <galexrt@googlemail.com>
 
-EXPOSE 9991
+ENV ZULIP_VERSION="1.6.0" DATA_DIR="/data"
 
-RUN apt-get update && apt-get install -y \
-  python-pbs \
-  wget
+RUN apt-get -q update && \
+    apt-get -q dist-upgrade -y && \
+    mkdir -p "$DATA_DIR" /root/zulip && \
+    wget -q "https://www.zulip.org/dist/releases/zulip-server-$ZULIP_VERSION.tar.gz" -O /tmp/zulip-server.tar.gz && \
+    tar xfz /tmp/zulip-server.tar.gz -C /root/zulip --strip-components=1 && \
+    rm -rf /tmp/zulip-server.tar.gz && \
+    export VOYAGER_CLASS="dockervoyager" DEPLOYMENT_TYPE="dockervoyager" \
+        ADDITIONAL_PACKAGES="python-dev python-six" has_nginx="0" has_appserver="0" && \
+    /root/zulip/scripts/setup/install && \
+    apt-get -qq autoremove --purge -y && \
+    apt-get -qq clean && \
+    rm -rf /root/zulip/puppet/ /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN locale-gen en_US.UTF-8
+COPY docker-entrypoint.sh /sbin/entrypoint.sh
 
-RUN useradd -d /home/zulip -m zulip && echo 'zulip ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+VOLUME ["$DATA_DIR"]
+EXPOSE 80 443
 
-USER zulip
-
-RUN ln -nsf /srv/zulip ~/zulip
-
-RUN echo 'export LC_ALL="en_US.UTF-8" LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8"' >> ~zulip/.bashrc
-
-WORKDIR /srv/zulip
+ENTRYPOINT ["/sbin/entrypoint.sh"]
+CMD ["app:run"]
