@@ -79,25 +79,59 @@ if you're working on new database migrations.  To do this, run:
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
 
-### Internet access inside test suits
+### Internet access inside test suites
 
-Zulip has a policy of requiring its backend tests to not depend upon Internet
-connectivity. We currently enforce this policy by overriding library functions
-which might be used to access internet (eg. `httplib2.Http().request`). Though
-this might not be a full proof blockade to internet access but we intend to
-improve upon this in near time.
+As a policy matter, the Zulip test suites should never make outgoing
+HTTP or other network requests.  This is important for 2 major
+reasons:
 
-- If you are seeing test failures with tracebacks as below, you should
-probably mock the element trying to access the network. You can consult our
-[guide](/docs/testing-with-django.htmls#mocks-and-stubs) on
-mocking if you want to learn how to write mockups.
+* Tests that make outgoing Internet requests will fail when the user
+  isn't on the Internet.
+* Tests that make outgoing Internet requests often have a hidden
+  dependency on the uptime of a third-party service, and will fail
+  nondeterministically if that service has a temporary outage.
+  Nondeterministically failing tests can be a big waste of
+  developer time, and we try to avoid them wherever possible.
+
+As a result, Zulip's major test suites should never access the
+Internet directly.  Since code in Zulip does need to access the
+Internet (e.g. to access various third-party APIs), this means that
+the Zulip tests use mocking to basically hardcode (for the purposes of
+the test) what responses should be used for any outgoing Internet
+requests that Zulip would make in the code path being tested.
+
+This is easy to do using test fixtures (a fancy word for fixed data
+used in tests) and the `mock.patch` function to specify what HTTP
+response should be used by the tests for every outgoing HTTP (or other
+network) request.  Consult
+[our guide on mocking](testing-with-django.html#mocks-and-stubs) to
+learn how to mock network requests easily; there are also a number of
+examples throughout the codebase.
+
+We partially enforce this policy in the main Django/backend test suite
+by overriding certain library functions that are used in outgoing HTTP
+code paths (`httplib2.Http().request`, `requests.request`, etc.) to
+throw an exception in the backend tests.  While this is enforcement is
+not complete (there a lot of other ways to use the Internet from
+Python), it is easy to do and catches most common cases of new code
+dependning on Internet access.
+
+This enforcement code results in the following exception:
 
   ```
   File "tools/test-backend", line 120, in internet_guard
-    raise Exception("Zulip doesn't allow network access to test suits."
-  Exception: Zulip doesn't allow network access to test suits.
-  You need to mock any network access calls in testsuits.
+    raise Exception("Outgoing network requests are not allowed in the Zulip tests."
+  Exception: Outgoing network requests are not allowed in the Zulip tests.
+  ...
   ```
+
+#### Documentation tests
+
+The one exception to this policy is our documentation tests, which
+will attempt to verify that the links included in our documentation
+aren't broken.  Those tests end up failing nondeterministically fairly
+often, which is unfortunate, but there's simply no other correct way
+to verify links other than attempting to access them.
 
 ## Schema and initial data changes
 

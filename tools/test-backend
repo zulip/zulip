@@ -118,9 +118,8 @@ def block_internet():
     # httplib2 to access internet.
     def internet_guard(*args, **kwargs):
         # type: (*Any, **Any) -> None
-        raise Exception("Zulip doesn't allow network access to test suits. "
-                        "You need to mock any network access calls in test"
-                        "suits. Checkout our docs on testing here for details."
+        raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
+                        "More details and advice are available here:"
                         "https://zulip.readthedocs.io/en/latest/testing.html#internet-access-inside-test-suits")
 
     httplib2.Http.request = internet_guard

@@ -168,7 +168,9 @@ We use mocks and stubs for all the typical reasons:
 
 - to more precisely test the target code
 - to stub out calls to third-party services
-- to make it so that you can run your tests on the airplane without wifi
+- to make it so that you can [run the Zulip tests on the airplane without wifi][no-internet]
+
+[no-internet]: testing.html#internet-access-inside-test-suites
 
 For mocking we generally use the "mock" library and use `mock.patch` as
 a context manager or decorator.  We also take advantage of some context managers
@@ -183,6 +185,10 @@ from Django as well as our own custom helpers.  Here is an example:
 
 Follow [this link](settings.html#testing-non-default-settings) for more
 information on the "settings" context manager.
+
+A common use is to prevent a call to a third-party service from using
+the Internet; `git grep mock.patch | grep requests` is a good way to
+find several examples of doing this.
 
 ### Template tests
 
