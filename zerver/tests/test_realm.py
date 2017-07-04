@@ -255,6 +255,7 @@ class RealmAPITest(ZulipTestCase):
             invite_by_admins_only=bool_tests,
             inline_image_preview=bool_tests,
             inline_url_embed_preview=bool_tests,
+            mandatory_topics=bool_tests,
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             name_changes_disabled=bool_tests,
