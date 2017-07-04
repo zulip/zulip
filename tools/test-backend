@@ -2,13 +2,15 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-from typing import List
+from typing import List, Any
 import glob
 import optparse
 import os
 import sys
 import subprocess
 import ujson
+import httplib2
+import requests
 
 # check for the venv
 from lib import sanity_check
@@ -110,7 +112,22 @@ def write_failed_tests(failed_tests):
         with open(FAILED_TEST_PATH, 'w') as f:
             ujson.dump(failed_tests, f)
 
+def block_internet():
+    # type: () -> None
+    # We are blocking internet currently by assuming mostly any test would use
+    # httplib2 to access internet.
+    def internet_guard(*args, **kwargs):
+        # type: (*Any, **Any) -> None
+        raise Exception("Zulip doesn't allow network access to test suits. "
+                        "You need to mock any network access calls in test"
+                        "suits. Checkout our docs on testing here for details."
+                        "https://zulip.readthedocs.io/en/latest/testing.html#internet-access-inside-test-suits")
+
+    httplib2.Http.request = internet_guard
+    requests.request = internet_guard
+
 if __name__ == "__main__":
+    block_internet()
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
