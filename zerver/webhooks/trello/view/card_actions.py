@@ -32,6 +32,8 @@ ADD_MEMBER = u'addMemberToCard'
 REMOVE_MEMBER = u'removeMemberFromCard'
 ADD_ATTACHMENT = u'addAttachmentToCard'
 ADD_CHECKLIST = u'addChecklistToCard'
+MOVE_UP = u'moveUp'
+MOVE_DOWN = u'moveDown'
 COMMENT = u'commentCard'
 
 TRELLO_CARD_URL_TEMPLATE = u'[{card_name}]({card_url})'
@@ -54,6 +56,8 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_MEMBER: u'removed {member_name} from {card_url_template}',
     ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}',
     ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}',
+    MOVE_UP: u'moved {card_url_template} up in the list {list}',
+    MOVE_DOWN: u'moved {card_url_template} down in the list {list}',
     COMMENT: u'commented on {card_url_template}\n>{text}\n'
 }
 
@@ -96,10 +100,11 @@ def get_proper_action(payload, action_type):
             return ARCHIVE
         if old_data.get('closed') and card_data.get('closed') is False:
             return REOPEN
-        # we don't support events for when a card is moved up or down
-        # within a single list
         if old_data.get('pos'):
-            return None
+            if card_data['pos'] > old_data['pos']:
+                return MOVE_DOWN
+            else:
+                return MOVE_UP
         raise UnknownUpdateCardAction()
 
     return action_type
@@ -187,6 +192,13 @@ def get_changed_due_date_body(payload, action_type):
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+def get_moved_card_body(payload, action_type):
+    # type: (Mapping[str, Any], Text) -> Text
+    data = {
+        'list': prettify_date(get_action_data(payload)['list']['name'])
+    }
+    return fill_appropriate_message_content(payload, action_type, data)
+
 def get_managed_desc_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
@@ -251,5 +263,7 @@ ACTIONS_TO_FILL_BODY_MAPPER = {
     REMOVE_MEMBER: get_managed_member_body,
     ADD_ATTACHMENT: get_added_attachment_body,
     ADD_CHECKLIST: get_added_checklist_body,
+    MOVE_UP: get_moved_card_body,
+    MOVE_DOWN: get_moved_card_body,
     COMMENT: get_comment_body,
 }

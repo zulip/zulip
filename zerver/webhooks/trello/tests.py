@@ -121,3 +121,13 @@ class TrelloHookTests(WebhookTestCase):
         # type: () -> None
         expected_message = u"Marco Matarazzo changed description for [New Card](https://trello.com/c/P2r0z66z) from\n>New Description\n\nto\n>Changed Description\n\n."
         self.send_and_test_stream_message('changing_description_on_card', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_card_was_moved_up_in_list(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo moved [New Card](https://trello.com/c/P2r0z66z) up in the list List."
+        self.send_and_test_stream_message('moving_card_up_in_list', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_card_was_moved_down_in_list(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo moved [New Card](https://trello.com/c/P2r0z66z) down in the list List."
+        self.send_and_test_stream_message('moving_card_down_in_list', u"Welcome Board.", expected_message)
