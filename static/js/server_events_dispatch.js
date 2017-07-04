@@ -99,6 +99,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
+        } else if (event.op === 'update' && event.property === 'mandatory_topics') {
+            page_params.realm_mandatory_topics = event.value;
         }
 
         break;

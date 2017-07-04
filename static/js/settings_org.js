@@ -246,6 +246,11 @@ function _set_up() {
                 checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
                 unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
             },
+            mandatory_topics: {
+                type: 'bool',
+                checked_msg: i18n.t("Topics are required in messages to streams"),
+                unchecked_msg: i18n.t("Topics are not required in messages to streams"),
+            },
         },
     };
 
