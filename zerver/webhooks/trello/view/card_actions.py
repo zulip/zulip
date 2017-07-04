@@ -48,7 +48,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_MEMBER: u'removed {member_name} from {card_url_template}',
     ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}',
     ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}',
-    COMMENT: u'commented on {card_url_template}'
+    COMMENT: u'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n'
 }
 
 def prettify_date(date_string):
@@ -153,6 +153,13 @@ def get_managed_member_body(payload, action_type):
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+def get_comment_body(payload, action_type):
+    # type: (Mapping[str, Any], Text) -> Text
+    data = {
+        'text': get_action_data(payload)['text'],
+    }
+    return fill_appropriate_message_content(payload, action_type, data)
+
 def get_managed_due_date_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     data = {
@@ -214,5 +221,5 @@ ACTIONS_TO_FILL_BODY_MAPPER = {
     REMOVE_MEMBER: get_managed_member_body,
     ADD_ATTACHMENT: get_added_attachment_body,
     ADD_CHECKLIST: get_added_checklist_body,
-    COMMENT: get_body_by_action_type_without_data,
+    COMMENT: get_comment_body,
 }
