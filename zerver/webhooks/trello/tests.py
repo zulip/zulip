@@ -124,3 +124,18 @@ class TrelloHookTests(WebhookTestCase):
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_message_mock.called)
         self.assert_json_success(result)
+
+    def test_trello_webhook_when_description_was_added_to_card(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) to\n~~~ quote\nNew Description\n~~~."
+        self.send_and_test_stream_message('adding_description_to_card', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_description_was_removed_from_card(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo removed description from [New Card](https://trello.com/c/P2r0z66z)."
+        self.send_and_test_stream_message('removing_description_from_card', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_description_was_changed_on_card(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo changed description for [New Card](https://trello.com/c/P2r0z66z) from\n~~~ quote\nNew Description\nto\n~~~ quote\nChanged Description\n~~~."
+        self.send_and_test_stream_message('changing_description_on_card', u"Welcome Board.", expected_message)
