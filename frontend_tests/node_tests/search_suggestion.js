@@ -303,6 +303,14 @@ global.stream_data.populate_stream_topics_for_tests({});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    // Do not suggest "bob@zulip.com" (the name of the current user)
+    query = 'pm-with:ted@zulip.com,bo';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:ted@zulip.com,bo",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     // No superfluous suggestions should be generated.
     query = 'pm-with:bob@zulip.com,red';
     suggestions = search.get_suggestions(query);
