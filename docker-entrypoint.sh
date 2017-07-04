@@ -6,46 +6,7 @@ if [ "$DEBUG" = "true" ] || [ "$DEBUG" = "True" ]; then
 fi
 set -e
 
-# DB aka Database
-DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_HOST_PORT="${DB_HOST_PORT:-5432}"
-DB_NAME="${DB_NAME:-zulip}"
-DB_SCHEMA="${DB_SCHEMA:-zulip}"
-DB_USER="${DB_USER:-zulip}"
-DB_PASS="${DB_PASS:-zulip}"
-DB_ROOT_USER="${DB_ROOT_USER:-postgres}"
-DB_ROOT_PASS="${DB_ROOT_PASS:-$(echo $DB_PASS)}"
-REMOTE_POSTGRES_SSLMODE="${REMOTE_POSTGRES_SSLMODE:-prefer}"
-unset DB_PASSWORD
-# RabbitMQ
-IGNORE_RABBITMQ_ERRORS="${IGNORE_RABBITMQ_ERRORS:-true}"
-SETTING_RABBITMQ_HOST="${SETTING_RABBITMQ_HOST:-127.0.0.1}"
-SETTING_RABBITMQ_USER="${SETTING_RABBITMQ_USER:-zulip}"
-SETTING_RABBITMQ_PASSWORD="${SETTING_RABBITMQ_PASSWORD:-zulip}"
-SECRETS_rabbitmq_password="${SECRETS_rabbitmq_password:-$(echo $SETTING_RABBITMQ_PASSWORD)}"
-unset SETTING_RABBITMQ_PASSWORD
-# Redis
-SETTING_RATE_LIMITING="${SETTING_RATE_LIMITING:-True}"
-SETTING_REDIS_HOST="${SETTING_REDIS_HOST:-127.0.0.1}"
-SETTING_REDIS_PORT="${SETTING_REDIS_PORT:-6379}"
-# Memcached
-if [ -z "$SETTING_MEMCACHED_LOCATION" ]; then
-    SETTING_MEMCACHED_LOCATION="127.0.0.1:11211"
-fi
-# Nginx settings
-NGINX_WORKERS="${NGINX_WORKERS:-2}"
-NGINX_PROXY_BUFFERING="${NGINX_PROXY_BUFFERING:-off}"
-NGINX_MAX_UPLOAD_SIZE="${NGINX_MAX_UPLOAD_SIZE:-24m}"
-# Zulip certifcate parameters
-ZULIP_AUTO_GENERATE_CERTS="${ZULIP_AUTO_GENERATE_CERTS:-True}"
-ZULIP_CERTIFICATE_SUBJ="${ZULIP_CERTIFICATE_SUBJ:-}"
-ZULIP_CERTIFICATE_C="${ZULIP_CERTIFICATE_C:-US}"
-ZULIP_CERTIFICATE_ST="${ZULIP_CERTIFICATE_ST:-Denial}"
-ZULIP_CERTIFICATE_L="${ZULIP_CERTIFICATE_L:-Springfield}"
-ZULIP_CERTIFICATE_O="${ZULIP_CERTIFICATE_O:-Dis}"
-ZULIP_CERTIFICATE_CN="${ZULIP_CERTIFICATE_CN:-}"
 # Zulip related settings
-ZULIP_AUTH_BACKENDS="${ZULIP_AUTH_BACKENDS:-EmailAuthBackend}"
 ZULIP_RUN_POST_SETUP_SCRIPTS="${ZULIP_RUN_POST_SETUP_SCRIPTS:-True}"
 # Zulip user setup
 FORCE_FIRST_START_INIT="${FORCE_FIRST_START_INIT:-False}"
@@ -153,52 +114,30 @@ setConfigurationValue() {
     echo "$VALUE" >> "$FILE"
     echo "Setting key \"$KEY\", type \"$TYPE\" in file \"$FILE\"."
 }
-nginxConfiguration() {
-    echo "Executing nginx configuration ..."
-    sed -i "s/worker_processes .*/worker_processes $NGINX_WORKERS;/g" /etc/nginx/nginx.conf
-    sed -i "s/client_max_body_size .*/client_max_body_size $NGINX_MAX_UPLOAD_SIZE;/g" /etc/nginx/nginx.conf
-    sed -i "s/proxy_buffering .*/proxy_buffering $NGINX_PROXY_BUFFERING;/g" /etc/nginx/zulip-include/proxy_longpolling
-    echo "Nginx configuration succeeded."
-}
+
 configureCerts() {
     echo "Exectuing certificates configuration..."
-    case "$ZULIP_AUTO_GENERATE_CERTS" in
-        [Tt][Rr][Uu][Ee])
-            ZULIP_AUTO_GENERATE_CERTS="True"
-        ;;
-        [Ff][Aa][Ll][Ss][Ee])
-            ZULIP_AUTO_GENERATE_CERTS="False"
-        ;;
-        *)
-            echo "Defaulting \"ZULIP_AUTO_GENERATE_CERTS\" to \"True\". Couldn't parse if \"True\" or \"False\"."
-            ZULIP_AUTO_GENERATE_CERTS="True"
-        ;;
-    esac
     if [ -e "$DATA_DIR/certs/zulip.key" ] && [ -e "$DATA_DIR/certs/zulip.combined-chain.crt" ]; then
         ln -sfT "$DATA_DIR/certs/zulip.key" /etc/ssl/private/zulip.key
         ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
     else
-        if [ "$ZULIP_AUTO_GENERATE_CERTS" = "True" ] || [ "$ZULIP_AUTO_GENERATE_CERTS" = "true" ]; then
-            if [ -z "$ZULIP_CERTIFICATE_SUBJ" ]; then
-                if [ -z "$ZULIP_CERTIFICATE_CN" ]; then
-                    if [ -z "$SETTING_EXTERNAL_HOST" ]; then
-                        echo "Certificates generation failed. \"ZULIP_CERTIFICATE_CN\" and as fallback \"SETTING_EXTERNAL_HOST\" not given."
-                        echo "Certificates configuration failed."
-                        exit 1
-                    fi
-                    ZULIP_CERTIFICATE_CN="$SETTING_EXTERNAL_HOST"
+        if [ -z "$ZULIP_CERTIFICATE_SUBJ" ]; then
+            if [ -z "$ZULIP_CERTIFICATE_CN" ]; then
+                if [ -z "$SETTING_EXTERNAL_HOST" ]; then
+                    echo "Certificates generation failed. \"ZULIP_CERTIFICATE_CN\" and as fallback \"SETTING_EXTERNAL_HOST\" not given."
+                    echo "Certificates configuration failed."
+                    exit 1
                 fi
-                ZULIP_CERTIFICATE_SUBJ="/C=$ZULIP_CERTIFICATE_C/ST=$ZULIP_CERTIFICATE_ST/L=$ZULIP_CERTIFICATE_L/O=$ZULIP_CERTIFICATE_O/CN=$ZULIP_CERTIFICATE_CN"
+                ZULIP_CERTIFICATE_CN="$SETTING_EXTERNAL_HOST"
             fi
-            export CERTIFICATE_SUBJ="$ZULIP_CERTIFICATE_SUBJ"
-            /root/zulip/scripts/setup/configure-certs
-            mv /etc/ssl/private/zulip.key "$DATA_DIR/certs/zulip.key"
-            mv /etc/ssl/certs/zulip.combined-chain.crt "$DATA_DIR/certs/zulip.combined-chain.crt"
-            ln -sfT "$DATA_DIR/certs/zulip.key" /etc/ssl/private/zulip.key
-            ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
-        else
-            echo "Certificate auto generation is disabled. Continuing"
+            ZULIP_CERTIFICATE_SUBJ="/C=$ZULIP_CERTIFICATE_C/ST=$ZULIP_CERTIFICATE_ST/L=$ZULIP_CERTIFICATE_L/O=$ZULIP_CERTIFICATE_O/CN=$ZULIP_CERTIFICATE_CN"
         fi
+        export CERTIFICATE_SUBJ="$ZULIP_CERTIFICATE_SUBJ"
+        /root/zulip/scripts/setup/configure-certs
+        mv /etc/ssl/private/zulip.key "$DATA_DIR/certs/zulip.key"
+        mv /etc/ssl/certs/zulip.combined-chain.crt "$DATA_DIR/certs/zulip.combined-chain.crt"
+        ln -sfT "$DATA_DIR/certs/zulip.key" /etc/ssl/private/zulip.key
+        ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
     fi
     echo "Certificates configuration succeeded."
 }
@@ -336,9 +275,7 @@ autoBackupConfiguration() {
 initialConfiguration() {
     echo "=== Begin Initial Configuration Phase ==="
     prepareDirectories
-    nginxConfiguration
     configureCerts
-    databaseConfiguration
     if [ "$MANUAL_CONFIGURATION" = "False" ] || [ "$MANUAL_CONFIGURATION" = "false" ]; then
         secretsConfiguration
         authenticationBackends
@@ -365,40 +302,7 @@ waitingForDatabase() {
     done
     unset PGPASSWORD
 }
-bootstrapDatabase() {
-    echo "(Re)creating database structure ..."
-    if [ ! -z "$DB_ROOT_USER" ] && [ ! -z "$DB_ROOT_PASS" ]; then
-        echo "Setting up the database, schema and user ..."
-        export PGPASSWORD="$DB_ROOT_PASS"
-        echo """
-        CREATE USER $DB_USER;
-        ALTER ROLE $DB_USER SET search_path TO $DB_NAME,public;
-        CREATE DATABASE $DB_NAME OWNER=$DB_USER;
-        CREATE SCHEMA $DB_SCHEMA AUTHORIZATION $DB_USER;
-        """ | psql -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_USER" || :
-        echo "Creating tsearch_extras extension ..."
-        echo "CREATE EXTENSION tsearch_extras SCHEMA $DB_SCHEMA;" | \
-        psql -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_ROOT_USER" "$DB_NAME" || :
-        unset PGPASSWORD
-        echo "Database structure recreated."
-    else
-        echo "No database root user nor password given. Not (re)creating database structure."
-    fi
-}
-bootstrapRabbitMQ() {
-    echo "Bootstrapping RabbitMQ ..."
-    set +e
-    /root/zulip/scripts/setup/configure-rabbitmq | tail -n 16
-    RETURN_CODE=$?
-    if [[ $RETURN_CODE != 0 ]] && ([ "$IGNORE_RABBITMQ_ERRORS" = "False" ] && [ "$IGNORE_RABBITMQ_ERRORS" = "false" ]); then
-        echo "=> In most cases you can completely ignore the RabbmitMQ bootstrap errors."
-        echo "=> If you want to ignore RabbitMQ bootstrap errors, (re)add the env var 'IGNORE_RABBITMQ_ERRORS' with 'true'."
-        echo "Zulip RabbitMQ bootstrap failed in \"configure-rabbitmq\" exit code $RETURN_CODE. Exiting."
-        exit $RETURN_CODE
-    fi
-    set -e
-    echo "RabbitMQ bootstrap succeeded."
-}
+
 userCreationConfiguration() {
     echo "Executing Zulip user creation script ..."
     if ([ "$ZULIP_USER_CREATION_ENABLED" != "True" ] && [ "$ZULIP_USER_CREATION_ENABLED" != "true" ]) && [ -e "$DATA_DIR/.initiated" ]; then
@@ -426,20 +330,7 @@ zulipFirstStartInit() {
     touch "$DATA_DIR/.initiated"
     echo "Zulip first start init sucessful."
 }
-zulipMigration() {
-    echo "Migrating Zulip to new version ..."
-    set +e
-    su zulip -c "/home/zulip/deployments/current/manage.py migrate --noinput"
-    local RETURN_CODE=$?
-    if [[ $RETURN_CODE != 0 ]]; then
-        echo "Zulip migration failed with exit code $RETURN_CODE. Exiting."
-        exit $RETURN_CODE
-    fi
-    set -e
-    rm -rf "$DATA_DIR/.zulip-*"
-    touch "$DATA_DIR/.zulip-$ZULIP_VERSION"
-    echo "Zulip migration succeeded."
-}
+
 runPostSetupScripts() {
     echo "Post setup scripts execution ..."
     if ([ "$ZULIP_RUN_POST_SETUP_SCRIPTS" != "True" ] && [ "$ZULIP_RUN_POST_SETUP_SCRIPTS" != "true" ]); then
@@ -471,11 +362,10 @@ runPostSetupScripts() {
 bootstrappingEnvironment() {
     echo "=== Begin Bootstrap Phase ==="
     waitingForDatabase
-    bootstrapDatabase
-    bootstrapRabbitMQ
+    "$ZULIP_PATH"/scripts/setup/postgres-init-db
+    "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
     userCreationConfiguration
     zulipFirstStartInit
-    zulipMigration
     runPostSetupScripts
     echo "=== End Bootstrap Phase ==="
 }
