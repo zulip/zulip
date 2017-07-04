@@ -113,7 +113,7 @@ function get_group_suggestions(all_persons, last, operators) {
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    var parts = all_but_last_part.split(',');
+    var parts = all_but_last_part.split(',').concat(people.my_current_email());
     var persons = _.filter(all_persons, function (person) {
         if (_.contains(parts, person.email)) {
             return false;
