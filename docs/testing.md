@@ -79,6 +79,25 @@ if you're working on new database migrations.  To do this, run:
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
 
+### Internet access inside test suits
+
+Zulip has a policy of requiring its backend tests to not depend upon Internet
+connectivity. We currently enforce this policy by overriding library functions
+which might be used to access internet (eg. `httplib2.Http().request`). Though
+this might not be a full proof blockade to internet access but we intend to
+improve upon this in near time.
+
+- If you are seeing test failures with tracebacks as below, you should
+probably mock the element trying to access the network. You can consult our
+[guide](/docs/testing-with-django.htmls#mocks-and-stubs) on
+mocking if you want to learn how to write mockups.
+
+  ```
+  File "tools/test-backend", line 120, in internet_guard
+    raise Exception("Zulip doesn't allow network access to test suits."
+  Exception: Zulip doesn't allow network access to test suits.
+  You need to mock any network access calls in testsuits.
+  ```
 
 ## Schema and initial data changes
 
