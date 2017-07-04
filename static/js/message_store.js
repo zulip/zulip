@@ -176,7 +176,7 @@ exports.add_message_metadata = function (message) {
     return message;
 };
 
-util.execute_early(function () {
+exports.initialize = function () {
     $(document).on('message_id_changed', function (event) {
         var old_id = event.old_id;
         var new_id = event.new_id;
@@ -204,7 +204,7 @@ util.execute_early(function () {
             }
         });
     });
-});
+};
 
 return exports;
 
