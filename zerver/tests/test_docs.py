@@ -50,7 +50,7 @@ class DocPageTest(ZulipTestCase):
             self._test('/devtools/', 'Useful development URLs')
             self._test('/errors/404/', 'Page not found')
             self._test('/errors/5xx/', 'Internal server error')
-            self._test('/emails/', 'Road Runner invited you to join Zulip')
+            self._test('/emails/', 'Road Runner invited you to join Acme Corporation')
             self._test('/register/', 'Sign up for Zulip')
 
             result = self.client_get('/new-user/')
