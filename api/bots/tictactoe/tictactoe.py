@@ -281,37 +281,31 @@ class ticTacToeHandler(object):
             command += val
         original_sender = message['sender_email']
 
-        mydict = state_handler.get_state()
-        if not mydict:
-            state_handler.set_state({})
-            mydict = state_handler.get_state()
+        with state_handler.state({}) as mydict:
+            user_game = mydict.get(original_sender)
+            if (not user_game) and command == "new":
+                user_game = TicTacToeGame(copy.deepcopy(initial_board))
+                mydict[original_sender] = user_game
 
-        user_game = mydict.get(original_sender)
-        if (not user_game) and command == "new":
-            user_game = TicTacToeGame(copy.deepcopy(initial_board))
-            mydict[original_sender] = user_game
-
-        if command == 'new':
-            if user_game and not first_time(user_game.board):
-                return_content = "You're already playing a game! Type **@tictactoe help** or **@ttt help** to see valid inputs."
+            if command == 'new':
+                if user_game and not first_time(user_game.board):
+                    return_content = "You're already playing a game! Type **@tictactoe help** or **@ttt help** to see valid inputs."
+                else:
+                    return_content = "Welcome to tic-tac-toe! You'll be x's and I'll be o's. Your move first!\n"
+                    return_content += TicTacToeGame.positions
+            elif command == 'help':
+                return_content = TicTacToeGame.detailed_help_message
+            elif (user_game) and TicTacToeGame.check_validity(user_game, TicTacToeGame.sanitize_move(user_game, command)):
+                user_board = user_game.board
+                return_content = TicTacToeGame.tictactoe(user_game, user_board, command)
+            elif (user_game) and command == 'quit':
+                del mydict[original_sender]
+                return_content = "You've successfully quit the game."
             else:
-                return_content = "Welcome to tic-tac-toe! You'll be x's and I'll be o's. Your move first!\n"
-                return_content += TicTacToeGame.positions
-        elif command == 'help':
-            return_content = TicTacToeGame.detailed_help_message
-        elif (user_game) and TicTacToeGame.check_validity(user_game, TicTacToeGame.sanitize_move(user_game, command)):
-            user_board = user_game.board
-            return_content = TicTacToeGame.tictactoe(user_game, user_board, command)
-        elif (user_game) and command == 'quit':
-            del mydict[original_sender]
-            return_content = "You've successfully quit the game."
-        else:
-            return_content = "Hmm, I didn't understand your input. Type **@tictactoe help** or **@ttt help** to see valid inputs."
+                return_content = "Hmm, I didn't understand your input. Type **@tictactoe help** or **@ttt help** to see valid inputs."
 
-        if "Game over" in return_content or "draw" in return_content:
-            del mydict[original_sender]
-
-        state_handler.set_state(mydict)
+            if "Game over" in return_content or "draw" in return_content:
+                del mydict[original_sender]
 
         bot_handler.send_message(dict(
             type = 'private',

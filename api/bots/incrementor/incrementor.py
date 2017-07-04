@@ -12,18 +12,16 @@ class IncrementorHandler(object):
         '''
 
     def handle_message(self, message, bot_handler, state_handler):
-        state = state_handler.get_state() or {'number': 0, 'message_id': None}
-        state['number'] += 1
-        state_handler.set_state(state)
-        if state['message_id'] is None:
-            result = bot_handler.send_reply(message, str(state['number']))
-            state['message_id'] = result['id']
-            state_handler.set_state(state)
-        else:
-            bot_handler.update_message(dict(
-                message_id = state['message_id'],
-                content = str(state['number'])
-            ))
+        with state_handler.state({'number': 0, 'message_id': None}) as state:
+            state['number'] += 1
+            if state['message_id'] is None:
+                result = bot_handler.send_reply(message, str(state['number']))
+                state['message_id'] = result['id']
+            else:
+                bot_handler.update_message(dict(
+                    message_id = state['message_id'],
+                    content = str(state['number'])
+                ))
 
 
 handler_class = IncrementorHandler
