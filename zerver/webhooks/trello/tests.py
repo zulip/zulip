@@ -99,7 +99,7 @@ class TrelloHookTests(WebhookTestCase):
 
     def test_trello_webhook_when_comment_was_added_to_card(self):
         # type: () -> None
-        expected_message = u"TomaszKolek commented on [New card](https://trello.com/c/xPKXoSTQ)."
+        expected_message = u"TomaszKolek commented on [New card](https://trello.com/c/xPKXoSTQ)\n~~~ quote\nNew comment\n~~~."
         self.send_and_test_stream_message('adding_comment_to_card', u"Welcome Board.", expected_message)
 
     def test_trello_webhook_when_board_was_renamed(self):
