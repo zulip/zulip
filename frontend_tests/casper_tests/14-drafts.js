@@ -177,7 +177,10 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info('Finished reloading; now opening drafts again');
     // Reloading into a narrow opens compose box automatically
-    casper.click("#compose_close");
+
+    casper.waitUntilVisible("#compose_close", function () {
+        casper.click("#compose_close");
+    });
     casper.waitUntilVisible('.drafts-link', function () {
         casper.click('.drafts-link');
     });
