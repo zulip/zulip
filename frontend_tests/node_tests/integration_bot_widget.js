@@ -68,29 +68,37 @@ var integration_bot_widget = require('js/integration_bot_widget.js');
         integration_url: integration_url,
     };
 
+    // Main function to be tested
     integration_bot_widget.set_integration_bot_url(bot);
 
+    // Assert that the above function goes to the desired url by channel.post
     assert(posted);
 
     var xhr = {
         responseText: '{"api_key": "1234567", "email": "airbrake@zulip.com"}',
     };
 
+    // Call on_success callback function.
     success_callback(xhr);
 
     assert.equal(blueslip_errors, 4);
 
+    // Placeholder for the returned url string
     var info = $('#integration_bot_url');
 
+    // Desired result url
     var integration_bot_url = "https://chat.zulip.org/api/v1/external/airbrake?api_key=1234567&stream=Airbrake";
 
     assert.equal(info.text(), integration_bot_url);
 
+    // xhr for error.
     xhr = {
         responseText: '{"msg": "no can do"}',
     };
+    // Call on error function.
     error_callback(xhr);
 
+    // Placeholder UI for the error string.
     info = $('#bot_widget_error');
 
     assert.equal(info.text(), 'no can do');
