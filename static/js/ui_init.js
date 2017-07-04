@@ -243,6 +243,7 @@ $(function () {
 
     // initialize other stuff
     reload.initialize();
+    server_events.initialize();
     people.initialize();
     bot_data.initialize(); // Must happen after people.initialize()
     message_fetch.initialize();
