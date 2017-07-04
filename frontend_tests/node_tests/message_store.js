@@ -62,6 +62,7 @@ people.add_in_realm(cindy);
 global.people.initialize_current_user(me.user_id);
 
 var message_store = require('js/message_store.js');
+message_store.initialize();
 
 (function test_insert_recent_private_message() {
     message_store.insert_recent_private_message('1', 1001);
