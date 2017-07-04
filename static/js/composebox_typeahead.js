@@ -401,7 +401,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                 return typeahead_helper.sort_emojis(matches, this.token);
             } else if (this.completing === 'mention') {
                 return typeahead_helper.sort_recipients(matches, this.token,
-                                                        compose_state.stream_name());
+                                                        compose_state.stream_name(),
+                                                        compose_state.subject());
             } else if (this.completing === 'stream') {
                 return typeahead_helper.sort_streams(matches, this.token);
             } else if (this.completing === 'syntax') {
@@ -506,9 +507,9 @@ exports.initialize = function () {
             return query_matches_person(current_recipient, item);
         },
         sorter: function (matches) {
-            var current_stream = compose_state.stream_name();
+            // var current_stream = compose_state.stream_name();
             return typeahead_helper.sort_recipientbox_typeahead(
-                this.query, matches, current_stream);
+                this.query, matches, "");
         },
         updater: function (item, event) {
             var previous_recipients = typeahead_helper.get_cleaned_pm_recipients(this.query);
