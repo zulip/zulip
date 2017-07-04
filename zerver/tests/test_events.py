@@ -847,26 +847,18 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (str) -> None
         bool_tests = [True, False, True]  # type: List[bool]
         test_values = dict(
-            add_emoji_by_admins_only=bool_tests,
-            create_stream_by_admins_only=bool_tests,
             default_language=[u'es', u'de', u'en'],
             description=[u'Realm description', u'New description'],
-            email_changes_disabled=bool_tests,
-            invite_required=bool_tests,
-            invite_by_admins_only=bool_tests,
-            inline_image_preview=bool_tests,
-            inline_url_embed_preview=bool_tests,
-            mandatory_topics=bool_tests,
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
-            name_changes_disabled=bool_tests,
-            restricted_to_domain=bool_tests,
             waiting_period_threshold=[10, 20],
         )  # type: Dict[str, Any]
 
+        vals = test_values.get(name)
         property_type = Realm.property_types[name]
         if property_type is bool:
             validator = check_bool
+            vals = bool_tests
         elif property_type is Text:
             validator = check_string
         elif property_type is int:
@@ -882,7 +874,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', validator),
         ])
 
-        vals = test_values.get(name)
         if vals is None:
             raise AssertionError('No test created for %s' % (name))
         do_set_realm_property(self.user_profile.realm, name, vals[0])

@@ -359,10 +359,17 @@ Ex, for `authentication_methods`:
     # ...
 
 This completes the backend implementation.  A great next step is to
-write the [backend tests](testing-with-django.html).  With the
-`property_types` framework, one just needs to add a line in
+write the [backend tests](testing-with-django.html).
+
+To test the new setting syncs correctly with the `property_types`
+framework, one usually just needs to add a line in each of
 `test_events.py` and `test_realm.py` with a list of values to switch
-between in the test.
+between in the test.  In the case of a boolean field, no action is
+required, because those tests will correctly assume that the only
+values to test are `True` and `False`.
+
+One still needs to add a test for whether the setting actually
+controls the feature it is supposed to control, however.
 
 ### Update the front end
 

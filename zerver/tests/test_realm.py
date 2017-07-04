@@ -246,23 +246,15 @@ class RealmAPITest(ZulipTestCase):
 
         bool_tests = [False, True] # type: List[bool]
         test_values = dict(
-            add_emoji_by_admins_only=bool_tests,
-            create_stream_by_admins_only=bool_tests,
             default_language=[u'de', u'en'],
             description=[u'Realm description', u'New description'],
-            email_changes_disabled=bool_tests,
-            invite_required=bool_tests,
-            invite_by_admins_only=bool_tests,
-            inline_image_preview=bool_tests,
-            inline_url_embed_preview=bool_tests,
-            mandatory_topics=bool_tests,
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
-            name_changes_disabled=bool_tests,
-            restricted_to_domain=bool_tests,
             waiting_period_threshold=[10, 20],
         ) # type: Dict[str, Any]
         vals = test_values.get(name)
+        if Realm.property_types[name] is bool:
+            vals = bool_tests
         if vals is None:
             raise AssertionError('No test created for %s' % (name))
 
