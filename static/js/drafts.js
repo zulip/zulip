@@ -136,7 +136,8 @@ exports.restore_draft = function (draft_id) {
         }
     } else {
         if (draft.private_message_recipient !== "") {
-            narrow.activate([{operator: "pm-with", operand: draft.private_message_recipient}],
+            var recipients = draft.private_message_recipient.replace(/\s/g, '');
+            narrow.activate([{operator: "pm-with", operand: recipients}],
                              {select_first_unread: true, trigger: "restore draft"});
         }
     }
