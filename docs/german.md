@@ -278,7 +278,7 @@ This translation is unambiguous.
 
 Transifex has two different translations for "Narrow to" -
 "Schränke auf ... ein." and "Begrenze auf ... ." Both sound a bit strange to a
-German speaker, since he would expect grammatically correct sentences when
+German speaker, since they would expect grammatically correct sentences when
 using the imperative (e.g. "Schränke diesen Stream ein auf ... .") Since this
 would be too long for many labels, the infinitive "begrenzen auf" is preferable.
 "einschränken auf" sounds equally good, but Transifex shows more use cases for
