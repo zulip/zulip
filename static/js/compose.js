@@ -310,9 +310,56 @@ exports.transmit_message = function (request, success, error) {
     }
 };
 
-exports.send_message = function send_message(request) {
+exports.send_message = function send_message(skip_correct_narrow_check, request) {
     if (request === undefined) {
         request = create_message_object();
+    }
+
+    // All messages will appear in home.
+    if (!skip_correct_narrow_check && narrow_state.active()) {
+        var is_wrongly_narrowed = true;
+        var current_filter = narrow_state.get_current_filter();
+        var args = {};
+
+        if (request.type === "stream") {
+            args.narrow_link = narrow.by_stream_subject_uri(request.stream, request.subject);
+            args.narrow_to_text = request.stream + " > "+ request.subject;
+
+            var narrow_topic = narrow_state.topic();
+
+            // If narrow contains stream and no topic or narrow contains stream and correct topic.
+            if (narrow_state.stream() === request.stream &&
+                (!narrow_topic || narrow_topic === request.subject)) {
+                is_wrongly_narrowed = false;
+            }
+        } else if (request.type === "private") {
+            var group_text =  (request.to_user_ids.indexOf(",") < 0 ? "" : i18n.t("Group "));
+            args.narrow_link = narrow.huddle_with_uri(request.to_user_ids);
+            args.narrow_to_text = group_text + i18n.t("Private message");
+            args.narrow_title = group_text + i18n.t("PM with ") + request.private_message_recipient;
+
+            // If narrowed to all private messages.
+            is_wrongly_narrowed = !current_filter.has_operand("is", "private");
+
+            // If narrow contains the correct recipients.
+            if (current_filter.has_operator("pm-with") &&
+                (util.normalize_recipients(request.private_message_recipient) ===
+                    current_filter.operands("pm-with")[0])) {
+                is_wrongly_narrowed = false;
+            }
+        }
+
+        if (is_wrongly_narrowed) {
+            $("#out-of-view-notification").hide();
+            $("#send-status").attr("class", "alert alert-warning").show();
+            $("#error-msg").html(templates.render("confirm_outside_narrow", args));
+            $("#outside-narrow-send-button").focus();
+
+            $("#compose-send-button").removeAttr('disabled');
+            $("#sending-indicator").hide();
+
+            return;
+        }
     }
 
     if (request.type === "private") {
@@ -573,6 +620,16 @@ exports.initialize = function () {
     $("#compose form").on("submit", function (e) {
        e.preventDefault();
        compose.finish();
+    });
+
+    $("#send-status").on("click", "#outside-narrow-send-button", function (e) {
+        exports.send_message(true);
+        $("#send-status").hide();
+        e.preventDefault();
+    });
+
+    $("#send-status").on("click", "#outside-narrow-to-button", function () {
+        $("#send-status").hide();
     });
 
     resize.watch_manual_resize("#new_message_content");

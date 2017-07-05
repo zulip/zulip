@@ -208,7 +208,7 @@ exports.turn_off_press_enter_to_send = function () {
 };
 
 // Wait for any previous send to finish, then send a message.
-exports.then_send_message = function (type, params) {
+exports.then_send_message = function (type, params, check_wrong_narrow_warning) {
     casper.then(function () {
         casper.waitForSelector('#compose-send-button:enabled');
         casper.waitForSelector('#new_message_content');
@@ -230,6 +230,14 @@ exports.then_send_message = function (type, params) {
             casper.click('#compose-send-button');
         });
     });
+
+    if (check_wrong_narrow_warning) {
+        casper.then(function () {
+            casper.waitForSelector('#send-status', function () {
+                casper.click('#outside-narrow-send-button');
+            });
+        });
+    }
 
     casper.then(function () {
         casper.waitFor(function emptyComposeBox() {
@@ -286,11 +294,12 @@ exports.keypress = function (code) {
 };
 
 // Send a whole list of messages using then_send_message.
-exports.then_send_many = function (msgs) {
+exports.then_send_many = function (msgs, check_wrong_narrow_warning) {
     msgs.forEach(function (msg) {
         exports.then_send_message(
             (msg.stream !== undefined) ? 'stream' : 'private',
-            msg);
+            msg,
+            check_wrong_narrow_warning);
     });
 };
 

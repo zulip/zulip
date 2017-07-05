@@ -1,0 +1,17 @@
+<div>
+    {{t "Are you sure you want to send this message outside the current narrow?" }}
+</div>
+<div class="new-style outside-narrow-buttons">
+    <a id="outside-narrow-send-button" class="button small rounded sea-green outside-narrow-button" href="#">
+        {{t "Yes, Send" }}
+    </a>
+    <a id="outside-narrow-to-button" class="button small rounded sea-green outside-narrow-button" href="{{ narrow_link }}"
+        {{#if narrow_title}}
+        title="{{ narrow_title }}"
+        {{/if}}>
+        {{t "Narrow to" }}
+        <strong>
+            {{ narrow_to_text }}
+        </strong>
+    </a>
+</div>
