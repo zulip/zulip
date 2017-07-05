@@ -256,6 +256,12 @@ global.stream_data.populate_stream_topics_for_tests({});
         return undefined;
     };
 
+    set_global('activity', {
+            get_huddles: function () {
+                return [];
+            },
+    });
+
     var ted =
     {
         email: 'ted@zulip.com',
@@ -270,8 +276,16 @@ global.stream_data.populate_stream_topics_for_tests({});
         full_name: 'Alice Ignore',
     };
 
+    var jeff =
+    {
+        email: 'jeff@zulip.com',
+        user_id: 103,
+        full_name: 'Jeff Zoolipson',
+    };
+
     people.add(ted);
     people.add(alice);
+    people.add(jeff);
 
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
@@ -280,6 +294,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     var expected = [
         "pm-with:bob@zulip.com,",
         "pm-with:bob@zulip.com,alice@zulip.com",
+        "pm-with:bob@zulip.com,jeff@zulip.com",
         "pm-with:bob@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -327,6 +342,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     expected = [
         "-pm-with:bob@zulip.com,",
         "is:private -pm-with:bob@zulip.com,alice@zulip.com",
+        "is:private -pm-with:bob@zulip.com,jeff@zulip.com",
         "is:private -pm-with:bob@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -371,6 +387,44 @@ global.stream_data.populate_stream_topics_for_tests({});
         "stream:Denmark has:link pm-with:bob@zulip.com,Smit",
         "stream:Denmark has:link",
         "stream:Denmark",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    set_global('activity', {
+            get_huddles: function () {
+                return ['101,42', '101,103,42'];
+            },
+    });
+
+    // Simulate a past huddle which should now prioritize ted over alice
+    query = 'pm-with:bob@zulip.com,';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "pm-with:bob@zulip.com,alice@zulip.com",
+        "pm-with:bob@zulip.com,jeff@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // bob,ted,jeff is already an existing huddle, so prioritize this one
+    query = 'pm-with:bob@zulip.com,ted@zulip.com,';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,ted@zulip.com,",
+        "pm-with:bob@zulip.com,ted@zulip.com,jeff@zulip.com",
+        "pm-with:bob@zulip.com,ted@zulip.com,alice@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // bob,ted,jeff is already an existing huddle, but if we start with just bob,
+    // then don't prioritize ted over alice because it doesn't complete the full huddle.
+    query = 'pm-with:jeff@zulip.com,';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:jeff@zulip.com,",
+        "pm-with:jeff@zulip.com,alice@zulip.com",
+        "pm-with:jeff@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());

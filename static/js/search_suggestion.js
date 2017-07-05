@@ -40,6 +40,37 @@ function match_criteria(operators, criteria) {
     });
 }
 
+function compare_by_huddle(huddle) {
+    huddle = _.map(huddle.slice(0, -1), function (person) {
+        person = people.get_by_email(person);
+        if (person) {
+            return person.user_id;
+        }
+    });
+
+    // Construct dict for all huddles, so we can lookup each's recency
+    var huddles = activity.get_huddles();
+    var huddle_dict = {};
+    for (var i = 0; i < huddles.length; i += 1) {
+        huddle_dict[huddles[i]] = i + 1;
+    }
+
+    return function (person1, person2) {
+        var huddle1 = huddle.concat(person1.user_id).sort().join(',');
+        var huddle2 = huddle.concat(person2.user_id).sort().join(',');
+
+        // If not in the dict, assign an arbitrarily high index
+        var score1 = huddle_dict[huddle1] || 100;
+        var score2 = huddle_dict[huddle2] || 100;
+        var diff = score1 - score2;
+
+        if (diff !== 0) {
+            return diff;
+        }
+        return typeahead_helper.compare_by_pms(person1, person2);
+    };
+}
+
 function get_stream_suggestions(last, operators) {
     if (!(last.operator === 'stream' || last.operator === 'search'
         || last.operator === '')) {
@@ -121,7 +152,7 @@ function get_group_suggestions(all_persons, last, operators) {
         return (last_part === '') || people.person_matches_query(person, last_part);
     });
 
-    persons.sort(typeahead_helper.compare_by_pms);
+    persons.sort(compare_by_huddle(parts));
 
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);
