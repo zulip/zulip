@@ -18,6 +18,7 @@ exports.make_zjquery = function () {
         var attrs = new Dict();
         var classes = new Dict();
         var on_functions = new Dict();
+        var child_on_functions = new Dict();
 
         function generic_event(event_name, arg) {
             if (typeof(arg) === 'function') {
@@ -113,9 +114,26 @@ exports.make_zjquery = function () {
                 generic_event('keyup', arg);
                 return self.wrapper;
             },
-            on: function (name, f) {
-                var funcs = on_functions.setdefault(name, []);
-                funcs.push(f);
+            on: function () {
+                var funcs;
+                var event_name;
+                var handler;
+                var sel;
+                if (arguments.length === 2) {
+                    event_name = arguments[0];
+                    handler = arguments[1];
+                    funcs = on_functions.setdefault(event_name, []);
+                    funcs.push(handler);
+                } else if (arguments.length === 3) {
+                    event_name = arguments[0];
+                    sel = arguments[1];
+                    handler = arguments[2];
+                    assert.equal(typeof(sel), 'string', 'String selectors expected here.');
+                    assert.equal(typeof(handler), 'function', 'An handler function expected here.');
+                    var child_on = child_on_functions.setdefault(sel, new Dict());
+                    funcs = child_on.setdefault(event_name, []);
+                    funcs.push(handler);
+                }
                 return self.wrapper;
             },
             parent: function () {
