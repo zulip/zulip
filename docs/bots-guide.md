@@ -137,7 +137,7 @@ You need:
 It is a simple python flask server which can be used to interact with bots through making use of
 outgoing webhook services. It makes it really convenient for users to run multiple bots. Traditionally,
 a person would be required to download zuliprc of each bot and run each of them separately. With Zulip Bot
-server, he or she would be able to download a single configuration file for all bots i.e. `flaskbotrc` and
+server, they would be able to download a single configuration file for all bots i.e. `flaskbotrc` and
 start the server which would enable interacting with all the bots.
 
 It's location is `api/zulip/bot_server.py`.
