@@ -16,7 +16,7 @@ with the following goals in mind:
 - Simple custom apps should be simple to write and deploy.
 - Custom app authors should be able to easily distribute their work.
 - Zulip should provide deployment support for mature, general-purpose bots,
-ideally either within organizations (a Zulip admin can vet her own
+ideally either within organizations (a Zulip admin can vet their own
 custom apps and easily deploy them across upgrade cycles)
 or across organizations (custom apps get distributed with the Zulip
 tarball).
