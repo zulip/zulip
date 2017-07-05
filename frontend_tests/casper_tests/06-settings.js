@@ -273,7 +273,7 @@ casper.then(function () {
     casper.waitUntilVisible("#default_language", function () {
         casper.test.info("Checking if we are on Chinese page.");
         casper.test.assertEvalEquals(function () {
-            return $('#default_language_name').text();
+            return $('#default_language_name').text().trim();
         }, 'Chinese Simplified');
         casper.test.info("Opening German page through i18n url.");
     });
