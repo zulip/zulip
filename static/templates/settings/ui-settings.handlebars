@@ -1,9 +1,10 @@
 <div id="ui-settings" class="settings-section" data-name="zulip-labs">
     <div class="alert" id="ui-settings-status"></div>
     <form class="ui-settings-form">
-        <p>
-            {{t "Warning: the below features are experimental, and may not work as well as you would like." }}
-        </p>
+        <div class="tip">{{t "The below features are experimental, and may not work as well as you would like." }}</div>
+
+        <h3 class="light">{{t "UI Settings"}}</h3>
+
         <div class="input-group">
             <label class="checkbox">
                 <input type="checkbox" class="inline-block" name="autoscroll_forever" id="autoscroll_forever"
@@ -27,7 +28,6 @@
             <label for="default_desktop_notifications" class="inline-block">
                 {{t "Enable desktop notifications for new streams" }}
             </label>
-
         </div>
         <div class="input-group no-border">
             <div class="ui-submission">
