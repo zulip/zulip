@@ -134,6 +134,10 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_in_response("Check your email to finish the process.", result)
 
+        # Check that the password reset email is from a noreply address.
+        from django.core.mail import outbox
+        self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
+
         # Visit the password reset link.
         password_reset_url = self.get_confirmation_url_from_outbox(email, "(\S+)")
         result = self.client_get(password_reset_url)
@@ -185,6 +189,7 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
+        self.assertIn(FromAddress.NOREPLY, message.from_email)
         self.assertIn("hamlet@zulip.com does not\nhave an active account in http://",
                       message.body)
 
@@ -210,6 +215,7 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
+        self.assertIn(FromAddress.NOREPLY, message.from_email)
         self.assertIn("Psst. Word on the street is that you forgot your password,",
                       message.body)
 
@@ -370,6 +376,8 @@ class InviteUserTest(ZulipTestCase):
         else:
             self.assertIn("Message from ", outbox[0].body)
             self.assertIn(custom_body, outbox[0].body)
+
+        self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
 
     def test_successful_invite_user(self):
         # type: () -> None
@@ -743,7 +751,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_future_email(
                 "zerver/emails/invitation_reminder", data["email"],
-                from_address=FromAddress.SUPPORT, context=context)
+                from_address=FromAddress.NOREPLY, context=context)
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
             scheduled_timestamp__lte=timezone_now())
@@ -752,6 +760,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for job in email_jobs_to_deliver:
             self.assertTrue(send_email(**ujson.loads(job.data)))
         self.assertEqual(len(outbox), email_count + 1)
+        self.assertIn(FromAddress.NOREPLY, outbox[-1].from_email)
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
