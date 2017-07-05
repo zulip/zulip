@@ -168,7 +168,7 @@ class MessageDict(object):
             display_type = "private"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
-                # someone and his self, preserving ordering
+                # someone and themself, preserving ordering
                 recip = {'email': sender_email,
                          'full_name': sender_full_name,
                          'short_name': sender_short_name,
