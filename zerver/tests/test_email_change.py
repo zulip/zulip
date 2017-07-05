@@ -17,6 +17,7 @@ from zerver.lib.actions import do_start_email_change_process, do_set_realm_prope
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.send_email import FromAddress
 from zerver.models import get_user, EmailChangeStatus, Realm, get_realm
 
 
@@ -124,6 +125,7 @@ class EmailChangeTestCase(ZulipTestCase):
         )
         body = email_message.body
         self.assertIn('We received a request to change the email', body)
+        self.assertIn(FromAddress.NOREPLY, email_message.from_email)
 
         activation_url = [s for s in body.split('\n') if s][4]
         response = self.client_get(activation_url)
