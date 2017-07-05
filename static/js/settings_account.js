@@ -174,7 +174,7 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         $('#change_email_modal').modal('show');
-        var email = $('#email_value').text();
+        var email = $('#email_value').text().trim();
         $('.email_change_container').find("input[name='email']").val(email);
     });
 
