@@ -801,7 +801,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("iago"))
         with get_test_image_file('img.png') as fp1, \
                 get_test_image_file('img.png') as fp2:
-            result = self.client_put_multipart("/json/realm/icon", {'f1': fp1, 'f2': fp2})
+            result = self.client_post("/json/realm/icon", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one icon.")
 
     def test_no_file_upload_failure(self):
@@ -811,7 +811,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login(self.example_email("iago"))
 
-        result = self.client_put_multipart("/json/realm/icon")
+        result = self.client_post("/json/realm/icon")
         self.assert_json_error(result, "You must upload exactly one icon.")
 
     correct_files = [
@@ -826,7 +826,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+            result = self.client_post("/json/realm/icon", {'file': fp})
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_get_gravatar_icon(self):
@@ -867,7 +867,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             # with self.subTest(fname=fname):
             self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
-                result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+                result = self.client_post("/json/realm/icon", {'file': fp})
             realm = get_realm('zulip')
             self.assert_json_success(result)
             json = ujson.loads(result.content)
@@ -890,7 +890,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             # with self.subTest(fname=fname):
             self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
-                result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+                result = self.client_post("/json/realm/icon", {'file': fp})
 
             self.assert_json_error(result, "Could not decode image; did you upload an image file?")
 
@@ -920,7 +920,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         icon_version = realm.icon_version
         self.assertEqual(icon_version, 1)
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            self.client_put_multipart("/json/realm/icon", {'file': fp})
+            self.client_post("/json/realm/icon", {'file': fp})
         realm = get_realm('zulip')
         self.assertEqual(realm.icon_version, icon_version + 1)
 
@@ -929,7 +929,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("iago"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_ICON_FILE_SIZE=0):
-                result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+                result = self.client_post("/json/realm/icon", {'file': fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
 
     def tearDown(self):

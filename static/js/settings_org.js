@@ -634,7 +634,7 @@ function _set_up() {
         var spinner = $("#upload_icon_spinner").expectOne();
         loading.make_indicator(spinner, {text: i18n.t("Uploading icon.")});
 
-        channel.put({
+        channel.post({
             url: '/json/realm/icon',
             data: form_data,
             cache: false,

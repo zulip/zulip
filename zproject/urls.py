@@ -196,7 +196,7 @@ v1_api_and_json_patterns = [
 
     # realm/icon -> zerver.views.realm_icon
     url(r'^realm/icon$', rest_dispatch,
-        {'PUT': 'zerver.views.realm_icon.upload_icon',
+        {'POST': 'zerver.views.realm_icon.upload_icon',
          'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
          'GET': 'zerver.views.realm_icon.get_icon_backend'}),
 
