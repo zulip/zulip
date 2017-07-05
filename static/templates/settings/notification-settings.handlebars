@@ -3,11 +3,10 @@
         <div class="notification-reminder tip">{{#tr this }}You'll receive notifications when a message arrives and Zulip isn't in focus or the message is offscreen.{{/tr}}</div>
         <div class="alert" id="notify-settings-status"></div>
 
-        <h4>{{t "Stream messages" }}</h4>
+        <h3 class="light">{{t "Stream messages" }}</h3>
+        <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
-        <div class="padded-container">
-            <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
-
+        <div class="side-padded-container">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
@@ -37,15 +36,16 @@
                 <div class="propagate_stream_notifications_change"></div>
             </div>
 
-            <p class="notification-settings-note">
-                {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
-            </p>
         </div>
 
-        <h4>{{t "Private messages and @-mentions" }}</h4>
+        <p class="notification-settings-note">
+            {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
+        </p>
 
-        <div class="padded-container">
-            <p>{{t "I want:" }}</p>
+        <h3 class="light">{{t "Private messages and @-mentions" }}</h3>
+        <p>{{t "I want:" }}</p>
+
+        <div class="side-padded-container">
 
             <div class="input-group">
                 <label class="checkbox">
@@ -130,9 +130,9 @@
 
         <div id="other_notifications">
 
-            <h4>{{t "Other notifications I want:" }}</h4>
+            <h3 class="light">{{t "Other notifications I want:" }}</h3>
 
-            <div class="padded-container">
+            <div class="side-padded-container">
                 <div class="input-group no-margin" id="digest_container">
                     <label class="checkbox">
                         <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
