@@ -620,7 +620,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
-    # Minutes to wait before warning a bot owner that her bot sent a message
+    # Minutes to wait before warning a bot owner that their bot sent a message
     # to a nonexistent stream
     BOT_OWNER_STREAM_ALERT_WAITPERIOD = 1
 
