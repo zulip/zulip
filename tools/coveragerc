@@ -20,7 +20,11 @@ omit =
     */zulip-venv-cache/*
     */migrations/*
     */management/commands/*
+    # Parts of the test runner infrastructure
     tools/test-backend
     zerver/lib/test_fixtures.py
     zerver/lib/test_runner.py
+    # Excluded because its coverage state is flaky.
+    zerver/tornado/ioloop_logging.py
+    # Zulip's library for use in scripts
     scripts/lib/zulip_tools.py
