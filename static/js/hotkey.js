@@ -328,7 +328,7 @@ exports.process_enter_key = function (e) {
     return true;
 };
 
-exports.process_tab_key = function () {
+exports.process_tab_key = function (e) {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -347,6 +347,10 @@ exports.process_tab_key = function () {
         message_edit_form = focused_message_edit_save.closest(".message_edit_form");
         message_edit_form.find(".message_edit_cancel").focus();
         return true;
+    }
+
+    if (emoji_picker.reactions_popped()) {
+        return emoji_picker.navigate(e, 'tab');
     }
 
     return false;
@@ -394,7 +398,7 @@ exports.process_hotkey = function (e, hotkey) {
         case 'enter':
             return exports.process_enter_key(e);
         case 'tab':
-            return exports.process_tab_key();
+            return exports.process_tab_key(e);
         case 'shift_tab':
             return exports.process_shift_tab_key();
         case 'esc_ctrl':

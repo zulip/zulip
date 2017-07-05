@@ -1,0 +1,9 @@
+{{#with emoji_dict}}
+<div class="emoji-popover-emoji {{# if ../message_id }}{{#if has_reacted}} reacted {{/if}} reaction {{else}} composition {{/if}}" title={{name}} tabindex="0">
+    {{#if is_realm_emoji}}
+    <img src="{{url}}" class="emoji" title= ":{{name}}:" />
+    {{else}}
+    <div class="emoji emoji-{{css_class}}" title= ":{{name}}:"></div>
+    {{/if}}
+</div>
+{{/with}}

@@ -32,6 +32,11 @@ set_global('markdown', {
     set_realm_filters: noop,
 });
 
+// TODO: verify this gets dispatched correctly
+set_global('emoji_picker', {
+    generate_emoji_picker_data: noop,
+});
+
 // page_params is highly coupled to dispatching now
 set_global('page_params', {test_suite: false});
 var page_params = global.page_params;
