@@ -18,6 +18,7 @@ exports.make_zjquery = function () {
         var attrs = new Dict();
         var classes = new Dict();
         var on_functions = new Dict();
+        var child_on_functions = new Dict();
 
         function generic_event(event_name, arg) {
             if (typeof(arg) === 'function') {
@@ -113,9 +114,35 @@ exports.make_zjquery = function () {
                 generic_event('keyup', arg);
                 return self.wrapper;
             },
-            on: function (name, f) {
-                var funcs = on_functions.setdefault(name, []);
-                funcs.push(f);
+            on: function () {
+                // parameters will either be
+                //    (event_name, handler) or
+                //    (event_name, sel, handler)
+                var event_name;
+                var sel;
+                var handler;
+
+                // For each event_name (or event_name/sel combo), we will store an
+                // array of functions that are mapped to the event (or event/selector).
+                //
+                // Usually funcs is an array of just one element, but not always.
+                var funcs;
+
+                if (arguments.length === 2) {
+                    event_name = arguments[0];
+                    handler = arguments[1];
+                    funcs = on_functions.setdefault(event_name, []);
+                    funcs.push(handler);
+                } else if (arguments.length === 3) {
+                    event_name = arguments[0];
+                    sel = arguments[1];
+                    handler = arguments[2];
+                    assert.equal(typeof(sel), 'string', 'String selectors expected here.');
+                    assert.equal(typeof(handler), 'function', 'An handler function expected here.');
+                    var child_on = child_on_functions.setdefault(sel, new Dict());
+                    funcs = child_on.setdefault(event_name, []);
+                    funcs.push(handler);
+                }
                 return self.wrapper;
             },
             parent: function () {
