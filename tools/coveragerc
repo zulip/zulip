@@ -23,4 +23,5 @@ omit =
     tools/test-backend
     zerver/lib/test_fixtures.py
     zerver/lib/test_runner.py
+    zerver/tornado/ioloop_logging.py
     scripts/lib/zulip_tools.py
