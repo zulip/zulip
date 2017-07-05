@@ -86,6 +86,17 @@ exports.make_zjquery = function () {
                 assert.equal(idx, 0);
                 return selector;
             },
+            get_on_handlers: function (name, child_selector) {
+                var funcs;
+                if (child_selector === undefined) {
+                    funcs = on_functions.get(name) || [];
+                } else {
+                    var child_on = child_on_functions.get(child_selector) || {};
+                    funcs = child_on.get(name) || [];
+                }
+                assert(!assert.equal(funcs, []));
+                return funcs;
+            },
             hasClass: function (class_name) {
                 return classes.has(class_name);
             },
