@@ -32,14 +32,16 @@ exports.populate_emoji = function (emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
     _.each(emoji_data, function (data, name) {
-        emoji_table.append(templates.render('admin_emoji_list', {
-            emoji: {
-                name: name, source_url: data.source_url,
-                display_url: data.source_url,
-                author: data.author || '',
-                can_admin_emoji: can_admin_emoji(data),
-            },
-        }));
+        if (data.deactivated !== true) {
+            emoji_table.append(templates.render('admin_emoji_list', {
+                emoji: {
+                    name: name, source_url: data.source_url,
+                    display_url: data.source_url,
+                    author: data.author || '',
+                    can_admin_emoji: can_admin_emoji(data),
+                },
+            }));
+        }
     });
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };

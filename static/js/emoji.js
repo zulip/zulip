@@ -3,7 +3,7 @@ var emoji = (function () {
 var exports = {};
 
 exports.emojis = [];
-exports.realm_emojis = {};
+exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
 exports.emojis_by_name = {};
 exports.emojis_name_to_css_class = {};
@@ -33,24 +33,30 @@ _.each(emoji_codes.codepoints, function (value) {
 });
 
 exports.update_emojis = function update_emojis(realm_emojis) {
-    // exports.realm_emojis is emptied before adding the realm-specific emoji to it.
+    // exports.all_realm_emojis is emptied before adding the realm-specific emoji to it.
     // This makes sure that in case of deletion, the deleted realm_emojis don't
-    // persist in exports.realm_emojis or exports.active_realm_emojis.
-    exports.realm_emojis = {};
+    // persist in exports.all_realm_emojis or exports.active_realm_emojis.
+    exports.all_realm_emojis = {};
     exports.active_realm_emojis = {};
 
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
-        exports.emojis.push({emoji_name: name, emoji_url: data.source_url, is_realm_emoji: true});
-        exports.realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
+        exports.all_realm_emojis[name] = {emoji_name: name,
+                                          emoji_url: data.source_url,
+                                          deactivated: data.deactivated};
         if (data.deactivated !== true) {
+            // export.emojis are used in composebox autocomplete. This condition makes sure
+            // that deactivated emojis don't appear in the autocomplete.
+            exports.emojis.push({emoji_name: name,
+                                 emoji_url: data.source_url,
+                                 is_realm_emoji: true});
             exports.active_realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
         }
     });
     // Add the Zulip emoji to the realm emojis list
     exports.emojis.push(zulip_emoji);
-    exports.realm_emojis.zulip = zulip_emoji;
+    exports.all_realm_emojis.zulip = zulip_emoji;
     exports.active_realm_emojis.zulip = zulip_emoji;
 
     exports.emojis_by_name = {};
