@@ -88,7 +88,7 @@ def filter_stream_authorization(user_profile, streams):
 
     unauthorized_streams = []  # type: List[Stream]
     for stream in streams:
-        # The user is authorized for his own streams
+        # The user is authorized for their own streams
         if stream.id in streams_subscribed:
             continue
 
