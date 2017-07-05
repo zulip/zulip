@@ -66,12 +66,6 @@ function get_new_heights() {
         - $("#streams_header").outerHeight(true)
         - 10; // stream_filters margin-bottom
 
-    if ($("#share-the-love").is(":visible")) {
-        res.stream_filters_max_height -=
-            $("#share-the-love").outerHeight(true)
-            + 20; // share-the-love margins + 10px of ??
-    }
-
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
@@ -239,7 +233,6 @@ exports.resize_page_components = function () {
             sidebar = $(".bottom_sidebar").expectOne();
             sidebar.append($("#user-list").expectOne());
             sidebar.append($("#group-pm-list").expectOne());
-            sidebar.append($("#share-the-love").expectOne());
             $("#user_presences").css("margin", "0px");
             $("#group-pms").css("margin", "0px");
             $("#userlist-toggle").css("display", "none");
