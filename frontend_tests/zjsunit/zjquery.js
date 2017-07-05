@@ -86,6 +86,11 @@ exports.make_zjquery = function () {
                 assert.equal(idx, 0);
                 return selector;
             },
+            get_on_handler: function (name, child_selector) {
+                var funcs = self.get_on_handlers(name, child_selector);
+                assert.equal(funcs.length, 1, 'We expected to have exactly one handler here.');
+                return funcs[0];
+            },
             get_on_handlers: function (name, child_selector) {
                 var funcs;
                 if (child_selector === undefined) {
