@@ -39,11 +39,11 @@ label {
     min-width: 200px;
 }
 
-.new-style .grid .user-name-section label {
+.new-style #account-settings .grid label {
     min-width: 120px;
 }
 
-.new-style .grid .user-name-section .warning {
+.new-style #account-settings .grid .warning {
     display: block;
     width: calc(100% - 20px - 5px);
     text-align: right;
@@ -75,15 +75,16 @@ label {
 .user-avatar-section,
 .realm-icon-section {
     position: relative;
-
-    overflow: hidden;
 }
 
-.user-avatar-section .avatar-controls,
-.realm-icon-section .avatar-controls {
-    background-color: #fff;
-    padding: 10px;
-    margin-left: 10px;
+.user-avatar-section {
+    float: right;
+}
+
+.user-avatar-section .avatar-controls {
+    margin-top: 20px;
+
+    box-shadow: none;
 }
 
 .realm-icon-section {
@@ -310,6 +311,14 @@ input[type=checkbox] + .inline-block {
     margin-top: 10px;
 }
 
+.organization-submission {
+    margin-top: 0px;
+}
+
+#default_language {
+    margin-left: 20px;
+}
+
 #user-settings-avatar,
 #realm-icon-section {
     border-radius: 5px;
@@ -426,8 +435,7 @@ input[type=checkbox].inline-block {
 .grey-bg {
     background: hsl(0, 0%, 89%);
     padding: 10px;
-    width: 90%;
-    margin: 15px auto;
+    margin: 20px auto;
     box-shadow: 0px 0px 2px hsla(0, 0%, 0%, 0.5);
     position: relative;
     font-size: 14px;
@@ -538,11 +546,6 @@ input[type=checkbox].inline-block {
 
 .emoji_image img {
     max-width: 100%;
-}
-
-.admin-table-wrapper {
-    width: 90%;
-    margin: 0 auto;
 }
 
 .admin_filters_table {
@@ -1120,11 +1123,20 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 /* -- end new settings overlay -- */
-@media (max-width: 1215px) {
+@media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
         float: none;
+        display: block;
+    }
+
+    .user-avatar-section .avatar-controls {
         display: inline-block;
+        margin-top: 10px;
+    }
+
+    #settings_content .warning {
+        display: none;
     }
 }
 
@@ -1150,12 +1162,6 @@ input[type=text]#settings_search {
 
     #settings_page .content-wrapper.right {
         top: 47px;
-    }
-}
-
-@media (max-width: 953px) {
-    #settings_content .warning {
-        display: none;
     }
 }
 
