@@ -11,7 +11,7 @@ import os
 import ujson
 
 from zerver.lib import bugdown
-from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
+from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.utils import get_subdomain
 
 def add_api_uri_context(context, request):
@@ -87,8 +87,10 @@ class HelpView(ApiURLView):
 
 def add_integrations_context(context):
     # type: (Dict[str, Any]) -> None
+    alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
     alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
     alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
+    context['categories_dict'] = alphabetical_sorted_categories
     context['integrations_dict'] = alphabetical_sorted_integration
     context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
 
