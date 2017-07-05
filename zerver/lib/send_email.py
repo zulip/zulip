@@ -44,6 +44,11 @@ def build_email(template_prefix, to_email, from_name=None, from_address=None,
     reply_to = None
     if reply_to_email is not None:
         reply_to = [reply_to_email]
+    # Remove the from_name in the reply-to for noreply emails, so that users
+    # see "noreply@..." rather than "Zulip" or whatever the from_name is
+    # when they reply in their email client.
+    elif from_address == FromAddress.NOREPLY:
+        reply_to = [FromAddress.NOREPLY]
 
     mail = EmailMultiAlternatives(subject, message, from_email, [to_email], reply_to=reply_to)
     if html_message is not None:
