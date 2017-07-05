@@ -714,8 +714,8 @@ def process_message_event(event_template, users):
             if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
                 send_to_clients[client.event_queue.id]['is_sender'] = True
 
-        # If the recipient was offline and the message was a single or group PM to him
-        # or she was @-notified potentially notify more immediately
+        # If the recipient was offline and the message was a single or group PM to them
+        # or they were @-notified potentially notify more immediately
         received_pm = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags
         idle = receiver_is_idle(user_profile_id, realm_presences)
