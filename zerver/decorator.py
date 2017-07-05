@@ -652,7 +652,7 @@ def rate_limit_user(request, user, domain):
     request._ratelimit_applied_limits = True
     request._ratelimit_secs_to_freedom = time
     request._ratelimit_over_limit = ratelimited
-    # Abort this request if the user is over her rate limits
+    # Abort this request if the user is over their rate limits
     if ratelimited:
         statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
         raise RateLimited()
