@@ -402,7 +402,7 @@ exports.deactivate = function () {
         // stream from the home view since leaving it the old selected id might
         // no longer be there
         // Additionally, we pass empty_ok as the user may have removed **all** streams
-        // from her home view
+        // from their home view
         if (unread.messages_read_in_narrow) {
             // We read some unread messages in a narrow. Instead of going back to
             // where we were before the narrow, go to our first unread message (or
@@ -418,7 +418,7 @@ exports.deactivate = function () {
             // to go back to exactly where we were before narrowing.
             if (preserve_pre_narrowing_screen_position) {
                 // We scroll the user back to exactly the offset from the selected
-                // message that he was at the time that he narrowed.
+                // message that they were at the time that they narrowed.
                 // TODO: Make this correctly handle the case of resizing while narrowed.
                 select_opts.target_scroll_offset = current_msg_list.pre_narrow_offset;
             }
