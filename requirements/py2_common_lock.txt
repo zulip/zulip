@@ -8,6 +8,7 @@ git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
 git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
 git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6
+git+https://github.com/zulip/python-zulip-api.git@7910d8767a38feedcdaa12838f1978d15a013f7c#egg=zulip==0.3.1
 argon2-cffi==16.3.0
 asn1crypto==0.22.0        # via cryptography
 backports-abc==0.5
@@ -19,6 +20,7 @@ cchardet==2.1.0
 certifi==2017.4.17
 cffi==1.10.0
 chardet==3.0.4
+click==6.7                # via flask
 cryptography==1.8.1       # via pyopenssl
 cssselect==1.0.1
 decorator==4.0.11         # via ipython, traitlets
@@ -32,6 +34,7 @@ django-webpack-loader==0.5.0
 django==1.11.2
 docopt==0.6.2
 enum34==1.1.6
+flask==0.12.2
 fonttools==3.13.1
 funcsigs==1.0.2           # via mock
 future==0.16.0            # via python-twitter
@@ -45,6 +48,7 @@ ijson==2.3
 ipaddress==1.0.18         # via cryptography
 ipython-genutils==0.2.0   # via traitlets
 ipython==5.4.1
+itsdangerous==0.24        # via flask
 jinja2==2.9.6
 lxml==3.8.0
 markdown-include==0.5.1
@@ -105,3 +109,4 @@ ujson==1.35
 uritemplate==3.0.0
 urllib3==1.21.1
 wcwidth==0.1.7            # via prompt-toolkit
+werkzeug==0.12.2          # via flask
