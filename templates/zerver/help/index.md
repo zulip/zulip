@@ -131,6 +131,7 @@ is known as an **organization**.
 * [Prevent users from changing their name](/help/prevent-users-from-changing-their-name)
 * [Prevent users from changing their email address](/help/prevent-users-from-changing-their-email-address)
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
+* [Require users to include topics in stream messages](/help/require-users-to-include-topics-in-stream-messages)
 * [Change the default language for your organization](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
 <!-- Configure authentication methods -->
