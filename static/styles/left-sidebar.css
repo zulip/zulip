@@ -410,8 +410,7 @@ li.expanded_private_message a {
     margin-bottom: 20px;
 }
 
-#topics_header,
-#sharethelove-header {
+#topics_header {
     border-top: 1px solid hsl(0, 0%, 88%);
     margin-top: 5px;
     margin-right: 10px;
