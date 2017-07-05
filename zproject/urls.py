@@ -313,7 +313,7 @@ v1_api_and_json_patterns = [
     url(r'^users/me/enter-sends$', rest_dispatch,
         {'POST': 'zerver.views.user_settings.change_enter_sends'}),
     url(r'^users/me/avatar$', rest_dispatch,
-        {'PUT': 'zerver.views.user_settings.set_avatar_backend',
+        {'POST': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
 
     # users/me/hotspots -> zerver.views.hotspots

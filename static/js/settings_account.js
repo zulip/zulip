@@ -209,7 +209,7 @@ exports.set_up = function () {
         var spinner = $("#upload_avatar_spinner").expectOne();
         loading.make_indicator(spinner, {text: 'Uploading avatar.'});
 
-        channel.put({
+        channel.post({
             url: '/json/users/me/avatar',
             data: form_data,
             cache: false,
