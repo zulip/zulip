@@ -50,7 +50,7 @@ class ReactionEmojiTest(ZulipTestCase):
         self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
-            result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
+            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_success(result)
         emoji = RealmEmoji.objects.get(name="my_emoji")
         emoji.deactivated = True
@@ -119,8 +119,8 @@ class ReactionEmojiTest(ZulipTestCase):
         emoji_name = 'my_emoji'
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
-            result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data,
-                                               **self.api_auth(sender))
+            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data,
+                                      **self.api_auth(sender))
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 
