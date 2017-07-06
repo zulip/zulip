@@ -8,6 +8,8 @@ import sys
 import optparse
 import subprocess
 
+from linter_lib.printer import print_err, colors
+
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
@@ -128,14 +130,29 @@ def run():
 
         If target_langs is empty, just runs the linter unconditionally.
         """
+        color = next(colors)
+
         def run_linter():
             # type: () -> int
-            if len(target_langs) == 0:
-                return subprocess.call(command)
-            targets = [target for lang in target_langs for target in by_lang[lang]]
-            if len(targets) == 0:
-                return 0
-            return subprocess.call(command + targets)
+            targets = []  # type: List[str]
+            if len(target_langs) != 0:
+                targets = [target for lang in target_langs for target in by_lang[lang]]
+                if len(targets) == 0:
+                    # If we this linter has a list of languages, and
+                    # no files in those languages are to be checked,
+                    # then we can safely return success without
+                    # invoking the external linter.
+                    return 0
+
+            p = subprocess.Popen(command + targets,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+
+            for line in iter(p.stdout.readline, b''):
+                print_err(name, color, line)
+
+            return p.wait()  # Linter exit code
+
         lint_functions[name] = run_linter
 
     with bright_red_output():
