@@ -167,10 +167,10 @@ def add_change_info(content, field, from_field, to_field):
     return content
 
 def handle_updated_issue_event(payload, user_profile):
+    # type: (Dict[str, Any], UserProfile) -> Text
     # Reassigned, commented, reopened, and resolved events are all bundled
     # into this one 'updated' event type, so we try to extract the meaningful
     # event that happened
-    # type: (Dict[str, Any], UserProfile) -> Text
     issue_id = get_in(payload, ['issue', 'key'])
     issue = get_issue_string(payload, issue_id)
 
