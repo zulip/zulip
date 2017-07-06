@@ -52,7 +52,7 @@ def get_device_os(user_agent):
 
 @receiver(user_logged_in, dispatch_uid="only_on_login")
 def email_on_new_login(sender, user, request, **kwargs):
-    # type: (Any, UserProfile, Any, Any) -> None
+    # type: (Any, UserProfile, Any, **Any) -> None
 
     # We import here to minimize the dependencies of this module,
     # since it runs as part of `manage.py` initialization
