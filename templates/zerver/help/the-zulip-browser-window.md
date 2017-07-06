@@ -15,7 +15,7 @@ allows you to narrow your view to show specific messages using
 
 !!! tip ""
     If your current filter is not the **Home** view, clicking on the home ((<i
-    class="icon-vector-home"></i>) icon to the left of the search bar will also
+    class="fa fa-home" aria-hidden="true"></i>) icon to the left of the search bar will also
     narrow your view to that of the **Home** view.
 
 ### Message table
@@ -69,22 +69,22 @@ in which you were [mentioned](/help/at-mention-a-team-member).
 Located below the preset filters, the **Streams** section shows all the streams
 that you are subscribed to.
 
-* Public streams are represented by a hashtag (<span style="font-size: 1.3rem;
-font-weight: 800">#</span>) icon, and private streams are represented by a lock
-(<i class="icon-vector-lock"></i>) icon.
+* Public streams are represented by a hashtag
+(<i class="fa fa-hashtag" aria-hidden="true"></i>) icon, and private streams are
+represented by a lock (<i class="fa fa-lock" aria-hidden="true"></i>) icon.
 * There are two icons located next to the **Streams** section header:
-    * Clicking the magnifying glass (<i class="icon-vector-search"></i>) icon
-    reveals an input that allows you to search for streams.
-    * Clicking the cog (<i class="icon-vector-cog"></i>) icon allows you to
-    [navigate](/help/browse-and-subscribe-to-streams#browse-streams) to the
-    [Streams](/#streams) page.
+    * Clicking the magnifying glass (<i class="fa fa-search" aria-hidden="true">
+    </i>) icon reveals an input that allows you to search for streams.
+    * Clicking the cog (<i class="fa fa-cog" aria-hidden="true"></i>) icon
+    allows you to [navigate](/help/browse-and-subscribe-to-streams#browse-streams)
+    to the [Streams](/#streams) page.
 * Hovering over a stream in the **Streams** section reveals a
 chevron that allows you to modify the stream's settings when you click on it.
 * Clicking on a stream in the **Streams** section allows you to narrow your view
 to the stream's messages and view all topics in the stream.
     * Similarly, hovering over a topic in the **Streams** section reveals a
-    down chevron (<i class="icon-vector-chevron-down"></i>) icon that allows you
-    to modify the topic's settings when you click on it.
+    down chevron (<i class="fa fa-chevron-down" aria-hidden="true"></i>) icon
+    that allows you to modify the topic's settings when you click on it.
 
 ## Right sidebar
 The **right sidebar** shows users in your Zulip organization and some
@@ -94,8 +94,9 @@ configuration settings on the right side of the browser window.
 
 ### Configuration settings
 
-You can access your configuration settings, such as **Settings**,  by clicking the cog (<i
-class="icon-vector-cog"></i>) icon in the top right corner of the right sidebar.
+You can access your configuration settings, such as **Settings**,  by clicking
+the cog (<i class="fa fa-cog" aria-hidden="true"></i>) icon in the top right
+corner of the right sidebar.
 
 ### Users section
 
@@ -110,7 +111,7 @@ all users in your organization.
 * You can search for specific users in the **Search people** input located
 directly under the **Users** section header.
 * Hovering over a user in the **Users** section reveals a down chevron (<i
-class="icon-vector-chevron-down"></i>) icon that allows you to perform several
-narrowing and message composing actions when you click on it.
+class="fa fa-chevron-down" aria-hidden="true"></i>) icon that allows you to
+perform several narrowing and message composing actions when you click on it.
 * Clicking on a user in the **Users** section allows you to narrow your view
 to your private messages with that particular user.

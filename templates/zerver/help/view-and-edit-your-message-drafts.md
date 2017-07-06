@@ -41,13 +41,13 @@ stream and topic.
 
 ## Edit a draft
 
-To edit the content of a draft, click the pencil (<i
-class="icon-vector-pencil"></i>) icon or press the `Enter` key to open the
-selected draft in the compose box, where you can change the contents of the
-draft.
+To edit the content of a draft, click the pencil
+(<i class="fa fa-pencil" aria-hidden="true"></i>) icon or press the `Enter` key
+to open the selected draft in the compose box, where you can change the contents
+of the draft.
 
 To save the changes you made to the draft, exit out of the compose box by
-clicking the x (<i class="icon-vector-remove"></i>) or pressing the `Esc` key.
+clicking the x (<i class="fa fa-times"></i>) or pressing the `Esc` key.
 
 !!! warn ""
     **Note:** Drafts cannot be converted from one message type to another
@@ -57,15 +57,16 @@ clicking the x (<i class="icon-vector-remove"></i>) or pressing the `Esc` key.
 ## Send a draft
 
 Once you are ready to send a draft as a message, click the pencil (<i
-class="icon-vector-pencil"></i>) icon or press the `Enter` key to open the
-selected draft in the compose box. You can now send the draft as a message by
-pressing the `Enter` key or clicking the **Send** button, depending on your
-settings.
+class="fa fa-pencil" aria-hidden="true"></i>) icon or press the `Enter` key to
+open the selected draft in the compose box. You can now send the draft as a
+message by pressing the `Enter` key or clicking the **Send** button, depending
+on your settings.
 
 ## Delete a draft
 
 You can delete the selected draft by clicking the trash (<i
-class="icon-vector-trash"></i>) icon or pressing the `Backspace` key.
+class="fa fa-trash" aria-hidden="true"></i>) icon or pressing the `Backspace`
+key.
 
 !!! warn ""
     **Warning:** Discarded drafts cannot be retrieved, so please be careful

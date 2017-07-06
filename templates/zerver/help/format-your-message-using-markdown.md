@@ -6,11 +6,11 @@ Zulip uses a variant of
 
 ## Summary
 
-To see a summary of message formatting in Zulip, click the A (<i
-class="icon-vector-font"></i>) icon located in the bottom left corner of
-your messaging box. You can alternatively click the cog (<i
-class="icon-vector-cog"></i>) icon in the upper right corner of the right
-sidebar and choose **Message formatting** from the dropdown menu that
+To see a summary of message formatting in Zulip, click the A
+(<i class="fa fa-font"></i>) icon located in the bottom left corner of your
+messaging box. You can alternatively click the cog
+(<i class="fa fa-cog" aria-hidden="true"></i>) icon in the upper right corner of
+the right sidebar and choose **Message formatting** from the dropdown menu that
 appears.
 
 ![Message formatting modal](/static/images/help/message-formatting-summary.png)

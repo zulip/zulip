@@ -6,11 +6,12 @@ menu, pasting Unicode, or manually inputting the emoji code.
 
 ## Using the emoji menu
 1. Compose a [new message or reply](/help/reply-to-a-message).
-2. Click the smiley face (<i class="icon-vector-smile"></i>) icon in the
-bottom left corner of the compose box.
-3. Upon clicking on the smiley face (<i class="icon-vector-smile"></i>)
-icon, the emoji menu will appear below the compose box. Click on an emoji in
-the emoji menu to include it in your message.
+2. Click the smiley face (<i class="fa fa-smile-o" aria-hidden="true"></i>)
+icon in the bottom left corner of the compose box.
+3. Upon clicking on the smiley face
+(<i class="fa fa-smile-o" aria-hidden="true"></i>) icon, the emoji menu will
+appear below the compose box. Click on an emoji in the emoji menu to include it
+in your message.
 
 ## Pasting Unicode
 Zulip fully supports Unicode emoji. To use Unicode emoji in your message:

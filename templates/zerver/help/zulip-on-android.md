@@ -47,8 +47,8 @@ do so, choose the **Dev backend testing server** option from the
 ### Logging out
 
 You only need to log out when you want to switch to another account or server.
-To do so, tap the overflow ( <i class="icon-vector-ellipsis-vertical"></i> )
-icon in the top right corner of the screen, and choose **Log out**.
+To do so, tap the overflow ( <i class="fa fa-ellipsis-v" aria-hidden="true">
+</i>) icon in the top right corner of the screen, and choose **Log out**.
 
 ## Using the app
 ### Sending a stream message
@@ -95,8 +95,9 @@ icon to send your message.
 There are multiple ways of narrowing to a stream in Zulip's Android app.
 
 By swiping to the right from the border of the screen or clicking the menu (<i
-class="icon-vector-reorder"></i>) icon, you'll be able to see a list of the
-streams you're subscribed to. You can tap one of them to narrow to that stream.
+class="fa fa-bars" aria-hidden="true"></i>) icon, you'll be able to see a list
+of the streams you're subscribed to. You can tap one of them to narrow to that
+stream.
 
 !!! tip ""
     You can also click on the stream name of a message to automatically narrow
@@ -111,7 +112,7 @@ topic over a message.
 
 You can search your organization for specific messages by using [search operators](/help/search-for-messages).
 
-1. Tap the search (<i class="icon-vector-search"></i>)
+1. Tap the search (<i class="fa fa-search" aria-hidden="true"></i>)
 icon at the top of the screen.
 2. Enter the [search operators](/help/search-for-messages#search-operators)
 that you want to use to narrow your messages.
@@ -133,8 +134,8 @@ manually refresh them by:
 
 * scrolling to the bottom of the message list
 * clicking the overflow (
-<i class="icon-vector-ellipsis-vertical"></i> ) icon in the top right corner
-and choosing the **Refresh** option from the dropdown that appears.
+<i class="fa fa-ellipsis-v" aria-hidden="true"></i> ) icon in the top right
+corner and choosing the **Refresh** option from the dropdown that appears.
 
 ### Day/Night Themes
 
@@ -143,6 +144,6 @@ one with dark colors (night theme) that makes reading more comfortable when
 there isn't much light.
 
 To switch between the two themes, click the overflow ( <i
-class="icon-vector-ellipsis-vertical"></i> ) icon at the top right corner of the
-screen and choosing the **Switch Day/Night Theme** option from the dropdown that
-appears.
+class="fa fa-ellipsis-v" aria-hidden="true"></i> ) icon at the top right corner
+of the screen and choosing the **Switch Day/Night Theme** option from the
+dropdown that appears.

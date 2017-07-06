@@ -2,8 +2,8 @@
 
 Zulip allows you to easily attach files, including images, sound, and video by:
 
-- Clicking the paperclip (<i class="icon-vector-paperclip"></i>) icon located
-under the message field.
+- Clicking the paperclip (<i class="fa fa-paperclip" aria-hidden="true"></i>)
+icon located under the message field.
 - Dragging or dropping files into the compose box. The files are uploaded to a
 server and a link is supplied, but a thumbnail is displayed if possible. The
 link to the file will be in Markdown format: `[link_text](link_URL)`
@@ -38,7 +38,7 @@ downloaded).
 
 !!! tip ""
     You can exit out of a lightbox by clicking the space around the media preview
-    or by clicking the x (<i class="icon-vector-remove"></i>) icon found in
+    or by clicking the x (<i class="fa fa-times"></i>) icon found in
     the upper right-hand corner.
 
 ## Sharing files from external websites

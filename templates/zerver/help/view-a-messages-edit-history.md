@@ -28,5 +28,5 @@ the previous message edit and the current version.
 
 !!! tip ""
     To exit the **Message edit history** modal, simply click the x (<i
-    class="icon-vector-remove"></i>) icon in the top right-hand corner or the
+    class="fa fa-times"></i>) icon in the top right-hand corner or the
     **Close** button in the bottom right corner.

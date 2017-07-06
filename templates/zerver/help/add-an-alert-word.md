@@ -28,5 +28,5 @@ addition of the specified alert word.
 
     !!! tip ""
         An alert word can be removed by clicking the trash (<i
-        class="icon-vector-trash"></i>) icon to the right of the particular
+        class="fa fa-trash" aria-hidden="true"></i>) icon to the right of the particular
         alert word.

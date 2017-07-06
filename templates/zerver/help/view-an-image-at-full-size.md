@@ -18,5 +18,5 @@ right corner of the screen, but they also can be downloaded by clicking the
 
 !!! tip ""
     To exit out of the lightbox modal, click the x (<i
-    class="icon-vector-remove"></i>) icon in the top right corner or press
-    the escape key.
+    class="fa fa-times"></i>) icon in the top right corner or press the escape
+    key.

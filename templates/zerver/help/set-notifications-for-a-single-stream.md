@@ -7,7 +7,7 @@ On Zulip, you can set different notification settings for different streams.
 
 2. On the **Streams** list, hover over the stream that you want to set
  notifications for to reveal a down chevron
- (<i class="icon-vector-chevron-down"></i>) icon.
+ (<i class="fa fa-chevron-down" aria-hidden="true"></i>) icon.
 
 3. Click on the {!down-chevron.md!} Select the **Stream settings**
  option from the dropdown.
