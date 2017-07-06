@@ -244,6 +244,7 @@ nav .hamburger {
 }
 
 nav .content {
+    margin: 0 5px 0 10px;
     position: relative;
     z-index: 2;
 }
