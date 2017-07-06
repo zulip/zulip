@@ -9,6 +9,8 @@ import re
 
 from six.moves import configparser
 
+from contextlib import contextmanager
+
 if False:
     from mypy_extensions import NoReturn
 from typing import Any, Optional, List, Dict
@@ -117,15 +119,22 @@ class ExternalBotHandler(object):
 class StateHandler(object):
     def __init__(self):
         # type: () -> None
-        self.state = None  # type: Any
+        self.state_ = None  # type: Any
 
     def set_state(self, state):
         # type: (Any) -> None
-        self.state = state
+        self.state_ = state
 
     def get_state(self):
         # type: () -> Any
-        return self.state
+        return self.state_
+
+    @contextmanager
+    def state(self, default):
+        # type: (Any) -> Any
+        new_state = self.get_state() or default
+        yield new_state
+        self.set_state(new_state)
 
 def run_message_handler_for_bot(lib_module, quiet, config_file):
     # type: (Any, bool, str) -> Any

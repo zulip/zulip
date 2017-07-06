@@ -11,26 +11,23 @@ class VirtualFsHandler(object):
         command = message['content']
         if command == "":
             command = "help"
-        sender = message['sender_email']
 
-        state = state_handler.get_state()
-        if state is None:
-            state = {}
+        sender = message['sender_email']
 
         recipient = message['display_recipient']
         if isinstance(recipient, list):  # If not a stream, then hash on list of emails
             recipient = " ".join([x['email'] for x in recipient])
 
-        if recipient not in state:
-            state[recipient] = fs_new()
-        fs = state[recipient]
-        if sender not in fs['user_paths']:
-            fs['user_paths'][sender] = '/'
-        fs, msg = fs_command(fs, sender, command)
-        prependix = '{}:\n'.format(sender)
-        msg = prependix + msg
-        state[recipient] = fs
-        state_handler.set_state(state)
+        with state_handler.state({}) as state:
+            if recipient not in state:
+                state[recipient] = fs_new()
+            fs = state[recipient]
+            if sender not in fs['user_paths']:
+                fs['user_paths'][sender] = '/'
+            fs, msg = fs_command(fs, sender, command)
+            prependix = '{}:\n'.format(sender)
+            msg = prependix + msg
+            state[recipient] = fs
 
         bot_handler.send_reply(message, msg)
 
