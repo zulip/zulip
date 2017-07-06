@@ -478,8 +478,6 @@ paths:
 
                        * `realm_waiting_period_threshold`:
 
-                       * `referrals`:
-
                        * `streams`:
 
                        * `twenty_four_hour_time`:
@@ -1015,8 +1013,6 @@ definitions:
       realm_waiting_period_threshold:
         type: integer
         format: int64
-      referrals:
-        type: string
       streams:
         type: array
         items:
@@ -1089,7 +1085,6 @@ definitions:
   #realm_domains
   #realm_emoji
   #realm_filters
-  #referrals
   #subscriptions
   #unsubscribed
 
