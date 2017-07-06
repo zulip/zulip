@@ -6,15 +6,18 @@ import re
 import sys
 import traceback
 
+from .printer import print_err, colors
+
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple
 
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
     RuleList = List[Dict[str, Any]]
 
-    def custom_check_file(fn, _identifier, rules, skip_rules=None, max_length=None):
+    def custom_check_file(fn, identifier, rules, skip_rules=None, max_length=None):
         # type: (str, str, RuleList, Optional[Any], Optional[int]) -> bool
         failed = False
+        color = next(colors)
 
         line_tups = []
         for i, line in enumerate(open(fn)):
@@ -66,8 +69,9 @@ def build_custom_checkers(by_lang):
                         else:
                             raise Exception("Invalid strip rule")
                     if re.search(pattern, line_to_check):
-                        sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
-                        print(line)
+                        print_err(identifier, color, '{} at {} line {}:'.format(
+                            rule['description'], fn, i+1))
+                        print_err(identifier, color, line)
                         failed = True
                 except Exception:
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
