@@ -346,7 +346,7 @@ INTEGRATIONS = {
     ),
     'perforce': Integration('perforce', 'perforce', ['version_control'],
                             doc='zerver/integrations/perforce.md'),
-    'phabricator': Integration('phabricator', 'version_control', ['analytics'],
+    'phabricator': Integration('phabricator', 'phabricator', ['version_control'],
                                doc='zerver/integrations/phabricator.md'),
     'puppet': Integration('puppet', 'puppet', ['deployment'], doc='zerver/integrations/puppet.md'),
     'redmine': Integration('redmine', 'redmine', ['project_management'], doc='zerver/integrations/redmine.md'),
