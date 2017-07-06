@@ -529,6 +529,29 @@ people.add(bob);
     }());
 }());
 
+(function test_enter_with_preview_open() {
+    $("#new_message_content").hide();
+    $("#undo_markdown_preview").show();
+    $("#preview_message_area").show();
+    $("#markdown_preview").hide();
+    page_params.enter_sends = true;
+    var send_message_called = false;
+    compose.send_message = function () {
+        send_message_called = true;
+    };
+    compose.enter_with_preview_open();
+    assert($("#new_message_content").visible());
+    assert(!$("#undo_markdown_preview").visible());
+    assert(!$("#preview_message_area").visible());
+    assert($("#markdown_preview").visible());
+    assert(send_message_called);
+
+    page_params.enter_sends = false;
+    $("#new_message_content").blur();
+    compose.enter_with_preview_open();
+    assert($("#new_message_content").is_focused());
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
