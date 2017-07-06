@@ -278,14 +278,6 @@ var event_fixtures = {
         },
     },
 
-    referral: {
-        type: 'referral',
-        referrals: {
-            granted: 10,
-            used: 5,
-        },
-    },
-
     restart: {
         type: 'restart',
         immediate: true,
@@ -656,18 +648,6 @@ with_overrides(function (override) {
         dispatch(event);
         var args = stub.get_args('person');
         assert_same(args.person, event.person);
-    });
-});
-
-with_overrides(function (override) {
-    // referral
-    var event = event_fixtures.referral;
-    global.with_stub(function (stub) {
-        override('referral.update_state', stub.f);
-        dispatch(event);
-        var args = stub.get_args('granted', 'used');
-        assert_same(args.granted, event.referrals.granted);
-        assert_same(args.used, event.referrals.used);
     });
 });
 
