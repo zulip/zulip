@@ -9,6 +9,7 @@ from django.utils.lru_cache import lru_cache
 from zerver.lib.utils import force_text
 from typing import List
 import zerver.lib.bugdown.fenced_code
+import zerver.lib.bugdown.zulip_help_markdown
 
 import markdown
 import markdown.extensions.admonition
@@ -75,6 +76,7 @@ def render_markdown_path(markdown_file_path, context=None):
                 guess_lang=False
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(),
+            zerver.lib.bugdown.zulip_help_markdown.makeExtension(),
             markdown_include.include.makeExtension(base_path='templates/zerver/help/include/'),
         ]
     md_engine = markdown.Markdown(extensions=md_extensions)
