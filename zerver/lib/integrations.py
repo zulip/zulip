@@ -35,17 +35,16 @@ features for writing and configuring integrations efficiently.
 
 CATEGORIES = {
     'analytics': _('Analytics'),
-    'bots': _('Bots'),
+    'meta_integration': _('Integration frameworks'),
     'continuous_integration': _('Continuous integration'),
     'customer_support': _('Customer support'),
     'deployment': _('Deployment'),
     'communication': _('Communication'),
-    'file_management': _('File management'),
-    'financial': _('Financial and payments'),
+    'financial': _('Financial'),
     'hr': _('HR'),
     'marketing': _('Marketing'),
     'misc': _('Miscellaneous'),
-    'monitoring': _('Monitoring and error reporting'),
+    'monitoring': _('Monitoring tools'),
     'project_management': _('Project management'),
     'productivity': _('Productivity'),
     'version_control': _('Version control'),
@@ -246,13 +245,13 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('gogs', ['version_control']),
     WebhookIntegration('gosquared', ['analytics', 'marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
-    WebhookIntegration('hellosign', ['file_management', 'hr'], display_name='HelloSign'),
+    WebhookIntegration('hellosign', ['productivity', 'hr'], display_name='HelloSign'),
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
     WebhookIntegration('heroku', ['deployment'], display_name='Heroku'),
     WebhookIntegration('homeassistant', ['misc'], display_name='Home Assistant'),
     WebhookIntegration(
         'ifttt',
-        ['misc'],
+        ['meta_integration'],
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
         display_name='IFTTT'
     ),
@@ -284,7 +283,7 @@ WEBHOOK_INTEGRATIONS = [
         display_name='Yo App'
     ),
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
-    WebhookIntegration('zapier', ['misc']),
+    WebhookIntegration('zapier', ['meta_integration']),
     WebhookIntegration('zendesk', ['customer_support'])
 ]  # type: List[WebhookIntegration]
 
@@ -309,7 +308,7 @@ INTEGRATIONS = {
         display_name='Google Calendar',
         doc='zerver/integrations/google-calendar.md'
     ),
-    'hubot': Integration('hubot', 'hubot', ['bots'], doc='zerver/integrations/hubot.md'),
+    'hubot': Integration('hubot', 'hubot', ['meta_integration'], doc='zerver/integrations/hubot.md'),
     'jenkins': Integration(
         'jenkins',
         'jenkins',
