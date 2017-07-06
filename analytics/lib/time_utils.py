@@ -20,8 +20,6 @@ def time_range(start, end, frequency, min_length):
         raise AssertionError("Unknown frequency: %s" % (frequency,))
 
     times = []
-    if min_length is not None:
-        start = min(start, end - (min_length-1)*step)
     current = end
     while current >= start:
         times.append(current)
