@@ -169,10 +169,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         break;
 
-    case 'referral':
-        referral.update_state(event.referrals.granted, event.referrals.used);
-        break;
-
     case 'stream':
         if (event.op === 'update') {
             // Legacy: Stream properties are still managed by subs.js on the client side.
