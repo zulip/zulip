@@ -1,3 +1,0 @@
-#!/bin/sh
-krb_user_id=1051
-env KRB5CCNAME=/tmp/krb5cc_"$krb_user_id".tmp kinit -k -t /home/zulip/tabbott.extra.keytab tabbott/extra@ATHENA.MIT.EDU; mv /tmp/krb5cc_"$krb_user_id".tmp /tmp/krb5cc_"$krb_user_id"

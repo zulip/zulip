@@ -7,4 +7,4 @@ uWSGI==2.0.14
 # used in production for things like Nagios checks.  While also needed
 # in development, we can't move it to common.txt due to limitations in
 # `pip compile`.
-api/
+git+https://github.com/eeshangarg/python-zulip.git#egg=zulip==0.3.1

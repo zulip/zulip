@@ -13,11 +13,6 @@ TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, ROOT_DIR)
 
-api_path = os.path.abspath(os.path.join(ROOT_DIR, 'api'))
-if not os.path.exists(api_path):
-    raise Exception('programming error--files probably got moved')
-
-sys.path.insert(0, api_path)
 from zulip import Client
 
 from tools.lib.test_server import test_server_running
