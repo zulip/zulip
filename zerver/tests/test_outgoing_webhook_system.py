@@ -24,11 +24,11 @@ class ResponseMock(object):
         self.content = content
 
 def request_exception_error(http_method, final_url, data, **request_kwargs):
-    # type: (Any, Any, Any, Any) -> Any
+    # type: (Any, Any, Any, **Any) -> Any
     raise requests.exceptions.RequestException
 
 def timeout_error(http_method, final_url, data, **request_kwargs):
-    # type: (Any, Any, Any, Any) -> Any
+    # type: (Any, Any, Any, **Any) -> Any
     raise requests.exceptions.Timeout
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
