@@ -463,7 +463,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # type: () -> None
 
         def create_user(email, realm_id):
-            # type: (Text) -> UserProfile
+            # type: (Text, Text) -> UserProfile
             self.register(email, 'test')
             return get_user(email, get_realm(realm_id))
 
