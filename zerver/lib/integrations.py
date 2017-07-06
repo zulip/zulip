@@ -34,7 +34,6 @@ features for writing and configuring integrations efficiently.
 """
 
 CATEGORIES = {
-    'analytics': _('Analytics'),
     'meta_integration': _('Integration frameworks'),
     'continuous_integration': _('Continuous integration'),
     'customer_support': _('Customer support'),
@@ -243,7 +242,7 @@ WEBHOOK_INTEGRATIONS = [
     ),
     WebhookIntegration('gitlab', ['version_control'], display_name='GitLab'),
     WebhookIntegration('gogs', ['version_control']),
-    WebhookIntegration('gosquared', ['analytics', 'marketing'], display_name='GoSquared'),
+    WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
     WebhookIntegration('hellosign', ['productivity', 'hr'], display_name='HelloSign'),
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
@@ -259,7 +258,7 @@ WEBHOOK_INTEGRATIONS = [
                        secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato', ['monitoring']),
     WebhookIntegration('mention', ['marketing'], display_name='Mention'),
-    WebhookIntegration('newrelic', ['analytics', 'monitoring'], display_name='New Relic'),
+    WebhookIntegration('newrelic', ['monitoring'], display_name='New Relic'),
     WebhookIntegration('pagerduty', ['monitoring']),
     WebhookIntegration('papertrail', ['monitoring']),
     WebhookIntegration('pingdom', ['monitoring']),
