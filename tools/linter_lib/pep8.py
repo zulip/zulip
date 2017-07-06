@@ -4,6 +4,8 @@ from __future__ import absolute_import
 import subprocess
 import sys
 
+from .printer import print_err, colors
+
 from typing import List
 
 def check_pep8(files):
@@ -12,14 +14,13 @@ def check_pep8(files):
     def run_pycodestyle(files, ignored_rules):
         # type: (List[str], List[str]) -> bool
         failed = False
+        color = next(colors)
         pep8 = subprocess.Popen(
             ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        for pipe in (pep8.stdout, pep8.stderr):
-            assert(pipe is not None)  # convince mypy that pipe cannot be None
-            for ln in pipe:
-                sys.stdout.write(ln)
-                failed = True
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in iter(pep8.stdout.readline, b''):
+            print_err('pep8', color, line)
+            failed = True
         return failed
 
     failed = False

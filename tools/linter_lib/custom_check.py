@@ -6,15 +6,18 @@ import re
 import sys
 import traceback
 
+from .printer import print_err, colors
+
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple
 
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
     RuleList = List[Dict[str, Any]]
 
-    def custom_check_file(fn, rules, skip_rules=None, max_length=None):
-        # type: (str, RuleList, Optional[Any], Optional[int]) -> bool
+    def custom_check_file(fn, identifier, rules, skip_rules=None, max_length=None):
+        # type: (str, str, RuleList, Optional[Any], Optional[int]) -> bool
         failed = False
+        color = next(colors)
 
         line_tups = []
         for i, line in enumerate(open(fn)):
@@ -66,8 +69,9 @@ def build_custom_checkers(by_lang):
                         else:
                             raise Exception("Invalid strip rule")
                     if re.search(pattern, line_to_check):
-                        sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
-                        print(line)
+                        print_err(identifier, color, '{} at {} line {}:'.format(
+                            rule['description'], fn, i+1))
+                        print_err(identifier, color, line)
                         failed = True
                 except Exception:
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
@@ -414,7 +418,7 @@ def build_custom_checkers(by_lang):
         for fn in by_lang['py']:
             if 'custom_check.py' in fn:
                 continue
-            if custom_check_file(fn, python_rules, max_length=140):
+            if custom_check_file(fn, 'py', python_rules, max_length=140):
                 failed = True
         return failed
 
@@ -423,27 +427,27 @@ def build_custom_checkers(by_lang):
         failed = False
 
         for fn in by_lang['js']:
-            if custom_check_file(fn, js_rules):
+            if custom_check_file(fn, 'js', js_rules):
                 failed = True
 
         for fn in by_lang['sh']:
-            if custom_check_file(fn, bash_rules):
+            if custom_check_file(fn, 'sh', bash_rules):
                 failed = True
 
         for fn in by_lang['css']:
-            if custom_check_file(fn, css_rules):
+            if custom_check_file(fn, 'css', css_rules):
                 failed = True
 
         for fn in by_lang['handlebars']:
-            if custom_check_file(fn, handlebars_rules):
+            if custom_check_file(fn, 'handlebars', handlebars_rules):
                 failed = True
 
         for fn in by_lang['html']:
-            if custom_check_file(fn, jinja2_rules):
+            if custom_check_file(fn, 'html', jinja2_rules):
                 failed = True
 
         for fn in by_lang['json']:
-            if custom_check_file(fn, json_rules):
+            if custom_check_file(fn, 'json', json_rules):
                 failed = True
 
         markdown_docs_length_exclude = {
@@ -467,15 +471,15 @@ def build_custom_checkers(by_lang):
             rules = markdown_rules
             if fn.startswith("templates/zerver/help"):
                 rules = help_markdown_rules
-            if custom_check_file(fn, rules, max_length=max_length):
+            if custom_check_file(fn, 'md', rules, max_length=max_length):
                 failed = True
 
         for fn in by_lang['txt'] + by_lang['text']:
-            if custom_check_file(fn, txt_rules):
+            if custom_check_file(fn, 'txt', txt_rules):
                 failed = True
 
         for fn in by_lang['yaml']:
-            if custom_check_file(fn, txt_rules):
+            if custom_check_file(fn, 'yaml', txt_rules):
                 failed = True
 
         return failed

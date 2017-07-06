@@ -25,6 +25,13 @@ FAIL = '\033[91m'
 ENDC = '\033[0m'
 BLACKONYELLOW = '\x1b[0;30;43m'
 WHITEONRED = '\x1b[0;37;41m'
+BOLDRED = '\x1B[1;31m'
+
+GREEN = '\x1b[32m'
+YELLOW = '\x1b[33m'
+BLUE = '\x1b[34m'
+MAGENTA = '\x1b[35m'
+CYAN = '\x1b[36m'
 
 def get_deployment_version(extract_path):
     # type: (str) -> str

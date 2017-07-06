@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from __future__ import absolute_import
-from contextlib import contextmanager
 import logging
 import os
 import sys
 import optparse
 import subprocess
+
+from linter_lib.printer import print_err, colors
 
 # check for the venv
 from lib import sanity_check
@@ -14,18 +15,6 @@ sanity_check.check_venv(__file__)
 
 import lister
 from typing import cast, Callable, Dict, Iterator, List
-
-@contextmanager
-def bright_red_output():
-    # type: () -> Iterator[None]
-    # Make the lint output bright red
-    sys.stdout.write('\x1B[1;31m')
-    sys.stdout.flush()
-    try:
-        yield
-    finally:
-        # Restore normal terminal colors
-        sys.stdout.write('\x1B[0m')
 
 
 def run_parallel(lint_functions):
@@ -128,57 +117,67 @@ def run():
 
         If target_langs is empty, just runs the linter unconditionally.
         """
+        color = next(colors)
+
         def run_linter():
             # type: () -> int
-            if len(target_langs) == 0:
-                return subprocess.call(command)
-            targets = [target for lang in target_langs for target in by_lang[lang]]
-            if len(targets) == 0:
-                return 0
-            return subprocess.call(command + targets)
+            targets = []  # type: List[str]
+            if len(target_langs) != 0:
+                targets = [target for lang in target_langs for target in by_lang[lang]]
+                if len(targets) == 0:
+                    return 0
+
+            p = subprocess.Popen(command + targets,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+
+            for line in iter(p.stdout.readline, b''):
+                print_err(name, color, line)
+
+            return p.wait()  # Linter exit code
+
         lint_functions[name] = run_linter
 
-    with bright_red_output():
-        external_linter('add_class', ['tools/find-add-class'])
-        external_linter('css', ['tools/check-css'], ['css'])
-        external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
-        external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
-                                   'static/ts/tslint.json'], ['ts'])
-        external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
-        external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
-        external_linter('urls', ['tools/check-urls'])
-        external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
+    external_linter('add_class', ['tools/find-add-class'])
+    external_linter('css', ['tools/check-css'], ['css'])
+    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
+    external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
+                               'static/ts/tslint.json'], ['ts'])
+    external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
+    external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
+    external_linter('urls', ['tools/check-urls'])
+    external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
 
-        # gitlint disabled until we can stabilize it more
-#        if not options.no_gitlint:
-#            external_linter('commit_messages', ['tools/commit-message-lint'])
+    # gitlint disabled until we can stabilize it more
+    # if not options.no_gitlint:
+    #     external_linter('commit_messages', ['tools/commit-message-lint'])
 
+    @lint
+    def custom_py():
+        # type: () -> int
+        failed = check_custom_checks_py()
+        return 1 if failed else 0
+
+    @lint
+    def custom_nonpy():
+        # type: () -> int
+        failed = check_custom_checks_nonpy()
+        return 1 if failed else 0
+
+    @lint
+    def pyflakes():
+        # type: () -> int
+        failed = check_pyflakes(options, by_lang)
+        return 1 if failed else 0
+
+    if options.pep8:
         @lint
-        def custom_py():
+        def pep8():
             # type: () -> int
-            failed = check_custom_checks_py()
+            failed = check_pep8(by_lang['py'])
             return 1 if failed else 0
 
-        @lint
-        def custom_nonpy():
-            # type: () -> int
-            failed = check_custom_checks_nonpy()
-            return 1 if failed else 0
-
-        @lint
-        def pyflakes():
-            # type: () -> int
-            failed = check_pyflakes(options, by_lang)
-            return 1 if failed else 0
-
-        if options.pep8:
-            @lint
-            def pep8():
-                # type: () -> int
-                failed = check_pep8(by_lang['py'])
-                return 1 if failed else 0
-
-        failed = run_parallel(lint_functions)
+    failed = run_parallel(lint_functions)
 
     sys.exit(1 if failed else 0)
 
