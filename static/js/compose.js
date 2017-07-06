@@ -313,7 +313,7 @@ exports.transmit_message = function (request, success, error) {
     }
 };
 
-function send_message(request) {
+exports.send_message = function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
     }
@@ -356,13 +356,13 @@ function send_message(request) {
     if (locally_echoed) {
         clear_compose_box();
     }
-}
+};
 
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {
         // If enter_sends is enabled, we just send the message
-        send_message();
+        exports.send_message();
     } else {
         // Otherwise, we return to the compose box and focus it
         $("#new_message_content").focus();
@@ -384,7 +384,7 @@ exports.test_send_many_messages = function (stream, subject, count) {
         message.subject = subject;
         message.content = num_sent.toString();
 
-        send_message(message);
+        exports.send_message(message);
 
         if (num_sent === count) {
             return;
@@ -402,7 +402,7 @@ exports.finish = function () {
     if (! compose.validate()) {
         return false;
     }
-    send_message();
+    exports.send_message();
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
