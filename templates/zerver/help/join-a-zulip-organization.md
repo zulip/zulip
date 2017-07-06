@@ -9,7 +9,7 @@ controlling the specific settings of the organizations that they own.
 2. Click the **Register** button in the top right hand corner of the screen.
 
 3. You will be taken to the register page and prompted to
- **Enter your work email address**. Enter your work email address
+ **Enter your email address**. Enter your email address
  and click **Sign Up**.
 
 4. You will be asked to confirm your email address. Wait for the email to
