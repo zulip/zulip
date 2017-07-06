@@ -359,16 +359,16 @@ $('.user-list-filter').is = function (sel) {
     };
     compose_actions.start = function () {};
 
-    var event = $.Event('keydown', e);
-    $(".user-list-filter").trigger(event);
+    var keydown_handler = $('.user-list-filter').get_on_handler('keydown');
+    keydown_handler(e);
 }());
 
 (function test_focus_user_filter() {
     var e = {
         stopPropagation: function () {},
     };
-    var event = $.Event('click', e);
-    $(".user-list-filter").trigger(event);
+    var click_handler = $('.user-list-filter').get_on_handler('click');
+    click_handler(e);
 }());
 
 presence.presence_info = {};
