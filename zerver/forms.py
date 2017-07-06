@@ -143,9 +143,11 @@ class HomepageForm(forms.Form):
                                         "join using {email} does not "
                                         "exist.").format(email=email))
             else:
-                raise ValidationError(_("Your email address, {email}, does not "
-                                        "correspond to any existing "
-                                        "organization.").format(email=email))
+                raise ValidationError(
+                    _("{email} does not have permission to join this server."
+                      "Try using an address from a different domain, or requesting an"
+                      "invite from the organization administrator.")
+                    .format(email=email))
 
         if realm.invite_required:
             raise ValidationError(_("Please request an invite for {email} "

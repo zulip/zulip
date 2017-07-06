@@ -616,9 +616,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=email, name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('Your email address, {}, does not '
-                                    'correspond to any existing '
-                                    'organization.'.format(email), result)
+            self.assert_in_response(
+                '{} does not have permission to join this server.'
+                'Try using an address from a different domain, or requesting an'
+                .format(email), result)
 
     def test_github_backend_existing_user(self):
         # type: () -> None
