@@ -1,3 +1,7 @@
+body {
+    background-color: #fafafa;
+}
+
 .container-fluid {
     padding: 0px;
     min-height: 100%;
@@ -29,26 +33,14 @@
 }
 
 .header {
+    position: relative;
+
     padding: 6px 0px;
     height: 29px;
-}
 
-.header .stripes,
-.header .darker {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0px;
+    background-color: #fff;
 
-    background: repeating-linear-gradient(
-      75deg,
-      hsla(0, 0%, 100%, 0.0) 0px,
-      hsla(0, 0%, 100%, 0.06) 200px
-    );
-}
-
-.header .darker {
-    background: -webkit-linear-gradient(top left, transparent , hsla(0, 0%, 0%, 0.3));
+    z-index: 2;
 }
 
 .navbar.footer .nav > li {
