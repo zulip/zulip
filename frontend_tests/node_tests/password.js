@@ -32,18 +32,6 @@ var common = require("js/common.js");
         return self;
     }());
 
-    password = 'plain';
-    accepted = common.password_quality(password, bar);
-    assert(!accepted);
-    assert.equal(bar.w, '10.654507557627486%');
-    assert.equal(bar.added_class, 'bar-danger');
-
-    password = 'z!X4@S_&';
-    accepted = common.password_quality(password, bar);
-    assert(accepted);
-    assert.equal(bar.w, '47.679074269445294%');
-    assert.equal(bar.added_class, 'bar-success');
-
     function password_field(min_length, min_quality) {
         var self = {};
 
