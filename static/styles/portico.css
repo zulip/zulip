@@ -13,15 +13,6 @@ body {
     margin: 0 auto -56px;
 }
 
-/* This is a hack so that our main content
-   remains centered in the middle 1440px or so
-   on wide monitors, but that our little color
-   bars can extend to the edges of the screen */
-.content {
-    max-width: 1440px;
-    margin: 0px auto;
-}
-
 .navbar {
     margin-bottom: 0px;
 }
