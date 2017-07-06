@@ -184,7 +184,6 @@ def home_real(request):
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
         # Server settings.
-        share_the_love        = settings.SHARE_THE_LOVE,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
