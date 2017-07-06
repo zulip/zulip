@@ -2,21 +2,9 @@ html {
     min-height: 500px;
 }
 
-.app-main .bg-image {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-
-    background-color: hsl(0, 0%, 98%);
-
-    z-index: -1;
-}
-
 .flex {
     display: flex;
-    height: calc(100vh - 100px);
+    height: calc(100vh - 135px);
     align-items: center;
     justify-content: center;
 }
@@ -142,12 +130,12 @@ html {
     margin-bottom: 0px;
 }
 
-.header,
-.header .stripes,
-.header .darker {
-    background: #fff;
-
+.header {
     color: hsl(0, 0%, 27%);
+}
+
+.header {
+    background-color: #fff;
 }
 
 .header .top-links a,
