@@ -27,7 +27,7 @@ from zerver.models import (
     get_unique_open_realm, get_unique_non_system_realm,
     completely_open, get_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
-    Referral, ScheduledJob, UserProfile, UserMessage,
+    ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob, flush_per_request_caches
 )
 from zerver.lib.actions import (
@@ -674,55 +674,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
-
-    def test_refer_friend(self):
-        # type: () -> None
-        self.login(self.example_email("hamlet"))
-        user = self.example_user('hamlet')
-        user.invites_granted = 1
-        user.invites_used = 0
-        user.save()
-
-        invitee = "alice-test@zulip.com"
-        result = self.client_post('/json/refer_friend', dict(email=invitee))
-        self.assert_json_success(result)
-
-        # verify this works
-        Referral.objects.get(user_profile=user, email=invitee)
-
-        user = self.example_user('hamlet')
-        self.assertEqual(user.invites_used, 1)
-
-    def test_refer_friend_no_email(self):
-        # type: () -> None
-        self.login(self.example_email("hamlet"))
-        user = self.example_user('hamlet')
-        user.invites_granted = 1
-        user.invites_used = 0
-        user.save()
-
-        self.assert_json_error(
-            self.client_post('/json/refer_friend', dict(email='')),
-            "No email address specified")
-
-        user = self.example_user('hamlet')
-        self.assertEqual(user.invites_used, 0)
-
-    def test_refer_friend_no_invites(self):
-        # type: () -> None
-        self.login(self.example_email("hamlet"))
-        user = self.example_user('hamlet')
-        user.invites_granted = 1
-        user.invites_used = 1
-        user.save()
-
-        invitee = "alice-test@zulip.com"
-        self.assert_json_error(
-            self.client_post('/json/refer_friend', dict(email=invitee)),
-            "Insufficient invites")
-
-        user = self.example_user('hamlet')
-        self.assertEqual(user.invites_used, 1)
 
     def test_invitation_reminder_email(self):
         # type: () -> None
