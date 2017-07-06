@@ -30,6 +30,12 @@ var bot_data = (function () {
         send_change_event();
     };
 
+    exports.add_services = function bot_data__add_services(services) {
+        _.each(services, function (service) {
+            exports.add_service(service);
+        });
+    };
+
     exports.add_service = function bot_data__add_service(service) {
         var clean_service = _.pick(service, services_fields);
         services[service.email] = clean_service;
@@ -78,9 +84,7 @@ var bot_data = (function () {
         _.each(page_params.realm_bots, function (bot) {
             exports.add(bot);
         });
-        _.each(page_params.realm_services, function (service) {
-            exports.add_service(service);
-        });
+        exports.add_services(page_params.realm_services);
     };
 
     return exports;
