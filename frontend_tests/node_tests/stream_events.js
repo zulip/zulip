@@ -287,18 +287,21 @@ stream_data.add_sub('Frontend', frontend);
         override('narrow_state.is_for_stream_id', function () {
             return true;
         });
-        global.with_stub(function (stub) {
-            $(document).on('subscription_remove_done.zulip', stub.f);
 
-            var updated = false;
-            override('current_msg_list.update_trailing_bookend', function () {
-                updated = true;
-            });
-
-            stream_events.mark_unsubscribed(frontend);
-            var args = stub.get_args('event');
-            assert.equal(updated, true);
-            assert.deepEqual(args.event.sub, frontend);
+        var updated = false;
+        override('current_msg_list.update_trailing_bookend', function () {
+            updated = true;
         });
+
+        var event_triggered = false;
+        $(document).trigger = function (ev) {
+            assert.equal(ev.name, 'subscription_remove_done.zulip');
+            assert.deepEqual(ev.data.sub, frontend);
+            event_triggered = true;
+        };
+
+        stream_events.mark_unsubscribed(frontend);
+        assert.equal(updated, true);
+        assert.equal(event_triggered, true);
     });
 }());
