@@ -123,7 +123,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream=None,
                          default_events_register_stream=None,
                          default_all_public_streams=False,
-                         owner=self.example_email('hamlet'))
+                         owner=self.example_email('hamlet')),
+                service=[],
             ),
             event['event']
         )
@@ -291,7 +292,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream='Denmark',
                          default_events_register_stream=None,
                          default_all_public_streams=False,
-                         owner=self.example_email('hamlet'))
+                         owner=self.example_email('hamlet')),
+                service=[],
             ),
             event['event']
         )
@@ -361,7 +363,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream=None,
                          default_events_register_stream='Denmark',
                          default_all_public_streams=False,
-                         owner=self.example_email('hamlet'))
+                         owner=self.example_email('hamlet')),
+                service=[],
             ),
             event['event']
         )
@@ -574,6 +577,30 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('othello'))
         bot = self.get_bot()
         self.assertEqual('The Bot of Hamlet', bot['full_name'])
+
+    def test_patch_outgoing_webhook_bot_baseurl_interface(self):
+        # type: () -> None
+        self.login(self.example_email('hamlet'))
+        bot_info = {
+            'full_name': u'The Bot of Hamlet',
+            'short_name': u'hambot',
+            'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
+            'payload_url': ujson.dumps("http://hostname.domain1.com"),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'service_payload_url': ujson.dumps("http://hostname.domain2.com"),
+            'service_interface': 1,
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_success(result)
+
+        service_interface = ujson.loads(result.content)['service_interface']
+        self.assertEqual(service_interface, 1)
+
+        service_payload_url = ujson.loads(result.content)['service_payload_url']
+        self.assertEqual(service_payload_url, "http://hostname.domain2.com")
 
     @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self):

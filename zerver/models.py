@@ -1854,3 +1854,23 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+def get_service_dicts_for_bots(user_profile):
+    # type: (UserProfile) -> List[Dict[str, Any]]
+    services = get_bot_services(user_profile.id)
+    service_dicts = ([{'email': user_profile.email,
+                       'name': service.name,
+                       'base_url': service.base_url,
+                       'interface': service.interface,
+                       }
+                      for service in services])
+    return service_dicts
+
+def get_service_dicts_for_users(user_profile):
+    # type: (UserProfile) -> List[Dict[str, Any]]
+
+    bots = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True, bot_owner=user_profile)
+    service_dicts = []
+    for bot in bots:
+        service_dicts.extend(get_service_dicts_for_bots(bot))
+    return service_dicts

@@ -17,7 +17,8 @@ from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
+    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, notify_created_bot, \
+    do_update_outgoing_webhook_service
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
@@ -158,10 +159,12 @@ def get_stream_name(stream):
 def patch_bot_backend(request, user_profile, email,
                       full_name=REQ(default=None),
                       bot_owner=REQ(default=None),
+                      service_payload_url=REQ(validator=check_url, default=None),
+                      service_interface=REQ(validator=check_int, default=1),
                       default_sending_stream=REQ(default=None),
                       default_events_register_stream=REQ(default=None),
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[int], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
         bot = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -192,6 +195,10 @@ def patch_bot_backend(request, user_profile, email,
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(bot, default_all_public_streams)
 
+    if service_payload_url is not None:
+        check_valid_interface_type(service_interface)
+        do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
+
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
@@ -214,7 +221,9 @@ def patch_bot_backend(request, user_profile, email,
     # Default bots have no owner.
     if bot.bot_owner is not None:
         json_result['bot_owner'] = bot.bot_owner.email
-
+    if service_payload_url is not None:
+        json_result['service_interface'] = service_interface
+        json_result['service_payload_url'] = service_payload_url
     return json_success(json_result)
 
 @has_request_variables
@@ -304,6 +313,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
                                      base_url=payload_url,
                                      interface=interface_type,
                                      token=random_api_key())
+    notify_created_bot(bot_profile)
 
     json_result = dict(
         api_key=bot_profile.api_key,

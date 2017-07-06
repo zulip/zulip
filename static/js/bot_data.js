@@ -6,6 +6,9 @@ var bot_data = (function () {
                       'default_events_register_stream', 'default_sending_stream',
                       'email', 'full_name', 'is_active', 'owner', 'bot_type'];
 
+    var services = {};
+    var services_fields = ['base_url', 'interface', 'name'];
+
     var send_change_event = _.debounce(function () {
         $(document).trigger('zulip.bot_data_changed');
     }, 50);
@@ -27,6 +30,12 @@ var bot_data = (function () {
         send_change_event();
     };
 
+    exports.add_service = function bot_data__add_service(service) {
+        var clean_service = _.pick(service, services_fields);
+        services[service.email] = clean_service;
+        send_change_event();
+    };
+
     exports.deactivate = function bot_data__deactivate(email) {
         bots[email].is_active = false;
         send_change_event();
@@ -36,6 +45,12 @@ var bot_data = (function () {
         var bot = bots[email];
         _.extend(bot, _.pick(bot_update, bot_fields));
         set_can_admin(bot);
+        send_change_event();
+    };
+
+    exports.update_service = function bot_data__update_service(email, service_update) {
+        var service = services[email];
+        _.extend(service, _.pick(service_update, services_fields));
         send_change_event();
     };
 
@@ -55,9 +70,16 @@ var bot_data = (function () {
         return bots[email];
     };
 
+    exports.get_service = function bot_data__get_service(email) {
+        return services[email];
+    };
+
     exports.initialize = function () {
         _.each(page_params.realm_bots, function (bot) {
             exports.add(bot);
+        });
+        _.each(page_params.realm_services, function (service) {
+            exports.add_service(service);
         });
     };
 
