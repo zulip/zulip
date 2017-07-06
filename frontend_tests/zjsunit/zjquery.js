@@ -18,6 +18,7 @@ exports.make_zjquery = function () {
         var attrs = new Dict();
         var classes = new Dict();
         var on_functions = new Dict();
+        var child_on_functions = new Dict();
 
         function generic_event(event_name, arg) {
             if (typeof(arg) === 'function') {
@@ -85,6 +86,22 @@ exports.make_zjquery = function () {
                 assert.equal(idx, 0);
                 return selector;
             },
+            get_on_handler: function (name, child_selector) {
+                var funcs = self.get_on_handlers(name, child_selector);
+                assert.equal(funcs.length, 1, 'We expected to have exactly one handler here.');
+                return funcs[0];
+            },
+            get_on_handlers: function (name, child_selector) {
+                var funcs;
+                if (child_selector === undefined) {
+                    funcs = on_functions.get(name) || [];
+                } else {
+                    var child_on = child_on_functions.get(child_selector) || {};
+                    funcs = child_on.get(name) || [];
+                }
+                assert(!assert.equal(funcs, []));
+                return funcs;
+            },
             hasClass: function (class_name) {
                 return classes.has(class_name);
             },
@@ -113,9 +130,26 @@ exports.make_zjquery = function () {
                 generic_event('keyup', arg);
                 return self.wrapper;
             },
-            on: function (name, f) {
-                var funcs = on_functions.setdefault(name, []);
-                funcs.push(f);
+            on: function () {
+                var funcs;
+                var event_name;
+                var handler;
+                var sel;
+                if (arguments.length === 2) {
+                    event_name = arguments[0];
+                    handler = arguments[1];
+                    funcs = on_functions.setdefault(event_name, []);
+                    funcs.push(handler);
+                } else if (arguments.length === 3) {
+                    event_name = arguments[0];
+                    sel = arguments[1];
+                    handler = arguments[2];
+                    assert.equal(typeof(sel), 'string', 'String selectors expected here.');
+                    assert.equal(typeof(handler), 'function', 'An handler function expected here.');
+                    var child_on = child_on_functions.setdefault(sel, new Dict());
+                    funcs = child_on.setdefault(event_name, []);
+                    funcs.push(handler);
+                }
                 return self.wrapper;
             },
             parent: function () {
