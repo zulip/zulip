@@ -1900,7 +1900,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
     def test_invalid_email(self):
         # type: () -> None
         request = POSTRequestMock({}, None)
-        email = None
+        email = None  # type: Optional[Text]
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
         invalid_subdomain = False
