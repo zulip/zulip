@@ -647,9 +647,6 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     # completed.
     onboarding_steps = models.TextField(default=u'[]') # type: Text
 
-    invites_granted = models.IntegerField(default=0) # type: int
-    invites_used = models.IntegerField(default=0) # type: int
-
     alert_words = models.TextField(default=u'[]') # type: Text # json-serialized list of strings
 
     # Contains serialized JSON of the form:
@@ -1686,11 +1683,6 @@ class DefaultStream(models.Model):
 
     class Meta(object):
         unique_together = ("realm", "stream")
-
-class Referral(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE) # type: UserProfile
-    email = models.EmailField(blank=False, null=False) # type: Text
-    timestamp = models.DateTimeField(auto_now_add=True, null=False) # type: datetime.datetime
 
 class ScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(auto_now_add=False, null=False) # type: datetime.datetime
