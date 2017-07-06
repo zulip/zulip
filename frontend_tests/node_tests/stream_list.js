@@ -252,10 +252,8 @@ function initialize_stream_data() {
     stream_list.initialize();
 
     function activate_filter(filter) {
-        var data = {
-            filter: filter,
-        };
-        $(document).trigger($.Event('narrow_activated.zulip', data));
+        var handler = $(document).get_on_handler('narrow_activated.zulip');
+        handler({filter: filter});
     }
 
     var filter;
