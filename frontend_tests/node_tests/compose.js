@@ -552,6 +552,52 @@ people.add(bob);
     assert($("#new_message_content").is_focused());
 }());
 
+(function test_finish() {
+    (function test_when_compose_validation_fails() {
+        $("#compose_invite_users").show();
+        $("#compose-send-button").removeAttr('disabled');
+        $("#compose-send-button").focus();
+        $("#sending-indicator").hide();
+        $("#new_message_content").select(noop);
+        $("#new_message_content").val('');
+        var res = compose.finish();
+        assert.equal(res, false);
+        assert(!$("#compose_invite_users").visible());
+        assert(!$("#sending-indicator").visible());
+        assert(!$("#compose-send-button").is_focused());
+        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
+    }());
+
+    (function test_when_compose_validation_succeed() {
+        $("#new_message_content").hide();
+        $("#undo_markdown_preview").show();
+        $("#preview_message_area").show();
+        $("#markdown_preview").hide();
+        $("#new_message_content").val('foobarfoobar');
+        compose_state.set_message_type('private');
+        compose_state.recipient('bob@example.com');
+        var compose_finished_event_checked = false;
+        $.stub_selector(document, {
+            trigger: function (e) {
+                assert.equal(e.name, 'compose_finished.zulip');
+                compose_finished_event_checked = true;
+            },
+        });
+        var send_message_called = false;
+        compose.send_message = function () {
+            send_message_called = true;
+        };
+        assert(compose.finish());
+        assert($("#new_message_content").visible());
+        assert(!$("#undo_markdown_preview").visible());
+        assert(!$("#preview_message_area").visible());
+        assert($("#markdown_preview").visible());
+        assert(send_message_called);
+        assert(compose_finished_event_checked);
+    }());
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
