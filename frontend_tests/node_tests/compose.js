@@ -26,6 +26,11 @@ set_global('feature_flags', {
 });
 set_global('echo', {});
 
+// Setting these up so that we can test that links to uploads within messages are
+// automatically converted to server relative links.
+global.document.location.protocol = 'https:';
+global.document.location.host = 'foo.com';
+
 add_dependencies({
     common: 'js/common',
     compose_state: 'js/compose_state',
@@ -315,6 +320,213 @@ people.add(bob);
     compose.report_as_received(msg);
     assert.equal(typeof(compose.send_times_data[13].received), 'object');
     assert.equal(typeof(compose.send_times_data[13].displayed), 'object');
+}());
+
+(function test_send_message() {
+    // This is the common setup stuff for all of the four tests.
+    var stub_state;
+    function initialize_state_stub_dict() {
+        stub_state = {};
+        stub_state.local_id_counter = 0;
+        stub_state.send_msg_ajax_post_called = 0;
+        stub_state.get_events_running_called = 0;
+        stub_state.server_events_triggered = 0;
+        stub_state.reify_message_id_checked = 0;
+        return stub_state;
+    }
+
+    global.patch_builtin('setTimeout', function (func) {
+        func();
+    });
+    global.server_events = {
+        restart_get_events: function () {
+            stub_state.server_events_triggered += 1;
+        },
+        assert_get_events_running: function () {
+            stub_state.get_events_running_called += 1;
+        },
+    };
+
+    // Tests start here.
+    (function test_message_send_success_codepath() {
+        stub_state = initialize_state_stub_dict();
+        compose_state.subject('');
+        compose_state.set_message_type('private');
+        page_params.user_id = 101;
+        compose_state.recipient('alice@example.com');
+        echo.try_deliver_locally = function () {
+            stub_state.local_id_counter += 1;
+            return stub_state.local_id_counter;
+        };
+        channel.post = function (payload) {
+            var single_msg = {
+              type: 'private',
+              content: '[foobar](/user_uploads/123456)',
+              sender_id: 101,
+              queue_id: undefined,
+              stream: '',
+              subject: '',
+              to: '["alice@example.com"]',
+              reply_to: 'alice@example.com',
+              private_message_recipient: 'alice@example.com',
+              to_user_ids: '31',
+              local_id: 1,
+            };
+            assert.equal(payload.url, '/json/messages');
+            assert.equal(_.keys(payload.data).length, 11);
+            assert.deepEqual(payload.data, single_msg);
+            payload.data.id = stub_state.local_id_counter;
+            payload.success(payload.data);
+            stub_state.send_msg_ajax_post_called += 1;
+        };
+        echo.reify_message_id = function (local_id, message_id) {
+            assert.equal(typeof(local_id), 'number');
+            assert.equal(typeof(message_id), 'number');
+            stub_state.reify_message_id_checked += 1;
+        };
+        compose.send_times_data = {};
+        // Setting message content with a host server link and we will assert
+        // later that this has been converted to a relative link.
+        $("#new_message_content").val('[foobar]' +
+                                      '(https://foo.com/user_uploads/123456)');
+        $("#new_message_content").blur();
+        $("#send-status").show();
+        $("#compose-send-button").attr('disabled', 'disabled');
+        $("#sending-indicator").show();
+
+        compose.send_message();
+
+        var state = {
+            local_id_counter: 1,
+            get_events_running_called: 1,
+            reify_message_id_checked: 1,
+            send_msg_ajax_post_called: 1,
+            server_events_triggered: 1,
+        };
+        assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert.equal($("#new_message_content").val(), '');
+        assert($("#new_message_content").is_focused());
+        assert(!$("#send-status").visible());
+        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert(!$("#sending-indicator").visible());
+    }());
+
+    (function test_error_code_path_when_error_type_not_timeout() {
+        stub_state = initialize_state_stub_dict();
+        compose_state.set_message_type('stream');
+        var server_error_triggered = false;
+        channel.post = function (payload) {
+            payload.error('500', 'Internal Server Error');
+            stub_state.send_msg_ajax_post_called += 1;
+            server_error_triggered = true;
+        };
+        var reload_initiate_triggered = false;
+        global.reload = {
+            is_pending: function () { return true; },
+            initiate: function () {
+                reload_initiate_triggered = true;
+            },
+        };
+
+        compose.send_message();
+
+        var state = {
+            local_id_counter: 1,
+            get_events_running_called: 1,
+            reify_message_id_checked: 0,
+            send_msg_ajax_post_called: 1,
+            server_events_triggered: 0,
+        };
+        assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert(server_error_triggered);
+        assert(reload_initiate_triggered);
+    }());
+
+    // This is the additional setup which is common to both the tests below.
+    var server_error_triggered = false;
+    var reload_initiate_triggered = false;
+    channel.post = function (payload) {
+        payload.error('408', 'timeout');
+        stub_state.send_msg_ajax_post_called += 1;
+        server_error_triggered = true;
+    };
+    var xhr_error_msg_checked = false;
+    channel.xhr_error_message = function (error, xhr) {
+        assert.equal(error, 'Error sending message');
+        assert.equal(xhr, '408');
+        xhr_error_msg_checked = true;
+        return 'Error sending message: Server says 408';
+    };
+    var echo_error_msg_checked = false;
+    echo.message_send_error = function (local_id, error_response) {
+        assert.equal(local_id, 1);
+        assert.equal(error_response, 'Error sending message: Server says 408');
+        echo_error_msg_checked = true;
+    };
+
+    // Tests start here.
+    (function test_param_error_function_passed_from_send_message() {
+        stub_state = initialize_state_stub_dict();
+
+        compose.send_message();
+
+        var state = {
+            local_id_counter: 1,
+            get_events_running_called: 1,
+            reify_message_id_checked: 0,
+            send_msg_ajax_post_called: 1,
+            server_events_triggered: 0,
+        };
+        assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert(server_error_triggered);
+        assert(!reload_initiate_triggered);
+        assert(xhr_error_msg_checked);
+        assert(echo_error_msg_checked);
+    }());
+
+    (function test_error_codepath_local_id_undefined() {
+        stub_state = initialize_state_stub_dict();
+        $("#new_message_content").val('foobarfoobar');
+        $("#new_message_content").blur();
+        $("#send-status").show();
+        $("#compose-send-button").attr('disabled', 'disabled');
+        $("#sending-indicator").show();
+        $("#new_message_content").select(noop);
+        echo_error_msg_checked = false;
+        xhr_error_msg_checked = false;
+        server_error_triggered = false;
+        reload_initiate_triggered = false;
+        echo.try_deliver_locally = function () {
+            return;
+        };
+
+        compose.send_message();
+
+        var state = {
+            local_id_counter: 0,
+            get_events_running_called: 1,
+            reify_message_id_checked: 0,
+            send_msg_ajax_post_called: 1,
+            server_events_triggered: 0,
+        };
+        assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert(server_error_triggered);
+        assert(!reload_initiate_triggered);
+        assert(xhr_error_msg_checked);
+        assert(!echo_error_msg_checked);
+        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($('#error-msg').html(),
+                       'Error sending message: Server says 408');
+        assert.equal($("#new_message_content").val(), 'foobarfoobar');
+        assert($("#new_message_content").is_focused());
+        assert($("#send-status").visible());
+        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert(!$("#sending-indicator").visible());
+    }());
 }());
 
 (function test_set_focused_recipient() {
