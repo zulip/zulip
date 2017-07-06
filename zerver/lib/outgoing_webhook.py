@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping
+from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping, Optional
 
 import requests
 import json
@@ -101,7 +101,7 @@ def request_retry(event, failure_message):
         queue_json_publish("outgoing_webhooks", event, lambda x: None)
 
 def do_rest_call(rest_operation, request_data, event, service_handler, timeout=None):
-    # type: (Dict[str, Any], Dict[str, Any], Dict[str, Any], Any, Any) -> None
+    # type: (Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Any, Any) -> None
     rest_operation_validator = check_dict([
         ('method', check_string),
         ('relative_url_path', check_string),
