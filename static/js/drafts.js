@@ -112,11 +112,8 @@ exports.delete_draft_after_send = function () {
     $("#new_message_content").removeData("draft-id");
 };
 
-exports.restore_draft = function (draft_id) {
+function load_restored_draft(draft_id) {
     var draft = draft_model.getDraft(draft_id);
-    if (!draft) {
-        return;
-    }
 
     var draft_copy = _.extend({}, draft);
     if ((draft_copy.type === "stream" &&
@@ -126,6 +123,21 @@ exports.restore_draft = function (draft_id) {
                   draft_copy.reply_to.length > 0)) {
         draft_copy = _.extend({replying_to_message: draft_copy},
                               draft_copy);
+    }
+
+    compose_fade.clear_compose();
+    if (draft.type === "stream" && draft.stream === "") {
+        draft_copy.subject = "";
+    }
+    compose_actions.start(draft_copy.type, draft_copy);
+    compose_ui.autosize_textarea();
+    $("#new_message_content").data("draft-id", draft_id);
+}
+
+exports.restore_draft = function (draft_id) {
+    var draft = draft_model.getDraft(draft_id);
+    if (!draft) {
+        return;
     }
 
     if (draft.type === "stream") {
@@ -143,13 +155,70 @@ exports.restore_draft = function (draft_id) {
     }
 
     overlays.close_overlay("drafts");
-    compose_fade.clear_compose();
-    if (draft.type === "stream" && draft.stream === "") {
-        draft_copy.subject = "";
+    load_restored_draft(draft_id);
+};
+
+function get_stream_drafts(draft_list) {
+    return _.filter(draft_list, function (draft_id) {
+        return draft_model.getDraft(draft_id).type === 'stream';
+    });
+}
+
+function get_private_drafts(draft_list) {
+    return _.filter(draft_list, function (draft_id) {
+        return draft_model.getDraft(draft_id).type === 'private';
+    });
+}
+
+exports.draft_matching_narrow = function (operators) {
+    if ($("#new_message_content").val()) {
+        return; // Abort if the user currently has something in the compose box
     }
-    compose_actions.start(draft_copy.type, draft_copy);
-    compose_ui.autosize_textarea();
-    $("#new_message_content").data("draft-id", draft_id);
+
+    var filter = new Filter(operators);
+    // Only take from 2 most recent drafts to avoid intrusiveness
+    var draft_list = Object.keys(draft_model.get()).slice(-2);
+    var restore;
+    if (filter.has_operator('pm-with')) {
+        if (operators.length > 1) {
+            return;
+        }
+        draft_list = get_private_drafts(draft_list);
+        draft_list = _.filter(draft_list, function (draft_id) {
+            var recip = draft_model.getDraft(draft_id).private_message_recipient;
+            recip = recip.replace(/\s/g, '').toLowerCase().split(',').sort().join(',');
+            var op_recip = operators[0].operand.split(',').sort().join(',');
+
+            return recip === op_recip;
+        });
+        restore = draft_list.pop();
+    } else if (filter.has_operator('stream') && filter.has_operator('topic')) {
+        if (operators.length > 2) {
+            return;
+        }
+        draft_list = get_stream_drafts(draft_list);
+        draft_list = _.filter(draft_list, function (draft_id) {
+            return _.all(operators, function (op) {
+                if (op.operator === 'stream') {
+                    return op.operand === draft_model.getDraft(draft_id).stream;
+                }
+                return op.operand === draft_model.getDraft(draft_id).subject;
+            });
+        });
+        restore = draft_list.pop();
+    }
+
+    // Make sure the draft has at least 10 characters (filter out garbage drafts)
+    if (restore && draft_model.getDraft(restore).content.length > 10) {
+        return restore;
+    }
+};
+
+exports.restore_on_narrow = function (operators) {
+    var draft = exports.draft_matching_narrow(operators);
+    if (draft) {
+        load_restored_draft(draft);
+    }
 };
 
 exports.setup_page = function (callback) {

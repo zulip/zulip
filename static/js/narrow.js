@@ -246,6 +246,7 @@ exports.activate = function (raw_operators, opts) {
     search.update_button_visibility();
 
     compose_actions.on_narrow();
+    drafts.restore_on_narrow(operators);
 
     var current_filter = narrow_state.get_current_filter();
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
