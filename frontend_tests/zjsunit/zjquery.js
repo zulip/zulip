@@ -213,6 +213,16 @@ exports.make_zjquery = function () {
             },
             trigger: function (ev) {
                 var funcs = on_functions.get(ev.name) || [];
+
+                // The following assertion is temporary.  It can be
+                // legitimate for code to trigger multiple handlers.
+                // But up until now, we haven't needed this, and if
+                // you come across this assertion, it's possible that
+                // you can simplify your tests by just doing your own
+                // mocking of trigger().  If you really know what you
+                // are doing, you can remove this limitation.
+                assert(funcs.length <= 1, 'multiple functions set up');
+
                 _.each(funcs, function (f) {
                     f(ev.data);
                 });

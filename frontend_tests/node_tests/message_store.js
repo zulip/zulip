@@ -244,17 +244,16 @@ message_store.initialize();
     set_global('message_list', {});
     set_global('home_msg_list', {});
 
-    var id_change_event = {
-        name: 'message_id_changed',
-        data: {
-            old_id: 401,
-            new_id: 402,
-        },
+    var event = {
+        old_id: 401,
+        new_id: 402,
     };
+
+    var on_id_message_changed_func = $(document).get_on_handler('message_id_changed');
 
     global.with_stub(function (stub) {
         home_msg_list.change_message_id = stub.f;
-        $(document).trigger(id_change_event);
+        on_id_message_changed_func(event);
         var msg_id = stub.get_args('old', 'new');
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
@@ -263,7 +262,7 @@ message_store.initialize();
     home_msg_list.view = {};
     global.with_stub(function (stub) {
         home_msg_list.view.change_message_id = stub.f;
-        $(document).trigger(id_change_event);
+        on_id_message_changed_func(event);
         var msg_id = stub.get_args('old', 'new');
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
