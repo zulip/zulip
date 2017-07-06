@@ -95,7 +95,6 @@
         "realm_icon": false,
         "feature_flags": false,
         "search_suggestion": false,
-        "referral": false,
         "notifications": false,
         "message_flags": false,
         "bot_data": false,
