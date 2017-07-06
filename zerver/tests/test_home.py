@@ -89,6 +89,8 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
+            "password_min_length",
+            "password_min_quality",
             "pm_content_in_desktop_notifications",
             "pointer",
             "poll_timeout",
