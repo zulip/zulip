@@ -31,6 +31,8 @@ set_global('Socket', function () {
     return global.socket;
 });
 set_global('stream_edit', {});
+set_global('markdown', {});
+set_global('loading', {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -1128,6 +1130,116 @@ function test_with_mock_socket(test_params) {
         };
         handler(event);
         assert(compose_file_input_clicked);
+    }());
+
+    (function test_markdown_preview_compose_clicked() {
+        // Tests setup
+        function setup_visibilities() {
+            $("#new_message_content").show();
+            $("#markdown_preview").show();
+            $("#undo_markdown_preview").hide();
+            $("#preview_message_area").hide();
+        }
+
+        function assert_visibilities() {
+            assert(!$("#new_message_content").visible());
+            assert(!$("#markdown_preview").visible());
+            assert($("#undo_markdown_preview").visible());
+            assert($("#preview_message_area").visible());
+        }
+
+        function setup_mock_markdown_contains_bugdown(msg_content, return_val) {
+            markdown.contains_bugdown = function (msg) {
+                assert.equal(msg, msg_content);
+                return return_val;
+            };
+        }
+
+        function test_post_success(success_callback) {
+            var resp = {
+                rendered: 'Server: foobarfoobar',
+            };
+            success_callback(resp);
+            assert.equal($("#preview_content").html(), 'Server: foobarfoobar');
+        }
+
+        function test_post_error(error_callback) {
+            error_callback();
+            assert.equal($("#preview_content").html(),
+                            'translated: Failed to generate preview');
+        }
+
+        function mock_channel_post(msg) {
+            channel.post = function (payload) {
+                assert.equal(payload.url, '/json/messages/render');
+                assert(payload.idempotent);
+                assert(payload.data);
+                assert.deepEqual(payload.data.content, msg);
+
+                function test(func, param) {
+                    var destroy_indicator_called = false;
+                    loading.destroy_indicator = function (spinner) {
+                        assert.equal(spinner, $("#markdown_preview_spinner"));
+                        destroy_indicator_called = true;
+                    };
+                    setup_mock_markdown_contains_bugdown(msg, true);
+
+                    func(param);
+
+                    assert(destroy_indicator_called);
+                }
+
+                test(test_post_error, payload.error);
+                test(test_post_success, payload.success);
+
+            };
+        }
+
+        var handler = $("#compose")
+                        .get_on_handler("click", "#markdown_preview");
+
+        // Tests start here
+        $("#new_message_content").val('');
+        setup_visibilities();
+
+        handler(event);
+
+        assert.equal($("#preview_content").html(),
+                      'translated: Nothing to preview');
+        assert_visibilities();
+
+        var make_indicator_called = false;
+        $("#new_message_content").val('```foobarfoobar```');
+        setup_visibilities();
+        setup_mock_markdown_contains_bugdown('```foobarfoobar```', true);
+        loading.make_indicator = function (spinner) {
+            assert.equal(spinner, $("#markdown_preview_spinner"));
+            make_indicator_called = true;
+        };
+        mock_channel_post('```foobarfoobar```');
+
+        handler(event);
+
+        assert(make_indicator_called);
+        assert_visibilities();
+
+        var apply_markdown_called = false;
+        $("#new_message_content").val('foobarfoobar');
+        setup_visibilities();
+        setup_mock_markdown_contains_bugdown('foobarfoobar', false);
+        mock_channel_post('foobarfoobar');
+        markdown.apply_markdown = function (msg) {
+            assert.equal(msg, 'foobarfoobar');
+            apply_markdown_called = true;
+            return msg;
+        };
+
+        handler(event);
+
+        assert(apply_markdown_called);
+        assert_visibilities();
+        assert.equal($("#preview_content").html(),
+                      'Server: foobarfoobar');
     }());
 }());
 
