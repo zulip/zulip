@@ -337,6 +337,7 @@ def main(options):
             print("No need to run `manage.py compilemessages`.")
 
     # Here we install nvm, node, and npm.
+    run(["mkdir", "-p", "var"])
     run(["sudo", "scripts/lib/install-node"])
 
     # This is a wrapper around `npm install`, which we run last since
