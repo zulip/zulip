@@ -35,9 +35,8 @@ class ConfirmationManager(models.Manager):
             except self.model.DoesNotExist:
                 return False
 
-            max_days = self.get_link_validity_in_days()
             time_elapsed = timezone_now() - confirmation.date_sent
-            if time_elapsed.total_seconds() > max_days * 24 * 3600:
+            if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
                 return False
 
             obj = confirmation.content_object
@@ -62,10 +61,6 @@ class ConfirmationManager(models.Manager):
                             reverse('confirmation.views.confirm',
                                     kwargs={'confirmation_key': confirmation_key}))
 
-    def get_link_validity_in_days(self):
-        # type: () -> int
-        return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
-
 class EmailChangeConfirmationManager(ConfirmationManager):
     def get_activation_url(self, key, host=None):
         # type: (Text, Optional[str]) -> Text
@@ -76,10 +71,6 @@ class EmailChangeConfirmationManager(ConfirmationManager):
                             host,
                             reverse('zerver.views.user_settings.confirm_email_change',
                                     kwargs={'confirmation_key': key}))
-
-    def get_link_validity_in_days(self):
-        # type: () -> int
-        return settings.EMAIL_CHANGE_CONFIRMATION_DAYS
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
