@@ -144,10 +144,6 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
 
-    if want('referral'):
-        state['referrals'] = {'granted': user_profile.invites_granted,
-                              'used': user_profile.invites_used}
-
     if want('subscription'):
         subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
             user_profile, include_subscribers=include_subscribers)
@@ -415,8 +411,6 @@ def apply_event(state, event, user_profile, include_subscribers):
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass
-    elif event['type'] == "referral":
-        state['referrals'] = event['referrals']
     elif event['type'] == 'typing':
         # Typing notification events are transient and thus ignored
         pass

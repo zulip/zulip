@@ -127,7 +127,6 @@ def find_edges_to_remove(graph, methods):
         ('pm_list', 'resize'),
         ('notifications', 'navigate'),
         ('compose', 'socket'),
-        ('referral', 'resize'),
         ('stream_muting', 'message_util'),
         ('subs', 'stream_list'),
         ('ui', 'message_fetch'),

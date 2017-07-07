@@ -34,7 +34,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, \
-    Client, DefaultStream, UserPresence, Referral, PushDeviceToken, \
+    Client, DefaultStream, UserPresence, PushDeviceToken, \
     MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -3154,33 +3154,6 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
         ret_error_data = {'errors': skipped, 'sent_invitations': True}
 
     return ret_error, ret_error_data
-
-def send_referral_event(user_profile):
-    # type: (UserProfile) -> None
-    event = dict(type="referral",
-                 referrals=dict(granted=user_profile.invites_granted,
-                                used=user_profile.invites_used))
-    send_event(event, [user_profile.id])
-
-def do_refer_friend(user_profile, email):
-    # type: (UserProfile, Text) -> None
-    content = ('Referrer: "%s" <%s>\n'
-               'Realm: %s\n'
-               'Referred: %s') % (user_profile.full_name, user_profile.email,
-                                  user_profile.realm.string_id, email)
-    subject = "Zulip referral: %s" % (email,)
-    from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
-    to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
-    headers = {'Reply-To': '"%s" <%s>' % (user_profile.full_name, user_profile.email,)}
-    msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
-    msg.send()
-
-    referral = Referral(user_profile=user_profile, email=email)
-    referral.save()
-    user_profile.invites_used += 1
-    user_profile.save(update_fields=['invites_used'])
-
-    send_referral_event(user_profile)
 
 def notify_realm_emoji(realm):
     # type: (Realm) -> None

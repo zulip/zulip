@@ -73,43 +73,5 @@
                 <ul id="stream_filters" class="filters"></ul>
             </div>
         </div>
-        <div id="share-the-love">
-            <div id="share-the-love-expand-collapse">
-                <i class="toggle icon-vector-caret-right"></i><div id="sharethelove-header"><h4 class="sidebar-title">{{ _('SHARE THE LOVE') }}<span class="still-have-invites"> (<span class="invite-count">0</span>)</span></h4></div>
-            </div>
-            <div id="share-the-love-contents">
-                <div id="tell-a-friend-success" class="alert alert-success">
-                    {% trans %}<strong>Thanks!</strong> A hand-crafted, artisanal invite is on the way.{% endtrans %}
-                </div>
-                <div class="still-have-invites" id="encouraging-invite-message">
-                    <p>
-                        {{ _("Know someone who would love Zulip for their company or group? Invite 'em!") }}
-                    </p>
-                </div>
-                <div class="no-more-invites">
-                    <p>
-                        {% trans %}
-                        We'll have more invites for
-                        you soon, but for now, enjoy
-                        this <a target="_blank"
-                                 href="http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s">song
-                                 that expresses how we feel when you're
-                        logged out</a>.
-                        {% endtrans %}
-                    </p>
-                </div>
-                <div class="still-have-invites">
-                    {#  Many of these values are set by the initialization code in referral.js  #}
-                    <form id="referral-form">
-                        <input class="input-block-level required" type="email" name="email" />
-                        <label for="email" generated="true" class="text-error"></label>
-                    </form>
-                </div>
-                <div class="invite-count-area">
-                    <span id="invite-hearts"></span>
-                    <small class="pull-right"><span class="invite-count">0 {{ _('invites remaining') }}</span></small>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

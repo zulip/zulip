@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from typing import List, Optional, Set, Text
 
 from zerver.decorator import authenticated_json_post_view
-from zerver.lib.actions import do_invite_users, do_refer_friend, \
+from zerver.lib.actions import do_invite_users, \
     get_default_subs, internal_send_message
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -67,16 +67,3 @@ def get_invitee_emails_set(invitee_emails_raw):
             email = is_email_with_name.group('email')
         invitee_emails.add(email.strip())
     return invitee_emails
-
-@authenticated_json_post_view
-@has_request_variables
-def json_refer_friend(request, user_profile, email=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if not email:
-        return json_error(_("No email address specified"))
-    if user_profile.invites_granted - user_profile.invites_used <= 0:
-        return json_error(_("Insufficient invites"))
-
-    do_refer_friend(user_profile, email)
-
-    return json_success()
