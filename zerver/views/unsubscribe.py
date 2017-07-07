@@ -49,10 +49,10 @@ email_unsubscribers = {
 }
 
 # Login NOT required. These are for one-click unsubscribes.
-def email_unsubscribe(request, type, token):
+def email_unsubscribe(request, email_type, confirmation_key):
     # type: (HttpRequest, str, str) -> HttpResponse
-    if type in email_unsubscribers:
-        display_name, unsubscribe_function = email_unsubscribers[type]
-        return process_unsubscribe(request, token, display_name, unsubscribe_function)
+    if email_type in email_unsubscribers:
+        display_name, unsubscribe_function = email_unsubscribers[email_type]
+        return process_unsubscribe(request, confirmation_key, display_name, unsubscribe_function)
 
     return render(request, 'zerver/unsubscribe_link_error.html')

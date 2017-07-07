@@ -39,14 +39,14 @@ def unsubscribe_token(user_profile):
     # unsubscription tokens.
     return Confirmation.objects.get_link_for_object(user_profile, 'unused').split("/")[-1]
 
-def one_click_unsubscribe_link(user_profile, endpoint):
+def one_click_unsubscribe_link(user_profile, email_type):
     # type: (UserProfile, Text) -> Text
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
     """
     token = unsubscribe_token(user_profile)
-    resource_path = "accounts/unsubscribe/%s/%s" % (endpoint, token)
+    resource_path = "accounts/unsubscribe/%s/%s" % (email_type, token)
     return "%s/%s" % (user_profile.realm.uri.rstrip("/"), resource_path)
 
 def hash_util_encode(string):
