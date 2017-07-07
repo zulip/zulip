@@ -605,6 +605,28 @@ people.add(bob);
     }());
 }());
 
+(function test_abort_xhr() {
+    $("#compose-send-button").attr('disabled', 'disabled');
+    var compose_removedata_checked = false;
+    $('#compose').removeData = function (sel) {
+        assert.equal(sel, 'filedrop_xhr');
+        compose_removedata_checked = true;
+    };
+    var xhr_abort_checked = false;
+    $("#compose").data = function (sel) {
+        assert.equal(sel, 'filedrop_xhr');
+        return {
+            abort: function () {
+                xhr_abort_checked = true;
+            },
+        };
+    };
+    compose.abort_xhr();
+    assert.equal($("#compose-send-button").attr(), undefined);
+    assert(xhr_abort_checked);
+    assert(compose_removedata_checked);
+}());
+
 (function test_initialize() {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
