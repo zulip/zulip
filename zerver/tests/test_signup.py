@@ -1341,6 +1341,18 @@ class UserSignUpTest(ZulipTestCase):
                                                HTTP_HOST=subdomain + ".testserver")
         self.assert_in_success_response(["You're almost there."], result)
 
+    def test_completely_open_domain_form_action(self):
+        # type: () -> None
+        email = "user1@acme.com"
+        realm = get_realm('zulip')
+        realm.restricted_to_domain = False
+        realm.invite_required = False
+        realm.save()
+
+        result = self.client_get('/register/zulip/', {'email': email})
+        key = "action=\"/register/zulip/?email=user1%40acme.com\""
+        self.assert_in_success_response([key], result)
+
     def test_failed_signup_with_realm_str(self):
         # type: () -> None
         """

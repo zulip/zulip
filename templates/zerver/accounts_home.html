@@ -75,7 +75,7 @@ $(function () {
 
                         {% if google_auth_enabled %}
                         <div class="register-google">
-                            <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
+                            <a href="{{ url('zerver.views.auth.start_google_oauth2') }}{{ realm_str_url_suffix }}">
                                 <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
                             </a>
                         </div>
@@ -83,7 +83,7 @@ $(function () {
 
                         {% if github_auth_enabled %}
                         <div class="login-github">
-                            <a href="{{ url('signup-social', args=('github',)) }}"
+                            <a href="{{ url('signup-social', args=('github',)) }}{{ realm_str_url_suffix }}"
                                 class="github-wrapper">
                                 <button class="login-github-button github">
                                     <span>{{ _('Sign up with GitHub') }}</span>

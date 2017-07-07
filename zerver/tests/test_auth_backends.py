@@ -1159,7 +1159,7 @@ class GoogleLoginTest(GoogleOAuthTest):
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more:")
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more::")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')
