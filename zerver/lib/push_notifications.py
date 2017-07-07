@@ -393,7 +393,7 @@ def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
     send_json_to_push_bouncer('POST', 'notify', post_data)
 
 def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
-    # type: (UserProfile, str, int, Optional[str]) -> None
+    # type: (UserProfile, bytes, int, Optional[str]) -> None
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
@@ -426,7 +426,7 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
         token.save(update_fields=['last_updated'])
 
 def remove_push_device_token(user_profile, token_str, kind):
-    # type: (UserProfile, str, int) -> None
+    # type: (UserProfile, bytes, int) -> None
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
