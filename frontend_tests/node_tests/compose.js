@@ -2,9 +2,10 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 set_global('page_params', {
-    use_websockets: false,
+    use_websockets: true,
 });
 
+set_global('navigator', {});
 set_global('document', {
     location: {
     },
@@ -25,6 +26,10 @@ set_global('feature_flags', {
     resize_bottom_whitespace: noop,
 });
 set_global('echo', {});
+set_global('socket', {});
+set_global('Socket', function () {
+    return global.socket;
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -42,6 +47,7 @@ add_dependencies({
 });
 
 var compose = require('js/compose.js');
+page_params.use_websockets = false;
 
 var me = {
     email: 'me@example.com',
@@ -596,6 +602,74 @@ people.add(bob);
         assert(send_message_called);
         assert(compose_finished_event_checked);
     }());
+}());
+
+function test_with_mock_socket(test_params) {
+    var socket_send_called;
+    var send_args = {};
+
+    global.socket.send = function (request, success, error) {
+        global.socket.send = undefined;
+        socket_send_called = true;
+
+        // Save off args for check_send_args callback.
+        send_args.request = request;
+        send_args.success = success;
+        send_args.error = error;
+    };
+
+    // Run the actual code here.
+    test_params.run_code();
+
+    assert(socket_send_called);
+    test_params.check_send_args(send_args);
+}
+
+(function test_transmit_message() {
+    page_params.use_websockets = true;
+    global.navigator.userAgent = 'unittest_transmit_message';
+
+    // Our request is mostly unimportant, except that the
+    // socket_user_agent field will be added.
+    var request = {foo: 'bar'};
+
+    // Our success function gets passed all the way through to
+    // socket.send, so we can just use a stub to test that.
+    var success = 'success-function-stub';
+
+    // Our error function gets wrapped, so we set up a real
+    // function to test the wrapping mechanism.
+    var error_func_checked = false;
+    var error = function (error_msg) {
+        assert.equal(error_msg, 'Error sending message: simulated_error');
+        error_func_checked = true;
+    };
+
+    test_with_mock_socket({
+        run_code: function () {
+            compose.transmit_message(request, success, error);
+        },
+        check_send_args: function (send_args) {
+            // The real code patches new data on the request, rather
+            // than making a copy, so we test both that it didn't
+            // clone the object and that it did add a field.
+            assert.equal(send_args.request, request);
+            assert.deepEqual(send_args.request, {
+                foo: 'bar',
+                socket_user_agent: 'unittest_transmit_message',
+            });
+
+            // Our success function never gets wrapped.
+            assert.equal(send_args.success, success);
+
+            // Our error function does get wrapped, so we test by
+            // using socket.send's error callback, which should
+            // invoke our test error function via a wrapper
+            // function in the real code.
+            send_args.error('response', {msg: 'simulated_error'});
+            assert(error_func_checked);
+        },
+    });
 }());
 
 (function test_set_focused_recipient() {
