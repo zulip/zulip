@@ -1110,6 +1110,25 @@ function test_with_mock_socket(test_params) {
         assert(all_invite_children_called);
         assert(!$("#compose_invite_users").visible());
     }());
+
+    var event = {
+        preventDefault: noop,
+    };
+
+    (function test_attach_files_compose_clicked() {
+        var handler = $("#compose")
+                        .get_on_handler("click", "#attach_files");
+        $('#file_input').clone = function (param) {
+            assert(param);
+        };
+        var compose_file_input_clicked = false;
+        $('#compose #file_input').trigger = function (ev_name) {
+            assert.equal(ev_name, 'click');
+            compose_file_input_clicked = true;
+        };
+        handler(event);
+        assert(compose_file_input_clicked);
+    }());
 }());
 
 (function test_set_focused_recipient() {
