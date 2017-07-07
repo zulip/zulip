@@ -8,38 +8,21 @@
         <!-- NB: Relies on the fact that PipelineCachedStorage also includes
         a copy of the file with no hash in the name.
         This file will not load in dev unless you set DEBUG = False. -->
-        <link href="/static/min/portico.css" rel="stylesheet">
+        <link href="/static/styles/portico.css" rel="stylesheet">
     </head>
 
-    <body>
-
+    <body id="error_page">
         <div class="container">
-
-            <div class="navbar">
-                <ul class="nav pull-right">
-                    <li><a href="/accounts/login/?next=/">Log in</a></li>
-                </ul>
-            </div>
             <div class="row-fluid">
-                <div class="span2"></div>
-                <div class="span10">
-                    <div class="title">
-                        <a class="title" href="/">Zulip</a>
-                        <span class="for_you"> got a bit lost there.</span>
+                <img src="../images/400art.svg" alt=""/>
+                <div class="errorbox">
+                    <div class="errorcontent">
+                        <h1 class="lead">404 Page Not Found</h1>
+                        <p>The page might be temporarily unavailable, or maybe it has been permanently removed (sorry!).</p>
+                        <p>We know this is stressful, but we still love you.</p>
                     </div>
-
-                    <br/>
-                    <p class="lead">404: Page not found.</p>
-                    <br/>
-
-                    <p>We know this is stressful, but we still love you.</p>
-
-                    <!-- TODO: Make nginx 5xx error page customizable -->
-                    <!-- This is tricky because it's not served by Django, -->
-                    <!-- so we can't use variables -->
                 </div>
             </div>
-
         </div>
 
     </body>
