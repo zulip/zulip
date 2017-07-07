@@ -380,7 +380,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         if response_data['result'] == 'error':
             check_and_send_restart_signal()
 
-        result = {'response': ujson.loads(resp_content), 'req_id': event['req_id'],
+        result = {'response': response_data, 'req_id': event['req_id'],
                   'server_meta': server_meta}
 
         redis_key = req_redis_key(event['req_id'])
