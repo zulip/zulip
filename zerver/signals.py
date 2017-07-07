@@ -44,6 +44,8 @@ def get_device_os(user_agent):
         return "Linux"
     elif "android" in user_agent:
         return "Android"
+    elif "ios" in user_agent:
+        return "iOS"
     elif "like mac os x" in user_agent:
         return "iOS"
     else:

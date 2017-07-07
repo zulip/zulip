@@ -88,7 +88,8 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                 'AppleWebKit/602.3.12 (KHTML, like Gecko) ' +
                 'Version/10.0.2 Safari/602.3.12', 'Safari', 'MacOS'),
             ('ZulipAndroid/1.0', 'Zulip', 'Android'),
-            ('ZulipMobile/1.0', 'Zulip', None),
+            ('ZulipMobile/1.0.12 (Android 7.1.1)', 'Zulip', 'Android'),
+            ('ZulipMobile/0.7.1.1 (iOS 10.3.1)', 'Zulip', 'iOS'),
             ('ZulipElectron/1.1.0-beta Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
              'AppleWebKit/537.36 (KHTML, like Gecko) Zulip/1.1.0-beta ' +
              'Chrome/56.0.2924.87 Electron/1.6.8 Safari/537.36', 'Zulip', 'Windows'),
