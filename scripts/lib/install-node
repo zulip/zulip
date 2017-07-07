@@ -2,7 +2,6 @@
 set -e
 
 ZULIP_PATH=$(dirname "$0")
-ZULIP_ROOT=$(realpath "$ZULIP_PATH/../..")
 node_version=6.6.0
 npm_version=3.10.3
 
