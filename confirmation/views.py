@@ -14,6 +14,8 @@ from confirmation.models import Confirmation
 from zerver.models import PreregistrationUser
 
 
+# This is currently only used for confirming PreregistrationUser.
+# Do not add other confirmation paths here.
 def confirm(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     confirmation_key = confirmation_key.lower()
@@ -35,7 +37,6 @@ def confirm(request, confirmation_key):
     templates = [
         'confirmation/confirm.html',
     ]
-    if obj and isinstance(obj, (PreregistrationUser, Confirmation)):
-        # if we have an object, we can use specific template
-        templates.insert(0, 'confirmation/confirm_%s.html' % (obj._meta.model_name,))
+    if obj:
+        templates = ['confirmation/confirm_preregistrationuser.html']
     return render(request, templates, context=ctx)
