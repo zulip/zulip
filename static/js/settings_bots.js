@@ -163,6 +163,8 @@ exports.set_up = function () {
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
                     $('#create_bot_button').show();
                     create_avatar_widget.clear();
+                    $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
+                    $("#bots_lists_navbar .active-bots-tab").addClass("active");
                 },
                 error: function (xhr) {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
