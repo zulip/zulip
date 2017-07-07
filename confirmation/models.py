@@ -27,6 +27,8 @@ def generate_key():
     return generate_random_token(40)
 
 class ConfirmationManager(models.Manager):
+    url_pattern_name = 'confirmation.views.confirm'
+
     def confirm(self, confirmation_key):
         # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
         if B16_RE.search(confirmation_key):
@@ -56,16 +58,11 @@ class ConfirmationManager(models.Manager):
         # type: (Text, str) -> Text
         return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
                             host,
-                            reverse('confirmation.views.confirm',
+                            reverse(self.url_pattern_name,
                                     kwargs={'confirmation_key': confirmation_key}))
 
 class EmailChangeConfirmationManager(ConfirmationManager):
-    def get_activation_url(self, key, host):
-        # type: (Text, str) -> Text
-        return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                            host,
-                            reverse('zerver.views.user_settings.confirm_email_change',
-                                    kwargs={'confirmation_key': key}))
+    url_pattern_name = 'zerver.views.user_settings.confirm_email_change'
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
