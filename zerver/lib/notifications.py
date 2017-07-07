@@ -37,7 +37,7 @@ def unsubscribe_token(user_profile):
     # type: (UserProfile) -> Text
     # Leverage the Django confirmations framework to generate and track unique
     # unsubscription tokens.
-    return Confirmation.objects.get_link_for_object(user_profile).split("/")[-1]
+    return Confirmation.objects.get_link_for_object(user_profile, host='unused').split("/")[-1]
 
 def one_click_unsubscribe_link(user_profile, endpoint):
     # type: (UserProfile, Text) -> Text
