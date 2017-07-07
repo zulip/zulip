@@ -13,6 +13,7 @@ from django.http import HttpRequest, HttpResponse
 from confirmation.models import Confirmation
 from zerver.models import PreregistrationUser
 
+from typing import Any
 
 # This is currently only used for confirming PreregistrationUser.
 # Do not add other confirmation paths here.
@@ -29,14 +30,14 @@ def confirm(request, confirmation_key):
             obj = Confirmation.objects.get(confirmation_key=confirmation_key)
         except Confirmation.DoesNotExist:
             pass
-    ctx = {
-        'confirmed': confirmed,
-        'key': confirmation_key,
-        'full_name': request.GET.get("full_name", None),
-    }
+    ctx = {'confirmed': confirmed}  # type: Dict[str, Any]
     templates = [
         'confirmation/confirm.html',
     ]
     if obj:
+        ctx = {
+            'key': confirmation_key,
+            'full_name': request.GET.get("full_name", None),
+        }
         templates = ['confirmation/confirm_preregistrationuser.html']
     return render(request, templates, context=ctx)
