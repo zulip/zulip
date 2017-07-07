@@ -21,20 +21,20 @@
 
         <div class="padded-content">
             <ul class="sidebar">
-                <li data-name="android">Android</li>
-                <li data-name="ios">iOS</li>
-                <li data-name="mac">MacOS</li>
-                <li data-name="windows">Windows</li>
-                <li data-name="linux">Linux desktop</li>
-                <li data-name="snipe">Terminal client</li>
-                <li data-name="plan9">Plan 9</li>
+                <li data-name="android">{{ _('Android') }}</li>
+                <li data-name="ios">{{ _('iOS') }}</li>
+                <li data-name="mac">{{ _('MacOS') }}</li>
+                <li data-name="windows">{{ _('Windows') }}</li>
+                <li data-name="linux">{{ _('Linux desktop') }}</li>
+                <li data-name="snipe">{{ _('Terminal client') }}</li>
+                <li data-name="plan9">{{ _('Plan 9') }}</li>
             </ul>
             <div class="details-container">
                 <div class="details-box" data-name="ios">
                     <div class="image">
                         <div class="platform description">
                             <div class="wrapper">
-                                <h2>iOS</h2>
+                                <h2>{{ _('iOS') }}</h2>
                                 <div class="instructions">
                                     <p class="center">
                                         {% trans %}Zulip's brand-new
@@ -45,7 +45,7 @@
                                     </p>
                                 </div>
                                 <a href="https://itunes.apple.com/us/app/zulip/id1203036395" target="_blank">
-                                    <button class="button grey-transparent" type="button" name="button">Get from App Store</button>
+                                    <button class="button grey-transparent" type="button" name="button">{{ _('Get from App Store') }}</button>
                                 </a>
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                     <div class="image">
                         <div class="platform description">
                             <div class="wrapper">
-                                <h2>Android</h2>
+                                <h2>{{ _('Android') }}</h2>
                                 <div class="instructions">
                                     <p class="center">
                                       {% trans %}Read and reply to
@@ -70,7 +70,7 @@
                                     </p>
                                 </div>
                                 <a href="https://play.google.com/store/apps/details?id=com.zulip.android" target="_blank">
-                                    <button class="button grey-transparent" type="button" name="button">Get from Play Store</button>
+                                    <button class="button grey-transparent" type="button" name="button">{{ _('Get from Play Store') }}</button>
                                 </a>
                             </div>
                         </div>
@@ -84,12 +84,14 @@
                     <div class="image">
                         <div class="platform description">
                             <div class="wrapper">
-                                <h2>MacOS</h2>
+                                <h2>{{ _('MacOS') }}</h2>
                                 <div class="instructions">
-                                    <p class="center">You love your Mac. And you love Zulip. So what could be better than a Zulip app for Mac? Enjoy notifications for messages and PMs in your dock whether you're in Sublime, emacs, or Photoshop.</p>
+                                    <p class="center">
+                                        {% trans %}You love your Mac. And you love Zulip. So what could be better than a Zulip app for Mac? Enjoy notifications for messages and PMs in your dock whether you're in Sublime, emacs, or Photoshop.{% endtrans %}
+                                    </p>
                                 </div>
                                 <a href="https://zulip.org/dist/apps/mac/Zulip-latest.dmg" download>
-                                    <button class="button grey-transparent" type="button" name="button">Download Now</button>
+                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download now') }}</button>
                                 </a>
                             </div>
                         </div>
@@ -103,14 +105,14 @@
                     <div class="image">
                         <div class="platform description">
                             <div class="wrapper">
-                                <h2>Windows 7+</h2>
+                                <h2>{{ _('Windows 7+') }}</h2>
                                 <div class="instructions">
                                     <p class="center">
-                                        We proudly present Zulip for Windows: the second-best app for Windows on the market today (after Solitaire, obviously).
+                                        {% trans %}We proudly present Zulip for Windows: the second-best app for Windows on the market today (after Solitaire, obviously).{% endtrans %}
                                     </p>
                                 </div>
                                 <a href="https://github.com/zulip/zulip-electron/releases/download/v1.0.0-beta/Zulip-Web-Setup-1.0.0-beta.exe" download>
-                                    <button class="button grey-transparent" type="button" name="button">Download Now</button>
+                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download now') }}</button>
                                 </a>
                             </div>
                         </div>
@@ -123,9 +125,11 @@
                 <div class="details-box" data-name="linux">
                     <div class="image">
                         <div class="platform">
-                            <h2>Ubuntu &amp; Debian</h2>
+                            <h2>{{ _('Ubuntu &amp; Debian') }}</h2>
                             <div class="instructions">
-                                <p>We have an APT repository for Zulip, so adding and installing the app is easy.</p>
+                                <p>
+                                    {% trans %}We have an APT repository for Zulip, so adding and installing the app is easy.{% endtrans %}
+                                </p>
                             </div>
 <pre>
 wget https://zulip.org/dist/keys/user-apt.asc
@@ -137,9 +141,13 @@ sudo apt-get install zulip-desktop
 </pre>
                         </div>
                         <div class="platform">
-                            <h2>Other Platforms</h2>
+                            <h2>{{ _('Other platforms') }}</h2>
                             <div class="instructions">
-                                <p>{% trans %}We provide a <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
+                                <p>
+                                    {% trans %}We provide a
+                                    <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>binary tarball</a>
+                                    of the Zulip application, built for 64-bit
+                                    systems.{% endtrans %}
                                 </p>
                                 <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>
                                     <img src="/static/images/landing-page/tar.gz.svg" alt="{{ _('Download') }}" />
@@ -153,7 +161,7 @@ sudo apt-get install zulip-desktop
                     <div class="image">
                         <div class="platform description">
                             <div class="wrapper">
-                                <h2>Plan 9</h2>
+                                <h2>{{ _('Plan 9') }}</h2>
                                 <div class="instructions">
                                     <p class="center">
                                       {% trans %}First, connect to our
@@ -173,7 +181,7 @@ sudo apt-get install zulip-desktop
                     <div class="image">
                         <div class="platform description">
                             <div class="wrapper">
-                                <h2>Snipe</h2>
+                                <h2>{{ _('Snipe') }}</h2>
                                 <div class="instructions">
                                     <p class="center">
                                       {% trans %}Snipe, a modern
@@ -185,7 +193,9 @@ sudo apt-get install zulip-desktop
                                     <a href="https://github.com/kcr/snipe">
                                         <button class="button
                                         grey-transparent" type="button"
-                                        name="button">Download from GitHub</button>
+                                        name="button">
+                                            {{ _('Download from GitHub') }}
+                                        </button>
                                     </a>
                                 </div>
                             </div>
