@@ -182,7 +182,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         do_send_confirmation_email(invitee, referrer, body)
 
         # queue invitation reminder for two days from now.
-        link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
+        link = Confirmation.objects.get_link_for_object(invitee, referrer.realm.host)
         context = common_context(referrer)
         context.update({
             'activate_url': link,

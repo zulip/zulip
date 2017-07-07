@@ -46,27 +46,22 @@ class ConfirmationManager(models.Manager):
             return obj
         return False
 
-    def get_link_for_object(self, obj, host=None):
-        # type: (Union[ContentType, int], Optional[str]) -> Text
+    def get_link_for_object(self, obj, host):
+        # type: (Union[ContentType, int], str) -> Text
         key = generate_key()
         self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
-        return self.get_activation_url(key, host=host)
+        return self.get_activation_url(key, host)
 
-    def get_activation_url(self, confirmation_key, host=None):
-        # type: (Text, Optional[str]) -> Text
-        if host is None:
-            host = settings.EXTERNAL_HOST
+    def get_activation_url(self, confirmation_key, host):
+        # type: (Text, str) -> Text
         return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
                             host,
                             reverse('confirmation.views.confirm',
                                     kwargs={'confirmation_key': confirmation_key}))
 
 class EmailChangeConfirmationManager(ConfirmationManager):
-    def get_activation_url(self, key, host=None):
-        # type: (Text, Optional[str]) -> Text
-        if host is None:
-            # This will raise exception if the key doesn't exist.
-            host = self.get(confirmation_key=key).content_object.realm.host
+    def get_activation_url(self, key, host):
+        # type: (Text, str) -> Text
         return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
                             host,
                             reverse('zerver.views.user_settings.confirm_email_change',

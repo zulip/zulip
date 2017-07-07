@@ -26,9 +26,6 @@ class EmailChangeTestCase(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         key = generate_key()
-        with self.assertRaises(EmailChangeConfirmation.DoesNotExist):
-            url = EmailChangeConfirmation.objects.get_activation_url(key)
-
         url = EmailChangeConfirmation.objects.get_activation_url(
             key, 'testserver')
         response = self.client_get(url)
@@ -38,9 +35,6 @@ class EmailChangeTestCase(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         key = 'invalid key'
-        with self.assertRaises(EmailChangeConfirmation.DoesNotExist):
-            url = EmailChangeConfirmation.objects.get_activation_url(key)
-
         url = EmailChangeConfirmation.objects.get_activation_url(
             key, 'testserver')
         response = self.client_get(url)
@@ -49,9 +43,6 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_email_change_when_not_logging_in(self):
         # type: () -> None
         key = generate_key()
-        with self.assertRaises(EmailChangeConfirmation.DoesNotExist):
-            url = EmailChangeConfirmation.objects.get_activation_url(key)
-
         url = EmailChangeConfirmation.objects.get_activation_url(
             key, 'testserver')
         response = self.client_get(url)
@@ -72,7 +63,7 @@ class EmailChangeTestCase(ZulipTestCase):
         EmailChangeConfirmation.objects.create(content_object=obj,
                                                date_sent=date_sent,
                                                confirmation_key=key)
-        url = EmailChangeConfirmation.objects.get_activation_url(key)
+        url = EmailChangeConfirmation.objects.get_activation_url(key, user_profile.realm.host)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops"], response)
 
@@ -91,7 +82,7 @@ class EmailChangeTestCase(ZulipTestCase):
         EmailChangeConfirmation.objects.create(content_object=obj,
                                                date_sent=now(),
                                                confirmation_key=key)
-        url = EmailChangeConfirmation.objects.get_activation_url(key)
+        url = EmailChangeConfirmation.objects.get_activation_url(key, user_profile.realm.host)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)

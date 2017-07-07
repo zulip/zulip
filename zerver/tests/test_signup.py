@@ -691,7 +691,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         data = {"email": invitee, "referrer_email": current_user_email}
         invitee = get_prereg_user_by_email(data["email"])
         referrer = self.example_user(referrer_user)
-        link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
+        link = Confirmation.objects.get_link_for_object(invitee, referrer.realm.host)
         context = common_context(referrer)
         context.update({
             'activate_url': link,

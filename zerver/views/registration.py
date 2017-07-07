@@ -312,7 +312,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
     can complete their registration.
     """
     prereg_user = create_preregistration_user(email, request, realm_creation)
-    activation_url = Confirmation.objects.get_link_for_object(prereg_user, host=request.get_host())
+    activation_url = Confirmation.objects.get_link_for_object(prereg_user, request.get_host())
     send_email('zerver/emails/confirm_registration', email, from_address=FromAddress.NOREPLY,
                context={'activate_url': activation_url})
     if settings.DEVELOPMENT and realm_creation:

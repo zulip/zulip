@@ -995,7 +995,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.client_get(result.url)
             assert Confirmation.objects.all().count() == 1
             confirmation = Confirmation.objects.all().first()
-            url = Confirmation.objects.get_activation_url(confirmation.confirmation_key)
+            url = Confirmation.objects.get_activation_url(confirmation.confirmation_key, realm.host)
             result = self.client_get(url)
             key_match = re.search('value="(?P<key>[0-9a-f]+)" name="key"', result.content.decode("utf-8"))
             result = self.client_post('/accounts/register/',
@@ -1042,7 +1042,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         self.client_get(result.url)
         assert Confirmation.objects.all().count() == 1
         confirmation = Confirmation.objects.all().first()
-        url = Confirmation.objects.get_activation_url(confirmation.confirmation_key)
+        url = Confirmation.objects.get_activation_url(confirmation.confirmation_key, settings.EXTERNAL_HOST)
         result = self.client_get(url)
         key_match = re.search('value="(?P<key>[0-9a-f]+)" name="key"', result.content.decode("utf-8"))
         result = self.client_post('/accounts/register/',
