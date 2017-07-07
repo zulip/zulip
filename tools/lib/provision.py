@@ -19,6 +19,7 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules, NPM_CACHE_PATH
+from zerver.lib.queue import SimpleQueueClient
 
 from version import PROVISION_VERSION
 if False:
@@ -172,6 +173,14 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
+def is_rabbitmq_configured():
+    # type: () -> bool
+    try:
+        SimpleQueueClient()
+        return True
+    except Exception:
+        return False
+
 def install_apt_deps():
     # type: () -> None
     # setup-apt-repo does an `apt-get update`
@@ -272,12 +281,17 @@ def main(options):
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
     if not options.is_production_travis:
-        # These won't be used anyway
-        run(["scripts/setup/configure-rabbitmq"])
-        # Need to set up Django before using is_template_database_current.
+
+        # Need to set up Django before using is_template_database_current
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
-        django.setup()
+        django.setup()        
+
+        if options.is_force or not is_rabbitmq_configured():
+            run(["scripts/setup/configure-rabbitmq"])
+        else:
+            print("RabbitMQ is already configured.")
+
         from zerver.lib.str_utils import force_bytes
         from zerver.lib.test_fixtures import is_template_database_current
 
