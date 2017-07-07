@@ -604,6 +604,128 @@ people.add(bob);
     }());
 }());
 
+function verify_filedrop_payload(payload) {
+    assert.equal(payload.url, '/json/upload_file');
+    assert.equal(payload.fallback_id, 'file_input');
+    assert.equal(payload.paramname, 'file');
+    assert.equal(payload.maxfilesize, 512);
+    assert.equal(payload.data.csrfmiddlewaretoken, 'fake-csrf-token');
+    assert.deepEqual(payload.raw_droppable, ['text/uri-list', 'text/plain']);
+    assert.equal(typeof(payload.drop), 'function');
+    assert.equal(typeof(payload.progressUpdated), 'function');
+    assert.equal(typeof(payload.error), 'function');
+    assert.equal(typeof(payload.uploadFinished), 'function');
+    assert.equal(typeof(payload.rawDrop), 'function');
+}
+
+function test_raw_file_drop(raw_drop_func) {
+    compose_state.set_message_type(false);
+    var compose_actions_start_checked = false;
+    global.compose_actions = {
+        start: function (msg_type) {
+            assert.equal(msg_type, 'stream');
+            compose_actions_start_checked = true;
+        },
+    };
+    $("#new_message_content").val('Old content ');
+    var compose_ui_autosize_textarea_checked = false;
+    compose_ui.autosize_textarea = function () {
+        compose_ui_autosize_textarea_checked = true;
+    };
+
+    // Call the method here!
+    raw_drop_func('new contents');
+
+    assert(compose_actions_start_checked);
+    assert.equal($("#new_message_content").val(), 'Old content new contents');
+    assert(compose_ui_autosize_textarea_checked);
+}
+
+(function test_initialize() {
+    // In this test we mostly do the setup stuff in addition to testing the
+    // normal workflow of the function. All the tests for the on functions are
+    // done in subsequent tests directly below this test.
+
+    var resize_watch_manual_resize_checked = false;
+    resize.watch_manual_resize = function (elem) {
+        assert.equal('#new_message_content', elem);
+        resize_watch_manual_resize_checked = true;
+    };
+    global.window = {
+        XMLHttpRequest: true,
+        bridge: true,
+    };
+    var xmlhttprequest_checked = false;
+    set_global('XMLHttpRequest', function () {
+        this.upload = true;
+        xmlhttprequest_checked = true;
+    });
+    $("#compose #attach_files").addClass("notdisplayed");
+
+    global.document = 'fake-document-object';
+    global.csrf_token = 'fake-csrf-token';
+
+    var filedrop_in_compose_checked = false;
+    page_params.maxfilesize = 512;
+    $("#compose").filedrop = function (payload) {
+        verify_filedrop_payload(payload);
+        test_raw_file_drop(payload.rawDrop);
+
+        filedrop_in_compose_checked = true;
+    };
+
+    compose.initialize();
+
+    assert(resize_watch_manual_resize_checked);
+    assert(xmlhttprequest_checked);
+    assert(!$("#compose #attach_files").hasClass("notdisplayed"));
+    assert(filedrop_in_compose_checked);
+
+    function reset_jquery() {
+        // Avoid leaks.
+        set_global('$', global.make_zjquery());
+
+        // Bypass filedrop (we already tested it above).
+        $("#compose").filedrop = noop;
+    }
+
+    var compose_actions_start_checked;
+
+    function set_up_compose_start_mock(expected_opts) {
+        compose_actions_start_checked = false;
+
+        global.compose_actions = {
+            start: function (msg_type, opts) {
+                assert.equal(msg_type, 'stream');
+                assert.deepEqual(opts, expected_opts);
+                compose_actions_start_checked = true;
+            },
+        };
+    }
+
+    (function test_page_params_narrow_path() {
+        page_params.narrow = true;
+
+        reset_jquery();
+        set_up_compose_start_mock({});
+
+        compose.initialize();
+
+        assert(compose_actions_start_checked);
+    }());
+
+    (function test_page_params_narrow_topic() {
+        page_params.narrow_topic = 'testing';
+
+        reset_jquery();
+        set_up_compose_start_mock({subject: 'testing'});
+
+        compose.initialize();
+
+        assert(compose_actions_start_checked);
+    }());
+}());
+
 function test_with_mock_socket(test_params) {
     var socket_send_called;
     var send_args = {};
