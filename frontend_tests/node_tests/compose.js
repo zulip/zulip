@@ -864,6 +864,51 @@ function test_with_mock_socket(test_params) {
     assert(compose_finish_checked);
 }());
 
+(function test_on_events() {
+    (function test_usermention_completed_zulip_triggered() {
+        var handler = $(document).get_on_handler('usermention_completed.zulip');
+
+        var data = {
+            mentioned: {
+              email: 'foo@bar.com',
+            },
+        };
+
+        function setup(msg_type, is_zephyr_mirror, mentioned_full_name) {
+            compose_fade.would_receive_message = function (email) {
+                assert.equal(email, 'foo@bar.com');
+                return false;
+            };
+            templates.render = function (template_name, context) {
+                assert.equal(template_name, 'compose-invite-users');
+                assert.equal(context.email, 'foo@bar.com');
+                assert.equal(context.name, 'foobar');
+                return 'fake-compose-invite-user-template';
+            };
+            $("#compose_invite_users").append = function (html) {
+                assert.equal(html, 'fake-compose-invite-user-template');
+            };
+            $("#compose_invite_users").hide();
+            compose_state.set_message_type(msg_type);
+            page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
+            data.mentioned.full_name = mentioned_full_name;
+        }
+
+        function test(msg_type, is_zephyr_mirror, mentioned_full_name,
+                      compose_invite_users_visible) {
+            setup(msg_type, is_zephyr_mirror, mentioned_full_name);
+            handler({}, data);
+            assert.equal($('#compose_invite_users').visible(),
+                         compose_invite_users_visible);
+        }
+
+        test('private', true, 'everyone', false);
+        test('stream', true, 'everyone', false);
+        test('stream', false, 'everyone', false);
+        test('stream', false, 'foobar', true);
+    }());
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
