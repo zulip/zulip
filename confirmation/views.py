@@ -19,7 +19,6 @@ from typing import Any, Dict
 # Do not add other confirmation paths here.
 def confirm(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
-    confirmation_key = confirmation_key.lower()
     obj = Confirmation.objects.confirm(confirmation_key)
     ctx = {'confirmed': False}  # type: Dict[str, Any]
     templates = [
