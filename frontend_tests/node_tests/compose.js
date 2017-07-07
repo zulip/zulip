@@ -1285,6 +1285,16 @@ function test_with_mock_socket(test_params) {
     assert.equal($("#error-msg").html(), 'fake-html');
 }());
 
+(function test_progress_updated() {
+    var width_update_checked = false;
+    $("#upload-bar").width = function (width_percent) {
+        assert.equal(width_percent, '39%');
+        width_update_checked = true;
+    };
+    compose.progressUpdated(1, '', 39);
+    assert(width_update_checked);
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
