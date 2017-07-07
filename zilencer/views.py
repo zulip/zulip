@@ -12,7 +12,7 @@ from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_dict
+from zerver.lib.validator import check_dict, check_int
 from zerver.models import UserProfile, PushDeviceToken, Realm
 from zerver.views.push_notifications import validate_token
 
@@ -25,6 +25,8 @@ def validate_entity(entity):
 
 def validate_bouncer_token_request(entity, token, kind):
     # type: (Union[UserProfile, RemoteZulipServer], str, int) -> None
+    if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
+        raise JsonableError(_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
 
@@ -35,7 +37,7 @@ def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dic
 
 @has_request_variables
 def remote_server_register_push(request, entity, user_id=REQ(),
-                                token=REQ(), token_kind=REQ(), ios_app_id=None):
+                                token=REQ(), token_kind=REQ(validator=check_int), ios_app_id=None):
     # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], int, str, int, Optional[Text]) -> HttpResponse
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
@@ -60,7 +62,7 @@ def remote_server_register_push(request, entity, user_id=REQ(),
 
 @has_request_variables
 def remote_server_unregister_push(request, entity, token=REQ(),
-                                  token_kind=REQ(), ios_app_id=None):
+                                  token_kind=REQ(validator=check_int), ios_app_id=None):
     # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], str, int, Optional[Text]) -> HttpResponse
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)

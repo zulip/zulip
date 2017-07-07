@@ -141,6 +141,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                              'token': token},
                                   **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
+        result = self.client_post(endpoint, {'user_id': user_id, 'token': token,
+                                             'token_kind': 17},
+                                  **self.get_auth())
+        self.assert_json_error(result, "Invalid token type")
 
     def test_remote_push_user_endpoints(self):
         # type: () -> None
@@ -196,26 +200,29 @@ class PushBouncerNotificationTest(BouncerTestCase):
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
         endpoints = [
-            ('/json/users/me/apns_device_token', 'apple-tokenaz'),
-            ('/json/users/me/android_gcm_reg_id', 'android-token'),
+            ('/json/users/me/apns_device_token', 'apple-tokenaz', RemotePushDeviceToken.APNS),
+            ('/json/users/me/android_gcm_reg_id', 'android-token', RemotePushDeviceToken.GCM),
         ]
 
         # Test error handling
-        for endpoint, _ in endpoints:
+        for endpoint, _, kind in endpoints:
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
-            result = self.client_post(endpoint, {'token': broken_token})
+            result = self.client_post(endpoint, {'token': broken_token,
+                                                 'token_kind': kind})
             self.assert_json_error(result, 'Empty or invalid length token')
 
-            result = self.client_delete(endpoint, {'token': broken_token})
+            result = self.client_delete(endpoint, {'token': broken_token,
+                                                   'token_kind': kind})
             self.assert_json_error(result, 'Empty or invalid length token')
 
             # Try to remove a non-existent token...
-            result = self.client_delete(endpoint, {'token': 'abcd1234'})
+            result = self.client_delete(endpoint, {'token': 'abcd1234',
+                                                   'token_kind': kind})
             self.assert_json_error(result, 'Token does not exist')
 
         # Add tokens
-        for endpoint, token in endpoints:
+        for endpoint, token, kind in endpoints:
             # Test that we can push twice
             result = self.client_post(endpoint, {'token': token})
             self.assert_json_success(result)
@@ -234,8 +241,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assertEqual(len(tokens), 2)
 
         # Remove tokens
-        for endpoint, token in endpoints:
-            result = self.client_delete(endpoint, {'token': token})
+        for endpoint, token, kind in endpoints:
+            result = self.client_delete(endpoint, {'token': token,
+                                                   'token_kind': kind})
             self.assert_json_success(result)
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
