@@ -1241,6 +1241,23 @@ function test_with_mock_socket(test_params) {
         assert.equal($("#preview_content").html(),
                       'Server: foobarfoobar');
     }());
+
+    (function test_undo_markdown_preview_clicked() {
+        var handler = $("#compose")
+                        .get_on_handler("click", "#undo_markdown_preview");
+
+        $("#new_message_content").hide();
+        $("#undo_markdown_preview").show();
+        $("#preview_message_area").show();
+        $("#markdown_preview").hide();
+
+        handler(event);
+
+        assert($("#new_message_content").visible());
+        assert(!$("#undo_markdown_preview").visible());
+        assert(!$("#preview_message_area").visible());
+        assert($("#markdown_preview").visible());
+    }());
 }());
 
 (function test_set_focused_recipient() {
