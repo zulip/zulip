@@ -31,7 +31,7 @@ class Command(BaseCommand):
       metadata needed to restore them even in the ab
 
     Things that are not exported:
-    * Confirmation, MitUser, and PreregistrationUser (transient tables)
+    * Confirmation and PreregistrationUser (transient tables)
     * Sessions (everyone will need to login again post-export)
     * Users' passwords and API keys (users will need to use SSO or reset password)
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
