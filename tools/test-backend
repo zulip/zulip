@@ -226,6 +226,9 @@ if __name__ == "__main__":
         failed_tests = get_failed_tests()
         if failed_tests:
             args = failed_tests
+    if len(args) > 0:
+        # If we passed a specific set of tests, run in serial mode.
+        options.processes = 1
 
     # to transform forward slashes '/' present in the argument into dots '.'
     for suite in args:
