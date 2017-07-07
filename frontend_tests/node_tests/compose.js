@@ -907,6 +907,42 @@ function test_with_mock_socket(test_params) {
         test('stream', false, 'everyone', false);
         test('stream', false, 'foobar', true);
     }());
+
+    (function test_compose_all_everyone_confirm_clicked() {
+        var handler = $("#compose-all-everyone")
+                      .get_on_handler('click', '.compose-all-everyone-confirm');
+
+        var container = $.create('fake compose-all-everyone');
+        var container_removed = false;
+
+        container.remove = function () {
+            container_removed = true;
+        };
+
+        var target = $.create('fake click target (compose-all-everyone)');
+
+        target.set_parents_result('.compose-all-everyone', container);
+
+        $("#compose-all-everyone").show();
+        $("#send-status").show();
+
+        var compose_finish_checked = false;
+        compose.finish = function () {
+            compose_finish_checked = true;
+        };
+
+        var event = {
+            preventDefault: noop,
+            target: target,
+        };
+
+        handler(event);
+
+        assert(container_removed);
+        assert(compose_finish_checked);
+        assert(!$("#compose-all-everyone").visible());
+        assert(!$("#send-status").visible());
+    }());
 }());
 
 (function test_set_focused_recipient() {
