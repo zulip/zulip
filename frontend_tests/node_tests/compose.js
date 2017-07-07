@@ -1260,6 +1260,31 @@ function test_with_mock_socket(test_params) {
     }());
 }());
 
+(function test_upload_started() {
+    $("#compose-send-button").removeAttr('disabled');
+    $("#send-status").removeClass("alert-info").hide();
+    $(".send-status-close").one = function (ev_name, handler) {
+        assert.equal(ev_name, 'click');
+        assert(handler);
+    };
+    $("#error-msg").html('');
+    var test_html = '<div class="progress progress-striped active">' +
+                    '<div class="bar" id="upload-bar" style="width: 00%;">' +
+                    '</div></div>';
+    $("<p>").after = function (html) {
+        assert.equal(html, test_html);
+        return 'fake-html';
+    };
+
+    compose.uploadStarted();
+
+    assert.equal($("#compose-send-button").attr("disabled"), '');
+    assert($("#send-status").hasClass("alert-info"));
+    assert($("#send-status").visible());
+    assert.equal($("<p>").text(), 'translated: Uploading…');
+    assert.equal($("#error-msg").html(), 'fake-html');
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
