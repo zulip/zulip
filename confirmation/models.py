@@ -14,7 +14,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils.timezone import now as timezone_now
 
-from confirmation.util import get_status_field
 from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
@@ -42,9 +41,8 @@ class ConfirmationManager(models.Manager):
                 return False
 
             obj = confirmation.content_object
-            status_field = get_status_field(obj._meta.app_label, obj._meta.model_name)
-            setattr(obj, status_field, getattr(settings, 'STATUS_ACTIVE', 1))
-            obj.save()
+            obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
+            obj.save(update_fields=['status'])
             return obj
         return False
 
