@@ -964,6 +964,8 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
         # type: () -> None
         post_endpoints = [
             "/api/v1/users/me/presence",
+            "/api/v1/users/me/apns_device_token",
+            "/api/v1/users/me/android_gcm_reg_id",
         ]
         for endpoint in post_endpoints:
             result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))
@@ -976,6 +978,14 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
         ]
         for endpoint in patch_endpoints:
             result = self.client_patch(endpoint, **self.api_auth('default-bot@zulip.com'))
+            self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
+        delete_endpoints = [
+            "/api/v1/users/me/apns_device_token",
+            "/api/v1/users/me/android_gcm_reg_id",
+        ]
+        for endpoint in delete_endpoints:
+            result = self.client_delete(endpoint, **self.api_auth('default-bot@zulip.com'))
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
