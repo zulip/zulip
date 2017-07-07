@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 import django.contrib.auth
-from django.core.exceptions import ValidationError, MultipleObjectsReturned
+from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, MinLengthValidator, \
     RegexValidator
 from django.dispatch import receiver
@@ -1413,16 +1413,6 @@ def get_user_profile_by_email(email):
 def get_user(email, realm):
     # type: (Text, Realm) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
-
-def get_user_for_mgmt(email, realm=None):
-    # type: (Text, Optional[Realm]) -> UserProfile
-    if realm is not None:
-        return get_user(email, realm)
-    try:
-        return UserProfile.objects.select_related().get(email__iexact=email.strip())
-    except MultipleObjectsReturned:
-        logging.warning("Please specify the realm as this email is a member of multiple realms.")
-        sys.exit(1)
 
 @cache_with_key(bot_profile_cache_key, timeout=3600*24*7)
 def get_system_bot(email):

@@ -10,10 +10,37 @@ from six.moves import map, filter
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase
+from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
 from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
+
+class TestZulipBaseCommand(ZulipTestCase):
+    def test_get_realm(self):
+        # type: () -> None
+        command = ZulipBaseCommand()
+        self.assertEqual(command.get_realm(dict(realm_id='zulip')), get_realm("zulip"))
+        self.assertEqual(command.get_realm(dict(realm_id=None)), None)
+        self.assertEqual(command.get_realm(dict(realm_id='1')), get_realm("zulip"))
+        with self.assertRaisesRegex(CommandError, "The is no realm with id"):
+            command.get_realm(dict(realm_id='17'))
+
+    def test_get_user(self):
+        # type: () -> None
+        command = ZulipBaseCommand()
+        zulip_realm = get_realm("zulip")
+        mit_realm = get_realm("zephyr")
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+
+        self.assertEqual(command.get_user(email, zulip_realm), user_profile)
+        self.assertEqual(command.get_user(email, None), user_profile)
+        with self.assertRaisesRegex(CommandError, "The realm '<Realm: zephyr 2>' does not contain a user with email"):
+            self.assertEqual(command.get_user(email, mit_realm), user_profile)
+        with self.assertRaisesRegex(CommandError, "server does not contain a user with email"):
+            self.assertEqual(command.get_user('invalid_email@example.com', None), user_profile)
+        # TODO: Add a test for the MultipleObjectsReturned case once we make that possible.
 
 class TestCommandsCanStart(TestCase):
 
