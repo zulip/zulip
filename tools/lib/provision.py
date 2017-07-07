@@ -272,6 +272,11 @@ def main(options):
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
     if not options.is_production_travis:
+        # The following block is skipped for the production Travis
+        # suite, because that suite doesn't make use of these elements
+        # of the development environment (it just uses the development
+        # environment to build a release tarball).
+
         # Need to set up Django before using is_template_database_current
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
