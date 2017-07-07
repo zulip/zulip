@@ -604,6 +604,28 @@ people.add(bob);
     }());
 }());
 
+(function test_abort_xhr() {
+    $("#compose-send-button").attr('disabled', 'disabled');
+    var compose_removedata_checked = false;
+    $('#compose').removeData = function (sel) {
+        assert.equal(sel, 'filedrop_xhr');
+        compose_removedata_checked = true;
+    };
+    var xhr_abort_checked = false;
+    $("#compose").data = function (sel) {
+        assert.equal(sel, 'filedrop_xhr');
+        return {
+            abort: function () {
+                xhr_abort_checked = true;
+            },
+        };
+    };
+    compose.abort_xhr();
+    assert.equal($("#compose-send-button").attr(), undefined);
+    assert(xhr_abort_checked);
+    assert(compose_removedata_checked);
+}());
+
 function verify_filedrop_payload(payload) {
     assert.equal(payload.url, '/json/upload_file');
     assert.equal(payload.fallback_id, 'file_input');
