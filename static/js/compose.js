@@ -360,8 +360,8 @@ exports.send_message = function send_message(request) {
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {
-        // If enter_sends is enabled, we just send the message
-        exports.send_message();
+        // If enter_sends is enabled, we attempt to send the message
+        exports.finish();
     } else {
         // Otherwise, we return to the compose box and focus it
         $("#new_message_content").focus();

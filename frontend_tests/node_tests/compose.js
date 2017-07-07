@@ -540,6 +540,8 @@ people.add(bob);
 }());
 
 (function test_enter_with_preview_open() {
+    // Test sending a message with content.
+    $("#new_message_content").val('message me');
     $("#new_message_content").hide();
     $("#undo_markdown_preview").show();
     $("#preview_message_area").show();
@@ -560,6 +562,17 @@ people.add(bob);
     $("#new_message_content").blur();
     compose.enter_with_preview_open();
     assert($("#new_message_content").is_focused());
+
+    // Test sending a message without content.
+    $("#new_message_content").val('');
+    $("#preview_message_area").show();
+    $("#enter_sends").prop("checked", true);
+    page_params.enter_sends = true;
+
+    compose.enter_with_preview_open();
+
+    assert($("#enter_sends").prop("checked"));
+    assert.equal($("#error-msg").html(), i18n.t('You have nothing to send!'));
 }());
 
 (function test_finish() {
