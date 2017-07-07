@@ -24,8 +24,12 @@ and an authentication mechanism.  Or, you can check out the
   [documentation on scalability](prod-maintain-secure-upgrade.html#scalability)
   for advice on hardware requirements for larger organizations.
 
-* Disk space: You'll need at least 10GB of free disk space. If you intend to
-  store uploaded files locally rather than on S3 you will likely need more.
+* Disk space: You'll need at least 10GB of free disk space for a
+  server with dozens of users. If you intend to store uploaded files
+  locally rather than on S3 you will likely need more, depending how
+  often your users upload large files.  You'll eventually need 100GB
+  or more if you have thousands of active users or millions of total
+  messages sent.
 
 #### Network and Security Specifications
 
