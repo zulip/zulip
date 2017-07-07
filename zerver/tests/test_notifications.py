@@ -20,10 +20,12 @@ from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
 from zerver.models import (
+    RealmEmoji,
     Recipient,
     UserMessage,
     UserProfile,
 )
+from zerver.lib.test_helpers import get_test_image_file
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
@@ -35,8 +37,8 @@ class TestMissedMessages(ZulipTestCase):
         # type: () -> List[str]
         return [str(random.getrandbits(32)) for _ in range(30)]
 
-    def _test_cases(self, tokens, msg_id, body, subject, send_as_user):
-        # type: (List[str], int, str, str, bool) -> None
+    def _test_cases(self, tokens, msg_id, body, subject, send_as_user, verify_html_body=False):
+        # type: (List[str], int, str, str, bool, bool) -> None
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
@@ -54,7 +56,10 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(msg.subject, subject)
         self.assertEqual(len(msg.reply_to), 1)
         self.assertIn(msg.reply_to[0], reply_to_emails)
-        self.assertIn(body, self.normalize_string(msg.body))
+        if verify_html_body:
+            self.assertIn(body, self.normalize_string(msg.alternatives[0][0]))
+        else:
+            self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_mention(self, send_as_user, mock_random_token):
@@ -323,3 +328,24 @@ class TestMissedMessages(ZulipTestCase):
     def test_deleted_message_in_huddle_missed_stream_messages(self):
         # type: () -> None
         self._deleted_message_in_huddle_missed_stream_messages(False)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_realm_emoji_in_missed_message(self, mock_random_token):
+        # type: (MagicMock) -> None
+        # Create a test emoji.
+        email = self.example_email('iago')
+        self.login(email)
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            self.client_post('/json/realm/emoji/test_emoji', info=emoji_data)
+        self.logout()
+
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
+                                   Recipient.PERSONAL,
+                                   'Extremely personal message with a realm emoji :test_emoji:!')
+        body = '<img alt=":test_emoji:" height="20px" src="http://testserver/user_avatars/1/emoji/test_emoji.png" title=":test_emoji:">'
+        subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)

@@ -114,6 +114,11 @@ def build_message_list(user_profile, messages):
             user_profile.realm.uri + r"/static/generated/emoji/images/emoji/",
             content)
 
+        # Realm emoji should use absolute URLs when referenced in missed-message emails.
+        content = re.sub(
+            r"/user_avatars/(\d+)/emoji/",
+            user_profile.realm.uri + r"/user_avatars/\1/emoji/", content)
+
         return content
 
     def fix_plaintext_image_urls(content):
