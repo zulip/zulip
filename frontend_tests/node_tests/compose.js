@@ -815,6 +815,22 @@ function test_with_mock_socket(test_params) {
     assert(update_faded_messages_checked);
 }());
 
+(function test_trigger_submit_compose_form() {
+    var prevent_default_checked = false;
+    var compose_finish_checked = false;
+    var e = {
+        preventDefault: function () {
+            prevent_default_checked = true;
+        },
+    };
+    compose.finish = function () {
+        compose_finish_checked = true;
+    };
+    $("#compose form").trigger($.Event('submit', e));
+    assert(prevent_default_checked);
+    assert(compose_finish_checked);
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
