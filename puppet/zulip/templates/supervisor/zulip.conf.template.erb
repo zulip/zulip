@@ -17,7 +17,7 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/django.log        ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 stopasgroup=true              ; Without this, we leak processes every restart
 killasgroup=true              ; Without this, we leak processes every restart
@@ -33,7 +33,7 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/tornado.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
@@ -49,8 +49,8 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/events_<%= queue %>.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 <% end -%>
 <% else %>
@@ -64,8 +64,8 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/events.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 <% end %>
 
@@ -79,8 +79,8 @@ topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/events_deliver_enqueued_emails.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
 [program:zulip_events_message_sender]
@@ -94,8 +94,8 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/events_message_sender.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=5     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 numprocs=5
 
