@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
+
 import os
 import sys
 import logging
@@ -16,6 +19,7 @@ if __name__ == "__main__":
     os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py"))
 
     from django.conf import settings
+    from django.core.management.base import CommandError
 
     logger = logging.getLogger("zulip.management")
     subprocess.check_call([os.path.join(BASE_DIR, "scripts", "lib", "log-management-command"),
@@ -26,4 +30,8 @@ if __name__ == "__main__":
 
     from django.core.management import execute_from_command_line
 
-    execute_from_command_line(sys.argv)
+    try:
+        execute_from_command_line(sys.argv)
+    except CommandError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
