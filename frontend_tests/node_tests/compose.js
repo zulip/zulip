@@ -793,6 +793,28 @@ function test_with_mock_socket(test_params) {
     });
 }());
 
+(function test_update_fade() {
+    var set_focused_recipient_checked = false;
+    var update_faded_messages_checked = false;
+    global.compose_fade = {
+        set_focused_recipient: function (msg_type) {
+            assert.equal(msg_type, 'private');
+            set_focused_recipient_checked = true;
+        },
+        update_faded_messages: function () {
+            update_faded_messages_checked = true;
+        },
+    };
+    $('#stream,#subject,#private_message_recipient').trigger($.Event('keyup'));
+    assert(!set_focused_recipient_checked);
+    assert(!update_faded_messages_checked);
+
+    compose_state.set_message_type('private');
+    $('#stream,#subject,#private_message_recipient').trigger($.Event('keyup'));
+    assert(set_focused_recipient_checked);
+    assert(update_faded_messages_checked);
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
