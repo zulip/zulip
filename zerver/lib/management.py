@@ -7,7 +7,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 from typing import Any, Dict, Optional, Text
 
-from zerver.models import get_realm, Realm, UserProfile
+from zerver.models import Realm, UserProfile
 
 def is_integer_string(val):
     # type: (str) -> bool
@@ -39,7 +39,7 @@ class ZulipBaseCommand(BaseCommand):
         try:
             if is_integer_string(val):
                 return Realm.objects.get(id=val)
-            return get_realm(val)
+            return Realm.objects.get(string_id=val)
         except Realm.DoesNotExist:
             raise CommandError("The is no realm with id '%s'. Aborting." %
                                (options["realm_id"],))
