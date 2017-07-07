@@ -601,10 +601,8 @@ exports.validate = function () {
 };
 
 exports.initialize = function () {
-    $('#stream,#subject,#private_message_recipient').bind({
-         keyup: update_fade,
-         change: update_fade,
-    });
+    $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
+    $('#stream,#subject,#private_message_recipient').on('change', update_fade);
 
     $("#compose form").on("submit", function (e) {
        e.preventDefault();

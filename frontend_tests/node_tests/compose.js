@@ -2,9 +2,10 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 set_global('page_params', {
-    use_websockets: false,
+    use_websockets: true,
 });
 
+set_global('navigator', {});
 set_global('document', {
     location: {
     },
@@ -25,6 +26,10 @@ set_global('feature_flags', {
     resize_bottom_whitespace: noop,
 });
 set_global('echo', {});
+set_global('socket', {});
+set_global('Socket', function () {
+    return global.socket;
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -42,6 +47,7 @@ add_dependencies({
 });
 
 var compose = require('js/compose.js');
+page_params.use_websockets = false;
 
 var me = {
     email: 'me@example.com',
@@ -527,6 +533,122 @@ people.add(bob);
         assert.equal($("#compose-send-button").attr('disabled'), undefined);
         assert(!$("#sending-indicator").visible());
     }());
+}());
+
+(function test_enter_with_preview_open() {
+    $("#new_message_content").hide();
+    $("#undo_markdown_preview").show();
+    $("#preview_message_area").show();
+    $("#markdown_preview").hide();
+    page_params.enter_sends = true;
+    var send_message_called = false;
+    compose.send_message = function () {
+        send_message_called = true;
+    };
+    compose.enter_with_preview_open();
+    assert($("#new_message_content").visible());
+    assert(!$("#undo_markdown_preview").visible());
+    assert(!$("#preview_message_area").visible());
+    assert($("#markdown_preview").visible());
+    assert(send_message_called);
+
+    page_params.enter_sends = false;
+    $("#new_message_content").blur();
+    compose.enter_with_preview_open();
+    assert($("#new_message_content").is_focused());
+}());
+
+(function test_finish() {
+    (function test_when_compose_validation_fails() {
+        $("#compose_invite_users").show();
+        $("#compose-send-button").removeAttr('disabled');
+        $("#compose-send-button").focus();
+        $("#sending-indicator").hide();
+        $("#new_message_content").select(noop);
+        $("#new_message_content").val('');
+        var res = compose.finish();
+        assert.equal(res, false);
+        assert(!$("#compose_invite_users").visible());
+        assert(!$("#sending-indicator").visible());
+        assert(!$("#compose-send-button").is_focused());
+        assert.equal($("#compose-send-button").attr('disabled'), undefined);
+        assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
+    }());
+
+    (function test_when_compose_validation_succeed() {
+        $("#new_message_content").hide();
+        $("#undo_markdown_preview").show();
+        $("#preview_message_area").show();
+        $("#markdown_preview").hide();
+        $("#new_message_content").val('foobarfoobar');
+        compose_state.set_message_type('private');
+        compose_state.recipient('bob@example.com');
+        var compose_finished_event_checked = false;
+        $.stub_selector(document, {
+            trigger: function (e) {
+                assert.equal(e.name, 'compose_finished.zulip');
+                compose_finished_event_checked = true;
+            },
+        });
+        var send_message_called = false;
+        compose.send_message = function () {
+            send_message_called = true;
+        };
+        assert(compose.finish());
+        assert($("#new_message_content").visible());
+        assert(!$("#undo_markdown_preview").visible());
+        assert(!$("#preview_message_area").visible());
+        assert($("#markdown_preview").visible());
+        assert(send_message_called);
+        assert(compose_finished_event_checked);
+    }());
+}());
+
+function test_with_mock_socket(test_params) {
+    var socket_send_called;
+    var socket_options = {};
+
+    global.socket.send = function (request, success, error) {
+        global.socket.send = undefined;
+        socket_send_called = true;
+        socket_options.request = request;
+        socket_options.simulate_success = function (data) {
+            success(data);
+        };
+        socket_options.simulate_error = function (type, resp) {
+            error(type, resp);
+        };
+    };
+
+    test_params.run_code();
+    assert(socket_send_called);
+    test_params.check_socket_options(socket_options);
+}
+
+(function test_transmit_message() {
+    page_params.use_websockets = true;
+    global.navigator.userAgent = 'unittest_transmit_message';
+    var success_func_checked = false;
+    var success = function (request) {
+        assert.equal(request.socket_user_agent, 'unittest_transmit_message');
+        success_func_checked = true;
+    };
+    var error_func_checked = false;
+    var error = function (error_msg) {
+        assert.equal(error_msg, 'Error sending message: Test error codepath.');
+        error_func_checked = true;
+    };
+    test_with_mock_socket({
+        run_code: function () {
+            compose.transmit_message({}, success, error);
+        },
+        check_socket_options: function (options) {
+            options.simulate_success(options.request);
+            options.simulate_error('response', {msg: 'Test error codepath.'});
+        },
+    });
+    assert(success_func_checked);
+    assert(error_func_checked);
 }());
 
 (function test_set_focused_recipient() {
