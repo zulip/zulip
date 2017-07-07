@@ -97,6 +97,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
     if want('realm'):
         for property_name in Realm.property_types:
             state['realm_' + property_name] = getattr(user_profile.realm, property_name)
+
+        # Most state is handled via the property_types framework;
+        # these manual entries are for those realm settings that don't
+        # fit into that framework.
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
@@ -106,7 +110,6 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
         state['realm_uri'] = user_profile.realm.uri
         state['realm_presence_disabled'] = user_profile.realm.presence_disabled
-        state['realm_mandatory_topics'] = user_profile.realm.mandatory_topics
         state['realm_show_digest_email'] = user_profile.realm.show_digest_email
         state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
         state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)
