@@ -6,6 +6,7 @@
 * [Change your avatar](/help/change-your-avatar)
 * [Change your language](/help/change-your-language)
 * [Change the date and time format](/help/change-the-date-and-time-format)
+* [Enable high contrast mode for accessibility](/help/enable-high-contrast-mode)
 * [Move the users list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)
 * [Join a Zulip organization](/help/join-a-zulip-organization)
 * [Signing in](/help/signing-in)
