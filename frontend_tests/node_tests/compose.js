@@ -2,9 +2,10 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 set_global('page_params', {
-    use_websockets: false,
+    use_websockets: true,
 });
 
+set_global('navigator', {});
 set_global('document', {
     location: {
     },
@@ -25,6 +26,10 @@ set_global('feature_flags', {
     resize_bottom_whitespace: noop,
 });
 set_global('echo', {});
+set_global('socket', {});
+set_global('Socket', function () {
+    return global.socket;
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -42,6 +47,7 @@ add_dependencies({
 });
 
 var compose = require('js/compose.js');
+page_params.use_websockets = false;
 
 var me = {
     email: 'me@example.com',
@@ -596,6 +602,53 @@ people.add(bob);
         assert(send_message_called);
         assert(compose_finished_event_checked);
     }());
+}());
+
+function test_with_mock_socket(test_params) {
+    var socket_send_called;
+    var socket_options = {};
+
+    global.socket.send = function (request, success, error) {
+        global.socket.send = undefined;
+        socket_send_called = true;
+        socket_options.request = request;
+        socket_options.simulate_success = function (data) {
+            success(data);
+        };
+        socket_options.simulate_error = function (type, resp) {
+            error(type, resp);
+        };
+    };
+
+    test_params.run_code();
+    assert(socket_send_called);
+    test_params.check_socket_options(socket_options);
+}
+
+(function test_transmit_message() {
+    page_params.use_websockets = true;
+    global.navigator.userAgent = 'unittest_transmit_message';
+    var success_func_checked = false;
+    var success = function (request) {
+        assert.equal(request.socket_user_agent, 'unittest_transmit_message');
+        success_func_checked = true;
+    };
+    var error_func_checked = false;
+    var error = function (error_msg) {
+        assert.equal(error_msg, 'Error sending message: Test error codepath.');
+        error_func_checked = true;
+    };
+    test_with_mock_socket({
+        run_code: function () {
+            compose.transmit_message({}, success, error);
+        },
+        check_socket_options: function (options) {
+            options.simulate_success(options.request);
+            options.simulate_error('response', {msg: 'Test error codepath.'});
+        },
+    });
+    assert(success_func_checked);
+    assert(error_func_checked);
 }());
 
 (function test_set_focused_recipient() {
