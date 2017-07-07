@@ -30,6 +30,7 @@ set_global('socket', {});
 set_global('Socket', function () {
     return global.socket;
 });
+set_global('stream_edit', {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -997,6 +998,83 @@ function test_with_mock_socket(test_params) {
         assert(compose_finish_checked);
         assert(!$("#compose-all-everyone").visible());
         assert(!$("#send-status").visible());
+    }());
+
+    (function test_compose_invite_users_clicked() {
+        var handler = $("#compose_invite_users")
+                      .get_on_handler('click', '.compose_invite_link');
+        var subscription = {
+            stream_id: 102,
+            name: 'test',
+            subscribed: true,
+        };
+        var invite_user_to_stream_called = false;
+        stream_edit.invite_user_to_stream = function (email, sub, success) {
+            invite_user_to_stream_called = true;
+            assert.equal(email, 'foo@bar.com');
+            assert.equal(sub, subscription);
+            success();  // This will check success callback path.
+        };
+
+        var container = $.create('fake compose_invite_users');
+        var container_removed = false;
+
+        container.remove = function () {
+            container_removed = true;
+        };
+
+        var target = $.create('fake click target (compose_invite_link)');
+
+        target.set_parents_result('.compose_invite_user', container);
+
+        var event = {
+            preventDefault: noop,
+            target: target,
+        };
+
+        // .data in zjquery is a noop by default, so handler should just return
+        handler(event);
+
+        assert(!invite_user_to_stream_called);
+        assert(!container_removed);
+
+        // !sub will result false here and we check the failure code path.
+        blueslip.warn = function (err_msg) {
+            assert.equal(err_msg, 'Stream no longer exists: no-stream');
+        };
+        $('#stream').val('no-stream');
+        container.data = function (field) {
+            assert.equal(field, 'useremail');
+            return 'foo@bar.com';
+        };
+        var invite_err_sel = '.compose_invite_user_error';
+        container.set_find_results(invite_err_sel, $(invite_err_sel));
+        target.removeAttr('disabled');
+        $(invite_err_sel).hide();
+
+        handler(event);
+
+        assert($(invite_err_sel).visible());
+        assert(target.attr('disabled'));
+        assert(!invite_user_to_stream_called);
+        assert(!container_removed);
+
+        // !sub will result in true here and we check the success code path.
+        stream_data.add_sub('test', subscription);
+        $('#stream').val('test');
+        var all_invite_children_called = false;
+        $("#compose_invite_users").children = function () {
+            all_invite_children_called = true;
+            return [];
+        };
+        $("#compose_invite_users").show();
+
+        handler(event);
+
+        assert(container_removed);
+        assert(!$("#compose_invite_users").visible());
+        assert(invite_user_to_stream_called);
+        assert(all_invite_children_called);
     }());
 }());
 
