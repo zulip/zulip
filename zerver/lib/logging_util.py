@@ -36,7 +36,7 @@ class _RateLimitFilter(object):
                 if record.exc_info is not None:
                     tb = force_bytes('\n'.join(traceback.format_exception(*record.exc_info)))
                 else:
-                    tb = force_bytes(str(record))
+                    tb = force_bytes(u'%s' % (record,))
                 key = self.__class__.__name__.upper() + hashlib.sha1(tb).hexdigest()
                 duplicate = cache.get(key) == 1
                 if not duplicate:
