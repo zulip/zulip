@@ -1076,6 +1076,40 @@ function test_with_mock_socket(test_params) {
         assert(invite_user_to_stream_called);
         assert(all_invite_children_called);
     }());
+
+    (function test_compose_invite_close_clicked() {
+        var handler = $("#compose_invite_users")
+                        .get_on_handler('click', '.compose_invite_close');
+
+        var container = $.create('fake compose_invite_users_close');
+        var container_removed = false;
+
+        container.remove = function () {
+            container_removed = true;
+        };
+
+        var target = $.create('fake click target (compose_invite_close)');
+
+        target.set_parents_result('.compose_invite_user', container);
+
+        var event = {
+            preventDefault: noop,
+            target: target,
+        };
+
+        var all_invite_children_called = false;
+        $("#compose_invite_users").children = function () {
+            all_invite_children_called = true;
+            return [];
+        };
+        $("#compose_invite_users").show();
+
+        handler(event);
+
+        assert(container_removed);
+        assert(all_invite_children_called);
+        assert(!$("#compose_invite_users").visible());
+    }());
 }());
 
 (function test_set_focused_recipient() {
