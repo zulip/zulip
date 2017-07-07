@@ -61,11 +61,7 @@ def maybe_send_to_registration(request, email, full_name=''):
             prereg_user = create_preregistration_user(email, request)
 
         return redirect("".join((
-            settings.EXTERNAL_URI_SCHEME,
-            request.get_host(),
-            "/",
-            # Split this so we only get the part after the /
-            Confirmation.objects.get_link_for_object(prereg_user, 'unused').split("/", 3)[3],
+            Confirmation.objects.get_link_for_object(prereg_user, request.get_host()),
             '?full_name=',
             # urllib does not handle Unicode, so coerece to encoded byte string
             # Explanation: http://stackoverflow.com/a/5605354/90777
