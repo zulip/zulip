@@ -191,12 +191,12 @@ v1_api_and_json_patterns = [
     url(r'^realm/emoji$', rest_dispatch,
         {'GET': 'zerver.views.realm_emoji.list_emoji'}),
     url(r'^realm/emoji/(?P<emoji_name>.*)$', rest_dispatch,
-        {'PUT': 'zerver.views.realm_emoji.upload_emoji',
+        {'POST': 'zerver.views.realm_emoji.upload_emoji',
          'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
 
     # realm/icon -> zerver.views.realm_icon
     url(r'^realm/icon$', rest_dispatch,
-        {'PUT': 'zerver.views.realm_icon.upload_icon',
+        {'POST': 'zerver.views.realm_icon.upload_icon',
          'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
          'GET': 'zerver.views.realm_icon.get_icon_backend'}),
 
@@ -313,7 +313,7 @@ v1_api_and_json_patterns = [
     url(r'^users/me/enter-sends$', rest_dispatch,
         {'POST': 'zerver.views.user_settings.change_enter_sends'}),
     url(r'^users/me/avatar$', rest_dispatch,
-        {'PUT': 'zerver.views.user_settings.set_avatar_backend',
+        {'POST': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
 
     # users/me/hotspots -> zerver.views.hotspots

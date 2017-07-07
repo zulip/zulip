@@ -91,7 +91,7 @@ exports.set_up = function () {
         $.each($('#emoji_file_input')[0].files, function (i, file) {
             formData.append('file-' + i, file);
         });
-        channel.put({
+        channel.post({
             url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
             data: formData,
             cache: false,

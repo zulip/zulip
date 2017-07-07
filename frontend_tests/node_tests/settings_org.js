@@ -310,7 +310,7 @@ function test_upload_realm_icon(upload_realm_icon) {
     ];
 
     var posted;
-    channel.put = function (req) {
+    channel.post = function (req) {
         posted = true;
         assert.equal(req.url, '/json/realm/icon');
         assert.equal(req.data.csrfmiddlewaretoken, 'token-stub');
