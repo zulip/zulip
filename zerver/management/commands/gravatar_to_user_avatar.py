@@ -4,11 +4,12 @@ from typing import Any
 
 from argparse import ArgumentParser
 import requests
-from zerver.models import get_user_profile_by_email, UserProfile
+from zerver.models import get_user_for_mgmt, get_realm, UserProfile
 from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.upload import upload_avatar_image
 from django.core.management.base import BaseCommand, CommandError
 from django.core.files.uploadedfile import SimpleUploadedFile
+import sys
 
 class Command(BaseCommand):
     help = """Migrate the specified user's Gravatar over to an avatar that we serve.  If two
@@ -17,8 +18,15 @@ for both email addresses."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
+        parser.add_argument(
+            '-r', '--realm', nargs='?', default=None,
+            dest='string_id',
+            type=str,
+            help='The name of the realm in which you are changing from gravatar to avatar.')
+
         parser.add_argument('old_email', metavar='<old email>', type=str,
                             help="user whose Gravatar should be migrated")
+
         parser.add_argument('new_email', metavar='<new email>', type=str, nargs='?', default=None,
                             help="user to copy the Gravatar to")
 
@@ -35,18 +43,21 @@ for both email addresses."""
         gravatar_data = requests.get(gravatar_url).content
         gravatar_file = SimpleUploadedFile('gravatar.jpg', gravatar_data, 'image/jpeg')
 
+        realm = get_realm(options["string_id"])
+
         try:
-            user_profile = get_user_profile_by_email(old_email)
+            user_profile = get_user_for_mgmt(old_email, realm)
             upload_avatar_image(gravatar_file, user_profile, user_profile)
             user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
             user_profile.save(update_fields=['avatar_source'])
         except UserProfile.DoesNotExist:
-            raise CommandError("Could not find specified user for email %s" % (old_email))
+            print("Could not find specified user for email %s" % (old_email))
+            sys.exit(1)
 
         if old_email != new_email:
             gravatar_file.seek(0)
             try:
-                user_profile = get_user_profile_by_email(new_email)
+                user_profile = get_user_for_mgmt(new_email, realm)
                 upload_avatar_image(gravatar_file, user_profile, user_profile)
                 user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
                 user_profile.save(update_fields=['avatar_source'])

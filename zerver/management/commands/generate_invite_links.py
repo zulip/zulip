@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
 from zerver.models import UserProfile, PreregistrationUser, \
-    get_user_profile_by_email, get_realm, email_allowed_for_realm
+    get_user_for_mgmt, get_realm, email_allowed_for_realm
 
 class Command(BaseCommand):
     help = "Generate activation links for users and print them to stdout."
@@ -29,17 +29,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         duplicates = False
-        for email in options['emails']:
-            try:
-                get_user_profile_by_email(email)
-                print(email + ": There is already a user registered with that address.")
-                duplicates = True
-                continue
-            except UserProfile.DoesNotExist:
-                pass
-
-        if duplicates:
-            return
 
         realm = None
         string_id = options["string_id"]
@@ -49,6 +38,18 @@ class Command(BaseCommand):
             print("The realm %s doesn't exist yet, please create it first." % (string_id,))
             print("Don't forget default streams!")
             exit(1)
+
+        for email in options['emails']:
+            try:
+                get_user_for_mgmt(email, realm)
+                print(email + ": There is already a user registered with that address.")
+                duplicates = True
+                continue
+            except UserProfile.DoesNotExist:
+                pass
+
+        if duplicates:
+            return
 
         for email in options['emails']:
             if realm:
