@@ -166,6 +166,22 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.client_post(endpoint, payload, **self.get_auth())
             self.assert_json_error(result, 'Empty or invalid length token')
 
+    def test_invalid_apns_token(self):
+        # type: () -> None
+        endpoints = [
+            ('/json/users/me/apns_device_token', 'apple-token'),
+        ]
+
+        for endpoint, method in endpoints:
+            payload = {
+                'user_id': 10,
+                'token': 'xyz uses non-hex characters',
+                'token_kind': PushDeviceToken.APNS,
+            }
+            result = self.client_post(endpoint, payload,
+                                      **self.get_auth())
+            self.assert_json_error(result, 'Invalid APNS token')
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.push_notifications.requests.request')
     def test_push_bouncer_api(self, mock):
@@ -180,14 +196,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
         endpoints = [
-            ('/json/users/me/apns_device_token', 'apple-token'),
+            ('/json/users/me/apns_device_token', 'apple-tokenaz'),
             ('/json/users/me/android_gcm_reg_id', 'android-token'),
         ]
 
         # Test error handling
         for endpoint, _ in endpoints:
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000  # too big
+            broken_token = "a" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
 
@@ -195,7 +211,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_error(result, 'Empty or invalid length token')
 
             # Try to remove a non-existent token...
-            result = self.client_delete(endpoint, {'token': 'non-existent token'})
+            result = self.client_delete(endpoint, {'token': 'abcd1234'})
             self.assert_json_error(result, 'Token does not exist')
 
         # Add tokens
@@ -664,22 +680,26 @@ class TestPushApi(ZulipTestCase):
         self.login(email)
 
         endpoints = [
-            ('/json/users/me/apns_device_token', 'apple-token'),
+            ('/json/users/me/apns_device_token', 'apple-tokenaz'),
             ('/json/users/me/android_gcm_reg_id', 'android-token'),
         ]
 
         # Test error handling
-        for endpoint, _ in endpoints:
+        for endpoint, label in endpoints:
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000  # too big
+            broken_token = "a" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
+
+            if label == 'apple-tokenaz':
+                result = self.client_post(endpoint, {'token': 'xyz has non-hex characters'})
+                self.assert_json_error(result, 'Invalid APNS token')
 
             result = self.client_delete(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
 
             # Try to remove a non-existent token...
-            result = self.client_delete(endpoint, {'token': 'non-existent token'})
+            result = self.client_delete(endpoint, {'token': 'abcd1234'})
             self.assert_json_error(result, 'Token does not exist')
 
         # Add tokens
