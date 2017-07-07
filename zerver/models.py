@@ -1417,7 +1417,7 @@ def get_user(email, realm):
 def get_user_for_mgmt(email, realm=None):
     # type: (Text, Optional[Realm]) -> UserProfile
     if realm is not None:
-        return get_user(email, realm)
+        return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
     try:
         return UserProfile.objects.select_related().get(email__iexact=email.strip())
     except MultipleObjectsReturned:

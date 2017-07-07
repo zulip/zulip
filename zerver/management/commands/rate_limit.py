@@ -4,7 +4,7 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser
-from zerver.models import UserProfile, get_user_profile_by_email
+from zerver.models import UserProfile, get_user_for_mgmt, get_realm
 from zerver.lib.rate_limiter import block_user, unblock_user
 
 from django.core.management.base import BaseCommand
@@ -15,6 +15,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
+        parser.add_argument('-r', '--realm',
+                            nargs='?', default=None,
+                            dest='string_id',
+                            type=str,
+                            help='The name of the realm in which you are limiting rate.')
         parser.add_argument('-e', '--email',
                             dest='email',
                             help="Email account of user.")
@@ -35,8 +40,8 @@ class Command(BaseCommand):
                             action='store_true',
                             default=False,
                             help="Whether or not to also block all bots for this user.")
-        parser.add_argument('operation', metavar='<operation>', type=str, choices=['block', 'unblock'],
-                            help="operation to perform (block or unblock)")
+        parser.add_argument('operation', metavar='<operation>', type=str,
+                            choices=['block', 'unblock'], help="operation to perform (block or unblock)")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -45,8 +50,17 @@ class Command(BaseCommand):
             print("Please enter either an email or API key to manage")
             exit(1)
 
-        if options['email']:
-            user_profile = get_user_profile_by_email(options['email'])
+        email = options['email']
+        realm = get_realm(options["string_id"])
+        if options["string_id"] is not None and realm is None:
+            print("The realm %s does not exist. Aborting." % options["string_id"])
+            exit(1)
+        if email:
+            try:
+                user_profile = get_user_for_mgmt(email, realm)
+            except UserProfile.DoesNotExist:
+                print("Could not find specified user for email %s" % (email,))
+                exit(1)
         else:
             try:
                 user_profile = UserProfile.objects.get(api_key=options['api_key'])

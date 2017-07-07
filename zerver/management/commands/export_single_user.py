@@ -14,7 +14,7 @@ import tempfile
 import ujson
 
 from zerver.lib.export import do_export_user
-from zerver.models import UserProfile, get_user_profile_by_email
+from zerver.models import UserProfile, get_realm, get_user_for_mgmt
 
 class Command(BaseCommand):
     help = """Exports message data from a Zulip user
@@ -27,8 +27,15 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
+        parser.add_argument(
+            '-r', '--realm', nargs='?', default=None,
+            dest='string_id',
+            type=str,
+            help='The name of the realm from which you are exporting a single user.')
+
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to export")
+
         parser.add_argument('--output',
                             dest='output_dir',
                             action="store",
@@ -37,10 +44,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
+        email = options['email']
+        realm = get_realm(options["string_id"])
+        if options["string_id"] is not None and realm is None:
+            print("The realm %s does not exist. Aborting." % options["string_id"])
+            exit(1)
         try:
-            user_profile = get_user_profile_by_email(options["email"])
+            user_profile = get_user_for_mgmt(email, realm)
         except UserProfile.DoesNotExist:
-            raise CommandError("No such user.")
+            if realm is None:
+                print("e-mail %s doesn't exist in the system, skipping" % (email,))
+            else:
+                print("e-mail %s doesn't exist in the realm, skipping" % (email,))
+            exit(1)
 
         output_dir = options["output_dir"]
         if output_dir is None:
