@@ -2,12 +2,14 @@
 from __future__ import absolute_import
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
+import signal
 import sys
 import os
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../api')))
 
 from bots_api.bot_lib import ExternalBotHandler, StateHandler
 from django.conf import settings
+from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
@@ -91,6 +93,15 @@ def get_active_worker_queues(queue_type=None):
         return list(worker_classes.keys())
     return list(queues[queue_type].keys())
 
+def check_and_send_restart_signal():
+    # type: () -> None
+    try:
+        if not connection.is_usable():
+            logging.warning("*** Sending restart signal(10).")
+            os.kill(os.getpid(), signal.SIGUSR1)
+    except Exception:
+        pass
+
 class QueueProcessingWorker(object):
     queue_name = None # type: str
 
@@ -119,7 +130,9 @@ class QueueProcessingWorker(object):
             with lockfile(lock_fn):
                 with open(fn, 'ab') as f:
                     f.write(line.encode('utf-8'))
-        reset_queries()
+            check_and_send_restart_signal()
+        finally:
+            reset_queries()
 
     def _log_problem(self):
         # type: () -> None
@@ -363,7 +376,11 @@ class MessageSenderWorker(QueueProcessingWorker):
         server_meta['worker_log_data'] = request._log_data
 
         resp_content = resp.content.decode('utf-8')
-        result = {'response': ujson.loads(resp_content), 'req_id': event['req_id'],
+        response_data = ujson.loads(resp_content)
+        if response_data['result'] == 'error':
+            check_and_send_restart_signal()
+
+        result = {'response': response_data, 'req_id': event['req_id'],
                   'server_meta': server_meta}
 
         redis_key = req_redis_key(event['req_id'])
