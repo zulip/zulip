@@ -30,6 +30,7 @@ set_global('socket', {});
 set_global('Socket', function () {
     return global.socket;
 });
+set_global('LazyLoad', {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -602,6 +603,126 @@ people.add(bob);
         assert(send_message_called);
         assert(compose_finished_event_checked);
     }());
+}());
+
+(function test_initialize() {
+    // In this test we mostly do the setup stuff in addition to testing the
+    // normal workflow of the function. All the tests for the on functions are
+    // done in subsequent tests directly below this test.
+
+    var resize_watch_manual_resize_checked = false;
+    resize.watch_manual_resize = function (elem) {
+        assert.equal('#new_message_content', elem);
+        resize_watch_manual_resize_checked = true;
+    };
+    global.window = {
+        XMLHttpRequest: true,
+        bridge: true,
+    };
+    var xmlhttprequest_checked = false;
+    set_global('XMLHttpRequest', function () {
+        this.upload = true;
+        xmlhttprequest_checked = true;
+    });
+    $("#compose #attach_files").addClass("notdisplayed");
+    feature_flags.dropbox_integration = true;
+    var dropbox_integration_loaded = false;
+    global.LazyLoad.js = function (script, on_success) {
+        assert.equal(script, 'https://www.dropbox.com/static/api/1/dropins.js');
+        dropbox_integration_loaded = true;
+
+        blueslip.error = function (error_msg) {
+            assert.equal(error_msg, 'Dropbox script reports loading but window.Dropbox undefined');
+        };
+        on_success();
+
+        global.window.Dropbox = 'fake-dropbox-script';
+        global.window.dropboxAppKey = 'fake-dropbox-appkey';
+        var dropbox_isbrowsersupported_checked = false;
+        global.Dropbox = {
+            isBrowserSupported: function () {
+              dropbox_isbrowsersupported_checked = true;
+              return true;
+            },
+        };
+        var dropbox_init_checked = false;
+        global.Dropbox.init = function (data) {
+            assert.equal(data.appKey, 'fake-dropbox-appkey');
+            dropbox_init_checked = true;
+        };
+        $("#compose #attach_dropbox_files").addClass("notdisplayed");
+        on_success();
+        assert(dropbox_isbrowsersupported_checked);
+        assert(dropbox_init_checked);
+        assert(!$("#compose #attach_dropbox_files").hasClass("notdisplayed"));
+    };
+    global.document = 'fake-document-object';
+    global.csrf_token = 'fake-csrf-token';
+    var filedrop_in_compose_checked = false;
+    page_params.maxfilesize = 512;
+    $("#compose").filedrop = function (payload) {
+        assert.equal(payload.url, '/json/upload_file');
+        assert.equal(payload.fallback_id, 'file_input');
+        assert.equal(payload.paramname, 'file');
+        assert.equal(payload.maxfilesize, 512);
+        assert.equal(payload.data.csrfmiddlewaretoken, 'fake-csrf-token');
+        assert.deepEqual(payload.raw_droppable, ['text/uri-list', 'text/plain']);
+        assert.equal(typeof(payload.drop), 'function');
+        assert.equal(typeof(payload.progressUpdated), 'function');
+        assert.equal(typeof(payload.error), 'function');
+        assert.equal(typeof(payload.uploadFinished), 'function');
+        assert.equal(typeof(payload.rawDrop), 'function');
+
+        compose_state.set_message_type(false);
+        var compose_actions_start_checked = false;
+        global.compose_actions = {
+            start: function (msg_type) {
+                assert.equal(msg_type, 'stream');
+                compose_actions_start_checked = true;
+            },
+        };
+        $("#new_message_content").val('Old content ');
+        var compose_ui_autosize_textarea_checked = false;
+        compose_ui.autosize_textarea = function () {
+            compose_ui_autosize_textarea_checked = true;
+        };
+        payload.rawDrop('new contents');
+        assert(compose_actions_start_checked);
+        assert.equal($("#new_message_content").val(), 'Old content new contents');
+        assert(compose_ui_autosize_textarea_checked);
+        filedrop_in_compose_checked = true;
+    };
+    compose.initialize();
+    assert(resize_watch_manual_resize_checked);
+    assert(xmlhttprequest_checked);
+    assert(!$("#compose #attach_files").hasClass("notdisplayed"));
+    assert(dropbox_integration_loaded);
+    assert(filedrop_in_compose_checked);
+
+    // Reset jquery here.
+    set_global('$', global.make_zjquery());
+    $("#compose").filedrop = noop;
+    page_params.narrow = true;
+    var compose_actions_start_checked = false;
+    var compose_actions_start_opts = {};
+    global.compose_actions = {
+        start: function (msg_type, opts) {
+            assert.equal(msg_type, 'stream');
+            assert.deepEqual(opts, compose_actions_start_opts);
+            compose_actions_start_checked = true;
+        },
+    };
+    compose.initialize();
+    assert(compose_actions_start_checked);
+
+    // Reset jquery here.
+    set_global('$', global.make_zjquery());
+    $("#compose").filedrop = noop;
+    compose_actions_start_checked = false;
+    compose_actions_start_opts.subject = 'testing';
+    page_params.narrow_topic = 'testing';
+    compose.initialize();
+    assert(compose_actions_start_checked);
 }());
 
 function test_with_mock_socket(test_params) {
