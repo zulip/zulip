@@ -28,9 +28,7 @@ def confirm(request, confirmation_key):
         except Confirmation.DoesNotExist:
             pass
     ctx = {
-        'object': obj,
         'confirmed': confirmed,
-        'days': getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10),
         'key': confirmation_key,
         'full_name': request.GET.get("full_name", None),
     }
