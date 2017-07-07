@@ -20,14 +20,10 @@ from typing import Any, Dict
 def confirm(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     obj = Confirmation.objects.confirm(confirmation_key)
-    ctx = {'confirmed': False}  # type: Dict[str, Any]
-    templates = [
-        'confirmation/confirm.html',
-    ]
     if obj:
-        ctx = {
-            'key': confirmation_key,
-            'full_name': request.GET.get("full_name", None),
-        }
-        templates = ['confirmation/confirm_preregistrationuser.html']
-    return render(request, templates, context=ctx)
+        return render(request, 'confirmation/confirm_preregistrationuser.html',
+                      context={
+                          'key': confirmation_key,
+                          'full_name': request.GET.get("full_name", None)})
+    else:
+        return render(request, 'confirmation/confirm.html', context = {'confirmed': False})
