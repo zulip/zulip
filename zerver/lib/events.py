@@ -442,37 +442,11 @@ def apply_event(state, event, user_profile, include_subscribers):
     elif event['type'] == "realm_filters":
         state['realm_filters'] = event["realm_filters"]
     elif event['type'] == "update_display_settings":
-        if event['setting_name'] == "twenty_four_hour_time":
-            state['twenty_four_hour_time'] = event["setting"]
-        if event['setting_name'] == 'left_side_userlist':
-            state['left_side_userlist'] = event["setting"]
-        if event['setting_name'] == 'emoji_alt_code':
-            state['emoji_alt_code'] = event["setting"]
-        if event['setting_name'] == 'emojiset':
-            state['emojiset'] = event["setting"]
-        if event['setting_name'] == 'default_language':
-            state['default_language'] = event["setting"]
-        if event['setting_name'] == 'timezone':
-            state['timezone'] = event["setting"]
+        assert event['setting_name'] in UserProfile.property_types
+        state[event['setting_name']] = event['setting']
     elif event['type'] == "update_global_notifications":
-        if event['notification_name'] == "enable_stream_desktop_notifications":
-            state['enable_stream_desktop_notifications'] = event['setting']
-        elif event['notification_name'] == "enable_stream_sounds":
-            state['enable_stream_sounds'] = event['setting']
-        elif event['notification_name'] == "enable_desktop_notifications":
-            state['enable_desktop_notifications'] = event['setting']
-        elif event['notification_name'] == "enable_sounds":
-            state['enable_sounds'] = event['setting']
-        elif event['notification_name'] == "enable_offline_email_notifications":
-            state['enable_offline_email_notifications'] = event['setting']
-        elif event['notification_name'] == "enable_offline_push_notifications":
-            state['enable_offline_push_notifications'] = event['setting']
-        elif event['notification_name'] == "enable_online_push_notifications":
-            state['enable_online_push_notifications'] = event['setting']
-        elif event['notification_name'] == "enable_digest_emails":
-            state['enable_digest_emails'] = event['setting']
-        elif event['notification_name'] == "pm_content_in_desktop_notifications":
-            state['pm_content_in_desktop_notifications'] = event['setting']
+        assert event['notification_name'] in UserProfile.notification_setting_types
+        state[event['notification_name']] = event['setting']
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 
