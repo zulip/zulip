@@ -40,7 +40,7 @@ class Command(ZulipBaseCommand):
     def handle(self, **options):
         # type: (**Any) -> None
         if options["streams"] is None or \
-                (options["users"] is None and options["all_users"] is None):
+                (options["users"] is None and not options["all_users"]):
             self.print_help("./manage.py", "add_users_to_streams")
             exit(1)
 
