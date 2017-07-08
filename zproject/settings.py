@@ -69,7 +69,7 @@ ZULIP_ORG_ID = get_secret("zulip_org_id")
 if 'DEBUG' not in globals():
     # Uncomment end of next line to test CSS minification.
     # For webpack JS minification use tools/run_dev.py --minify
-    DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
+    DEBUG = DEVELOPMENT  # and platform.node() != 'your-machine'
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
@@ -405,7 +405,7 @@ DATABASES = {"default": {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'zulip',
     'USER': 'zulip',
-    'PASSWORD': '', # Authentication done via certificates
+    'PASSWORD': '',  # Authentication done via certificates
     'HOST': '',  # Host = '' => connect through a local socket
     'SCHEMA': 'zulip',
     'CONN_MAX_AGE': 600,
@@ -485,7 +485,7 @@ CACHES = {
 ########################################################################
 
 RATE_LIMITING_RULES = [
-    (60, 100),     # 100 requests max every minute
+    (60, 100),  # 100 requests max every minute
 ]
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret('redis_password')

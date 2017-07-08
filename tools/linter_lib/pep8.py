@@ -93,7 +93,6 @@ def check_pep8(files):
         'zerver/worker/queue_processors.py',
         'zilencer/management/commands/populate_db.py',
         'zproject/prod_settings_template.py',
-        'zproject/settings.py',
     ]
 
     filtered_files = [fn for fn in files if fn not in IGNORE_FILES_PEPE261]
