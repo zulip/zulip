@@ -1333,6 +1333,73 @@ function test_with_mock_socket(test_params) {
     test('Do-not-match-any-case', {}, msg_prefix + msg_6);
 }());
 
+(function test_upload_finish() {
+    function test(i, response, textbox_val) {
+        var compose_ui_autosize_textarea_checked = false;
+        var compose_actions_start_checked = false;
+        var clear_out_file_input_triggered = false;
+
+        function setup_clearout_file_list_func() {
+            var event = {
+                preventDefault: noop,
+            };
+            $('#compose #file_input').trigger = noop;
+            var handler = $("#compose")
+                            .get_on_handler("click", "#attach_files");
+            handler(event);
+            $('#file_input').replaceWith = function (ele) {
+                assert.equal(ele, $('#file_input'));
+                clear_out_file_input_triggered = true;
+            };
+        }
+
+        function setup() {
+            $("#new_message_content").val('');
+            compose_ui.autosize_textarea = function () {
+                compose_ui_autosize_textarea_checked = true;
+            };
+            compose_state.set_message_type();
+            global.compose_actions = {
+                start: function (msg_type) {
+                    assert.equal(msg_type, 'stream');
+                    compose_actions_start_checked = true;
+                },
+            };
+            $("#compose-send-button").attr('disabled', 'disabled');
+            $("#send-status").addClass("alert-info");
+            $("#send-status").show();
+            $('#file_input').clone = function (param) {
+                assert(param);
+                return $('#file_input');
+            };
+            setup_clearout_file_list_func();
+        }
+
+        function assert_side_effects() {
+            assert.equal($("#new_message_content").val(), textbox_val);
+            if (response.uri) {
+                assert(compose_actions_start_checked);
+                assert(compose_ui_autosize_textarea_checked);
+                assert.equal($("#compose-send-button").attr('disabled'), undefined);
+                assert(!$('#send-status').hasClass('alert-info'));
+                assert(!$('#send-status').visible());
+                assert(clear_out_file_input_triggered);
+            }
+        }
+
+        setup();
+        compose.uploadFinished(i, {}, response);
+        assert_side_effects();
+    }
+
+    var msg_1 = '[pasted image](https://foo.com/uploads/122456) ';
+    var msg_2 = '[foobar.jpeg](https://foo.com/user_uploads/foobar.jpeg) ';
+
+    test(-1, {}, '');
+    test(-1, {uri: 'https://foo.com/uploads/122456'}, msg_1);
+    test(1, {uri: '/user_uploads/foobar.jpeg'}, msg_2);
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
