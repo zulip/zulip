@@ -37,9 +37,9 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     if not os.path.exists(success_stamp):
         do_npm_install(npm_cache,
                        npm_args or [],
+                       success_stamp,
                        stdout=stdout,
                        stderr=stderr,
-                       success_stamp=success_stamp,
                        copy_modules=copy_modules)
 
     print("Using cached node modules from %s" % (cached_node_modules,))
@@ -50,9 +50,9 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     for cmd in cmds:
         run(cmd, stdout=stdout, stderr=stderr)
 
-def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules=False,
-                   success_stamp=None):
-    # type: (str, List[str], Optional[IO], Optional[IO], Optional[bool], Optional[str]) -> None
+def do_npm_install(target_path, npm_args, success_stamp, stdout=None, stderr=None,
+                   copy_modules=False):
+    # type: (str, List[str], str, Optional[IO], Optional[IO], Optional[bool]) -> None
     cmds = [
         ["rm", "-rf", target_path],
         ['mkdir', '-p', target_path],
