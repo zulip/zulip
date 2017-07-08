@@ -1,4 +1,4 @@
-FROM quay.io/sameersbn/ubuntu:latest
+FROM quay.io/sameersbn/ubuntu:14.04.20170608
 MAINTAINER Alexander Trost <galexrt@googlemail.com>
 
 ENV ZULIP_VERSION="1.6.0" DATA_DIR="/data"
