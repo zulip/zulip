@@ -165,13 +165,6 @@ function create_stream() {
     );
 }
 
-function show_large_invites_warning(count) {
-    var invites_warning_modal = templates.render('subscription_invites_warning_modal');
-    $('#stream-creation').append(invites_warning_modal);
-    var confirm_button = $('#invites-warning-overlay').find('.confirm-invites-warning-modal');
-    confirm_button.text(i18n.t('Invite __count__ users!', {count: count}));
-}
-
 exports.new_stream_clicked = function (stream) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
@@ -328,8 +321,11 @@ $(function () {
         }
 
         var principals = get_principals();
-        if (principals.length > 100) {
-            show_large_invites_warning(principals.length);
+        if (principals.length >= 50) {
+            var invites_warning_modal = templates.render('subscription_invites_warning_modal',
+                                                         {stream_name: stream,
+                                                          count: principals.length});
+            $('#stream-creation').append(invites_warning_modal);
         } else {
             create_stream();
         }

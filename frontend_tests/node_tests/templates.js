@@ -939,7 +939,7 @@ function render(template_name, args) {
     global.write_handlebars_output("subscription_invites_warning_modal", html);
 
     var button = $(html).find(".close-invites-warning-modal").last();
-    assert.equal(button.text(), 'Oops! Let me change it');
+    assert.equal(button.text(), 'Go back');
 }());
 
 (function subscription_settings() {
