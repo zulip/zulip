@@ -134,6 +134,15 @@ function update_announce_stream_state() {
     $('#announce-new-stream').show();
 }
 
+function get_principals() {
+    return _.map(
+        $("#stream_creation_form input:checkbox[name=user]:checked"),
+        function (elem) {
+            return $(elem).val();
+        }
+    );
+}
+
 exports.new_stream_clicked = function (stream) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
@@ -291,12 +300,7 @@ $(function () {
             return;
         }
 
-        var principals = _.map(
-            $("#stream_creation_form input:checkbox[name=user]:checked"),
-            function (elem) {
-                return $(elem).val();
-            }
-        );
+        var principals = get_principals();
 
         // You are always subscribed to streams you create.
         principals.push(people.my_current_email());
