@@ -81,7 +81,6 @@ def check_pep8(files):
         'api/zulip/__init__.py',
         'tools/run-dev.py',
         'zerver/lib/bugdown/__init__.py',
-        'zerver/models.py',
         'zerver/tests/test_bugdown.py',
         'zerver/tests/test_events.py',
         'zerver/tests/test_messages.py',
