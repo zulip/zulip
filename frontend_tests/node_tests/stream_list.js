@@ -162,7 +162,11 @@ function initialize_stream_data() {
             update_whether_active: function () {},
             get_li: function () {
                 var html = '<' + sub.name + ' sidebar row html>';
-                return $(html);
+                var obj = $(html);
+
+                obj.length = 1;  // bypass blueslip error
+
+                return obj;
             },
         };
         stream_list.stream_sidebar.set_row(sub.stream_id, row);
