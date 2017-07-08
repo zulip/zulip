@@ -134,7 +134,6 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/login.html',
         'templates/zerver/markdown_help.html',
         'templates/zerver/navbar.html',
-        'templates/zerver/register.html',
         'zerver/webhooks/stripe/doc.html',
         'zerver/webhooks/wordpress/doc.html',
     ]
