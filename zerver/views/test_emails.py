@@ -70,7 +70,8 @@ def email_page(request):
     # Do not render these templates,
     # as they are currently unsupported
     ignore = [
-        'email_base',
+        'email_base_default',
+        'email_base_messages',
         'digest',
         'missed_message',
         'password_reset',
