@@ -25,26 +25,26 @@ def generate_key():
     # type: () -> str
     return generate_random_token(40)
 
+def get_object_from_key(confirmation_key):
+    # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
+    if B16_RE.search(confirmation_key):
+        try:
+            confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
+        except Confirmation.DoesNotExist:
+            return False
+
+        time_elapsed = timezone_now() - confirmation.date_sent
+        if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
+            return False
+
+        obj = confirmation.content_object
+        obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
+        obj.save(update_fields=['status'])
+        return obj
+    return False
+
 class ConfirmationManager(models.Manager):
     url_pattern_name = 'confirmation.views.confirm'
-
-    def confirm(self, confirmation_key):
-        # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
-        if B16_RE.search(confirmation_key):
-            try:
-                confirmation = self.get(confirmation_key=confirmation_key)
-            except self.model.DoesNotExist:
-                return False
-
-            time_elapsed = timezone_now() - confirmation.date_sent
-            if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
-                return False
-
-            obj = confirmation.content_object
-            obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
-            obj.save(update_fields=['status'])
-            return obj
-        return False
 
     def get_link_for_object(self, obj, host):
         # type: (Union[ContentType, int], str) -> str
