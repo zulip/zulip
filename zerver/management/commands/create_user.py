@@ -41,7 +41,9 @@ Omit both <email> and <full name> for interactive user creation.
                             dest='password',
                             type=str,
                             default='',
-                            help='password of new user.  Note that we recommend against setting passwords this way, since they can be snooped by any user account on the server via `ps -ef`.')
+                            help='password of new user.  Note that we recommend against setting '
+                                 'passwords this way, since they can be snooped by any user account '
+                                 'on the server via `ps -ef`.')
         parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
                             help='email address of new user')
         parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
