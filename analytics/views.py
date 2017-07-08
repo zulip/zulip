@@ -163,7 +163,7 @@ def client_label_map(name):
     if name == "ZulipiOS":
         return "Old iOS app"
     if name == "ZulipMobile":
-        return "New iOS app"
+        return "Mobile app"
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
