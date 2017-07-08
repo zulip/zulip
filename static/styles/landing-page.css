@@ -1300,308 +1300,146 @@ nav ul li.active::after {
 }
 
 /* -- apps page -- */
+.portico-landing.apps {
+    padding-top: 0px;
+}
 .portico-landing.apps .main,
 .portico-landing.features-app .main {
     background-color: #fff;
 }
 
-.portico-landing.apps .main {
-    max-width: 1600px;
-}
-
-.portico-landing.apps .main .padded-content.headline {
-    padding-bottom: 0px;
-}
-
-.portico-landing.apps .main .headline h1 {
-    font-size: 2.5em;
-}
-
-.portico-landing.apps .main .headline h3 {
-    font-weight: 400;
-    font-size: 1.1em;
-    color: hsl(0, 0%, 66%);
-}
-
-.portico-landing.apps .main ul.sidebar {
-    display: inline-block;
-    vertical-align: top;
-    margin: 0 -4px 0 0;
-    list-style: none;
-    font-weight: 500;
-    color: hsl(0, 0%, 66%);
-}
-
-.portico-landing.apps .main ul.sidebar li {
+.portico-landing.apps .hero {
     position: relative;
-    padding: 20px 15px 20px 0px;
-    margin: 2px 0px;
-    width: 130px;
-    text-align: right;
-    background-color: #fff;
-    cursor: pointer;
 
-    transition: all 0.3s ease;
+    padding: 100px 50px 50px 50px;
+    background: linear-gradient(35deg, #0d7373, #6ae4c8);
+    height: 600px;
+
+    color: #fff;
+
+    overflow: hidden;
 }
 
-.portico-landing.apps .main ul.sidebar li:first-of-type {
+.portico-landing.apps .hero h1 {
+    font-size: 3em;
+    margin-bottom: 0px;
+}
+
+.portico-landing.apps .hero h1 {
     margin-top: 0px;
 }
 
-.portico-landing.apps .main ul.sidebar li.active {
-    color: hsl(0, 0%, 27%);
-    font-weight: 600;
-
-    transform: translateX(-10px);
-}
-
-/* active arrow that slides in when a tab is .active on */
-.portico-landing.apps .main ul.sidebar li::after {
-    content: ">";
-    position: absolute;
-    right: 0px;
-    top: 21px;
-    opacity: 0;
-    transform: translateX(3px);
-}
-
-.portico-landing.apps .main ul.sidebar li.active::after {
-    transform: translateX(0px);
-    opacity: 1;
-}
-
-.portico-landing.apps .main .details-container {
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-    height: 500px;
-    width: calc(100% - 155px);
-    background-color: hsl(0, 0%, 53%);
-}
-
-.portico-landing.apps .main .details-container .details-box {
+.portico-landing.apps .hero #waves {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
-    pointer-events: none;
 
-    transition: all 0.3s ease;
+    background-image: url(/static/images/waves.svg);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.portico-landing.apps .hero .info,
+.portico-landing.apps .hero .image {
+    position: relative;
+
+    width: 50%;
+    float: left;
+    height: 100%;
+
     z-index: 1;
 }
 
-.portico-landing.apps .main .details-container .details-box.show {
-    opacity: 1;
-    pointer-events: auto;
-    z-index: 2;
+.portico-landing.apps .hero .info .cta {
+    text-shadow: 0px 0px 60px rgba(0,0,0,0.3);
 }
 
-.portico-landing.apps .main .details-container .details-box[data-name="android"] {
-    color: hsl(156, 56%, 95%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(128, 78%, 84%) 0%, hsl(191, 74%, 35%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(128, 78%, 84%) 0%, hsl(191, 74%, 35%) 100%);
-}
-
-.portico-landing.apps .main .details-container .details-box[data-name="ios"] {
-    color: hsl(203, 48%, 95%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(36, 98%, 84%) 0%, hsl(197, 80%, 37%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(36, 98%, 84%) 0%, hsl(197, 80%, 37%) 100%);
-}
-
-.portico-landing.apps .main .details-container .details-box[data-name="windows"] {
-    color: hsl(0, 0%, 93%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(212, 60%, 78%) 0%, hsl(216, 91%, 21%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(212, 60%, 78%) 0%, hsl(216, 91%, 21%) 100%);
-}
-
-.portico-landing.apps .main .details-container .details-box[data-name="mac"] {
-    color: hsl(350, 92%, 95%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(44, 97%, 85%) 0%, hsl(340, 73%, 32%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(44, 97%, 85%) 0%, hsl(340, 73%, 32%) 100%);
-}
-
-.portico-landing.apps .main .details-container .details-box[data-name="linux"] {
-    color: hsl(16, 93%, 95%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(16, 98%, 81%) 0%, hsl(6, 88%, 43%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(16, 98%, 81%) 0%, hsl(6, 88%, 43%) 100%);
-}
-
-.portico-landing.apps .main .details-container .details-box[data-name="snipe"] {
-    color: hsl(350, 92%, 95%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(9, 97%, 87%) 0%, hsl(246, 82%, 30%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(9, 97%, 87%) 0%, hsl(246, 82%, 30%) 100%);
-}
-
-.portico-landing.apps .main .details-container .details-box[data-name="plan9"] {
-    color: hsl(350, 92%, 95%);
-
-    background: -webkit-radial-gradient(top right, ellipse cover, hsl(9, 97%, 87%) 0%, hsl(356, 82%, 30%) 100%);
-    background: radial-gradient(ellipse farthest corner at 0px 0px, hsl(9, 97%, 87%) 0%, hsl(356, 82%, 30%) 100%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="android"].active {
-    color: hsl(175, 74%, 35%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="ios"].active {
-    color: hsl(196, 57%, 58%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="windows"].active {
-    color: hsl(216, 70%, 39%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="mac"].active {
-    color: hsl(340, 55%, 51%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="linux"].active {
-    color: hsl(6, 88%, 43%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="snipe"].active {
-    color: hsl(246, 82%, 30%);
-}
-
-.portico-landing.apps .main ul.sidebar li[data-name="plan9"].active {
-    color: hsl(356, 82%, 30%);
-}
-
-.portico-landing.apps .main .details-container .platform.description {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 300px;
-    padding: 50px;
-}
-
-.portico-landing.apps .main .details-container .platform.image {
-    float: right;
-    width: calc(49.5% - 40px);
-}
-
-.portico-landing.apps .main .details-container {
-    overflow: hidden;
-}
-
-.portico-landing.apps .details-box[data-name="mac"] .platform.image {
-    text-align: center;
-}
-
-.portico-landing.apps .main .details-box .platform.image {
-    opacity: 0;
-    transform: scale(0.2);
-    transition: transform 0.3s ease;
-}
-
-.portico-landing.apps .main .details-box.show .platform.image {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.portico-landing.apps .details-box[data-name="mac"] .platform.image img {
-    width: 450px;
-}
-
-.portico-landing.apps .details-box[data-name="windows"] .platform.image img {
-    width: 450px;
-}
-
-.portico-landing.apps .details-box[data-name="ios"] .platform.image img {
-    width: 175px;
-}
-
-.portico-landing.apps .details-box[data-name="android"] .platform.image img {
-    width: 240px;
-}
-
-.portico-landing.apps .details-box button.grey-transparent {
-    margin-top: 30px;
-}
-
-.portico-landing.apps .details-box[data-name="mac"] button.grey-transparent:active {
-    color: hsl(356, 58%, 47%);
-}
-
-.portico-landing.apps .details-box[data-name="ios"] button.grey-transparent:active {
-    color: hsl(205, 33%, 56%);
-}
-
-.portico-landing.apps .details-box[data-name="windows"] button.grey-transparent:active {
-    color: hsl(216, 50%, 35%);
-}
-
-.portico-landing.apps .main .details-box > .image {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: 35px 0px;
-    height: calc(100% - 70px);
-    background-color: hsla(0, 0%, 100%, 0.1);
-}
-
-.portico-landing.apps .main .details-container h1 {
-    margin: 20px 0px;
-}
-
-.portico-landing.apps .main .details-container .platform {
-    display: inline-block;
-    vertical-align: top;
-    padding: 20px;
-    text-align: center;
+.portico-landing.apps .hero .image img[src="/static/images/landing-page/tar.gz.svg"] {
     width: 50%;
 }
 
-.portico-landing.apps .main .details-container .platform h2 {
-    margin-top: 0px;
+.portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
+    height: 85%;
 }
 
-.portico-landing.apps .main .details-container pre {
-    display: inline-block;
-    max-width: 400px;
-    border: none;
-    padding: 15px;
-    box-shadow: 0px 0px 30px hsla(0, 0%, 100%, 0.3);
-    text-align: left;
-    background-color: hsl(16, 93%, 95%);
-    color: hsl(7, 32%, 57%);
+.portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-android.png"] {
+    height: 100%;
 }
 
-.portico-landing.apps .main .details-container .instructions {
-    margin: 30px auto 0 auto;
-    text-align: left;
-    font-size: 1.1rem;
+.portico-landing.apps .hero .info .flex {
+    height: 100%;
 }
 
-.portico-landing.apps .main .details-container .instructions a {
+.portico-landing.apps .hero .info button {
+    padding: 10px 20px;
+    margin-top: 50px;
+
+    font-size: 1em;
+    font-weight: 600;
+
+    border: 2px solid #fff;
     color: #fff;
+    background-color: transparent;
 }
 
-.portico-landing.apps .main .details-container .instructions a:not(.no-style):before {
-    background-color: hsla(0, 0%, 100%, 0.5);
-    width: 50%;
-    left: 25%;
-}
-
-.portico-landing.apps .main .details-container .instructions a:not(.no-style):hover:before {
+.portico-landing.apps .other-apps {
     background-color: #fff;
-    width: 100%;
-    left: 0%;
+    padding: 50px 50px 120px 50px;
+
+    text-align: center;
 }
 
-.portico-landing.apps .main .details-container .instructions img {
+.portico-landing.apps .other-apps h2 {
+    width: 600px;
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.portico-landing.apps .other-apps .apps {
+    display: inline-block;
+    margin: 50px 0px 0px 0px;
+}
+
+.portico-landing.apps .other-apps .apps .icon {
+    vertical-align: top;
+
+    width: 50px;
+    padding: 20px 30px;
+    border-radius: 70px;
+
+    color: #ccc;
+
+    font-size: 3em;
+    text-align: center;
+
+    transition: all 0.2s ease;
+}
+
+.portico-landing.apps .other-apps .apps .icon:hover {
+    color: #777;
+    background: linear-gradient(-45deg, #d4d4d4, #fafafa);
+}
+
+.portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
+    font-size: 4em;
+    padding: 11.5px 27px;
+}
+
+.portico-landing.apps .other-apps .apps .icon.fa-mobile-phone::after {
+    margin-top: 1px;
+}
+
+.portico-landing.apps .other-apps .apps .icon::after {
+    content: attr(data-label);
     display: block;
-    margin: -32px auto 0px auto;
-    width: 195px;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: "Humbug", sans-serif;
+    margin-top: 10px;
 }
 
 /* -- /for/open-source/ -- */
@@ -1657,6 +1495,7 @@ nav ul li.active::after {
     color: #333;
 }
 
+/* -- hello page styling -- */
 .portico-landing.hello .apps .screen {
     display: inline-block;
     margin: 0px 10px;
@@ -2431,6 +2270,55 @@ nav ul li.active::after {
 @media (max-width: 686px) {
     .portico-landing {
         padding-top: 120px;
+    }
+
+    .portico-landing.apps .hero {
+        height: 350px;
+    }
+
+    .portico-landing.apps .hero h1 {
+        font-size: 1.9em;
+        font-weight: 400;
+    }
+
+    .portico-landing.apps .other-apps {
+        padding: 50px 5px 120px 5px;
+    }
+
+    .portico-landing.apps .other-apps h2 {
+        font-size: 1.5em;
+        width: 100%;
+    }
+
+    .portico-landing.apps .other-apps .apps .icon {
+        padding: 0px 14px;
+        width: 30px;
+        padding-top: 8px;
+        padding-bottom: 0px;
+        font-size: 2.3em;
+    }
+
+    .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
+        padding: 7px 10px 5px 10px;
+        width: 35px;
+        font-size: 2.5em;
+    }
+
+    .portico-landing.apps .other-apps .apps .icon.fa-windows {
+        font-size: 2em;
+        padding: 10px 13px 2px 13px !important;
+    }
+
+    .portico-landing.apps .other-apps .apps .icon::after {
+        content: "";
+    }
+
+    .portico-landing.apps .hero .image {
+        display: none;
+    }
+
+    .portico-landing.apps .hero .info {
+        width: 100%;
     }
 
     .portico-landing.integrations .main,

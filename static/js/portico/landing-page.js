@@ -1,6 +1,11 @@
 import fuzzysearch from 'fuzzysearch';
 import blueslip from './../blueslip';
 
+const ELECTRON_APP_VERSION = "1.2.0-beta";
+const ELECTRON_APP_URL_LINUX = `https://github.com/zulip/zulip-electron/releases/download/v${ELECTRON_APP_VERSION}/Zulip-${ELECTRON_APP_VERSION}-x86_64.AppImage`;
+const ELECTRON_APP_URL_MAC = `https://github.com/zulip/zulip-electron/releases/download/v${ELECTRON_APP_VERSION}/Zulip-${ELECTRON_APP_VERSION}.dmg`;
+const ELECTRON_APP_URL_WINDOWS = `https://github.com/zulip/zulip-electron/releases/download/v${ELECTRON_APP_VERSION}/Zulip-Web-Setup-${ELECTRON_APP_VERSION}.exe`;
+
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
 // (as specified like `scroll-to='0px'`).
@@ -271,13 +276,97 @@ var hello_events = function () {
     $(".footer").addClass("hello");
 };
 
+var apps_events = function () {
+    var version;
+    var info = {
+        windows: {
+            image: "/static/images/landing-page/microsoft.png",
+            alt: "Windows",
+            description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            link: ELECTRON_APP_URL_WINDOWS,
+        },
+        mac: {
+            image: "/static/images/landing-page/macbook.png",
+            alt: "MacOS",
+            description: "Zulip on MacOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            link: ELECTRON_APP_URL_MAC,
+        },
+        android: {
+            image: "/static/images/app-screenshots/zulip-android.png",
+            alt: "Android",
+            description: "Zulip's native Android app makes it easy to keep up while on the go.",
+            link: "https://play.google.com/store/apps/details?id=com.zulip.android",
+        },
+        ios: {
+            image: "/static/images/app-screenshots/zulip-iphone-rough.png",
+            alt: "iOS",
+            description: "Zulip's native iOS app makes it easy to keep up while on the go.",
+            link: "https://itunes.apple.com/us/app/zulip/id1203036395",
+        },
+        linux: {
+            image: "/static/images/landing-page/ubuntu.png",
+            alt: "Linux",
+            description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            link: ELECTRON_APP_URL_LINUX,
+        },
+    };
+
+    var nav_version = {
+        Win: "windows",
+        MacIntel: "mac",
+        Linux: "linux",
+        iP: "ios",
+    };
+
+    // if the hash is not a valid section, then identify it.
+    version = window.location.hash.replace(/^#/, "");
+
+    if (info[version]) {
+        window.location.hash = version;
+    } else {
+        for (var x in nav_version) {
+            if (navigator.platform.indexOf(x) !== -1) {
+                window.location.hash = nav_version[x];
+                version = nav_version[x];
+                break;
+            }
+        }
+
+        if (!version || !info[version]) {
+            version = "mac";
+        }
+
+        window.location.hash = version;
+    }
+
+    var update_version = function (version) {
+        var version_info = info[version];
+        $(".info .platform").text(version_info.alt);
+        $(".info .description").text(version_info.description);
+        $(".info .link").attr("href", version_info.link);
+        $(".image img").attr("src", version_info.image);
+    };
+
+
+    window.onhashchange = function () {
+        update_version(window.location.hash.substr(1));
+    };
+
+    update_version(version);
+
+    $(".apps > .icon").click(function () {
+        $("body").animate({ scrollTop: 0 }, 200);
+    });
+};
+
 var events = function () {
     ScrollTo();
 
     $("a").click(function (e) {
         // if the pathname is different than what we are already on, run the
         // custom transition function.
-        if (window.location.pathname !== this.pathname && !this.hasAttribute("download")) {
+        if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&
+            !/no-action/.test(this.className)) {
             e.preventDefault();
             $(".portico-landing").removeClass("show");
             setTimeout(function () {
@@ -306,57 +395,9 @@ var events = function () {
         $("nav ul").addClass("show");
     });
 
-    (function () {
-        var $last = $(".details-box").eq(0).addClass("show");
-        var $li = $("ul.sidebar li");
-        var version;
-
-        var nav_version = {
-            Win: "windows",
-            MacIntel: "mac",
-            Linux: "linux",
-            iP: "ios",
-        };
-
-        for (var x in nav_version) {
-            if (navigator.platform.indexOf(x) !== -1) {
-                $('li[data-name="' + nav_version[x] + '"]').click();
-                version = nav_version[x];
-                break;
-            }
-        }
-
-        var switch_to_tab = function (elem) {
-            var target = $(elem).data("name");
-            var $el = $(".details-box[data-name='" + target + "']");
-
-            // $li is a semi-global variable from the closure above.
-            $li.removeClass("active");
-            $(elem).addClass("active");
-
-            $last.removeClass("show");
-            $el.addClass("show");
-
-            $last = $el;
-        };
-
-        // this is for the sidebar on the /apps/ page to trigger the correct info box.
-        $li.click(function () {
-            window.location.hash = $(this).data("name");
-        });
-
-        if (detectPath() === "apps") {
-            var hash = function () {
-                return window.location.hash.replace(/^#/, "");
-            };
-
-            switch_to_tab($("ul.sidebar li[data-name='" + (hash() || version || "windows") + "']"));
-
-            window.onhashchange = function () {
-                switch_to_tab($("ul.sidebar li[data-name='" + hash() + "']"));
-            };
-        }
-    }());
+    if (detectPath() === "apps") {
+        apps_events();
+    }
 
     if (detectPath() === "integrations") {
         integration_events();

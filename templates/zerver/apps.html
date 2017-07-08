@@ -2,6 +2,11 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style media="screen">
+    .app.portico-page {
+        padding-bottom: 0px;
+    }
+</style>
 {% stylesheet 'portico' %}
 {% stylesheet 'landing-page' %}
 {{ render_bundle('landing-page') }}
@@ -13,191 +18,36 @@
 {% include 'zerver/landing_nav.html' %}
 {% include 'zerver/gradients.html' %}
 
-<div class="portico-landing apps">
-    <div class="main">
-        <div class="padded-content headline">
-            <h1 class="center">{% trans %}Do we have apps? Appsolutely.{% endtrans %}</h1>
-            <h3 class="center">{% trans %}Ok, I take it back, I'm sorry, please don't go.{% endtrans %}</h3>
-        </div>
-
-        <div class="padded-content">
-            <ul class="sidebar">
-                <li data-name="android">Android</li>
-                <li data-name="ios">iOS</li>
-                <li data-name="mac">MacOS</li>
-                <li data-name="windows">Windows</li>
-                <li data-name="linux">{{ _('Linux desktop') }}</li>
-                <li data-name="snipe">{{ _('Terminal client') }}</li>
-                <li data-name="plan9">Plan 9</li>
-            </ul>
-            <div class="details-container">
-                <div class="details-box" data-name="ios">
-                    <div class="image">
-                        <div class="platform description">
-                            <div class="wrapper">
-                                <h2>iOS</h2>
-                                <div class="instructions">
-                                    <p class="center">
-                                        {% trans %}Zulip's brand-new
-                                        iOS app makes it easy to
-                                        browse your messages with
-                                        lightning-fast scrolling!
-                                        {% endtrans %}
-                                    </p>
-                                </div>
-                                <a href="https://itunes.apple.com/us/app/zulip/id1203036395" target="_blank">
-                                    <button class="button grey-transparent" type="button" name="button">{{ _('Get from App Store') }}</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="platform image">
-                          <img src="/static/images/app-screenshots/zulip-iphone-rough.png" alt="{{ _('Zulip iOS') }}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="details-box" data-name="android">
-                    <div class="image">
-                        <div class="platform description">
-                            <div class="wrapper">
-                                <h2>Android</h2>
-                                <div class="instructions">
-                                    <p class="center">
-                                      {% trans %}Read and reply to
-                                      your messages while on the go
-                                      with Zulip's free, native app
-                                      for Android.
-                                      {% endtrans %}
-                                    </p>
-                                </div>
-                                <a href="https://play.google.com/store/apps/details?id=com.zulip.android" target="_blank">
-                                    <button class="button grey-transparent" type="button" name="button">{{ _('Get from Play Store') }}</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="platform image">
-                            <img src="/static/images/app-screenshots/zulip-android.png" alt="{{ _('Zulip Android') }}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="details-box" data-name="mac">
-                    <div class="image">
-                        <div class="platform description">
-                            <div class="wrapper">
-                                <h2>MacOS</h2>
-                                <div class="instructions">
-                                    <p class="center">
-                                        {% trans %}You love your Mac. And you love Zulip. So what could be better than a Zulip app for Mac? Enjoy notifications for messages and PMs in your dock whether you're in Sublime, emacs, or Photoshop.{% endtrans %}
-                                    </p>
-                                </div>
-                                <a href="https://zulip.org/dist/apps/mac/Zulip-latest.dmg" download>
-                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download now') }}</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="platform image">
-                            <img src="/static/images/landing-page/macbook.png" alt="{{ _('MacOS') }}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="details-box" data-name="windows">
-                    <div class="image">
-                        <div class="platform description">
-                            <div class="wrapper">
-                                <h2>{{ _('Windows 7+') }}</h2>
-                                <div class="instructions">
-                                    <p class="center">
-                                        {% trans %}We proudly present Zulip for Windows: the second-best app for Windows on the market today (after Solitaire, obviously).{% endtrans %}
-                                    </p>
-                                </div>
-                                <a href="https://github.com/zulip/zulip-electron/releases/download/v1.0.0-beta/Zulip-Web-Setup-1.0.0-beta.exe" download>
-                                    <button class="button grey-transparent" type="button" name="button">{{ _('Download now') }}</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="platform image">
-                            <img src="/static/images/landing-page/microsoft.png" alt="{{ _('Windows') }}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="details-box" data-name="linux">
-                    <div class="image">
-                        <div class="platform">
-                            <h2>{{ _('Ubuntu &amp; Debian') }}</h2>
-                            <div class="instructions">
-                                <p>
-                                    {% trans %}We have an APT repository for Zulip, so adding and installing the app is easy.{% endtrans %}
-                                </p>
-                            </div>
-<pre>
-wget https://zulip.org/dist/keys/user-apt.asc
-cat user-apt.asc | sudo apt-key add -
-sudo apt-add-repository http://apt.zulip.com/user/
-sudo apt-get update
-
-sudo apt-get install zulip-desktop
-</pre>
-                        </div>
-                        <div class="platform">
-                            <h2>{{ _('Other platforms') }}</h2>
-                            <div class="instructions">
-                                <p>{% trans %}We provide a <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
-                                </p>
-                                <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz" download>
-                                    <img src="/static/images/landing-page/tar.gz.svg" alt="{{ _('Download') }}" />
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="details-box" data-name="plan9">
-                    <div class="image">
-                        <div class="platform description">
-                            <div class="wrapper">
-                                <h2>Plan 9</h2>
-                                <div class="instructions">
-                                    <p class="center">
-                                      {% trans %}First, connect to our
-                                      hosted 9P filesystem
-                                      at <tt>plan9.zulip.org</tt> and
-                                      then... no, we're - totally
-                                      kidding. There definitely isn't
-                                      a version of Zulip - for Plan
-                                      9.{% endtrans %}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="details-box" data-name="snipe">
-                    <div class="image">
-                        <div class="platform description">
-                            <div class="wrapper">
-                                <h2>Snipe</h2>
-                                <div class="instructions">
-                                    <p class="center">
-                                      {% trans %}Snipe, a modern
-                                      multi-protocol terminal-based
-                                      chat client, is a great way to
-                                      use Zulip from a terminal.
-                                      {% endtrans %}
-                                    </p>
-                                    <a href="https://github.com/kcr/snipe">
-                                        <button class="button
-                                        grey-transparent" type="button"
-                                        name="button">{{ _('Download from GitHub') }}</button>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div class="portico-landing apps no-slide">
+    <div class="hero">
+        <div id="waves"></div>
+        <div class="info">
+            <div class="flex">
+                <div class="cta">
+                    <h1>Zulip for <span class="platform"></span></h1>
+                    <p><span class="description"></span></p>
+                    <a class="link no-style no-action" href="">
+                        <button type="button" name="button">Download Zulip for <span class="platform"></span></button>
+                    </a>
                 </div>
             </div>
+        </div>
+        <div class="image">
+            <div class="flex">
+                <img src="" />
+            </div>
+        </div>
+    </div>
+
+    <div class="other-apps">
+        <h2>Apps for every platform.</h2>
+
+        <div class="apps">
+            <a class="icon fa fa-apple no-style" href="/apps/#mac" data-label="MacOS"></a>
+            <a class="icon fa fa-windows no-style" href="/apps/#windows" data-label="Windows"></a>
+            <a class="icon fa fa-linux no-style" href="/apps/#linux" data-label="Linux"></a>
+            <a class="icon fa fa-android no-style" href="/apps/#android" data-label="Android"></a>
+            <a class="icon fa fa-mobile-phone no-style" href="/apps/#ios" data-label="iOS"></a>
         </div>
     </div>
 </div>
