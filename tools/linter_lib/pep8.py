@@ -92,7 +92,6 @@ def check_pep8(files):
         'zerver/tornado/websocket_client.py',
         'zerver/worker/queue_processors.py',
         'zilencer/management/commands/populate_db.py',
-        'zproject/dev_settings.py',
         'zproject/prod_settings_template.py',
         'zproject/settings.py',
     ]
