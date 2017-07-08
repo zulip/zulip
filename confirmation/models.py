@@ -5,7 +5,6 @@
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
 import datetime
-import re
 
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -20,29 +19,25 @@ from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
 from typing import Any, Dict, Optional, Text, Union
 
-B16_RE = re.compile('^[a-f0-9]{40}$')
-
 def generate_key():
     # type: () -> str
     return generate_random_token(40)
 
 def get_object_from_key(confirmation_key):
     # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
-    if B16_RE.search(confirmation_key):
-        try:
-            confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
-        except Confirmation.DoesNotExist:
-            return False
+    try:
+        confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
+    except Confirmation.DoesNotExist:
+        return False
 
-        time_elapsed = timezone_now() - confirmation.date_sent
-        if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
-            return False
+    time_elapsed = timezone_now() - confirmation.date_sent
+    if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
+        return False
 
-        obj = confirmation.content_object
-        obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
-        obj.save(update_fields=['status'])
-        return obj
-    return False
+    obj = confirmation.content_object
+    obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
+    obj.save(update_fields=['status'])
+    return obj
 
 def create_confirmation_link(obj, host, confirmation_type):
     # type: (Union[ContentType, int], str, int) -> str
