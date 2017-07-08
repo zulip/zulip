@@ -12,7 +12,7 @@ exports.make_zjquery = function () {
         var value;
         var shown = false;
         var focused = false;
-        var children = new Dict();
+        var find_results = new Dict();
         var my_parent;
         var properties = new Dict();
         var attrs = new Dict();
@@ -31,8 +31,10 @@ exports.make_zjquery = function () {
         }
 
         var self = {
-            add_child: function (child_selector, child_elem) {
-                children.set(child_selector, child_elem);
+            add_child: function () {
+                // TODO: Remove this once some in-flight PRs
+                //       get merged.
+                assert(false, 'Use set_find_results instead.');
             },
             addClass: function (class_name) {
                 classes.set(class_name, true);
@@ -69,7 +71,7 @@ exports.make_zjquery = function () {
             },
             fadeTo: noop,
             find: function (child_selector) {
-                var child = children.get(child_selector);
+                var child = find_results.get(child_selector);
                 if (child) {
                     return child;
                 }
@@ -186,6 +188,9 @@ exports.make_zjquery = function () {
             select: function (arg) {
                 generic_event('select', arg);
                 return self.wrapper;
+            },
+            set_find_results: function (find_selector, jquery_object) {
+                find_results.set(find_selector, jquery_object);
             },
             show: function () {
                 shown = true;

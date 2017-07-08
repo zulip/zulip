@@ -146,7 +146,7 @@ set_global('message_store', {
     var count_element = $('count-stub');
     var reaction_element = $('reaction-stub');
 
-    reaction_element.add_child('.message_reaction_count', count_element);
+    reaction_element.set_find_results('.message_reaction_count', count_element);
 
     reactions.set_reaction_count(reaction_element, 5);
 
@@ -158,8 +158,8 @@ set_global('message_store', {
     var message_row = $('some-message-row');
     var message_reactions = $('our-reactions-section');
 
-    message_table.add_child("[zid='555']", message_row);
-    message_row.add_child('.message_reactions', message_reactions);
+    message_table.set_find_results("[zid='555']", message_row);
+    message_row.set_find_results('.message_reactions', message_reactions);
 
     var section = reactions.get_reaction_section(555);
 
@@ -222,7 +222,7 @@ set_global('message_store', {
 
     var count_element = $('count-element');
     var reaction_element = $('reaction-element');
-    reaction_element.add_child('.message_reaction_count', count_element);
+    reaction_element.set_find_results('.message_reaction_count', count_element);
 
     var title_set;
     reaction_element.prop = function (prop_name, value) {

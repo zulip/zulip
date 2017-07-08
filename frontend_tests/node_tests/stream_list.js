@@ -50,8 +50,8 @@ set_global('topic_list', {});
     (function create_devel_sidebar_row() {
         var devel_value = $('devel-value');
         var devel_count = $('devel-count');
-        $('devel-stub-html').add_child('.count', devel_count);
-        $('devel-count').add_child('.value', devel_value);
+        $('devel-stub-html').set_find_results('.count', devel_count);
+        $('devel-count').set_find_results('.value', devel_value);
         devel_count.set_parent($('devel-stub-html'));
 
         global.templates.render = function (template_name, data) {
@@ -67,8 +67,8 @@ set_global('topic_list', {});
     (function create_social_sidebar_row() {
         var social_value = $('social-value');
         var social_count = $('social-count');
-        $('social-stub-html').add_child('.count', social_count);
-        $('social-count').add_child('.value', social_value);
+        $('social-stub-html').set_find_results('.count', social_count);
+        $('social-count').set_find_results('.value', social_value);
         social_count.set_parent($('social-stub-html'));
 
         global.templates.render = function (template_name, data) {
@@ -111,7 +111,7 @@ set_global('topic_list', {});
     var stream_id = social.stream_id;
 
     var privacy_elem = $('privacy-stub');
-    social_li.add_child('.stream-privacy', privacy_elem);
+    social_li.set_find_results('.stream-privacy', privacy_elem);
 
     social.invite_only = true;
     social.color = '#222222';
@@ -362,8 +362,8 @@ function initialize_stream_data() {
         var elem = $(elem_selector);
         var count = $(count_selector);
         var value = $(value_selector);
-        elem.add_child('.count', count);
-        count.add_child('.value', value);
+        elem.set_find_results('.count', count);
+        count.set_find_results('.value', value);
         count.set_parent(elem);
 
         return elem;

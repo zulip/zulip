@@ -290,8 +290,8 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     var count = $('alice-count');
     var pm_key = alice.user_id.toString();
     var li = $("li.user_sidebar_entry[data-user-id='" + pm_key + "']");
-    count.add_child('.value', value);
-    li.add_child('.count', count);
+    count.set_find_results('.value', value);
+    li.set_find_results('.count', count);
     count.set_parent(li);
 
     var counts = new Dict();
@@ -315,8 +315,8 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
     var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
     var li = $(li_selector);
-    count.add_child('.value', value);
-    li.add_child('.count', count);
+    count.set_find_results('.value', value);
+    li.set_find_results('.count', count);
     count.set_parent(li);
 
     var counts = new Dict();
@@ -416,7 +416,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
     var alice_li = $('alice-li');
 
     // These selectors are here to avoid some short-circuit logic.
-    $('#user_presences').add_child('[data-user-id="1"]', alice_li);
+    $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
 
     var appended_html;
     $('#user_presences').append = function (html) {
@@ -437,7 +437,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
     var fred_li = $('fred-li');
 
     // These selectors are here to avoid some short-circuit logic.
-    $('#user_presences').add_child('[data-user-id="2"]', fred_li);
+    $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
 
     var appended_html;
     $('#user_presences').append = function (html) {
@@ -466,7 +466,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
     var fred_li = $('fred-li');
 
     // These selectors are here to avoid some short-circuit logic.
-    $('#user_presences').add_child('[data-user-id="2"]', fred_li);
+    $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
 
     $('fake-dom-for-jill').attr = function (attr_name) {
         assert.equal(attr_name, 'data-user-id');
@@ -576,8 +576,8 @@ $('.user-list-filter').is = function (sel) {
     var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
     var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
     var li = $(li_selector);
-    count.add_child('.value', value);
-    li.add_child('.count', count);
+    count.set_find_results('.value', value);
+    li.set_find_results('.count', count);
     count.set_parent(li);
 
     var real_get_huddles = activity.get_huddles;
@@ -609,7 +609,7 @@ $('.user-list-filter').is = function (sel) {
     };
     var alice_li = $('alice-li');
 
-    $('#user_presences').add_child('[data-user-id="1"]', alice_li);
+    $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
 
     $('#user_presences').append = function () {};
 

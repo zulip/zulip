@@ -69,14 +69,14 @@ set_global('ui_report', {
 });
 
 function simulate_auth_methods() {
-    $('#admin_auth_methods_table').add_child(
+    $('#admin_auth_methods_table').set_find_results(
         'tr.method_row',
         $('admin-tr-stub')
     );
 
     var controls = $('auth-methods-controls-stub');
 
-    $(".organization-box [data-name='auth-methods']").add_child(
+    $(".organization-box [data-name='auth-methods']").set_find_results(
         'input, button, select, checked',
         controls
     );
@@ -87,7 +87,7 @@ function simulate_auth_methods() {
     };
 
     var non_editables = $('auth-methods-not-edit-stub');
-    $('.organization-box').add_child(
+    $('.organization-box').set_find_results(
         '.settings-section:not(.can-edit)',
         non_editables
     );
@@ -96,7 +96,7 @@ function simulate_auth_methods() {
 }
 
 function simulate_realm_domains_table() {
-    $('#realm_domains_table tbody').add_child(
+    $('#realm_domains_table tbody').set_find_results(
         'tr',
         $('realm-tr-stub')
     );
@@ -115,17 +115,17 @@ function simulate_realm_domains_table() {
 function test_realms_domain_modal(add_realm_domain) {
     var info = $('domains-info-stub');
 
-    $('#realm_domains_modal').add_child(
+    $('#realm_domains_modal').set_find_results(
         '.realm_domains_info',
         info
     );
 
-    $('#add-realm-domain-widget').add_child(
+    $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain',
         $('new-realm-domain-stub')
     );
 
-    $('#add-realm-domain-widget').add_child(
+    $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain-allow-subdomains',
         $('new-realm-domain-allow-subdomains-stub')
     );
@@ -393,7 +393,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         error_callback = req.error;
     };
 
-    $('#realm_domains_modal').add_child(
+    $('#realm_domains_modal').set_find_results(
         '.realm_domains_info',
         info
     );
@@ -402,7 +402,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     $('elem-stub').parents = function () {
         return $('parents-stub');
     };
-    $('parents-stub').add_child('.domain', $('domain-stub'));
+    $('parents-stub').set_find_results('.domain', $('domain-stub'));
     $('elem-stub').prop('checked', allow);
 
     change_allow_subdomains.apply('elem-stub', [ev]);

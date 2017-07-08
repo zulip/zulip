@@ -58,7 +58,7 @@ set_global('$', global.make_zjquery());
     assert.equal(widget.val(), '42');
 }());
 
-(function test_parent_child_stuff() {
+(function test_finding_child_objects() {
     // Let's say you have a function like the following:
     function update_message_emoji(emoji_src) {
         $('#my-message').find('.emoji').attr('src', emoji_src);
@@ -72,9 +72,9 @@ set_global('$', global.make_zjquery());
 
     // But you can set up your tests to simulate DOM relationships.
     //
-    // We will use add_child(), which is a special zjquery helper.
+    // We will use set_find_results(), which is a special zjquery helper.
     var emoji = $('emoji-stub');
-    $('#my-message').add_child('.emoji', emoji);
+    $('#my-message').set_find_results('.emoji', emoji);
 
     // And then calling the function produces the desired effect:
     update_message_emoji('foo.png');
