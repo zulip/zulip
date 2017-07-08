@@ -33,7 +33,8 @@ from zerver.lib.utils import get_subdomain
 from zerver.lib.timezone import get_all_timezones
 from zproject.backends import password_auth_enabled
 
-from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
+from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid, \
+    create_confirmation_link
 
 import logging
 import requests
@@ -312,7 +313,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
     can complete their registration.
     """
     prereg_user = create_preregistration_user(email, request, realm_creation)
-    activation_url = Confirmation.objects.get_link_for_object(prereg_user, request.get_host())
+    activation_url = create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION)
     send_email('zerver/emails/confirm_registration', email, from_address=FromAddress.NOREPLY,
                context={'activate_url': activation_url})
     if settings.DEVELOPMENT and realm_creation:

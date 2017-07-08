@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.timezone import now
 
-from confirmation.models import EmailChangeConfirmation, generate_key
+from confirmation.models import Confirmation, generate_key, confirmation_url
 from zerver.lib.actions import do_start_email_change_process, do_set_realm_property
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -26,8 +26,7 @@ class EmailChangeTestCase(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         key = generate_key()
-        url = EmailChangeConfirmation.objects.get_activation_url(
-            key, 'testserver')
+        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops"], response)
 
@@ -35,16 +34,14 @@ class EmailChangeTestCase(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         key = 'invalid key'
-        url = EmailChangeConfirmation.objects.get_activation_url(
-            key, 'testserver')
+        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops"], response)
 
     def test_email_change_when_not_logging_in(self):
         # type: () -> None
         key = generate_key()
-        url = EmailChangeConfirmation.objects.get_activation_url(
-            key, 'testserver')
+        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assertEqual(response.status_code, 302)
 
@@ -60,10 +57,10 @@ class EmailChangeTestCase(ZulipTestCase):
                                                realm=user_profile.realm)
         key = generate_key()
         date_sent = now() - datetime.timedelta(days=2)
-        EmailChangeConfirmation.objects.create(content_object=obj,
-                                               date_sent=date_sent,
-                                               confirmation_key=key)
-        url = EmailChangeConfirmation.objects.get_activation_url(key, user_profile.realm.host)
+        Confirmation.objects.create(content_object=obj,
+                                    date_sent=date_sent,
+                                    confirmation_key=key)
+        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops"], response)
 
@@ -79,10 +76,10 @@ class EmailChangeTestCase(ZulipTestCase):
                                                user_profile=user_profile,
                                                realm=user_profile.realm)
         key = generate_key()
-        EmailChangeConfirmation.objects.create(content_object=obj,
-                                               date_sent=now(),
-                                               confirmation_key=key)
-        url = EmailChangeConfirmation.objects.get_activation_url(key, user_profile.realm.host)
+        Confirmation.objects.create(content_object=obj,
+                                    date_sent=now(),
+                                    confirmation_key=key)
+        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)

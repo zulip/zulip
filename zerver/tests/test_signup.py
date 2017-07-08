@@ -11,7 +11,7 @@ from django.utils.timezone import now as timezone_now
 from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, create_confirmation_link
 
 from zilencer.models import Deployment
 
@@ -697,7 +697,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         data = {"email": invitee, "referrer_email": current_user_email}
         invitee = get_prereg_user_by_email(data["email"])
         referrer = self.example_user(referrer_user)
-        link = Confirmation.objects.get_link_for_object(invitee, referrer.realm.host)
+        link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
         context = common_context(referrer)
         context.update({
             'activate_url': link,

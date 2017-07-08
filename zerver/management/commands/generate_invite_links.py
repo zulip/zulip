@@ -5,7 +5,7 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.management.base import CommandError
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import PreregistrationUser, email_allowed_for_realm
 
@@ -53,4 +53,4 @@ class Command(ZulipBaseCommand):
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
-            print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user, realm.host))
+            print(email + ": " + create_confirmation_link(prereg_user, realm.host, Confirmation.InVITATION))

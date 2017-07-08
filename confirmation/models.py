@@ -43,24 +43,24 @@ def get_object_from_key(confirmation_key):
         return obj
     return False
 
+def create_confirmation_link(obj, host, confirmation_type):
+    # type: (Union[ContentType, int], str, int) -> str
+    key = generate_key()
+    Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
+    return confirmation_url(key, host, confirmation_type)
+
+def confirmation_url(confirmation_key, host, confirmation_type):
+    # type: (str, str, int) -> str
+    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                       host,
+                       reverse(_properties[confirmation_type].url_name,
+                               kwargs={'confirmation_key': confirmation_key}))
+
 class ConfirmationManager(models.Manager):
-    url_pattern_name = 'confirmation.views.confirm'
-
-    def get_link_for_object(self, obj, host):
-        # type: (Union[ContentType, int], str) -> str
-        key = generate_key()
-        self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
-        return self.get_activation_url(key, host)
-
-    def get_activation_url(self, confirmation_key, host):
-        # type: (str, str) -> str
-        return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                           host,
-                           reverse(self.url_pattern_name,
-                                   kwargs={'confirmation_key': confirmation_key}))
+    pass
 
 class EmailChangeConfirmationManager(ConfirmationManager):
-    url_pattern_name = 'zerver.views.user_settings.confirm_email_change'
+    pass
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
@@ -68,6 +68,12 @@ class Confirmation(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
     date_sent = models.DateTimeField('sent')
     confirmation_key = models.CharField('activation key', max_length=40)
+
+    USER_REGISTRATION = 1
+    INVITATION = 2
+    EMAIL_CHANGE = 3
+    UNSUBSCRIBE = 4
+    SERVER_REGISTRATION = 5
 
     objects = ConfirmationManager()
 
@@ -84,6 +90,17 @@ class EmailChangeConfirmation(Confirmation):
         proxy = True
 
     objects = EmailChangeConfirmationManager()
+
+class ConfirmationType(object):
+    def __init__(self, url_name):
+        # type: (str) -> None
+        self.url_name = url_name
+
+_properties = {
+    Confirmation.USER_REGISTRATION: ConfirmationType('confirmation.views.confirm'),
+    Confirmation.INVITATION: ConfirmationType('confirmation.views.confirm'),
+    Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
+}
 
 # Conirmation pathways for which there is no content_object that we need to
 # keep track of.
