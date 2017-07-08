@@ -592,6 +592,10 @@ button.login-google-button {
     color: hsl(156, 62%, 61%);
 }
 
+#registration section {
+    padding: 10px 0 5px;
+}
+
 #registration .input-box {
     display: block;
     text-align: center;

@@ -26,6 +26,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
             {{ csrf_input }}
 
+            <section class="user-registration">
             <div class="input-box no-validation">
                 <input type='hidden' name='key' value='{{ key }}' />
                 <input type='hidden' name='timezone' id='timezone'/>
@@ -73,7 +74,9 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
             </div>
             {% endif %}
+            </section>
 
+            <section class="org-registration">
             {% if creating_new_team %}
             <div class="input-box">
                 <div class="inline-block relative">
@@ -130,6 +133,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
             </div>
             {% endif %}
+            </section>
 
             <div class="input-group margin terms-of-service">
                 {% if terms_of_service %}
