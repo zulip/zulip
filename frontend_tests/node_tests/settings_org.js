@@ -71,10 +71,10 @@ set_global('ui_report', {
 function simulate_auth_methods() {
     $('#admin_auth_methods_table').set_find_results(
         'tr.method_row',
-        $('admin-tr-stub')
+        $.create('admin-tr-stub')
     );
 
-    var controls = $('auth-methods-controls-stub');
+    var controls = $.create('auth-methods-controls-stub');
 
     $(".organization-box [data-name='auth-methods']").set_find_results(
         'input, button, select, checked',
@@ -86,7 +86,7 @@ function simulate_auth_methods() {
         assert.equal(val, true);
     };
 
-    var non_editables = $('auth-methods-not-edit-stub');
+    var non_editables = $.create('auth-methods-not-edit-stub');
     $('.organization-box').set_find_results(
         '.settings-section:not(.can-edit)',
         non_editables
@@ -98,7 +98,7 @@ function simulate_auth_methods() {
 function simulate_realm_domains_table() {
     $('#realm_domains_table tbody').set_find_results(
         'tr',
-        $('realm-tr-stub')
+        $.create('realm-tr-stub')
     );
 
     var appended;
@@ -113,7 +113,7 @@ function simulate_realm_domains_table() {
 }
 
 function test_realms_domain_modal(add_realm_domain) {
-    var info = $('domains-info-stub');
+    var info = $.create('domains-info-stub');
 
     $('#realm_domains_modal').set_find_results(
         '.realm_domains_info',
@@ -122,12 +122,12 @@ function test_realms_domain_modal(add_realm_domain) {
 
     $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain',
-        $('new-realm-domain-stub')
+        $.create('new-realm-domain-stub')
     );
 
     $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain-allow-subdomains',
-        $('new-realm-domain-allow-subdomains-stub')
+        $.create('new-realm-domain-allow-subdomains-stub')
     );
 
     var posted;
@@ -323,7 +323,7 @@ function test_upload_realm_icon(upload_realm_icon) {
 }
 
 function test_change_message_editing(change_message_editing) {
-    var parent_elem = $('editing-parent-stub');
+    var parent_elem = $.create('editing-parent-stub');
 
     $('#id_realm_message_content_edit_limit_minutes_label').set_parent(parent_elem);
 
@@ -337,7 +337,7 @@ function test_change_message_editing(change_message_editing) {
 }
 
 function test_change_invite_required(change_invite_required) {
-    var parent_elem = $('invite-parent-stub');
+    var parent_elem = $.create('invite-parent-stub');
 
     $('#id_realm_invite_by_admins_only_label').set_parent(parent_elem);
 
@@ -380,7 +380,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         stopPropagation: noop,
     };
 
-    var info = $('realm-domain-info-stub');
+    var info = $.create('realm-domain-info-stub');
     var domain = 'example.com';
     var allow = true;
 
@@ -398,14 +398,18 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         info
     );
 
-    $('domain-stub').text(domain);
-    $('elem-stub').parents = function () {
-        return $('parents-stub');
-    };
-    $('parents-stub').set_find_results('.domain', $('domain-stub'));
-    $('elem-stub').prop('checked', allow);
+    var domain_obj = $.create('domain object');
+    domain_obj.text(domain);
 
-    change_allow_subdomains.apply('elem-stub', [ev]);
+
+    var elem_obj = $('<elem html>');
+    var parents_obj = $.create('parents object');
+
+    elem_obj.set_parents_result('tr', parents_obj);
+    parents_obj.set_find_results('.domain', domain_obj);
+    elem_obj.prop('checked', allow);
+
+    change_allow_subdomains.apply('<elem html>', [ev]);
 
     success_callback();
     assert.equal(info.text(),
@@ -421,8 +425,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     assert.equal(info.text(), 'no can do');
 
     allow = false;
-    $('elem-stub').prop('checked', allow);
-    change_allow_subdomains.apply('elem-stub', [ev]);
+    elem_obj.prop('checked', allow);
+    change_allow_subdomains.apply('<elem html>', [ev]);
     success_callback();
     assert.equal(info.text(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');

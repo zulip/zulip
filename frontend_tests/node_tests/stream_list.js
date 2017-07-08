@@ -48,16 +48,19 @@ set_global('topic_list', {});
     };
 
     (function create_devel_sidebar_row() {
-        var devel_value = $('devel-value');
-        var devel_count = $('devel-count');
-        $('devel-stub-html').set_find_results('.count', devel_count);
-        $('devel-count').set_find_results('.value', devel_value);
-        devel_count.set_parent($('devel-stub-html'));
+        var devel_value = $.create('devel-value');
+        var devel_count = $.create('devel-count');
+
+        var sidebar_row = $('<devel sidebar row>');
+
+        sidebar_row.set_find_results('.count', devel_count);
+        devel_count.set_find_results('.value', devel_value);
+        devel_count.set_parent(sidebar_row);
 
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/devel');
-            return 'devel-stub-html';
+            return '<devel sidebar row>';
         };
 
         stream_list.create_sidebar_row(devel);
@@ -65,16 +68,18 @@ set_global('topic_list', {});
     }());
 
     (function create_social_sidebar_row() {
-        var social_value = $('social-value');
-        var social_count = $('social-count');
-        $('social-stub-html').set_find_results('.count', social_count);
-        $('social-count').set_find_results('.value', social_value);
-        social_count.set_parent($('social-stub-html'));
+        var social_value = $.create('social-value');
+        var social_count = $.create('social-count');
+        var sidebar_row = $('<social sidebar row>');
+
+        sidebar_row.set_find_results('.count', social_count);
+        social_count.set_find_results('.value', social_value);
+        social_count.set_parent(sidebar_row);
 
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/social');
-            return 'social-stub-html';
+            return '<social sidebar row>';
         };
 
         stream_list.create_sidebar_row(social);
@@ -89,8 +94,8 @@ set_global('topic_list', {});
     }
 
     set_getter($('<hr class="stream-split">'), 'split');
-    set_getter($('devel-stub-html'), 'devel-sidebar');
-    set_getter($('social-stub-html'), 'social-sidebar');
+    set_getter($('<devel sidebar row>'), 'devel-sidebar');
+    set_getter($('<social sidebar row>'), 'social-sidebar');
 
     var appended_elems;
     $('#stream_filters').append = function (elems) {
@@ -107,10 +112,10 @@ set_global('topic_list', {});
 
     assert.deepEqual(appended_elems, expected_elems);
 
-    var social_li = $('social-stub-html');
+    var social_li = $('<social sidebar row>');
     var stream_id = social.stream_id;
 
-    var privacy_elem = $('privacy-stub');
+    var privacy_elem = $.create('privacy-stub');
     social_li.set_find_results('.stream-privacy', privacy_elem);
 
     social.invite_only = true;
@@ -156,8 +161,8 @@ function initialize_stream_data() {
         var row = {
             update_whether_active: function () {},
             get_li: function () {
-                var selector = 'stub-' + sub.name;
-                return $(selector);
+                var html = '<' + sub.name + ' sidebar row html>';
+                return $(html);
             },
         };
         stream_list.stream_sidebar.set_row(sub.stream_id, row);
@@ -249,7 +254,7 @@ function initialize_stream_data() {
         perfectScrollbar: function () { scrollbar_updated = true; },
     });
 
-    assert(!$('stub-devel').hasClass('active-filter'));
+    assert(!$('<devel sidebar row html>').hasClass('active-filter'));
 
     stream_list.initialize();
 
@@ -264,7 +269,7 @@ function initialize_stream_data() {
         {operator: 'stream', operand: 'devel'},
     ]);
     activate_filter(filter);
-    assert($('stub-devel').hasClass('active-filter'));
+    assert($('<devel sidebar row html>').hasClass('active-filter'));
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
     scrollbar_updated = false;
@@ -274,7 +279,7 @@ function initialize_stream_data() {
     ]);
     activate_filter(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
-    assert(!$('stub-cars').hasClass('active-filter')); // false because of topic
+    assert(!$('<cars sidebar row html>').hasClass('active-filter')); // false because of topic
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
     assert(!pm_expanded);
@@ -301,7 +306,7 @@ function initialize_stream_data() {
     ]);
     activate_filter(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
-    assert($('stub-cars').hasClass('active-filter'));
+    assert($('<cars sidebar row html>').hasClass('active-filter'));
 }());
 
 (function test_sort_streams() {
@@ -325,14 +330,14 @@ function initialize_stream_data() {
     stream_list.build_stream_list();
 
     var expected_elems = [
-        'stub-devel',
-        'stub-Rome',
-        'stub-test',
+        '<devel sidebar row html>',
+        '<Rome sidebar row html>',
+        '<test sidebar row html>',
         'split',
-        'stub-announce',
-        'stub-Denmark',
+        '<announce sidebar row html>',
+        '<Denmark sidebar row html>',
         'split',
-        'stub-cars',
+        '<cars sidebar row html>',
     ];
     assert.deepEqual(appended_elems, expected_elems);
 
@@ -358,8 +363,7 @@ function initialize_stream_data() {
 }());
 
 (function test_update_count_in_dom() {
-    function make_elem(elem_selector, count_selector, value_selector) {
-        var elem = $(elem_selector);
+    function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
         var value = $(value_selector);
         elem.set_find_results('.count', count);
@@ -370,26 +374,25 @@ function initialize_stream_data() {
     }
 
     var stream_li = make_elem(
-        'stream-li',
-        'stream-count',
-        'stream-value'
+        $('<stream li>'),
+        '<stream-count>',
+        '<stream-value>'
     );
-
 
     stream_li.addClass('subscription_block');
     stream_li.addClass('stream-with-count');
     assert(stream_li.hasClass('stream-with-count'));
 
     make_elem(
-        "#global_filters li[data-name='mentioned']",
-        'mentioned-count',
-        'mentioned-value'
+        $("#global_filters li[data-name='mentioned']"),
+        '<mentioned-count>',
+        '<mentioned-value>'
     );
 
     make_elem(
-        "#global_filters li[data-name='home']",
-        'home-count',
-        'home-value'
+        $("#global_filters li[data-name='home']"),
+        '<home-count>',
+        '<home-value>'
     );
 
     unread_ui.set_count_toggle_button = noop;
@@ -412,16 +415,16 @@ function initialize_stream_data() {
     };
 
     stream_list.update_dom_with_unread_counts(counts);
-    assert.equal($('stream-value').text(), '');
+    assert.equal($('<stream li>').text(), 'never-been-set');
     assert(!stream_li.hasClass('stream-with-count'));
 
-    assert.equal($('mentioned-value').text(), '222');
-    assert.equal($('home-value').text(), '333');
+    assert.equal($('<mentioned-value>').text(), '222');
+    assert.equal($('<home-value>').text(), '333');
 
     stream_count.set(stream_id, 99);
 
     stream_list.update_dom_with_unread_counts(counts);
-    assert.equal($('stream-value').text(), '99');
+    assert.equal($('<stream-value>').text(), '99');
     assert(stream_li.hasClass('stream-with-count'));
 
     var topic_results;

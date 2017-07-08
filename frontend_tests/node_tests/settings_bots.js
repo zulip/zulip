@@ -10,7 +10,7 @@ add_dependencies({
 });
 
 set_global('$', global.make_zjquery());
-set_global('document', {});
+set_global('document', 'document-stub');
 
 var settings_bots = require("js/settings_bots.js");
 

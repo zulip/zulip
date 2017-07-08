@@ -73,7 +73,7 @@ set_global('$', global.make_zjquery());
     // But you can set up your tests to simulate DOM relationships.
     //
     // We will use set_find_results(), which is a special zjquery helper.
-    var emoji = $('emoji-stub');
+    var emoji = $('<div class="emoji">');
     $('#my-message').set_find_results('.emoji', emoji);
 
     // And then calling the function produces the desired effect:
@@ -135,7 +135,7 @@ set_global('$', global.make_zjquery());
     var value;
 
     function initialize_handler() {
-        $('my-parent').on('input', '.some-child-class', function (e) {
+        $('#my-parent').on('input', '.some-child-class', function (e) {
             value = 42; // just a dummy side effect
             e.stopPropagation();
         });
@@ -147,7 +147,7 @@ set_global('$', global.make_zjquery());
 
     // We want to call the inner function, so first let's get it using the
     // get_on_handler() helper from zjquery.
-    var handler_func = $('my-parent').get_on_handler('input', '.some-child-class');
+    var handler_func = $('#my-parent').get_on_handler('input', '.some-child-class');
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
     var stub_event = {
@@ -159,4 +159,18 @@ set_global('$', global.make_zjquery());
 
     // And verify it did what it was supposed to do.
     assert.equal(value, 42);
+}());
+
+(function test_create() {
+    // You can create jQuery objects that aren't tied to any particular
+    // selector, and which just have a name.
+
+    var obj1 = $.create('the table holding employees');
+    var obj2 = $.create('the collection of rows in the table');
+
+    obj1.show();
+    assert(obj1.visible());
+
+    obj2.addClass('.striped');
+    assert(obj2.hasClass('.striped'));
 }());

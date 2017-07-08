@@ -38,7 +38,7 @@ var presence = global.presence;
 set_global('resize', {
     resize_page_components: function () {},
 });
-set_global('window', {});
+set_global('window', 'window-stub');
 
 var me = {
     email: 'me@zulip.com',
@@ -286,8 +286,8 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 }());
 
 (function test_PM_update_dom_counts() {
-    var value = $('alice-value');
-    var count = $('alice-count');
+    var value = $.create('alice-value');
+    var count = $.create('alice-count');
     var pm_key = alice.user_id.toString();
     var li = $("li.user_sidebar_entry[data-user-id='" + pm_key + "']");
     count.set_find_results('.value', value);
@@ -310,8 +310,8 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 }());
 
 (function test_group_update_dom_counts() {
-    var value = $('alice-fred-value');
-    var count = $('alice-fred-count');
+    var value = $.create('alice-fred-value');
+    var count = $.create('alice-fred-count');
     var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
     var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
     var li = $(li_selector);
@@ -413,7 +413,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 }());
 
 (function test_insert_one_user_into_empty_list() {
-    var alice_li = $('alice-li');
+    var alice_li = $.create('alice list item');
 
     // These selectors are here to avoid some short-circuit logic.
     $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
@@ -434,7 +434,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 }());
 
 (function test_insert_fred_after_alice() {
-    var fred_li = $('fred-li');
+    var fred_li = $.create('fred list item');
 
     // These selectors are here to avoid some short-circuit logic.
     $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
@@ -444,7 +444,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
         appended_html = html;
     };
 
-    $('fake-dom-for-alice').attr = function (attr_name) {
+    $('<fake html for alice>').attr = function (attr_name) {
         assert.equal(attr_name, 'data-user-id');
         return alice.user_id;
     };
@@ -452,7 +452,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
     $.stub_selector('#user_presences li', {
         toArray: function () {
             return [
-                'fake-dom-for-alice',
+                '<fake html for alice>',
             ];
         },
     });
@@ -463,12 +463,12 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 }());
 
 (function test_insert_fred_before_jill() {
-    var fred_li = $('fred-li');
+    var fred_li = $.create('fred-li');
 
     // These selectors are here to avoid some short-circuit logic.
     $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
 
-    $('fake-dom-for-jill').attr = function (attr_name) {
+    $('<fake-dom-for-jill').attr = function (attr_name) {
         assert.equal(attr_name, 'data-user-id');
         return jill.user_id;
     };
@@ -476,13 +476,13 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
     $.stub_selector('#user_presences li', {
         toArray: function () {
             return [
-                'fake-dom-for-jill',
+                '<fake-dom-for-jill',
             ];
         },
     });
 
     var before_html;
-    $('fake-dom-for-jill').before = function (html) {
+    $('<fake-dom-for-jill').before = function (html) {
         before_html = html;
     };
     activity.insert_user_into_list(fred.user_id);
@@ -571,8 +571,8 @@ $('.user-list-filter').is = function (sel) {
 }());
 
 (function test_update_huddles_and_redraw() {
-    var value = $('alice-fred-value');
-    var count = $('alice-fred-count');
+    var value = $.create('alice-fred-value');
+    var count = $.create('alice-fred-count');
     var pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
     var li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
     var li = $(li_selector);
@@ -607,7 +607,7 @@ $('.user-list-filter').is = function (sel) {
             timestamp: server_time,
         },
     };
-    var alice_li = $('alice-li');
+    var alice_li = $.create('alice-li');
 
     $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
 

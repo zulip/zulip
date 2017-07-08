@@ -1,7 +1,7 @@
 var assert = require('assert');
 var noop = function () {};
 set_global('$', global.make_zjquery());
-set_global('document', '');
+set_global('document', 'document-stub');
 
 set_global('colorspace', {
     sRGB_to_linear: noop,

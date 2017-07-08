@@ -9,7 +9,7 @@ var with_overrides = global.with_overrides;
 var people = global.people;
 
 set_global('$', global.make_zjquery());
-set_global('document', '');
+set_global('document', 'document-stub');
 
 set_global('alert_words', {
     process_message: noop,

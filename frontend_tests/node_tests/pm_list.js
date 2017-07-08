@@ -143,8 +143,8 @@ global.people.initialize_current_user(me.user_id);
     };
 
     var private_li = $("#global_filters > li[data-name='private']");
-    var alice_li = $('alice-li-stub');
-    var bob_li = $('bob-li-stub');
+    var alice_li = $.create('alice-li-stub');
+    var bob_li = $.create('bob-li-stub');
 
     private_li.set_find_results("li[data-user-ids-string='101']", alice_li);
     private_li.set_find_results("li[data-user-ids-string='102']", bob_li);
@@ -234,15 +234,15 @@ global.people.initialize_current_user(me.user_id);
 }());
 
 (function test_update_dom_with_unread_counts() {
-    var total_value = $('total-value-stub');
-    var total_count = $('total-count-stub');
+    var total_value = $.create('total-value-stub');
+    var total_count = $.create('total-count-stub');
     var private_li = $("#global_filters > li[data-name='private']");
     private_li.set_find_results('.count', total_count);
     total_count.set_find_results('.value', total_value);
 
-    var child_value = $('child-value-stub');
-    var child_count = $('child-count-stub');
-    var child_li = $('child-li-stub');
+    var child_value = $.create('child-value-stub');
+    var child_count = $.create('child-count-stub');
+    var child_li = $.create('child-li-stub');
     private_li.set_find_results("li[data-user-ids-string='101,102']", child_li);
     child_li.set_find_results('.private_message_count', child_count);
     child_count.set_find_results('.value', child_value);

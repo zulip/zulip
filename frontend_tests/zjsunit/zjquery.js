@@ -290,6 +290,21 @@ exports.make_zjquery = function () {
         }
 
         var selector = arg;
+
+        var valid_selector =
+            ('<#.'.indexOf(selector[0]) >= 0) ||
+            (selector === 'window-stub') ||
+            (selector === 'document-stub') ||
+            (selector === 'html') ||
+            (selector.location) ||
+            (selector.indexOf('#') >= 0) ||
+            (selector.indexOf('.') >= 0);
+
+        assert(valid_selector,
+               'Invalid selector: ' + selector +
+               ' Use $.create() maybe?');
+
+
         if (elems[selector] === undefined) {
             var elem = new_elem(selector);
             elems[selector] = jquery_array(elem);
@@ -297,6 +312,13 @@ exports.make_zjquery = function () {
         return elems[selector];
     };
 
+    zjquery.create = function (name)  {
+        assert(!elems[name],
+               'You already created an object with this name!!');
+        var elem = new_elem(name);
+        elems[name] = jquery_array(elem);
+        return elems[name];
+    };
 
     zjquery.stub_selector = function (selector, stub) {
         elems[selector] = stub;

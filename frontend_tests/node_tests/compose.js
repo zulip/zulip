@@ -684,7 +684,7 @@ function test_raw_file_drop(raw_drop_func) {
     });
     $("#compose #attach_files").addClass("notdisplayed");
 
-    global.document = 'fake-document-object';
+    global.document = 'document-stub';
     global.csrf_token = 'fake-csrf-token';
 
     var filedrop_in_compose_checked = false;

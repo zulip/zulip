@@ -143,8 +143,8 @@ set_global('message_store', {
 }());
 
 (function test_set_reaction_count() {
-    var count_element = $('count-stub');
-    var reaction_element = $('reaction-stub');
+    var count_element = $.create('count-stub');
+    var reaction_element = $.create('reaction-stub');
 
     reaction_element.set_find_results('.message_reaction_count', count_element);
 
@@ -154,9 +154,9 @@ set_global('message_store', {
 }());
 
 (function test_get_reaction_section() {
-    var message_table = $('.message_table');
-    var message_row = $('some-message-row');
-    var message_reactions = $('our-reactions-section');
+    var message_table = $.create('.message_table');
+    var message_row = $.create('some-message-row');
+    var message_reactions = $.create('our-reactions-section');
 
     message_table.set_find_results("[zid='555']", message_row);
     message_row.set_find_results('.message_reactions', message_reactions);
@@ -176,7 +176,7 @@ set_global('message_store', {
         },
     };
 
-    var message_reactions = $('our-reactions');
+    var message_reactions = $.create('our-reactions');
 
     reactions.get_reaction_section = function (message_id) {
         assert.equal(message_id, 1001);
@@ -196,11 +196,11 @@ set_global('message_store', {
         assert(!data.is_realm_emoji);
         assert.equal(data.message_id, 1001);
         assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
-        return 'new-reaction-html-stub';
+        return '<new reaction html>';
     };
 
     var insert_called;
-    $('new-reaction-html-stub').insertBefore = function (element) {
+    $('<new reaction html>').insertBefore = function (element) {
         assert.equal(element, 'reaction-button-stub');
         insert_called = true;
     };
@@ -220,8 +220,8 @@ set_global('message_store', {
         },
     };
 
-    var count_element = $('count-element');
-    var reaction_element = $('reaction-element');
+    var count_element = $.create('count-element');
+    var reaction_element = $.create('reaction-element');
     reaction_element.set_find_results('.message_reaction_count', count_element);
 
     var title_set;
@@ -287,7 +287,7 @@ set_global('message_store', {
         assert.equal(data.class, 'message_reaction');
         assert(data.is_realm_emoji);
         template_called = true;
-        return 'new-reaction-html-stub';
+        return '<new reaction html>';
     };
 
     message_reactions.find = function (selector) {
