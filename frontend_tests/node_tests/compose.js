@@ -1258,6 +1258,26 @@ function test_with_mock_socket(test_params) {
         assert(!$("#preview_message_area").visible());
         assert($("#markdown_preview").visible());
     }());
+
+    (function test_message_id_changed_document() {
+        var handler = $(document).get_on_handler('message_id_changed');
+        compose.send_times_data = {
+            1031: {
+                data: 'Test data!',
+            },
+        };
+        event.old_id = 1031;
+        event.new_id = 1045;
+
+        handler(event);
+
+        var send_times_data = {
+            1045: {
+                data: 'Test data!',
+            },
+        };
+        assert.deepEqual(compose.send_times_data, send_times_data);
+    }());
 }());
 
 (function test_upload_started() {
