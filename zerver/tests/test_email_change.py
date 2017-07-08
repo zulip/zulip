@@ -59,7 +59,8 @@ class EmailChangeTestCase(ZulipTestCase):
         date_sent = now() - datetime.timedelta(days=2)
         Confirmation.objects.create(content_object=obj,
                                     date_sent=date_sent,
-                                    confirmation_key=key)
+                                    confirmation_key=key,
+                                    type=Confirmation.EMAIL_CHANGE)
         url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops"], response)
@@ -78,7 +79,8 @@ class EmailChangeTestCase(ZulipTestCase):
         key = generate_key()
         Confirmation.objects.create(content_object=obj,
                                     date_sent=now(),
-                                    confirmation_key=key)
+                                    confirmation_key=key,
+                                    type=Confirmation.EMAIL_CHANGE)
         url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
