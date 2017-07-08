@@ -208,6 +208,7 @@ databaseConfiguration() {
     setConfigurationValue "REMOTE_POSTGRES_SSLMODE" "$REMOTE_POSTGRES_SSLMODE" "$SETTINGS_PY" "string"
     echo "Database configuration succeeded."
 }
+# authenticationBackends Configure the authentication backends list/array to be used by Zulip
 authenticationBackends() {
     echo "Activating authentication backends ..."
     local FIRST=true
@@ -353,6 +354,9 @@ zulipFirstStartInit() {
     touch "$DATA_DIR/.initiated"
     echo "Zulip first start init sucessful."
 }
+# zulipMigration Runs the zulip database migrations
+# This runs the migration everytime the container runs, to make sure Zulip has the
+# uptodate database version.
 zulipMigration() {
     echo "Migrating Zulip to new version ..."
     set +e
@@ -367,6 +371,7 @@ zulipMigration() {
     touch "$DATA_DIR/.zulip-$ZULIP_VERSION"
     echo "Zulip migration succeeded."
 }
+# runPostSetupScripts Run user given custom post setup scripts
 runPostSetupScripts() {
     echo "Post setup scripts execution ..."
     if ([ "$ZULIP_RUN_POST_SETUP_SCRIPTS" != "True" ] && [ "$ZULIP_RUN_POST_SETUP_SCRIPTS" != "true" ]); then
