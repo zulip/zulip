@@ -143,6 +143,27 @@ function get_principals() {
     );
 }
 
+function create_stream() {
+    var stream = $.trim($("#create_stream_name").val());
+    var description = $.trim($("#create_stream_description").val());
+    var is_invite_only = $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only";
+    var principals = get_principals();
+
+    // You are always subscribed to streams you create.
+    principals.push(people.my_current_email());
+
+    created_stream = stream;
+
+    var announce = (!!page_params.notifications_stream &&
+        $('#announce-new-stream input').prop('checked'));
+
+    ajaxSubscribeForCreation(stream,
+        description,
+        principals,
+        is_invite_only,
+        announce
+    );
+}
 exports.new_stream_clicked = function (stream) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
@@ -292,30 +313,13 @@ $(function () {
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
-        var description = $.trim($("#create_stream_description").val());
 
         var name_ok = stream_name_error.validate_for_submit(stream);
 
         if (!name_ok) {
             return;
         }
-
-        var principals = get_principals();
-
-        // You are always subscribed to streams you create.
-        principals.push(people.my_current_email());
-
-        created_stream = stream;
-
-        var announce = (!!page_params.notifications_stream &&
-            $('#announce-new-stream input').prop('checked'));
-
-        ajaxSubscribeForCreation(stream,
-            description,
-            principals,
-            $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
-            announce
-        );
+        create_stream();
     });
 
     $(".subscriptions").on("input", "#create_stream_name", function () {
