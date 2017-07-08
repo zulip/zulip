@@ -59,7 +59,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.utils.timezone import now as timezone_now
 
-from confirmation.models import Confirmation, EmailChangeConfirmation
+from confirmation.models import Confirmation, create_confirmation_link
 import six
 from six.moves import filter
 from six.moves import map
@@ -641,7 +641,7 @@ def do_start_email_change_process(user_profile, new_email):
     obj = EmailChangeStatus.objects.create(new_email=new_email, old_email=old_email,
                                            user_profile=user_profile, realm=user_profile.realm)
 
-    activation_url = EmailChangeConfirmation.objects.get_link_for_object(obj, user_profile.realm.host)
+    activation_url = create_confirmation_link(obj, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
     context = {'realm': user_profile.realm, 'old_email': old_email, 'new_email': new_email,
                'activate_url': activation_url}
     send_email('zerver/emails/confirm_new_email', to_email=new_email,
@@ -3102,7 +3102,7 @@ def do_send_confirmation_email(invitee, referrer, body):
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
-    activation_url = Confirmation.objects.get_link_for_object(invitee, referrer.realm.host)
+    activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
     context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url,
                'referrer_realm_name': referrer.realm.name}
     from_name = u"%s (via Zulip)" % (referrer.full_name,)

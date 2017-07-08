@@ -2,7 +2,7 @@ from __future__ import print_function
 
 from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Text
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, create_confirmation_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
@@ -37,7 +37,8 @@ def unsubscribe_token(user_profile):
     # type: (UserProfile) -> Text
     # Leverage the Django confirmations framework to generate and track unique
     # unsubscription tokens.
-    return Confirmation.objects.get_link_for_object(user_profile, 'unused').split("/")[-1]
+    # Will be changed to UNSUBSCRIBE in a few commits. This is the current behavior.
+    return create_confirmation_link(user_profile, 'unused', Confirmation.USER_REGISTRATION).split("/")[-1]
 
 def one_click_unsubscribe_link(user_profile, email_type):
     # type: (UserProfile, Text) -> Text

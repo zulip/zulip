@@ -19,7 +19,7 @@ from django.core import signing
 from six.moves import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
@@ -61,7 +61,7 @@ def maybe_send_to_registration(request, email, full_name=''):
             prereg_user = create_preregistration_user(email, request)
 
         return redirect("".join((
-            Confirmation.objects.get_link_for_object(prereg_user, request.get_host()),
+            create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
             '?full_name=',
             # urllib does not handle Unicode, so coerece to encoded byte string
             # Explanation: http://stackoverflow.com/a/5605354/90777
