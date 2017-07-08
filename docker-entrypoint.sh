@@ -13,8 +13,6 @@ DB_NAME="${DB_NAME:-zulip}"
 DB_SCHEMA="${DB_SCHEMA:-zulip}"
 DB_USER="${DB_USER:-zulip}"
 DB_PASSWORD="${DB_PASSWORD:-zulip}"
-DB_ROOT_USER="${DB_ROOT_USER:-postgres}"
-DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-$(echo $DB_PASSWORD)}"
 REMOTE_POSTGRES_SSLMODE="${REMOTE_POSTGRES_SSLMODE:-prefer}"
 # RabbitMQ
 IGNORE_RABBITMQ_ERRORS="${IGNORE_RABBITMQ_ERRORS:-true}"
@@ -311,26 +309,6 @@ waitingForDatabase() {
     done
     unset PGPASSWORD
 }
-bootstrapDatabase() {
-    echo "(Re)creating database structure ..."
-    if [ ! -z "$DB_ROOT_USER" ] && [ ! -z "$DB_ROOT_PASSWORD" ]; then
-        echo "Setting up the database, schema and user ..."
-        export PGPASSWORD="$DB_ROOT_PASSWORD"
-        echo """
-        CREATE USER $DB_USER;
-        ALTER ROLE $DB_USER SET search_path TO $DB_NAME,public;
-        CREATE DATABASE $DB_NAME OWNER=$DB_USER;
-        CREATE SCHEMA $DB_SCHEMA AUTHORIZATION $DB_USER;
-        """ | psql -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_USER" || :
-        echo "Creating tsearch_extras extension ..."
-        echo "CREATE EXTENSION tsearch_extras SCHEMA $DB_SCHEMA;" | \
-        psql -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_ROOT_USER" "$DB_NAME" || :
-        unset PGPASSWORD
-        echo "Database structure recreated."
-    else
-        echo "No database root user nor password given. Not (re)creating database structure."
-    fi
-}
 bootstrapRabbitMQ() {
     echo "Bootstrapping RabbitMQ ..."
     set +e
@@ -362,10 +340,16 @@ zulipFirstStartInit() {
     fi
     local RETURN_CODE=0
     set +e
+    /home/zulip/deployments/current/scripts/setup/postgres-init-db
+    RETURN_CODE=$?
+    if [[ $RETURN_CODE != 0 ]]; then
+        echo "Zulip first start init failed at \"postgres-init-db\" with exit code $RETURN_CODE. Exiting."
+        exit $RETURN_CODE
+    fi
     su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
     RETURN_CODE=$?
     if [[ $RETURN_CODE != 0 ]]; then
-        echo "Zulip first start database initi failed in \"initialize-database\" exit code $RETURN_CODE. Exiting."
+        echo "Zulip first start init failed at \"initialize-database\" with exit code $RETURN_CODE. Exiting."
         exit $RETURN_CODE
     fi
     set -e
@@ -417,7 +401,6 @@ runPostSetupScripts() {
 bootstrappingEnvironment() {
     echo "=== Begin Bootstrap Phase ==="
     waitingForDatabase
-    bootstrapDatabase
     bootstrapRabbitMQ
     userCreationConfiguration
     zulipFirstStartInit
