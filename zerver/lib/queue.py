@@ -29,7 +29,7 @@ class SimpleQueueClient(object):
         self.channel = None  # type: Optional[BlockingChannel]
         self.consumers = defaultdict(set)  # type: Dict[str, Set[Consumer]]
         # Disable RabbitMQ heartbeats since BlockingConnection can't process them
-        self.rabbitmq_heartbeat = 0
+        self.rabbitmq_heartbeat = 0  # type: Optional[int]
         self._connect()
 
     def _connect(self):
