@@ -292,6 +292,7 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     var li = $("li.user_sidebar_entry[data-user-id='" + pm_key + "']");
     count.add_child('.value', value);
     li.add_child('.count', count);
+    count.set_parent(li);
 
     var counts = new Dict();
     counts.set(pm_key, 5);
@@ -316,6 +317,7 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     var li = $(li_selector);
     count.add_child('.value', value);
     li.add_child('.count', count);
+    count.set_parent(li);
 
     var counts = new Dict();
     counts.set(pm_key, 5);
@@ -576,6 +578,8 @@ $('.user-list-filter').is = function (sel) {
     var li = $(li_selector);
     count.add_child('.value', value);
     li.add_child('.count', count);
+    count.set_parent(li);
+
     var real_get_huddles = activity.get_huddles;
     activity.get_huddles = function () {
         return ['1,2'];

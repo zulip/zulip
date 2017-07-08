@@ -32,7 +32,6 @@ exports.make_zjquery = function () {
 
         var self = {
             add_child: function (child_selector, child_elem) {
-                child_elem.set_parent(self);
                 children.set(child_selector, child_elem);
             },
             addClass: function (class_name) {

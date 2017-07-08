@@ -325,10 +325,7 @@ function test_upload_realm_icon(upload_realm_icon) {
 function test_change_message_editing(change_message_editing) {
     var parent_elem = $('editing-parent-stub');
 
-    parent_elem.add_child(
-        'whatever',
-        $('#id_realm_message_content_edit_limit_minutes_label')
-    );
+    $('#id_realm_message_content_edit_limit_minutes_label').set_parent(parent_elem);
 
     change_message_editing.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));
@@ -342,10 +339,7 @@ function test_change_message_editing(change_message_editing) {
 function test_change_invite_required(change_invite_required) {
     var parent_elem = $('invite-parent-stub');
 
-    parent_elem.add_child(
-        'whatever',
-        $('#id_realm_invite_by_admins_only_label')
-    );
+    $('#id_realm_invite_by_admins_only_label').set_parent(parent_elem);
 
     change_invite_required.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));

@@ -52,6 +52,7 @@ set_global('topic_list', {});
         var devel_count = $('devel-count');
         $('devel-stub-html').add_child('.count', devel_count);
         $('devel-count').add_child('.value', devel_value);
+        devel_count.set_parent($('devel-stub-html'));
 
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
@@ -68,6 +69,7 @@ set_global('topic_list', {});
         var social_count = $('social-count');
         $('social-stub-html').add_child('.count', social_count);
         $('social-count').add_child('.value', social_value);
+        social_count.set_parent($('social-stub-html'));
 
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
@@ -362,6 +364,7 @@ function initialize_stream_data() {
         var value = $(value_selector);
         elem.add_child('.count', count);
         count.add_child('.value', value);
+        count.set_parent(elem);
 
         return elem;
     }
