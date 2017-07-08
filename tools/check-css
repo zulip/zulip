@@ -12,7 +12,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 def validate(fn):
-    # type: (Text) -> None
+    # type: (str) -> None
     text = open(fn).read()
     section_list = parse(text)
     if text != section_list.text():
@@ -22,7 +22,7 @@ def validate(fn):
         sys.exit(1)
 
 def check_our_files(filenames):
-    # type: (Iterable[Text]) -> None
+    # type: (Iterable[str]) -> None
     for filename in filenames:
         try:
             validate(filename)
