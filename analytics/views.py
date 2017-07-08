@@ -158,6 +158,8 @@ def client_label_map(name):
         return "Website"
     if name.startswith("desktop app"):
         return "Old desktop app"
+    if name == "ZulipElectron":
+        return "Desktop app"
     if name == "ZulipAndroid":
         return "Android app"
     if name == "ZulipiOS":
