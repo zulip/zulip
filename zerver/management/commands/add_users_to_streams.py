@@ -1,15 +1,13 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from optparse import make_option
-
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 
 from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import UserProfile, get_realm, get_user_profile_by_email
+from zerver.models import UserProfile
 
 class Command(ZulipBaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
