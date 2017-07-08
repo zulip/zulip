@@ -31,7 +31,7 @@ def get_object_from_key(confirmation_key):
         return False
 
     time_elapsed = timezone_now() - confirmation.date_sent
-    if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
+    if time_elapsed.total_seconds() > _properties[confirmation.type].validity_in_days * 24 * 3600:
         return False
 
     obj = confirmation.content_object
@@ -73,13 +73,15 @@ class Confirmation(models.Model):
         return '<Confirmation: %s>' % (self.content_object,)
 
 class ConfirmationType(object):
-    def __init__(self, url_name):
-        # type: (str) -> None
+    def __init__(self, url_name, validity_in_days=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS):
+        # type: (str, int) -> None
         self.url_name = url_name
+        self.validity_in_days = validity_in_days
 
 _properties = {
     Confirmation.USER_REGISTRATION: ConfirmationType('confirmation.views.confirm'),
-    Confirmation.INVITATION: ConfirmationType('confirmation.views.confirm'),
+    Confirmation.INVITATION: ConfirmationType('confirmation.views.confirm',
+                                              validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS),
     Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
 }
 
