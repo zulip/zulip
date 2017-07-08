@@ -39,22 +39,22 @@ exports.make_zjquery = function () {
             },
             addClass: function (class_name) {
                 classes.set(class_name, true);
-                return self.wrapper;
+                return self;
             },
             attr: function (name, val) {
                 if (val === undefined) {
                     return attrs.get(name);
                 }
                 attrs.set(name, val);
-                return self.wrapper;
+                return self;
             },
             blur: function () {
                 focused = false;
-                return self.wrapper;
+                return self;
             },
             click: function (arg) {
                 generic_event('click', arg);
-                return self.wrapper;
+                return self;
             },
             css: noop,
             data: noop,
@@ -68,7 +68,7 @@ exports.make_zjquery = function () {
             empty: noop,
             expectOne: function () {
                 // silently do nothing
-                return self.wrapper;
+                return self;
             },
             fadeTo: noop,
             find: function (child_selector) {
@@ -81,7 +81,7 @@ exports.make_zjquery = function () {
             },
             focus: function () {
                 focused = true;
-                return self.wrapper;
+                return self;
             },
             get: function (idx) {
                 // We have some legacy code that does $('foo').get(0).
@@ -111,12 +111,12 @@ exports.make_zjquery = function () {
             height: noop,
             hide: function () {
                 shown = false;
-                return self.wrapper;
+                return self;
             },
             html: function (arg) {
                 if (arg !== undefined) {
                     html = arg;
-                    return self.wrapper;
+                    return self;
                 }
                 return html;
             },
@@ -127,11 +127,11 @@ exports.make_zjquery = function () {
             },
             keydown: function (arg) {
                 generic_event('keydown', arg);
-                return self.wrapper;
+                return self;
             },
             keyup: function (arg) {
                 generic_event('keyup', arg);
-                return self.wrapper;
+                return self;
             },
             on: function () {
                 // parameters will either be
@@ -162,7 +162,7 @@ exports.make_zjquery = function () {
                     funcs = child_on.setdefault(event_name, []);
                     funcs.push(handler);
                 }
-                return self.wrapper;
+                return self;
             },
             parent: function () {
                 return my_parent;
@@ -178,30 +178,30 @@ exports.make_zjquery = function () {
                     return properties.get(name);
                 }
                 properties.set(name, val);
-                return self.wrapper;
+                return self;
             },
             removeAttr: function (name) {
                 attrs.del(name);
-                return self.wrapper;
+                return self;
             },
             removeClass: function (class_name) {
                 classes.del(class_name);
-                return self.wrapper;
+                return self;
             },
             remove: function () {
-                return self.wrapper;
+                return self;
             },
             removeData: noop,
             select: function (arg) {
                 generic_event('select', arg);
-                return self.wrapper;
+                return self;
             },
             set_find_results: function (find_selector, jquery_object) {
                 find_results.set(find_selector, jquery_object);
             },
             show: function () {
                 shown = true;
-                return self.wrapper;
+                return self;
             },
             set_parent: function (parent_elem) {
                 my_parent = parent_elem;
@@ -210,12 +210,12 @@ exports.make_zjquery = function () {
                 parents_result.set(selector, result);
             },
             stop: function () {
-                return self.wrapper;
+                return self;
             },
             text: function (arg) {
                 if (arg !== undefined) {
                     text = arg;
-                    return self.wrapper;
+                    return self;
                 }
                 return text;
             },
@@ -226,7 +226,7 @@ exports.make_zjquery = function () {
                 // legitimate for code to trigger multiple handlers.
                 // But up until now, we haven't needed this, and if
                 // you come across this assertion, it's possible that
-                // you can simplify your tests by just doing your own
+                // you can sselfify your tests by just doing your own
                 // mocking of trigger().  If you really know what you
                 // are doing, you can remove this limitation.
                 assert(funcs.length <= 1, 'multiple functions set up');
@@ -234,14 +234,14 @@ exports.make_zjquery = function () {
                 _.each(funcs, function (f) {
                     f(ev.data);
                 });
-                return self.wrapper;
+                return self;
             },
             val: function () {
                 if (arguments.length === 0) {
                     return value || '';
                 }
                 value = arguments[0];
-                return self.wrapper;
+                return self;
             },
             visible: function () {
                 return shown;
@@ -252,20 +252,9 @@ exports.make_zjquery = function () {
             self.html(selector);
         }
 
+        self[0] = 'you-must-set-the-child-yourself';
+
         return self;
-    }
-
-    function jquery_array(elem) {
-        var result = [elem];
-
-        for (var attr in elem) {
-            if (Object.prototype.hasOwnProperty.call(elem, attr)) {
-                result[attr] = elem[attr];
-            }
-        }
-        elem.wrapper = result;
-
-        return result;
     }
 
     var zjquery = function (arg) {
@@ -307,7 +296,7 @@ exports.make_zjquery = function () {
 
         if (elems[selector] === undefined) {
             var elem = new_elem(selector);
-            elems[selector] = jquery_array(elem);
+            elems[selector] = elem;
         }
         return elems[selector];
     };
@@ -316,7 +305,7 @@ exports.make_zjquery = function () {
         assert(!elems[name],
                'You already created an object with this name!!');
         var elem = new_elem(name);
-        elems[name] = jquery_array(elem);
+        elems[name] = elem;
         return elems[name];
     };
 
