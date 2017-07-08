@@ -236,9 +236,6 @@ function mark_end_to_end_receive_time(message_id) {
 }
 
 function mark_end_to_end_display_time(message_id) {
-    if (exports.send_times_data[message_id] === undefined) {
-        exports.send_times_data[message_id] = {};
-    }
     exports.send_times_data[message_id].displayed = new Date();
     maybe_report_send_times(message_id);
 }
