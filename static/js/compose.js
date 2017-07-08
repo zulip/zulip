@@ -656,8 +656,9 @@ exports.initialize = function () {
                 var new_row = templates.render("compose-invite-users",
                                                {email: email, name: data.mentioned.full_name});
                 var error_area = $("#compose_invite_users");
+                var existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
-                var existing_invites = _.map($(".compose_invite_user", error_area), function (user_row) {
+                var existing_invites = _.map($(existing_invites_area), function (user_row) {
                     return $(user_row).data('useremail');
                 });
 
