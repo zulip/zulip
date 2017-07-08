@@ -621,6 +621,20 @@ button.login-google-button {
     border-radius: 4px;
 }
 
+#registration #id_team_subdomain.subdomain {
+    text-align: right;
+    position: relative;
+    padding-right: 10px;
+}
+
+#registration .realm_subdomain_label {
+    font-weight: 400;
+    font-size: 1.07em;
+    position: absolute;
+    top: 37px;
+    right: 0;
+}
+
 #registration {
     width: 700px;
 }
