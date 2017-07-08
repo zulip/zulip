@@ -116,8 +116,8 @@ def log_statsd_event(name):
     statsd.incr(event_name)
 
 def generate_random_token(length):
-    # type: (int) -> Text
-    return base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower()
+    # type: (int) -> str
+    return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
 
 def mkdir_p(path):
     # type: (str) -> None

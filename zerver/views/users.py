@@ -380,7 +380,7 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
     return json_success()
 
 def generate_client_id():
-    # type: () -> Text
+    # type: () -> str
     return generate_random_token(32)
 
 def get_profile_backend(request, user_profile):
