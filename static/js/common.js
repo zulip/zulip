@@ -6,7 +6,7 @@ exports.status_classes = 'alert-error alert-success alert-info';
 
 exports.autofocus = function (selector) {
     $(function () {
-        $(selector)[0].focus();
+        $(selector).focus();
     });
 };
 
