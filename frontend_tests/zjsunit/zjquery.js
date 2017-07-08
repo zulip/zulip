@@ -14,6 +14,7 @@ exports.make_zjquery = function () {
         var focused = false;
         var find_results = new Dict();
         var my_parent;
+        var parents_result = new Dict();
         var properties = new Dict();
         var attrs = new Dict();
         var classes = new Dict();
@@ -166,6 +167,12 @@ exports.make_zjquery = function () {
             parent: function () {
                 return my_parent;
             },
+            parents: function (parents_selector) {
+                var result = parents_result.get(parents_selector);
+                assert(result, 'You need to call set_parents_result for ' +
+                                parents_selector + ' in ' + selector);
+                return result;
+            },
             prop: function (name, val) {
                 if (val === undefined) {
                     return properties.get(name);
@@ -198,6 +205,9 @@ exports.make_zjquery = function () {
             },
             set_parent: function (parent_elem) {
                 my_parent = parent_elem;
+            },
+            set_parents_result: function (selector, result) {
+                parents_result.set(selector, result);
             },
             stop: function () {
                 return self.wrapper;

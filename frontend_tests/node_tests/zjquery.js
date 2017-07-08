@@ -58,7 +58,7 @@ set_global('$', global.make_zjquery());
     assert.equal(widget.val(), '42');
 }());
 
-(function test_finding_child_objects() {
+(function test_finding_related_objects() {
     // Let's say you have a function like the following:
     function update_message_emoji(emoji_src) {
         $('#my-message').find('.emoji').attr('src', emoji_src);
@@ -79,6 +79,21 @@ set_global('$', global.make_zjquery());
     // And then calling the function produces the desired effect:
     update_message_emoji('foo.png');
     assert.equal(emoji.attr('src'), 'foo.png');
+
+    /*
+    An important thing to understand is that zjquery doesn't truly
+    simulate DOM.  The way you make relationships work in zjquery
+    is that you explicitly set up what your functions want to return.
+
+    Here is another example.
+    */
+
+    var my_parents = $('#folder1,#folder4');
+    var elem = $('#folder555');
+
+    elem.set_parents_result('.folder', my_parents);
+    elem.parents('.folder').addClass('active');
+    assert(my_parents.hasClass('active'));
 
 }());
 
