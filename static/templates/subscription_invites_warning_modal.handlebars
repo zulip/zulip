@@ -1,0 +1,15 @@
+<div id='invites-warning-overlay' class='overlay new-style show' style='z-index:1000;'>
+    <div class="modal" id="invites-warning-modal" tabindex="-1" role="dialog" aria-labelledby="invites-warning-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close close-invites-warning-modal" aria-hidden="true">×</button>
+            <h3 id="invites-warning-label">{{t "Confirm invites" }}</h3>
+        </div>
+        <div class="modal-body">
+            <p>{{t 'You are going to invite a large numbers of users! Are you sure?' }}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default close-invites-warning-modal" aria-hidden="true">{{t "Oops! Let me change it" }}</button>
+            <button class="btn btn-warning confirm-invites-warning-modal"></button>
+        </div>
+    </div>
+</div>
