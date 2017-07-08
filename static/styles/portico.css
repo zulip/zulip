@@ -1598,3 +1598,47 @@ input.new-organization-button {
     max-width: 800px;
     margin: 0 auto;
 }
+
+#error_page {
+    background-color: #c9e9e0;
+    font-family: 'Humbug', Helvetica, Arial, sans-serif;
+}
+
+#error_page .row-fluid {
+    margin-top: 60px;
+}
+
+#error_page img {
+    display: block;
+    clear: right;
+    margin: 0 auto;
+    max-width: 500px;
+}
+
+#error_page .for_you {
+    font-style: normal;
+}
+
+#error_page .errorbox {
+    margin: auto;
+    border: 2px solid #44A98C;
+    max-width: 500px;
+    background-color: white;
+    box-shadow: 0 0 4px #44A98C;
+    font-size: 18px;
+}
+
+#error_page p {
+    color: #777676;
+}
+
+#error_page .errorcontent {
+    text-align: left;
+    padding: 40px 40px 30px 40px;
+}
+
+#error_page .lead {
+    color: #39a688;
+    font-size: 40px;
+    margin-bottom: 30px;
+}
