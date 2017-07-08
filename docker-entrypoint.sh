@@ -25,9 +25,7 @@ SETTING_RATE_LIMITING="${SETTING_RATE_LIMITING:-True}"
 SETTING_REDIS_HOST="${SETTING_REDIS_HOST:-127.0.0.1}"
 SETTING_REDIS_PORT="${SETTING_REDIS_PORT:-6379}"
 # Memcached
-if [ -z "$SETTING_MEMCACHED_LOCATION" ]; then
-    SETTING_MEMCACHED_LOCATION="127.0.0.1:11211"
-fi
+SETTING_MEMCACHED_LOCATION="${SETTING_MEMCACHED_LOCATION:-127.0.0.1:11211}"
 # Nginx settings
 NGINX_WORKERS="${NGINX_WORKERS:-2}"
 NGINX_PROXY_BUFFERING="${NGINX_PROXY_BUFFERING:-off}"
@@ -135,7 +133,7 @@ nginxConfiguration() {
     echo "Nginx configuration succeeded."
 }
 configureCerts() {
-    echo "Exectuing certificates configuration..."
+    echo "Executing certificates configuration..."
     if [ ! -f "$DATA_DIR/certs/zulip.key" ] && [ ! -f "$DATA_DIR/certs/zulip.combined-chain.crt" ]; then
         /root/zulip/scripts/setup/configure-certs
         mv /etc/ssl/private/zulip.key "$DATA_DIR/certs/zulip.key"
