@@ -80,7 +80,6 @@ def check_pep8(files):
     IGNORE_FILES_PEPE261 = [
         'api/zulip/__init__.py',
         'tools/run-dev.py',
-        'zerver/lib/bugdown/__init__.py',
         'zerver/tests/test_bugdown.py',
         'zerver/tests/test_events.py',
         'zerver/tests/test_messages.py',

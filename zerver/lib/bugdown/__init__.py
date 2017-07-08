@@ -67,7 +67,7 @@ class BugdownRenderingException(Exception):
 def url_embed_preview_enabled_for_realm(message):
     # type: (Optional[Message]) -> bool
     if message is not None:
-        realm = message.get_realm() # type: Optional[Realm]
+        realm = message.get_realm()  # type: Optional[Realm]
     else:
         realm = None
 
@@ -81,7 +81,7 @@ def image_preview_enabled_for_realm():
     # type: () -> bool
     global current_message
     if current_message is not None:
-        realm = current_message.get_realm() # type: Optional[Realm]
+        realm = current_message.get_realm()  # type: Optional[Realm]
     else:
         realm = None
     if not settings.INLINE_IMAGE_PREVIEW:
@@ -424,7 +424,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 image_info = dict()
             image_info['is_image'] = True
             parsed_url_list = list(parsed_url)
-            parsed_url_list[4] = "dl=1" # Replaces query
+            parsed_url_list[4] = "dl=1"  # Replaces query
             image_info["image"] = urllib.parse.urlunparse(parsed_url_list)
 
             return image_info
@@ -474,7 +474,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         Finally we add any remaining text to the last node.
         """
 
-        to_linkify = [] # type: List[Dict[Text, Any]]
+        to_linkify = []  # type: List[Dict[Text, Any]]
         # Build dicts for URLs
         for url_data in urls:
             short_url = url_data["url"]
@@ -549,7 +549,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             res = fetch_tweet_data(tweet_id)
             if res is None:
                 return None
-            user = res['user'] # type: Dict[Text, Any]
+            user = res['user']  # type: Dict[Text, Any]
             tweet = markdown.util.etree.Element("div")
             tweet.set("class", "twitter-tweet")
             img_a = markdown.util.etree.SubElement(tweet, 'a')
@@ -568,7 +568,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             text = unescape(res['text'])
             urls = res.get('urls', [])
             user_mentions = res.get('user_mentions', [])
-            media = res.get('media', []) # type: List[Dict[Text, Any]]
+            media = res.get('media', [])  # type: List[Dict[Text, Any]]
             p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
 
@@ -796,7 +796,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        realm_emoji = {} # type: Dict[Text, Dict[str, Text]]
+        realm_emoji = {}  # type: Dict[Text, Dict[str, Text]]
         if db_data is not None:
             realm_emoji = db_data['emoji']
 
@@ -853,7 +853,7 @@ class Tex(markdown.inlinepatterns.Pattern):
         rendered = render_tex(match.group('body'), is_inline=True)
         if rendered is not None:
             return etree.fromstring(rendered.encode('utf-8'))
-        else: # Something went wrong while rendering
+        else:  # Something went wrong while rendering
             span = markdown.util.etree.Element('span')
             span.set('class', 'tex-error')
             span.text = '$$' + match.group('body') + '$$'
@@ -1350,8 +1350,8 @@ class Bugdown(markdown.Extension):
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]
 
-md_engines = {} # type: Dict[int, markdown.Markdown]
-realm_filter_data = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
+md_engines = {}  # type: Dict[int, markdown.Markdown]
+realm_filter_data = {}  # type: Dict[int, List[Tuple[Text, Text, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
@@ -1378,7 +1378,7 @@ def make_md_engine(key, opts):
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
     from zerver.models import RealmFilter, realm_filters_for_realm
-    matches = [] # type: List[Text]
+    matches = []  # type: List[Text]
 
     realm_filters = realm_filters_for_realm(realm_filters_key)
 
@@ -1434,12 +1434,12 @@ def _sanitize_for_log(content):
 
 # Filters such as UserMentionPattern need a message, but python-markdown
 # provides no way to pass extra params through to a pattern. Thus, a global.
-current_message = None # type: Optional[Message]
+current_message = None  # type: Optional[Message]
 
 # We avoid doing DB queries in our markdown thread to avoid the overhead of
 # opening a new DB connection. These connections tend to live longer than the
 # threads themselves, as well.
-db_data = None # type: Optional[Dict[Text, Any]]
+db_data = None  # type: Optional[Dict[Text, Any]]
 
 def log_bugdown_error(msg):
     # type: (str) -> None
@@ -1490,12 +1490,12 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     # Pre-fetch data from the DB that is used in the bugdown thread
     global db_data
     if message is not None:
-        assert message_realm is not None # ensured above if message is not None
+        assert message_realm is not None  # ensured above if message is not None
         realm_users = get_active_user_dicts_in_realm(message_realm)
         realm_streams = get_active_streams(message_realm).values('id', 'name')
 
         if possible_words is None:
-            possible_words = set() # Set[Text]
+            possible_words = set()  # Set[Text]
 
         db_data = {'possible_words': possible_words,
                    'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
