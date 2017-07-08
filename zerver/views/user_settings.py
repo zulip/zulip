@@ -27,7 +27,7 @@ from zerver.lib.users import check_change_full_name
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
-from confirmation.models import EmailChangeConfirmation, get_object_from_key
+from confirmation.models import get_object_from_key
 
 @zulip_login_required
 def confirm_email_change(request, confirmation_key):

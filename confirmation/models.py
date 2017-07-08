@@ -4,6 +4,7 @@
 
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
+import datetime
 import re
 
 from django.db import models
@@ -46,7 +47,8 @@ def get_object_from_key(confirmation_key):
 def create_confirmation_link(obj, host, confirmation_type):
     # type: (Union[ContentType, int], str, int) -> str
     key = generate_key()
-    Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
+    Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
+                                type=confirmation_type)
     return confirmation_url(key, host, confirmation_type)
 
 def confirmation_url(confirmation_key, host, confirmation_type):
@@ -56,40 +58,24 @@ def confirmation_url(confirmation_key, host, confirmation_type):
                        reverse(_properties[confirmation_type].url_name,
                                kwargs={'confirmation_key': confirmation_key}))
 
-class ConfirmationManager(models.Manager):
-    pass
-
-class EmailChangeConfirmationManager(ConfirmationManager):
-    pass
-
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField()  # type: int
     content_object = GenericForeignKey('content_type', 'object_id')
-    date_sent = models.DateTimeField('sent')
-    confirmation_key = models.CharField('activation key', max_length=40)
+    date_sent = models.DateTimeField()  # type: datetime.datetime
+    confirmation_key = models.CharField(max_length=40)  # type: str
 
+    # The following list is the set of valid types
     USER_REGISTRATION = 1
     INVITATION = 2
     EMAIL_CHANGE = 3
     UNSUBSCRIBE = 4
     SERVER_REGISTRATION = 5
-
-    objects = ConfirmationManager()
-
-    class Meta(object):
-        verbose_name = 'confirmation email'
-        verbose_name_plural = 'confirmation emails'
+    type = models.PositiveSmallIntegerField()  # type: int
 
     def __unicode__(self):
         # type: () -> Text
-        return 'confirmation email for %s' % (self.content_object,)
-
-class EmailChangeConfirmation(Confirmation):
-    class Meta(object):
-        proxy = True
-
-    objects = EmailChangeConfirmationManager()
+        return '<Confirmation: %s>' % (self.content_object,)
 
 class ConfirmationType(object):
     def __init__(self, url_name):
