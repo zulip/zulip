@@ -176,17 +176,11 @@ exports.make_zjquery = function () {
                 attrs.del(name);
                 return self.wrapper;
             },
-            remove_child: function (child_selector) {
-                children.del(child_selector);
-            },
             removeClass: function (class_name) {
                 classes.del(class_name);
                 return self.wrapper;
             },
             remove: function () {
-                if (my_parent) {
-                    my_parent.remove_child(selector);
-                }
                 return self.wrapper;
             },
             removeData: noop,
