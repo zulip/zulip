@@ -39,19 +39,20 @@ def get_object_from_key(confirmation_key):
     obj.save(update_fields=['status'])
     return obj
 
-def create_confirmation_link(obj, host, confirmation_type):
-    # type: (Union[ContentType, int], str, int) -> str
+def create_confirmation_link(obj, host, confirmation_type, url_args=None):
+    # type: (Union[ContentType, int], str, int, Optional[Dict[str, str]]) -> str
     key = generate_key()
     Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
                                 type=confirmation_type)
-    return confirmation_url(key, host, confirmation_type)
+    return confirmation_url(key, host, confirmation_type, url_args)
 
-def confirmation_url(confirmation_key, host, confirmation_type):
-    # type: (str, str, int) -> str
-    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                       host,
-                       reverse(_properties[confirmation_type].url_name,
-                               kwargs={'confirmation_key': confirmation_key}))
+def confirmation_url(confirmation_key, host, confirmation_type, url_args=None):
+    # type: (str, str, int, Optional[Dict[str, str]]) -> str
+    if url_args is None:
+        url_args = {}
+    url_args['confirmation_key'] = confirmation_key
+    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME, host,
+                       reverse(_properties[confirmation_type].url_name, kwargs=url_args))
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
@@ -83,6 +84,8 @@ _properties = {
     Confirmation.INVITATION: ConfirmationType('confirmation.views.confirm',
                                               validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS),
     Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
+    Confirmation.UNSUBSCRIBE: ConfirmationType('zerver.views.unsubscribe.email_unsubscribe',
+                                               validity_in_days=1000000),  # should never expire
 }
 
 # Conirmation pathways for which there is no content_object that we need to

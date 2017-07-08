@@ -33,22 +33,15 @@ import ujson
 from six.moves import urllib
 from collections import defaultdict
 
-def unsubscribe_token(user_profile):
-    # type: (UserProfile) -> Text
-    # Leverage the Django confirmations framework to generate and track unique
-    # unsubscription tokens.
-    # Will be changed to UNSUBSCRIBE in a few commits. This is the current behavior.
-    return create_confirmation_link(user_profile, 'unused', Confirmation.USER_REGISTRATION).split("/")[-1]
-
 def one_click_unsubscribe_link(user_profile, email_type):
-    # type: (UserProfile, Text) -> Text
+    # type: (UserProfile, str) -> str
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
     """
-    token = unsubscribe_token(user_profile)
-    resource_path = "accounts/unsubscribe/%s/%s" % (email_type, token)
-    return "%s/%s" % (user_profile.realm.uri.rstrip("/"), resource_path)
+    return create_confirmation_link(user_profile, user_profile.realm.host,
+                                    Confirmation.UNSUBSCRIBE,
+                                    url_args = {'email_type': email_type})
 
 def hash_util_encode(string):
     # type: (Text) -> Text
