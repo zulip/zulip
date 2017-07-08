@@ -3,24 +3,24 @@ from __future__ import print_function
 
 from typing import Any, Iterable
 
-from optparse import make_option
 import logging
 import sys
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 
 from zerver.lib import utils
-from zerver.models import UserMessage, get_user_profile_by_email
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import UserMessage
 from django.db import models
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all
     Expects a comma-delimited list of user message ids via stdin, and an EOF to terminate."""
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('-r', '--for-real',
+        parser.add_argument('-l', '--for-real',
                             dest='for_real',
                             action='store_true',
                             default=False,
@@ -45,6 +45,7 @@ class Command(BaseCommand):
                             dest='email',
                             type=str,
                             help="Email to set messages for")
+        self.add_realm_args(parser)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -57,7 +58,8 @@ class Command(BaseCommand):
         all_until = options['all_until']
         email = options['email']
 
-        user_profile = get_user_profile_by_email(email)
+        realm = self.get_realm(options)
+        user_profile = self.get_user(email, realm)
 
         if all_until:
             filt = models.Q(id__lte=all_until)
