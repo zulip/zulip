@@ -15,6 +15,7 @@ IGNORED_PHRASES = [
     r"Android",
     r"API",
     r"APNS",
+    r"Botserver",
     r"Cookie Bot",
     r"Dropbox",
     r"GitHub",
