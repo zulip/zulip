@@ -1295,6 +1295,44 @@ function test_with_mock_socket(test_params) {
     assert(width_update_checked);
 }());
 
+(function test_upload_error() {
+    function setup_test() {
+        $("#send-status").removeClass("alert-error");
+        $("#send-status").addClass("alert-info");
+        $("#compose-send-button").attr("disabled", 'disabled');
+        $("#error-msg").text('');
+    }
+
+    function assert_side_effects(msg) {
+        assert($("#send-status").hasClass("alert-error"));
+        assert(!$("#send-status").hasClass("alert-info"));
+        assert.equal($("#compose-send-button").attr("disabled"), undefined);
+        assert.equal($("#error-msg").text(), msg);
+    }
+
+    function test(err, file, msg) {
+        setup_test();
+        compose.uploadError(err, file);
+        assert_side_effects(msg);
+    }
+
+    var msg_prefix = 'translated: ';
+    var msg_1 = 'File upload is not yet available for your browser.';
+    var msg_2 = 'Unable to upload that many files at once.';
+    var msg_3 = '"foobar.txt" was too large; the maximum file size is 25MiB.';
+    var msg_4 = 'Sorry, the file was too large.';
+    var msg_5 = 'Upload would exceed your maximum quota.' +
+                ' Consider deleting some previously uploaded files.';
+    var msg_6 = 'An unknown error occurred.';
+
+    test('BrowserNotSupported', {}, msg_prefix + msg_1);
+    test('TooManyFiles', {}, msg_prefix + msg_2);
+    test('FileTooLarge', {name: 'foobar.txt'}, msg_prefix + msg_3);
+    test('REQUEST ENTITY TOO LARGE', {}, msg_prefix + msg_4);
+    test('QuotaExceeded', {}, msg_prefix + msg_5);
+    test('Do-not-match-any-case', {}, msg_prefix + msg_6);
+}());
+
 (function test_set_focused_recipient() {
     var sub = {
         stream_id: 101,
