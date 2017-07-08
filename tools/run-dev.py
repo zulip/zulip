@@ -100,7 +100,7 @@ if options.interface is None:
 elif options.interface == "":
     options.interface = None
 
-runserver_args = [] # type: List[str]
+runserver_args = []  # type: List[str]
 base_port = 9991
 if options.test:
     base_port = 9981
@@ -227,7 +227,7 @@ class BaseWebsocketHandler(WebSocketHandler):
         # type: (*Any, **Any) -> None
         super(BaseWebsocketHandler, self).__init__(*args, **kwargs)
         # define client for target websocket server
-        self.client = None # type: Any
+        self.client = None  # type: Any
 
     def get(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[Callable]
