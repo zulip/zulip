@@ -323,6 +323,8 @@ pip install --no-deps -r requirements/py3_dev.txt # install python packages requ
 Now run these commands:
 
 ```
+sudo ./scripts/lib/install-node
+npm install
 ./tools/install-mypy
 sudo mkdir /srv/zulip-emoji-cache
 sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
@@ -341,8 +343,6 @@ fi
 ./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ./manage.py compilemessages
-sudo ./scripts/lib/install-node
-npm install
 ```
 
 To start the development server:
