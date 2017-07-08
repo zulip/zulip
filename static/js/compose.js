@@ -396,10 +396,6 @@ exports.get_invalid_recipient_emails = function () {
     var private_recipients = util.extract_pm_recipients(compose_state.recipient());
     var invalid_recipients = [];
     _.each(private_recipients, function (email) {
-        // This case occurs when compose_state.recipient() ends with ','
-        if (email === "") {
-            return;
-        }
         if (people.realm_get(email) !== undefined) {
             return;
         }
