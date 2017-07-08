@@ -102,7 +102,7 @@ def get_missed_message_token_from_address(address):
     return msg_string[2:]
 
 def create_missed_message_address(user_profile, message):
-    # type: (UserProfile, Message) -> Text
+    # type: (UserProfile, Message) -> str
     if settings.EMAIL_GATEWAY_PATTERN == '':
         logging.warning("EMAIL_GATEWAY_PATTERN is an empty string, using "
                         "NOREPLY_EMAIL_ADDRESS in the 'from' field.")

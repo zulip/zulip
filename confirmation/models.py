@@ -22,7 +22,7 @@ from typing import Any, Dict, Optional, Text, Union
 B16_RE = re.compile('^[a-f0-9]{40}$')
 
 def generate_key():
-    # type: () -> Text
+    # type: () -> str
     return generate_random_token(40)
 
 class ConfirmationManager(models.Manager):
@@ -47,17 +47,17 @@ class ConfirmationManager(models.Manager):
         return False
 
     def get_link_for_object(self, obj, host):
-        # type: (Union[ContentType, int], str) -> Text
+        # type: (Union[ContentType, int], str) -> str
         key = generate_key()
         self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
         return self.get_activation_url(key, host)
 
     def get_activation_url(self, confirmation_key, host):
-        # type: (Text, str) -> Text
-        return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                            host,
-                            reverse(self.url_pattern_name,
-                                    kwargs={'confirmation_key': confirmation_key}))
+        # type: (str, str) -> str
+        return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                           host,
+                           reverse(self.url_pattern_name,
+                                   kwargs={'confirmation_key': confirmation_key}))
 
 class EmailChangeConfirmationManager(ConfirmationManager):
     url_pattern_name = 'zerver.views.user_settings.confirm_email_change'
