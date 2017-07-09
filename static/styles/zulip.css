@@ -1414,18 +1414,18 @@ div.message_content thead {
     background-color: hsl(0, 0%, 93%);
 }
 
-div.message_content div {
+div.message_content tr {
     display: table-row;
     vertical-align: inherit;
 }
 
-div.message_content div {
+div.message_content tr th {
     border: 1px solid hsl(0, 0%, 80%);
     padding: 4px;
     text-align: left;
 }
 
-div.message_content div {
+div.message_content tr td {
     border: 1px solid hsl(0, 0%, 80%);
     padding: 4px;
 }
