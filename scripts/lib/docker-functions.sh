@@ -46,7 +46,7 @@ ZPROJECT_SETTINGS="/home/zulip/deployments/current/zproject/settings.py"
 SETTINGS_PY="/etc/zulip/settings.py"
 
 # BEGIN app_run functions
-# === initial_configuration ===
+# === run_initial_configuration ===
 prepare_directories() {
     if [ ! -d "$DATA_DIR" ]; then
         mkdir -p "$DATA_DIR"
@@ -270,7 +270,7 @@ configure_auto_backup() {
     echo "MAILTO=""\n$AUTO_BACKUP_INTERVAL cd /;/entrypoint.sh app:backup" > /etc/cron.d/autobackup
     echo "Auto backup enabled."
 }
-initial_configuration() {
+run_initial_configuration() {
     echo "=== Begin Initial Configuration Phase ==="
     prepare_directories
     configure_nginx

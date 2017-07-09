@@ -16,7 +16,7 @@ fi
 
 # BEGIN app functions
 app_run() {
-    initial_configuration
+    run_initial_configuration
     bootstrap_environment
     echo "=== Begin Run Phase ==="
     echo "Starting Zulip using supervisor with \"/etc/supervisor/supervisord.conf\" config ..."
