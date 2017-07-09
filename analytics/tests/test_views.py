@@ -29,7 +29,7 @@ class TestStatsEndpoint(ZulipTestCase):
         result = self.client_get('/stats')
         self.assertEqual(result.status_code, 200)
         # Check that we get something back
-        self.assert_in_response("Zulip Analytics for", result)
+        self.assert_in_response("Zulip analytics for", result)
 
 class TestGetChartData(ZulipTestCase):
     def setUp(self):
