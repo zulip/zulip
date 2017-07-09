@@ -318,7 +318,7 @@ bootstrap_rabbitmq() {
 }
 configure_user_creation() {
     echo "Executing Zulip user creation script ..."
-    if ([ "$ZULIP_USER_CREATION_ENABLED" != "True" ] && [ "$ZULIP_USER_CREATION_ENABLED" != "true" ]) && [ -e "$DATA_DIR/.initiated" ]; then
+    if ([ "$ZULIP_USER_CREATION_ENABLED" != "True" ] || [ "$ZULIP_USER_CREATION_ENABLED" != "true" ]) && [ -e "$DATA_DIR/.initiated" ]; then
         rm -f /etc/supervisor/conf.d/zulip_postsetup.conf
         echo "Zulip user creation disabled."
         return 0
