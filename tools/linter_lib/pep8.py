@@ -88,7 +88,6 @@ def check_pep8(files):
         'zerver/tests/test_signup.py',
         'zerver/tests/test_subs.py',
         'zerver/tests/test_upload.py',
-        'zerver/tornado/websocket_client.py',
         'zerver/worker/queue_processors.py',
         'zilencer/management/commands/populate_db.py',
     ]
