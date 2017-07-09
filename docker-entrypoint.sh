@@ -8,7 +8,7 @@ set -e
 
 if [ -f /opt/docker-functions.sh ]; then
     source /opt/docker-functions.sh
-else if [ -f ./docker-functions.sh ]; then
+elif [ -f ./docker-functions.sh ]; then
     source /opt/docker-functions.sh
 else
     echo "docker-functions.sh not found in /opt nor current work directory."
