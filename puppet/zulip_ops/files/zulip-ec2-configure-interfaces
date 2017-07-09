@@ -65,11 +65,14 @@ def address_of(device_id):
         return None
 
 def guess_gateway(device_id):
-    # type: (int) -> str
+    # type: (int) -> Optional[str]
     # This will not work if the default gateway isn't n.n.n.1.
-    address = address_of(device_id).split('.')
-    address[3] = '1'
-    return '.'.join(address)
+    address = address_of(device_id)
+    if address is None:
+        return None
+    gateway = address.split('.')
+    gateway[3] = '1'
+    return '.'.join(gateway)
 
 log = logging.getLogger('configure-cloud-interfaces')
 log.setLevel(logging.DEBUG)
