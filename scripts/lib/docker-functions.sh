@@ -307,7 +307,7 @@ bootstrap_rabbitmq() {
     set +e
     /root/zulip/scripts/setup/configure-rabbitmq | tail -n 16
     RETURN_CODE=$?
-    if [[ $RETURN_CODE != 0 ]] && ([ "$IGNORE_RABBITMQ_ERRORS" = "False" ] && [ "$IGNORE_RABBITMQ_ERRORS" = "false" ]); then
+    if [[ $RETURN_CODE != 0 ]] && ([ "$IGNORE_RABBITMQ_ERRORS" = "False" ] || [ "$IGNORE_RABBITMQ_ERRORS" = "false" ]); then
         echo "=> In most cases you can completely ignore the RabbmitMQ bootstrap errors."
         echo "=> If you want to ignore RabbitMQ bootstrap errors, (re)add the env var 'IGNORE_RABBITMQ_ERRORS' with 'true'."
         echo "Zulip RabbitMQ bootstrap failed in \"configure-rabbitmq\" exit code $RETURN_CODE. Exiting."
