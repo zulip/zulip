@@ -86,7 +86,6 @@ def check_pep8(files):
         'zerver/tests/test_signup.py',
         'zerver/tests/test_subs.py',
         'zerver/tests/test_upload.py',
-        'zilencer/management/commands/populate_db.py',
     ]
 
     filtered_files = [fn for fn in files if fn not in IGNORE_FILES_PEPE261]
