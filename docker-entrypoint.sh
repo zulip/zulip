@@ -50,9 +50,9 @@ MANUAL_CONFIGURATION="${MANUAL_CONFIGURATION:-false}"
 ZPROJECT_SETTINGS="/home/zulip/deployments/current/zproject/settings.py"
 SETTINGS_PY="/etc/zulip/settings.py"
 
-# BEGIN appRun functions
-# === initialConfiguration ===
-prepareDirectories() {
+# BEGIN app_run functions
+# === initial_configuration ===
+prepare_directories() {
     if [ ! -d "$DATA_DIR" ]; then
         mkdir -p "$DATA_DIR"
     fi
@@ -77,13 +77,13 @@ prepareDirectories() {
     chown zulip:zulip -R "$DATA_DIR/uploads"
     echo "Prepared and linked the uploads directory."
 }
-setConfigurationValue() {
+set_configuration_value() {
     if [ -z "$1" ]; then
-        echo "No KEY given for setConfigurationValue."
+        echo "No KEY given for set_configuration_value."
         return 1
     fi
     if [ -z "$3" ]; then
-        echo "No FILE given for setConfigurationValue."
+        echo "No FILE given for set_configuration_value."
         return 1
     fi
     local KEY="$1"
@@ -125,14 +125,14 @@ setConfigurationValue() {
     echo "$VALUE" >> "$FILE"
     echo "Setting key \"$KEY\", type \"$TYPE\" in file \"$FILE\"."
 }
-nginxConfiguration() {
+nginx_configuration() {
     echo "Executing nginx configuration ..."
     sed -i "s/worker_processes .*/worker_processes $NGINX_WORKERS;/g" /etc/nginx/nginx.conf
     sed -i "s/client_max_body_size .*/client_max_body_size $NGINX_MAX_UPLOAD_SIZE;/g" /etc/nginx/nginx.conf
     sed -i "s/proxy_buffering .*/proxy_buffering $NGINX_PROXY_BUFFERING;/g" /etc/nginx/zulip-include/proxy_longpolling
     echo "Nginx configuration succeeded."
 }
-configureCerts() {
+configure_certs() {
     echo "Executing certificates configuration..."
     if [ ! -f "$DATA_DIR/certs/zulip.key" ] && [ ! -f "$DATA_DIR/certs/zulip.combined-chain.crt" ]; then
         /root/zulip/scripts/setup/configure-certs
@@ -143,7 +143,7 @@ configureCerts() {
     ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
     echo "Certificates configuration succeeded."
 }
-secretsConfiguration() {
+secrets_configuration() {
     echo "Setting Zulip secrets ..."
     if [ ! -e "$DATA_DIR/zulip-secrets.conf" ]; then
         echo "Generating Zulip secrets ..."
@@ -185,7 +185,7 @@ secretsConfiguration() {
     echo "Linked existing secrets from data dir to etc zulip."
     echo "Zulip secrets configuration succeeded."
 }
-databaseConfiguration() {
+database_configuration() {
     echo "Setting database configuration ..."
     local VALUE="{
   'default': {
@@ -203,27 +203,27 @@ databaseConfiguration() {
     },
   },
 }"
-    setConfigurationValue "DATABASES" "$VALUE" "$ZPROJECT_SETTINGS" "array"
-    setConfigurationValue "REMOTE_POSTGRES_HOST" "$DB_HOST" "$SETTINGS_PY" "string"
-    setConfigurationValue "REMOTE_POSTGRES_SSLMODE" "$REMOTE_POSTGRES_SSLMODE" "$SETTINGS_PY" "string"
+    set_configuration_value "DATABASES" "$VALUE" "$ZPROJECT_SETTINGS" "array"
+    set_configuration_value "REMOTE_POSTGRES_HOST" "$DB_HOST" "$SETTINGS_PY" "string"
+    set_configuration_value "REMOTE_POSTGRES_SSLMODE" "$REMOTE_POSTGRES_SSLMODE" "$SETTINGS_PY" "string"
     echo "Database configuration succeeded."
 }
-# authenticationBackends Configure the authentication backends list/array to be used by Zulip
-authenticationBackends() {
+# authentication_backends Configure the authentication backends list/array to be used by Zulip
+authentication_backends() {
     echo "Activating authentication backends ..."
     local FIRST=true
     echo "$ZULIP_AUTH_BACKENDS" | sed -n 1'p' | tr ',' '\n' | while read AUTH_BACKEND; do
         if [ "$FIRST" = true ]; then
-            setConfigurationValue "AUTHENTICATION_BACKENDS" "('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "$SETTINGS_PY" "array"
+            set_configuration_value "AUTHENTICATION_BACKENDS" "('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "$SETTINGS_PY" "array"
             FIRST=false
         else
-            setConfigurationValue "AUTHENTICATION_BACKENDS += ('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "" "$SETTINGS_PY" "literal"
+            set_configuration_value "AUTHENTICATION_BACKENDS += ('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "" "$SETTINGS_PY" "literal"
         fi
         echo "Adding authentication backend \"$AUTH_BACKEND\"."
     done
     echo "Authentication backend activation succeeded."
 }
-zulipConfiguration() {
+zulip_configuration() {
     echo "Executing Zulip configuration ..."
     if [ ! -z "$ZULIP_CUSTOM_SETTINGS" ]; then
         echo -e "\n$ZULIP_CUSTOM_SETTINGS" >> "$ZPROJECT_SETTINGS"
@@ -256,7 +256,7 @@ zulipConfiguration() {
         if ([ "$SPECIAL_SETTING_DETECTION_MODE" = "True" ] || [ "$SPECIAL_SETTING_DETECTION_MODE" = "true" ]) || [ "$type" = "string" ]; then
             type=""
         fi
-        setConfigurationValue "$setting_key" "$setting_var" "$file" "$type"
+        set_configuration_value "$setting_key" "$setting_var" "$file" "$type"
     done
     unset setting_key setting_var
     su zulip -c "/home/zulip/deployments/current/manage.py checkconfig"
@@ -266,7 +266,7 @@ zulipConfiguration() {
     fi
     echo "Zulip configuration succeeded."
 }
-autoBackupConfiguration() {
+auto_backup_configuration() {
     if ([ "$AUTO_BACKUP_ENABLED" != "True" ] && [ "$AUTO_BACKUP_ENABLED" != "true" ]); then
         rm -f /etc/cron.d/autobackup
         echo "Auto backup is disabled. Continuing."
@@ -275,22 +275,22 @@ autoBackupConfiguration() {
     echo "MAILTO=""\n$AUTO_BACKUP_INTERVAL cd /;/entrypoint.sh app:backup" > /etc/cron.d/autobackup
     echo "Auto backup enabled."
 }
-initialConfiguration() {
+initial_configuration() {
     echo "=== Begin Initial Configuration Phase ==="
-    prepareDirectories
-    nginxConfiguration
-    configureCerts
-    databaseConfiguration
+    prepare_directories
+    nginx_configuration
+    configure_certs
+    database_configuration
     if [ "$MANUAL_CONFIGURATION" = "False" ] || [ "$MANUAL_CONFIGURATION" = "false" ]; then
-        secretsConfiguration
-        authenticationBackends
-        zulipConfiguration
+        secrets_configuration
+        authentication_backends
+        zulip_configuration
     fi
-    autoBackupConfiguration
+    auto_backup_configuration
     echo "=== End Initial Configuration Phase ==="
 }
-# === bootstrappingEnvironment ===
-waitingForDatabase() {
+# === bootstrapping_environment ===
+waiting_for_database() {
     export PGPASSWORD="$DB_PASSWORD"
     local TIMEOUT=60
     echo "Waiting for database server to allow connections ..."
@@ -307,7 +307,7 @@ waitingForDatabase() {
     done
     unset PGPASSWORD
 }
-bootstrapRabbitMQ() {
+bootstrap_rabbitmq() {
     echo "Bootstrapping RabbitMQ ..."
     set +e
     /root/zulip/scripts/setup/configure-rabbitmq | tail -n 16
@@ -321,7 +321,7 @@ bootstrapRabbitMQ() {
     set -e
     echo "RabbitMQ bootstrap succeeded."
 }
-userCreationConfiguration() {
+user_creationg_configuration() {
     echo "Executing Zulip user creation script ..."
     if ([ "$ZULIP_USER_CREATION_ENABLED" != "True" ] && [ "$ZULIP_USER_CREATION_ENABLED" != "true" ]) && [ -e "$DATA_DIR/.initiated" ]; then
         rm -f /etc/supervisor/conf.d/zulip_postsetup.conf
@@ -330,7 +330,7 @@ userCreationConfiguration() {
     fi
     echo "Zulip user creation left enabled."
 }
-zulipFirstStartInit() {
+zulip_first_start_init() {
     echo "Executing Zulip first start init ..."
     if [ -e "$DATA_DIR/.initiated" ] && ([ "$FORCE_FIRST_START_INIT" != "True" ] && [ "$FORCE_FIRST_START_INIT" != "true" ]); then
         echo "First Start Init not needed. Continuing."
@@ -354,10 +354,10 @@ zulipFirstStartInit() {
     touch "$DATA_DIR/.initiated"
     echo "Zulip first start init sucessful."
 }
-# zulipMigration Runs the zulip database migrations
+# zulip_migration Runs the zulip database migrations
 # This runs the migration everytime the container runs, to make sure Zulip has the
 # uptodate database version.
-zulipMigration() {
+zulip_migration() {
     echo "Migrating Zulip to new version ..."
     set +e
     su zulip -c "/home/zulip/deployments/current/manage.py migrate --noinput"
@@ -371,8 +371,8 @@ zulipMigration() {
     touch "$DATA_DIR/.zulip-$ZULIP_VERSION"
     echo "Zulip migration succeeded."
 }
-# runPostSetupScripts Run user given custom post setup scripts
-runPostSetupScripts() {
+# run_post_setup_scripts Run user given custom post setup scripts
+run_post_setup_scripts() {
     echo "Post setup scripts execution ..."
     if ([ "$ZULIP_RUN_POST_SETUP_SCRIPTS" != "True" ] && [ "$ZULIP_RUN_POST_SETUP_SCRIPTS" != "true" ]); then
         echo "Not running post setup scripts. ZULIP_RUN_POST_SETUP_SCRIPTS isn't true."
@@ -400,27 +400,27 @@ runPostSetupScripts() {
     set -e
     echo "Post setup scripts execution succeeded."
 }
-bootstrappingEnvironment() {
+bootstrapping_environment() {
     echo "=== Begin Bootstrap Phase ==="
-    waitingForDatabase
-    bootstrapRabbitMQ
-    userCreationConfiguration
-    zulipFirstStartInit
-    zulipMigration
-    runPostSetupScripts
+    waiting_for_database
+    bootstrap_rabbitmq
+    user_creationg_configuration
+    zulip_first_start_init
+    zulip_migration
+    run_post_setup_scripts
     echo "=== End Bootstrap Phase ==="
 }
-# END appRun functions
+# END app_run functions
 # BEGIN app functions
-appRun() {
-    initialConfiguration
-    bootstrappingEnvironment
+app_run() {
+    initial_configuration
+    bootstrapping_environment
     echo "=== Begin Run Phase ==="
     echo "Starting Zulip using supervisor with \"/etc/supervisor/supervisord.conf\" config ..."
     echo ""
     exec supervisord -n -c "/etc/supervisor/supervisord.conf"
 }
-appManagePy() {
+app_managepy() {
     COMMAND="$1"
     shift 1
     if [ -z "$COMMAND" ]; then
@@ -431,7 +431,7 @@ appManagePy() {
     set +e
     exec su zulip -c "/home/zulip/deployments/current/manage.py $COMMAND $*"
 }
-appBackup() {
+app_backup() {
     echo "Starting backup process ..."
     if [ -d "/tmp/backup-$(date "%D-%H-%M-%S")" ]; then
         echo "Temporary backup folder for \"$(date "%D-%H-%M-%S")\" already exists. Aborting."
@@ -441,14 +441,14 @@ appBackup() {
     local BACKUP_FOLDER
     BACKUP_FOLDER="/tmp/backup-$(date "%D-%H-%M-%S")"
     mkdir -p "$BACKUP_FOLDER"
-    waitingForDatabase
+    waiting_for_database
     pg_dump -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_USER" "$DB_NAME" > "$BACKUP_FOLDER/database-postgres.sql"
     tar -zcvf "$DATA_DIR/backups/backup-$(date "%D-%H-%M-%S").tar.gz" "$BACKUP_FOLDER/"
     rm -r "${BACKUP_FOLDER:?}/"
     echo "Backup process succeeded."
     exit 0
 }
-appRestore() {
+app_restore() {
     echo "Starting restore process ..."
     if [ "$(ls -A "$DATA_DIR/backups/")" ]; then
         echo "No backups to restore found in \"$DATA_DIR/backups/\"."
@@ -488,17 +488,17 @@ appRestore() {
         sleep 1
     done
     echo "!! WARNING !! Starting restore process ... !! WARNING !!"
-    waitingForDatabase
+    waiting_for_database
     tar -zxvf "$DATA_DIR/backups/$BACKUP_FILE" -C /tmp
     psql -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_USER" "$DB_NAME" < "/tmp/$(basename "$BACKUP_FILE" | cut -d. -f1)/database-postgres.sql"
     rm -r "/tmp/$(basename  | cut -d. -f1)/"
     echo "Restore process succeeded. Exiting."
     exit 0
 }
-appCerts() {
-    configureCerts
+app_certs() {
+    configure_certs
 }
-appHelp() {
+app_help() {
     echo "Available commands:"
     echo "> app:help     - Show this help menu and exit"
     echo "> app:version  - Container Zulip server version"
@@ -509,7 +509,7 @@ appHelp() {
     echo "> app:run      - Run the Zulip server"
     echo "> [COMMAND]    - Run given command with arguments in shell"
 }
-appVersion() {
+app_version() {
     echo "This container contains:"
     echo "> Zulip server $ZULIP_VERSION"
     echo "> Checksum: $ZULIP_CHECKSUM"
@@ -519,26 +519,26 @@ appVersion() {
 
 case "$1" in
     app:run)
-        appRun
+        app_run
     ;;
     app:managepy)
         shift 1
-        appManagePy "$@"
+        app_managepy "$@"
     ;;
     app:backup)
-        appBackup
+        app_backup
     ;;
     app:restore)
-        appRestore
+        app_restore
     ;;
     app:certs)
-        appCerts
+        app_certs
     ;;
     app:help)
-        appHelp
+        app_help
     ;;
     app:version)
-        appVersion
+        app_version
     ;;
     *)
         if [[ -x $1 ]]; then
@@ -549,7 +549,7 @@ case "$1" in
                 shift 1
                 exec "$(which $COMMAND)" "$@"
             else
-                appHelp
+                app_help
             fi
         fi
     ;;
