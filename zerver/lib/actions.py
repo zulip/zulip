@@ -3053,7 +3053,9 @@ def do_send_confirmation_email(invitee, referrer, body):
     """
     activation_url = Confirmation.objects.get_link_for_object(invitee, referrer.realm.host)
     context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url}
-    send_email('zerver/emails/invitation', invitee.email, from_address=FromAddress.NOREPLY, context=context)
+    from_name = u"%s (via Zulip)" % (referrer.full_name,)
+    send_email('zerver/emails/invitation', invitee.email, from_name=from_name,
+               from_address=FromAddress.NOREPLY, context=context)
 
 def is_inactive(email):
     # type: (Text) -> None
