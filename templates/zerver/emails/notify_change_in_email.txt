@@ -5,5 +5,4 @@ was recently changed to {{ new_email }}. If you did not request this change,
 please contact us immediately at <{{ support_email }}>.
 
 Best,
-
-The Zulip Team
+Team Zulip

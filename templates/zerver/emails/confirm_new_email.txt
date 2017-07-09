@@ -6,9 +6,8 @@ to confirm this change, please click this link:
 
 {{ activate_url }}
 
-Feel free to give us a shout at <{{ support_email }}> if you have any
-questions or you did not request this change.
+If you did not request this change, please contact us immediately at
+<{{ support_email }}>.
 
 Cheers,
-
-The Zulip Team
+Team Zulip

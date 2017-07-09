@@ -8,5 +8,4 @@ To complete signup, visit this link below:
 Feel free to give us a shout at <{{ support_email }}> if you have any questions.
 
 Cheers,
-
-The Zulip Team
+Team Zulip
