@@ -9,7 +9,7 @@ RUN apt-get -q update && \
     wget -q "https://www.zulip.org/dist/releases/zulip-server-$ZULIP_VERSION.tar.gz" -O /tmp/zulip-server.tar.gz && \
     tar xfz /tmp/zulip-server.tar.gz -C /root/zulip --strip-components=1 && \
     rm -rf /tmp/zulip-server.tar.gz && \
-    export VOYAGER_CLASS="dockervoyager" DEPLOYMENT_TYPE="dockervoyager" \
+    export PUPPET_CLASSES="dockervoyager" DEPLOYMENT_TYPE="dockervoyager" \
         ADDITIONAL_PACKAGES="python-dev python-six" has_nginx="0" has_appserver="0" && \
     /root/zulip/scripts/setup/install && \
     apt-get -qq autoremove --purge -y && \
