@@ -12,7 +12,7 @@ from django.conf import settings
 
 from zerver.lib.notifications import build_message_list, hash_util_encode, \
     one_click_unsubscribe_link
-from zerver.lib.send_email import display_email, send_future_email
+from zerver.lib.send_email import display_email, send_future_email, FromAddress
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams
 from zerver.context_processors import common_context
@@ -209,4 +209,5 @@ def handle_digest_email(user_profile_id, cutoff):
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledJob
-        send_future_email('zerver/emails/digest', display_email(user_profile), context=context)
+        send_future_email('zerver/emails/digest', display_email(user_profile), from_name="Zulip Digest",
+                          from_address=FromAddress.NOREPLY, context=context)
