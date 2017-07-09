@@ -125,7 +125,7 @@ set_configuration_value() {
     echo "$VALUE" >> "$FILE"
     echo "Setting key \"$KEY\", type \"$TYPE\" in file \"$FILE\"."
 }
-nginx_configuration() {
+configure_nginx() {
     echo "Executing nginx configuration ..."
     sed -i "s/worker_processes .*/worker_processes $NGINX_WORKERS;/g" /etc/nginx/nginx.conf
     sed -i "s/client_max_body_size .*/client_max_body_size $NGINX_MAX_UPLOAD_SIZE;/g" /etc/nginx/nginx.conf
@@ -143,7 +143,7 @@ configure_certs() {
     ln -sfT "$DATA_DIR/certs/zulip.combined-chain.crt" /etc/ssl/certs/zulip.combined-chain.crt
     echo "Certificates configuration succeeded."
 }
-secrets_configuration() {
+configure_secrets() {
     echo "Setting Zulip secrets ..."
     if [ ! -e "$DATA_DIR/zulip-secrets.conf" ]; then
         echo "Generating Zulip secrets ..."
@@ -185,7 +185,7 @@ secrets_configuration() {
     echo "Linked existing secrets from data dir to etc zulip."
     echo "Zulip secrets configuration succeeded."
 }
-database_configuration() {
+configure_database_settings() {
     echo "Setting database configuration ..."
     local VALUE="{
   'default': {
@@ -208,8 +208,8 @@ database_configuration() {
     set_configuration_value "REMOTE_POSTGRES_SSLMODE" "$REMOTE_POSTGRES_SSLMODE" "$SETTINGS_PY" "string"
     echo "Database configuration succeeded."
 }
-# authentication_backends Configure the authentication backends list/array to be used by Zulip
-authentication_backends() {
+# configure_authentication_backends Configure the authentication backends list/array to be used by Zulip
+configure_authentication_backends() {
     echo "Activating authentication backends ..."
     local FIRST=true
     echo "$ZULIP_AUTH_BACKENDS" | sed -n 1'p' | tr ',' '\n' | while read AUTH_BACKEND; do
@@ -223,7 +223,7 @@ authentication_backends() {
     done
     echo "Authentication backend activation succeeded."
 }
-zulip_configuration() {
+configure_zulip() {
     echo "Executing Zulip configuration ..."
     if [ ! -z "$ZULIP_CUSTOM_SETTINGS" ]; then
         echo -e "\n$ZULIP_CUSTOM_SETTINGS" >> "$ZPROJECT_SETTINGS"
@@ -266,7 +266,7 @@ zulip_configuration() {
     fi
     echo "Zulip configuration succeeded."
 }
-auto_backup_configuration() {
+configure_auto_backup() {
     if ([ "$AUTO_BACKUP_ENABLED" != "True" ] && [ "$AUTO_BACKUP_ENABLED" != "true" ]); then
         rm -f /etc/cron.d/autobackup
         echo "Auto backup is disabled. Continuing."
@@ -278,19 +278,19 @@ auto_backup_configuration() {
 initial_configuration() {
     echo "=== Begin Initial Configuration Phase ==="
     prepare_directories
-    nginx_configuration
+    configure_nginx
     configure_certs
-    database_configuration
+    configure_database_settings
     if [ "$MANUAL_CONFIGURATION" = "False" ] || [ "$MANUAL_CONFIGURATION" = "false" ]; then
-        secrets_configuration
-        authentication_backends
-        zulip_configuration
+        configure_secrets
+        configure_authentication_backends
+        configure_zulip
     fi
-    auto_backup_configuration
+    configure_auto_backup
     echo "=== End Initial Configuration Phase ==="
 }
-# === bootstrapping_environment ===
-waiting_for_database() {
+# === bootstrap_environment ===
+wait_for_database() {
     export PGPASSWORD="$DB_PASSWORD"
     local TIMEOUT=60
     echo "Waiting for database server to allow connections ..."
@@ -321,7 +321,7 @@ bootstrap_rabbitmq() {
     set -e
     echo "RabbitMQ bootstrap succeeded."
 }
-user_creationg_configuration() {
+configure_user_creation() {
     echo "Executing Zulip user creation script ..."
     if ([ "$ZULIP_USER_CREATION_ENABLED" != "True" ] && [ "$ZULIP_USER_CREATION_ENABLED" != "true" ]) && [ -e "$DATA_DIR/.initiated" ]; then
         rm -f /etc/supervisor/conf.d/zulip_postsetup.conf
@@ -354,10 +354,10 @@ zulip_first_start_init() {
     touch "$DATA_DIR/.initiated"
     echo "Zulip first start init sucessful."
 }
-# zulip_migration Runs the zulip database migrations
+# migrate_zulip_database Runs the zulip database migrations
 # This runs the migration everytime the container runs, to make sure Zulip has the
 # uptodate database version.
-zulip_migration() {
+migrate_zulip_database() {
     echo "Migrating Zulip to new version ..."
     set +e
     su zulip -c "/home/zulip/deployments/current/manage.py migrate --noinput"
@@ -400,13 +400,13 @@ run_post_setup_scripts() {
     set -e
     echo "Post setup scripts execution succeeded."
 }
-bootstrapping_environment() {
+bootstrap_environment() {
     echo "=== Begin Bootstrap Phase ==="
-    waiting_for_database
+    wait_for_database
     bootstrap_rabbitmq
-    user_creationg_configuration
+    configure_user_creation
     zulip_first_start_init
-    zulip_migration
+    migrate_zulip_database
     run_post_setup_scripts
     echo "=== End Bootstrap Phase ==="
 }
@@ -414,7 +414,7 @@ bootstrapping_environment() {
 # BEGIN app functions
 app_run() {
     initial_configuration
-    bootstrapping_environment
+    bootstrap_environment
     echo "=== Begin Run Phase ==="
     echo "Starting Zulip using supervisor with \"/etc/supervisor/supervisord.conf\" config ..."
     echo ""
@@ -441,7 +441,7 @@ app_backup() {
     local BACKUP_FOLDER
     BACKUP_FOLDER="/tmp/backup-$(date "%D-%H-%M-%S")"
     mkdir -p "$BACKUP_FOLDER"
-    waiting_for_database
+    wait_for_database
     pg_dump -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_USER" "$DB_NAME" > "$BACKUP_FOLDER/database-postgres.sql"
     tar -zcvf "$DATA_DIR/backups/backup-$(date "%D-%H-%M-%S").tar.gz" "$BACKUP_FOLDER/"
     rm -r "${BACKUP_FOLDER:?}/"
@@ -488,7 +488,7 @@ app_restore() {
         sleep 1
     done
     echo "!! WARNING !! Starting restore process ... !! WARNING !!"
-    waiting_for_database
+    wait_for_database
     tar -zxvf "$DATA_DIR/backups/$BACKUP_FILE" -C /tmp
     psql -h "$DB_HOST" -p "$DB_HOST_PORT" -U "$DB_USER" "$DB_NAME" < "/tmp/$(basename "$BACKUP_FILE" | cut -d. -f1)/database-postgres.sql"
     rm -r "/tmp/$(basename  | cut -d. -f1)/"
