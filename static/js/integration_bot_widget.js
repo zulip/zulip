@@ -45,8 +45,8 @@ function on_create_bot_success(result, stream_name, external_api_uri_subdomain, 
 function create_bot(bot, on_success) {
     var formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrf_token);
-    formData.append('full_name', bot.full_name);
-    formData.append('short_name', bot.short_name);
+    formData.append('full_name', bot.bot_full_name);
+    formData.append('short_name', bot.bot_short_name);
     formData.append('bot_type', INCOMING_WEBHOOK_BOT_TYPE);
 
     // Will need to set the value of #bot_avatar_file_input (name can be changed) before calling

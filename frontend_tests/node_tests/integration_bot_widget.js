@@ -20,23 +20,20 @@ var integration_bot_widget = require('js/integration_bot_widget.js');
     var success_callback;
     var error_callback;
     var posted;
+    var INCOMING_WEBHOOK_BOT_TYPE = '2';
 
     var form_data = {
         append: function (field, val) {
             form_data[field] = val;
+        },
+        get: function (field) {
+            return form_data[field];
         },
     };
 
     set_global('FormData', function () {
         return form_data;
     });
-
-    channel.post = function (req) {
-        posted = true;
-        assert.equal(req.url, '/json/bots');
-        success_callback = req.success;
-        error_callback = req.error;
-    };
 
     var external_api_uri_subdomain = "https://chat.zulip.org/api/v1/external/";
     var integration_url = "airbrake";
@@ -66,6 +63,19 @@ var integration_bot_widget = require('js/integration_bot_widget.js');
         stream_name: stream_name,
         external_api_uri_subdomain: external_api_uri_subdomain,
         integration_url: integration_url,
+    };
+
+    channel.post = function (req) {
+        posted = true;
+
+        // Asserting formdata contents.
+        assert.equal(req.url, '/json/bots');
+        assert.equal(req.data.get('full_name'), bot.bot_full_name);
+        assert.equal(req.data.get('short_name'), bot.bot_short_name);
+        assert.equal(req.data.get('bot_type'), INCOMING_WEBHOOK_BOT_TYPE);
+
+        success_callback = req.success;
+        error_callback = req.error;
     };
 
     // Main function to be tested
