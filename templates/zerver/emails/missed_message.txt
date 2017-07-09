@@ -1,7 +1,3 @@
-{#
-Mail sent to user when they were not logged in and received a PM or @-mention
-#}
-
 Hello {{ name }},
 
 While you were away you received {{ message_count }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!

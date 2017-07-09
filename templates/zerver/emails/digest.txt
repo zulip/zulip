@@ -1,7 +1,3 @@
-{#
-Mail sent to a user who hasn't logged in for 24 hours.
-#}
-
 Hello {{ name }},
 
 A lot has happened on Zulip while you've been away! Visit

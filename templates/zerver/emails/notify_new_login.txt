@@ -1,5 +1,3 @@
-{# Informs user of a new login to their account #}
-
 Hi,
 
 This is a notification that a new login to your Zulip account has just occurred.
