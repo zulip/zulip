@@ -16,7 +16,8 @@ RUN apt-get -q update && \
     apt-get -qq clean && \
     rm -rf /root/zulip/puppet/ /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY docker-entrypoint.sh /sbin/entrypoint.sh
+COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY scripts/lib/docker-functions.sh /opt/docker-functions.sh
 
 VOLUME ["$DATA_DIR"]
 EXPOSE 80 443
