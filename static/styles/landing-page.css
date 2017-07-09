@@ -167,6 +167,7 @@ nav ul {
 
 nav ul .exit {
     display: none;
+    user-select: none;
 }
 
 nav ul li {
