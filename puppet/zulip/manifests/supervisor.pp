@@ -3,7 +3,7 @@ class zulip::supervisor {
                           "supervisor",
                           ]
   package { $supervisor_packages: ensure => "installed" }
-  # depending on the environment, ignoreSupervisorService is set, meaning we
+  # Depending on the environment, ignoreSupervisorService is set, meaning we
   # don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
