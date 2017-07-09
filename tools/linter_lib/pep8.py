@@ -78,12 +78,10 @@ def check_pep8(files):
 
     # TODO: Clear up this list of violations.
     IGNORE_FILES_PEPE261 = [
-        'api/zulip/__init__.py',
         'zerver/tests/test_bugdown.py',
         'zerver/tests/test_events.py',
         'zerver/tests/test_messages.py',
         'zerver/tests/test_narrow.py',
-        'zerver/tests/test_outgoing_webhook_system.py',
         'zerver/tests/test_realm.py',
         'zerver/tests/test_signup.py',
         'zerver/tests/test_subs.py',
