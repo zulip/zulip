@@ -60,7 +60,7 @@ class Integration(object):
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
         self.doc = doc
-        self.doc_context = None  # type: Dict[Any, Any]
+        self.doc_context = None  # type: Optional[Dict[Any, Any]]
 
         for category in categories:
             if category not in CATEGORIES:
