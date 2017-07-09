@@ -874,38 +874,93 @@ function test_with_mock_socket(test_params) {
             },
         };
 
-        function setup(msg_type, is_zephyr_mirror, mentioned_full_name) {
-            compose_fade.would_receive_message = function (email) {
-                assert.equal(email, 'foo@bar.com');
-                return false;
-            };
-            templates.render = function (template_name, context) {
-                assert.equal(template_name, 'compose-invite-users');
-                assert.equal(context.email, 'foo@bar.com');
-                assert.equal(context.name, 'foobar');
-                return 'fake-compose-invite-user-template';
-            };
-            $("#compose_invite_users").append = function (html) {
-                assert.equal(html, 'fake-compose-invite-user-template');
-            };
-            $("#compose_invite_users").hide();
+        $('#compose_invite_users .compose_invite_user').length = 0;
+
+        function test_noop_case(msg_type, is_zephyr_mirror, mentioned_full_name) {
             compose_state.set_message_type(msg_type);
             page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
             data.mentioned.full_name = mentioned_full_name;
-        }
-
-        function test(msg_type, is_zephyr_mirror, mentioned_full_name,
-                      compose_invite_users_visible) {
-            setup(msg_type, is_zephyr_mirror, mentioned_full_name);
             handler({}, data);
-            assert.equal($('#compose_invite_users').visible(),
-                         compose_invite_users_visible);
+            assert.equal($('#compose_invite_users').visible(), false);
         }
 
-        test('private', true, 'everyone', false);
-        test('stream', true, 'everyone', false);
-        test('stream', false, 'everyone', false);
-        test('stream', false, 'foobar', true);
+        test_noop_case('private', true, 'everyone');
+        test_noop_case('stream', true, 'everyone');
+        test_noop_case('stream', false, 'everyone');
+
+        // Test mentioning a user that should gets a warning.
+
+        $("#compose_invite_users").hide();
+        compose_state.set_message_type('stream');
+        page_params.realm_is_zephyr_mirror_realm = false;
+
+        var checks = [
+            (function () {
+                var called;
+                compose_fade.would_receive_message = function (email) {
+                    called = true;
+                    assert.equal(email, 'foo@bar.com');
+                    return false;
+                };
+                return function () { assert(called); };
+            }()),
+
+
+            (function () {
+                var called;
+                templates.render = function (template_name, context) {
+                    called = true;
+                    assert.equal(template_name, 'compose-invite-users');
+                    assert.equal(context.email, 'foo@bar.com');
+                    assert.equal(context.name, 'Foo Barson');
+                    return 'fake-compose-invite-user-template';
+                };
+                return function () { assert(called); };
+            }()),
+
+            (function () {
+                var called;
+                $("#compose_invite_users").append = function (html) {
+                    called = true;
+                    assert.equal(html, 'fake-compose-invite-user-template');
+                };
+                return function () { assert(called); };
+            }()),
+        ];
+
+        data = {
+            mentioned: {
+              email: 'foo@bar.com',
+              full_name: 'Foo Barson',
+            },
+        };
+
+        handler({}, data);
+        assert.equal($('#compose_invite_users').visible(), true);
+
+        _.each(checks, function (f) { f(); });
+
+
+        // Simulate that the row was added to the DOM.
+        var warning_row = $('<warning row>');
+
+        var looked_for_existing;
+        warning_row.data = function (field) {
+            assert.equal(field, 'useremail');
+            looked_for_existing = true;
+            return 'foo@bar.com';
+        };
+
+        var previous_users = $('#compose_invite_users .compose_invite_user');
+        previous_users.length = 1;
+        previous_users[0] = warning_row;
+
+        // Now try to mention the same person again. The template should
+        // not render.
+        templates.render = noop;
+        handler({}, data);
+        assert.equal($('#compose_invite_users').visible(), true);
+        assert(looked_for_existing);
     }());
 
     (function test_compose_all_everyone_confirm_clicked() {

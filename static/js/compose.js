@@ -653,8 +653,6 @@ exports.initialize = function () {
             }
 
             if (compose_fade.would_receive_message(email) === false) {
-                var new_row = templates.render("compose-invite-users",
-                                               {email: email, name: data.mentioned.full_name});
                 var error_area = $("#compose_invite_users");
                 var existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
@@ -663,6 +661,8 @@ exports.initialize = function () {
                 });
 
                 if (existing_invites.indexOf(email) === -1) {
+                    var context = {email: email, name: data.mentioned.full_name};
+                    var new_row = templates.render("compose-invite-users", context);
                     error_area.append(new_row);
                 }
 
