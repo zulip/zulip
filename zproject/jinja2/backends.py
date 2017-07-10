@@ -11,8 +11,6 @@ import jinja2
 from django.test.signals import template_rendered
 from django.template.backends import jinja2 as django_jinja2
 from django.template import TemplateDoesNotExist, TemplateSyntaxError, Context
-from django.utils.module_loading import import_string
-from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 from django.http import HttpRequest
 
 
@@ -40,6 +38,14 @@ class Jinja2(django_jinja2.Jinja2):
 
     def get_template(self, template_name):
         # type: (str) -> Template
+        """
+        The only we need to override this function is to use our own Template
+        class. Jinja2 backend doesn't allow the usage of custom Template
+        class.
+
+        If in the future Django adds a method through which we can get a
+        custom Template class, this method can be safely removed.
+        """
         try:
             return Template(self.env.get_template(template_name), self)
         except jinja2.TemplateNotFound as exc:
@@ -51,26 +57,22 @@ class Jinja2(django_jinja2.Jinja2):
 
     def from_string(self, template_code):
         # type: (str) -> Template
+        """
+        The only need to override this function is to use our own Template
+        class. Jinja2 backend doesn't allow the usage of custom Template
+        class.
+
+        If in the future Django adds a method through which we can get a
+        custom Template class, this method can be safely removed.
+        """
         return Template(self.env.from_string(template_code), self)
 
 
 class Template(django_jinja2.Template):
-        """Context processors aware Template.
-
-        This class upgrades the default `Template` to apply context
-        processors to the context before passing it to the `render`
-        function.
         """
-        def __init__(self, template, backend):
-            # type: (django_jinja2.Template, django_jinja2.BaseEngine) -> None
-            # TODO: Remove this function once we shift to Django 1.11 completely.
-            # This is only intended for backward compatibility.
-            self.template = template
-            self.backend = backend
-            self.origin = django_jinja2.Origin(
-                name=template.filename, template_name=template.name,
-            )
-
+        We need this class so that we can send the template_rendered signal,
+        and to flatten the context if it is an instance of Context class.
+        """
         def render(self, context=None, request=None):
             # type: (Optional[Union[Dict[str, Any], Context]], Optional[HttpRequest]) -> Text
             if context is None:
@@ -85,17 +87,11 @@ class Template(django_jinja2.Template):
                 # `flatten` attribute in some members of union.
                 context = context.flatten()  # type: ignore
 
-            if request is not None:
-                context['request'] = request
-                context['csrf_input'] = csrf_input_lazy(request)
-                context['csrf_token'] = csrf_token_lazy(request)
-
-                for context_processor in self.backend.context_processors:
-                    cp = import_string(context_processor)
-                    context.update(cp(request))
+            result = super(Template, self).render(context=context,
+                                                  request=request)
 
             if self.backend.debug:
                 template_rendered.send(sender=self, template=self,
                                        context=context)
 
-            return self.template.render(context)
+            return result
