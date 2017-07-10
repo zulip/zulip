@@ -11,7 +11,7 @@ members to those with email invitations.
 
 ## Limiting new membership to users invited by organization members
 
-{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
+{!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
 4. Locate the **E-mail invitation required** checkbox.
