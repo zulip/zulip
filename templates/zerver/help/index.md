@@ -128,6 +128,8 @@ is known as an **organization**.
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * [Only allow admins to create new streams](/help/only-allow-admins-to-create-new-streams-feature)
+* [Only allow admins to add emoji](/help/only-allow-admins-to-add-emoji)
+* [Allow image/link previews](/help/allow-image-link-previews)
 * [Prevent users from changing their name](/help/prevent-users-from-changing-their-name)
 * [Prevent users from changing their email address](/help/prevent-users-from-changing-their-email-address)
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
