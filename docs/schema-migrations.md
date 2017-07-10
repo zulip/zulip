@@ -8,6 +8,15 @@ tutorial](new-feature-tutorial.html).
 This page documents some important issues related to writing schema
 migrations.
 
+* **Naming**: Please provide clear names for new database migrations
+  (e.g. `0072_realmauditlog_add_index_event_time.py`).  Since in the
+  Django migrations system, the filename is the name for the
+  migration, this just means moving the migration file to have a
+  reasonable name.  Note that `tools/test-migrations` will fail in
+  Travis CI if a migration has bad name of the form
+  `0089_auto_20170710_1353.py`, which are what Django generates
+  automatically for nontrivial database schema changes.
+
 * **Large tables**: For large tables like Message and UserMessage, you
   want to take precautions when adding columns to the table,
   performing data backfills, or building indexes. We have a
