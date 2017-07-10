@@ -91,7 +91,7 @@ You need:
 
     * In the *Your bots* panel, click on the green icon to download
       its configuration file *zuliprc* (the structure of this file is
-      explained [here](#configuration-file).)
+      explained [here](#configuration-file)).
     * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`
       or `~/zuliprc-test`. Note that the destination should be accessible
       from your Zulip dev environment (e.g. Vagrant or Digital Ocean).
