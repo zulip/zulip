@@ -2141,7 +2141,7 @@ a:not(.no-style):hover:before {
     }
 
     #integration-instruction-block .integration-lozenge {
-        display: none;
+        display: none !important;
     }
 
     #integration-list-link {
