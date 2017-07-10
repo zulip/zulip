@@ -45,6 +45,7 @@ import django
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings
+from django.utils.translation import template
 
 from zerver.lib.str_utils import force_text
 
@@ -105,34 +106,27 @@ class Command(makemessages.Command):
 
     def handle_django_locales(self, *args, **options):
         # type: (*Any, **Any) -> None
-        if django.VERSION > (1, 11):
-            from django.utils.translation import template
-            re_module = template
-        else:
-            from django.utils.translation import trans_real
-            re_module = trans_real
+        old_endblock_re = template.endblock_re
+        old_block_re = template.block_re
+        old_constant_re = template.constant_re
 
-        old_endblock_re = re_module.endblock_re
-        old_block_re = re_module.block_re
-        old_constant_re = re_module.constant_re
-
-        old_templatize = re_module.templatize
+        old_templatize = template.templatize
         # Extend the regular expressions that are used to detect
         # translation blocks with an "OR jinja-syntax" clause.
-        re_module.endblock_re = re.compile(
-            re_module.endblock_re.pattern + '|' + r"""^-?\s*endtrans\s*-?$""")
-        re_module.block_re = re.compile(
-            re_module.block_re.pattern + '|' + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)""")
-        re_module.plural_re = re.compile(
-            re_module.plural_re.pattern + '|' + r"""^-?\s*pluralize(?:\s+.+|-?$)""")
-        re_module.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
+        template.endblock_re = re.compile(
+            template.endblock_re.pattern + '|' + r"""^-?\s*endtrans\s*-?$""")
+        template.block_re = re.compile(
+            template.block_re.pattern + '|' + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)""")
+        template.plural_re = re.compile(
+            template.plural_re.pattern + '|' + r"""^-?\s*pluralize(?:\s+.+|-?$)""")
+        template.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
         def my_templatize(src, *args, **kwargs):
             # type: (Text, *Any, **Any) -> Text
             new_src = strip_whitespaces(src)
             return old_templatize(new_src, *args, **kwargs)
 
-        re_module.templatize = my_templatize
+        template.templatize = my_templatize
 
         try:
             ignore_patterns = options.get('ignore_patterns', [])
@@ -140,10 +134,10 @@ class Command(makemessages.Command):
             options['ignore_patterns'] = ignore_patterns
             super(Command, self).handle(*args, **options)
         finally:
-            re_module.endblock_re = old_endblock_re
-            re_module.block_re = old_block_re
-            re_module.templatize = old_templatize
-            re_module.constant_re = old_constant_re
+            template.endblock_re = old_endblock_re
+            template.block_re = old_block_re
+            template.templatize = old_templatize
+            template.constant_re = old_constant_re
 
     def extract_strings(self, data):
         # type: (str) -> Dict[str, str]
