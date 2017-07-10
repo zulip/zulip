@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from typing import Text
-from typing import Iterable, Optional, Sequence
+from typing import Iterable, Optional, Sequence, Text
 
 from zerver.lib.events import do_events_register
 from zerver.lib.request import REQ, has_request_variables

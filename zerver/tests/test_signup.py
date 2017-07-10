@@ -60,11 +60,10 @@ from collections import defaultdict
 import re
 import ujson
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Text
 
 from six.moves import urllib
 from six.moves import range
-from typing import Any, Text
 import os
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):

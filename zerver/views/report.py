@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Text
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -12,8 +12,6 @@ from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict
 from zerver.models import UserProfile
-
-from typing import Optional, Text
 
 import subprocess
 import os

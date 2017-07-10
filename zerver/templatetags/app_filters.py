@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from os.path import basename, splitext
 
 from django.conf import settings
@@ -7,7 +7,6 @@ from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
 
 from zerver.lib.utils import force_text
-from typing import List
 import zerver.lib.bugdown.fenced_code
 
 import markdown

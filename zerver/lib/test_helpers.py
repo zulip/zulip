@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-                    Optional, Set, Sized, Tuple, Union, IO)
+                    Optional, Set, Sized, Tuple, Union, IO, Text)
 
 from django.core import signing
 from django.core.urlresolvers import LocaleRegexURLResolver
@@ -57,7 +57,6 @@ import ujson
 import unittest
 from six.moves import urllib
 from six import binary_type
-from typing import Text
 from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
