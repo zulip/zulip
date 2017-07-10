@@ -561,6 +561,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone_now) # type: datetime.datetime
     is_mirror_dummy = models.BooleanField(default=False) # type: bool
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL) # type: Optional[UserProfile]
+    long_term_idle = models.BooleanField(default=False, db_index=True)  # type: bool
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
@@ -577,6 +578,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     realm = models.ForeignKey(Realm, on_delete=CASCADE) # type: Realm
     api_key = models.CharField(max_length=API_KEY_LENGTH) # type: Text
     tos_version = models.CharField(null=True, max_length=10) # type: Optional[Text]
+    last_active_message_id = models.IntegerField(null=True)  # type: int
 
     ### Notifications settings. ###
 
