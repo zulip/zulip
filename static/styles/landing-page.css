@@ -1798,6 +1798,10 @@ a:not(.no-style):hover:before {
     transition: all 0.3s ease;
 }
 
+.portico-landing.integrations .integration-lozenge.without-category {
+    height: 180px;
+}
+
 .portico-landing.integrations .integration-lozenge:hover {
     border: 1px solid hsl(170, 47%, 53%);
 }
@@ -2103,6 +2107,10 @@ a:not(.no-style):hover:before {
         height: 180px;
     }
 
+    .portico-landing.integrations .integration-lozenge.without-category {
+        height: 160px;
+    }
+
     .portico-landing.integrations .integration-lozenge .integration-logo {
         margin: 34px auto 15px;
         height: 45px;
@@ -2402,6 +2410,10 @@ a:not(.no-style):hover:before {
     .portico-landing.integrations .integration-lozenge {
         width: 108px;
         height: 160px;
+    }
+
+    .portico-landing.integrations .integration-lozenge.without-category {
+        height: 140px;
     }
 
     .portico-landing.integrations .integration-lozenge .integration-logo {

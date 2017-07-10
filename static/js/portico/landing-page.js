@@ -189,6 +189,15 @@ function integration_search() {
     var update_integrations = _.debounce(function () {
         integrations.forEach(function (integration) {
             var $integration = $(integration).find('.integration-lozenge');
+            var $integration_category = $integration.find('.integration-category');
+
+            if (current_category !== 'All') {
+                $integration_category.css('display', 'none');
+                $integration.addClass('without-category');
+            } else {
+                $integration_category.css('display', '');
+                $integration.removeClass('without-category');
+            }
 
             var display =
                 fuzzysearch(current_query, $integration.data('name').toLowerCase()) &&
