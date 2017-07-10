@@ -75,9 +75,9 @@ casper.then(function () {
 
 casper.then(function () {
     // The user is logged in to the newly created realm and the app is loaded
-    //   '(1) home - ' + organization_name + ' - Zulip' (but the (1) may or may not be there)
-    this.test.assertTitleMatch(/ - Zulip$/, "Title ends with Zulip");
-    this.test.assertTitleMatch(/home - /, "Title shows in the home view");
+    casper.waitUntilVisible('#zhome', function () {
+        this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
+    });
 });
 
 common.then_log_out();
