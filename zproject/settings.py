@@ -747,7 +747,6 @@ PIPELINE = {
                 'third/spectrum/spectrum.css',
                 'third/thirdparty-fonts.css',
                 'node_modules/katex/dist/katex.css',
-                'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
                 'styles/components.css',
                 'styles/zulip.css',
                 'styles/alerts.css',
@@ -773,6 +772,7 @@ PIPELINE = {
                 'third/bootstrap/css/bootstrap.css',
                 'third/bootstrap/css/bootstrap-btn.css',
                 'third/bootstrap/css/bootstrap-responsive.css',
+                'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
             ),
             'output_filename': 'min/common.css'
         },
