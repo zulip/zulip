@@ -59,7 +59,7 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
         wildcard_list = "ratelimit:*:*:list"
         wildcard_zset = "ratelimit:*:*:zset"
 
-        trim_func = lambda key, max_calls: client.ltrim(key, 0, max_calls - 1)
+        trim_func = lambda key, max_calls: client.ltrim(key, 0, max_calls - 1)  # type: Optional[Callable[[str, int], None]]
         if not options['trim']:
             trim_func = None
 
