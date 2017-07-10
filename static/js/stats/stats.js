@@ -30,8 +30,9 @@ function floor_to_local_week(date) {
 }
 
 function format_date(date, include_hour) {
-    var months = ['January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'];
+    var months = [i18n.t('January'), i18n.t('February'), i18n.t('March'), i18n.t('April'), i18n.t('May'), i18n.t('June'),
+                  i18n.t('July'), i18n.t('August'), i18n.t('September'), i18n.t('October'), i18n.t('November'),
+                  i18n.t('December')];
     var month_str = months[date.getMonth()];
     var year = date.getFullYear();
     var day = date.getDate();
@@ -85,11 +86,11 @@ function populate_messages_sent_over_time(data) {
         var common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
             human: $.extend({ // 5062a0
-                name: "Humans", y: values.human, marker: {color: '#5f6ea0'}}, common),
+                name: i18n.t("Humans"), y: values.human, marker: {color: '#5f6ea0'}}, common),
             bot: $.extend({ // a09b5f bbb56e
-                name: "Bots", y: values.bot, marker: {color: '#b7b867'}}, common),
+                name: i18n.t("Bots"), y: values.bot, marker: {color: '#b7b867'}}, common),
             me: $.extend({
-                name: "Me", y: values.me, marker: {color: '#be6d68'}}, common),
+                name: i18n.t("Me"), y: values.me, marker: {color: '#be6d68'}}, common),
         };
     }
 
@@ -118,17 +119,17 @@ function populate_messages_sent_over_time(data) {
     }
     var hourly_rangeselector = make_rangeselector(
         0.66, -0.62,
-        {count: 24, label: 'Last 24 Hours', step: 'hour'},
-        {count: 72, label: 'Last 72 Hours', step: 'hour'});
+        {count: 24, label: i18n.t('Last 24 hours'), step: 'hour'},
+        {count: 72, label: i18n.t('Last 72 hours'), step: 'hour'});
     // This is also the cumulative rangeselector
     var daily_rangeselector = make_rangeselector(
         0.68, -0.62,
-        {count: 10, label: 'Last 10 Days', step: 'day'},
-        {count: 30, label: 'Last 30 Days', step: 'day'});
+        {count: 10, label: i18n.t('Last 10 days'), step: 'day'},
+        {count: 30, label: i18n.t('Last 30 days'), step: 'day'});
     var weekly_rangeselector = make_rangeselector(
         0.656, -0.62,
-        {count: 2, label: 'Last 2 Months', step: 'month'},
-        {count: 6, label: 'Last 6 Months', step: 'month'});
+        {count: 2, label: i18n.t('Last 2 months'), step: 'month'},
+        {count: 6, label: i18n.t('Last 6 months'), step: 'month'});
 
     function add_hover_handler() {
         document.getElementById('id_messages_sent_over_time').on('plotly_hover', function (data) {
@@ -219,7 +220,7 @@ function populate_messages_sent_over_time(data) {
     info = aggregate_data('week');
     date_formatter = function (date) {
         // return i18n.t("Week of __date__", {date: format_date(date, false)});
-        return "Week of " + format_date(date, false);
+        return i18n.t("Week of ") + format_date(date, false);
     };
     var last_week_is_partial = info.last_value_is_partial;
     var weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
@@ -669,13 +670,13 @@ function populate_number_of_users(data) {
                 buttons: [
                     {
                         count: 30,
-                        label: 'Last 30 Days',
+                        label: i18n.t('Last 30 days'),
                         step: 'day',
                         stepmode: 'backward',
                     },
                     {
                         step: 'all',
-                        label: 'All time',
+                        label: i18n.t('All time'),
                     },
                 ],
             },
