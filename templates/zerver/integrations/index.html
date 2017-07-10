@@ -68,7 +68,7 @@
     <div class="catalog">
         <div class="integration-categories-sidebar">
             <h3>{% trans %}Categories{% endtrans %}</h3>
-            <h4 data-category="All" class="integration-category selected">All</h4>
+            <h4 data-category="All" class="integration-category selected">{% trans %}All{% endtrans %}</h4>
             {% for category in categories_dict.values() %}
                 <h4 data-category="{{ category }}" class="integration-category">{{ category }}</h4>
             {% endfor %}
