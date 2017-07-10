@@ -5,7 +5,7 @@
 By default, any user can create new streams. You can enable a setting that
 only allows administrators to create new streams in the organization.
 
-{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
+{!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
 2. Select the **Only admins may create streams** checkbox.
