@@ -957,6 +957,7 @@ function test_with_mock_socket(test_params) {
         var previous_users = $('#compose_invite_users .compose_invite_user');
         previous_users.length = 1;
         previous_users[0] = warning_row;
+        $('#compose_invite_users').hide();
 
         // Now try to mention the same person again. The template should
         // not render.
