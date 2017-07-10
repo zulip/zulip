@@ -1734,7 +1734,7 @@ a:not(.no-style):hover:before {
 .portico-landing.integrations .catalog {
     margin-top: 20px;
     padding: 0 30px;
-    min-height: 1000px;
+    min-height: 500px;
 }
 
 .portico-landing.integrations .integration-categories-sidebar {
