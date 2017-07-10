@@ -7,8 +7,7 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from typing import Text
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Text
 
 BODY_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.'
 

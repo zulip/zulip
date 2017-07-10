@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict
+from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -33,7 +33,6 @@ import ujson
 from six.moves import urllib
 
 import six
-from typing import Text
 
 class PrincipalError(JsonableError):
     def __init__(self, principal, status_code=403):

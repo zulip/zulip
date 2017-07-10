@@ -44,7 +44,6 @@ from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
 import six
 from six.moves import range, html_parser
-from typing import Text
 
 if six.PY3:
     import html

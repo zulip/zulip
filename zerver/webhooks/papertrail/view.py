@@ -8,8 +8,7 @@ from zerver.lib.validator import check_dict, check_string
 from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from typing import Text
-from typing import Dict, Any, Iterable, Optional
+from typing import Dict, Any, Iterable, Optional, Text
 
 @api_key_only_webhook_view('Papertrail')
 @has_request_variables
