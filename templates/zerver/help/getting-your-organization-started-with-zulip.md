@@ -14,9 +14,11 @@ to match your organization’s needs.
   up Zulip for your company, you can restrict new users to those from
   your company’s email domain.  You can also allow new users to join
   without being explicitly invited.
-- Add an organization icon and description for Zulip to customize your
-  login/registration pages as well as how your organization appears in
-  the desktop and mobile apps.
+
+- Add an organization [icon](/help/change-your-organizations-avatar)
+and [description](change-your-organizations-description) for Zulip to
+customize your login/registration pages as well as how your
+organization appears in the desktop and mobile apps.
 
 ## Create streams
 

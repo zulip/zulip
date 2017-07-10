@@ -124,6 +124,8 @@ is known as an **organization**.
 
 * [Change your organization settings](/help/change-your-organization-settings)
 * [Change your organization's name](/help/change-your-organizations-name)
+* [Change your organization's description](/help/change-your-organizations-description)
+* [Change your organization's avatar](/help/change-your-organizations-avatar)
 * [Restrict user email addresses to certain domains](/help/restrict-user-email-addresses-to-certain-domains)
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
