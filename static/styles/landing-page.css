@@ -1818,7 +1818,7 @@ a:not(.no-style):hover:before {
 .portico-landing.integrations .integration-lozenge .integration-name {
     font-size: 1.2em;
     font-weight: 400;
-    margin-bottom: 0;
+    margin: 10px 4px 0 4px;
 }
 
 .portico-landing.integrations .integration-lozenge .integration-name.create-your-own {

@@ -46,13 +46,37 @@ var integration_events = function () {
             }
         );
 
+    function adjust_font_sizing() {
+        $('.integration-lozenge').toArray().forEach(function (integration) {
+            var $integration_name = $(integration).find('.integration-name');
+            var $integration_category = $(integration).find('.integration-category');
+
+            // if the text has wrapped to two lines, decrease font-size
+            if ($integration_name.height() > 30) {
+                $integration_name.css('font-size', '1em');
+                if ($integration_name.height() > 30) {
+                     $integration_name.css('font-size', '.95em');
+                }
+            }
+
+            if ($integration_category.height() > 30) {
+                $integration_category.css('font-size', '.8em');
+                if ($integration_category.height() > 30) {
+                    $integration_category.css('font-size', '.75em');
+                }
+            }
+        });
+    }
+
+    adjust_font_sizing();
+    $(window).resize(adjust_font_sizing);
+
     var $lozenge_icon;
     var currentblock;
     var instructionbox = $("#integration-instruction-block");
     var hashes = $('.integration-instructions').map(function () {
         return this.id || null;
     }).get();
-
 
     var show_integration = function (hash) {
         // the version of the hash without the leading "#".
@@ -125,6 +149,8 @@ var integration_events = function () {
             $(".integration-categories-dropdown").removeClass('hide');
             $(".integrations .catalog").removeClass('hide');
         }
+
+        adjust_font_sizing();
     }
 
     window.onhashchange = update_hash;
