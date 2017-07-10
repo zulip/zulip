@@ -4,10 +4,10 @@ var exports = {};
 var INCOMING_WEBHOOK_BOT_TYPE = '2';
 
 // This function subscribes the newly created bot to the stream specified by the user.
-function subscribe_to_stream(bot_email, stream_name) {
+exports.subscribe_to_stream = function (bot_email, stream_name) {
     var bot_user_id = people.get_user_id(bot_email);
-    stream_data.add_subscriber(stream_name, bot_user_id);
-}
+    return stream_data.add_subscriber(stream_name, bot_user_id);
+};
 
 // This function puts together the main string for url that will be copied by the user
 // to use for incoming webhook services.
@@ -36,7 +36,7 @@ function on_create_bot_success(result, stream_name, external_api_uri_subdomain, 
     var bot_api_key = result.api_key;
     var bot_email = result.email;
 
-    subscribe_to_stream(bot_email, stream_name);
+    exports.subscribe_to_stream(bot_email, stream_name);
     var integration_bot_url = put_key_values_in_url(external_api_uri_subdomain, integration_url,
                                                     bot_api_key, stream_name);
     update_integration_bot_url(integration_bot_url);
