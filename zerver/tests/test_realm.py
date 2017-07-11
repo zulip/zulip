@@ -144,7 +144,7 @@ class RealmTest(ZulipTestCase):
     def test_do_deactivate_realm_clears_scheduled_jobs(self):
         # type: () -> None
         user = self.example_user('hamlet')
-        send_future_email('template_prefix', user.email, delay=datetime.timedelta(hours=1))
+        send_future_email('template_prefix', to_user_id=user.id, delay=datetime.timedelta(hours=1))
         self.assertEqual(ScheduledJob.objects.count(), 1)
         do_deactivate_realm(user.realm)
         self.assertEqual(ScheduledJob.objects.count(), 0)

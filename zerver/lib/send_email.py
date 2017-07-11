@@ -73,11 +73,17 @@ def send_email_from_dict(email_dict):
     # type: (Mapping[str, Any]) -> None
     send_email(**dict(email_dict))
 
-def send_future_email(template_prefix, to_email, from_name=None, from_address=None, context={},
-                      delay=datetime.timedelta(0)):
-    # type: (str, Text, Optional[Text], Optional[Text], Dict[str, Any], datetime.timedelta) -> None
-    email_fields = {'template_prefix': template_prefix, 'to_email': to_email, 'from_name': from_name,
-                    'from_address': from_address, 'context': context}
+def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
+                      from_address=None, context={}, delay=datetime.timedelta(0)):
+    # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any], datetime.timedelta) -> None
+    assert (to_user_id is None) ^ (to_email is None)
+    # Temporary measure until we fix the ScheduledJob table to handle
+    # filtering by user as well as by email.
+    if to_email is None:
+        to_email = get_user_profile_by_id(to_user_id).email
+        to_user_id = None
+    email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
+                    'from_name': from_name, 'from_address': from_address, 'context': context}
     ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=parseaddr(to_email)[1],
                                 data=ujson.dumps(email_fields),
                                 scheduled_timestamp=timezone_now() + delay)

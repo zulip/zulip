@@ -193,7 +193,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         })
         send_future_email(
             "zerver/emails/invitation_reminder",
-            data["email"],
+            to_email=data["email"],
             from_address=FromAddress.NOREPLY,
             context=context,
             delay=datetime.timedelta(days=2))

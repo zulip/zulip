@@ -425,10 +425,10 @@ def enqueue_welcome_emails(email, name, realm):
         'unsubscribe_link': unsubscribe_link
     })
     send_future_email(
-        "zerver/emails/followup_day1", '%s <%s>' % (name, email), from_name=from_name,
+        "zerver/emails/followup_day1", to_email='%s <%s>' % (name, email), from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(hours=1))
     send_future_email(
-        "zerver/emails/followup_day2", '%s <%s>' % (name, email), from_name=from_name,
+        "zerver/emails/followup_day2", to_email='%s <%s>' % (name, email), from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html):
