@@ -2,6 +2,8 @@
 
 # Copyright: (c) 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 
+from __future__ import absolute_import
+
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
 import datetime
@@ -17,11 +19,16 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
+from random import SystemRandom
+from six.moves import range
+import string
 from typing import Any, Dict, Optional, Text, Union
 
 def generate_key():
     # type: () -> str
-    return generate_random_token(40)
+    generator = SystemRandom()
+    # 24 characters * 5 bits of entropy/character = 120 bits of entropy
+    return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
 def get_object_from_key(confirmation_key):
     # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
