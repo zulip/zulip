@@ -157,6 +157,7 @@ class SignupWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         # This should clear out any invitation reminder emails
         clear_followup_emails_queue(data['email_address'])
+        realm = Realm.objects.get(id=data['merge_fields']['REALM_ID'])
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                        (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)
@@ -170,7 +171,7 @@ class SignupWorker(QueueProcessingWorker):
             else:
                 r.raise_for_status()
 
-        enqueue_welcome_emails(data['email_address'], data['merge_fields']['NAME'])
+        enqueue_welcome_emails(data['email_address'], data['merge_fields']['NAME'], realm)
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):

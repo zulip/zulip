@@ -17,7 +17,7 @@ from zerver.models import (
     Stream,
     get_display_recipient,
     UserProfile,
-    get_user_profile_by_email,
+    get_user,
     get_user_profile_by_id,
     receives_offline_notifications,
     get_context_for_message,
@@ -400,8 +400,8 @@ def log_digest_event(msg):
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
-def enqueue_welcome_emails(email, name):
-    # type: (Text, Text) -> None
+def enqueue_welcome_emails(email, name, realm):
+    # type: (Text, Text, Realm) -> None
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
         # line break to avoid triggering lint rule
@@ -411,7 +411,7 @@ def enqueue_welcome_emails(email, name):
         from_name = None
         from_address = FromAddress.SUPPORT
 
-    user_profile = get_user_profile_by_email(email)
+    user_profile = get_user(email, realm)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
     context = common_context(user_profile)
     context.update({

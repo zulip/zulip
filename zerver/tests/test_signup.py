@@ -787,9 +787,9 @@ class EmailUnsubscribeTests(ZulipTestCase):
         """
         email = self.example_email("hamlet")
         user_profile = self.example_user('hamlet')
-
+        realm = get_realm("zulip")
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
-        enqueue_welcome_emails(email, "King Hamlet")
+        enqueue_welcome_emails(email, "King Hamlet", realm)
         self.assertEqual(2, len(ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
