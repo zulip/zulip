@@ -10,12 +10,12 @@ set -e
 #     chmod +x .git/hooks/post-checkout
 
 cd "$(dirname "$0")/.."
-pycfiles=(`find . -name "*.pyc"`)
-for i in "${pycfiles[@]}"
-do
-  pyfile="`basename $i .pyc`.py"
-  if [ ! -e "$pyfile" ]; then
-    rm $i;
-  fi
+pycfiles=($(find . -name "*.pyc"))
+for i in "${pycfiles[@]}"; do
+    pyfile="${i%.pyc}.py"
+    if [ ! -e "$pyfile" ]; then
+        echo "Removing "$i" because source file ("$pyfile") doesn't exist."
+        rm $i
+    fi
 done
 find . -name "__pycache__" -prune -exec rm -rf {} \;
