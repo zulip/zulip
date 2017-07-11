@@ -115,7 +115,9 @@ class EmailChangeTestCase(ZulipTestCase):
             '[Zulip] Confirm your new email address for Zulip Dev'
         )
         body = email_message.body
+        from_email = email_message.from_email
         self.assertIn('We received a request to change the email', body)
+        self.assertIn('Zulip Account Security', from_email)
         self.assertIn(FromAddress.NOREPLY, email_message.from_email)
 
         activation_url = [s for s in body.split('\n') if s][4]

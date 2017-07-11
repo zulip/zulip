@@ -136,7 +136,9 @@ class PasswordResetTest(ZulipTestCase):
 
         # Check that the password reset email is from a noreply address.
         from django.core.mail import outbox
-        self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
+        from_email = outbox[0].from_email
+        self.assertIn("Zulip Account Security", from_email)
+        self.assertIn(FromAddress.NOREPLY, from_email)
 
         # Visit the password reset link.
         password_reset_url = self.get_confirmation_url_from_outbox(email, "(\S+)")
@@ -215,6 +217,7 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
+        self.assertIn("Zulip Account Security", message.from_email)
         self.assertIn(FromAddress.NOREPLY, message.from_email)
         self.assertIn("Psst. Word on the street is that you forgot your password,",
                       message.body)
@@ -362,8 +365,8 @@ class InviteUserTest(ZulipTestCase):
                                  "stream": streams,
                                  "custom_body": body})
 
-    def check_sent_emails(self, correct_recipients, custom_body=None):
-        # type: (List[Text], Optional[str]) -> None
+    def check_sent_emails(self, correct_recipients, custom_body=None, custom_from_name=None):
+        # type: (List[Text], Optional[str], Optional[str]) -> None
         from django.core.mail import outbox
         self.assertEqual(len(outbox), len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in outbox]
@@ -377,6 +380,9 @@ class InviteUserTest(ZulipTestCase):
             self.assertIn("Message from ", outbox[0].body)
             self.assertIn(custom_body, outbox[0].body)
 
+        if custom_from_name is not None:
+            self.assertIn(custom_from_name, outbox[0].from_email)
+
         self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
 
     def test_successful_invite_user(self):
@@ -389,7 +395,7 @@ class InviteUserTest(ZulipTestCase):
         invitee = "alice-test@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee])
+        self.check_sent_emails([invitee], custom_from_name="Hamlet")
 
     def test_successful_invite_user_with_custom_body(self):
         # type: () -> None
@@ -402,7 +408,7 @@ class InviteUserTest(ZulipTestCase):
         body = "Custom Text."
         self.assert_json_success(self.invite(invitee, ["Denmark"], body))
         self.assertTrue(find_pattern_in_email(invitee, body))
-        self.check_sent_emails([invitee], custom_body=body)
+        self.check_sent_emails([invitee], custom_body=body, custom_from_name="Hamlet")
 
     def test_successful_invite_user_with_name(self):
         # type: () -> None
@@ -415,7 +421,7 @@ class InviteUserTest(ZulipTestCase):
         invitee = "Alice Test <{}>".format(email)
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
-        self.check_sent_emails([email])
+        self.check_sent_emails([email], custom_from_name="Hamlet")
 
     def test_successful_invite_user_with_name_and_normal_one(self):
         # type: () -> None
@@ -430,7 +436,7 @@ class InviteUserTest(ZulipTestCase):
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
-        self.check_sent_emails([email, email2])
+        self.check_sent_emails([email, email2], custom_from_name="Hamlet")
 
     def test_require_realm_admin(self):
         # type: () -> None
