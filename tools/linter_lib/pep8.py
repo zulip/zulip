@@ -76,21 +76,9 @@ def check_pep8(files):
         'E731',
     ]
 
-    # TODO: Clear up this list of violations.
-    IGNORE_FILES_PEPE261 = []
-
-    filtered_files = [fn for fn in files if fn not in IGNORE_FILES_PEPE261]
-    filtered_files_E261 = [fn for fn in files if fn in IGNORE_FILES_PEPE261]
-
     if len(files) == 0:
         return False
-    if not len(filtered_files) == 0:
-        failed = run_pycodestyle(filtered_files, ignored_rules)
-    if not len(filtered_files_E261) == 0:
-        # Adding an extra ignore rule for these files since they still remain in
-        # violation of PEP-E261.
-        failed_ignore_e261 = run_pycodestyle(filtered_files_E261, ignored_rules + ['E261'])
-        if not failed:
-            failed = failed_ignore_e261
+
+    failed = run_pycodestyle(files, ignored_rules)
 
     return failed
