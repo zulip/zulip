@@ -198,7 +198,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         user2_email = 'user2@2.example.com'
         user3_email = 'user3@3.example.com'
         feedback_email = 'feedback@zulip.com'
-        support_email = 'support@3.example.com' # note: not zulip.com
+        support_email = 'support@3.example.com'  # note: not zulip.com
 
         self.create_user(random_zulip_email)
         user1 = self.create_user(user1_email)
@@ -1551,9 +1551,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self):
         # type: () -> None
         user = self.example_user('hamlet')
-        recipients = [] # type: List[Text]
+        recipients = []  # type: List[Text]
         request = self.Request()
-        request.POST = dict() # no sender
+        request.POST = dict()  # no sender
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -1563,12 +1563,12 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
     def test_invalid_client(self):
         # type: () -> None
-        client = get_client(name='banned_mirror') # Invalid!!!
+        client = get_client(name='banned_mirror')  # Invalid!!!
 
         user = self.example_user('hamlet')
         sender = user
 
-        recipients = [] # type: List[Text]
+        recipients = []  # type: List[Text]
         request = self.Request()
         request.POST = dict(
             sender=sender.email,
