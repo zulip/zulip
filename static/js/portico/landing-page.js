@@ -173,15 +173,17 @@ function integration_search() {
                 $integration.removeClass('without-category');
             }
 
-            var display =
-                fuzzysearch(current_query, $integration.data('name').toLowerCase()) &&
-                ($integration.data('categories').indexOf(current_category) !== -1 ||
-                 current_category === 'All');
+            if (!$integration.hasClass('integration-create-your-own')) {
+                var display =
+                    fuzzysearch(current_query, $integration.data('name').toLowerCase()) &&
+                    ($integration.data('categories').indexOf(current_category) !== -1 ||
+                     current_category === 'All');
 
-            if (display) {
-                $integration.css('display', 'inline-block');
-            } else {
-                $integration.css('display', 'none');
+                if (display) {
+                    $integration.css('display', 'inline-block');
+                } else {
+                    $integration.css('display', 'none');
+                }
             }
         });
     }, 50);

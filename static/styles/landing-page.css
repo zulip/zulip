@@ -1811,10 +1811,19 @@ a:not(.no-style):hover:before {
     height: 60px;
 }
 
+.portico-landing.integrations .integration-lozenge .icon-vector-plus {
+    font-size: 59px;
+}
+
 .portico-landing.integrations .integration-lozenge .integration-name {
     font-size: 1.2em;
     font-weight: 400;
     margin-bottom: 0;
+}
+
+.portico-landing.integrations .integration-lozenge .integration-name.create-your-own {
+    margin-top: 27px;
+    font-size: 1.1em !important;
 }
 
 .portico-landing.integrations .integration-lozenge .integration-name.with-secondary {
@@ -2114,6 +2123,10 @@ a:not(.no-style):hover:before {
     .portico-landing.integrations .integration-lozenge .integration-logo {
         margin: 34px auto 15px;
         height: 45px;
+    }
+
+    .portico-landing.integrations .integration-lozenge .icon-vector-plus {
+        font-size: 45px;
     }
 
     .portico-landing.integrations .integration-lozenge .integration-name {
