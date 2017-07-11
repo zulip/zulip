@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-# Remove .pyc files to prevent loading stale code.
+# Remove .pyc files without corresponding .py files
+# to prevent loading stale code.
 #
 # You can run it automatically on checkout:
 #
