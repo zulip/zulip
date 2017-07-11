@@ -355,6 +355,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
             "signups",
             {
                 'email_address': user_profile.email,
+                'user_id': user_profile.id,
                 'merge_fields': {
                     'NAME': user_profile.full_name,
                     'REALM_ID': user_profile.realm_id,
