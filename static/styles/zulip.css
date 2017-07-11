@@ -1122,10 +1122,6 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-.sender_name_hovered .inline_profile_picture {
-    border-color: hsl(200, 100%, 40%);
-}
-
 .message_sender .bot-icon {
     position: relative;
     vertical-align: top;
