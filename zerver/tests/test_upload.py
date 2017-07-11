@@ -54,7 +54,7 @@ def destroy_uploads():
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 class StringIO(_StringIO):
-    name = '' # https://github.com/python/typeshed/issues/598
+    name = ''  # https://github.com/python/typeshed/issues/598
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
@@ -117,7 +117,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         mock_filename.encode.assert_not_called()
 
         # Non-str filenames should be encoded.
-        mock_filename = mock.Mock(spec=None) # None is not str
+        mock_filename = mock.Mock(spec=None)  # None is not str
         mock_file.name = mock_filename
         with mock.patch('zerver.views.upload.upload_message_image_from_request'):
             result = upload_file_backend(mock_request, user_profile)
@@ -629,7 +629,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     correct_files = [
         ('img.png', 'png_resized.png'),
-        ('img.jpg', None), # jpeg resizing is platform-dependent
+        ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png')
     ]
@@ -816,7 +816,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     correct_files = [
         ('img.png', 'png_resized.png'),
-        ('img.jpg', None), # jpeg resizing is platform-dependent
+        ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png')
     ]
@@ -1044,7 +1044,7 @@ class S3Test(ZulipTestCase):
         response = self.client_get(uri)
         redirect_url = response['Location']
 
-        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip()) # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
+        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())  # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
 
         self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
