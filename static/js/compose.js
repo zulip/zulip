@@ -236,9 +236,6 @@ function mark_end_to_end_receive_time(message_id) {
 }
 
 function mark_end_to_end_display_time(message_id) {
-    if (exports.send_times_data[message_id] === undefined) {
-        exports.send_times_data[message_id] = {};
-    }
     exports.send_times_data[message_id].displayed = new Date();
     maybe_report_send_times(message_id);
 }
@@ -369,33 +366,6 @@ exports.enter_with_preview_open = function () {
     }
 };
 
-// This function is for debugging / data collection only.  Arguably it
-// should live in debug.js, but then it wouldn't be able to call
-// send_message() directly below.
-exports.test_send_many_messages = function (stream, subject, count) {
-    var num_sent = 0;
-
-    function do_send_one() {
-        var message = {};
-        num_sent += 1;
-
-        message.type = "stream";
-        message.to = stream;
-        message.subject = subject;
-        message.content = num_sent.toString();
-
-        exports.send_message(message);
-
-        if (num_sent === count) {
-            return;
-        }
-
-        setTimeout(do_send_one, 1000);
-    }
-
-    do_send_one();
-};
-
 exports.finish = function () {
     exports.clear_invites();
 
@@ -426,10 +396,6 @@ exports.get_invalid_recipient_emails = function () {
     var private_recipients = util.extract_pm_recipients(compose_state.recipient());
     var invalid_recipients = [];
     _.each(private_recipients, function (email) {
-        // This case occurs when compose_state.recipient() ends with ','
-        if (email === "") {
-            return;
-        }
         if (people.realm_get(email) !== undefined) {
             return;
         }

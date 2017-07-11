@@ -957,6 +957,7 @@ function test_with_mock_socket(test_params) {
         var previous_users = $('#compose_invite_users .compose_invite_user');
         previous_users.length = 1;
         previous_users[0] = warning_row;
+        $('#compose_invite_users').hide();
 
         // Now try to mention the same person again. The template should
         // not render.
@@ -966,20 +967,35 @@ function test_with_mock_socket(test_params) {
         assert(looked_for_existing);
     }());
 
-    (function test_compose_all_everyone_confirm_clicked() {
-        var handler = $("#compose-all-everyone")
-                      .get_on_handler('click', '.compose-all-everyone-confirm');
-
-        var container = $.create('fake compose-all-everyone');
-        var container_removed = false;
+    var event;
+    var container;
+    var target;
+    var container_removed;
+    function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
+        container = $.create('fake ' + container_sel);
+        container_removed = false;
 
         container.remove = function () {
             container_removed = true;
         };
 
-        var target = $.create('fake click target (compose-all-everyone)');
+        target = $.create('fake click target (' + target_sel + ')');
 
-        target.set_parents_result('.compose-all-everyone', container);
+        target.set_parents_result(parent, container);
+
+        event = {
+            preventDefault: noop,
+            target: target,
+        };
+    }
+
+    (function test_compose_all_everyone_confirm_clicked() {
+        var handler = $("#compose-all-everyone")
+                      .get_on_handler('click', '.compose-all-everyone-confirm');
+
+        setup_parents_and_mock_remove('compose-all-everyone',
+                                      'compose-all-everyone',
+                                      '.compose-all-everyone');
 
         $("#compose-all-everyone").show();
         $("#send-status").show();
@@ -987,11 +1003,6 @@ function test_with_mock_socket(test_params) {
         var compose_finish_checked = false;
         compose.finish = function () {
             compose_finish_checked = true;
-        };
-
-        var event = {
-            preventDefault: noop,
-            target: target,
         };
 
         handler(event);
@@ -1018,21 +1029,9 @@ function test_with_mock_socket(test_params) {
             success();  // This will check success callback path.
         };
 
-        var container = $.create('fake compose_invite_users');
-        var container_removed = false;
-
-        container.remove = function () {
-            container_removed = true;
-        };
-
-        var target = $.create('fake click target (compose_invite_link)');
-
-        target.set_parents_result('.compose_invite_user', container);
-
-        var event = {
-            preventDefault: noop,
-            target: target,
-        };
+        setup_parents_and_mock_remove('compose_invite_users',
+                                      'compose_invite_link',
+                                      '.compose_invite_user');
 
         // .data in zjquery is a noop by default, so handler should just return
         handler(event);
@@ -1083,21 +1082,9 @@ function test_with_mock_socket(test_params) {
         var handler = $("#compose_invite_users")
                         .get_on_handler('click', '.compose_invite_close');
 
-        var container = $.create('fake compose_invite_users_close');
-        var container_removed = false;
-
-        container.remove = function () {
-            container_removed = true;
-        };
-
-        var target = $.create('fake click target (compose_invite_close)');
-
-        target.set_parents_result('.compose_invite_user', container);
-
-        var event = {
-            preventDefault: noop,
-            target: target,
-        };
+        setup_parents_and_mock_remove('compose_invite_users_close',
+                                      'compose_invite_close',
+                                      '.compose_invite_user');
 
         var all_invite_children_called = false;
         $("#compose_invite_users").children = function () {
@@ -1113,7 +1100,7 @@ function test_with_mock_socket(test_params) {
         assert(!$("#compose_invite_users").visible());
     }());
 
-    var event = {
+    event = {
         preventDefault: noop,
     };
 
