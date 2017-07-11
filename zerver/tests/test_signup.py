@@ -1326,7 +1326,7 @@ class UserSignUpTest(ZulipTestCase):
         realm.save()
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = realm.host)
-            request.session = {} # type: ignore
+            request.session = {}  # type: ignore
             email = 'user@acme.com'
             form = HomepageForm({'email': email}, realm=realm)
             self.assertIn("Your email address, {}, is not in one of the domains".format(email),
@@ -1338,7 +1338,7 @@ class UserSignUpTest(ZulipTestCase):
         realm.invite_required = True
         realm.save()
         request = HostRequestMock(host = realm.host)
-        request.session = {} # type: ignore
+        request.session = {}  # type: ignore
         email = 'user@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Please request an invite for {} from".format(email),
@@ -1348,7 +1348,7 @@ class UserSignUpTest(ZulipTestCase):
         # type: () -> None
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
-            request.session = {} # type: ignore
+            request.session = {}  # type: ignore
             email = 'user@acme.com'
             form = HomepageForm({'email': email}, realm=None)
             self.assertIn("organization you are trying to join using {} does "
