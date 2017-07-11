@@ -77,9 +77,7 @@ def check_pep8(files):
     ]
 
     # TODO: Clear up this list of violations.
-    IGNORE_FILES_PEPE261 = [
-        'zerver/tests/test_upload.py',
-    ]
+    IGNORE_FILES_PEPE261 = []
 
     filtered_files = [fn for fn in files if fn not in IGNORE_FILES_PEPE261]
     filtered_files_E261 = [fn for fn in files if fn in IGNORE_FILES_PEPE261]
