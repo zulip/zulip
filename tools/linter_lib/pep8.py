@@ -78,7 +78,6 @@ def check_pep8(files):
 
     # TODO: Clear up this list of violations.
     IGNORE_FILES_PEPE261 = [
-        'zerver/tests/test_subs.py',
         'zerver/tests/test_upload.py',
     ]
 
