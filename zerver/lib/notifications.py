@@ -342,7 +342,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
-        'to_email': display_email(user_profile),
+        'to_user_id': user_profile.id,
         'from_name': from_name,
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
