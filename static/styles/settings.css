@@ -197,7 +197,8 @@ td .button {
     border-bottom: 1px solid hsl(0, 0%, 86%) !important;
 }
 
-#admin-user-list .table tr:first-of-type td {
+#admin-user-list .table tr:first-of-type td,
+#admin-bot-list .table tr:first-of-type td {
     border-top: none;
 }
 
