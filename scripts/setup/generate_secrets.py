@@ -94,6 +94,9 @@ def generate_secrets(development=False):
     if need_secret('camo_key'):
         add_secret('camo_key', get_random_string(64))
 
+    # zulip_org_key is generated using os.urandom().
+    # zulip_org_id does not require a secure CPRNG,
+    # it only needs to be unique.
     if need_secret('zulip_org_key'):
         add_secret('zulip_org_key', get_random_string(64))
     if need_secret('zulip_org_id'):
