@@ -714,7 +714,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:
-            self.assertTrue(send_email(**ujson.loads(job.data)))
+            send_email(**ujson.loads(job.data))
         self.assertEqual(len(outbox), email_count + 1)
         self.assertIn(FromAddress.NOREPLY, outbox[-1].from_email)
 

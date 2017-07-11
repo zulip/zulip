@@ -29,7 +29,8 @@ from zerver.lib.actions import do_send_confirmation_email, \
     render_incoming_message, do_update_embedded_data
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
-from zerver.lib.send_email import send_future_email, send_email_from_dict, FromAddress
+from zerver.lib.send_email import send_future_email, send_email_from_dict, \
+    FromAddress, EmailNotDeliveredException
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
@@ -251,7 +252,11 @@ class MissedMessageWorker(QueueProcessingWorker):
 class MissedMessageSendingWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        send_email_from_dict(data)
+        try:
+            send_email_from_dict(data)
+        except EmailNotDeliveredException:
+            # TODO: Do something smarter here ..
+            pass
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):

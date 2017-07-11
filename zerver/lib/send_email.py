@@ -56,15 +56,17 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         mail.attach_alternative(html_message, 'text/html')
     return mail
 
+class EmailNotDeliveredException(Exception):
+    pass
+
 def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                from_address=None, reply_to_email=None, context={}):
-    # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> bool
+    # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> None
     mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
                        from_address=from_address, reply_to_email=reply_to_email, context=context)
-    return mail.send() > 0
+    if mail.send() == 0:
+        raise EmailNotDeliveredException
 
-# Returns None instead of bool so that the type signature matches the third
-# argument of zerver.lib.queue.queue_json_publish
 def send_email_from_dict(email_dict):
     # type: (Mapping[str, Any]) -> None
     send_email(**dict(email_dict))
