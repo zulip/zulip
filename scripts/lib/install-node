@@ -5,7 +5,16 @@ ZULIP_PATH=$(dirname "$0")
 node_version=6.6.0
 npm_version=3.10.3
 
-if [ "$(npm --version)" = "$npm_version" ] && [ "$(node --version)" = "v$node_version" ]; then
+current_npm_version="none"
+if hash npm 2>/dev/null; then
+    current_npm_version="$(npm --version)"
+fi
+current_node_version="none"
+if hash node 2>/dev/null; then
+    current_node_version="$(node --version)"
+fi
+
+if [ "$current_npm_version" = "$npm_version" ] && [ "$current_node_version" = "v$node_version" ]; then
     echo "Node version $node_version and npm version $npm_version are already installed."
     exit 0
 fi
