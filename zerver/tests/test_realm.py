@@ -233,7 +233,7 @@ class RealmAPITest(ZulipTestCase):
         # type: (str, Union[Text, int, bool]) -> Realm
         result = self.client_patch('/json/realm', {name: ujson.dumps(value)})
         self.assert_json_success(result)
-        return get_realm('zulip') # refresh data
+        return get_realm('zulip')  # refresh data
 
     def do_test_realm_update_api(self, name):
         # type: (str) -> None
@@ -244,14 +244,14 @@ class RealmAPITest(ZulipTestCase):
         assertion error.
         """
 
-        bool_tests = [False, True] # type: List[bool]
+        bool_tests = [False, True]  # type: List[bool]
         test_values = dict(
             default_language=[u'de', u'en'],
             description=[u'Realm description', u'New description'],
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
-        ) # type: Dict[str, Any]
+        )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:
             vals = bool_tests
