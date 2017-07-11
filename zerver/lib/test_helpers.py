@@ -34,7 +34,6 @@ from zerver.models import (
     get_recipient,
     get_stream,
     get_user,
-    get_user_profile_by_email,
     Client,
     Message,
     Realm,
