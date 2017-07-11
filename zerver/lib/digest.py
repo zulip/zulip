@@ -12,7 +12,7 @@ from django.conf import settings
 
 from zerver.lib.notifications import build_message_list, hash_util_encode, \
     one_click_unsubscribe_link
-from zerver.lib.send_email import display_email, send_future_email, FromAddress
+from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams
 from zerver.context_processors import common_context

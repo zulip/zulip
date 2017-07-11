@@ -7,7 +7,7 @@ from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.decorator import statsd_increment
-from zerver.lib.send_email import send_future_email, display_email, \
+from zerver.lib.send_email import send_future_email, \
     send_email_from_dict, FromAddress
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (

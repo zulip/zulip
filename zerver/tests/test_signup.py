@@ -36,7 +36,7 @@ from zerver.lib.actions import (
     get_stream,
     do_create_realm,
 )
-from zerver.lib.send_email import display_email, send_email, send_future_email, FromAddress
+from zerver.lib.send_email import send_email, send_future_email, FromAddress
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,

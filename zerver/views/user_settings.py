@@ -16,7 +16,7 @@ from zerver.lib.actions import do_change_password, \
     do_regenerate_api_key, do_change_avatar_fields, do_set_user_display_setting, \
     validate_email, do_change_user_email, do_start_email_change_process
 from zerver.lib.avatar import avatar_url
-from zerver.lib.send_email import send_email, display_email, FromAddress
+from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image

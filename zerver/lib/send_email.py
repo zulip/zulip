@@ -14,12 +14,6 @@ class FromAddress(object):
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
-def display_email(user):
-    # type: (UserProfile) -> Text
-    # Change to '%s <%s>' % (user.full_name, user.email) once
-    # https://github.com/zulip/zulip/issues/4676 is resolved
-    return user.email
-
 # Intended only for test code
 def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                 from_address=None, reply_to_email=None, context={}):
@@ -27,7 +21,9 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
         to_user = get_user_profile_by_id(to_user_id)
-        to_email = display_email(to_user)
+        # Change to formataddr((to_user.full_name, to_user.email)) once
+        # https://github.com/zulip/zulip/issues/4676 is resolved
+        to_email = to_user.email
 
     context.update({
         'realm_name_in_notifications': False,
