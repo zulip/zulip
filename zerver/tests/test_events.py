@@ -1088,7 +1088,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('realm_filters')),
-            ('realm_filters', check_list(None)), # TODO: validate tuples in the list
+            ('realm_filters', check_list(None)),  # TODO: validate tuples in the list
         ])
         events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip"), "#(?P<id>[123])",
                                                           "https://realm.com/my_realm_filter/%(id)s"))
@@ -1397,7 +1397,7 @@ class EventsRegisterTest(ZulipTestCase):
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
-            check_dict(subscription_fields),        # TODO: Can this be converted to check_dict_only?
+            check_dict(subscription_fields),  # TODO: Can this be converted to check_dict_only?
         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
@@ -1446,7 +1446,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
-        action = lambda: self.subscribe_to_stream(self.example_email("hamlet"), "test_stream") # type: Callable
+        action = lambda: self.subscribe_to_stream(self.example_email("hamlet"), "test_stream")  # type: Callable
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
