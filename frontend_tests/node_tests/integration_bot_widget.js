@@ -15,12 +15,12 @@ add_dependencies({
 set_global('blueslip', {});
 
 var integration_bot_widget = require('js/integration_bot_widget.js');
+var INCOMING_WEBHOOK_BOT_TYPE = '2';
 
 (function test_set_integration_bot_url() {
     var success_callback;
     var error_callback;
     var posted;
-    var INCOMING_WEBHOOK_BOT_TYPE = '2';
 
     var form_data = {
         append: function (field, val) {
@@ -112,4 +112,38 @@ var integration_bot_widget = require('js/integration_bot_widget.js');
     info = $('#bot_widget_error');
 
     assert.equal(info.text(), 'no can do');
+}());
+
+// This function tests if the newly created bot gets subscribed to the stream (which already exists)
+// specified by the user.
+(function test_subscribe_to_stream() {
+
+    var bot_email = "airbrake@zulip.com";
+    var stream_name = "Airbrake";
+
+    var new_bot = {
+        email: bot_email,
+        user_id: 4,
+        full_name: "airbrake",
+        is_bot: true,
+        bot_type: INCOMING_WEBHOOK_BOT_TYPE,
+    };
+
+    // Create bot
+    people.add(new_bot);
+
+    // Create a stream
+        var airbrake = {
+        subscribed: false,
+        color: 'blue',
+        name: 'Airbrake',
+        stream_id: 1,
+        in_home_view: false,
+    };
+
+    stream_data.add_sub(stream_name, airbrake);
+
+    var subscribed = integration_bot_widget.subscribe_to_stream(bot_email, stream_name);
+    assert(subscribed);
+
 }());
