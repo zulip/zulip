@@ -52,7 +52,8 @@ def confirm_email_change(request, confirmation_key):
                    'new_email': new_email,
                    }
         send_email('zerver/emails/notify_change_in_email', old_email,
-                   from_address=FromAddress.SUPPORT, context=context)
+                   from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
+                   context=context)
 
     ctx = {
         'confirmed': confirmed,
