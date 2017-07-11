@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from zerver.lib.actions import get_realm, check_add_realm_emoji
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file, get_user_profile_by_email
+from zerver.lib.test_helpers import get_test_image_file, get_user
 from zerver.models import RealmEmoji
 import ujson
 
@@ -136,8 +136,8 @@ class RealmEmojiTest(ZulipTestCase):
         # type: () -> None
         # If any user in a realm can upload the emoji then the user who
         # uploaded it as well as the admin should be able to delete it.
-        author = get_user_profile_by_email('othello@zulip.com')
         realm = get_realm('zulip')
+        author = get_user('othello@zulip.com', realm)
         realm.add_emoji_by_admins_only = False
         realm.save()
         check_add_realm_emoji(realm, "my_emoji_1", "my_emoji.png", author)
