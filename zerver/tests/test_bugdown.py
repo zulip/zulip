@@ -102,8 +102,8 @@ class FencedBlockPreprocessorTest(TestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code # type: ignore # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**' # type: ignore # https://github.com/python/mypy/issues/708
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
 
         markdown = [
             '``` .py',
@@ -141,8 +141,8 @@ class FencedBlockPreprocessorTest(TestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code # type: ignore # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**' # type: ignore # https://github.com/python/mypy/issues/708
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
 
         markdown = [
             '~~~ quote',
@@ -605,7 +605,7 @@ class BugdownTest(ZulipTestCase):
             directly for testing is kind of awkward
             '''
             class Instance(object):
-                realm_id = None # type: Optional[int]
+                realm_id = None  # type: Optional[int]
             instance = Instance()
             instance.realm_id = realm.id
             flush_realm_filter(sender=None, instance=instance)
