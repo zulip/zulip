@@ -81,7 +81,8 @@ def email_page(request):
     for template in templates:
         if template not in ignore:
             try:
-                email = build_email('zerver/emails/' + template, 'recipient@acme.com', context=test_context)
+                email = build_email('zerver/emails/' + template, to_email='recipient@acme.com',
+                                    context=test_context)
                 email_data = {
                     'template': template,
                     'subject': email.subject,

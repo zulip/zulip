@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, ScheduledJob
+from zerver.models import UserProfile, ScheduledJob, get_user_profile_by_id
 
 import datetime
 from email.utils import parseaddr, formataddr
@@ -21,9 +21,14 @@ def display_email(user):
     return user.email
 
 # Intended only for test code
-def build_email(template_prefix, to_email, from_name=None, from_address=None,
-                reply_to_email=None, context={}):
-    # type: (str, Text, Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> EmailMultiAlternatives
+def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
+                from_address=None, reply_to_email=None, context={}):
+    # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> EmailMultiAlternatives
+    assert (to_user_id is None) ^ (to_email is None)
+    if to_user_id is not None:
+        to_user = get_user_profile_by_id(to_user_id)
+        to_email = display_email(to_user)
+
     context.update({
         'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
@@ -55,16 +60,12 @@ def build_email(template_prefix, to_email, from_name=None, from_address=None,
         mail.attach_alternative(html_message, 'text/html')
     return mail
 
-def send_email(template_prefix, to_email, from_name=None, from_address=None, reply_to_email=None, context={}):
-    # type: (str, Text, Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> bool
-    mail = build_email(template_prefix, to_email, from_name=from_name,
+def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
+               from_address=None, reply_to_email=None, context={}):
+    # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> bool
+    mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
                        from_address=from_address, reply_to_email=reply_to_email, context=context)
     return mail.send() > 0
-
-def send_email_to_user(template_prefix, user, from_name=None, from_address=None, context={}):
-    # type: (str, UserProfile, Optional[Text], Optional[Text], Dict[str, Text]) -> bool
-    return send_email(template_prefix, display_email(user), from_name=from_name,
-                      from_address=from_address, context=context)
 
 # Returns None instead of bool so that the type signature matches the third
 # argument of zerver.lib.queue.queue_json_publish
