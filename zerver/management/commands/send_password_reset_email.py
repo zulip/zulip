@@ -4,43 +4,42 @@ import logging
 from typing import Any, Dict, List, Optional, Text
 
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
-from zerver.forms import PasswordResetForm
-from zerver.models import UserProfile, get_user_profile_by_email, get_realm
-from django.template import loader
+from zerver.models import UserProfile
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
 
 from zerver.lib.send_email import send_email
+from zerver.lib.management import ZulipBaseCommand
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Send email to specified email address."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('--to', metavar='<to>', type=str,
-                            help="email of user to send the email")
-        parser.add_argument('--realm', metavar='<realm>', type=str,
-                            help="realm to send the email to all users in")
-        parser.add_argument('--server', metavar='<server>', type=str,
-                            help="If you specify 'YES' will send to everyone on server")
+                            help="email of users to send the email")
+        parser.add_argument('--target', metavar='<target>', type=str,
+                            help="If you pass 'server' will send to everyone on server. "
+                                 "If you pass 'realm' will send to everyone on realm."
+                                 "Don't forget to specify the realm using -r or --realm flag.")
+        self.add_realm_args(parser)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
+        realm = self.get_realm(options)
+        if options["to"] and options["target"]:
+            self.print_help("./manage.py", "send_password_reset_email")
+            exit(1)
         if options["to"]:
-            users = [get_user_profile_by_email(options["to"])]
-        elif options["realm"]:
-            realm = get_realm(options["realm"])
+            users = [self.get_user(options["to"], realm)]
+        elif options["target"] == "realm":
             users = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
-        elif options["server"] == "YES":
+        elif options["target"] == "server":
             users = UserProfile.objects.filter(is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
-        else:
-            raise RuntimeError("Missing arguments")
         self.send(users)
 
     def send(self, users, subject_template_name='', email_template_name='',

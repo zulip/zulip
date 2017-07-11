@@ -49,7 +49,7 @@ def get_user_profile(session_id):
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
-connections = dict() # type: Dict[Union[int, str], SocketConnection]
+connections = dict()  # type: Dict[Union[int, str], SocketConnection]
 
 def get_connection(id):
     # type: (Union[int, str]) -> SocketConnection
@@ -86,7 +86,7 @@ class CloseErrorInfo(object):
         self.err_msg = err_msg
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
-    client_id = None # type: Optional[Union[int, str]]
+    client_id = None  # type: Optional[Union[int, str]]
 
     def on_open(self, info):
         # type: (ConnectionInfo) -> None
@@ -97,7 +97,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         self.authenticated = False
         self.session.user_profile = None
-        self.close_info = None # type: CloseErrorInfo
+        self.close_info = None  # type: CloseErrorInfo
         self.did_close = False
 
         try:
@@ -251,7 +251,7 @@ def fake_message_sender(event):
     # type: (Dict[str, Any]) -> None
     """This function is used only for Casper and backend tests, where
     rabbitmq is disabled"""
-    log_data = dict() # type: Dict[str, Any]
+    log_data = dict()  # type: Dict[str, Any]
     record_request_start_data(log_data)
 
     req = event['request']

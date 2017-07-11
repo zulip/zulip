@@ -78,26 +78,14 @@ def check_pep8(files):
 
     # TODO: Clear up this list of violations.
     IGNORE_FILES_PEPE261 = [
-        'api/zulip/__init__.py',
-        'tools/run-dev.py',
-        'zerver/lib/bugdown/__init__.py',
-        'zerver/models.py',
         'zerver/tests/test_bugdown.py',
         'zerver/tests/test_events.py',
         'zerver/tests/test_messages.py',
         'zerver/tests/test_narrow.py',
-        'zerver/tests/test_outgoing_webhook_system.py',
         'zerver/tests/test_realm.py',
         'zerver/tests/test_signup.py',
         'zerver/tests/test_subs.py',
         'zerver/tests/test_upload.py',
-        'zerver/tornado/socket.py',
-        'zerver/tornado/websocket_client.py',
-        'zerver/worker/queue_processors.py',
-        'zilencer/management/commands/populate_db.py',
-        'zproject/dev_settings.py',
-        'zproject/prod_settings_template.py',
-        'zproject/settings.py',
     ]
 
     filtered_files = [fn for fn in files if fn not in IGNORE_FILES_PEPE261]

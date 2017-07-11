@@ -73,7 +73,7 @@ def assign_queue(queue_name, enabled=True, queue_type="consumer"):
         return clazz
     return decorate
 
-worker_classes = {} # type: Dict[str, Any] # Any here should be QueueProcessingWorker type
+worker_classes = {}  # type: Dict[str, Any] # Any here should be QueueProcessingWorker type
 queues = {}  # type: Dict[str, Dict[str, QueueProcessingWorker]]
 def register_worker(queue_name, clazz, queue_type):
     # type: (str, QueueProcessingWorker, str) -> None
@@ -103,11 +103,11 @@ def check_and_send_restart_signal():
         pass
 
 class QueueProcessingWorker(object):
-    queue_name = None # type: str
+    queue_name = None  # type: str
 
     def __init__(self):
         # type: () -> None
-        self.q = None # type: SimpleQueueClient
+        self.q = None  # type: SimpleQueueClient
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
@@ -232,7 +232,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         # type: () -> None
         while True:
             missed_events = self.q.drain_queue("missedmessage_emails", json=True)
-            by_recipient = defaultdict(list) # type: Dict[int, List[Dict[str, Any]]]
+            by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
 
             for event in missed_events:
                 logging.info("Received event: %s" % (event,))
@@ -477,7 +477,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
     def get_bot_handler(self, service):
         # type: (Service) -> Any
         bot_module_name = 'bots_api.bots.%s.%s' % (service.name, service.name)
-        bot_module = importlib.import_module(bot_module_name) # type: Any
+        bot_module = importlib.import_module(bot_module_name)  # type: Any
         return bot_module.handler_class()
 
     # TODO: Handle stateful bots properly

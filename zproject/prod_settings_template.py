@@ -92,11 +92,11 @@ NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST.split(":")[0]
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
 AUTHENTICATION_BACKENDS = (
-    'zproject.backends.EmailAuthBackend', # Email and password; just requires SMTP setup
-    # 'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
-    # 'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
-    # 'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
-    # 'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
+    'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
+    # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
+    # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
+    # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
+    # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
 
 # To enable Google authentication, you need to do the following:
@@ -138,7 +138,7 @@ AUTHENTICATION_BACKENDS = (
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
 # corresponding email address is "username@example.com", set
 # SSO_APPEND_DOMAIN = "example.com")
-SSO_APPEND_DOMAIN = None # type: Optional[str]
+SSO_APPEND_DOMAIN = None  # type: Optional[str]
 
 
 # Support for mobile push notifications.  Setting controls whether
@@ -152,7 +152,7 @@ SSO_APPEND_DOMAIN = None # type: Optional[str]
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Session cookie expiry in seconds after the last page load
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 # Password strength requirements; learn about configuration at
 # http://zulip.readthedocs.io/en/latest/security-model.html.
@@ -363,7 +363,7 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
 
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.
-LDAP_APPEND_DOMAIN = None # type: Optional[str]
+LDAP_APPEND_DOMAIN = None  # type: Optional[str]
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {

@@ -32,7 +32,7 @@ settings.CACHES['default'] = {
 
 def create_users(realm, name_list, bot_type=None):
     # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
-    user_set = set() # type: Set[Tuple[Text, Text, Text, bool]]
+    user_set = set()  # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
@@ -159,17 +159,17 @@ class Command(BaseCommand):
                 "Scotland": {"description": "Located in the United Kingdom", "invite_only": False},
                 "Venice": {"description": "A northeastern Italian city", "invite_only": False},
                 "Rome": {"description": "Yet another Italian city", "invite_only": False}
-            } # type: Dict[Text, Dict[Text, Any]]
+            }  # type: Dict[Text, Dict[Text, Any]]
 
             bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
-                                 for name in stream_list] # type: List[int]
+                                 for name in stream_list]  # type: List[int]
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
             # of users).
-            subscriptions_to_add = [] # type: List[Subscription]
-            profiles = UserProfile.objects.select_related().all().order_by("email") # type: Sequence[UserProfile]
+            subscriptions_to_add = []  # type: List[Subscription]
+            profiles = UserProfile.objects.select_related().all().order_by("email")  # type: Sequence[UserProfile]
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
                 for type_id in recipient_streams[:int(len(recipient_streams) *
@@ -188,12 +188,12 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = list(UserProfile.objects.all()) # type: List[UserProfile]
+        user_profiles = list(UserProfile.objects.all())  # type: List[UserProfile]
 
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status = UserPresence.ACTIVE # type: int
+                status = UserPresence.ACTIVE  # type: int
                 date = timezone_now()
                 client = get_client("website")
                 if user.full_name[0] <= 'H':
@@ -211,7 +211,7 @@ class Command(BaseCommand):
                            for i in range(options["num_personals"])]
 
         threads = options["threads"]
-        jobs = [] # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int]]]
+        jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int]]]
         for i in range(threads):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
@@ -336,7 +336,7 @@ class Command(BaseCommand):
 
             self.stdout.write("Successfully populated test database.\n")
 
-recipient_hash = {} # type: Dict[int, Recipient]
+recipient_hash = {}  # type: Dict[int, Recipient]
 def get_recipient_by_id(rid):
     # type: (int) -> Recipient
     if rid in recipient_hash:
@@ -358,19 +358,19 @@ def send_messages(data):
     offset = random.randint(0, len(texts))
 
     recipient_streams = [klass.id for klass in
-                         Recipient.objects.filter(type=Recipient.STREAM)] # type: List[int]
-    recipient_huddles = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)] # type: List[int]
+                         Recipient.objects.filter(type=Recipient.STREAM)]  # type: List[int]
+    recipient_huddles = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]  # type: List[int]
 
-    huddle_members = {} # type: Dict[int, List[int]]
+    huddle_members = {}  # type: Dict[int, List[int]]
     for h in recipient_huddles:
         huddle_members[h] = [s.user_profile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
 
     num_messages = 0
     random_max = 1000000
-    recipients = {} # type: Dict[int, Tuple[int, int, Dict[str, Any]]]
+    recipients = {}  # type: Dict[int, Tuple[int, int, Dict[str, Any]]]
     while num_messages < tot_messages:
-        saved_data = {} # type: Dict[str, Any]
+        saved_data = {}  # type: Dict[str, Any]
         message = Message()
         message.sending_client = get_client('populate_db')
         length = random.randint(1, 5)
@@ -445,7 +445,7 @@ def create_simple_community_realm():
 def create_user_presences(user_profiles):
     # type: (Iterable[UserProfile]) -> None
     for user in user_profiles:
-        status = 1 # type: int
+        status = 1  # type: int
         date = timezone_now()
         client = get_client("website")
         UserPresence.objects.get_or_create(

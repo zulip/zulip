@@ -40,7 +40,7 @@ OPEN_REALM_CREATION = True
 
 SAVE_FRONTEND_STACKTRACES = True
 EVENT_LOGS_ENABLED = True
-SYSTEM_ONLY_REALMS = set() # type: Set[str]
+SYSTEM_ONLY_REALMS = set()  # type: Set[str]
 USING_PGROONGA = True
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
