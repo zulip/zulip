@@ -253,7 +253,7 @@ class ZulipTestCase(TestCase):
 
     def notification_bot(self):
         # type: () -> UserProfile
-        return get_user_profile_by_email('notification-bot@zulip.com')
+        return get_user('notification-bot@zulip.com', get_realm('zulip'))
 
     def login_with_return(self, email, password=None):
         # type: (Text, Optional[Text]) -> HttpResponse
