@@ -53,7 +53,7 @@ from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
 
 from django.db import transaction, IntegrityError, connection
-from django.db.models import F, Q
+from django.db.models import F, Q, Max
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
@@ -1679,6 +1679,27 @@ def bulk_add_subscriptions(streams, users, from_creation=False):
         Subscription.objects.filter(id__in=[sub.id for (sub, stream) in subs_to_activate]).update(active=True)
         occupied_streams_after = list(get_occupied_streams(user_profile.realm))
 
+    # Log Subscription Activities in RealmAuditLog
+    event_time = timezone_now()
+    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
+    all_subscription_logs = []  # type: (List[RealmAuditLog])
+    for (sub, stream) in subs_to_add:
+        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+                                                   modified_user=sub.user_profile,
+                                                   modified_stream=stream,
+                                                   event_last_message_id=0,
+                                                   event_type='subscription_created',
+                                                   event_time=event_time))
+    for (sub, stream) in subs_to_activate:
+        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+                                                   modified_user=sub.user_profile,
+                                                   modified_stream=stream,
+                                                   event_last_message_id=event_last_message_id,
+                                                   event_type='subscription_activated',
+                                                   event_time=event_time))
+    # Now since we have all log objects generated we can do a bulk insert
+    RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
     new_occupied_streams = [stream for stream in
                             set(occupied_streams_after) - set(occupied_streams_before)
                             if not stream.invite_only]
@@ -1801,6 +1822,20 @@ def bulk_remove_subscriptions(users, streams):
         Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in
                                             subs_to_deactivate]).update(active=False)
         occupied_streams_after = list(get_occupied_streams(user_profile.realm))
+
+    # Log Subscription Activities in RealmAuditLog
+    event_time = timezone_now()
+    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
+    all_subscription_logs = []  # type: (List[RealmAuditLog])
+    for (sub, stream) in subs_to_deactivate:
+        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+                                                   modified_user=sub.user_profile,
+                                                   modified_stream=stream,
+                                                   event_last_message_id=event_last_message_id,
+                                                   event_type='subscription_deactivated',
+                                                   event_time=event_time))
+    # Now since we have all log objects generated we can do a bulk insert
+    RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
     new_vacant_streams = [stream for stream in
                           set(occupied_streams_before) - set(occupied_streams_after)]

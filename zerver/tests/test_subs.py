@@ -1602,7 +1602,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
                 )
-        self.assert_length(queries, 40)
+        self.assert_length(queries, 42)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -1630,7 +1630,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assert_length(queries, 13)
+        self.assert_length(queries, 15)
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -1866,7 +1866,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 17)
+        self.assert_length(queries, 19)
 
     @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):

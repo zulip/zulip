@@ -1720,6 +1720,7 @@ class RealmAuditLog(models.Model):
     acting_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
     modified_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
     modified_stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
+    event_last_message_id = models.IntegerField(null=True)  # type: Optional[int]
     event_type = models.CharField(max_length=40)  # type: Text
     event_time = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # If True, event_time is an overestimate of the true time. Can be used

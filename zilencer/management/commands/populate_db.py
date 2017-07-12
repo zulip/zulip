@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
-    Subscription, get_huddle, Realm, UserMessage, RealmDomain, \
+    Subscription, RealmAuditLog, get_huddle, Realm, UserMessage, RealmDomain, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username, Service, get_user_profile_by_email
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
@@ -169,6 +169,8 @@ class Command(BaseCommand):
             # deterministic subset of the streams (given a fixed list
             # of users).
             subscriptions_to_add = []  # type: List[Subscription]
+            event_time = timezone_now()
+            all_subscription_logs = []  # type: (List[RealmAuditLog])
             profiles = UserProfile.objects.select_related().all().order_by("email")  # type: Sequence[UserProfile]
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
@@ -181,7 +183,17 @@ class Command(BaseCommand):
                         color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
 
                     subscriptions_to_add.append(s)
+
+                    log = RealmAuditLog(realm=profile.realm,
+                                        modified_user=profile,
+                                        modified_stream_id=type_id,
+                                        event_last_message_id=0,
+                                        event_type='subscription_created',
+                                        event_time=event_time)
+                    all_subscription_logs.append(log)
+
             Subscription.objects.bulk_create(subscriptions_to_add)
+            RealmAuditLog.objects.bulk_create(all_subscription_logs)
         else:
             zulip_realm = get_realm("zulip")
             recipient_streams = [klass.type_id for klass in
@@ -305,6 +317,8 @@ class Command(BaseCommand):
 
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
+                event_time = timezone_now()
+                all_subscription_logs = []
                 profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
                 for i, stream_name in enumerate(zulip_stream_dict):
                     stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
@@ -316,7 +330,16 @@ class Command(BaseCommand):
                             user_profile=profile,
                             color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
                         subscriptions_to_add.append(s)
+
+                        log = RealmAuditLog(realm=profile.realm,
+                                            modified_user=profile,
+                                            modified_stream=stream,
+                                            event_last_message_id=0,
+                                            event_type='subscription_created',
+                                            event_time=event_time)
+                        all_subscription_logs.append(log)
                 Subscription.objects.bulk_create(subscriptions_to_add)
+                RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
                 # These bots are not needed by the test suite
                 internal_zulip_users_nosubs = [
