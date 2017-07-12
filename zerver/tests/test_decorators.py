@@ -6,6 +6,8 @@ import os
 from collections import defaultdict
 
 from typing import Any, Dict, Iterable, List, Optional, Tuple
+from django_otp.conf import settings as otp_settings
+
 from django.test import TestCase, override_settings
 from django.http import HttpResponse, HttpRequest
 from django.test.client import RequestFactory
@@ -35,7 +37,8 @@ from zerver.decorator import (
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
-    return_success_on_head_request, to_not_negative_int_or_none
+    return_success_on_head_request, to_not_negative_int_or_none,
+    zulip_login_required
 )
 from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
@@ -1342,6 +1345,67 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         with mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
             result = self.client_get('/accounts/accept_terms/')
             self.assertEqual(result.status_code, 302)
+
+    def test_2fa_failure(self) -> None:
+        @zulip_login_required
+        def test_view(request: HttpRequest) -> HttpResponse:
+            return HttpResponse('Success')
+
+        request = HttpRequest()
+        request.META['SERVER_NAME'] = 'localhost'
+        request.META['SERVER_PORT'] = 80
+        request.META['PATH_INFO'] = ''
+        request.user = hamlet = self.example_user('hamlet')
+        request.user.is_verified = lambda: False
+        self.login(hamlet.email)
+        request.session = self.client.session
+        request.get_host = lambda: 'zulip.testserver'
+
+        response = test_view(request)
+        content = getattr(response, 'content')
+        self.assertEqual(content.decode(), 'Success')
+
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            request = HttpRequest()
+            request.META['SERVER_NAME'] = 'localhost'
+            request.META['SERVER_PORT'] = 80
+            request.META['PATH_INFO'] = ''
+            request.user = hamlet = self.example_user('hamlet')
+            request.user.is_verified = lambda: False
+            self.login(hamlet.email)
+            request.session = self.client.session
+            request.get_host = lambda: 'zulip.testserver'
+            self.create_default_device(request.user)
+
+            response = test_view(request)
+
+            status_code = getattr(response, 'status_code')
+            self.assertEqual(status_code, 302)
+
+            url = getattr(response, 'url')
+            response_url = url.split("?")[0]
+            self.assertEqual(response_url, settings.HOME_NOT_LOGGED_IN)
+
+    def test_2fa_success(self) -> None:
+        @zulip_login_required
+        def test_view(request: HttpRequest) -> HttpResponse:
+            return HttpResponse('Success')
+
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            request = HttpRequest()
+            request.META['SERVER_NAME'] = 'localhost'
+            request.META['SERVER_PORT'] = 80
+            request.META['PATH_INFO'] = ''
+            request.user = hamlet = self.example_user('hamlet')
+            request.user.is_verified = lambda: True
+            self.login(hamlet.email)
+            request.session = self.client.session
+            request.get_host = lambda: 'zulip.testserver'
+            self.create_default_device(request.user)
+
+            response = test_view(request)
+            content = getattr(response, 'content')
+            self.assertEqual(content.decode(), 'Success')
 
 class TestRequireDecorators(ZulipTestCase):
     def test_require_server_admin_decorator(self) -> None:
