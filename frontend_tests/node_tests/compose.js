@@ -45,6 +45,7 @@ add_dependencies({
     compose_ui: 'js/compose_ui.js',
     Handlebars: 'handlebars',
     people: 'js/people',
+    sent_messages: 'js/sent_messages',
     stream_data: 'js/stream_data',
     util: 'js/util',
 });
@@ -288,17 +289,17 @@ people.add(bob);
     assert(!$("#send-status").visible());
     assert.equal($("#compose-send-button").attr('disabled'), undefined);
     assert(!$("#sending-indicator").visible());
-    assert.equal(_.keys(compose.send_times_data).length, 1);
-    assert.equal(compose.send_times_data[12].start.getTime(), new Date(test_date).getTime());
-    assert(!compose.send_times_data[12].locally_echoed);
+    assert.equal(_.keys(sent_messages.send_times_data).length, 1);
+    assert.equal(sent_messages.send_times_data[12].start.getTime(), new Date(test_date).getTime());
+    assert(!sent_messages.send_times_data[12].locally_echoed);
     assert(reify_message_id_checked);
     assert(server_events_triggered);
     assert(set_timeout_called);
 }());
 
 (function test_mark_rendered_content_disparity() {
-    compose.mark_rendered_content_disparity(13, true);
-    assert.deepEqual(compose.send_times_data[13], { rendered_content_disparity: true });
+    sent_messages.mark_rendered_content_disparity(13, true);
+    assert.deepEqual(sent_messages.send_times_data[13], { rendered_content_disparity: true });
 }());
 
 (function test_report_as_received() {
@@ -312,23 +313,23 @@ people.add(bob);
         func();
         set_timeout_called = true;
     });
-    compose.send_times_data[12].locally_echoed = true;
+    sent_messages.send_times_data[12].locally_echoed = true;
     channel.post = function (payload) {
         assert.equal(payload.url, '/json/report_send_time');
         assert.equal(typeof(payload.data.time), 'string');
         assert(payload.data.locally_echoed);
         assert(!payload.data.rendered_content_disparity);
     };
-    compose.report_as_received(msg);
-    assert.equal(typeof(compose.send_times_data[12].received), 'object');
-    assert.equal(typeof(compose.send_times_data[12].displayed), 'object');
+    sent_messages.report_as_received(msg);
+    assert.equal(typeof(sent_messages.send_times_data[12].received), 'object');
+    assert.equal(typeof(sent_messages.send_times_data[12].displayed), 'object');
     assert(set_timeout_called);
 
-    delete compose.send_times_data[13];
+    delete sent_messages.send_times_data[13];
     msg.id = 13;
-    compose.report_as_received(msg);
-    assert.equal(typeof(compose.send_times_data[13].received), 'object');
-    assert.equal(typeof(compose.send_times_data[13].displayed), 'object');
+    sent_messages.report_as_received(msg);
+    assert.equal(typeof(sent_messages.send_times_data[13].received), 'object');
+    assert.equal(typeof(sent_messages.send_times_data[13].displayed), 'object');
 }());
 
 (function test_send_message() {
@@ -394,7 +395,7 @@ people.add(bob);
             assert.equal(typeof(message_id), 'number');
             stub_state.reify_message_id_checked += 1;
         };
-        compose.send_times_data = {};
+        sent_messages.send_times_data = {};
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
         $("#new_message_content").val('[foobar]' +
@@ -414,7 +415,7 @@ people.add(bob);
             server_events_triggered: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert.equal($("#new_message_content").val(), '');
         assert($("#new_message_content").is_focused());
         assert(!$("#send-status").visible());
@@ -449,7 +450,7 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(reload_initiate_triggered);
     }());
@@ -490,7 +491,7 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -523,7 +524,7 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
+        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -1249,8 +1250,9 @@ function test_with_mock_socket(test_params) {
     }());
 
     (function test_message_id_changed_document() {
+        sent_messages.initialize();
         var handler = $(document).get_on_handler('message_id_changed');
-        compose.send_times_data = {
+        sent_messages.send_times_data = {
             1031: {
                 data: 'Test data!',
             },
@@ -1265,7 +1267,7 @@ function test_with_mock_socket(test_params) {
                 data: 'Test data!',
             },
         };
-        assert.deepEqual(compose.send_times_data, send_times_data);
+        assert.deepEqual(sent_messages.send_times_data, send_times_data);
     }());
 }());
 

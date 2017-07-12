@@ -171,11 +171,11 @@ exports.process_from_server = function process_from_server(messages) {
             if (client_message.content !== message.content) {
                 client_message.content = message.content;
                 updated = true;
-                compose.mark_rendered_content_disparity(message.id, true);
+                sent_messages.mark_rendered_content_disparity(message.id, true);
             }
             msgs_to_rerender.push(client_message);
             locally_processed_ids.push(client_message.id);
-            compose.report_as_received(client_message);
+            sent_messages.report_as_received(client_message);
             delete waiting_for_ack[client_message.id];
             return false;
         }
