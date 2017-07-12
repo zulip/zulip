@@ -1363,9 +1363,9 @@ class SubscriptionAPITest(ZulipTestCase):
         other_params = {
             'announce': 'true',
         }
-        notifications_stream = get_stream(self.streams[0], self.realm)
-        self.realm.notifications_stream = notifications_stream
-        self.realm.save()
+        notifications_stream = get_stream(self.streams[0], self.test_realm)
+        self.test_realm.notifications_stream = notifications_stream
+        self.test_realm.save()
 
         # Delete the UserProfile from the cache so the realm change will be
         # picked up

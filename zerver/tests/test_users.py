@@ -388,10 +388,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertIn("pointer", json)
 
     def test_cache_behavior(self):
+        # type: () -> None
         """Tests whether fetching a user object the normal way, with
         `get_user`, makes 1 cache query and 1 database query.
         """
-        # type: () -> None
         realm = get_realm("zulip")
         email = self.example_email("hamlet")
         with queries_captured() as queries:
