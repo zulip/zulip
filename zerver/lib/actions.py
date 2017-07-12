@@ -79,7 +79,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import clear_followup_emails_queue
+from zerver.lib.notifications import clear_scheduled_emails
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.sessions import delete_user_sessions
@@ -525,7 +525,7 @@ def do_deactivate_realm(realm):
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
-        clear_followup_emails_queue(user.id)
+        clear_scheduled_emails(user.id)
 
 def do_reactivate_realm(realm):
     # type: (Realm) -> None
@@ -541,7 +541,7 @@ def do_deactivate_user(user_profile, _cascade=True):
     user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
-    clear_followup_emails_queue(user_profile.id)
+    clear_scheduled_emails(user_profile.id)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
@@ -2287,7 +2287,7 @@ def do_change_notification_settings(user_profile, name, value, log=True):
 
     # Disabling digest emails should clear a user's email queue
     if name == 'enable_digest_emails' and not value:
-        clear_followup_emails_queue(user_profile.id, ScheduledEmail.DIGEST)
+        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[name])
     event = {'type': 'update_global_notifications',
