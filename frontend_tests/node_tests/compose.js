@@ -290,8 +290,11 @@ people.add(bob);
     assert.equal($("#compose-send-button").attr('disabled'), undefined);
     assert(!$("#sending-indicator").visible());
     assert.equal(_.keys(sent_messages.send_times_data).length, 1);
-    assert.equal(sent_messages.send_times_data[12].start.getTime(), new Date(test_date).getTime());
-    assert(!sent_messages.send_times_data[12].locally_echoed);
+
+    var data = sent_messages.get_message_state(12).data;
+    assert.equal(data.start.getTime(), new Date(test_date).getTime());
+    assert(!data.locally_echoed);
+
     assert(reify_message_id_checked);
     assert(server_events_triggered);
     assert(set_timeout_called);
@@ -299,7 +302,7 @@ people.add(bob);
 
 (function test_mark_rendered_content_disparity() {
     sent_messages.mark_rendered_content_disparity(13, true);
-    assert.deepEqual(sent_messages.send_times_data[13], { rendered_content_disparity: true });
+    assert.deepEqual(sent_messages.send_times_data[13].data.rendered_content_disparity, true);
 }());
 
 (function test_report_as_received() {
@@ -313,7 +316,10 @@ people.add(bob);
         func();
         set_timeout_called = true;
     });
-    sent_messages.send_times_data[12].locally_echoed = true;
+
+    var data = sent_messages.get_message_state(12).data;
+
+    data.locally_echoed = true;
     channel.post = function (payload) {
         assert.equal(payload.url, '/json/report_send_time');
         assert.equal(typeof(payload.data.time), 'string');
@@ -321,15 +327,16 @@ people.add(bob);
         assert(!payload.data.rendered_content_disparity);
     };
     sent_messages.report_as_received(msg);
-    assert.equal(typeof(sent_messages.send_times_data[12].received), 'object');
-    assert.equal(typeof(sent_messages.send_times_data[12].displayed), 'object');
+    assert.equal(typeof(data.received), 'object');
+    assert.equal(typeof(data.displayed), 'object');
     assert(set_timeout_called);
 
     delete sent_messages.send_times_data[13];
     msg.id = 13;
     sent_messages.report_as_received(msg);
-    assert.equal(typeof(sent_messages.send_times_data[13].received), 'object');
-    assert.equal(typeof(sent_messages.send_times_data[13].displayed), 'object');
+    data = sent_messages.get_message_state(13).data;
+    assert.equal(typeof(data.received), 'object');
+    assert.equal(typeof(data.displayed), 'object');
 }());
 
 (function test_send_message() {
