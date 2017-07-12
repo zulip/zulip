@@ -1,4 +1,7 @@
 
+import django_otp
+from two_factor.utils import default_device
+
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
@@ -391,6 +394,11 @@ def logged_in_and_active(request: HttpRequest) -> bool:
         return False
     return user_matches_subdomain(get_subdomain(request), request.user)
 
+def do_two_factor_login(request: HttpRequest, user_profile: UserProfile) -> None:
+    device = default_device(user_profile)
+    if device:
+        django_otp.login(request, device)
+
 def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     """Creates a session, logging in the user, using the Django method,
     and also adds helpful data needed by our server logs.
@@ -398,6 +406,9 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     django_login(request, user_profile)
     request._email = user_profile.email
     process_client(request, user_profile, is_browser_view=True)
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+        # Login with two factor authentication as well.
+        do_two_factor_login(request, user_profile)
 
 def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)

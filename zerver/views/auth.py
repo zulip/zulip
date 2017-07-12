@@ -591,7 +591,10 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         return redirect_response
 
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
-    if request.user.is_authenticated:
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+        if request.user and request.user.is_verified():
+            return HttpResponseRedirect(request.user.realm.uri)
+    elif request.user.is_authenticated:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.find_account')
@@ -617,6 +620,10 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if 'username' in request.POST:
         extra_context['email'] = request.POST['username']
 
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+        return start_two_factor_auth(request, extra_context=extra_context,
+                                     **kwargs)
+
     try:
         template_response = django_login_page(
             request, authentication_form=OurAuthenticationForm,
@@ -634,6 +641,37 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         update_login_page_context(request, template_response.context_data)
 
     return template_response
+
+def start_two_factor_auth(request: HttpRequest,
+                          extra_context: ExtraContext=None,
+                          **kwargs: Any) -> HttpResponse:
+    two_fa_form_field = 'two_factor_login_view-current_step'
+    if two_fa_form_field not in request.POST:
+        # Here we inject the 2FA step in the request context if it's missing to
+        # force the user to go to the first step of 2FA authentication process.
+        # This seems a bit hackish but simplifies things from testing point of
+        # view. I don't think this can result in anything bad because all the
+        # authentication logic runs after the auth step.
+        #
+        # If we don't do this, we will have to modify a lot of auth tests to
+        # insert this variable in the request.
+        request.POST = request.POST.copy()
+        request.POST.update({two_fa_form_field: 'auth'})
+
+    """
+    This is how Django implements as_view(), so extra_context will be passed
+    to the __init__ method of TwoFactorLoginView.
+
+    def as_view(cls, **initkwargs):
+        def view(request, *args, **kwargs):
+            self = cls(**initkwargs)
+            ...
+
+        return view
+    """
+    two_fa_view = TwoFactorLoginView.as_view(extra_context=extra_context,
+                                             **kwargs)
+    return two_fa_view(request, **kwargs)
 
 @csrf_exempt
 def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
