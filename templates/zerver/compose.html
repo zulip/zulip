@@ -56,11 +56,11 @@
                   </span>
                   <input type="text" class="recipient_box" name="stream" id="stream"
                          maxlength="30"
-                         value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0"/>
+                         value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}"/>
                   <i class="icon-vector-narrow icon-vector-small"></i>
                   <input type="text" class="recipient_box" name="subject" id="subject"
                          maxlength="60"
-                         value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0"/>
+                         value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}"/>
               </td>
             </tr>
             <tr id="private-message">
@@ -78,7 +78,7 @@
             <tr>
               <td class="messagebox" colspan="2">
                 <textarea class="new_message_textarea" name="content" id="new_message_content"
-                          value="" placeholder="{{ _('Compose your message here...') }}" tabindex="0" maxlength="10000"></textarea>
+                          value="" placeholder="{{ _('Compose your message here...') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
                 <div class="scrolling_list" id="preview_message_area" style="display:none;">
                   <div id="markdown_preview_spinner"></div>
                   <div id="preview_content"></div>
