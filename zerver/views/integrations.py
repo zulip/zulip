@@ -10,9 +10,11 @@ from django.shortcuts import render
 import os
 import ujson
 
+from zerver.decorator import has_request_variables, REQ
 from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.utils import get_subdomain
+from zerver.templatetags.app_filters import render_markdown_path
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
@@ -94,7 +96,7 @@ def add_integrations_context(context):
     context['integrations_dict'] = alphabetical_sorted_integration
     context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
 
-    if context["html_settings_links"]:
+    if "html_settings_links" in context and context["html_settings_links"]:
         settings_html = '<a href="../#settings">Zulip settings page</a>'
         subscriptions_html = '<a target="_blank" href="../#streams">streams page</a>'
     else:
@@ -120,6 +122,20 @@ class IntegrationView(ApiURLView):
         add_integrations_context(context)
         return context
 
+
+@has_request_variables
+def integration_doc(request, integration_name=REQ(default=None)):
+    # type: (HttpRequest, str) -> HttpResponse
+    try:
+        integration = INTEGRATIONS[integration_name]
+    except KeyError:
+        return HttpResponseNotFound()
+
+    context = integration.doc_context or {}
+    add_integrations_context(context)
+    doc_html_str = render_markdown_path(integration.doc, context)
+
+    return HttpResponse(doc_html_str)
 
 def api_endpoint_docs(request):
     # type: (HttpRequest) -> HttpResponse

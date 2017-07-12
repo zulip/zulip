@@ -46,12 +46,16 @@ class DocPageTest(ZulipTestCase):
                        'Zapier',
                        'IFTTT'
                    ])
+        self._test('/integrations/doc/travis', 'Your Travis CI notifications may look like:')
         self._test('/devlogin/', 'Normal users')
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
         self._test('/emails/', 'Road Runner invited you to join Zulip')
         self._test('/register/', 'Sign up for Zulip')
+
+        result = self.client_get('/integrations/doc/nonexistent_integration', follow=True)
+        self.assertEqual(result.status_code, 404)
 
         result = self.client_get('/new-user/')
         self.assertEqual(result.status_code, 301)
