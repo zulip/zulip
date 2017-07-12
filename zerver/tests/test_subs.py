@@ -794,7 +794,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_api_calls(self):
         # type: () -> None
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         stream_name = 'stream ADDED via api'
@@ -991,7 +991,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
     def test_json_subscription_property_invalid_stream(self):
         # type: () -> None
-        test_email = "hamlet@zulip.com"
+        test_email = self.example_email("hamlet")
         self.login(test_email)
 
         stream_id = 1000
@@ -1025,7 +1025,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 class SubscriptionRestApiTest(ZulipTestCase):
     def test_basic_add_delete(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         # add
@@ -1094,7 +1094,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         """
         Trying to set an invalid stream id returns a JSON error.
         """
-        test_email = "hamlet@zulip.com"
+        test_email = self.example_email("hamlet")
         self.login(test_email)
         result = self.client_patch(
             "/api/v1/users/me/subscriptions/121",
@@ -1105,7 +1105,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_bad_add_parameters(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         def check_for_error(val, expected_message):
@@ -1126,7 +1126,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_bad_principals(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         request = {
@@ -1142,7 +1142,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_bad_delete_parameters(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         request = {
@@ -1157,7 +1157,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_add_or_delete_not_specified(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         result = self.client_patch(
@@ -1173,7 +1173,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         """
         Only way to force an error is with a empty string.
         """
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         invalid_stream_name = ""
@@ -1190,7 +1190,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_stream_name_too_long(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         long_stream_name = "a" * 61
@@ -1207,7 +1207,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_stream_name_contains_null(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         stream_name = "abc\000"
@@ -1757,7 +1757,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         email1 = self.example_email("othello")
         email2 = self.example_email("cordelia")
-        email3 = 'hamlet@zulip.com'
+        email3 = self.example_email('hamlet')
         email4 = self.example_email("iago")
         realm = get_realm('zulip')
 
@@ -2169,7 +2169,7 @@ class GetPublicStreamsTest(ZulipTestCase):
         Ensure that the query we use to get public streams successfully returns
         a list of streams
         """
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         realm = get_realm('zulip')
         self.login(email)
 
@@ -2232,10 +2232,10 @@ class InviteOnlyStreamTest(ZulipTestCase):
         If you try to send a message to an invite-only stream to which
         you aren't subscribed, you'll get a 400.
         """
-        self.login("hamlet@zulip.com")
+        self.login(self.example_email("hamlet"))
         # Create Saxony as an invite-only stream.
         self.assert_json_success(
-            self.common_subscribe_to_streams("hamlet@zulip.com", ["Saxony"],
+            self.common_subscribe_to_streams(self.example_email("hamlet"), ["Saxony"],
                                              invite_only=True))
 
         email = self.example_email("cordelia")
@@ -2248,7 +2248,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         Make sure that /api/v1/users/me/subscriptions properly returns
         the invite-only bit for streams that are invite-only
         """
-        email = 'hamlet@zulip.com'
+        email = self.example_email('hamlet')
         self.login(email)
 
         result1 = self.common_subscribe_to_streams(email, ["Saxony"], invite_only=True)
@@ -2319,7 +2319,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         json = ujson.loads(result.content)
 
         self.assertTrue(self.example_email("othello") in json['subscribers'])
-        self.assertTrue('hamlet@zulip.com' in json['subscribers'])
+        self.assertTrue(self.example_email('hamlet') in json['subscribers'])
 
 class GetSubscribersTest(ZulipTestCase):
 
@@ -2350,7 +2350,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         {"msg": "",
          "result": "success",
-         "subscribers": ["hamlet@zulip.com", self.example_email("prospero")]}
+         "subscribers": [self.example_email("hamlet"), self.example_email("prospero")]}
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
