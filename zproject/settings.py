@@ -491,6 +491,12 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
+from django.template.loaders import app_directories
+class TwoFactorLoader(app_directories.Loader):
+    def get_dirs(self):
+        dirs = super(TwoFactorLoader, self).get_dirs()
+        return [d for d in dirs if 'two_factor' in d]
+
 MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
@@ -1192,11 +1198,27 @@ non_html_template_engine_settings['OPTIONS'].update({
     'lstrip_blocks': True,
 })
 
+# django-two-factor uses the default Django template engine (not Jinja2), so we
+# need to add config for it here.
+two_factor_template_options = deepcopy(default_template_engine_settings['OPTIONS'])
+del two_factor_template_options['environment']
+del two_factor_template_options['extensions']
+two_factor_template_options['loaders'] = ['zproject.settings.TwoFactorLoader']
+
+two_factor_template_engine_settings = {
+    'NAME': 'Two_Factor',
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [],
+    'APP_DIRS': False,
+    'OPTIONS': two_factor_template_options,
+}
+
 # The order here is important; get_template and related/parent functions try
 # the template engines in order until one succeeds.
 TEMPLATES = [
     default_template_engine_settings,
     non_html_template_engine_settings,
+    two_factor_template_engine_settings,
 ]
 ########################################################################
 # LOGGING SETTINGS
