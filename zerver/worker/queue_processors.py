@@ -157,7 +157,7 @@ class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
         # This should clear out any invitation reminder emails
-        clear_followup_emails_queue(data['email_address'])
+        clear_followup_emails_queue(data['user_id'])
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                        (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)

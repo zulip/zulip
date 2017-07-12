@@ -32,7 +32,7 @@ def do_missedmessage_unsubscribe(user_profile):
 
 def do_welcome_unsubscribe(user_profile):
     # type: (UserProfile) -> None
-    clear_followup_emails_queue(user_profile.email)
+    clear_followup_emails_queue(user_profile.id)
 
 def do_digest_unsubscribe(user_profile):
     # type: (UserProfile) -> None
