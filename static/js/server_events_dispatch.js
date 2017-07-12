@@ -74,7 +74,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_email_changes_disabled = event.value;
             settings_org.toggle_email_change_display();
         } else if (event.op === 'update' && event.property === 'add_emoji_by_admins_only') {
-            page_params.add_emoji_by_admins_only = event.value;
+            page_params.realm_add_emoji_by_admins_only = event.value;
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
             page_params.realm_restricted_to_domain = event.value;
         } else if (event.op === 'update' && event.property === 'message_retention_days') {
