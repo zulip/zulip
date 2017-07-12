@@ -19,54 +19,54 @@ from zerver.views.integrations import (
 )
 
 class DocPageTest(ZulipTestCase):
-        def _test(self, url, expected_content, extra_strings=[]):
-            # type: (str, str, List[str]) -> None
-            result = self.client_get(url)
-            self.assertEqual(result.status_code, 200)
-            self.assertIn(expected_content, str(result.content))
-            for s in extra_strings:
-                self.assertIn(s, str(result.content))
+    def _test(self, url, expected_content, extra_strings=[]):
+        # type: (str, str, List[str]) -> None
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(expected_content, str(result.content))
+        for s in extra_strings:
+            self.assertIn(s, str(result.content))
 
-        def test_doc_endpoints(self):
-            # type: () -> None
-            self._test('/api/', 'We hear you like APIs')
-            self._test('/api/endpoints/', 'pre-built API bindings for')
-            self._test('/about/', 'Cambridge, Massachusetts')
-            # Test the i18n version of one of these pages.
-            self._test('/en/about/', 'Cambridge, Massachusetts')
-            self._test('/apps/', 'Appsolutely')
-            self._test('/features/', 'Talk about multiple topics at once')
-            self._test('/hello/', 'productive group chat')
-            self._test('/for/open-source/', 'for open source projects')
-            self._test('/integrations/',
-                       'Over 60 native integrations.',
-                       extra_strings=[
-                           'And hundreds more through',
-                           'Hubot',
-                           'Zapier',
-                           'IFTTT'
-                       ])
-            self._test('/devlogin/', 'Normal users')
-            self._test('/devtools/', 'Useful development URLs')
-            self._test('/errors/404/', 'Page not found')
-            self._test('/errors/5xx/', 'Internal server error')
-            self._test('/emails/', 'Road Runner invited you to join Zulip')
-            self._test('/register/', 'Sign up for Zulip')
+    def test_doc_endpoints(self):
+        # type: () -> None
+        self._test('/api/', 'We hear you like APIs')
+        self._test('/api/endpoints/', 'pre-built API bindings for')
+        self._test('/about/', 'Cambridge, Massachusetts')
+        # Test the i18n version of one of these pages.
+        self._test('/en/about/', 'Cambridge, Massachusetts')
+        self._test('/apps/', 'Appsolutely')
+        self._test('/features/', 'Talk about multiple topics at once')
+        self._test('/hello/', 'productive group chat')
+        self._test('/for/open-source/', 'for open source projects')
+        self._test('/integrations/',
+                   'Over 60 native integrations.',
+                   extra_strings=[
+                       'And hundreds more through',
+                       'Hubot',
+                       'Zapier',
+                       'IFTTT'
+                   ])
+        self._test('/devlogin/', 'Normal users')
+        self._test('/devtools/', 'Useful development URLs')
+        self._test('/errors/404/', 'Page not found')
+        self._test('/errors/5xx/', 'Internal server error')
+        self._test('/emails/', 'Road Runner invited you to join Zulip')
+        self._test('/register/', 'Sign up for Zulip')
 
-            result = self.client_get('/new-user/')
-            self.assertEqual(result.status_code, 301)
-            self.assertIn('hello', result['Location'])
+        result = self.client_get('/new-user/')
+        self.assertEqual(result.status_code, 301)
+        self.assertIn('hello', result['Location'])
 
-            result = self.client_get('/robots.txt')
-            self.assertEqual(result.status_code, 301)
-            self.assertIn('static/robots.txt', result['Location'])
+        result = self.client_get('/robots.txt')
+        self.assertEqual(result.status_code, 301)
+        self.assertIn('static/robots.txt', result['Location'])
 
-            result = self.client_get('/static/robots.txt')
-            self.assertEqual(result.status_code, 200)
-            self.assertIn(
-                'Disallow: /',
-                ''.join(str(x) for x in list(result.streaming_content))
-            )
+        result = self.client_get('/static/robots.txt')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(
+            'Disallow: /',
+            ''.join(str(x) for x in list(result.streaming_content))
+        )
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
