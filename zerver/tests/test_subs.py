@@ -221,10 +221,11 @@ class StreamAdminTest(ZulipTestCase):
     def test_vacate_private_stream_removes_default_stream(self):
         # type: () -> None
         stream = self.make_stream('new_stream', invite_only=True)
+        realm = self.example_user("hamlet").realm
         self.subscribe_to_stream(self.example_email("hamlet"), stream.name)
         do_add_default_stream(stream)
         self.assertEqual(1, DefaultStream.objects.filter(stream=stream).count())
-        self.unsubscribe_from_stream(self.example_email("hamlet"), stream.name)
+        self.unsubscribe_from_stream(self.example_email("hamlet"), stream.name, realm)
         self.assertEqual(0, DefaultStream.objects.filter(stream=stream).count())
         # Fetch stream again from database.
         stream = Stream.objects.get(id=stream.id)
