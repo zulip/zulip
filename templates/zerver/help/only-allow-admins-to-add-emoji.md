@@ -9,6 +9,6 @@ administrators to add new emoji.
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-2. Select the **Only admins may add emoji** checkbox.
+2. Select the **Prevent users from adding custom emoji** checkbox.
 
 {!save-changes.md!} organization settings.

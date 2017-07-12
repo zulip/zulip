@@ -14,10 +14,10 @@ members to those with email invitations.
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-4. Locate the **E-mail invitation required** checkbox.
+4. Locate the **Users cannot join without an invitation** checkbox.
 
     To limit new members of your organization to those who have been
-    invited to do so, click the **E-mail invitation required** checkbox.
+    invited to do so, click the **Users cannot join without an invitation** checkbox.
 
     New users will now require an email invitation sent by a user in your Zulip
 organization to join your organization.

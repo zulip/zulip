@@ -41,4 +41,4 @@ If the users are not from the same organization, you should change your organiza
 {!go-to-the.md!} [Organization settings](/#administration/organization-settings)
 {!admin.md!}
 
-2. Disable the **New users restricted to the following domains** option.
+2. Disable the **Restrict new users to the following email domains** option.

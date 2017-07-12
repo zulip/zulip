@@ -67,7 +67,7 @@ casper.then(function () {
                                           'Only administrators may now create new streams!');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
-        }, 'Only admins may create streams Setting activated');
+        }, 'Prevent users from creating streams Setting activated');
     });
 });
 
@@ -83,7 +83,7 @@ casper.waitUntilVisible('#id_realm_create_stream_by_admins_only + span', functio
     // Test Setting was saved
     casper.test.assertEval(function () {
         return document.querySelector('#id_realm_create_stream_by_admins_only').checked;
-    }, 'Only admins may create streams Setting saved');
+    }, 'Prevent users from creating streams Setting saved');
 
     // Deactivate setting
 
@@ -96,7 +96,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Any user may now create new streams!');
         casper.test.assertEval(function () {
             return !(document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
-        }, 'Only admins may create streams Setting deactivated');
+        }, 'Prevent users from creating streams Setting deactivated');
     });
 });
 

@@ -9,13 +9,13 @@ disable message editing for your organization users.
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-4. Locate the **Users can edit old messages**
+4. Locate the **Users can edit their messages**
 checkbox and **Message edit limit in minutes (0 for no limit)** input field
 underneath it.
 
     By default, user message editing is enabled for 10 minutes after sending.
 
-    * **Users can edit old messages** - Uncheck this option if you wish to
+    * **Users can edit their messages** - Uncheck this option if you wish to
     disable message editing. Upon doing so, the **Message edit limit in minutes (0 for no limit)**
     input field will be grayed out.
 

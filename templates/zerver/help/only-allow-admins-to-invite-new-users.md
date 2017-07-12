@@ -9,7 +9,7 @@ invite new users.
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-2. Select the **E-mail invitation required** and **Only admins may invite**
+2. Select the **Users cannot join without an invitation** and **Only admins can invite new users**
 checkboxes.
 
     If this option is enabled, only administrators in your organization can send

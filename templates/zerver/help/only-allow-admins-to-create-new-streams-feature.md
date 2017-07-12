@@ -8,6 +8,6 @@ only allows administrators to create new streams in the organization.
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-2. Select the **Only admins may create streams** checkbox.
+2. Select the **Prevent users from creating streams** checkbox.
 
 {!save-changes.md!} organization settings.
