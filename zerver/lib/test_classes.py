@@ -36,6 +36,7 @@ from zerver.models import (
     get_stream,
     get_user,
     get_user_profile_by_email,
+    get_realm,
     get_realm_by_email_domain,
     Client,
     Message,
@@ -231,7 +232,7 @@ class ZulipTestCase(TestCase):
     def example_user(self, name):
         # type: (str) -> UserProfile
         email = self.example_user_map[name]
-        return get_user_profile_by_email(email)
+        return get_user(email, get_realm('zulip'))
 
     def mit_user(self, name):
         # type: (str) -> UserProfile
