@@ -93,12 +93,6 @@ class Integration(object):
         # type: (Dict[Any, Any]) -> None
         self.doc_context = context
 
-    @property
-    def help_content(self):
-        # type: () -> Text
-        doc_context = self.doc_context or {}
-        return render_markdown_path(self.doc, doc_context)
-
 class EmailIntegration(Integration):
     def is_enabled(self):
         # type: () -> bool

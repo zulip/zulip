@@ -1,4 +1,5 @@
 import fuzzysearch from 'fuzzysearch';
+import blueslip from './../blueslip';
 
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
@@ -56,6 +57,18 @@ var integration_events = function () {
     var show_integration = function (hash) {
         // the version of the hash without the leading "#".
         var _hash = hash.replace(/^#/, "");
+        var integration_name = _hash;
+
+        $.get({
+            url: '/integrations/doc/' + integration_name,
+            dataType: 'html',
+            success: function (doc) {
+                $('#' + integration_name + '.integration-instructions .help-content').html(doc);
+            },
+            error: function (err) {
+                blueslip.error("Integration documentation for '" + integration_name + "' not found.", err);
+            },
+        });
 
         // clear out the integrations instructions that may exist in the instruction
         // block from a previous hash.
