@@ -13,7 +13,7 @@ from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
-    get_client, get_prereg_user_by_email, get_system_bot, \
+    get_client, get_prereg_user_by_email, get_system_bot, ScheduledEmail, \
     get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
@@ -156,8 +156,7 @@ class QueueProcessingWorker(object):
 class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        # This should clear out any invitation reminder emails
-        clear_followup_emails_queue(data['user_id'])
+        clear_followup_emails_queue(data['user_id'], ScheduledEmail.INVITATION_REMINDER)
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                        (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)

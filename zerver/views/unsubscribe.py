@@ -7,7 +7,7 @@ from typing import Callable
 
 from confirmation.models import Confirmation
 from zerver.lib.actions import do_change_notification_settings, clear_followup_emails_queue
-from zerver.models import UserProfile
+from zerver.models import UserProfile, ScheduledEmail
 from zerver.context_processors import common_context
 
 def process_unsubscribe(request, token, subscription_type, unsubscribe_function):
@@ -32,7 +32,7 @@ def do_missedmessage_unsubscribe(user_profile):
 
 def do_welcome_unsubscribe(user_profile):
     # type: (UserProfile) -> None
-    clear_followup_emails_queue(user_profile.id)
+    clear_followup_emails_queue(user_profile.id, ScheduledEmail.WELCOME)
 
 def do_digest_unsubscribe(user_profile):
     # type: (UserProfile) -> None

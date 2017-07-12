@@ -34,7 +34,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, \
-    Client, DefaultStream, UserPresence, PushDeviceToken, \
+    Client, DefaultStream, UserPresence, PushDeviceToken, ScheduledEmail, \
     MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -2287,7 +2287,7 @@ def do_change_notification_settings(user_profile, name, value, log=True):
 
     # Disabling digest emails should clear a user's email queue
     if name == 'enable_digest_emails' and not value:
-        clear_followup_emails_queue(user_profile.id)
+        clear_followup_emails_queue(user_profile.id, ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[name])
     event = {'type': 'update_global_notifications',
