@@ -388,14 +388,19 @@ class GetProfileTest(ZulipTestCase):
         self.assertIn("pointer", json)
 
     def test_cache_behavior(self):
+        """Tests whether fetching a user object the normal way, with
+        `get_user`, makes 1 cache query and 1 database query.
+        """
         # type: () -> None
+        realm = get_realm("zulip")
+        email = self.example_email("hamlet")
         with queries_captured() as queries:
             with simulated_empty_cache() as cache_queries:
-                user_profile = self.example_user('hamlet')
+                user_profile = get_user(email, realm)
 
         self.assert_length(queries, 1)
         self.assert_length(cache_queries, 1)
-        self.assertEqual(user_profile.email, self.example_email("hamlet"))
+        self.assertEqual(user_profile.email, email)
 
     def test_get_user_profile(self):
         # type: () -> None
