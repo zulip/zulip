@@ -237,7 +237,7 @@ class ZulipTestCase(TestCase):
     def mit_user(self, name):
         # type: (str) -> UserProfile
         email = self.mit_user_map[name]
-        return get_user_profile_by_email(email)
+        return get_user(email, get_realm('zephyr'))
 
     def nonreg_email(self, name):
         # type: (str) -> Text
