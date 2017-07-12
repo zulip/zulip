@@ -35,6 +35,10 @@ import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
 
+if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+    from two_factor.urls import urlpatterns as tf_urls
+    from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
+
 # NB: There are several other pieces of code which route requests by URL:
 #
 #   - legacy_urls.py contains API endpoint written before the redesign
@@ -577,6 +581,10 @@ urls += [url(r'^help/(?P<article>.*)$',
 urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
              MarkdownDirectoryView.as_view(template_name='zerver/api/main.html',
                                            path_template='/zerver/api/%s.md'))]
+
+# Two Factor urls
+if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+    urls += [url(r'', include(tf_urls + tf_twilio_urls, namespace='two_factor'))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls

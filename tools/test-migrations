@@ -2,7 +2,7 @@
 set -e
 echo 'Testing whether migrations are consistent with models'
 
-new_auto_named_migrations=$(./manage.py showmigrations | grep -v '0004_auto_20160423_0400\|0005_auto_20160727_2333\|0052_auto_fix_realmalias_realm_nullable\|0089_auto_20170710_1353' | grep "_auto_20" || true)
+new_auto_named_migrations=$(./manage.py showmigrations | grep -v '0004_auto_20160423_0400\|0005_auto_20160727_2333\|0052_auto_fix_realmalias_realm_nullable\|0089_auto_20170710_1353\|0002_auto_20150110_0810\|0003_auto_20150817_1733\|0004_auto_20160205_1827\|0005_auto_20160224_0450' | grep "_auto_20" || true)
 # We check if there is any new migration with the 'auto' keyword in its name and
 # cause a error to rename to a more meaningful name
 if [ "$new_auto_named_migrations" != "" ]; then

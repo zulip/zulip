@@ -69,3 +69,7 @@ PASSWORD_MIN_GUESSES = 0
 # environment to an email account.
 EMAIL_HOST = ""
 EMAIL_HOST_USER = ""
+
+# Two factor authentication: Use the fake backend for development.
+TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.fake.Fake'
+TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'

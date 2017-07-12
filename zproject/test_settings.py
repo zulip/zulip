@@ -153,3 +153,7 @@ GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
 
 SOCIAL_AUTH_GITHUB_KEY = "key"
 SOCIAL_AUTH_GITHUB_SECRET = "secret"
+
+# By default two factor authentication is disabled in tests.
+# Explicitly set this to True within tests that must have this on.
+TWO_FACTOR_AUTHENTICATION_ENABLED = False

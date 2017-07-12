@@ -192,6 +192,9 @@ DEFAULT_SETTINGS = {
     'RATE_LIMITING': True,
     'SEND_LOGIN_EMAILS': True,
     'EMBEDDED_BOTS_ENABLED': False,
+
+    # Two Factor Authentication is not yet implementation-complete
+    'TWO_FACTOR_AUTHENTICATION_ENABLED': False,
 }
 
 # These settings are not documented in prod_settings_template.py.
@@ -447,6 +450,15 @@ MIDDLEWARE = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
+# Make sure these come after authentication middleware.
+TWO_FACTOR_MIDDLEWARE = (
+    'django_otp.middleware.OTPMiddleware',  # Required by Two Factor auth.
+    'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
+)
+
+if TWO_FACTOR_AUTHENTICATION_ENABLED:
+    MIDDLEWARE += TWO_FACTOR_MIDDLEWARE
+
 ANONYMOUS_USER_ID = None
 
 AUTH_USER_MODEL = "zerver.UserProfile"
@@ -471,6 +483,10 @@ INSTALLED_APPS = [
     'webpack_loader',
     'zerver',
     'social_django',
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
