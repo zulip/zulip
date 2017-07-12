@@ -3,7 +3,6 @@
 {# Zulip User Documentation. #}
 
 {% block portico_content %}
-
 <div class="app help terms-page inline-block">
     <div class="sidebar">
         {{ "zerver/help/sidebar.md"|render_markdown_path }}
@@ -28,6 +27,5 @@
     </div>
 </div>
 
-<script src="/static/js/portico/help.js" charset="utf-8"></script>
-
+{{ render_bundle("help") }}
 {% endblock %}
