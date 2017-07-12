@@ -344,12 +344,12 @@ class ZulipTestCase(TestCase):
             'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
-    def get_streams(self, email):
-        # type: (Text) -> List[Text]
+    def get_streams(self, email, realm):
+        # type: (Text, Realm) -> List[Text]
         """
         Helper function to get the stream names for a user
         """
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         subs = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
