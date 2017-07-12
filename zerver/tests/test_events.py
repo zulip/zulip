@@ -272,8 +272,9 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        local_id = 10.01
-        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
+        client_message_id = 'opaque-id-1'
+        self.send_message(email, recipient_email, Recipient.PERSONAL,
+                          "hello", client_message_id=client_message_id, sender_queue_id=queue_id)
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -286,14 +287,14 @@ class GetEventsTest(ZulipTestCase):
         self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
-        self.assertEqual(events[0]["local_message_id"], local_id)
+        self.assertEqual(events[0]["client_message_id"], client_message_id)
         self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
 
         last_event_id = events[0]["id"]
-        local_id += 0.01
+        client_message_id = 'opaque-id-2'
 
-        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
+        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", client_message_id=client_message_id, sender_queue_id=queue_id)
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -306,7 +307,7 @@ class GetEventsTest(ZulipTestCase):
         self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
-        self.assertEqual(events[0]["local_message_id"], local_id)
+        self.assertEqual(events[0]["client_message_id"], client_message_id)
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
@@ -321,10 +322,10 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(len(recipient_events), 2)
         self.assertEqual(recipient_events[0]["type"], "message")
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
-        self.assertTrue("local_message_id" not in recipient_events[0])
+        self.assertTrue("client_message_id" not in recipient_events[0])
         self.assertEqual(recipient_events[1]["type"], "message")
         self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
-        self.assertTrue("local_message_id" not in recipient_events[1])
+        self.assertTrue("client_message_id" not in recipient_events[1])
 
     def test_get_events_narrow(self):
         # type: () -> None

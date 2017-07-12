@@ -302,6 +302,13 @@ exports.send_message_success = function (local_id, message_id, start_time, local
 };
 
 exports.transmit_message = function (request, success, error) {
+    // Give the server our local_id as client_message_id.  We
+    // will eventually decouple these concepts, so that local_id
+    // is only an interim value for a message id, whereas
+    // client_message_id will be a key used to track the message through
+    // its lifecycle of being posted/received/acked/sent/displayed.
+    request.client_message_id = request.local_id;
+
     delete exports.send_times_data[request.id];
     if (page_params.use_websockets) {
         send_message_socket(request, success, error);
