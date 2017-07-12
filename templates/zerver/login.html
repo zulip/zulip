@@ -69,9 +69,13 @@
                                 <form name="login_form" id="login_form" method="post" class="login-form"
                                   action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
 
+                                    {% if two_factor_authentication_enabled %}
+                                    {{ wizard.management_form }}
+                                    {% endif %}
                                     {{ csrf_input }}
 
                                     <!-- .no-validation is for removing the red star in CSS -->
+                                    {% if not two_factor_authentication_enabled or wizard.steps.current == 'auth' %}
                                     <div class="input-box no-validation">
                                         <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
                                           name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
@@ -92,6 +96,9 @@
                                         <input id="id_password" name="password" class="required" type="password" required />
                                         <label for="id_password" class="control-label">{{ _('Password') }}</label>
                                     </div>
+                                    {% else %}
+                                    {% include "two_factor/_wizard_forms.html" %}
+                                    {% endif %}
 
                                     {% if form.errors %}
                                     <div class="alert alert-error">

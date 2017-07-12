@@ -131,6 +131,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_guesses': settings.PASSWORD_MIN_GUESSES,
         'jitsi_server_url': settings.JITSI_SERVER_URL,
+        'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
         'zulip_version': ZULIP_VERSION,
         'user_is_authenticated': user_is_authenticated,
         'settings_path': settings_path,
