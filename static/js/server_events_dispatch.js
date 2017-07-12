@@ -75,6 +75,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_org.toggle_email_change_display();
         } else if (event.op === 'update' && event.property === 'add_emoji_by_admins_only') {
             page_params.realm_add_emoji_by_admins_only = event.value;
+            settings_emoji.update_custom_emoji_ui();
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
             page_params.realm_restricted_to_domain = event.value;
         } else if (event.op === 'update' && event.property === 'message_retention_days') {

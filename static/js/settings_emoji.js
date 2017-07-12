@@ -20,6 +20,18 @@ function can_admin_emoji(emoji) {
     return false;
 }
 
+exports.update_custom_emoji_ui = function () {
+    $('#emoji-settings').find('.tip').hide();
+    if (page_params.realm_add_emoji_by_admins_only && !page_params.is_admin) {
+        $('.admin-emoji-form').hide();
+        $('#emoji-settings').removeClass('can_edit');
+    } else {
+        $('.admin-emoji-form').show();
+        $('#emoji-settings').addClass('can_edit');
+    }
+    exports.populate_emoji(page_params.realm_emoji);
+};
+
 exports.reset = function () {
     meta.loaded = false;
 };
