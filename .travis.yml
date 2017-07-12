@@ -1,9 +1,10 @@
 # See https://zulip.readthedocs.io/en/latest/events-system.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
-before_install:
-  - sudo apt-get install moreutils # To use 'ts' and 'mispipe' for timing logs.
 install:
+  # Install moreutils so we can use `ts` and `mispipe` in the following.
+  - sudo ./tools/travis/install-moreutils
+
   # Disable Travis CI's built-in NVM installation
   - mispipe "mv ~/.nvm ~/.travis-nvm-disabled" ts
 
