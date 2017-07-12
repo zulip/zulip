@@ -870,6 +870,7 @@ JS_SPECS = {
             'js/markdown.js',
             'js/echo.js',
             'js/socket.js',
+            'js/sent_messages.js',
             'js/compose_state.js',
             'js/compose_actions.js',
             'js/compose.js',

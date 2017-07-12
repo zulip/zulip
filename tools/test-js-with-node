@@ -47,6 +47,7 @@ enforce_fully_covered = {
     'static/js/recent_senders.js',
     'static/js/rtl.js',
     'static/js/search_suggestion.js',
+    'static/js/sent_messages.js',
     'static/js/stream_events.js',
     'static/js/stream_sort.js',
     'static/js/topic_generator.js',
