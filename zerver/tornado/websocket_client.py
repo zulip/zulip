@@ -118,7 +118,7 @@ class WebsocketClient(object):
                 "queue_id": self.events_data['queue_id'],
                 "to": ujson.dumps([private_message_recepient]),
                 "reply_to": self.user_profile.email,
-                "local_id": -1
+                "client_message_id": -1,
             }
         }
         self.ws.write_message(ujson.dumps([ujson.dumps(user_message)]))
