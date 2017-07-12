@@ -1262,9 +1262,8 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         self.user_profile = self.example_user('hamlet')
         self.test_email = self.user_profile.email
-        self.test_realm = self.user_profile.realm
         self.login(self.test_email)
-        self.realm = self.user_profile.realm
+        self.test_realm = self.user_profile.realm
         self.streams = self.get_streams(self.test_email)
 
     def make_random_stream_names(self, existing_stream_names):
@@ -1275,7 +1274,7 @@ class SubscriptionAPITest(ZulipTestCase):
         but avoids names that appear in the list names_to_avoid.
         """
         random_streams = []
-        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.realm)]
+        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.test_realm)]
         for stream in existing_stream_names:
             random_stream = stream + str(random.randint(0, 9))
             if random_stream not in all_stream_names:
@@ -1298,7 +1297,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertIsInstance(stream['invite_only'], bool)
             # check that the stream name corresponds to an actual
             # stream; will throw Stream.DoesNotExist if it doesn't
-            get_stream(stream['name'], self.realm)
+            get_stream(stream['name'], self.test_realm)
         list_streams = [stream['name'] for stream in json["subscriptions"]]
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))
@@ -1406,9 +1405,9 @@ class SubscriptionAPITest(ZulipTestCase):
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names([current_stream])[:1]
 
-        notifications_stream = get_stream(current_stream, self.realm)
-        self.realm.notifications_stream = notifications_stream
-        self.realm.save()
+        notifications_stream = get_stream(current_stream, self.test_realm)
+        self.test_realm.notifications_stream = notifications_stream
+        self.test_realm.save()
 
         # Delete the UserProfile from the cache so the realm change will be
         # picked up
@@ -1478,9 +1477,9 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_full_name = 'Iago'
 
         current_stream = self.get_streams(invitee)[0]
-        notifications_stream = get_stream(current_stream, self.realm)
-        self.realm.notifications_stream = notifications_stream
-        self.realm.save()
+        notifications_stream = get_stream(current_stream, self.test_realm)
+        self.test_realm.notifications_stream = notifications_stream
+        self.test_realm.save()
 
         invite_streams = ['strange ) \\ test']
         result = self.common_subscribe_to_streams(
@@ -2022,7 +2021,7 @@ class SubscriptionAPITest(ZulipTestCase):
         Calling /json/subscriptions/exist on a stream to which you are not
         subbed should return that it exists and that you are not subbed.
         """
-        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.realm)]
+        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.test_realm)]
         streams_not_subbed = list(set(all_stream_names) - set(self.streams))
         self.assertNotEqual(len(streams_not_subbed), 0)  # necessary for full test coverage
         self.helper_subscriptions_exists(streams_not_subbed[0], True, False)
@@ -2084,7 +2083,7 @@ class SubscriptionAPITest(ZulipTestCase):
         stream_name = "Saxony"
         result = self.common_subscribe_to_streams(self.example_email("cordelia"), [stream_name],
                                                   invite_only=True)
-        stream = get_stream(stream_name, self.realm)
+        stream = get_stream(stream_name, self.test_realm)
 
         result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream_name, "autosubscribe": "true"})
@@ -2108,7 +2107,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def get_subscription(self, user_profile, stream_name):
         # type: (UserProfile, Text) -> Subscription
-        stream = get_stream(stream_name, self.realm)
+        stream = get_stream(stream_name, self.test_realm)
         return Subscription.objects.get(
             user_profile=user_profile,
             recipient__type=Recipient.STREAM,
