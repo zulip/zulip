@@ -395,8 +395,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
 def clear_followup_emails_queue(user_id):
     # type: (int) -> None
-    email = get_user_profile_by_id(user_id).email
-    items = ScheduledEmail.objects.filter(address__iexact=email)
+    items = ScheduledEmail.objects.filter(user_id=user_id)
     items.delete()
 
 def log_digest_event(msg):
