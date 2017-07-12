@@ -865,3 +865,42 @@ init();
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());
+
+(function test_queries_with_spaces() {
+    global.stream_data.subscribed_streams = function () {
+        return ['office', 'dev help'];
+    };
+
+    global.narrow_state.stream = function () {
+        return;
+    };
+
+    global.stream_data.populate_stream_topics_for_tests({});
+
+    // test allowing spaces with quotes surrounding operand
+    var query = 'stream:"dev he"';
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        "stream:dev+he",
+        "stream:dev+help",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // test mismatched quote
+    query = 'stream:"dev h';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "stream:dev+h",
+        "stream:dev+help",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // test extra space after operator still works
+    query = 'stream: offi';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "stream:offi",
+        "stream:office",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+}());
