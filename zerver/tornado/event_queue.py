@@ -762,9 +762,9 @@ def process_message_event(event_template, users):
             user_event.update(extra_data)
 
         if is_sender:
-            local_message_id = event_template.get('local_id', None)
+            local_message_id = event_template.get('client_message_id', None)
             if local_message_id is not None:
-                user_event["local_message_id"] = local_message_id
+                user_event["client_message_id"] = local_message_id
 
         if not client.accepts_event(user_event):
             continue

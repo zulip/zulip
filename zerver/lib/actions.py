@@ -752,7 +752,7 @@ def do_send_messages(messages_maybe_none):
     for message in messages:
         message['rendered_content'] = message.get('rendered_content', None)
         message['stream'] = message.get('stream', None)
-        message['local_id'] = message.get('local_id', None)
+        message['client_message_id'] = message.get('client_message_id', None)
         message['sender_queue_id'] = message.get('sender_queue_id', None)
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
@@ -898,8 +898,8 @@ def do_send_messages(messages_maybe_none):
                 event['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
                 event['invite_only'] = True
-        if message['local_id'] is not None:
-            event['local_id'] = message['local_id']
+        if message['client_message_id'] is not None:
+            event['client_message_id'] = message['client_message_id']
         if message['sender_queue_id'] is not None:
             event['sender_queue_id'] = message['sender_queue_id']
         send_event(event, users)
@@ -1181,12 +1181,12 @@ def extract_recipients(s):
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
-                       forged_timestamp=None, forwarder_user_profile=None, local_id=None,
+                       forged_timestamp=None, forwarder_user_profile=None, client_message_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
-                            forwarder_user_profile, local_id, sender_queue_id)
+                            forwarder_user_profile, client_message_id, sender_queue_id)
     return do_send_messages([message])[0]
 
 def check_stream_name(stream_name):
@@ -1251,7 +1251,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content_raw, realm=None, forged=False,
-                  forged_timestamp=None, forwarder_user_profile=None, local_id=None,
+                  forged_timestamp=None, forwarder_user_profile=None, client_message_id=None,
                   sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
     stream = None
@@ -1346,7 +1346,7 @@ def check_message(sender, client, message_type_name, message_to,
         if id is not None:
             return {'message': id}
 
-    return {'message': message, 'stream': stream, 'local_id': local_id,
+    return {'message': message, 'stream': stream, 'client_message_id': client_message_id,
             'sender_queue_id': sender_queue_id, 'realm': realm}
 
 def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients,
