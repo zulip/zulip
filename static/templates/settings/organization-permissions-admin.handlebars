@@ -1,6 +1,6 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
-        <h3 class="light">{{t "Joining the Organization" }}</h3>
+        <h3 class="light">{{t "Joining the organization" }}</h3>
 
         <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
         <div class="alert" id="admin-realm-invite-required-status"></div>
@@ -38,7 +38,7 @@
                 </label>
                 <label for="id_realm_invite_required" id="realm_invite_required_label" class="inline-block"
                     title="{{t 'If checked, users must be invited in order to join your organization.' }}">
-                    {{t "E-mail invitation required" }}
+                    {{t "Users cannot join without an invitation" }}
                 </label>
             </div>
 
@@ -51,12 +51,12 @@
                 </label>
                 <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block"
                     title="{{t 'If checked, only administrators may invite new users.' }}">
-                    {{t "Only admins may invite" }}
+                    {{t "Only admins can invite new users" }}
                 </label>
             </div>
         </div>
 
-        <h3 class="light">{{t "User Identity" }}</h3>
+        <h3 class="light">{{t "User identity" }}</h3>
         <div class="side-padded-container m-10 inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
@@ -83,7 +83,7 @@
             </div>
         </div>
 
-        <h3 class="light">{{t "Streams & Custom Emoji" }}</h3>
+        <h3 class="light">{{t "Streams & custom emoji" }}</h3>
         <div class="side-padded-container m-10 inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
@@ -93,7 +93,7 @@
                 </label>
                 <label for="id_realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" class="inline-block"
                     title="{{t 'If checked, only administrators may create new streams.' }}">
-                    {{t "Only admins may create streams" }}
+                    {{t "Prevent users from creating streams" }}
                 </label>
             </div>
 
@@ -105,12 +105,12 @@
                 </label>
                 <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block"
                     title="{{t 'If checked, only administrators may add new emoji.'}}">
-                    {{t "Only admins may add emoji" }}
+                    {{t "Prevent users from adding custom emoji" }}
                 </label>
             </div>
         </div>
 
-        <h3 class="light">{{t "Message Editing" }}</h3>
+        <h3 class="light">{{t "Message editing" }}</h3>
         <div class="side-padded-container m-10 inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
@@ -120,7 +120,7 @@
                 </label>
                 <label for="id_realm_allow_message_editing" class="inline-block"
                     title="{{t 'If checked, users can edit the content and topics of their old messages.' }}">
-                    {{t "Allow users to edit old messages" }}
+                    {{t "Users can edit their messages" }}
                 </label>
             </div>
 
@@ -145,12 +145,12 @@
                 </label>
                 <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block"
                     title="{{t 'If checked, users will be able view message edit history.'}}">
-                    {{t "Users can view message edit history" }}
+                    {{t "Enable message edit history" }}
                 </label>
             </div>
         </div>
 
-        <h3 class="light">{{t "Message Feed" }}</h3>
+        <h3 class="light">{{t "Message feed" }}</h3>
         <div class="side-padded-container m-10 inline-block organization-permissions-parent">
             {{#if false}}
             <div class="input-group">

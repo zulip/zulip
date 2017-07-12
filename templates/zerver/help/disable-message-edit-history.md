@@ -17,6 +17,6 @@ organization using the following steps:
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-2. Disable the the **Users can view edit message history** checkbox.
+2. Disable the the **Enable message edit history** checkbox.
 
 {!save-changes.md!} organization settings.
