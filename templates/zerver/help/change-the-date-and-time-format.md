@@ -7,5 +7,5 @@ a 24-hour format, you can do so easily using the following procedure:
 {!go-to-the.md!} [Display settings](/#settings/display-settings)
 {!settings.md!}
 
-2. Select the option labeled **Display time in 24-hour format (17:00
+2. Select the option labeled **24-hour time (17:00
    instead of 5:00 PM)**.

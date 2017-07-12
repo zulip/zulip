@@ -407,8 +407,8 @@ Do these tasks as Cordelia.
 - Display settings
     - Right now, these unfortunately require reloads to take effect.
     - Default language (change to Spanish)
-    - Display user list in narrow windows (verify by making window thinner)
-    - Display time in 24-hour format (and then test going back to AM/PM)
+    - User list on left sidebar in narrow windows (verify by making window thinner)
+    - 24-hour time (and then test going back to AM/PM)
 - Notifications
     - Stream Message
         - turn off notifications at user level
