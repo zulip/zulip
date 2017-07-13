@@ -328,6 +328,13 @@ exports.send_message = function send_message(request) {
     if (local_id !== undefined) {
         // We delivered this message locally
         request.local_id = local_id;
+
+        // Give the server our local_id as client_message_id.  We
+        // will eventually decouple these concepts, so that local_id
+        // is only an interim value for a message id, whereas
+        // client_message_id will be a key used to track the message through
+        // its lifecycle of being posted/received/acked/sent/displayed.
+        request.client_message_id = local_id;
     }
 
     var locally_echoed = local_id !== undefined;
