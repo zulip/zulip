@@ -121,6 +121,7 @@ exports.set_up = function () {
 
     var create_avatar_widget = avatar.build_bot_create_widget();
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
+    var SLASH_COMMAND_BOT_TYPE = '5';
     var GENERIC_BOT_TYPE = '1';
 
     $('#create_bot_form').validate({
@@ -177,7 +178,7 @@ exports.set_up = function () {
     });
 
     $("#create_bot_type").on("change", function () {
-        var bot_type = $('#create_bot_type :selected').val();
+        var bot_type = $('#create_bot_type').val();
         // If the selected bot_type is Outgoing webhook
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             $('#payload_url_inputbox').show();
@@ -185,6 +186,14 @@ exports.set_up = function () {
         } else {
             $('#payload_url_inputbox').hide();
             $('#create_payload_url').removeClass('required');
+        }
+
+        if (bot_type === SLASH_COMMAND_BOT_TYPE) {
+            $("#bot_short_name_label").text(i18n.t("Slash command name"));
+            $("#bot_short_name_suffix").text("-command");
+        } else {
+            $("#bot_short_name_label").text(i18n.t("Username"));
+            $("#bot_short_name_suffix").text("-bot");
         }
     });
 

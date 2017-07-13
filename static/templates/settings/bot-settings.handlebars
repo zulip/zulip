@@ -38,6 +38,7 @@
                             <option value="1">{{t "Generic bot" }}</option>
                             <option value="2">{{t "Incoming webhook" }}</option>
                             <option value="3">{{t "Outgoing webhook" }}</option>
+                            <option value="5">{{t "Slash command" }}</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -47,10 +48,10 @@
                         <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
                     </div>
                     <div class="input-group">
-                        <label for="bot_short_name">{{t "Username" }}</label>
+                        <label for="bot_short_name" id="bot_short_name_label">{{t "Username" }}</label>
                         <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
                                placeholder="cookie" value="" />
-                        -bot@{{ page_params.realm_bot_domain }}
+                        <span id="bot_short_name_suffix">-bot</span>@{{ page_params.realm_bot_domain }}
                         <div>
                             <label for="create_bot_short_name" generated="true" class="text-error"></label>
                         </div>
