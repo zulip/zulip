@@ -15,7 +15,9 @@ from django.http import HttpResponse
 from django.db.migrations.executor import MigrationExecutor
 from django.db import connection
 from django.db.utils import IntegrityError
+from django.http import HttpRequest
 
+from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
 from zerver.lib.utils import is_remote_server
 from zerver.views.users import add_service
@@ -51,6 +53,7 @@ from zerver.models import (
 )
 
 from zilencer.models import get_remote_server_by_uuid
+from zerver.decorator import do_two_factor_login
 
 
 import base64
@@ -288,6 +291,20 @@ class ZulipTestCase(TestCase):
         else:
             self.assertFalse(self.client.login(username=email, password=password,
                                                realm=realm))
+
+    def login_2fa(self, user_profile: UserProfile) -> None:
+        """
+        We need this function to call request.session.save().
+        do_two_factor_login doesn't save session; in normal request-response
+        cycle this doesn't matter because middleware will save the session
+        when it finds it dirty; however,in tests we will have to do that
+        explicitly.
+        """
+        request = HttpRequest()
+        request.session = self.client.session
+        request.user = user_profile
+        do_two_factor_login(request, user_profile)
+        request.session.save()
 
     def logout(self) -> None:
         self.client.logout()
@@ -627,6 +644,13 @@ class ZulipTestCase(TestCase):
                 mock.patch('zerver.lib.bugdown.timeout', side_effect=KeyError('foo')), \
                 mock.patch('zerver.lib.bugdown.log_bugdown_error'):
             yield
+
+    def create_default_device(self, user_profile: UserProfile,
+                              number: str="+12223334444") -> None:
+        phone_device = PhoneDevice(user=user_profile, name='default',
+                                   confirmed=True, number=number,
+                                   key='abcd', method='sms')
+        phone_device.save()
 
 class WebhookTestCase(ZulipTestCase):
     """
