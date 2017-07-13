@@ -344,12 +344,12 @@ class ZulipTestCase(TestCase):
             'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
-    def get_streams(self, email):
-        # type: (Text) -> List[Text]
+    def get_streams(self, email, realm):
+        # type: (Text, Realm) -> List[Text]
         """
         Helper function to get the stream names for a user
         """
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
         subs = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
@@ -496,10 +496,10 @@ class ZulipTestCase(TestCase):
         bulk_add_subscriptions([stream], [user_profile], from_creation=from_creation)
         return stream
 
-    def unsubscribe_from_stream(self, email, stream_name):
-        # type: (Text, Text) -> None
-        user_profile = get_user_profile_by_email(email)
-        stream = get_stream(stream_name, user_profile.realm)
+    def unsubscribe_from_stream(self, email, stream_name, realm):
+        # type: (Text, Text, Realm) -> None
+        user_profile = get_user(email, realm)
+        stream = get_stream(stream_name, realm)
         bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
