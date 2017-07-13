@@ -41,17 +41,34 @@ function report_send_time(send_time, receive_time, display_time, locally_echoed,
     });
 }
 
-exports.message_state = function () {
+exports.track_message = function (opts) {
+    var client_message_id = opts.client_message_id;
+
+    if (exports.send_times_data[client_message_id] !== undefined) {
+        blueslip.error('We are re-using a client_message_id');
+        return;
+    }
+
+    var state = exports.message_state(opts);
+
+    exports.send_times_data[client_message_id] = state;
+
+    return state;
+};
+
+exports.message_state = function (opts) {
     var self = {};
     self.data = {};
 
-    // TODO: Fix quirk that we don't know the start time sometime
-    //       when we start recording message state.
-    self.data.start = undefined;
+    self.data.start = new Date();
+
+    self.data.client_message_id = opts.client_message_id;
+    self.data.locally_echoed = opts.locally_echoed;
+
+
     self.data.received = undefined;
     self.data.displayed = undefined;
     self.data.send_finished = undefined;
-    self.data.locally_echoed = false;
     self.data.rendered_content_disparity = false;
 
     self.maybe_report_send_times = function () {
@@ -80,10 +97,18 @@ exports.message_state = function () {
         self.data.rendered_content_disparity = changed;
     };
 
-    self.process_success = function (opts) {
-        self.data.start = opts.start;
-        self.data.send_finished = opts.send_finished;
-        self.data.locally_echoed = opts.locally_echoed;
+    self.process_success = function () {
+        var send_finished = new Date();
+
+        var send_time = (send_finished - self.data.start);
+        if (feature_flags.log_send_times) {
+            blueslip.log("send time: " + send_time);
+        }
+        if (feature_flags.collect_send_times) {
+            exports.send_times_log.push(send_time);
+        }
+
+        self.data.send_finished = send_finished;
         self.maybe_report_send_times();
     };
 
@@ -101,26 +126,37 @@ exports.message_state = function () {
 };
 
 exports.get_message_state = function (client_message_id) {
-    if (exports.send_times_data[client_message_id] === undefined) {
-        exports.send_times_data[client_message_id] = exports.message_state();
+    var state = exports.send_times_data[client_message_id];
+
+    if (!state) {
+        blueslip.warn('Unknown client_message_id' + client_message_id);
     }
 
-    return exports.send_times_data[client_message_id];
+    return state;
 };
 
 
 function mark_end_to_end_receive_time(client_message_id) {
     var state = exports.get_message_state(client_message_id);
+    if (!state) {
+        return;
+    }
     state.mark_received();
 }
 
 function mark_end_to_end_display_time(client_message_id) {
     var state = exports.get_message_state(client_message_id);
+    if (!state) {
+        return;
+    }
     state.mark_displayed();
 }
 
 exports.mark_rendered_content_disparity = function (opts) {
     var state = exports.get_message_state(opts.client_message_id);
+    if (!state) {
+        return;
+    }
     state.mark_disparity(opts.changed);
 };
 
@@ -133,24 +169,6 @@ exports.report_as_received = function report_as_received(client_message_id) {
     }
 };
 
-exports.process_success = function (opts) {
-    var send_finished = new Date();
-    var send_time = (send_finished - opts.start);
-    if (feature_flags.log_send_times) {
-        blueslip.log("send time: " + send_time);
-    }
-    if (feature_flags.collect_send_times) {
-        exports.send_times_log.push(send_time);
-    }
-
-    var state = exports.get_message_state(opts.client_message_id);
-    state.process_success({
-        start: opts.start,
-        send_finished: send_finished,
-        locally_echoed: opts.locally_echoed,
-    });
-};
-
 exports.set_timer_for_restarting_event_loop = function (client_message_id) {
     setTimeout(function () {
         if (!exports.send_times_data[client_message_id].was_received()) {
@@ -158,10 +176,6 @@ exports.set_timer_for_restarting_event_loop = function (client_message_id) {
             server_events.restart_get_events();
         }
     }, 5000);
-};
-
-exports.clear = function (client_message_id) {
-    delete exports.send_times_data[client_message_id];
 };
 
 exports.initialize = function () {
