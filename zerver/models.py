@@ -21,7 +21,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    bot_dict_fields, flush_message, bot_profile_cache_key
+    bot_dict_fields, flush_message, bot_profile_cache_key, slash_commands_by_realm_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -1847,6 +1847,7 @@ def get_service_profile(email, realm, service_name):
     # type: (str, Realm, str) -> Service
     return Service.objects.get(user_profile__email=email, user_profile__realm=realm, name=service_name)
 
+@cache_with_key(slash_commands_by_realm_key, timeout=3600 * 24)
 def get_slash_commands_by_realm(realm, is_active=None):
     # type: (Realm, Optional[bool]) -> List[Any]
     if is_active is None:
