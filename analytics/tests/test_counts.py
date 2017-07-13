@@ -18,8 +18,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, update_user_activity_interval
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    Huddle, Client, UserActivityInterval, RealmAuditLog, \
-    get_user_profile_by_email, get_client
+    Huddle, Client, UserActivityInterval, RealmAuditLog, get_client
 
 from datetime import datetime, timedelta
 import ujson
