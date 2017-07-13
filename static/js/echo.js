@@ -13,14 +13,16 @@ function resend_message(message, row) {
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
     message.queue_id = page_params.queue_id;
-    var start_time = new Date();
     compose.transmit_message(message, function success(data) {
         retry_spinner.toggleClass('rotating', false);
 
         var message_id = data.id;
 
         retry_spinner.toggleClass('rotating', false);
-        compose.send_message_success(message.local_id, message_id, start_time, true);
+
+        var locally_echoed = true;
+
+        compose.send_message_success(message.local_id, message_id, locally_echoed);
 
         // Resend succeeded, so mark as no longer failed
         message_store.get(message_id).failed_request = false;
