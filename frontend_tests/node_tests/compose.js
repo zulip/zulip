@@ -284,16 +284,7 @@ people.add(bob);
     assert(reify_message_id_checked);
 }());
 
-(function test_mark_rendered_content_disparity() {
-    sent_messages.mark_rendered_content_disparity(13, true);
-    assert.deepEqual(sent_messages.send_times_data[13].data.rendered_content_disparity, true);
-}());
-
 (function test_report_as_received() {
-    var msg = {
-        id: 12,
-        sent_by_me: true,
-    };
     var set_timeout_called = false;
     global.patch_builtin('setTimeout', function (func, delay) {
         assert.equal(delay, 0);
@@ -310,14 +301,13 @@ people.add(bob);
         assert(payload.data.locally_echoed);
         assert(!payload.data.rendered_content_disparity);
     };
-    sent_messages.report_as_received(msg);
+    sent_messages.report_as_received(12);
     assert.equal(typeof(data.received), 'object');
     assert.equal(typeof(data.displayed), 'object');
     assert(set_timeout_called);
 
     delete sent_messages.send_times_data[13];
-    msg.id = 13;
-    sent_messages.report_as_received(msg);
+    sent_messages.report_as_received(13);
     data = sent_messages.get_message_state(13).data;
     assert.equal(typeof(data.received), 'object');
     assert.equal(typeof(data.displayed), 'object');
@@ -1242,27 +1232,6 @@ function test_with_mock_socket(test_params) {
         assert(!$("#undo_markdown_preview").visible());
         assert(!$("#preview_message_area").visible());
         assert($("#markdown_preview").visible());
-    }());
-
-    (function test_message_id_changed_document() {
-        sent_messages.initialize();
-        var handler = $(document).get_on_handler('message_id_changed');
-        sent_messages.send_times_data = {
-            1031: {
-                data: 'Test data!',
-            },
-        };
-        event.old_id = 1031;
-        event.new_id = 1045;
-
-        handler(event);
-
-        var send_times_data = {
-            1045: {
-                data: 'Test data!',
-            },
-        };
-        assert.deepEqual(sent_messages.send_times_data, send_times_data);
     }());
 }());
 

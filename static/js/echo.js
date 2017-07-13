@@ -173,11 +173,14 @@ exports.process_from_server = function process_from_server(messages) {
             if (client_message.content !== message.content) {
                 client_message.content = message.content;
                 updated = true;
-                sent_messages.mark_rendered_content_disparity(message.id, true);
+                sent_messages.mark_rendered_content_disparity({
+                    client_message_id: message.client_message_id,
+                    changed: true,
+                });
             }
             msgs_to_rerender.push(client_message);
             locally_processed_ids.push(client_message.id);
-            sent_messages.report_as_received(client_message);
+            sent_messages.report_as_received(message.client_message_id);
             delete waiting_for_ack[client_message.id];
             return false;
         }

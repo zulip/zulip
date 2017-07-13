@@ -23,7 +23,7 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
     if (msg_list === home_msg_list && opts.messages_are_new) {
         _.each(messages, function (message) {
             if (message.local_id === undefined) {
-                sent_messages.report_as_received(message);
+                sent_messages.report_as_received(message.client_message_id);
             }
         });
     }
