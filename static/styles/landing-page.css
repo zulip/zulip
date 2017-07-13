@@ -910,6 +910,12 @@ a:not(.no-style):hover:before {
     text-align: center;
 }
 
+.portico-landing.hello .features .col-3 img {
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
 .portico-landing.hello .features .col-3 .il-block {
     display: inline-block;
     width: 75%;
