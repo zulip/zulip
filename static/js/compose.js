@@ -216,11 +216,15 @@ exports.send_message_success = function (local_id, message_id, locally_echoed) {
 };
 
 exports.transmit_message = function (request, on_success, error) {
-    request.client_message_id = sent_messages.get_new_client_message_id({
+    var client_message_id = sent_messages.get_new_client_message_id({
         local_id: request.local_id,
     });
 
-    sent_messages.clear(request.id);
+    // The host will attach this to message events, and it will allow
+    // us to match up the right messages to this request.
+    request.client_message_id = client_message_id;
+
+    sent_messages.clear(client_message_id);
 
     var local_id = request.local_id;
     var start_time = new Date();
@@ -231,11 +235,13 @@ exports.transmit_message = function (request, on_success, error) {
         // box and turning off spinners and reifying locally echoed messages.
         on_success(data);
 
-        var message_id = data.id;
-
         // Once everything is reified, get ready to report times to the server.
-        sent_messages.process_success(message_id, start_time, locally_echoed);
-        sent_messages.set_timer_for_restarting_event_loop(message_id);
+        sent_messages.process_success({
+            client_message_id: client_message_id,
+            start: start_time,
+            locally_echoed: locally_echoed,
+        });
+        sent_messages.set_timer_for_restarting_event_loop(client_message_id);
     }
 
     if (page_params.use_websockets) {

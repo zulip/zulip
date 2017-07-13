@@ -74,6 +74,7 @@ function get_events_success(events) {
             msg.local_id = sent_messages.get_local_id({
                 client_message_id: event.client_message_id,
             });
+            msg.client_message_id = event.client_message_id;
 
             messages.push(msg);
             break;
