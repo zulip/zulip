@@ -75,6 +75,71 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.app.help {
+    position: fixed;
+    width: 100vw;
+    height: calc(100vh - 64px);
+    left: 0px;
+
+    box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
+    overflow: auto;
+}
+
+.help .sidebar {
+    width: 300px;
+
+    position: fixed;
+    z-index: 1;
+    /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
+    height: calc(100vh - 64px - 10px - 10px);
+    padding: 10px 20px 10px 20px;
+
+    background-color: #278676;
+    color: #dae0df;
+
+    overflow: auto;
+}
+
+.help .sidebar h2 {
+    font-size: 1.2em;
+    font-weight: 400;
+    margin-bottom: 0px;
+
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.help .sidebar h3 {
+    font-size: 1em;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #badcd6;
+
+    line-height: 1;
+    margin: 10px 0 5px 10px;
+}
+
+.help .sidebar ul {
+    margin-left: 25px;
+}
+
+.help .sidebar li {
+    list-style-type: circle;
+    font-size: 0.95;
+    font-weight: 500;
+    line-height: 1.7;
+
+    cursor: pointer;
+}
+
+.help .sidebar li a {
+    color: inherit;
+}
+
+.app.help .hamburger {
+    display: none;
+}
+
 .markdown h1[id]:before,
 .markdown h2[id]:before,
 .markdown h3[id]:before,
@@ -388,6 +453,22 @@ input.text-error {
     text-decoration: none;
     position: relative;
     line-height: 0.8;
+}
+
+
+.header-main .logo .light {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 8px;
+
+    font-size: 1.2em;
+    font-weight: 300;
+    color: #aaa;
+}
+
+.header-main .logo pipe {
+    position: relative;
+    top: -1px;
 }
 
 .header-main .logo .brand-logo {
@@ -940,7 +1021,6 @@ input.new-organization-button {
 .app-main,
 .header-main,
 .footer-main {
-    max-width: 1200px;
     min-width: 350px;
     margin: 0px auto;
     padding: 0px 20px 0px 20px;
@@ -1144,20 +1224,29 @@ input.new-organization-button {
 }
 
 /* -- markdown styling -- */
-
 .markdown {
-    max-width: 800px;
-    margin: 20px auto 0px auto;
-    padding: 20px;
+    position: absolute;
+    right: 0px;
+    /* 100vw - sidebar width - paddingTop - paddingBottom */
+    width: calc(100vw - 340px - 30px - 30px);
+    padding: 20px 30px 100px 30px;
+
+    min-height: calc(100vh - 64px - 100px - 20px);
 
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0, 0%, 40%);
+    background: #fff;
+
+    overflow: auto;
 
     -webkit-font-smoothing: antialiased;
-    outline: 10000px solid hsla(0, 0%, 94%, 0.5);
-    box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.2);
+}
+
+.markdown .content {
+    max-width: 1000px;
+    margin-left: 0px;
 }
 
 .markdown a {
@@ -1282,6 +1371,159 @@ input.new-organization-button {
     margin: 5px 0px;
 }
 
+.markdown .footer {
+    height: auto;
+    width: calc(100% - 40px);
+}
+
+/* -- scrollbars -- */
+.ps {
+    -ms-touch-action: auto;
+    touch-action: auto;
+    overflow: hidden !important;
+    -ms-overflow-style: none;
+}
+
+@media screen and (-ms-high-contrast: active),
+(-ms-high-contrast: none) {
+    .ps {
+        overflow: auto !important;
+    }
+}
+.ps.ps--active-x > .ps__scrollbar-x-rail,
+.ps.ps--active-y > .ps__scrollbar-y-rail {
+    display: block;
+    background-color: transparent;
+}
+.ps.ps--in-scrolling.ps--x > .ps__scrollbar-x-rail {
+    background-color: #eee;
+    opacity: 0.9;
+}
+.ps.ps--in-scrolling.ps--x > .ps__scrollbar-x-rail > .ps__scrollbar-x {
+    background-color: #999;
+    height: 11px;
+}
+.ps.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail {
+    background-color: #eee;
+    opacity: 0.9;
+}
+.ps.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail > .ps__scrollbar-y {
+    background-color: #999;
+    width: 11px;
+}
+.ps > .ps__scrollbar-x-rail {
+    display: none;
+    position: absolute;
+    /* please don't change 'position' */
+
+    opacity: 0;
+    -webkit-transition: background-color .2s linear, opacity .2s linear;
+    -moz-transition: background-color .2s linear, opacity .2s linear;
+    -o-transition: background-color .2s linear, opacity .2s linear;
+    transition: background-color .2s linear, opacity .2s linear;
+    bottom: 0px;
+    /* there must be 'bottom' for ps__scrollbar-x-rail */
+
+    height: 15px;
+}
+.ps > .ps__scrollbar-x-rail > .ps__scrollbar-x {
+    position: absolute;
+    /* please don't change 'position' */
+
+    background-color: #aaa;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, -webkit-border-radius .2s ease-in-out;
+    transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, -webkit-border-radius .2s ease-in-out;
+    -moz-transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out, -moz-border-radius .2s ease-in-out;
+    -o-transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out;
+    transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out;
+    transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out, -webkit-border-radius .2s ease-in-out, -moz-border-radius .2s ease-in-out;
+    bottom: 2px;
+    /* there must be 'bottom' for ps__scrollbar-x */
+
+    height: 6px;
+}
+.ps > .ps__scrollbar-x-rail:hover > .ps__scrollbar-x,
+.ps > .ps__scrollbar-x-rail:active > .ps__scrollbar-x {
+    height: 11px;
+}
+.ps > .ps__scrollbar-y-rail {
+    display: none;
+    position: absolute;
+    /* please don't change 'position' */
+
+    opacity: 0;
+    -webkit-transition: background-color .2s linear, opacity .2s linear;
+    -moz-transition: background-color .2s linear, opacity .2s linear;
+    -o-transition: background-color .2s linear, opacity .2s linear;
+    transition: background-color .2s linear, opacity .2s linear;
+    right: 0;
+    /* there must be 'right' for ps__scrollbar-y-rail */
+
+    width: 15px;
+}
+.ps > .ps__scrollbar-y-rail > .ps__scrollbar-y {
+    position: absolute;
+    /* please don't change 'position' */
+
+    background-color: #fff;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, -webkit-border-radius .2s ease-in-out;
+    transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, -webkit-border-radius .2s ease-in-out;
+    -moz-transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out, -moz-border-radius .2s ease-in-out;
+    -o-transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out;
+    transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out;
+    transition: background-color .2s linear, height .2s linear, width .2s ease-in-out, border-radius .2s ease-in-out, -webkit-border-radius .2s ease-in-out, -moz-border-radius .2s ease-in-out;
+    right: 2px;
+    /* there must be 'right' for ps__scrollbar-y */
+
+    width: 6px;
+}
+.ps > .ps__scrollbar-y-rail:hover > .ps__scrollbar-y,
+.ps > .ps__scrollbar-y-rail:active > .ps__scrollbar-y {
+    width: 11px;
+}
+.ps:hover.ps--in-scrolling.ps--x > .ps__scrollbar-x-rail {
+    background-color: #eee;
+    opacity: 0.9;
+}
+.ps:hover.ps--in-scrolling.ps--x > .ps__scrollbar-x-rail > .ps__scrollbar-x {
+    background-color: #999;
+    height: 11px;
+}
+.ps:hover.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail {
+    background-color: #eee;
+    opacity: 0.9;
+}
+.ps:hover.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail > .ps__scrollbar-y {
+    background-color: #999;
+    width: 11px;
+}
+.ps:hover > .ps__scrollbar-x-rail,
+.ps:hover > .ps__scrollbar-y-rail {
+    opacity: 0.6;
+}
+.ps:hover > .ps__scrollbar-x-rail:hover {
+    background-color: #eee;
+    opacity: 0.9;
+}
+.ps:hover > .ps__scrollbar-x-rail:hover > .ps__scrollbar-x {
+    background-color: #999;
+}
+.ps:hover > .ps__scrollbar-y-rail:hover {
+    background-color: #eee;
+    opacity: 0.9;
+}
+.ps:hover > .ps__scrollbar-y-rail:hover > .ps__scrollbar-y {
+    background-color: #999;
+}
+
+/* -- media queries -- */
+
 @media (max-height: 678px) {
     .portico-page {
         /* the footer becomes two lines */
@@ -1330,6 +1572,34 @@ input.new-organization-button {
 }
 
 @media (max-width: 1000px) {
+    .app.help .markdown {
+        padding-top: 40px;
+        width: calc(100vw - 40px);
+        height: calc(100vh - 64px - 10px - 10px - 55px - 40px);
+        left: 0;
+    }
+
+    .app.help .hamburger {
+        display: block;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        fill: hsl(0, 0%, 40%);
+        z-index: 1;
+
+        cursor: pointer;
+    }
+
+    .app.help .sidebar {
+        right: 100vw;
+        transform: translateX(0);
+        transition: all 0.3s ease;
+    }
+
+    .app.help .sidebar.show {
+        transform: translateX(340px);
+    }
+
     .feature-line .platform-text {
         display: block;
         width: 100%;
@@ -1366,6 +1636,10 @@ input.new-organization-button {
         box-sizing: border-box !important;
         margin-top: 10px !important;
         margin-bottom: 10px !important;
+    }
+
+    .footer {
+        height: auto;
     }
 
     .postal-envelope {
@@ -1406,6 +1680,26 @@ input.new-organization-button {
         display: block;
     }
 
+    .app.help {
+        position: absolute;
+    }
+
+    .app.help .sidebar {
+        width: calc(100% - 40px);
+    }
+
+    .app.help .sidebar.show {
+        transform: translateX(100%);
+    }
+
+    .app.help .markdown {
+        position: absolute;
+        top: 0;
+        padding-left: 20px;
+        padding-right: 20px;
+        width: calc(100vw - 40px);
+    }
+
     .app-main,
     .header-main,
     .footer-main {
@@ -1430,10 +1724,6 @@ input.new-organization-button {
 
     .footer-navigation {
         font-size: 12px;
-    }
-
-    .app-main .markdown {
-        max-width: 85%;
     }
 
     .markdown a {
