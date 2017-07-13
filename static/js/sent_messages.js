@@ -71,6 +71,19 @@ exports.message_state = function (opts) {
     self.data.send_finished = undefined;
     self.data.rendered_content_disparity = false;
 
+    self.maybe_restart_event_loop = function () {
+        if (self.data.received) {
+            // We got our event, no need to do anything
+            return;
+        }
+
+        blueslip.log("Restarting get_events due to " +
+                     "delayed receipt of sent message " +
+                     self.data.client_message_id);
+
+        server_events.restart_get_events();
+    };
+
     self.maybe_report_send_times = function () {
         if (!self.ready()) {
             return;
@@ -99,6 +112,15 @@ exports.message_state = function (opts) {
 
     self.process_success = function () {
         var send_finished = new Date();
+
+        // We only start our timer for events coming in here,
+        // since it's plausible the server rejected our message,
+        // or took a while to process it, but there is nothing
+        // wrong with our event loop.
+
+        if (!self.data.received) {
+            setTimeout(self.maybe_restart_event_loop, 5000);
+        }
 
         var send_time = (send_finished - self.data.start);
         if (feature_flags.log_send_times) {
@@ -167,15 +189,6 @@ exports.report_as_received = function report_as_received(client_message_id) {
             mark_end_to_end_display_time(client_message_id);
         }, 0);
     }
-};
-
-exports.set_timer_for_restarting_event_loop = function (client_message_id) {
-    setTimeout(function () {
-        if (!exports.send_times_data[client_message_id].was_received()) {
-            blueslip.log("Restarting get_events due to delayed receipt of sent message " + client_message_id);
-            server_events.restart_get_events();
-        }
-    }, 5000);
 };
 
 exports.initialize = function () {
