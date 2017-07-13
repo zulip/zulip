@@ -4,6 +4,7 @@ set_global('window', {});
 add_dependencies({
     localstorage: 'js/localstorage',
     drafts: 'js/drafts',
+    Filter: 'js/filter.js',
 });
 
 var ls_container = {};
@@ -155,3 +156,76 @@ var draft_2 = {
     assert(drafts.drafts_overlay_open());
 }());
 
+(function test_draft_matching_narrow() {
+    global.stream_data = {
+            get_name: function (a) {
+                return a;
+            },
+    };
+    var stream_draft_1 = {
+        stream: "stream",
+        subject: "topic",
+        type: "stream",
+        content: "This is a msg",
+    };
+    var stream_draft_2 = {
+        stream: "other_stream",
+        subject: "topic",
+        type: "stream",
+        content: "This is an old msg",
+    };
+    var pm_draft_1 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Hi, I'm Aaron",
+    };
+    var pm_draft_2 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Hi, I think I'm aaron",
+    };
+    var draft_model = drafts.draft_model;
+    draft_model.addDraft(pm_draft_2);
+    draft_model.addDraft(stream_draft_2);
+    draft_model.addDraft(stream_draft_1);
+    draft_model.addDraft(pm_draft_1);
+
+    // Make sure we took the most recent matching message
+    var draft = drafts.draft_matching_narrow([{operator: 'pm-with', operand: 'aaron@zulip.com'}]);
+    assert.equal(draft_model.getDraft(draft).content, "Hi, I'm Aaron");
+
+    // Now test streams
+    draft = drafts.draft_matching_narrow([
+        {operator: 'stream', operand: 'stream'},
+        {operator: 'topic', operand: 'topic'},
+    ]);
+    assert.equal(draft_model.getDraft(draft).content, "This is a msg");
+
+    // Make sure we don't bother restoring old drafts
+    draft = drafts.draft_matching_narrow([
+        {operator: 'stream', operand: 'other_stream'},
+        {operator: 'topic', operand: 'topic'},
+    ]);
+    assert.equal(draft_model.getDraft(draft), false);
+
+    // Don't restore with extra operators
+    draft = drafts.draft_matching_narrow([
+        {operator: 'stream', operand: 'stream'},
+        {operator: 'topic', operand: 'topic'},
+        {operator: 'is', operand: 'starred'},
+    ]);
+    assert.equal(draft_model.getDraft(draft), false);
+
+    draft = drafts.draft_matching_narrow([
+        {operator: 'pm-with', operand: 'aaron@zulip.com'},
+        {operator: 'is', operand: 'starred'},
+    ]);
+    assert.equal(draft_model.getDraft(draft), false);
+
+    // Make sure we don't restore when the user is already typing something
+    $("#new_message_content").val("Currently typing");
+    draft = drafts.draft_matching_narrow([{operator: 'pm-with', operand: 'aaron@zulip.com'}]);
+    assert.equal(draft_model.getDraft(draft), false);
+}());
