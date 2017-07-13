@@ -239,9 +239,6 @@ exports.transmit_message = function (request, on_success, error) {
 
         // Once everything is done, get ready to report times to the server.
         message_state.process_success();
-
-        // TODO: rework the timers
-        sent_messages.set_timer_for_restarting_event_loop(client_message_id);
     }
 
     if (page_params.use_websockets) {
