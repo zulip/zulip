@@ -266,40 +266,22 @@ people.add(bob);
     $("#sending-indicator").show();
     global.feature_flags.log_send_times = true;
     global.feature_flags.collect_send_times = true;
-    var set_timeout_called = false;
-    global.patch_builtin('setTimeout', function (func, delay) {
-        assert.equal(delay, 5000);
-        func();
-        set_timeout_called = true;
-    });
-    var server_events_triggered;
-    global.server_events = {
-        restart_get_events: function () {
-            server_events_triggered = true;
-        },
-    };
+
     var reify_message_id_checked;
     echo.reify_message_id = function (local_id, message_id) {
         assert.equal(local_id, 1001);
         assert.equal(message_id, 12);
         reify_message_id_checked = true;
     };
-    var test_date = 'Wed Jun 28 2017 22:12:48 GMT+0000 (UTC)';
-    compose.send_message_success(1001, 12, new Date(test_date), false);
+    var locally_echoed = false;
+    compose.send_message_success(1001, 12, locally_echoed);
     assert.equal($("#new_message_content").val(), '');
     assert($("#new_message_content").is_focused());
     assert(!$("#send-status").visible());
     assert.equal($("#compose-send-button").attr('disabled'), undefined);
     assert(!$("#sending-indicator").visible());
-    assert.equal(_.keys(sent_messages.send_times_data).length, 1);
-
-    var data = sent_messages.get_message_state(12).data;
-    assert.equal(data.start.getTime(), new Date(test_date).getTime());
-    assert(!data.locally_echoed);
 
     assert(reify_message_id_checked);
-    assert(server_events_triggered);
-    assert(set_timeout_called);
 }());
 
 (function test_mark_rendered_content_disparity() {
@@ -791,12 +773,11 @@ function test_with_mock_socket(test_params) {
     // socket_user_agent field will be added.
     var request = {foo: 'bar'};
 
-    // Our success function gets passed all the way through to
-    // socket.send, so we can just use a stub to test that.
-    var success = 'success-function-stub';
+    var success_func_checked = false;
+    var success = function () {
+        success_func_checked = true;
+    };
 
-    // Our error function gets wrapped, so we set up a real
-    // function to test the wrapping mechanism.
     var error_func_checked = false;
     var error = function (error_msg) {
         assert.equal(error_msg, 'Error sending message: simulated_error');
@@ -820,8 +801,11 @@ function test_with_mock_socket(test_params) {
                 socket_user_agent: 'unittest_transmit_message',
             });
 
-            // Our success function never gets wrapped.
-            assert.equal(send_args.success, success);
+            // Just make sure our success function gets called.
+            send_args.success({
+                id: 42,
+            });
+            assert(success_func_checked);
 
             // Our error function does get wrapped, so we test by
             // using socket.send's error callback, which should

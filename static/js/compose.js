@@ -207,26 +207,36 @@ function clear_compose_box() {
     resize.resize_bottom_whitespace();
 }
 
-exports.send_message_success = function (local_id, message_id, start_time, locally_echoed) {
+exports.send_message_success = function (local_id, message_id, locally_echoed) {
     if (!locally_echoed) {
         clear_compose_box();
     }
 
-    sent_messages.process_success(message_id, start_time, locally_echoed);
-
     echo.reify_message_id(local_id, message_id);
-
-    /* This next line is kind of suspect, since we are processing success here. */
-    sent_messages.set_timer_for_restarting_event_loop(message_id);
-
 };
 
-exports.transmit_message = function (request, success, error) {
+exports.transmit_message = function (request, on_success, error) {
     request.client_message_id = sent_messages.get_new_client_message_id({
         local_id: request.local_id,
     });
 
     sent_messages.clear(request.id);
+
+    var local_id = request.local_id;
+    var start_time = new Date();
+    var locally_echoed = local_id !== undefined;
+
+    function success(data) {
+        // Call back to our callers to do things like closing the compose
+        // box and turning off spinners and reifying locally echoed messages.
+        on_success(data);
+
+        var message_id = data.id;
+
+        // Once everything is reified, get ready to report times to the server.
+        sent_messages.process_success(message_id, start_time, locally_echoed);
+        sent_messages.set_timer_for_restarting_event_loop(message_id);
+    }
 
     if (page_params.use_websockets) {
         send_message_socket(request, success, error);
@@ -246,7 +256,6 @@ exports.send_message = function send_message(request) {
         request.to = JSON.stringify([request.to]);
     }
 
-    var start_time = new Date();
     var local_id;
 
     local_id = echo.try_deliver_locally(request);
@@ -254,11 +263,10 @@ exports.send_message = function send_message(request) {
         // We delivered this message locally
         request.local_id = local_id;
     }
-
     var locally_echoed = local_id !== undefined;
 
     function success(data) {
-        exports.send_message_success(local_id, data.id, start_time, locally_echoed);
+        exports.send_message_success(local_id, data.id, locally_echoed);
     }
 
     function error(response) {
