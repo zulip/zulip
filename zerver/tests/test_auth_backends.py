@@ -1829,6 +1829,91 @@ class FetchAuthBackends(ZulipTestCase):
                     'zulip_version': ZULIP_VERSION,
                 })
 
+class TestTwoFactor(ZulipTestCase):
+    def test_direct_dev_login_with_2fa(self) -> None:
+        email = self.example_email('hamlet')
+        user_profile = self.example_user('hamlet')
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            data = {'direct_email': email}
+            result = self.client_post('/accounts/login/local/', data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            # User logs in but when otp device doesn't exist.
+            self.assertNotIn('otp_device_id', self.client.session.keys())
+
+            self.create_default_device(user_profile)
+
+            data = {'direct_email': email}
+            result = self.client_post('/accounts/login/local/', data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            # User logs in when otp device exists.
+            self.assertIn('otp_device_id', self.client.session.keys())
+
+    @mock.patch('two_factor.models.totp')
+    def test_two_factor_login_with_ldap(self, mock_totp):
+        # type: (mock.MagicMock) -> None
+        token = 123456
+        email = self.example_email('hamlet')
+        password = 'testing'
+
+        user_profile = self.example_user('hamlet')
+        user_profile.set_password(password)
+        user_profile.save()
+        self.create_default_device(user_profile)
+
+        def totp(*args, **kwargs):
+            # type: (*Any, **Any) -> int
+            return token
+
+        mock_totp.side_effect = totp
+
+        # Setup LDAP
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        full_name = 'New LDAP fullname'
+        mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': [full_name],
+                'sn': ['shortname'],
+            }
+        }
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
+                TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
+                TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake',
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            first_step_data = {"username": email,
+                               "password": password,
+                               "two_factor_login_view-current_step": "auth"}
+            result = self.client_post("/accounts/login/", first_step_data)
+            self.assertEqual(result.status_code, 200)
+
+            second_step_data = {"token-otp_token": str(token),
+                                "two_factor_login_view-current_step": "token"}
+            result = self.client_post("/accounts/login/", second_step_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result['Location'], 'http://zulip.testserver')
+
+            # Going to login page should redirect to `realm.uri` if user is
+            # already logged in.
+            result = self.client_get('/accounts/login/')
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result['Location'], 'http://zulip.testserver')
+
 class TestDevAuthBackend(ZulipTestCase):
     def test_login_success(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -1837,6 +1922,18 @@ class TestDevAuthBackend(ZulipTestCase):
         result = self.client_post('/accounts/login/local/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_login_success_with_2fa(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.create_default_device(user_profile)
+        email = user_profile.email
+        data = {'direct_email': email}
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            result = self.client_post('/accounts/login/local/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://zulip.testserver')
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assertIn('otp_device_id', list(self.client.session.keys()))
 
     def test_redirect_to_next_url(self) -> None:
         def do_local_login(formaction: str) -> HttpResponse:
