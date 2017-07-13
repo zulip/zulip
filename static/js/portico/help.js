@@ -1,3 +1,5 @@
+const Ps = require('perfect-scrollbar');
+
 (function () {
     var html_map = {};
     var loading = {
@@ -37,6 +39,13 @@
         $(".sidebar").removeClass("show");
 
         e.preventDefault();
+    });
+
+    Ps.initialize($(".sidebar")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        // Picked so that each mousewheel bump moves 1 emoji down.
+        wheelSpeed: 0.68,
     });
 
     window.addEventListener("popstate", function () {

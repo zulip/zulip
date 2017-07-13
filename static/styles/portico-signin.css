@@ -689,6 +689,8 @@ button.login-google-button {
     margin-right: 10px;
 }
 
+/* -- media queries -- */
+
 @media (max-width: 950px) {
     .split-view .left-side {
         width: 400px;
