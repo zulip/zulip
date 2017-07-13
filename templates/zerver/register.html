@@ -116,8 +116,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             <p class="realm_subdomain_label">.{{ external_host }}</p>
                             {% endif %}
                             <div class="required"></div>
+                            <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                         </div>
-                        <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                         {% if form.realm_subdomain.errors %}
                             {% for error in form.realm_subdomain.errors %}
                             <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
