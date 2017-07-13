@@ -296,9 +296,8 @@ if PRODUCTION:
     LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
 
 base_template_engine_settings = {
-    'BACKEND': 'zproject.jinja2.backends.Jinja2',
+    'BACKEND': 'django.template.backends.jinja2.Jinja2',
     'OPTIONS': {
-        'debug': DEBUG,
         'environment': 'zproject.jinja2.environment',
         'extensions': [
             'jinja2.ext.i18n',
