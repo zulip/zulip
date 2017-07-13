@@ -6,6 +6,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
+from django.core.mail.message import sanitize_address
 from zerver.decorator import statsd_increment
 from zerver.lib.send_email import send_future_email, \
     send_email_from_dict, FromAddress
@@ -337,12 +338,17 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     if reply_to_address == FromAddress.NOREPLY:
         reply_to_name = ""
 
+    try:
+        reply_to_email = sanitize_address((reply_to_name, reply_to_address), 'ascii')
+    except UnicodeError:
+        reply_to_email = sanitize_address((reply_to_name, reply_to_address), 'utf-8')
+
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
         'to_user_id': user_profile.id,
         'from_name': from_name,
         'from_address': from_address,
-        'reply_to_email': formataddr((reply_to_name, reply_to_address)),
+        'reply_to_email': reply_to_email,
         'context': context}
     queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
 
