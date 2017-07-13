@@ -224,23 +224,23 @@ exports.transmit_message = function (request, on_success, error) {
     // us to match up the right messages to this request.
     request.client_message_id = client_message_id;
 
-    sent_messages.clear(client_message_id);
-
     var local_id = request.local_id;
-    var start_time = new Date();
     var locally_echoed = local_id !== undefined;
+
+    var message_state = sent_messages.track_message({
+        client_message_id: client_message_id,
+        locally_echoed: locally_echoed,
+    });
 
     function success(data) {
         // Call back to our callers to do things like closing the compose
         // box and turning off spinners and reifying locally echoed messages.
         on_success(data);
 
-        // Once everything is reified, get ready to report times to the server.
-        sent_messages.process_success({
-            client_message_id: client_message_id,
-            start: start_time,
-            locally_echoed: locally_echoed,
-        });
+        // Once everything is done, get ready to report times to the server.
+        message_state.process_success();
+
+        // TODO: rework the timers
         sent_messages.set_timer_for_restarting_event_loop(client_message_id);
     }
 

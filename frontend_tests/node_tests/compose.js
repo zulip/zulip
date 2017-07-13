@@ -292,6 +292,10 @@ people.add(bob);
         set_timeout_called = true;
     });
 
+    sent_messages.track_message({
+        client_message_id: 12,
+    });
+
     var data = sent_messages.get_message_state(12).data;
 
     data.locally_echoed = true;
@@ -307,6 +311,11 @@ people.add(bob);
     assert(set_timeout_called);
 
     delete sent_messages.send_times_data[13];
+    sent_messages.track_message({
+        client_message_id: 13,
+    });
+
+
     sent_messages.report_as_received(13);
     data = sent_messages.get_message_state(13).data;
     assert.equal(typeof(data.received), 'object');
@@ -431,7 +440,6 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(reload_initiate_triggered);
     }());
@@ -472,7 +480,6 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -505,7 +512,6 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -774,6 +780,7 @@ function test_with_mock_socket(test_params) {
         error_func_checked = true;
     };
 
+    sent_messages.send_times_data = {};
     sent_messages.reset_id_state();
 
     test_with_mock_socket({
