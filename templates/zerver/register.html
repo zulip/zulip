@@ -27,112 +27,112 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {{ csrf_input }}
 
             <section class="user-registration">
-            <div class="input-box no-validation">
-                <input type='hidden' name='key' value='{{ key }}' />
-                <input type='hidden' name='timezone' id='timezone'/>
-                <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
-                <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
-                <div class="required"></div>
-            </div>
+                <div class="input-box no-validation">
+                    <input type='hidden' name='key' value='{{ key }}' />
+                    <input type='hidden' name='timezone' id='timezone'/>
+                    <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
+                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    <div class="required"></div>
+                </div>
 
-            <div class="input-box">
-                {% if lock_name %}
-                    <p class="fakecontrol">{{ full_name }}</p>
-                {% else %}
-                    <input id="id_full_name" class="required" type="text" name="full_name"
-                    value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                    maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
-                    <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
-                    {% if form.full_name.errors %}
-                        {% for error in form.full_name.errors %}
+                <div class="input-box">
+                    {% if lock_name %}
+                        <p class="fakecontrol">{{ full_name }}</p>
+                    {% else %}
+                        <input id="id_full_name" class="required" type="text" name="full_name"
+                        value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
+                        maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
+                        <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+                        {% if form.full_name.errors %}
+                            {% for error in form.full_name.errors %}
+                            <p class="help-inline text-error">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if password_auth_enabled %}
+                <div class="input-box">
+                    <input id="id_password" class="required" type="password" name="password"
+                           value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
+                           maxlength={{ MAX_PASSWORD_LENGTH }}
+                           data-min-length="{{password_min_length}}"
+                           data-min-quality="{{password_min_quality}}" required />
+                    <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+                    {% if full_name %}
+                    <span class="help-inline">
+                        {{ _('This is used for mobile applications and other tools that require a password.') }}
+                    </span>
+                    {% endif %}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
                         <p class="help-inline text-error">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
-                {% endif %}
-            </div>
-
-            {% if password_auth_enabled %}
-            <div class="input-box">
-                <input id="id_password" class="required" type="password" name="password"
-                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                       maxlength={{ MAX_PASSWORD_LENGTH }}
-                       data-min-length="{{password_min_length}}"
-                       data-min-quality="{{password_min_quality}}" required />
-                <label for="id_password" class="inline-block">{{ _('Password') }}</label>
-                {% if full_name %}
-                <span class="help-inline">
-                    {{ _('This is used for mobile applications and other tools that require a password.') }}
-                </span>
-                {% endif %}
-                {% if form.password.errors %}
-                    {% for error in form.password.errors %}
-                    <p class="help-inline text-error">{{ error }}</p>
-                    {% endfor %}
-                {% endif %}
-                <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
-                    <div class="bar bar-danger" style="width: 10%;"></div>
+                    <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
+                        <div class="bar bar-danger" style="width: 10%;"></div>
+                    </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
             </section>
 
             <section class="org-registration">
-            {% if creating_new_team %}
-            <div class="input-box">
-                <div class="inline-block relative">
-                    <input id="id_team_name" class="required" type="text"
-                        placeholder="Acme or Aκμή"
-                        value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                        name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
-                    <div class="required"></div>
-                </div>
-                <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
-                {% if form.realm_name.errors %}
-                    {% for error in form.realm_name.errors %}
-                    <p class="help-inline text-error">{{ error }}</p>
-                    {% endfor %}
-                {% endif %}
-
-                <div class="help-box margin-top">
-                    {{ _('Shorter is better than longer.') }}
-                </div>
-            </div>
-
-            <div class="input-box">
-                <label for="id_team_subdomain" class="inline-block label-title">
-                    {% if realms_have_subdomains %}
-                    {{ _('Subdomain') }}
-                    {% else %}
-                    {{ _('Organization handle') }}
-                    {% endif %}
-                </label>
-                <div class="breakpoint">
+                {% if creating_new_team %}
+                <div class="input-box">
                     <div class="inline-block relative">
-                        <input id="id_team_subdomain" class="required {% if realms_have_subdomains %}subdomain{% endif %}" type="text"
-                            placeholder="acme"
-                            value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                            name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} required />
-                        {% if realms_have_subdomains %}
-                        <p class="realm_subdomain_label">.{{ external_host }}</p>
-                        {% endif %}
+                        <input id="id_team_name" class="required" type="text"
+                            placeholder="Acme or Aκμή"
+                            value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
+                            name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
                         <div class="required"></div>
                     </div>
-                    <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
-                    {% if form.realm_subdomain.errors %}
-                        {% for error in form.realm_subdomain.errors %}
-                        <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
+                    <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+                    {% if form.realm_name.errors %}
+                        {% for error in form.realm_name.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
+
+                    <div class="help-box margin-top">
+                        {{ _('Shorter is better than longer.') }}
+                    </div>
                 </div>
-                <div class="help-box margin-top">
-                    {% if realms_have_subdomains %}
-                    {{ _("The address you'll use to sign in to your organization.") }}
-                    {% else %}
-                    {{ _("a-z, 0-9, and - only.") }}
-                    {% endif %}
+
+                <div class="input-box">
+                    <label for="id_team_subdomain" class="inline-block label-title">
+                        {% if realms_have_subdomains %}
+                        {{ _('Subdomain') }}
+                        {% else %}
+                        {{ _('Organization handle') }}
+                        {% endif %}
+                    </label>
+                    <div class="breakpoint">
+                        <div class="inline-block relative">
+                            <input id="id_team_subdomain" class="required {% if realms_have_subdomains %}subdomain{% endif %}" type="text"
+                                placeholder="acme"
+                                value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                                name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} required />
+                            {% if realms_have_subdomains %}
+                            <p class="realm_subdomain_label">.{{ external_host }}</p>
+                            {% endif %}
+                            <div class="required"></div>
+                        </div>
+                        <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
+                        {% if form.realm_subdomain.errors %}
+                            {% for error in form.realm_subdomain.errors %}
+                            <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="help-box margin-top">
+                        {% if realms_have_subdomains %}
+                        {{ _("The address you'll use to sign in to your organization.") }}
+                        {% else %}
+                        {{ _("a-z, 0-9, and - only.") }}
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
             </section>
 
             <div class="input-group margin terms-of-service">
