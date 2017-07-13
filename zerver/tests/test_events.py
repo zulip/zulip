@@ -999,9 +999,6 @@ class EventsRegisterTest(ZulipTestCase):
 
         bool_change = [True, False, True]  # type: List[bool]
         test_changes = dict(
-            twenty_four_hour_time = bool_change,
-            left_side_userlist = bool_change,
-            emoji_alt_code = bool_change,
             emojiset = [u'apple', u'twitter'],
             default_language = [u'es', u'de', u'en'],
             timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
@@ -1019,6 +1016,8 @@ class EventsRegisterTest(ZulipTestCase):
         if setting_name == "timezone":
             num_events = 2
         values = test_changes.get(setting_name)
+        if property_type is bool:
+            values = bool_change
         if values is None:
             raise AssertionError('No test created for %s' % (setting_name))
 
