@@ -10,7 +10,7 @@ from django.utils.encoding import force_bytes
 
 from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
 
-from zerver.lib.send_email import send_email
+from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.management import ZulipBaseCommand
 
 class Command(ZulipBaseCommand):
@@ -61,4 +61,5 @@ class Command(ZulipBaseCommand):
             }
 
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
-            send_email('zerver/emails/password_reset', user_profile.email, context=context)
+            send_email('zerver/emails/password_reset', user_profile.email, from_name="Zulip Account Security",
+                       from_address=FromAddress.NOREPLY, context=context)

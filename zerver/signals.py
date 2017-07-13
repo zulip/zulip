@@ -7,7 +7,7 @@ from django.template import loader
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, Optional
-from zerver.lib.send_email import send_email_to_user
+from zerver.lib.send_email import send_email_to_user, FromAddress
 from zerver.models import UserProfile
 
 def get_device_browser(user_agent):
@@ -88,4 +88,6 @@ def email_on_new_login(sender, user, request, **kwargs):
         context['device_info'] = device_info
         context['user'] = user
 
-        send_email_to_user('zerver/emails/notify_new_login', user, context=context)
+        send_email_to_user('zerver/emails/notify_new_login', user,
+                           from_name='Zulip Account Security', from_address=FromAddress.NOREPLY,
+                           context=context)
