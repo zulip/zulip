@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
@@ -29,11 +29,14 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivate_users
+
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmDomain,
-    get_realm, get_realm_by_email_domain, get_stream, get_system_bot, get_user,
-    Reaction, sew_messages_and_reactions, flush_per_request_caches
+    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
+    RealmAuditLog, RealmDomain, get_realm, get_realm_by_email_domain,
+    get_stream, get_recipient, get_system_bot, get_user, Reaction,
+    sew_messages_and_reactions, flush_per_request_caches
 )
 
 from zerver.lib.actions import (
@@ -44,7 +47,6 @@ from zerver.lib.actions import (
     extract_recipients,
     do_create_user,
     get_client,
-    get_recipient,
 )
 
 from zerver.lib.upload import create_attachment
@@ -2137,3 +2139,140 @@ class DeleteMessageTest(ZulipTestCase):
         self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_error(result, "Invalid message(s)")
+
+class SoftDeactivationMessageTest(ZulipTestCase):
+
+    def test_add_missing_messages(self):
+        # type: () -> None
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago")]
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        sender = self.example_user('iago')
+        realm = sender.realm
+        sending_client = make_client(name="test suite")
+        stream_name = 'Denmark'
+        stream = get_stream(stream_name, realm)
+        subject = 'foo'
+
+        def send_fake_message(message_content, stream):
+            # type: (str, Stream) -> Message
+            recipient = get_recipient(Recipient.STREAM, stream.id)
+            return Message.objects.create(sender = sender,
+                                          recipient = recipient,
+                                          subject = subject,
+                                          content = message_content,
+                                          pub_date = timezone_now(),
+                                          sending_client = sending_client)
+
+        long_term_idle_user = self.example_user('hamlet')
+        do_soft_deactivate_users([long_term_idle_user])
+
+        # Test that add_missing_messages() in simplest case of adding a
+        # message for which UserMessage row doesn't exist for this user.
+        sent_message = send_fake_message('Test Message 1', stream)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertNotEqual(idle_user_msg_list[-1], sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assertEqual(idle_user_msg_list[-1], sent_message)
+
+        # Test that add_missing_messages() only adds messages that aren't
+        # already present in the UserMessage table. This test works on the
+        # fact that previous test just above this added a message but didn't
+        # updated the last_active_message_id field for the user.
+        sent_message = send_fake_message('Test Message 2', stream)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertNotEqual(idle_user_msg_list[-1], sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assertEqual(idle_user_msg_list[-1], sent_message)
+
+        # Test UserMessage rows are created correctly in case of stream
+        # Subscription was altered by admin while user was away.
+
+        # Test for a public stream.
+        sent_message_list = []
+        sent_message_list.append(send_fake_message('Test Message 3', stream))
+        # Alter subscription to stream.
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        send_fake_message('Test Message 4', stream)
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        sent_message_list.append(send_fake_message('Test Message 5', stream))
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        for sent_message in sent_message_list:
+            self.assertEqual(idle_user_msg_list.pop(), sent_message)
+
+        # Test consecutive subscribe/unsubscribe in a public stream
+        sent_message_list = []
+
+        sent_message_list.append(send_fake_message('Test Message 6', stream))
+        # Unsubscribe from stream and then immediately subscribe back again.
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        sent_message_list.append(send_fake_message('Test Message 7', stream))
+        # Again unsubscribe from stream and send a message.
+        # This will make sure that if initially in a unsubscribed state
+        # a consecutive subscribe/unsubscribe doesn't misbehave.
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        send_fake_message('Test Message 8', stream)
+        # Do a subscribe and unsubscribe immediately.
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        for sent_message in sent_message_list:
+            self.assertEqual(idle_user_msg_list.pop(), sent_message)
+        # Note: At this point in this test we have long_term_idle_user
+        # unsubscribed from the 'Denmark' stream.
+
+        # Test for a Private Stream.
+        stream_name = "Core"
+        private_stream = self.make_stream('Core', invite_only=True)
+        self.subscribe_to_stream(self.example_email("iago"), stream_name)
+        sent_message_list = []
+        send_fake_message('Test Message 9', private_stream)
+        self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
+        sent_message_list.append(send_fake_message('Test Message 10', private_stream))
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        send_fake_message('Test Message 11', private_stream)
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        sent_message_list.append(send_fake_message('Test Message 12', private_stream))
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        for sent_message in sent_message_list:
+            self.assertEqual(idle_user_msg_list.pop(), sent_message)
