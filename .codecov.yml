@@ -7,3 +7,4 @@ coverage:
         target: auto
         threshold: 0.03
         base: auto
+    patch: off
