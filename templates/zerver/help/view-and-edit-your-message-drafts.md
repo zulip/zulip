@@ -5,6 +5,11 @@ content in a draft, so that you never lose your work and need to
 retype a message.  Zulip's [Drafts](/#drafts) UI allows you to
 retrieve, edit, and eventually send these drafts.
 
+!!! warn ""
+    **Note:** Drafts are stored in your client, not on the server. For
+    example, drafts you create on the web application will not be accessible
+    from the mobile app, and vice versa.
+
 ## View your drafts
 
 To view a list of all your currently saved drafts, you can open the
