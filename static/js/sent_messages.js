@@ -5,6 +5,28 @@ var exports = {};
 exports.send_times_log = [];
 exports.send_times_data = {};
 
+exports.reset_id_state = function () {
+    exports.local_id_dict = new Dict();
+    exports.next_client_message_id = 0;
+};
+
+exports.get_new_client_message_id = function (opts) {
+    exports.next_client_message_id += 1;
+    var client_message_id = exports.next_client_message_id;
+    exports.local_id_dict.set(client_message_id, opts.local_id);
+    return client_message_id;
+};
+
+exports.get_local_id = function (opts) {
+    var client_message_id = opts.client_message_id;
+
+    if (client_message_id === undefined) {
+        return undefined;
+    }
+
+    return exports.local_id_dict.get(client_message_id);
+};
+
 function report_send_time(send_time, receive_time, display_time, locally_echoed, rendered_changed) {
     var data = {time: send_time.toString(),
                 received: receive_time.toString(),
@@ -150,6 +172,8 @@ exports.initialize = function () {
             delete exports.send_times_data[event.old_id];
         }
     });
+
+    exports.reset_id_state();
 };
 
 return exports;
