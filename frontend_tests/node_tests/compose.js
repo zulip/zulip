@@ -255,6 +255,8 @@ people.add(bob);
 }());
 
 (function test_send_message_success() {
+    sent_messages.reset_id_state();
+
     blueslip.error = noop;
     blueslip.log = noop;
     $("#new_message_content").val('foobarfoobar');
@@ -801,6 +803,8 @@ function test_with_mock_socket(test_params) {
         error_func_checked = true;
     };
 
+    sent_messages.reset_id_state();
+
     test_with_mock_socket({
         run_code: function () {
             compose.transmit_message(request, success, error);
@@ -812,7 +816,7 @@ function test_with_mock_socket(test_params) {
             assert.equal(send_args.request, request);
             assert.deepEqual(send_args.request, {
                 foo: 'bar',
-                client_message_id: undefined,
+                client_message_id: 1,
                 socket_user_agent: 'unittest_transmit_message',
             });
 

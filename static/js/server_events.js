@@ -69,11 +69,12 @@ function get_events_success(events) {
             var msg = event.message;
             msg.flags = event.flags;
 
-            // We will eventually decouple msg.local_id from event.client_message_id,
-            // but for now they are the same value.
-            if (event.client_message_id !== undefined) {
-                msg.local_id = event.client_message_id;
-            }
+            // The server echos client_message_id to us, and then we
+            // map it back to our local_id that was used for rendering.
+            msg.local_id = sent_messages.get_local_id({
+                client_message_id: event.client_message_id,
+            });
+
             messages.push(msg);
             break;
 
