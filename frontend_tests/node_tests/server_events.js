@@ -53,10 +53,6 @@ server_events.home_view_loaded();
         flags: [],
     };
 
-    set_global('sent_messages', {
-        get_local_id: function () { return 9999; },
-    });
-
     var inserted;
     set_global('message_events', {
         insert_new_messages: function (messages) {

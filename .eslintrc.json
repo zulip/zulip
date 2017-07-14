@@ -56,7 +56,6 @@
         "typing_events": false,
         "typing_data": false,
         "typing_status": false,
-        "sent_messages": false,
         "compose": false,
         "compose_actions": false,
         "compose_state": false,
