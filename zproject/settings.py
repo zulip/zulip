@@ -183,6 +183,7 @@ DEFAULT_SETTINGS = {
     'PUSH_NOTIFICATION_REDACT_CONTENT': False,
     'RATE_LIMITING': True,
     'SEND_LOGIN_EMAILS': True,
+    'EMBEDDED_BOTS_ENABLED': False,
 }
 
 # These settings are not documented in prod_settings_template.py.
