@@ -131,7 +131,8 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
 APT_DEPENDENCIES = {
     "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.6",
-        "postgresql-9.6-tsearch-extras",
+        # tsearch-extras removed because there's no apt repository hosting it for Debian.
+        # "postgresql-9.6-tsearch-extras",
         "postgresql-9.6-pgroonga",
     ],
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
