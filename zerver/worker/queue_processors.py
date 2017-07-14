@@ -33,7 +33,7 @@ from zerver.lib.send_email import send_future_email, send_email_from_dict, FromA
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
@@ -183,7 +183,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         do_send_confirmation_email(invitee, referrer, body)
 
         # queue invitation reminder for two days from now.
-        link = Confirmation.objects.get_link_for_object(invitee, referrer.realm.host)
+        link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
         context = common_context(referrer)
         context.update({
             'activate_url': link,

@@ -2,7 +2,7 @@ from __future__ import print_function
 
 from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Text
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, create_confirmation_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
@@ -33,21 +33,15 @@ import ujson
 from six.moves import urllib
 from collections import defaultdict
 
-def unsubscribe_token(user_profile):
-    # type: (UserProfile) -> Text
-    # Leverage the Django confirmations framework to generate and track unique
-    # unsubscription tokens.
-    return Confirmation.objects.get_link_for_object(user_profile, 'unused').split("/")[-1]
-
 def one_click_unsubscribe_link(user_profile, email_type):
-    # type: (UserProfile, Text) -> Text
+    # type: (UserProfile, str) -> str
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
     """
-    token = unsubscribe_token(user_profile)
-    resource_path = "accounts/unsubscribe/%s/%s" % (email_type, token)
-    return "%s/%s" % (user_profile.realm.uri.rstrip("/"), resource_path)
+    return create_confirmation_link(user_profile, user_profile.realm.host,
+                                    Confirmation.UNSUBSCRIBE,
+                                    url_args = {'email_type': email_type})
 
 def hash_util_encode(string):
     # type: (Text) -> Text

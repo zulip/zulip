@@ -2,9 +2,11 @@
 
 # Copyright: (c) 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 
+from __future__ import absolute_import
+
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
-import re
+import datetime
 
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -17,73 +19,81 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
+from random import SystemRandom
+from six.moves import range
+import string
 from typing import Any, Dict, Optional, Text, Union
 
-B16_RE = re.compile('^[a-f0-9]{40}$')
-
 def generate_key():
-    # type: () -> Text
-    return generate_random_token(40)
+    # type: () -> str
+    generator = SystemRandom()
+    # 24 characters * 5 bits of entropy/character = 120 bits of entropy
+    return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
-class ConfirmationManager(models.Manager):
-    url_pattern_name = 'confirmation.views.confirm'
-
-    def confirm(self, confirmation_key):
-        # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
-        if B16_RE.search(confirmation_key):
-            try:
-                confirmation = self.get(confirmation_key=confirmation_key)
-            except self.model.DoesNotExist:
-                return False
-
-            time_elapsed = timezone_now() - confirmation.date_sent
-            if time_elapsed.total_seconds() > settings.EMAIL_CONFIRMATION_DAYS * 24 * 3600:
-                return False
-
-            obj = confirmation.content_object
-            obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
-            obj.save(update_fields=['status'])
-            return obj
+def get_object_from_key(confirmation_key):
+    # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
+    try:
+        confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
+    except Confirmation.DoesNotExist:
         return False
 
-    def get_link_for_object(self, obj, host):
-        # type: (Union[ContentType, int], str) -> Text
-        key = generate_key()
-        self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
-        return self.get_activation_url(key, host)
+    time_elapsed = timezone_now() - confirmation.date_sent
+    if time_elapsed.total_seconds() > _properties[confirmation.type].validity_in_days * 24 * 3600:
+        return False
 
-    def get_activation_url(self, confirmation_key, host):
-        # type: (Text, str) -> Text
-        return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                            host,
-                            reverse(self.url_pattern_name,
-                                    kwargs={'confirmation_key': confirmation_key}))
+    obj = confirmation.content_object
+    obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
+    obj.save(update_fields=['status'])
+    return obj
 
-class EmailChangeConfirmationManager(ConfirmationManager):
-    url_pattern_name = 'zerver.views.user_settings.confirm_email_change'
+def create_confirmation_link(obj, host, confirmation_type, url_args=None):
+    # type: (Union[ContentType, int], str, int, Optional[Dict[str, str]]) -> str
+    key = generate_key()
+    Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
+                                type=confirmation_type)
+    return confirmation_url(key, host, confirmation_type, url_args)
+
+def confirmation_url(confirmation_key, host, confirmation_type, url_args=None):
+    # type: (str, str, int, Optional[Dict[str, str]]) -> str
+    if url_args is None:
+        url_args = {}
+    url_args['confirmation_key'] = confirmation_key
+    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME, host,
+                       reverse(_properties[confirmation_type].url_name, kwargs=url_args))
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField()  # type: int
     content_object = GenericForeignKey('content_type', 'object_id')
-    date_sent = models.DateTimeField('sent')
-    confirmation_key = models.CharField('activation key', max_length=40)
+    date_sent = models.DateTimeField()  # type: datetime.datetime
+    confirmation_key = models.CharField(max_length=40)  # type: str
 
-    objects = ConfirmationManager()
-
-    class Meta(object):
-        verbose_name = 'confirmation email'
-        verbose_name_plural = 'confirmation emails'
+    # The following list is the set of valid types
+    USER_REGISTRATION = 1
+    INVITATION = 2
+    EMAIL_CHANGE = 3
+    UNSUBSCRIBE = 4
+    SERVER_REGISTRATION = 5
+    type = models.PositiveSmallIntegerField()  # type: int
 
     def __unicode__(self):
         # type: () -> Text
-        return 'confirmation email for %s' % (self.content_object,)
+        return '<Confirmation: %s>' % (self.content_object,)
 
-class EmailChangeConfirmation(Confirmation):
-    class Meta(object):
-        proxy = True
+class ConfirmationType(object):
+    def __init__(self, url_name, validity_in_days=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS):
+        # type: (str, int) -> None
+        self.url_name = url_name
+        self.validity_in_days = validity_in_days
 
-    objects = EmailChangeConfirmationManager()
+_properties = {
+    Confirmation.USER_REGISTRATION: ConfirmationType('confirmation.views.confirm'),
+    Confirmation.INVITATION: ConfirmationType('confirmation.views.confirm',
+                                              validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS),
+    Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
+    Confirmation.UNSUBSCRIBE: ConfirmationType('zerver.views.unsubscribe.email_unsubscribe',
+                                               validity_in_days=1000000),  # should never expire
+}
 
 # Conirmation pathways for which there is no content_object that we need to
 # keep track of.

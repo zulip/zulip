@@ -859,7 +859,7 @@ class PushDeviceToken(AbstractPushDeviceToken):
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
 
 def generate_email_token_for_stream():
-    # type: () -> Text
+    # type: () -> str
     return generate_random_token(32)
 
 class Stream(ModelReprMixin, models.Model):
@@ -871,7 +871,7 @@ class Stream(ModelReprMixin, models.Model):
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token = models.CharField(
-        max_length=32, default=generate_email_token_for_stream)  # type: Text
+        max_length=32, default=generate_email_token_for_stream)  # type: str
     description = models.CharField(max_length=1024, default=u'')  # type: Text
 
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
