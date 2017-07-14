@@ -10,6 +10,7 @@ set -e
 #     chmod +x .git/hooks/post-checkout
 
 cd "$(dirname "$0")/.."
+find . -name "__pycache__" -prune -exec rm -rf {} \;
 for i in $(find . -name "*.pyc"); do
     pyfile="${i%.pyc}.py"
     if [ ! -e "$pyfile" ]; then
@@ -17,4 +18,3 @@ for i in $(find . -name "*.pyc"); do
         rm "$i"
     fi
 done
-find . -name "__pycache__" -prune -exec rm -rf {} \;
