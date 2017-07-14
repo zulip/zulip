@@ -263,7 +263,6 @@ $(function () {
     unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
-    hotspots.initialize();
     compose_fade.initialize();
     pm_list.initialize();
     stream_list.initialize();

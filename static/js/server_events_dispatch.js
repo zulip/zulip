@@ -16,8 +16,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'hotspots':
-        hotspots.show(event.hotspots);
-        page_params.hotspots = event.hotspots;
+        hotspots.load_new(event.hotspots);
+        page_params.hotspots = page_params.hotspots ?
+            page_params.hotspots.concat(event.hotspots) :
+            event.hotspots;
         break;
 
     case 'muted_topics':
