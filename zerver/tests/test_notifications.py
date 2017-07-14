@@ -72,7 +72,7 @@ class TestMissedMessages(ZulipTestCase):
         self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '11', subject='test2')
         msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM, '@**King Hamlet**')
         body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**King Hamlet**'
-        subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
+        subject = 'Othello, the Moor of Venice mentioned you'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -85,7 +85,7 @@ class TestMissedMessages(ZulipTestCase):
             self.send_message(self.example_email('cordelia'), "Denmark", Recipient.STREAM, str(i))
         msg_id = self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '@**King Hamlet**')
         body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**King Hamlet**'
-        subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
+        subject = 'Othello, the Moor of Venice mentioned you'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -98,7 +98,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'You and Othello, the Moor of Venice Extremely personal message!'
-        subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -111,7 +111,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Or just reply to this email.'
-        subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -124,7 +124,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Please do not reply to this automated message.'
-        subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -140,7 +140,7 @@ class TestMissedMessages(ZulipTestCase):
 
         body = ('You and Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
-        subject = 'Group PMs with Iago and Othello, the Moor of Venice in Zulip Dev'
+        subject = 'Group PMs with Iago and Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -156,7 +156,7 @@ class TestMissedMessages(ZulipTestCase):
 
         body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
-        subject = 'Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice in Zulip Dev'
+        subject = 'Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -175,7 +175,7 @@ class TestMissedMessages(ZulipTestCase):
 
         body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice, Prospero from The Tempest'
                 ' Othello, the Moor of Venice Group personal message')
-        subject = 'Group PMs with Cordelia Lear, Iago, and 2 others in Zulip Dev'
+        subject = 'Group PMs with Cordelia Lear, Iago, and 2 others'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -347,5 +347,5 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message with a realm emoji :test_emoji:!')
         body = '<img alt=":test_emoji:" height="20px" src="http://testserver/user_avatars/1/emoji/test_emoji.png" title=":test_emoji:">'
-        subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)

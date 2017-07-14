@@ -25,11 +25,13 @@ def build_email(template_prefix, to_email, from_name=None, from_address=None,
                 reply_to_email=None, context={}):
     # type: (str, Text, Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> EmailMultiAlternatives
     context.update({
+        'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
     })
     subject = loader.render_to_string(template_prefix + '.subject',
-                                      context=context, using='Jinja2_plaintext').strip()
+                                      context=context,
+                                      using='Jinja2_plaintext').strip().replace('\n', '')
     message = loader.render_to_string(template_prefix + '.txt',
                                       context=context, using='Jinja2_plaintext')
     html_message = loader.render_to_string(template_prefix + '.html', context)
