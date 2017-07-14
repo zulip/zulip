@@ -1369,7 +1369,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('hotspots')),
             ('hotspots', check_list(check_dict_only([
                 ('name', check_string),
+                ('title', check_string),
                 ('description', check_string),
+                ('delay', check_int),
             ]))),
         ])
         events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'click_to_reply'))
