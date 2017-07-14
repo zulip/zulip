@@ -50,7 +50,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
-        self._test('/emails/', 'Road Runner invited you to join Zulip')
+        self._test('/emails/', 'Road Runner invited you to join Acme Corporation')
         self._test('/register/', 'Sign up for Zulip')
 
         result = self.client_get('/new-user/')
@@ -67,6 +67,7 @@ class DocPageTest(ZulipTestCase):
             'Disallow: /',
             ''.join(str(x) for x in list(result.streaming_content))
         )
+
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
