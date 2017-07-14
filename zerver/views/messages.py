@@ -923,7 +923,7 @@ def send_message_backend(request, user_profile,
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
                          realm_str = REQ('realm_str', default=None),
-                         client_message_id = REQ(default=None),
+                         local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     # type: (HttpRequest, UserProfile, Text, List[Text], bool, Optional[Text], Text, Optional[Text], Optional[Text], Optional[Text]) -> HttpResponse
     client = request.client
@@ -979,7 +979,7 @@ def send_message_backend(request, user_profile,
                              subject_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
-                             client_message_id=client_message_id, sender_queue_id=queue_id)
+                             local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
 def fill_edit_history_entries(message_history, message):

@@ -356,7 +356,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 "queue_id": queue_events_data['response']['queue_id'],
                 "to": ujson.dumps([self.example_email('othello')]),
                 "reply_to": self.example_email('hamlet'),
-                "client_message_id": 'id-42',
+                "local_id": -1
             }
         }
         user_message_str = ujson.dumps(user_message)
@@ -391,7 +391,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 "queue_id": queue_events_data['response']['queue_id'],
                 "to": ujson.dumps(["Denmark"]),
                 "reply_to": self.example_email('hamlet'),
-                "client_message_id": 'id-99',
+                "local_id": -1
             }
         }
         user_message_str = ujson.dumps(user_message)
