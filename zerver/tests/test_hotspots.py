@@ -27,7 +27,7 @@ class TestGetNextHotspots(ZulipTestCase):
         do_mark_hotspot_as_read(user, 'stream_settings')
         hotspots = get_next_hotspots(user)
         self.assertEqual(len(hotspots), 1)
-        self.assertEqual(hotspots[0]['name'], 'new_topic_botton')
+        self.assertEqual(hotspots[0]['name'], 'new_topic_button')
 
     def test_all_done(self):
         # type: () -> None
