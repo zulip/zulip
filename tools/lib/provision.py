@@ -134,6 +134,10 @@ APT_DEPENDENCIES = {
         # tsearch-extras removed because there's no apt repository hosting it for Debian.
         # "postgresql-9.6-tsearch-extras",
         "postgresql-9.6-pgroonga",
+        # Technically, this should be in VENV_DEPENDENCIES, but it
+        # doesn't exist in trusty and we don't have a conditional on
+        # platform there.
+        "virtualenv",
     ],
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.3",
