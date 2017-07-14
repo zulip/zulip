@@ -19,7 +19,7 @@ var detectionOptions = {
 };
 
 var cacheOptions = {
-    enabled: true,
+    enabled: !page_params.development,
     prefix: 'i18next:' + page_params.server_generation + ':',
     expirationTime: 2*24*60*60*1000,  // 2 days
 };
