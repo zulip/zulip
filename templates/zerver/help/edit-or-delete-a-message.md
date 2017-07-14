@@ -35,6 +35,24 @@ changes to a file (<i class="icon-vector-file-text-alt"></i>) icon.
 
 ## Deleting messages
 
-You cannot entirely delete a message. When you remove the contents of a message,
-your message contents will be replaced with `(deleted)`; the original sender and
-timestamp of the message will still be displayed.
+When you send a message that you didn't intend to send, there are a few options
+to fix it. Often, the simplest solution is to just **edit the message to
+correct the mistake**. If you intended to send nothing, **deleting the content of the message in the editing UI**
+will cause the message to be displayed as `(deleted)`; the original sender
+and timestamp of the message will still be displayed, and the original content
+of the message is still accessible via Zulip's edit history feature.
+
+For cases where someone accidentally shared secret information publicly (e.g.
+you posted an employee's salary), **Zulip does support permanently
+deleting a message**, which is documented [here](/help/delete-a-message).
+Note, however, that anyone who received the message before you deleted it
+could have made a copy of its content. So if you accidentally shared your password,
+you should change your password regardless of whether you delete the message.
+
+### Delete a user's message
+
+{!admin-only.md!}
+{!message-actions.md!}
+{!down-chevron.md!}
+
+2. Select the **Delete message** option from the dropdown to delete that message.
