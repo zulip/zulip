@@ -583,6 +583,66 @@ $(function () {
         });
     }());
 
+
+    // HOTSPOTS
+
+    // open
+    $('body').on('click', '.hotspot-icon', function (e) {
+        // hide icon
+        $(this).animate({ opacity: 0 }, {
+            duration: 300,
+            done: function () {
+                $(this).css({ display: 'none' });
+            }.bind(this),
+        });
+
+        // show popover
+        var hotspot_name = $(e.target).closest('.hotspot-icon')
+            .attr('id')
+            .replace('hotspot_', '')
+            .replace('_icon', '');
+        var overlay_name = 'hotspot_' + hotspot_name + '_overlay';
+
+        overlays.open_overlay({
+            name: overlay_name,
+            overlay: $('#' + overlay_name),
+            on_close: function () {
+                // close popover
+                $(this).css({ display: 'block' });
+                $(this).animate({ opacity: 1 }, {
+                    duration: 300,
+                });
+            }.bind(this),
+        });
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // confirm
+    $('body').on('click', '.hotspot.overlay .hotspot-confirm', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var overlay_name = $(this).closest('.hotspot.overlay').attr('id');
+
+        var hotspot_name = overlay_name
+            .replace('hotspot_', '')
+            .replace('_overlay', '');
+
+        // Comment below to disable marking hotspots as read in production
+        hotspots.post_hotspot_as_read(hotspot_name);
+
+        overlays.close_overlay(overlay_name);
+        $('#hotspot_' + hotspot_name + '_icon').remove();
+    });
+
+    // stop propagation
+    $('body').on('click', '.hotspot.overlay .hotspot-popover', function (e) {
+        e.stopPropagation();
+    });
+
+
     // MAIN CLICK HANDLER
 
     $(document).on('click', function (e) {

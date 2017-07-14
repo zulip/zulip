@@ -85,6 +85,8 @@ def find(fns):
                 if not html_classes:
                     if 'bar-success' in line:
                         html_classes = ['bar-success', 'bar-danger']
+                    elif fn == 'hotspots.js' and 'arrow_placement' in line:
+                        html_classes = ['arrow-top', 'arrow-left', 'arrow-bottom', 'arrow-right']
                     elif 'color_class' in line:
                         continue
                     elif 'stream_dark' in line:
