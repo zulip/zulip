@@ -926,6 +926,17 @@ def send_message_backend(request, user_profile,
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     # type: (HttpRequest, UserProfile, Text, List[Text], bool, Optional[Text], Text, Optional[Text], Optional[Text], Optional[Text]) -> HttpResponse
+
+
+    # TEST CODE!!!!!
+    if str(message_content).strip() == '5':
+        return json_error('failing unlucky 5')
+
+    return json_success({'success': message_content});
+
+    ###########
+
+
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
