@@ -389,6 +389,12 @@ var event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__high_contrast_mode: {
+        type: 'update_display_settings',
+        setting_name: 'high_contrast_mode',
+        setting: true,
+    },
+
     update_global_notifications: {
         type: 'update_global_notifications',
         notification_name: 'enable_stream_sounds',

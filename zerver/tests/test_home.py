@@ -71,6 +71,7 @@ class HomeTest(ZulipTestCase):
             "furthest_read_time",
             "has_mobile_devices",
             "have_initial_messages",
+            "high_contrast_mode",
             "hotspots",
             "initial_servertime",
             "is_admin",

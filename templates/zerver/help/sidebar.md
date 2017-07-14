@@ -87,6 +87,7 @@
 ## Tools & Customization
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Enable high contrast mode for accessibility](/help/enable-high-contrast-mode)
 * [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
 
 ## Misc

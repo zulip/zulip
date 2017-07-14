@@ -115,6 +115,10 @@ $(function () {
         $("#navbar-buttons").addClass("right-userlist");
     }
 
+    if (page_params.high_contrast_mode) {
+        $("body").addClass("high-contrast");
+    }
+
     $("#main_div").on("mouseover", ".message_row", function () {
         var row = $(this).closest(".message_row");
         message_hover(row);
