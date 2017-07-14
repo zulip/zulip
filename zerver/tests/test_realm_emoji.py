@@ -19,7 +19,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 1)
+        self.assertEqual(len(content["emoji"]), 2)
 
     def test_list_no_author(self):
         # type: () -> None
@@ -30,7 +30,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 1)
+        self.assertEqual(len(content["emoji"]), 2)
         self.assertIsNone(content["emoji"]['my_emojy']['author'])
 
     def test_list_admins_only(self):
@@ -44,7 +44,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 1)
+        self.assertEqual(len(content["emoji"]), 2)
         self.assertIsNone(content["emoji"]['my_emojy']['author'])
 
     def test_upload(self):
@@ -62,12 +62,12 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         content = ujson.loads(result.content)
         self.assert_json_success(result)
-        self.assertEqual(len(content["emoji"]), 1)
+        self.assertEqual(len(content["emoji"]), 2)
         self.assertIn('author', content["emoji"]['my_emoji'])
         self.assertEqual(
             content["emoji"]['my_emoji']['author']['email'], email)
 
-        realm_emoji = RealmEmoji.objects.get(realm=get_realm('zulip'))
+        realm_emoji = RealmEmoji.objects.get(name='my_emoji')
         self.assertEqual(
             str(realm_emoji),
             '<RealmEmoji(zulip): my_emoji my_emoji.png>'
@@ -118,7 +118,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         # We only mark an emoji as deactivated instead of
         # removing it from the database.
-        self.assertEqual(len(emojis), 1)
+        self.assertEqual(len(emojis), 2)
         self.assertEqual(emojis["my_emoji"]["deactivated"], True)
 
     def test_delete_admins_only(self):

@@ -6,14 +6,17 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
-    Subscription, RealmAuditLog, get_huddle, Realm, UserMessage, RealmDomain, \
-    clear_database, get_client, get_user_profile_by_id, email_to_username, \
-    Service, get_user, DefaultStream, get_stream, get_realm
+    Subscription, RealmAuditLog, get_huddle, Realm, RealmEmoji, UserMessage, \
+    RealmDomain, clear_database, get_client, get_user_profile_by_id, \
+    email_to_username, Service, get_user, DefaultStream, get_stream, \
+    get_realm
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.upload import upload_backend
+
 import random
 import os
 from six.moves import range
@@ -198,6 +201,19 @@ class Command(BaseCommand):
 
         # Extract a list of all users
         user_profiles = list(UserProfile.objects.all())  # type: List[UserProfile]
+
+        # Create a test realm emoji.
+        IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'checkbox-green.png')
+        UPLOADED_EMOJI_FILE_NAME = 'green_tick.png'
+        with open(IMAGE_FILE_PATH, 'rb') as fp:
+            upload_backend.upload_emoji_image(fp, UPLOADED_EMOJI_FILE_NAME, iago)
+            RealmEmoji.objects.create(
+                name='green_tick',
+                author=iago,
+                realm=zulip_realm,
+                deactivated=False,
+                file_name=UPLOADED_EMOJI_FILE_NAME,
+            )
 
         if not options["test_suite"]:
             # Populate users with some bar data
