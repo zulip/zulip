@@ -234,7 +234,8 @@ def regenerate_bot_api_key(request, user_profile, email):
     )
     return json_success(json_result)
 
-def add_outgoing_webhook_service(name, user_profile, base_url, interface, token):
+# This function is used to add service for Outgoing webhook and Embedded bot type webhooks alike.
+def add_service(name, user_profile, base_url=None, interface=None, token=None):
     # type: (Text, UserProfile, Text, int, Text) -> None
     Service.objects.create(name=name,
                            user_profile=user_profile,
@@ -245,14 +246,18 @@ def add_outgoing_webhook_service(name, user_profile, base_url, interface, token)
 @has_request_variables
 def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name_raw=REQ("short_name"),
                     bot_type=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
-                    payload_url=REQ(validator=check_url, default=None),
+                    payload_url=REQ(validator=check_url, default=None), service_name=REQ(default=None),
                     interface_type=REQ(validator=check_int, default=Service.GENERIC),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name = check_short_name(short_name_raw)
-    service_name = short_name
+
+    # In case of outgoing webhooks.
+    if (service_name is None):
+        service_name = short_name
+
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
@@ -298,12 +303,14 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot_profile)
 
-    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        add_outgoing_webhook_service(name=service_name,
-                                     user_profile=bot_profile,
-                                     base_url=payload_url,
-                                     interface=interface_type,
-                                     token=random_api_key())
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT or bot_type == UserProfile.EMBEDDED_BOT:
+        if bot_type == UserProfile.EMBEDDED_BOT:
+            payload_url = ""
+        add_service(name=service_name,
+                    user_profile=bot_profile,
+                    base_url=payload_url,
+                    interface=interface_type,
+                    token=random_api_key())
 
     json_result = dict(
         api_key=bot_profile.api_key,
