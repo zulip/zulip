@@ -134,6 +134,7 @@ body {
 
 .help .sidebar li a {
     color: inherit;
+    display: block;
 }
 
 .app.help .hamburger {
