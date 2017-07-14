@@ -17,10 +17,10 @@
             <li class="add-a-new-bot-tab"><a>{{t "Add a new bot" }}</a></li>
         </ul>
 
-        <ol class="bots_list" id="active_bots_list">
+        <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You do not have any active bot.' }}">
         </ol>
 
-        <ol class="bots_list" id="inactive_bots_list">
+        <ol class="bots_list required-text" id="inactive_bots_list" data-empty="{{t 'You do not have any inactive bot.' }}">
         </ol>
 
         <div id="bot_table_error" class="alert alert-error hide"></div>
