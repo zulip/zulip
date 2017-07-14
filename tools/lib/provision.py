@@ -104,6 +104,7 @@ if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor
     sys.exit(1)
 
 POSTGRES_VERSION_MAP = {
+    "stretch": "9.6",
     "trusty": "9.3",
     "xenial": "9.5",
 }
@@ -128,6 +129,11 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
 ] + VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
+    "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.6",
+        "postgresql-9.6-tsearch-extras",
+        "postgresql-9.6-pgroonga",
+    ],
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.3",
         "postgresql-9.3-tsearch-extras",
