@@ -20,7 +20,7 @@ certifi==2017.4.17
 cffi==1.10.0
 chardet==3.0.4
 click==6.7                # via flask
-cryptography==1.8.1       # via pyopenssl
+cryptography==1.9
 cssselect==1.0.1
 decorator==4.0.11         # via ipython, traitlets
 defusedxml==0.5.0
@@ -53,7 +53,6 @@ ndg-httpsclient==0.4.2
 oauth2client==4.1.1
 oauthlib==2.0.2
 olefile==0.44             # via pillow
-packaging==16.8           # via cryptography
 pbr==3.0.0                # via mock
 pexpect==4.2.1            # via ipython
 pickleshare==0.7.4        # via ipython
@@ -73,7 +72,6 @@ pyjwt==1.5.0
 pyldap==2.4.25.1
 pylibmc==1.5.2
 pyopenssl==17.0.0         # via ndg-httpsclient
-pyparsing==2.2.0          # via packaging
 python-gcm==0.4
 python-twitter==3.3
 python3-openid==3.1.0

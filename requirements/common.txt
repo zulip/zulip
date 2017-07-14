@@ -37,6 +37,10 @@ cffi==1.10.0
 
 chardet==3.0.4
 
+# Pinned version because older versions don't compile on newer Linux.
+# Not actually a direct dependency.
+cryptography==1.9
+
 # Needed for integrations
 defusedxml==0.5.0
 
