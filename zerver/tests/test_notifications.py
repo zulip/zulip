@@ -349,3 +349,16 @@ class TestMissedMessages(ZulipTestCase):
         body = '<img alt=":test_emoji:" height="20px" src="http://testserver/user_avatars/1/emoji/test_emoji.png" title=":test_emoji:">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_stream_link_in_missed_message(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
+                                   Recipient.PERSONAL,
+                                   'Come and join us in #**Verona**.')
+        body = '<a class="stream" data-stream-id="5" href="http://testserver/#narrow/stream/Verona">#Verona</a'
+        subject = 'Othello, the Moor of Venice sent you a message'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)

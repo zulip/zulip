@@ -119,6 +119,13 @@ def build_message_list(user_profile, messages):
             r"/user_avatars/(\d+)/emoji/",
             user_profile.realm.uri + r"/user_avatars/\1/emoji/", content)
 
+        # Stream links need to be converted from relative to absolute. They
+        # have href values in the form of "/#narrow/stream/...".
+        content = re.sub(
+            r"/#narrow/stream/",
+            user_profile.realm.uri + r"/#narrow/stream/",
+            content)
+
         return content
 
     def fix_plaintext_image_urls(content):
