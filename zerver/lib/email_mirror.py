@@ -215,8 +215,7 @@ def get_message_part_by_type(message, content_type):
             content = part.get_payload(decode=True)
             assert isinstance(content, binary_type)
             if charsets[idx]:
-                text = content.decode(charsets[idx], errors="ignore")
-            return text
+                return content.decode(charsets[idx], errors="ignore")
     return None
 
 def extract_body(message):
