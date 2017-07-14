@@ -45,7 +45,6 @@ add_dependencies({
     compose_ui: 'js/compose_ui.js',
     Handlebars: 'handlebars',
     people: 'js/people',
-    sent_messages: 'js/sent_messages',
     stream_data: 'js/stream_data',
     util: 'js/util',
 });
@@ -255,8 +254,6 @@ people.add(bob);
 }());
 
 (function test_send_message_success() {
-    sent_messages.reset_id_state();
-
     blueslip.error = noop;
     blueslip.log = noop;
     $("#new_message_content").val('foobarfoobar');
@@ -266,60 +263,72 @@ people.add(bob);
     $("#sending-indicator").show();
     global.feature_flags.log_send_times = true;
     global.feature_flags.collect_send_times = true;
-
+    var set_timeout_called = false;
+    global.patch_builtin('setTimeout', function (func, delay) {
+        assert.equal(delay, 5000);
+        func();
+        set_timeout_called = true;
+    });
+    var server_events_triggered;
+    global.server_events = {
+        restart_get_events: function () {
+            server_events_triggered = true;
+        },
+    };
     var reify_message_id_checked;
     echo.reify_message_id = function (local_id, message_id) {
         assert.equal(local_id, 1001);
         assert.equal(message_id, 12);
         reify_message_id_checked = true;
     };
-    var locally_echoed = false;
-    compose.send_message_success(1001, 12, locally_echoed);
+    var test_date = 'Wed Jun 28 2017 22:12:48 GMT+0000 (UTC)';
+    compose.send_message_success(1001, 12, new Date(test_date), false);
     assert.equal($("#new_message_content").val(), '');
     assert($("#new_message_content").is_focused());
     assert(!$("#send-status").visible());
     assert.equal($("#compose-send-button").attr('disabled'), undefined);
     assert(!$("#sending-indicator").visible());
-
+    assert.equal(_.keys(compose.send_times_data).length, 1);
+    assert.equal(compose.send_times_data[12].start.getTime(), new Date(test_date).getTime());
+    assert(!compose.send_times_data[12].locally_echoed);
     assert(reify_message_id_checked);
+    assert(server_events_triggered);
+    assert(set_timeout_called);
+}());
+
+(function test_mark_rendered_content_disparity() {
+    compose.mark_rendered_content_disparity(13, true);
+    assert.deepEqual(compose.send_times_data[13], { rendered_content_disparity: true });
 }());
 
 (function test_report_as_received() {
+    var msg = {
+        id: 12,
+        sent_by_me: true,
+    };
     var set_timeout_called = false;
     global.patch_builtin('setTimeout', function (func, delay) {
         assert.equal(delay, 0);
         func();
         set_timeout_called = true;
     });
-
-    sent_messages.track_message({
-        client_message_id: 12,
-    });
-
-    var data = sent_messages.get_message_state(12).data;
-
-    data.locally_echoed = true;
+    compose.send_times_data[12].locally_echoed = true;
     channel.post = function (payload) {
         assert.equal(payload.url, '/json/report_send_time');
         assert.equal(typeof(payload.data.time), 'string');
         assert(payload.data.locally_echoed);
         assert(!payload.data.rendered_content_disparity);
     };
-    sent_messages.report_as_received(12);
-    assert.equal(typeof(data.received), 'object');
-    assert.equal(typeof(data.displayed), 'object');
+    compose.report_as_received(msg);
+    assert.equal(typeof(compose.send_times_data[12].received), 'object');
+    assert.equal(typeof(compose.send_times_data[12].displayed), 'object');
     assert(set_timeout_called);
 
-    delete sent_messages.send_times_data[13];
-    sent_messages.track_message({
-        client_message_id: 13,
-    });
-
-
-    sent_messages.report_as_received(13);
-    data = sent_messages.get_message_state(13).data;
-    assert.equal(typeof(data.received), 'object');
-    assert.equal(typeof(data.displayed), 'object');
+    delete compose.send_times_data[13];
+    msg.id = 13;
+    compose.report_as_received(msg);
+    assert.equal(typeof(compose.send_times_data[13].received), 'object');
+    assert.equal(typeof(compose.send_times_data[13].displayed), 'object');
 }());
 
 (function test_send_message() {
@@ -370,11 +379,10 @@ people.add(bob);
               reply_to: 'alice@example.com',
               private_message_recipient: 'alice@example.com',
               to_user_ids: '31',
-              client_message_id: 1,
               local_id: 1,
             };
             assert.equal(payload.url, '/json/messages');
-            assert.equal(_.keys(payload.data).length, 12);
+            assert.equal(_.keys(payload.data).length, 11);
             assert.deepEqual(payload.data, single_msg);
             payload.data.id = stub_state.local_id_counter;
             payload.success(payload.data);
@@ -385,7 +393,7 @@ people.add(bob);
             assert.equal(typeof(message_id), 'number');
             stub_state.reify_message_id_checked += 1;
         };
-        sent_messages.send_times_data = {};
+        compose.send_times_data = {};
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
         $("#new_message_content").val('[foobar]' +
@@ -405,7 +413,7 @@ people.add(bob);
             server_events_triggered: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(sent_messages.send_times_data).length, 1);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert.equal($("#new_message_content").val(), '');
         assert($("#new_message_content").is_focused());
         assert(!$("#send-status").visible());
@@ -440,6 +448,7 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(reload_initiate_triggered);
     }());
@@ -480,6 +489,7 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -512,6 +522,7 @@ people.add(bob);
             server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
+        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -769,19 +780,17 @@ function test_with_mock_socket(test_params) {
     // socket_user_agent field will be added.
     var request = {foo: 'bar'};
 
-    var success_func_checked = false;
-    var success = function () {
-        success_func_checked = true;
-    };
+    // Our success function gets passed all the way through to
+    // socket.send, so we can just use a stub to test that.
+    var success = 'success-function-stub';
 
+    // Our error function gets wrapped, so we set up a real
+    // function to test the wrapping mechanism.
     var error_func_checked = false;
     var error = function (error_msg) {
         assert.equal(error_msg, 'Error sending message: simulated_error');
         error_func_checked = true;
     };
-
-    sent_messages.send_times_data = {};
-    sent_messages.reset_id_state();
 
     test_with_mock_socket({
         run_code: function () {
@@ -794,15 +803,11 @@ function test_with_mock_socket(test_params) {
             assert.equal(send_args.request, request);
             assert.deepEqual(send_args.request, {
                 foo: 'bar',
-                client_message_id: 1,
                 socket_user_agent: 'unittest_transmit_message',
             });
 
-            // Just make sure our success function gets called.
-            send_args.success({
-                id: 42,
-            });
-            assert(success_func_checked);
+            // Our success function never gets wrapped.
+            assert.equal(send_args.success, success);
 
             // Our error function does get wrapped, so we test by
             // using socket.send's error callback, which should
@@ -1239,6 +1244,26 @@ function test_with_mock_socket(test_params) {
         assert(!$("#undo_markdown_preview").visible());
         assert(!$("#preview_message_area").visible());
         assert($("#markdown_preview").visible());
+    }());
+
+    (function test_message_id_changed_document() {
+        var handler = $(document).get_on_handler('message_id_changed');
+        compose.send_times_data = {
+            1031: {
+                data: 'Test data!',
+            },
+        };
+        event.old_id = 1031;
+        event.new_id = 1045;
+
+        handler(event);
+
+        var send_times_data = {
+            1045: {
+                data: 'Test data!',
+            },
+        };
+        assert.deepEqual(compose.send_times_data, send_times_data);
     }());
 }());
 
