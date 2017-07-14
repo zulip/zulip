@@ -161,6 +161,7 @@ def handle_digest_email(user_profile_id, cutoff):
 
     # Start building email template data.
     context.update({
+        'realm_name': user_profile.realm.name,
         'name': user_profile.full_name,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
     })
