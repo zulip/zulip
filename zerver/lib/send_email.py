@@ -77,14 +77,16 @@ def send_email_from_dict(email_dict):
 def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                       from_address=None, context={}, delay=datetime.timedelta(0)):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any], datetime.timedelta) -> None
+    template_name = template_prefix.split('/')[-1]
+    email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
+                    'from_name': from_name, 'from_address': from_address, 'context': context}
+
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
         to_field = {'user_id': to_user_id}  # type: Dict[str, Any]
     else:
         to_field = {'address': parseaddr(to_email)[1]}
-    email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
-                    'from_name': from_name, 'from_address': from_address, 'context': context}
-    template_name = template_prefix.split('/')[-1]
+
     ScheduledEmail.objects.create(
         type=EMAIL_TYPES[template_name],
         scheduled_timestamp=timezone_now() + delay,
