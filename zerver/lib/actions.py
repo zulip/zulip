@@ -2421,8 +2421,8 @@ def set_default_streams(realm, stream_dict):
         stream_names.append(name)
         stream, _ = create_stream_if_needed(realm,
                                             name,
-                                            invite_only = options["invite_only"],
-                                            stream_description = options["description"])
+                                            invite_only = options.get("invite_only", False),
+                                            stream_description = options.get("description", ''))
         DefaultStream.objects.create(stream=stream, realm=realm)
 
     # Always include the realm's default notifications streams, if it exists
