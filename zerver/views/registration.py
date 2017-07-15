@@ -74,6 +74,17 @@ Click anywhere on this message to reply. A compose box will open at the bottom o
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user.email, content)
 
+def setup_initial_streams_and_messages(realm):
+    # type: (Realm) -> None
+    stream_info = {
+        "social": {"description": "For socializing", "invite_only": False},
+        "general": {"description": "For general stuff", "invite_only": False},
+        "zulip": {"description": "For zulip stuff", "invite_only": False}
+    }  # type: Dict[Text, Dict[Text, Any]]
+
+    create_streams_with_welcome_messages(realm, stream_info)
+    set_default_streams(realm, stream_info)
+
 @require_post
 def accounts_register(request):
     # type: (HttpRequest) -> HttpResponse
@@ -203,15 +214,7 @@ def accounts_register(request):
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
             realm = do_create_realm(string_id, realm_name)[0]
-
-            stream_info = {
-                "social": {"description": "For socializing", "invite_only": False},
-                "general": {"description": "For general stuff", "invite_only": False},
-                "zulip": {"description": "For zulip stuff", "invite_only": False}
-            }  # type: Dict[Text, Dict[Text, Any]]
-
-            create_streams_with_welcome_messages(realm, stream_info)
-            set_default_streams(realm, stream_info)
+            setup_initial_streams_and_messages(realm)
         assert(realm is not None)
 
         full_name = form.cleaned_data['full_name']
