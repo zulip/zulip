@@ -1271,6 +1271,10 @@ thead .actions {
     width: 340px;
 }
 
+#service_name_list input[type=text] {
+    width: 340px;
+}
+
 .invited-as-admin {
     opacity: 0.5;
     margin-left: 2px;
