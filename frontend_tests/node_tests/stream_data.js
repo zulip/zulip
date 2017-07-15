@@ -75,6 +75,10 @@ var people = global.people;
 
     assert(stream_data.in_home_view(social.stream_id));
     assert(!stream_data.in_home_view(denmark.stream_id));
+
+    assert.equal(stream_data.maybe_get_stream_name(), undefined);
+    assert.equal(stream_data.maybe_get_stream_name(social.stream_id), 'social');
+    assert.equal(stream_data.maybe_get_stream_name(42), undefined);
 }());
 
 (function test_renames() {
