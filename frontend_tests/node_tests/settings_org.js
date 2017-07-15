@@ -28,10 +28,6 @@ set_global('realm_icon', {
 set_global('channel', {
 });
 
-set_global('stream_data', {
-    get_sub_by_id: noop,
-});
-
 set_global('templates', {
 });
 

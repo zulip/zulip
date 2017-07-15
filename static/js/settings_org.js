@@ -109,24 +109,11 @@ exports.populate_auth_methods = function (auth_methods) {
     }
 };
 
-function maybe_get_stream_name(stream_id) {
-    // TODO: move to stream_data.js.
-    if (!stream_id) {
-        return;
-    }
-    var stream = stream_data.get_sub_by_id(stream_id);
-
-    if (!stream) {
-        return;
-    }
-
-    return stream.name;
-}
 
 exports.render_notifications_stream_ui = function (stream_id) {
     var elem = $('#realm_notifications_stream_name');
 
-    var name = maybe_get_stream_name(stream_id);
+    var name = stream_data.maybe_get_stream_name(stream_id);
 
     if (!name) {
         elem.text(i18n.t("Disabled"));
