@@ -54,8 +54,16 @@ zrequire('settings_bots');
 function test_create_bot_type_input_box_toggle(f) {
     var create_payload_url = $('#create_payload_url');
     var payload_url_inputbox = $('#payload_url_inputbox');
+    var EMBEDDED_BOT_TYPE = '4';
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
     var GENERIC_BOT_TYPE = '1';
+
+    $('#create_bot_type :selected').val(EMBEDDED_BOT_TYPE);
+    f.apply();
+    assert(!create_payload_url.hasClass('required'));
+    assert(!payload_url_inputbox.visible());
+    assert($('#select_service_name').hasClass('required'));
+    assert($('#service_name_list').visible());
 
     $('#create_bot_type :selected').val(OUTGOING_WEBHOOK_BOT_TYPE);
     f.apply();
