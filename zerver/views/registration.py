@@ -78,12 +78,13 @@ Click anywhere on this message to reply. A compose box will open at the bottom o
 def setup_initial_streams(realm):
     # type: (Realm) -> None
     stream_dicts = [
-        {'name': "general",
-         'description': "For general stuff"},
-        {'name': "social",
-         'description': "For socializing"},
+        {'name': "general"},
+        {'name': "new members",
+         'description': "For welcoming and onboarding new members. If you haven't yet, "
+         "introduce yourself in a new thread using your name as the topic!"},
         {'name': "zulip",
-         'description': "For zulip stuff"}]  # type: List[Mapping[str, Any]]
+         'description': "For discussing Zulip, Zulip tips and tricks, and asking "
+         "questions about how Zulip works"}]  # type: List[Mapping[str, Any]]
     create_streams_if_needed(realm, stream_dicts)
     set_default_streams(realm, {stream['name']: {} for stream in stream_dicts})
 
@@ -107,16 +108,27 @@ def send_initial_realm_messages(realm):
         {'stream': "core team",
          'topic': "private streams",
          'content': "This is a private stream. Only admins and people you invite "
-         "will be able to see that this stream exists."},
+         "to the stream will be able to see that this stream exists."},
         {'stream': "general",
-         'topic': "hello",
+         'topic': "welcome",
          'content': "Welcome to #**general**."},
-        {'stream': "social",
-         'topic': "hello",
-         'content': "Welcome to #**social**."},
+        {'stream': "new members",
+         'topic': "onboarding",
+         'content': "A #**new members** stream is great for onboarding new members.\n\nIf you're "
+         "reading this and aren't the first person here, introduce yourself in a new thread "
+         "using your name as the topic! Type `c` or click on `New Topic` at the bottom of the "
+         "screen to start a new topic."},
         {'stream': "zulip",
-         'topic': "hello",
-         'content': "Welcome to #**zulip**."},
+         'topic': "topic demonstration",
+         'content': "Here is a message in one topic. Replies to this message will go to this topic."},
+        {'stream': "zulip",
+         'topic': "topic demonstration",
+         'content': "A second message in this topic."},
+        {'stream': "zulip",
+         'topic': "second topic",
+         'content': "This is a message in a second topic.\n\nTopics are similar to email subjects, "
+         "in that each conversation should get its own topic. Keep them short, though; one "
+         "or two words will do it!"},
     ]  # type: List[Dict[str, Text]]
     messages = [internal_prep_stream_message(
         realm, get_system_bot(settings.WELCOME_BOT),

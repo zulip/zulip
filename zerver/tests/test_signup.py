@@ -876,12 +876,17 @@ class RealmCreationTest(ZulipTestCase):
             self.assertTrue(result["Location"].endswith("/"))
 
             # Check welcome messages
-            for stream_name in ['general', 'social', 'zulip']:
+            for stream_name, text, message_count in [
+                    ('announce', 'This is', 1),
+                    ('core team', 'This is', 1),
+                    ('general', 'Welcome to', 1),
+                    ('new members', 'stream is', 1),
+                    ('zulip', 'Here is', 3)]:
                 stream = get_stream(stream_name, realm)
                 recipient = get_recipient(Recipient.STREAM, stream.id)
-                messages = Message.objects.filter(recipient=recipient)
-                self.assertEqual(len(messages), 1)
-                self.assertIn('Welcome to', messages[0].content)
+                messages = Message.objects.filter(recipient=recipient).order_by('pub_date')
+                self.assertEqual(len(messages), message_count)
+                self.assertIn(text, messages[0].content)
 
     def test_create_realm_existing_email(self):
         # type: () -> None
