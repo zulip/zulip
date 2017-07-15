@@ -244,6 +244,19 @@ exports.get_name = function (stream_name) {
     return sub.name;
 };
 
+exports.maybe_get_stream_name = function (stream_id) {
+    if (!stream_id) {
+        return;
+    }
+    var stream = exports.get_sub_by_id(stream_id);
+
+    if (!stream) {
+        return;
+    }
+
+    return stream.name;
+};
+
 exports.set_subscribers = function (sub, user_ids) {
     sub.subscribers = Dict.from_array(user_ids || []);
 };
