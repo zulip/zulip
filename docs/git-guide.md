@@ -1065,7 +1065,7 @@ working on a feature or bugfix. In order for Git to merge your changes and the
 changes that have occurred on zulip/upstream since you first started your work,
 it must perform a three-way merge and create a merge commit.
 
-Merge commits aren't bad, however, Zulip don't use them. Instead Zulip uses a
+Merge commits aren't bad, however, Zulip doesn't use them. Instead Zulip uses a
 forked-repo, rebase-oriented workflow.
 
 A merge commit is usually created when you've run `git pull` or `git merge`.
@@ -1125,9 +1125,9 @@ keep any changes that are in your working directory or that you have committed,
 use `git reset --merge <commit>` instead.
 
 You can also use the relative reflog `HEAD@{1}` instead of the commit hash,
-just keep in mind this changes as you run git commands.
+just keep in mind that this changes as you run git commands.
 
-Now when I look at the git reflog, I see the tip of my branch is pointing to my
+Now when you look at the output of `git reflog`, you should see that the tip of your branch points to your
 last commit `13bea0e` before the merge:
 
 ```
