@@ -6,6 +6,7 @@ import zlib
 
 from collections import defaultdict
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now as timezone_now
 from six import binary_type
 
 from zerver.lib.avatar import avatar_url_from_dict
@@ -671,3 +672,16 @@ def add_missing_messages(user_profile):
     # Doing a bulk create for all the UserMessage objects stored for creation.
     if all_messages_to_insert:
         UserMessage.objects.bulk_create(all_messages_to_insert)
+
+def maybe_catch_up_soft_deactivated_user(user_profile):
+    # type: (UserProfile) -> None
+    if user_profile.long_term_idle:
+        add_missing_messages(user_profile)
+        user_profile.long_term_idle = False
+        user_profile.save(update_fields=['long_term_idle'])
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            event_type='user_soft_activated',
+            event_time=timezone_now()
+        )
