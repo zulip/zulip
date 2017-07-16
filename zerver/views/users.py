@@ -29,6 +29,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
 from zerver.lib.create_user import random_api_key
+from zerver.lib.integrations import EMBEDDED_BOTS
 
 
 def deactivate_user_backend(request, user_profile, email):
@@ -262,6 +263,11 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
     form = CreateUserForm({'full_name': full_name, 'email': email})
+    if bot_type == UserProfile.EMBEDDED_BOT:
+        is_service_valid = any(service_name == embedded_bot_service.name for embedded_bot_service in EMBEDDED_BOTS)
+        if is_service_valid is False:
+            return json_error(_("Invalid service name."))
+
     if not form.is_valid():
         # We validate client-side as well
         return json_error(_('Bad name or username'))
