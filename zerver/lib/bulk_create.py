@@ -68,6 +68,15 @@ def bulk_create_streams(realm, stream_dict):
                     invite_only=options["invite_only"]
                 )
             )
+    # Sort streams by name before creating them so that we can have a
+    # reliable ordering of `stream_id` across different python versions.
+    # This is required for test fixtures which contain `stream_id`. Prior
+    # to python 3.3 hashes were not randomized but after a security fix
+    # hash randomization was enabled in python 3.3 which made iteration
+    # of dictionaries and sets completely unpredictable. Here the order
+    # of elements while iterating `stream_dict` will be completely random
+    # for python 3.3 and later versions.
+    streams_to_create.sort(key=lambda x: x.name)
     Stream.objects.bulk_create(streams_to_create)
 
     recipients_to_create = []  # type: List[Recipient]
