@@ -523,7 +523,7 @@ def ok_to_include_history(narrow, realm):
             if term['operator'] == "is":
                 include_history = False
 
-    return include_history
+    return include_history and realm.allow_edit_history
 
 def get_stream_name_from_narrow(narrow):
     # type: (Optional[Iterable[Dict[str, Any]]]) -> Optional[Text]
@@ -776,6 +776,8 @@ def get_messages_backend(request, user_profile,
         msg_dict = message_dicts[message_id]
         msg_dict.update({"flags": user_message_flags[message_id]})
         msg_dict.update(search_fields.get(message_id, {}))
+        if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
+            del msg_dict["edit_history"]
         message_list.append(msg_dict)
 
     statsd.incr('loaded_old_messages', len(message_list))
@@ -1027,14 +1029,16 @@ def fill_edit_history_entries(message_history, message):
 def get_message_edit_history(request, user_profile,
                              message_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    message, ignored_user_message = access_message(user_profile, message_id)
+    if user_profile.realm.allow_edit_history:
+        message, ignored_user_message = access_message(user_profile, message_id)
 
-    # Extract the message edit history from the message
-    message_edit_history = ujson.loads(message.edit_history)
+        # Extract the message edit history from the message
+        message_edit_history = ujson.loads(message.edit_history)
 
-    # Fill in all the extra data that will make it usable
-    fill_edit_history_entries(message_edit_history, message)
-    return json_success({"message_history": reversed(message_edit_history)})
+        # Fill in all the extra data that will make it usable
+        fill_edit_history_entries(message_edit_history, message)
+        return json_success({"message_history": reversed(message_edit_history)})
+    return json_error(_("Your organization does not allow access to message history"))
 
 @has_request_variables
 def update_message_backend(request, user_profile,
