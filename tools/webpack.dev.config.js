@@ -1,17 +1,27 @@
 var config = require('./webpack.config.js');
 var BundleTracker = require('webpack-bundle-tracker');
+var webpack = require('webpack');
 
 // Built webpack dev asset reloader
-config.entry.common.unshift('webpack-dev-server/client?/sockjs-node');
+config.entry.common.unshift('webpack/hot/dev-server');
+// Use 0.0.0.0 so that we can set a port but still use the host
+// the browser is connected to.
+config.entry.common.unshift('webpack-dev-server/client?http://0.0.0.0:9994');
+
 // Out JS debugging tools
 config.entry.common.push('./static/js/debug.js');
 
 config.devtool = 'eval';
 config.output.publicPath = '/webpack/';
 config.plugins.push(new BundleTracker({filename: 'static/webpack-bundles/webpack-stats-dev.json'}));
+// Hot Reload of code in development
+config.plugins.push(new webpack.HotModuleReplacementPlugin());
+// Better logging from console for hot reload
+config.plugins.push(new webpack.NamedModulesPlugin());
 
 config.devServer = {
-    port: 9994,
+    clientLogLevel: "warning",
+    hot: true,
     inline: false,
     stats: "errors-only",
     watchOptions: {

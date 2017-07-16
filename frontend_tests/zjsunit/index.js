@@ -47,6 +47,13 @@ global.stub_i18n = require('./i18n.js');
 
 var noop = function () {};
 
+// Set up fake module.hot
+// eslint-disable-next-line no-native-reassign
+module = require('module');
+module.prototype.hot = {
+    accept: noop,
+};
+
 output.start_writing();
 
 files.forEach(function (file) {
