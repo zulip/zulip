@@ -5,6 +5,7 @@
     compress
     delaycompress
     notifempty
+    create 644 zulip zulip
 }
 
 /var/log/zulip/server.log {
@@ -14,4 +15,5 @@
     compress
     delaycompress
     notifempty
+    create 644 zulip zulip
 }
