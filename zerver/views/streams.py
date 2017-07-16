@@ -177,7 +177,8 @@ def remove_subscriptions_backend(request, user_profile,
         people_to_unsub = set([user_profile])
 
     result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[Text]]
-    (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
+    (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
+                                                          acting_user=user_profile)
 
     for (subscriber, stream) in removed:
         result["removed"].append(stream.name)
@@ -255,7 +256,8 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = set([user_profile])
 
-    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
+    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
+                                                              acting_user=user_profile)
 
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))  # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
@@ -398,7 +400,7 @@ def json_stream_exists(request, user_profile, stream_name=REQ("stream"),
     # So if we're not yet subscribed and autosubscribe is enabled, we
     # should join.
     if sub is None and autosubscribe:
-        bulk_add_subscriptions([stream], [user_profile])
+        bulk_add_subscriptions([stream], [user_profile], acting_user=user_profile)
         result["subscribed"] = True
 
     return json_success(result)  # results are ignored for HEAD requests

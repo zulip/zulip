@@ -308,6 +308,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     try:
         if prereg_user is not None:
             streams = prereg_user.streams.all()
+            acting_user = prereg_user.referred_by  # type: Optional[UserProfile]
         else:
             streams = []
     except AttributeError:
@@ -318,7 +319,9 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     # add the default streams
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
-    bulk_add_subscriptions(streams, [user_profile])
+        acting_user = None
+
+    bulk_add_subscriptions(streams, [user_profile], acting_user=acting_user)
 
     add_new_user_history(user_profile, streams)
 
@@ -1627,8 +1630,8 @@ def query_all_subs_by_stream(streams):
         all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
     return all_subs_by_stream
 
-def bulk_add_subscriptions(streams, users, from_stream_creation=False):
-    # type: (Iterable[Stream], Iterable[UserProfile], bool) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_user=None):
+    # type: (Iterable[Stream], Iterable[UserProfile], bool, Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])  # type: Mapping[int, Recipient]
     recipients = [recipient.id for recipient in recipients_map.values()]  # type: List[int]
 
@@ -1685,6 +1688,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False):
     all_subscription_logs = []  # type: (List[RealmAuditLog])
     for (sub, stream) in subs_to_add:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+                                                   acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
                                                    event_last_message_id=0,
@@ -1692,6 +1696,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False):
                                                    event_time=event_time))
     for (sub, stream) in subs_to_activate:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+                                                   acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
                                                    event_last_message_id=event_last_message_id,
@@ -1790,8 +1795,8 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-def bulk_remove_subscriptions(users, streams):
-    # type: (Iterable[UserProfile], Iterable[Stream]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+def bulk_remove_subscriptions(users, streams, acting_user=None):
+    # type: (Iterable[UserProfile], Iterable[Stream], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 
     recipients_map = bulk_get_recipients(Recipient.STREAM,
                                          [stream.id for stream in streams])  # type: Mapping[int, Recipient]
