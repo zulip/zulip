@@ -26,6 +26,7 @@ from zerver.lib.message import (
     get_unread_message_ids_per_recipient,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter
+from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import (
@@ -509,6 +510,9 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         event_types_set = set(event_types)
     else:
         event_types_set = None
+
+    # Fill up the UserMessage rows if a soft-deactivated user has returned
+    maybe_catch_up_soft_deactivated_user(user_profile)
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    include_subscribers=include_subscribers)

@@ -5,6 +5,7 @@ import ujson
 import zlib
 
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now as timezone_now
 from six import binary_type
 
 from zerver.lib.avatar import avatar_url_from_dict

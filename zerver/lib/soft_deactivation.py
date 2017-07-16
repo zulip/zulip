@@ -177,3 +177,16 @@ def do_soft_deactivate_users(users):
             )
             realm_logs.append(log)
         RealmAuditLog.objects.bulk_create(realm_logs)
+
+def maybe_catch_up_soft_deactivated_user(user_profile):
+    # type: (UserProfile) -> None
+    if user_profile.long_term_idle:
+        add_missing_messages(user_profile)
+        user_profile.long_term_idle = False
+        user_profile.save(update_fields=['long_term_idle'])
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            event_type='user_soft_activated',
+            event_time=timezone_now()
+        )

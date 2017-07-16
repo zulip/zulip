@@ -30,7 +30,8 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
-from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivate_users
+from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivate_users, \
+    maybe_catch_up_soft_deactivated_user
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
@@ -2143,6 +2144,41 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid message(s)")
 
 class SoftDeactivationMessageTest(ZulipTestCase):
+
+    def test_maybe_catch_up_soft_deactivated_user(self):
+        # type: () -> None
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago")]
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        sender = self.example_email('iago')
+        stream_name = 'Denmark'
+        subject = 'foo'
+
+        def last_realm_audit_log_entry(event_type):
+            # type: (str) -> RealmAuditLog
+            return RealmAuditLog.objects.filter(
+                event_type=event_type
+            ).order_by('-event_time')[0]
+
+        long_term_idle_user = self.example_user('hamlet')
+        do_soft_deactivate_users([long_term_idle_user])
+
+        message = 'Test Message 1'
+        self.send_message(sender, stream_name, Recipient.STREAM,
+                          message, subject)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertNotEqual(idle_user_msg_list[-1].content, message)
+        with queries_captured() as queries:
+            maybe_catch_up_soft_deactivated_user(long_term_idle_user)
+        self.assert_length(queries, 8)
+        self.assertFalse(long_term_idle_user.long_term_idle)
+        self.assertEqual(last_realm_audit_log_entry(
+            'user_soft_activated').modified_user, long_term_idle_user)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
 
     def test_add_missing_messages(self):
         # type: () -> None
