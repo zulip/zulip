@@ -43,13 +43,15 @@ add it to the appropriate place under `static/`.
   static/ts; CSS lives under `static/styles`. Portico JavaScript ("portico" means
   for logged-out pages) lives under `static/js/portico`.
 
-After you add a new JavaScript file, it needs to be specified in the
-`entries` dictionary defined in `tools/webpack.assets.json` to be included
-in the concatenated file; this will magically ensure it is available
-both in development and production.  CSS should be added to
-the `STYLESHEETS` section of `PIPELINE` in `zproject/settings.py`.  A
-few notes on doing this:
+After you add a new JavaScript file, it needs to be imported by
+another file or specified in the `entries` dictionary defined in
+`tools/webpack.assets.json` to be included in the concatenated file;
+this will magically ensure it is available both in development and
+production.  CSS should be added to the `STYLESHEETS` section of
+`PIPELINE` in `zproject/settings.py`.  A few notes on doing this:
 
+* For new files you should generally import it from another file rather
+  than adding it to `tools/webpack.assets.json`
 * If you plan to only use the JS/CSS within the app proper, and not on
   the login page or other standalone pages, put it in the `app`
   bundle.
@@ -58,6 +60,8 @@ few notes on doing this:
   it its own bundle.  To load a bundle in the relevant Jinja2 template
   for that page, use `render_bundle` and `stylesheet` for JS and CSS,
   respectively.
+* If you modify `tools/webpack.assets.json` you will need to restart
+  the server.
 
 If you want to test minified files in development, look for the
 `PIPELINE_ENABLED =` line in `zproject/settings.py` and set it to `True`
@@ -106,6 +110,21 @@ All JavaScript we provide will eventually be migrated to Typescript,
 which will make refactoring the frontend code easier and allow static
 analyzers to reason about our code more easily.
 
-Declare entry points in webpack.assets.json. Any modules you add will
-need to be required or imported from this file (or one of its
-dependencies) in order to be included in the script bundle.
+Declare entry points in `webpack.assets.json`. Any modules you add
+will need to be imported from this file (or one of its dependencies)
+in order to be included in the script bundle.
+
+### Hot Reloading
+
+Webpack support hot reloading. To enable it you will need to add
+
+```
+// This reloads the module in development rather than refreshing the page
+if (module.hot) {
+    module.hot.accept();
+}
+
+```
+
+To the entry point of any JavaScript file you want to hot reload
+rather than refeshing the page on a change.
