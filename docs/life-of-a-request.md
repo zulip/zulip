@@ -33,10 +33,15 @@ likely culprit.
 Static files include JavaScript, css, static assets (like emoji, avatars),
 and user uploads (if stored locally and not on S3).
 
+File not found errors (404) are served using a Django URL, so that we
+can use configuration variables (like whether the user is logged in)
+in the 404 error page.
+
 ```
 location /static/ {
     alias /home/zulip/prod-static/;
-    error_page 404 /static/html/404.html;
+    # Set a nonexistent path, so we just serve the nice Django 404 page.
+    error_page 404 /django_static_404.html;
 }
 ```
 

@@ -10,7 +10,8 @@ error_page 502 503 504 /static/html/5xx.html;
 # Serve static files directly
 location /static/ {
     alias /home/zulip/prod-static/;
-    error_page 404 /static/html/404.html;
+    # Set a nonexistent path, so we just serve the nice Django 404 page.
+    error_page 404 /django_static_404.html;
 }
 
 # Send longpoll requests to Tornado
