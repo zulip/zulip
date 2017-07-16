@@ -131,6 +131,7 @@ class Realm(ModelReprMixin, models.Model):
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600  # if changed, also change in admin.js
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)  # type: int
     message_retention_days = models.IntegerField(null=True)  # type: Optional[int]
+    allow_edit_history = models.BooleanField(default=True)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -148,6 +149,7 @@ class Realm(ModelReprMixin, models.Model):
     # Define the types of the various automatically managed properties
     property_types = dict(
         add_emoji_by_admins_only=bool,
+        allow_edit_history=bool,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,

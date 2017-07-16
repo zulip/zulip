@@ -246,6 +246,7 @@ class RealmAPITest(ZulipTestCase):
 
         bool_tests = [False, True]  # type: List[bool]
         test_values = dict(
+            allow_edit_history=bool_tests,
             default_language=[u'de', u'en'],
             description=[u'Realm description', u'New description'],
             message_retention_days=[10, 20],

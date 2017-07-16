@@ -493,6 +493,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('update_message')),
             ('flags', check_list(None)),
+            ('content_changed', check_bool),
             ('content', check_string),
             ('edit_timestamp', check_int),
             ('flags', check_list(None)),
@@ -833,6 +834,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (str) -> None
         bool_tests = [True, False, True]  # type: List[bool]
         test_values = dict(
+            allow_edit_history=bool_tests,
             default_language=[u'es', u'de', u'en'],
             description=[u'Realm description', u'New description'],
             message_retention_days=[10, 20],

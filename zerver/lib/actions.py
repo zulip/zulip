@@ -2757,6 +2757,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
 
     ums = UserMessage.objects.filter(message=message.id)
 
+    event['content_changed'] = False
     if content is not None:
         update_user_message_flags(message, ums)
 
@@ -2765,8 +2766,11 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             # Don't highlight message edit diffs on prod
             rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
-        event['orig_content'] = message.content
-        event['orig_rendered_content'] = message.rendered_content
+        event['content_changed'] = True
+        if user_profile.realm.allow_edit_history:
+            event['orig_content'] = message.content
+            event['orig_rendered_content'] = message.rendered_content
+            event['prev_rendered_content_version'] = bugdown_version
         edit_history_event["prev_content"] = message.content
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
@@ -2775,7 +2779,6 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         message.rendered_content_version = bugdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
-        event['prev_rendered_content_version'] = message.rendered_content_version
 
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
