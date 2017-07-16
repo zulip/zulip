@@ -1627,7 +1627,7 @@ def query_all_subs_by_stream(streams):
         all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
     return all_subs_by_stream
 
-def bulk_add_subscriptions(streams, users, from_creation=False):
+def bulk_add_subscriptions(streams, users, from_stream_creation=False):
     # type: (Iterable[Stream], Iterable[UserProfile], bool) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])  # type: Mapping[int, Recipient]
     recipients = [recipient.id for recipient in recipients_map.values()]  # type: List[int]
@@ -1703,7 +1703,7 @@ def bulk_add_subscriptions(streams, users, from_creation=False):
     new_occupied_streams = [stream for stream in
                             set(occupied_streams_after) - set(occupied_streams_before)
                             if not stream.invite_only]
-    if new_occupied_streams and not from_creation:
+    if new_occupied_streams and not from_stream_creation:
         event = dict(type="stream", op="occupy",
                      streams=[stream.to_dict()
                               for stream in new_occupied_streams])
