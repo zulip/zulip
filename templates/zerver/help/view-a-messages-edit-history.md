@@ -1,6 +1,9 @@
 # View a message's edit history
 
-You can view the edit history of any edited messages in your organization.
+By default, you can view the edit history of any edited messages that
+you encounter.  Note, however, that Zulip allows an organization
+administrator to
+[disable message edit history](/help/disable-message-edit-history).
 
 {!message-actions.md!}
 {!down-chevron.md!}

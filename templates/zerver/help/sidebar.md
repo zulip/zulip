@@ -119,6 +119,7 @@
 * [Allow image/link previews](/help/allow-image-link-previews)
 * [Prevent users from changing their name](/help/prevent-users-from-changing-their-name)
 * [Prevent users from changing their email address](/help/prevent-users-from-changing-their-email-address)
+* [Disable message edit history](/help/disable-message-edit-history)
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Require users to include topics in stream messages](/help/require-users-to-include-topics-in-stream-messages)
 * [Change the default language for your organization](/help/change-the-default-language-for-your-organization)

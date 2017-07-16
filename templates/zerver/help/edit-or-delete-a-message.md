@@ -18,7 +18,8 @@ the **Save** button to save the changes you made to your message.
 !!! warn ""
     **Note:** After you have edited a message, the message is publicly marked as
     `(EDITED)`. You can [view](/help/view-a-messages-edit-history) a message's
-    edit history.
+    edit history, assuming that feature has not been
+    [disabled by an organization administrator](/help/disable-message-edit-history).
 
 ## Message editing time limit
 
