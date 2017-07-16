@@ -2765,6 +2765,14 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             # Don't highlight message edit diffs on prod
             rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
+        # One could imagine checking realm.allow_edit_history here and
+        # modifying the events based on that setting, but doing so
+        # doesn't really make sense.  We need to send the edit event
+        # to clients regardless, and a client already had access to
+        # the original/pre-edit content of the message anyway.  That
+        # setting must be enforced on the client side, and making a
+        # change here simply complicates the logic for clients parsing
+        # edit history events.
         event['orig_content'] = message.content
         event['orig_rendered_content'] = message.rendered_content
         edit_history_event["prev_content"] = message.content

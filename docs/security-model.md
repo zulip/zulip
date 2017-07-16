@@ -123,8 +123,9 @@ your organization.
   content (e.g. a password) shared unintentionally. Other users may
   have seen and saved the content of the original message, or have an
   integration (e.g. push notifications) forwarding all messages they
-  receive to another service. Zulip also stores and sends to clients
-  the content of every historical version of a message.
+  receive to another service.  Zulip stores the edit history of
+  messages, but it may or may not be available to clients, depending
+  on an organization-level setting.
 
 ## Users and Bots
 

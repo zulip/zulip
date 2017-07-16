@@ -9,6 +9,7 @@
         <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
         <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
         <div class="alert" id="admin-realm-add-emoji-by-admins-only-status"></div>
+        <div class="alert" id="admin-realm-allow-edit-history-status"></div>
         <div class="alert" id="admin-realm-message-editing-status"></div>
         <div class="alert" id="admin-realm-name-changes-disabled-status"></div>
         <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
@@ -153,6 +154,18 @@
                        class="admin-realm-message-content-edit-limit-minutes"
                        value="{{ realm_message_content_edit_limit_minutes }}"
                   {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_allow_edit_history" name="realm_allow_edit_history"
+                           {{#if realm_allow_edit_history}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block"
+                    title="{{t 'If checked, users will be able view message edit history.'}}">
+                    {{t "Users can view message edit history" }}
+                </label>
             </div>
 
             {{#if false}}

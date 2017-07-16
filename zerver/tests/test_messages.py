@@ -39,6 +39,7 @@ from zerver.models import (
 from zerver.lib.actions import (
     check_message,
     check_send_message,
+    do_set_realm_property,
     extract_recipients,
     do_create_user,
     get_client,
@@ -1228,6 +1229,39 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
         self.assertEqual(content, "(deleted)")
+
+    def test_edit_message_history_disabled(self):
+        # type: () -> None
+        user_profile = self.example_user("hamlet")
+        do_set_realm_property(user_profile.realm, "allow_edit_history", False)
+        self.login(self.example_email("hamlet"))
+
+        # Single-line edit
+        msg_id_1 = self.send_message(self.example_email("hamlet"),
+                                     "Denmark",
+                                     Recipient.STREAM,
+                                     subject="editing",
+                                     content="content before edit")
+
+        new_content_1 = 'content after edit'
+        result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
+            'message_id': msg_id_1, 'content': new_content_1
+        })
+        self.assert_json_success(result_1)
+
+        result = self.client_get(
+            "/json/messages/" + str(msg_id_1) + "/history")
+        self.assert_json_error(result, "Message edit history is disabled in this organization")
+
+        # Now verify that if we fetch the message directly, there's no
+        # edit history data attached.
+        messages_result = self.client_get("/json/messages",
+                                          {"anchor": msg_id_1, "num_before": 0, "num_after": 10})
+        self.assert_json_success(messages_result)
+        json_messages = ujson.loads(
+            messages_result.content.decode('utf-8'))
+        for msg in json_messages['messages']:
+            self.assertNotIn("edit_history", msg)
 
     def test_edit_message_history(self):
         # type: () -> None

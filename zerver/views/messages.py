@@ -776,6 +776,10 @@ def get_messages_backend(request, user_profile,
         msg_dict = message_dicts[message_id]
         msg_dict.update({"flags": user_message_flags[message_id]})
         msg_dict.update(search_fields.get(message_id, {}))
+        # Make sure that we never send message edit history to clients
+        # in realms with allow_edit_history disabled.
+        if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
+            del msg_dict["edit_history"]
         message_list.append(msg_dict)
 
     statsd.incr('loaded_old_messages', len(message_list))
@@ -1027,6 +1031,8 @@ def fill_edit_history_entries(message_history, message):
 def get_message_edit_history(request, user_profile,
                              message_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    if not user_profile.realm.allow_edit_history:
+        return json_error(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
 
     # Extract the message edit history from the message

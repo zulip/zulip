@@ -206,6 +206,11 @@ function _set_up() {
                 checked_msg: i18n.t("Only administrators may now add new emoji!"),
                 unchecked_msg: i18n.t("Any user may now add new emoji!"),
             },
+            allow_edit_history: {
+                type: 'bool',
+                checked_msg: i18n.t("Users can view message edit history!"),
+                unchecked_msg: i18n.t("Users can no longer view message edit history!"),
+            },
             create_stream_by_admins_only: {
                 type: 'bool',
                 checked_msg: i18n.t("Only administrators may now create new streams!"),
