@@ -27,6 +27,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
+from two_factor.utils import default_device
 
 import calendar
 import datetime
@@ -171,6 +172,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         translation.activate(default_language)
         request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
+    two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
@@ -205,6 +207,10 @@ def home_real(request: HttpRequest) -> HttpResponse:
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         bot_types             = get_bot_types(user_profile),
+        two_fa_enabled        = two_fa_enabled,
+        # Adding two_fa_enabled as condition saves us 3 queries when
+        # 2FA is not enabled.
+        two_fa_enabled_user   = two_fa_enabled and bool(default_device(user_profile)),
     )
 
     undesired_register_ret_fields = [

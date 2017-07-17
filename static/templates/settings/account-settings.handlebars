@@ -37,6 +37,13 @@
                 </div>
             </form>
 
+            {{#if page_params.two_fa_enabled }}
+            <p for="two_factor_auth" class="inline-block title">
+                {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
+                <a target="_blank" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
+            </p>
+            {{/if}}
+
             <form class="form-horizontal full-name-change-form">
                 <div class="input-group inline-block grid user-name-parent">
                     <div class="user-name-section inline-block">
