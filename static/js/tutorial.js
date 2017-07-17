@@ -10,18 +10,10 @@ function set_tutorial_status(status, callback) {
     });
 }
 
-function finale() {
-    set_tutorial_status("finished");
-    narrow.by('is', 'private', {select_first_unread: true, trigger: 'sidebar'});
-}
-
-exports.start = function () {
-    finale();
-};
-
 exports.initialize = function () {
     if (page_params.needs_tutorial) {
-        exports.start();
+        set_tutorial_status("finished");
+        narrow.by('is', 'private', {select_first_unread: true, trigger: 'sidebar'});
     }
 };
 
