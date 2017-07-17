@@ -20,7 +20,6 @@ from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
 from zerver.models import (
-    RealmEmoji,
     Recipient,
     UserMessage,
     UserProfile,
@@ -332,21 +331,13 @@ class TestMissedMessages(ZulipTestCase):
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_realm_emoji_in_missed_message(self, mock_random_token):
         # type: (MagicMock) -> None
-        # Create a test emoji.
-        email = self.example_email('iago')
-        self.login(email)
-        with get_test_image_file('img.png') as fp1:
-            emoji_data = {'f1': fp1}
-            self.client_post('/json/realm/emoji/test_emoji', info=emoji_data)
-        self.logout()
-
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
-                                   'Extremely personal message with a realm emoji :test_emoji:!')
-        body = '<img alt=":test_emoji:" height="20px" src="http://testserver/user_avatars/1/emoji/test_emoji.png" title="test emoji">'
+                                   'Extremely personal message with a realm emoji :green_tick:!')
+        body = '<img alt=":green_tick:" height="20px" src="http://testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
