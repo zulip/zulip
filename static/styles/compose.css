@@ -231,6 +231,25 @@ table.compose_table {
     display: none;
 }
 
+#send-status div.outside-narrow-buttons {
+    margin-top: 10px;
+}
+
+#send-status a.outside-narrow-button {
+    margin: 5px;
+    text-decoration: none;
+}
+
+#send-status a.outside-narrow-button:focus {
+    background: hsl(156, 39%, 54%);
+    border-color: hsl(156, 39%, 54%);
+    color: white;
+}
+
+#send-status div.outside-narrow-checkbox {
+    margin-bottom: 0px;
+}
+
 /* Like .alert .close */
 .send-status-close {
     font-size: 17px;

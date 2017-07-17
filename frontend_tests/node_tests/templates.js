@@ -520,6 +520,18 @@ function render(template_name, args) {
     assert.equal(a.text(), "Narrow to here");
 }());
 
+(function confirm_outside_narrow() {
+    var args = {
+        narrow_link: "#narrow/stream/Scotland/topic/Scotland2",
+        narrow_to_text: "Scotland > Scotland2",
+    };
+    var html = '<div>' + render('confirm_outside_narrow', args) + '</div>';
+    global.write_handlebars_output("confirm_outside_narrow", html);
+    var a = $(html).find("a#outside-narrow-to-button");
+    assert.equal(a.find("strong").text().trim(), "Scotland > Scotland2");
+    assert.equal(a.attr("href"), "#narrow/stream/Scotland/topic/Scotland2");
+}());
+
 (function draft_table_body() {
     var args = {
         drafts: [

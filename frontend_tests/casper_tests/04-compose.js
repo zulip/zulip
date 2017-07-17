@@ -137,7 +137,8 @@ casper.then(function () {
 casper.waitWhileVisible('.message_comp');
 common.then_send_many([
     { recipient: recipients.join(','),
-      content:   'A huddle to check spaces' }]);
+      content:   'A huddle to check spaces' }],
+      true);
 
 casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box

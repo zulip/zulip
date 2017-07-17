@@ -1,0 +1,27 @@
+<div>
+    {{t "Are you sure you want to send this message outside the current narrow?" }}
+</div>
+<div class="new-style outside-narrow-buttons">
+    <a id="outside-narrow-send-button" class="button small rounded sea-green outside-narrow-button" href="#">
+        {{t "Yes, Send" }}
+    </a>
+    <a id="outside-narrow-to-button" class="button small rounded sea-green outside-narrow-button" href="{{ narrow_link }}"
+        {{#if narrow_title}}
+        title="{{ narrow_title }}"
+        {{/if}}>
+        {{t "Narrow to" }}
+        <strong>
+            {{ narrow_to_text }}
+        </strong>
+    </a>
+</div>
+<div class="input-group new-style outside-narrow-checkbox">
+    <label class="checkbox" >
+        <input type="checkbox" name="dont_show_wrong_narrow_warning" id="id_dont_show_wrong_narrow_warning" />
+        <span></span>
+    </label>
+    <label for="id_dont_show_wrong_narrow_warning" id="dont_show_wrong_narrow_warning_label"
+        title="{{t 'This warning can be enabled again from the display settings.' }}" class="inline-block">
+        {{t "Don't show this warning again." }}
+    </label>
+</div>

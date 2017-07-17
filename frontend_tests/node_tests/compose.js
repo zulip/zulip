@@ -47,6 +47,7 @@ add_dependencies({
     people: 'js/people',
     stream_data: 'js/stream_data',
     util: 'js/util',
+    narrow_state: 'js/narrow_state',
 });
 
 var compose = require('js/compose.js');

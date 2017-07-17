@@ -339,7 +339,9 @@ exports.on_topic_narrow = function () {
         // appropriate (after all, they were starting to
         // compose on the old topic and may now be looking
         // for info), so we punt and cancel.
-        exports.cancel();
+
+        // Avoid cancelling since we now display a warning
+        // if the user tries to send a message in the wrong narrow.
         return;
     }
 

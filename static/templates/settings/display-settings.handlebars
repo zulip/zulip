@@ -44,6 +44,17 @@
 
         <div class="input-group">
             <label class="checkbox">
+                <input type="checkbox" name="disable_wrong_narrow_warning" id="disable_wrong_narrow_warning"
+                {{#if page_params.disable_wrong_narrow_warning}}
+                  checked="checked"
+                {{/if}} />
+                <span></span>
+            </label>
+            <label for="disable_wrong_narrow_warning" class="inline-block">{{t "Disable confirmation when sending message outside current narrow." }}</label>
+        </div>
+
+        <div class="input-group">
+            <label class="checkbox">
                 <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
                 {{#if page_params.twenty_four_hour_time}}
                   checked="checked"

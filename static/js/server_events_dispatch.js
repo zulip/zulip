@@ -301,6 +301,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // than requiring a reload or page resize.
             page_params.default_language = event.setting;
         }
+        if (event.setting_name === 'disable_wrong_narrow_warning') {
+            page_params.disable_wrong_narrow_warning = event.setting;
+        }
         if (event.setting_name === 'timezone') {
             page_params.timezone = event.setting;
         }
