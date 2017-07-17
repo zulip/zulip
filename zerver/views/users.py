@@ -12,13 +12,13 @@ from django.conf import settings
 from six.moves import map
 
 from zerver.decorator import has_request_variables, REQ, JsonableError, \
-    require_realm_admin
+    require_realm_admin, zulip_login_required
 from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
-from zerver.lib.avatar import avatar_url, get_avatar_url
+from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
@@ -26,8 +26,8 @@ from zerver.lib.validator import check_bool, check_string, check_int, check_url
 from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
     check_full_name, check_short_name
 from zerver.lib.utils import generate_random_token
-from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    email_allowed_for_realm, get_user_profile_by_id, get_user, Service
+from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
+    get_user_profile_by_id, get_user, get_user_including_cross_realm, Service
 from zerver.lib.create_user import random_api_key
 
 
@@ -116,26 +116,29 @@ def update_user_backend(request, user_profile, email,
 # TODO: Since eventually we want to support using the same email with
 # different organizations, we'll eventually want this to be a
 # logged-in endpoint so that we can access the realm_id.
+@zulip_login_required
 def avatar(request, email_or_id, medium=False):
     # type: (HttpRequest, str, bool) -> HttpResponse
     """Accepts an email address or user ID and returns the avatar"""
+    is_email = False
     try:
         int(email_or_id)
     except ValueError:
-        get_user_func = get_user_profile_by_email  # type: Callable[..., UserProfile]
-    else:
-        get_user_func = get_user_profile_by_id
+        is_email = True
 
     try:
+        if is_email:
+            realm = request.user.realm
+            user_profile = get_user_including_cross_realm(email_or_id, realm)
+        else:
+            user_profile = get_user_profile_by_id(email_or_id)
         # If there is a valid user account passed in, use its avatar
-        user_profile = get_user_func(email_or_id)
         url = avatar_url(user_profile, medium=medium)
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         email = email_or_id
-        avatar_source = 'G'
         avatar_version = 1
-        url = get_avatar_url(avatar_source, email, avatar_version, medium=medium)
+        url = get_gravatar_url(email, avatar_version, medium)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to
@@ -170,7 +173,7 @@ def patch_bot_backend(request, user_profile, email,
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
     if bot_owner is not None:
-        owner = get_user_profile_by_email(bot_owner)
+        owner = get_user_including_cross_realm(bot_owner, user_profile.realm)
         do_change_bot_owner(bot, owner, user_profile)
     if default_sending_stream is not None:
         if default_sending_stream == "":
