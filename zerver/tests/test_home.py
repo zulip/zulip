@@ -25,7 +25,6 @@ class HomeTest(ZulipTestCase):
         html_bits = [
             'Compose your message here...',
             'Exclude messages with topic',
-            'Get started',
             'Keyboard shortcuts',
             'Loading...',
             'Manage streams',

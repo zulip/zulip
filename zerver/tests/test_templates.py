@@ -79,7 +79,6 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/settings_sidebar.html',
             'zerver/stream_creation_prompt.html',
             'zerver/subscriptions.html',
-            'zerver/tutorial_finale.html',
             'zerver/message_history.html',
             'zerver/delete_message.html',
         ]
