@@ -14,8 +14,8 @@ with the user’s API key or any API keys of the bots the user has
 created.
 
 Instead, you should deactivate the user’s account using the Zulip
-**Manage organization** interface; this will also automatically
-deactivate any bots the user has created.
+**[organization administration interface](/help/change-your-organization-settings)**;
+this will also automatically deactivate any bots the user has created.
 
 {!go-to-the.md!} [Users](/#organization/user-list-admin)
 {!admin.md!}
