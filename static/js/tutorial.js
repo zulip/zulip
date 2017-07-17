@@ -5,9 +5,6 @@ var is_running = false;
 var event_handlers = {};
 var deferred_work = [];
 
-// Keep track of where we are for handling resizing.
-var current_popover_info;
-
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
 var real_default_color;
@@ -48,10 +45,6 @@ exports.defer = function (callback) {
     deferred_work.push(callback);
 };
 
-function update_popover_info(popover_func) {
-    current_popover_info = popover_func;
-}
-
 function finale(skip) {
     var finale_modal = $("#tutorial-finale");
     if (skip) {
@@ -71,7 +64,6 @@ function finale(skip) {
     // Restore your actual stream colors
     set_tutorial_status("finished");
     is_running = false;
-    update_popover_info(undefined);
     stream_color.default_color = real_default_color;
     $('#first_run_message').show();
     enable_event_handlers();
@@ -104,11 +96,6 @@ exports.initialize = function () {
     if (page_params.needs_tutorial) {
         exports.start();
     }
-    $(window).resize($.debounce(100, function () {
-        if (current_popover_info !== undefined) {
-            current_popover_info();
-        }
-    }));
 };
 
 return exports;
