@@ -187,21 +187,6 @@ var fake_messages = [
     },
 ];
 
-function send_delayed_stream_message(stream, topic, content, delay) {
-    var data = {type: JSON.stringify('stream'),
-                recipient: JSON.stringify(stream),
-                topic: JSON.stringify(topic),
-                content: JSON.stringify(content)};
-    setTimeout(function () {
-        $.ajax({
-            dataType: 'json',
-            url: '/json/tutorial_send_message',
-            type: 'POST',
-            data: data,
-        });
-    }, delay * 1000); // delay is in seconds.
-}
-
 function disable_event_handlers() {
     $('body').css({overflow: 'hidden'}); // prevents scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
@@ -347,35 +332,6 @@ function finale(skip) {
     var sender_bot = "welcome-bot@zulip.com";
     narrow.by('pm-with', sender_bot, {select_first_unread: true, trigger: 'sidebar'});
     compose_actions.cancel();
-
-    if (page_params.first_in_realm) {
-        // 'engineering' is the best possible stream since we used it in the
-        // tutorial, but fall back to something else if we have to.
-        var work_stream;
-        if (stream_data.name_in_home_view("engineering")) {
-            work_stream = "engineering";
-        } else {
-            work_stream = _.find(stream_data.home_view_stream_names(),
-                                 function (stream_name) {
-                return (stream_name !== "social") && (stream_name !== page_params.notifications_stream);
-            });
-        }
-
-        if (stream_data.notifications_in_home_view()) {
-            send_delayed_stream_message(page_params.notifications_stream, "welcome", "Practice sending sending some messages here, or starting a new topic.", 15);
-            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "Here's a message on a new topic: `Zulip tips`.\n\nAs you settle into Zulip, customize your account and notifications on your [Settings page](#settings).", 30);
-            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
-        }
-
-        if (work_stream !== undefined) {
-            send_delayed_stream_message(work_stream, "projects", "This is a message on stream `" + work_stream + "` with the topic `projects`.", 60);
-            send_delayed_stream_message(work_stream, "projects", "Take a peek at our [integrations](/integrations). Now's a great time to set one up!", 65);
-        }
-
-        if (stream_data.name_in_home_view("social")) {
-            send_delayed_stream_message("social", "cute animals", "This is a message on stream `social` with the topic `cute animals`. Try uploading or pasting in some pictures. Here's a [guinea pig](/static/images/cute/guinea.jpg) to get you started:", 75);
-        }
-    }
 }
 
 function box_first_message() {
