@@ -119,6 +119,27 @@ exports.set_up = function () {
         });
     });
 
+    $("#disable_wrong_narrow_warning").change(function () {
+        var disable_wrong_narrow_warning = this.checked;
+        var data = {};
+        data.disable_wrong_narrow_warning = JSON.stringify(disable_wrong_narrow_warning);
+        var disable_wrong_narrow_warning_message = i18n.t('A warning will be shown when sending message outside current narrow!');
+        if (data.disable_wrong_narrow_warning === "true") {
+            disable_wrong_narrow_warning_message = i18n.t('A warning will not be shown when sending message outside current narrow!');
+        }
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                ui_report.success(disable_wrong_narrow_warning_message, $('#display-settings-status').expectOne());
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error updating disable wrong narrow warning setting"), xhr, $('#display-settings-status').expectOne());
+            },
+        });
+    });
+
     $("#twenty_four_hour_time").change(function () {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");

@@ -316,7 +316,8 @@ exports.send_message = function send_message(skip_correct_narrow_check, request)
     }
 
     // All messages will appear in home.
-    if (!skip_correct_narrow_check && narrow_state.active()) {
+    if (!page_params.disable_wrong_narrow_warning &&
+        !skip_correct_narrow_check && narrow_state.active()) {
         var is_wrongly_narrowed = true;
         var current_filter = narrow_state.get_current_filter();
         var args = {};
@@ -630,6 +631,17 @@ exports.initialize = function () {
 
     $("#send-status").on("click", "#outside-narrow-to-button", function () {
         $("#send-status").hide();
+    });
+
+    $("#send-status").on("change", "#id_dont_show_wrong_narrow_warning", function () {
+        var disable_wrong_narrow_warning = this.checked;
+        var data = {};
+        data.disable_wrong_narrow_warning = JSON.stringify(disable_wrong_narrow_warning);
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+        });
     });
 
     resize.watch_manual_resize("#new_message_content");

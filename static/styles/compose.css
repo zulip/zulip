@@ -246,6 +246,10 @@ table.compose_table {
     color: white;
 }
 
+#send-status div.outside-narrow-checkbox {
+    margin-bottom: 0px;
+}
+
 /* Like .alert .close */
 .send-status-close {
     font-size: 17px;
