@@ -771,6 +771,10 @@ a.bottom-signup-button {
     margin-bottom: 50px;
 }
 
+.register-page-header {
+    text-align: left;
+}
+
 .login-page-header {
     width: 100%;
 }
