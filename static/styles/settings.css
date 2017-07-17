@@ -39,6 +39,10 @@ label {
     min-width: 200px;
 }
 
+.new-style button.button i.fa.fa-pencil {
+    margin-left: 3px;
+}
+
 .new-style #account-settings .grid label {
     min-width: 120px;
 }
@@ -508,6 +512,10 @@ input[type=checkbox].inline-block {
 }
 #notification-settings .notification-reminder {
     text-align: left;
+}
+
+#realm_notifications_stream_label > button {
+    margin: 0px 5px;
 }
 
 .control-label-disabled {

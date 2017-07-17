@@ -64,7 +64,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_password', function () {
         casper.fill('form[action^="/json/fetch_api_key"]', {password:'qwertyuiop'});
-        casper.click('input[name="view_api_key"]');
+        casper.click('button[name="view_api_key"]');
     });
 });
 
