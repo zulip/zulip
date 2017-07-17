@@ -2292,22 +2292,6 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
         realm.notifications_stream = notifications_stream
         realm.save(update_fields=['notifications_stream'])
 
-        # Include a welcome message in this notifications stream
-        stream_name = notifications_stream.name
-        sender = get_system_bot(settings.WELCOME_BOT)
-        topic = "welcome"
-        content = """\
-This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
-system-generated notifications.""" % (stream_name,)
-
-        msg = internal_prep_stream_message(
-            realm=realm,
-            sender=sender,
-            stream_name=stream_name,
-            topic=topic,
-            content=content)
-        do_send_messages([msg])
-
         # Log the event
         log_event({"type": "realm_created",
                    "string_id": string_id,
