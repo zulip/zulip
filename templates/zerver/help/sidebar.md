@@ -35,6 +35,7 @@
 * [Reply to a message](/help/reply-to-a-message)
 
 ## Reading Messages
+* [Navigation and unread counts](/help/unread-counter-and-pointer)
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View an image at full size](/help/view-an-image-at-full-size)
