@@ -89,7 +89,7 @@ var integration_events = function () {
         var integration_name = _hash;
 
         $.get({
-            url: '/integrations/doc/' + integration_name,
+            url: '/integrations/doc-html/' + integration_name,
             dataType: 'html',
             success: function (doc) {
                 $('#' + integration_name + '.integration-instructions .help-content').html(doc);
