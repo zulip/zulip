@@ -27,8 +27,7 @@ from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
     check_full_name, check_short_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
-    get_user_profile_by_id, get_user, get_user_profile_by_email, Service, \
-    get_user_including_cross_realm
+    get_user_profile_by_id, get_user, get_user_including_cross_realm, Service
 from zerver.lib.create_user import random_api_key
 
 
@@ -174,7 +173,7 @@ def patch_bot_backend(request, user_profile, email,
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
     if bot_owner is not None:
-        owner = get_user_profile_by_email(bot_owner)
+        owner = get_user_including_cross_realm(bot_owner, user_profile.realm)
         do_change_bot_owner(bot, owner, user_profile)
     if default_sending_stream is not None:
         if default_sending_stream == "":
