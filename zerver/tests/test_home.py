@@ -53,6 +53,7 @@ class HomeTest(ZulipTestCase):
             "default_language",
             "default_language_name",
             "development_environment",
+            "disable_wrong_narrow_warning",
             "email",
             "emoji_alt_code",
             "emojiset",
