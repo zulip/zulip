@@ -1417,6 +1417,13 @@ def get_user(email, realm):
     # type: (Text, Realm) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
+def get_user_including_cross_realm(email, realm=None):
+    # type: (Text, Optional[Realm]) -> UserProfile
+    if email in get_cross_realm_emails():
+        return get_system_bot(email)
+    assert realm is not None
+    return get_user(email, realm)
+
 @cache_with_key(bot_profile_cache_key, timeout=3600*24*7)
 def get_system_bot(email):
     # type: (Text) -> UserProfile
