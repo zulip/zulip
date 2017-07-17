@@ -35,21 +35,8 @@ function set_tutorial_status(status, callback) {
     });
 }
 
-function finale(skip) {
-    var finale_modal = $("#tutorial-finale");
-    if (skip) {
-        finale_modal.modal("hide");
-        $(".screen").css({opacity: 0.0, width: 0, height: 0});
-    } else {
-        $(".screen").css({opacity: 0.0});
-        finale_modal.css("z-index", 20001);
-        finale_modal.modal("show");
-
-        $("#tutorial-get-started").click(function () {
-            finale_modal.modal("hide");
-            $(".screen").css({opacity: 0.0, width: 0, height: 0});
-        }).focus();
-    }
+function finale() {
+    $(".screen").css({opacity: 0.0, width: 0, height: 0});
 
     // Restore your actual stream colors
     set_tutorial_status("finished");
@@ -73,7 +60,7 @@ exports.start = function () {
     stream_color.default_color = tutorial_default_color;
     disable_event_handlers();
     set_tutorial_status("started");
-    finale(true);
+    finale();
 };
 
 exports.initialize = function () {
