@@ -196,11 +196,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     # analytics into part of the main server, rather
                     # than a separate app.
                     'EXTRA_INSTALLED_APPS': ['analytics'],
-                    'DEFAULT_NEW_REALM_STREAMS': {
-                        "social": {"description": "For socializing", "invite_only": False},
-                        "general": {"description": "For general stuff", "invite_only": False},
-                        "zulip": {"description": "For zulip stuff", "invite_only": False}
-                    },
                     'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
                     'TERMS_OF_SERVICE': None,
                     'PRIVACY_POLICY': None,
