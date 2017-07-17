@@ -20,8 +20,10 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    user_email_is_unique, create_streams_with_welcome_messages, \
-    compute_mit_user_fullname, internal_send_private_message
+    create_streams_with_welcome_messages, \
+    user_email_is_unique, create_stream_if_needed, create_streams_if_needed, \
+    compute_mit_user_fullname, do_send_messages, bulk_add_subscriptions, \
+    internal_prep_stream_message, internal_send_private_message
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
@@ -84,6 +86,26 @@ def setup_initial_streams_and_messages(realm):
 
     create_streams_with_welcome_messages(realm, stream_info)
     set_default_streams(realm, stream_info)
+
+# For the first user in a realm
+def setup_initial_private_stream(user):
+    # type: (UserProfile) -> None
+    stream, _ = create_stream_if_needed(user.realm, "core team", invite_only=True,
+                                        stream_description="A private stream for core team members.")
+    bulk_add_subscriptions([stream], [user])
+
+def send_initial_realm_messages(realm):
+    # type: (Realm) -> None
+    welcome_messages = [
+        {'stream': "core team",
+         'topic': "private streams",
+         'content': "This is a private stream. Only admins and people you invite "
+         "will be able to see that this stream exists."},
+    ]  # type: List[Dict[str, Text]]
+    messages = [internal_prep_stream_message(
+        realm, get_system_bot(settings.WELCOME_BOT),
+        message['stream'], message['topic'], message['content']) for message in welcome_messages]
+    do_send_messages(messages)
 
 @require_post
 def accounts_register(request):
@@ -239,10 +261,12 @@ def accounts_register(request):
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
+        send_initial_pms(user_profile)
+
         if first_in_realm:
             do_change_is_admin(user_profile, True)
-
-        send_initial_pms(user_profile)
+            setup_initial_private_stream(user_profile)
+            send_initial_realm_messages(realm)
 
         if realm_creation and settings.REALMS_HAVE_SUBDOMAINS:
             # Because for realm creation, registration happens on the
