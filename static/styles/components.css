@@ -300,6 +300,10 @@
     color: inherit;
 }
 
+a.no-underline {
+    text-decoration: none;
+}
+
 /* -- unified overlay design component -- */
 .overlay {
     position: fixed;
