@@ -11,10 +11,7 @@ function set_tutorial_status(status, callback) {
 }
 
 function finale() {
-    $(".screen").css({opacity: 0.0, width: 0, height: 0});
-
     set_tutorial_status("finished");
-    $('#first_run_message').show();
 
     var sender_bot = "welcome-bot@zulip.com";
     narrow.by('pm-with', sender_bot, {select_first_unread: true, trigger: 'sidebar'});
@@ -22,11 +19,6 @@ function finale() {
 }
 
 exports.start = function () {
-    if (overlays.is_active()) {
-        ui_util.change_tab_to('#home');
-    }
-    narrow.deactivate();
-
     finale();
 };
 
