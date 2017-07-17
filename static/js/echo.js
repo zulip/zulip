@@ -4,7 +4,6 @@ var exports = {};
 
 var waiting_for_id = {};
 var waiting_for_ack = {};
-var home_view_loaded = false;
 
 function resend_message(message, row) {
     message.content = message.raw_content;
@@ -234,41 +233,6 @@ $(function () {
     on_failed_action('remove', abort_message);
     on_failed_action('refresh', resend_message);
     on_failed_action('edit', edit_failed_message);
-
-    $(document).on('home_view_loaded.zulip', function () {
-        home_view_loaded = true;
-    });
-});
-
-$(document).on('socket_loaded_requests.zulip', function (event, data) {
-    var msgs_to_insert = [];
-
-    var next_local_id = get_next_local_id();
-    _.each(data.requests, function (socket_msg) {
-        var msg = socket_msg.msg;
-        // Check for any message objects, then insert them locally
-        if (msg.stream === undefined || msg.local_id === undefined) {
-            return;
-        }
-        msg.local_id = next_local_id;
-        msg.queue_id = page_params.queue_id;
-
-        next_local_id = truncate_precision(next_local_id + 0.01);
-        msgs_to_insert.push(msg);
-    });
-
-    function echo_pending_messages() {
-        _.each(msgs_to_insert, function (msg) {
-            insert_local_message(msg, msg.local_id);
-        });
-    }
-    if (home_view_loaded) {
-        echo_pending_messages();
-    } else {
-        $(document).on('home_view_loaded.zulip', function () {
-            echo_pending_messages();
-        });
-    }
 });
 
 return exports;

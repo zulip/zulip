@@ -32,12 +32,6 @@ function Socket(url) {
         that._try_to_reconnect({reason: 'unsuspend'});
     });
 
-    // Notify any listeners that we've restored these requests from localstorage
-    // Listeners may mutate request objects in this list to affect re-send behaviour
-    if (Object.keys(this._requests).length !== 0) {
-        $(document).trigger('socket_loaded_requests.zulip', {requests: this._requests});
-    }
-
     this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
                                  'xdr-polling', 'xhr-polling', 'jsonp-polling'];
     if (page_params.test_suite) {
@@ -69,9 +63,7 @@ Socket.prototype = {
     // browser restarts if a restart takes place before a message
     // is successfully transmitted.
     // If that is the case, the success/error callbacks will not
-    // be automatically called. They can be re-added by modifying
-    // the loaded-from-localStorage request in the payload of
-    // the socket_loaded_requests.zulip event.
+    // be automatically called.
     send: function Socket__send(msg, success, error) {
         var request = this._make_request('request');
         request.msg = msg;
