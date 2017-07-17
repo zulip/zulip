@@ -7,9 +7,10 @@
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}>
-                        <button type="button" class="button rounded sea-green inline-block input-size" id='email_value'
+                        <button type="button" class="button small rounded inline-block" id='email_value'
                             {{#if page_params.realm_email_changes_disabled}} disabled="true" {{/if}}>
                             {{page_params.email}}
+                            <i class="fa fa-pencil"></i>
                         </button>
                     </a>
                 </div>
@@ -166,8 +167,8 @@
                            name="password" id="get_api_key_password" value="" />
                 </div>
                 <div class="control-group">
-                    <input type="submit" name="view_api_key" value="{{t 'Get API key' }}"
-                           class="btn btn-primary" />
+                    <button type="submit" name="view_api_key"
+                           class="button sea-green">{{t 'Get API key' }}</button>
                 </div>
             </form>
         </div>
