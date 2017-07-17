@@ -2,7 +2,7 @@
     aria-labelledby="invite-user-label" aria-hidden="true">
     <div class="overlay-content">
         <div class="modal-header">
-            <button type="button" class="exit" aria-hidden="true">×</button>
+            <button type="button" class="exit" aria-label="{{ _('Close') }}"><span aria-hidden="true">×</span></button>
             <h3 id="invite-user-label">{% trans %}Invite users to Zulip{% endtrans %}</h3>
         </div>
         <form id="invite_user_form" class="form-horizontal"
@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default exit" data-dismiss="modal" aria-hidden="true">{{ _('Cancel') }}</button>
+                <button class="btn btn-default exit" data-dismiss="modal">{{ _('Cancel') }}</button>
                 <button id="submit-invitation" class="btn btn-primary"
                 data-loading-text="{{ _('Inviting...') }}" type="submit">{{ _('Invite') }}</button>
             </div>
