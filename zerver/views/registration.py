@@ -67,10 +67,15 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address,
 
 def send_initial_pms(user):
     # type: (UserProfile) -> None
-    content = """Welcome to Zulip!
-
-This is a great place to test formatting, sending, and editing messages.
-Click anywhere on this message to reply. A compose box will open at the bottom of the screen."""
+    content = (
+        "Hello, and welcome to Zulip!\n\nThis is a private message from me, Welcome Bot. "
+        "Here are some tips to get you started:\n"
+        "* Download our [Desktop and mobile apps](/apps)\n"
+        "* Customize your account and notifications on your [Settings page](#settings).\n"
+        "* Check out our !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n\n"
+        "The most important shortcut is `r` or `Enter` to reply.\n\n"
+        "Practice sending a few messages by replying to this conversation. If you're not into "
+        "keyboards, that's okay too; clicking anywhere on this message will also do the trick!")
 
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user.email, content)
