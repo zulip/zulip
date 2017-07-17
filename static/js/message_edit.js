@@ -36,7 +36,7 @@ function get_editability(message, edit_limit_seconds_buffer) {
 
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.
-    if (message.local_id !== undefined) {
+    if (message.locally_echoed) {
         return editability_types.NO;
     }
 
@@ -87,7 +87,7 @@ exports.save = function (row, from_topic_edited_only) {
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
-    if (message.local_id !== undefined) {
+    if (message.locally_echoed) {
         if (new_content !== message.raw_content || topic_changed) {
             echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
             row = current_msg_list.get_row(message_id);
@@ -307,7 +307,7 @@ function edit_message(row, raw_content) {
     edit_obj.scrolled_by = scroll_by;
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
-    if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
+    if (feature_flags.propagate_topic_edits && !message.locally_echoed) {
         var original_topic = message.subject;
         message_edit_topic.keyup( function () {
             var new_topic = message_edit_topic.val();

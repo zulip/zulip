@@ -380,9 +380,10 @@ people.add(bob);
               private_message_recipient: 'alice@example.com',
               to_user_ids: '31',
               local_id: 1,
+              locally_echoed: true,
             };
             assert.equal(payload.url, '/json/messages');
-            assert.equal(_.keys(payload.data).length, 11);
+            assert.equal(_.keys(payload.data).length, 12);
             assert.deepEqual(payload.data, single_msg);
             payload.data.id = stub_state.local_id_counter;
             payload.success(payload.data);

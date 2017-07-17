@@ -54,7 +54,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 }
 
 
-exports.insert_new_messages = function insert_new_messages(messages, local_id) {
+exports.insert_new_messages = function insert_new_messages(messages, locally_echoed) {
     messages = _.map(messages, message_store.add_message_metadata);
 
     // You must add add messages to home_msg_list BEFORE
@@ -72,7 +72,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
     }
 
 
-    if (local_id) {
+    if (locally_echoed) {
         notifications.notify_local_mixes(messages);
     }
 

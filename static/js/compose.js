@@ -332,6 +332,8 @@ exports.send_message = function send_message(request) {
 
     var locally_echoed = local_id !== undefined;
 
+    request.locally_echoed = locally_echoed;
+
     function success(data) {
         exports.send_message_success(local_id, data.id, start_time, locally_echoed);
     }
@@ -339,7 +341,7 @@ exports.send_message = function send_message(request) {
     function error(response) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
-        if (request.local_id === undefined) {
+        if (!request.locally_echoed) {
             compose_error(response, $('#new_message_content'));
             return;
         }

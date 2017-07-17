@@ -1,5 +1,5 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
-    class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.local_id}}local{{/if}} selectable_row">
+    class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row">
     <div class="unread_marker"><div class="unread-marker-fill"></div></div>
     <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
         style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
@@ -34,7 +34,7 @@
                         {{/include_sender}}
                     </span>
                     <span class="alert-copied pull-right">{{t 'Copied!' }}</span>
-                    <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
+                    <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
                         <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>

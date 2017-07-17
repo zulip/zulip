@@ -189,7 +189,7 @@ exports.check_form = function (form_selector, expected, test_name) {
 exports.wait_for_message_actually_sent = function () {
     casper.waitFor(function () {
         return casper.evaluate(function () {
-            return current_msg_list.last().local_id === undefined;
+            return !current_msg_list.last().locally_echoed;
         });
     });
 };

@@ -11,7 +11,7 @@ function batched_updater(flag, op, immediate) {
     function server_request() {
         // Wait for server IDs before sending flags
         var real_msgs = _.filter(queue, function (msg) {
-            return msg.local_id === undefined;
+            return !msg.locally_echoed;
         });
         var real_msg_ids = _.map(real_msgs, function (msg) {
             return msg.id;

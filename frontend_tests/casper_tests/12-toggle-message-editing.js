@@ -27,7 +27,7 @@ casper.then(function () {
 // wait for message to be sent
 casper.waitFor(function () {
     return casper.evaluate(function () {
-        return current_msg_list.last().local_id === undefined;
+        return !current_msg_list.last().locally_echoed;
     });
 });
 

@@ -94,6 +94,7 @@ function insert_local_message(message_request, local_id) {
     message.avatar_url = page_params.avatar_url;
     message.timestamp = new XDate().getTime() / 1000;
     message.local_id = local_id;
+    message.locally_echoed = true;
     message.id = message.local_id;
     markdown.add_message_flags(message);
     markdown.add_subject_links(message);
@@ -125,7 +126,7 @@ function insert_local_message(message_request, local_id) {
     // It is a little bit funny to go through the message_events
     // codepath, but it's sort of the idea behind local echo that
     // we are simulating server events before they actually arrive.
-    message_events.insert_new_messages([message], local_id);
+    message_events.insert_new_messages([message], true);
     return message.local_id;
 }
 
@@ -180,7 +181,7 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
     }
 
     message.id = server_id;
-    delete message.local_id;
+    message.locally_echoed = false;
 
     var opts = {old_id: local_id, new_id: server_id};
 
