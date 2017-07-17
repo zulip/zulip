@@ -23,6 +23,11 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"GitHub webhook has been successfully configured by TomaszKolek"
         self.send_and_test_stream_message('ping', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='ping')
 
+    def test_ping_organization_event(self):
+        # type: () -> None
+        expected_message = u"GitHub webhook has been successfully configured by eeshangarg"
+        self.send_and_test_stream_message('ping_organization', 'zulip-test-org', expected_message, HTTP_X_GITHUB_EVENT='ping')
+
     def test_push_delete_branch(self):
         # type: () -> None
         expected_message = u"eeshangarg [deleted](https://github.com/eeshangarg/public-repo/compare/2e8cf535fb38...000000000000) the branch feature."

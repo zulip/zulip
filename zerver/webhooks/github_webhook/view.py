@@ -308,6 +308,10 @@ def get_repository_name(payload):
     # type: (Dict[str, Any]) -> Text
     return payload['repository']['name']
 
+def get_organization_name(payload):
+    # type: (Dict[str, Any]) -> Text
+    return payload['organization']['login']
+
 def get_sender_name(payload):
     # type: (Dict[str, Any]) -> Text
     return payload['sender']['login']
@@ -357,6 +361,9 @@ def get_subject_based_on_type(payload, event):
             repo=get_repository_name(payload),
             branch='Wiki Pages'
         )
+    elif event == 'ping':
+        if payload.get('repository') is None:
+            return get_organization_name(payload)
     return get_repository_name(payload)
 
 EVENT_FUNCTION_MAPPER = {
