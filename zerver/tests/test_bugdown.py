@@ -6,7 +6,6 @@ from django.test import TestCase, override_settings
 
 from zerver.lib import bugdown
 from zerver.lib.actions import (
-    check_add_realm_emoji,
     do_remove_realm_emoji,
     do_set_alert_words,
     get_realm,
@@ -33,7 +32,6 @@ from zerver.models import (
     Message,
     Stream,
     Realm,
-    RealmEmoji,
     RealmFilter,
     Recipient,
 )
@@ -509,28 +507,26 @@ class BugdownTest(ZulipTestCase):
                 name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " "))
 
         realm = get_realm('zulip')
-        check_add_realm_emoji(realm, "test", 'test.png')
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
-        converted = bugdown.convert(":test:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', 'test.png', realm.id)))
+        converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', 'green_tick.png', realm.id)))
 
-        do_remove_realm_emoji(realm, 'test')
-        converted = bugdown.convert(":test:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>:test:</p>')
+        # Deactivate realm emoji.
+        do_remove_realm_emoji(realm, 'green_tick')
+        converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_deactivated_realm_emoji(self):
         # type: () -> None
+        # Deactivate realm emoji.
         realm = get_realm('zulip')
-        check_add_realm_emoji(realm, "test", 'test.png')
-        emoji = RealmEmoji.objects.get(realm=realm, name='test')
-        emoji.deactivated = True
-        emoji.save(update_fields=['deactivated'])
+        do_remove_realm_emoji(realm, 'green_tick')
 
         msg = Message(sender=self.example_user('hamlet'))
-        converted = bugdown.convert(":test:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>:test:</p>')
+        converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_unicode_emoji(self):
         # type: () -> None
