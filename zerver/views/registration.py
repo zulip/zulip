@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Text
+from typing import Any, List, Dict, Mapping, Optional, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -20,7 +20,6 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    create_streams_with_welcome_messages, \
     user_email_is_unique, create_stream_if_needed, create_streams_if_needed, \
     compute_mit_user_fullname, do_send_messages, bulk_add_subscriptions, \
     internal_prep_stream_message, internal_send_private_message
@@ -76,16 +75,17 @@ Click anywhere on this message to reply. A compose box will open at the bottom o
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user.email, content)
 
-def setup_initial_streams_and_messages(realm):
+def setup_initial_streams(realm):
     # type: (Realm) -> None
-    stream_info = {
-        "social": {"description": "For socializing", "invite_only": False},
-        "general": {"description": "For general stuff", "invite_only": False},
-        "zulip": {"description": "For zulip stuff", "invite_only": False}
-    }  # type: Dict[Text, Dict[Text, Any]]
-
-    create_streams_with_welcome_messages(realm, stream_info)
-    set_default_streams(realm, stream_info)
+    stream_dicts = [
+        {'name': "general",
+         'description': "For general stuff"},
+        {'name': "social",
+         'description': "For socializing"},
+        {'name': "zulip",
+         'description': "For zulip stuff"}]  # type: List[Mapping[str, Any]]
+    create_streams_if_needed(realm, stream_dicts)
+    set_default_streams(realm, {stream['name']: {} for stream in stream_dicts})
 
 # For the first user in a realm
 def setup_initial_private_stream(user):
@@ -96,6 +96,9 @@ def setup_initial_private_stream(user):
 
 def send_initial_realm_messages(realm):
     # type: (Realm) -> None
+    # Make sure each stream created in the realm creation process has at least one message below
+    # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
+    # view slightly less overwhelming
     welcome_messages = [
         {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "welcome",
@@ -105,6 +108,15 @@ def send_initial_realm_messages(realm):
          'topic': "private streams",
          'content': "This is a private stream. Only admins and people you invite "
          "will be able to see that this stream exists."},
+        {'stream': "general",
+         'topic': "hello",
+         'content': "Welcome to #**general**."},
+        {'stream': "social",
+         'topic': "hello",
+         'content': "Welcome to #**social**."},
+        {'stream': "zulip",
+         'topic': "hello",
+         'content': "Welcome to #**zulip**."},
     ]  # type: List[Dict[str, Text]]
     messages = [internal_prep_stream_message(
         realm, get_system_bot(settings.WELCOME_BOT),
@@ -240,7 +252,7 @@ def accounts_register(request):
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
             realm = do_create_realm(string_id, realm_name)[0]
-            setup_initial_streams_and_messages(realm)
+            setup_initial_streams(realm)
         assert(realm is not None)
 
         full_name = form.cleaned_data['full_name']
