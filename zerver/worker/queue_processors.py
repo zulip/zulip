@@ -501,5 +501,5 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         for service in services:
             self.get_bot_handler(service).handle_message(
                 message=message,
-                client=self.get_bot_api_client(user_profile),
+                bot_handler=self.get_bot_api_client(user_profile),
                 state_handler=self.get_state_handler())

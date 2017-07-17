@@ -19,7 +19,7 @@ from types import ModuleType
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
-from zulip_bots.lib import RateLimit, send_reply
+from zulip_bots.lib import RateLimit
 
 class EmbeddedBotHandler(object):
     def __init__(self, user_profile):
@@ -27,18 +27,13 @@ class EmbeddedBotHandler(object):
         # Only expose a subset of our UserProfile's functionality
         self.user_profile = user_profile
         self._rate_limit = RateLimit(20, 5)
-        try:
-            self.full_name = user_profile['full_name']
-            self.email = user_profile['email']
-        except KeyError:
-            logging.error('Cannot fetch user profile, make sure you have set'
-                          ' up the zuliprc file correctly.')
-            sys.exit(1)
+        self.full_name = user_profile.full_name
+        self.email = user_profile.email
 
     def send_message(self, message):
         # type: (Dict[str, Any]) -> None
         if self._rate_limit.is_legal():
-            internal_send_message(realm=self.user_profile.realm, sender_email=message['sender'],
+            internal_send_message(realm=self.user_profile.realm, sender_email=message['sender_email'],
                                   recipient_type_name=message['type'], recipients=message['to'],
                                   subject=message['subject'], content=message['content'])
         else:
@@ -46,7 +41,21 @@ class EmbeddedBotHandler(object):
 
     def send_reply(self, message, response):
         # type: (Dict[str, Any], str) -> None
-        send_reply(message, response, self.email, self.send_message)
+        if message['type'] == 'private':
+            self.send_message(dict(
+                type='private',
+                to=[x['email'] for x in message['display_recipient'] if self.email != x['email']],
+                content=response,
+                sender_email=message['sender_email'],
+            ))
+        else:
+            self.send_message(dict(
+                type='stream',
+                to=message['display_recipient'],
+                subject=message['subject'],
+                content=response,
+                sender_email=message['sender_email'],
+            ))
 
     def get_config_info(self, bot_name, section=None):
         # type: (str, Optional[str]) -> Dict[str, Any]
