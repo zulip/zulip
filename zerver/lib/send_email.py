@@ -2,7 +2,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, ScheduledJob, get_user_profile_by_id
+from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
+    EMAIL_TYPES
 
 import datetime
 from email.utils import parseaddr, formataddr
@@ -18,6 +19,7 @@ class FromAddress(object):
 def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                 from_address=None, reply_to_email=None, context={}):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> EmailMultiAlternatives
+    # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
         to_user = get_user_profile_by_id(to_user_id)
@@ -59,6 +61,8 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
 class EmailNotDeliveredException(Exception):
     pass
 
+# When changing the arguments to this function, you may need to write a
+# migration to change or remove any emails in ScheduledEmail.
 def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                from_address=None, reply_to_email=None, context={}):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> None
@@ -74,14 +78,18 @@ def send_email_from_dict(email_dict):
 def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                       from_address=None, context={}, delay=datetime.timedelta(0)):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any], datetime.timedelta) -> None
-    assert (to_user_id is None) ^ (to_email is None)
-    # Temporary measure until we fix the ScheduledJob table to handle
-    # filtering by user as well as by email.
-    if to_email is None:
-        to_email = get_user_profile_by_id(to_user_id).email
-        to_user_id = None
+    template_name = template_prefix.split('/')[-1]
     email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
-    ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=parseaddr(to_email)[1],
-                                data=ujson.dumps(email_fields),
-                                scheduled_timestamp=timezone_now() + delay)
+
+    assert (to_user_id is None) ^ (to_email is None)
+    if to_user_id is not None:
+        to_field = {'user_id': to_user_id}  # type: Dict[str, Any]
+    else:
+        to_field = {'address': parseaddr(to_email)[1]}
+
+    ScheduledEmail.objects.create(
+        type=EMAIL_TYPES[template_name],
+        scheduled_timestamp=timezone_now() + delay,
+        data=ujson.dumps(email_fields),
+        **to_field)

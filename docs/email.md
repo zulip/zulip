@@ -22,7 +22,7 @@ with only a few things you need to know to get started.
 * All email is eventually sent by `zerver.lib.send_email.send_email`. There
   are several other functions in `zerver.lib.send_email`, but all of them
   eventually call the `send_email` function. The most interesting one is
-  `send_future_email`. The `ScheduledJob` entries are eventually processed
+  `send_future_email`. The `ScheduledEmail` entries are eventually processed
   by a cron job that runs `zerver/management/commands/deliver_email.py`.
 * A good way to find a bunch of example email pathways is to `git grep` for
   `zerver/emails` in the `zerver/` directory.

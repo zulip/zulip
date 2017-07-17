@@ -17,7 +17,7 @@ from zerver.lib.actions import (
 from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
-from zerver.models import get_realm, Realm, UserProfile, ScheduledJob
+from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile, new_realm_name):
@@ -144,10 +144,10 @@ class RealmTest(ZulipTestCase):
     def test_do_deactivate_realm_clears_scheduled_jobs(self):
         # type: () -> None
         user = self.example_user('hamlet')
-        send_future_email('template_prefix', to_user_id=user.id, delay=datetime.timedelta(hours=1))
-        self.assertEqual(ScheduledJob.objects.count(), 1)
+        send_future_email('zerver/emails/followup_day1', to_user_id=user.id, delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_realm(user.realm)
-        self.assertEqual(ScheduledJob.objects.count(), 0)
+        self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_do_deactivate_realm_on_deactived_realm(self):
         # type: () -> None

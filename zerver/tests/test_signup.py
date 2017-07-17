@@ -27,8 +27,8 @@ from zerver.models import (
     get_unique_open_realm, get_unique_non_system_realm,
     completely_open, get_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
-    ScheduledJob, UserProfile, UserMessage,
-    Stream, Subscription, ScheduledJob, flush_per_request_caches
+    ScheduledEmail, UserProfile, UserMessage,
+    Stream, Subscription, flush_per_request_caches
 )
 from zerver.lib.actions import (
     set_default_streams,
@@ -708,8 +708,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             send_future_email(
                 "zerver/emails/invitation_reminder", to_email=data["email"],
                 from_address=FromAddress.NOREPLY, context=context)
-        email_jobs_to_deliver = ScheduledJob.objects.filter(
-            type=ScheduledJob.EMAIL,
+        email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now())
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
@@ -790,12 +789,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
         We provide one-click unsubscribe links in welcome e-mails that you can
         click even when logged out to stop receiving them.
         """
-        email = self.example_email("hamlet")
         user_profile = self.example_user('hamlet')
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
         enqueue_welcome_emails(user_profile.id)
-        self.assertEqual(2, len(ScheduledJob.objects.filter(
-            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+        self.assertEqual(2, ScheduledEmail.objects.filter(user=user_profile).count())
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
@@ -803,8 +800,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(0, len(ScheduledJob.objects.filter(
-            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+        self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
 
     def test_digest_unsubscribe(self):
         # type: () -> None
@@ -815,7 +811,6 @@ class EmailUnsubscribeTests(ZulipTestCase):
         Unsubscribing from these emails also dequeues any digest email jobs that
         have been queued.
         """
-        email = self.example_email("hamlet")
         user_profile = self.example_user('hamlet')
         self.assertTrue(user_profile.enable_digest_emails)
 
@@ -824,8 +819,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
                    'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
         send_future_email('zerver/emails/digest', to_user_id=user_profile.id, context=context)
 
-        self.assertEqual(1, len(ScheduledJob.objects.filter(
-            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+        self.assertEqual(1, ScheduledEmail.objects.filter(user=user_profile).count())
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
@@ -836,8 +830,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Circumvent user_profile caching.
         user_profile = UserProfile.objects.get(email=self.example_email("hamlet"))
         self.assertFalse(user_profile.enable_digest_emails)
-        self.assertEqual(0, len(ScheduledJob.objects.filter(
-            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+        self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
 
 class RealmCreationTest(ZulipTestCase):
 

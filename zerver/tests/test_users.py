@@ -22,7 +22,7 @@ from zerver.lib.test_runner import slow
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
     get_user, get_realm, get_client, get_stream, \
-    Message, get_context_for_message, ScheduledJob
+    Message, get_context_for_message, ScheduledEmail
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -345,10 +345,10 @@ class ActivateTest(ZulipTestCase):
     def test_clear_scheduled_jobs(self):
         # type: () -> None
         user = self.example_user('hamlet')
-        send_future_email('template_prefix', to_user_id=user.id, delay=datetime.timedelta(hours=1))
-        self.assertEqual(ScheduledJob.objects.count(), 1)
+        send_future_email('zerver/emails/followup_day1', to_user_id=user.id, delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user)
-        self.assertEqual(ScheduledJob.objects.count(), 0)
+        self.assertEqual(ScheduledEmail.objects.count(), 0)
 
 class GetProfileTest(ZulipTestCase):
 

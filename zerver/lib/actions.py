@@ -34,7 +34,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, \
-    Client, DefaultStream, UserPresence, PushDeviceToken, \
+    Client, DefaultStream, UserPresence, PushDeviceToken, ScheduledEmail, \
     MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -43,7 +43,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, get_owned_bot_dicts, \
+    get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
@@ -79,7 +79,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import clear_followup_emails_queue
+from zerver.lib.notifications import clear_scheduled_emails
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.sessions import delete_user_sessions
@@ -525,7 +525,7 @@ def do_deactivate_realm(realm):
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
-        clear_followup_emails_queue(user.email)
+        clear_scheduled_emails(user.id)
 
 def do_reactivate_realm(realm):
     # type: (Realm) -> None
@@ -541,7 +541,7 @@ def do_deactivate_user(user_profile, _cascade=True):
     user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
-    clear_followup_emails_queue(user_profile.email)
+    clear_scheduled_emails(user_profile.id)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
@@ -2287,7 +2287,7 @@ def do_change_notification_settings(user_profile, name, value, log=True):
 
     # Disabling digest emails should clear a user's email queue
     if name == 'enable_digest_emails' and not value:
-        clear_followup_emails_queue(user_profile.email)
+        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[name])
     event = {'type': 'update_global_notifications',
