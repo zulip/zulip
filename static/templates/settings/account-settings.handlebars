@@ -31,8 +31,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button id='change_email_button' class="btn btn-success" data-dismiss="modal">{{t "Change" }}</button>
-                        <button class="btn btn-primary" data-dismiss="modal">{{t "Close" }}</button>
+                        <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                        <button class="button white rounded" data-dismiss="modal">{{t "Close" }}</button>
                     </div>
                 </div>
             </form>
@@ -136,8 +136,7 @@
             </div>
             <div class="modal-footer">
                 <button class="button" data-dismiss="modal">{{t "Cancel" }}</button>
-                <button class="button btn-danger" id="do_deactivate_self_button">{{t "Deactivate now" }}</button>
-
+                <button class="button btn-danger rounded" id="do_deactivate_self_button">{{t "Deactivate now" }}</button>
             </div>
         </div>
 
@@ -175,10 +174,10 @@
         <div id="show_api_key_box">
             <p>{{t "Your API key:" }}</p>
             <p><b><span id="api_key_value"></span></b></p>
-            <button type="submit" class="btn btn-primary regenerate_api_key">
+            <button type="submit" class="button white rounded regenerate_api_key">
                 {{t "Generate new API key" }}
             </button>
-            <a id="download_zuliprc" download="{{zuliprc}}" class="btn btn-success">
+            <a id="download_zuliprc" download="{{zuliprc}}" class="button sea-green">
                 {{t "Download .zuliprc" }}
             </a>
             <div id="user_api_key_error text-error">

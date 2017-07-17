@@ -105,7 +105,7 @@ function render(template_name, args) {
     html += render("admin-realm-domains-list", args);
     html += "</table>";
 
-    var button = $(html).find('.btn');
+    var button = $(html).find('.button');
     var domain = $(html).find('.domain');
     var row = button.closest('tr');
     var subdomains_checkbox = row.find('.allow-subdomains');
