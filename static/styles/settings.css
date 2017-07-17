@@ -1065,6 +1065,11 @@ input[type=text]#settings_search {
     border-bottom: 1px solid hsl(0, 0%, 93%);
 }
 
+#settings_page .sidebar li.border-top {
+    border-top: 1px solid hsl(0, 0%, 93%);
+    border-bottom: none;
+}
+
 #settings_page .sidebar li.no-border {
     border-color: transparent;
 }
