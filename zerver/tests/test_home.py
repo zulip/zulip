@@ -4,6 +4,7 @@ import os
 import re
 import ujson
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
@@ -169,6 +170,8 @@ class HomeTest(ZulipTestCase):
             "timezone",
             "translate_emoticons",
             "twenty_four_hour_time",
+            "two_fa_enabled",
+            "two_fa_enabled_user",
             "unread_msgs",
             "unsubscribed",
             "use_websockets",
