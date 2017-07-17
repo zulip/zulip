@@ -125,13 +125,28 @@ html {
 }
 
 .app-main.confirm-continue-page-container {
-    width: 600px;
+    width: 400px;
     font-weight: 400;
 }
 
 .app-main.confirm-continue-page-container .form-inline {
-    width: 320px;
-    margin: auto;
+    display: inline-block;
+    width: 180px;
+}
+
+.app-main.confirm-continue-page-container .form-inline .outline {
+    border: 2px inset hsl(213, 23%, 25%);
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(213, 23%, 25%);
+    padding: 13px 20px 11px 20px;
+}
+
+.app-main.confirm-continue-page-container .form-inline .outline:hover {
+    background-color: hsl(213, 65%, 97%);
+}
+
+.app-main.confirm-continue-page-container p {
+    font-size: 19px;
 }
 
 .find-team-page-container h3,
@@ -183,6 +198,7 @@ html {
 
 .register-form.new-style {
     text-align: left;
+    color: hsl(0, 0%, 45%);
 }
 
 .register-form #errors {

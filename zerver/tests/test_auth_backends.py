@@ -668,9 +668,9 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.backend.do_auth(response=response)
             self.assert_in_response(
                 'action="/register/"', result)
-            self.assert_in_response('You attempted to login using the email account',
+            self.assert_in_response('No account found for',
                                     result)
-            self.assert_in_response('nonexisting@phantom.com, but this email address does not',
+            self.assert_in_response('nonexisting@phantom.com. Would you like to register instead?',
                                     result)
 
     def test_login_url(self):
@@ -984,9 +984,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
             result = self.client_get(result.url)
-            self.assert_in_response('You attempted to login using the email account',
+            self.assert_in_response('No account found for',
                                     result)
-            self.assert_in_response('newuser@zulip.com, but this email address does not',
+            self.assert_in_response('newuser@zulip.com. Would you like to register instead?',
                                     result)
             # Click confirm registration button.
             result = self.client_post('/register/',
@@ -1031,9 +1031,9 @@ class GoogleLoginTest(GoogleOAuthTest):
                                          value=email)])
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response)
-        self.assert_in_response('You attempted to login using the email account',
+        self.assert_in_response('No account found for',
                                 result)
-        self.assert_in_response('newuser@zulip.com, but this email address does not',
+        self.assert_in_response('newuser@zulip.com. Would you like to register instead?',
                                 result)
         # Click confirm registration button.
         result = self.client_post('/register/',
@@ -1560,7 +1560,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
             result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
             self.assertEqual(result.status_code, 200)
             self.assertIs(get_session_dict_user(self.client.session), None)
-            self.assert_in_response("You attempted to login using", result)
+            self.assert_in_response("No account found for", result)
 
     def test_login_failure_due_to_invalid_email(self):
         # type: () -> None
@@ -1585,7 +1585,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
-                self.assert_in_response("You attempted to login using", result)
+                self.assert_in_response("No account found for", result)
 
     def test_login_failure_due_to_empty_subdomain(self):
         # type: () -> None
@@ -1597,7 +1597,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
-                self.assert_in_response("You attempted to login using", result)
+                self.assert_in_response("No account found for", result)
 
     def test_login_success_under_subdomains(self):
         # type: () -> None
