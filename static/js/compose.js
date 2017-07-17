@@ -355,6 +355,22 @@ exports.send_message = function send_message(request) {
     }
 };
 
+exports.reply_to_stream = function (orig_message, content) {
+    // This is used for system-generated messages.
+    // TODO: simplify by extracting some code from create_message_object().
+    var message = {};
+
+    message.type = "stream";
+    message.to = orig_message.stream;
+    message.stream = orig_message.stream;
+    message.stream_id = orig_message.stream_id
+    message.subject = orig_message.subject;
+    message.content = content;
+    message.sender_id = page_params.user_id;
+    message.queue_id = page_params.queue_id;
+    send_message(message);
+};
+
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {

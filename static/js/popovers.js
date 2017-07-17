@@ -159,6 +159,10 @@ exports.toggle_actions_popover = function (element, id) {
                 message.subject &&
                 muting.is_topic_muted(message.stream, message.subject);
 
+        var should_display_blog_option =
+                message.stream &&
+                people.is_my_user_id(message.sender_id);
+
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
             return entry.prev_content !== undefined;
         }) && page_params.realm_allow_edit_history;
@@ -171,6 +175,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_unmute_topic: can_unmute_topic,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
+            should_display_blog_option: should_display_blog_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
             narrowed: narrow_state.active(),
             should_display_delete_option: should_display_delete_option,
@@ -515,6 +520,36 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
         message_edit.show_history(message);
         message_history_cancel_btn.focus();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.blog_message', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+
+        popovers.hide_actions_popover();
+
+        var url = '/json/user_doc/message/' + msgid;
+        channel.post({
+            url: url,
+            success: function (data) {
+                var blog_url =
+                    window.location.protocol + '//' +
+                    window.location.host + '/' +
+                    'user_doc/' +
+                    data.user_doc_id;
+                // For now, automatically send a message to
+                // tell other users about the "blog."  We may want
+                // to refine this to give the user more control about
+                // how they publicize the user doc, or maybe we can
+                // use text reactions.
+                blueslip.info('new blog_url', blog_url);
+                var content = 'new blog: ' + blog_url;
+                var orig_message = message_store.get(msgid);
+                compose.reply_to_stream(orig_message, content);
+            },
+        });
+
         e.stopPropagation();
         e.preventDefault();
     });

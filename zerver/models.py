@@ -1062,6 +1062,20 @@ def sew_messages_and_reactions(messages, reactions):
     return list(converted_messages.values())
 
 
+class Content(ModelReprMixin, models.Model):
+    raw_text = models.TextField() # type: Text
+    rendered_content = models.TextField()
+
+    def __unicode__(self):
+        return 'content: ' + self.raw_text
+
+class UserDoc(ModelReprMixin, models.Model):
+    owner = models.ForeignKey(UserProfile)
+    content = models.ForeignKey(Content)
+
+    def __unicode__(self):
+        return '<%s, content %d>' % (self.owner.email, self.content_id)
+
 class AbstractMessage(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
