@@ -1535,10 +1535,12 @@ input.new-organization-button {
 
     .app.help {
         position: absolute;
+        height: calc(100vh - 40px);
     }
 
     .app.help .sidebar {
         width: calc(100% - 40px);
+        height: calc(100vh - 40px - 10px - 10px);
     }
 
     .app.help .sidebar.show {
@@ -1551,6 +1553,11 @@ input.new-organization-button {
         padding-left: 20px;
         padding-right: 20px;
         width: calc(100vw - 40px);
+        height: auto;
+    }
+
+    .app.help .footer-main {
+        padding: 0;
     }
 
     .app-main,
