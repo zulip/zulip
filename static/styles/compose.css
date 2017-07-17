@@ -79,8 +79,8 @@
 
 .compose_table #private-message .you_text {
     position: absolute;
-    height: 25px;
-    line-height: 25px;
+    height: 26px;
+    line-height: 27px;
     padding-top: 0px;
     padding-bottom: 0px;
     width: 4em;
@@ -94,8 +94,8 @@
     border-radius: 0px 3px 3px 0px;
     padding-top: 0px;
     padding-bottom: 0px;
-    height: 23px;
-    line-height: 23px;
+    height: 24px;
+    line-height: 24px;
 }
 
 .compose_table #private-message .right_part {
@@ -189,7 +189,7 @@ table.compose_table {
     display: none;
     position: absolute;
     right: 0px;
-    top: 5px;
+    top: 7px;
 }
 
 #compose_invite_users {

@@ -76,9 +76,6 @@
 
 .draft-row .draft-info-box {
     width: 100%;
-    background: hsl(0, 0%, 94%);
-    border-bottom: 1px solid hsl(0, 0%, 88%);
-    border-top: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
 
@@ -97,7 +94,7 @@
     display: inline-block;
     position: absolute;
     top: 9px;
-    right: -80px;
+    right: -100px;
     font-size: 0.9em;
 }
 

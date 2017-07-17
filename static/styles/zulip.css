@@ -972,14 +972,15 @@ td.pointer {
     border-radius: 4px;
 }
 
-.message_header_private_message .message_label_clickable::after {
+.message_header_private_message .message_label_clickable::after,
+.draft-row .pill-wrapper::after {
     content: " ";
 
     position: absolute;
     width: 5px;
     height: 24px;
     top: 0px;
-    right: -5px;
+    right: -6px;
 
     background-color: #fff;
 }
@@ -1011,10 +1012,10 @@ td.pointer {
 }
 
 .message-header-contents .pill-wrapper {
+    position: relative;
     display: inline-block;
     border: 1px solid transparent;
     border-radius: 4px;
-    overflow: hidden;
 
     background-color: #fff;
 }
