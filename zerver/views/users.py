@@ -26,8 +26,9 @@ from zerver.lib.validator import check_bool, check_string, check_int, check_url
 from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
     check_full_name, check_short_name
 from zerver.lib.utils import generate_random_token
-from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    email_allowed_for_realm, get_user_profile_by_id, get_user, Service
+from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
+    get_user_profile_by_id, get_user, get_user_profile_by_email, Service, \
+    get_user_including_cross_realm
 from zerver.lib.create_user import random_api_key
 
 
@@ -120,16 +121,19 @@ def update_user_backend(request, user_profile, email,
 def avatar(request, email_or_id, medium=False):
     # type: (HttpRequest, str, bool) -> HttpResponse
     """Accepts an email address or user ID and returns the avatar"""
+    is_email = False
     try:
         int(email_or_id)
     except ValueError:
-        get_user_func = get_user_profile_by_email  # type: Callable[..., UserProfile]
-    else:
-        get_user_func = get_user_profile_by_id
+        is_email = True
 
     try:
+        if is_email:
+            realm = request.user.realm
+            user_profile = get_user_including_cross_realm(email_or_id, realm)
+        else:
+            user_profile = get_user_profile_by_id(email_or_id)
         # If there is a valid user account passed in, use its avatar
-        user_profile = get_user_func(email_or_id)
         url = avatar_url(user_profile, medium=medium)
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
