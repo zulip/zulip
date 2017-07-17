@@ -35,15 +35,43 @@ function truncate_precision(float) {
     return parseFloat(float.toFixed(3));
 }
 
-function get_next_local_id() {
-    var local_id_increment = 0.01;
-    var latest = page_params.max_message_id;
-    if (typeof message_list.all !== 'undefined' && message_list.all.last() !== undefined) {
-        latest = message_list.all.last().id;
-    }
-    latest = Math.max(0, latest);
-    return truncate_precision(latest + local_id_increment);
-}
+var get_next_local_id = (function () {
+
+    var already_used = {};
+
+    return function () {
+        var local_id_increment = 0.01;
+        var latest = page_params.max_message_id;
+        if (typeof message_list.all !== 'undefined' && message_list.all.last() !== undefined) {
+            latest = message_list.all.last().id;
+        }
+        latest = Math.max(0, latest);
+        var next_local_id = truncate_precision(latest + local_id_increment);
+
+        if (already_used[next_local_id]) {
+            // If our id is already used, it is probably an edge case like we had
+            // to abort a very recent message.
+            blueslip.warn("We don't reuse ids for local echo.");
+            return undefined;
+        }
+
+        if (next_local_id % 1 > local_id_increment * 5) {
+            blueslip.warn("Turning off local echo for this message to let host catch up");
+            return undefined;
+        }
+
+        if (next_local_id % 1 === 0) {
+            // The logic to stop at 0.05 should prevent us from ever wrapping around
+            // to the next integer.
+            blueslip.error("Programming error");
+            return undefined;
+        }
+
+        already_used[next_local_id] = true;
+
+        return next_local_id;
+    };
+}());
 
 function insert_local_message(message_request, local_id) {
     // Shallow clone of message request object that is turned into something suitable
@@ -102,17 +130,18 @@ function insert_local_message(message_request, local_id) {
 }
 
 exports.try_deliver_locally = function try_deliver_locally(message_request) {
-    var next_local_id = get_next_local_id();
-    if (next_local_id % 1 === 0) {
-        blueslip.error("Incremented local id to next integer---100 local messages queued");
-        return undefined;
-    }
-
     if (markdown.contains_bugdown(message_request.content)) {
         return undefined;
     }
 
     if (narrow_state.active() && !narrow_state.filter().can_apply_locally()) {
+        return undefined;
+    }
+
+    var next_local_id = get_next_local_id();
+
+    if (!next_local_id) {
+        // This can happen for legit reasons.
         return undefined;
     }
 
