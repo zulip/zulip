@@ -18,7 +18,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
-from zerver.lib.avatar import avatar_url, get_avatar_url
+from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
@@ -133,9 +133,8 @@ def avatar(request, email_or_id, medium=False):
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         email = email_or_id
-        avatar_source = 'G'
         avatar_version = 1
-        url = get_avatar_url(avatar_source, email, avatar_version, medium=medium)
+        url = get_gravatar_url(email, avatar_version, medium)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to
