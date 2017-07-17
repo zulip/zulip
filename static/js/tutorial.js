@@ -218,76 +218,6 @@ exports.is_running = function () {
     return is_running;
 };
 
-function box(x, y, width, height) {
-    // Blanket everything ouside the box defined by the parameters in a
-    // translucent black screen, and cover the box itself with a clear screen so
-    // nothing in it is clickable.
-    //
-    // x and y are the coordinates for hte upper-left corner of the box.
-
-    var doc_width = $(document).width();
-    var doc_height = $(document).height();
-
-    $("#top-screen").css({opacity: 0.7, width: doc_width, height: y});
-    $("#bottom-screen").offset({top: y + height, left: 0});
-    $("#bottom-screen").css({opacity: 0.7, width: doc_width, height: doc_height});
-    $("#left-screen").offset({top: y, left: 0});
-    $("#left-screen").css({opacity: 0.7, width: x, height: height});
-    $("#right-screen").offset({top: y, left: x + width});
-    $("#right-screen").css({opacity: 0.7, width: x, height: height});
-    $("#clear-screen").css({opacity: 0.0, width: doc_width, height: doc_height});
-}
-
-function message_groups_in_viewport() {
-    var vp = message_viewport.message_viewport_info();
-    var top = vp.visible_top;
-    var height = vp.visible_height;
-    var last_group = rows.get_message_recipient_row(rows.last_visible());
-
-    return $.merge(last_group, last_group.prevAll()).filter(function (idx, row) {
-        var row_offset = $(row).offset();
-        return (row_offset.top > top && row_offset.top < top + height);
-    });
-}
-
-function small_window() {
-    return !$("#left-sidebar").is(":visible");
-}
-
-function maybe_tweak_placement(placement) {
-    // If viewed on a small screen, move popovers on the left to the center so
-    // they won't be cut off.
-
-    if (!small_window()) {
-        return placement;
-    }
-
-    if (placement === "left") {
-        return "bottom";
-    }
-
-    if (placement === "bottom") {
-        return "right";
-    }
-}
-
-function create_and_show_popover(target_div, placement, title, content_template) {
-    $(".popover").remove();
-    target_div.popover("destroy");
-    target_div.popover({
-        placement: placement,
-        title: templates.render("tutorial_title", {title: title,
-                                                   placement: placement}),
-        content: templates.render(content_template, {placement: placement,
-                                                     page_params: page_params}),
-        trigger: "manual",
-    });
-    target_div.popover("show");
-
-    $(".popover").css("z-index", 20001);
-    $(".popover-title").addClass("popover-" + placement);
-}
-
 exports.defer = function (callback) {
     deferred_work.push(callback);
 };
@@ -334,128 +264,6 @@ function finale(skip) {
     compose_actions.cancel();
 }
 
-function box_first_message() {
-    var spotlight_message = rows.first_visible();
-    var bar = rows.get_message_recipient_row(spotlight_message);
-    var header = bar.find('.message_header');
-    var x = bar.offset().left;
-    var y = bar.offset().top;
-    var message_height = header.height() + spotlight_message.height();
-    var message_width = bar.width();
-
-    box(x, y, message_width, message_height);
-}
-
-function box_messagelist() {
-    var spotlight_message_row = rows.get_message_recipient_row(rows.first_visible());
-    var x = spotlight_message_row.offset().left;
-    var y = spotlight_message_row.offset().top;
-    var height = 0;
-
-    _.each(message_groups_in_viewport(), function (row) {
-        height += $(row).height();
-    });
-
-    box(x, y, spotlight_message_row.width(), height);
-}
-
-function reply() {
-    var spotlight_message = rows.get_message_recipient_row(rows.first_visible());
-    box_messagelist();
-    create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
-                            "Replying", "tutorial_reply");
-
-    var my_popover = $("#tutorial-reply").closest(".popover");
-    my_popover.offset({left: my_popover.offset().left - 10});
-    update_popover_info(reply, spotlight_message);
-
-    $("#tutorial-reply-next").click(function () {
-        spotlight_message.popover("destroy");
-        finale(false);
-    }).focus();
-}
-
-function home() {
-    var spotlight_message = rows.get_message_recipient_header(rows.first_visible());
-    box_messagelist();
-    create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
-                            "Narrowing", "tutorial_home");
-
-    var my_popover = $("#tutorial-home").closest(".popover");
-    my_popover.offset({left: my_popover.offset().left - 10});
-    update_popover_info(home, spotlight_message);
-
-    $("#tutorial-home-next").click(function () {
-        spotlight_message.popover("destroy");
-        reply();
-    }).focus();
-}
-
-function subject() {
-    var spotlight_message = rows.first_visible();
-    var bar = rows.get_message_recipient_header(spotlight_message);
-    var placement = maybe_tweak_placement("bottom");
-    box_first_message();
-    create_and_show_popover(bar, placement, "Topics", "tutorial_subject");
-
-    var my_popover = $("#tutorial-subject").closest(".popover");
-    if (placement === "bottom") { // Wider screen, popover is on bottom.
-        my_popover.offset({left: bar.offset().left + 140 - my_popover.width() / 2});
-    } else {
-        my_popover.offset({left: bar.offset().left + 194});
-    }
-    update_popover_info(subject, bar);
-
-    $("#tutorial-subject-next").click(function () {
-        bar.popover("destroy");
-        home();
-    }).focus();
-}
-
-function stream() {
-    var bar = rows.get_message_recipient_header(rows.first_visible());
-    var placement = maybe_tweak_placement("bottom");
-    box_first_message();
-    create_and_show_popover(bar, placement, "Streams", "tutorial_stream");
-
-    var my_popover = $("#tutorial-stream").closest(".popover");
-    if (placement === "bottom") { // Wider screen, popover is on bottom.
-        my_popover.offset({left: bar.offset().left + 50 - my_popover.width() / 2});
-    } else { // Smaller screen, popover is to the right of the stream label.
-        my_popover.offset({left: bar.offset().left + 98});
-    }
-    update_popover_info(stream, bar);
-
-    $("#tutorial-stream-next").click(function () {
-        bar.popover("destroy");
-        subject();
-    }).focus();
-}
-
-function welcome() {
-    // Grey out everything.
-    $('#top-screen').css({opacity: 0.7, width: $(document).width(),
-                          height: $(document).height()});
-    var spotlight_message = rows.first_visible();
-    var bar = rows.get_message_recipient_header(spotlight_message);
-    box_first_message();
-    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome to Zulip",
-                            "tutorial_message");
-
-    var my_popover = $("#tutorial-message").closest(".popover");
-    my_popover.offset({left: my_popover.offset().left - 10});
-    update_popover_info(welcome, bar);
-
-    $("#tutorial-message-next").click(function () {
-        bar.popover("destroy");
-        stream();
-    }).focus();
-    $("#tutorial-message-skip").click(function () {
-        bar.popover("destroy");
-        finale(true);
-    });
-}
-
 exports.start = function () {
     if (overlays.is_active()) {
         ui_util.change_tab_to('#home');
@@ -470,7 +278,7 @@ exports.start = function () {
     disable_event_handlers();
     is_running = true;
     set_tutorial_status("started");
-    welcome();
+    finale(true);
 };
 
 exports.initialize = function () {

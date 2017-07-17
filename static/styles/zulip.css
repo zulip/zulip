@@ -2588,14 +2588,6 @@ img.emoji {
     z-index: 20000;
 }
 
-#tutorial-stream {
-    width: 250px;
-}
-
-#tutorial-subject {
-    width: 250px;
-}
-
 .tutorial-done-button {
     text-align: right;
     margin-top: 9px;
