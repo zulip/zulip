@@ -12,10 +12,7 @@ function set_tutorial_status(status, callback) {
 
 function finale() {
     set_tutorial_status("finished");
-
-    var sender_bot = "welcome-bot@zulip.com";
-    narrow.by('pm-with', sender_bot, {select_first_unread: true, trigger: 'sidebar'});
-    compose_actions.cancel();
+    narrow.by('is', 'private', {select_first_unread: true, trigger: 'sidebar'});
 }
 
 exports.start = function () {
