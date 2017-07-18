@@ -9,6 +9,7 @@ from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zerver.lib.cache import get_stream_cache_key, cache_delete
+from zerver.lib.str_utils import force_text
 from zilencer.models import Deployment
 
 from zerver.lib.message import (
@@ -48,6 +49,7 @@ from zerver.lib.actions import (
     extract_recipients,
     do_create_user,
     get_client,
+    do_add_alert_words,
 )
 
 from zerver.lib.upload import create_attachment
@@ -2277,3 +2279,142 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
+
+    def test_user_message_filter(self):
+        # type: () -> None
+        # In this test we are basically testing out the logic used out in
+        # do_send_messages() in action.py for filtering the messages for which
+        # UserMessage rows should be created for a soft-deactivated user.
+        recipient_list  = [
+            self.example_email("hamlet"),
+            self.example_email("iago"),
+            self.example_email('cordelia')
+        ]
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        cordelia = self.example_user('cordelia')
+        sender = self.example_email('iago')
+        stream_name = 'Denmark'
+        subject = 'foo'
+
+        def send_stream_message(content):
+            # type: (str) -> None
+            self.send_message(sender, stream_name, Recipient.STREAM,
+                              content, subject)
+
+        def send_personal_message(content):
+            # type: (str) -> None
+            self.send_message(sender, self.example_email("hamlet"),
+                              Recipient.PERSONAL, content)
+
+        long_term_idle_user = self.example_user('hamlet')
+        do_soft_deactivate_users([long_term_idle_user])
+
+        def assert_um_count(user, count):
+            # type: (UserProfile, int) -> None
+            user_messages = get_user_messages(user)
+            self.assertEqual(len(user_messages), count)
+
+        def assert_last_um_content(user, content, negate=False):
+            # type: (UserProfile, Text, bool) -> None
+            user_messages = get_user_messages(user)
+            if negate:
+                self.assertNotEqual(user_messages[-1].content, content)
+            else:
+                self.assertEqual(user_messages[-1].content, content)
+
+        # Test that sending a message to a stream with soft deactivated user
+        # doesn't end up creating UserMessage row for deactivated user.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test Message 1'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message), negate=True)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test sending a private message to soft deactivated user creates
+        # UserMessage row.
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test PM'
+        send_personal_message(message)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # user itself is mentioned.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**King Hamlet** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is not created while user is deactivated if
+        # anyone is mentioned but the user.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**Cordelia Lear**  mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message), negate=True)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # there is a wildcard mention such as @all or @everyone
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**all** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**everyone** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if there
+        # is a alert word in message.
+        do_add_alert_words(long_term_idle_user, ['test_alert_word'])
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Testing test_alert_word'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # message is a me message.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = '/me says test'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # user itself is mentioned and message is a me message.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = '/me says @**King Hamlet** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))

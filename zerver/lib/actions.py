@@ -727,6 +727,7 @@ def get_recipient_user_profiles(recipient, sender_id):
             'user_profile__is_active',
             'user_profile__is_bot',
             'user_profile__bot_type',
+            'user_profile__long_term_idle',
         ]
         query = Subscription.objects.select_related("user_profile").only(*fields).filter(
             recipient=recipient, active=True)
@@ -818,7 +819,16 @@ def do_send_messages(messages_maybe_none):
                     um.flags |= UserMessage.flags.is_me_message
 
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
-            ums.extend(ums_to_create)
+
+            user_messages = []
+            for um in ums_to_create:
+                if (um.user_profile.long_term_idle and
+                        um.message.recipient.type == Recipient.STREAM and
+                        int(um.flags) == 0):
+                    continue
+                user_messages.append(um)
+
+            ums.extend(user_messages)
 
             # Prepare to collect service queue events triggered by the message.
             message['message'].service_queue_events = defaultdict(list)
