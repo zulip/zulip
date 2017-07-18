@@ -19,13 +19,12 @@ var editability_types = message_edit.editability_types;
         sent_by_me: false,
     }), editability_types.NO);
 
-    // If the server returns the message with an error (e.g. due to
-    // malformed markdown), you can edit the message regardless of the realm
-    // message editing policy, since the message hasn't actually been sent yet
+    // Failed request are currently not editable (though we want to
+    // change this back).
     assert.equal(get_editability({
         sent_by_me: true,
         failed_request: true,
-    }), editability_types.FULL);
+    }), editability_types.NO);
 
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.

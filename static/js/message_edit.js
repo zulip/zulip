@@ -25,20 +25,25 @@ function get_editability(message, edit_limit_seconds_buffer) {
     if (!(message && message.sent_by_me)) {
         return editability_types.NO;
     }
-    // If the server returns the message with an error (e.g. due to
-    // malformed markdown), you can edit the message regardless of the realm
-    // message editing policy, since the message hasn't actually been sent yet
     if (message.failed_request) {
-        return editability_types.FULL;
+        // TODO: For completely failed requests, we should be able
+        //       to "edit" the message, but it won't really be like
+        //       other message updates.  This commit changed the result
+        //       from FULL to NO, since the prior implementation was
+        //       buggy.
+        return editability_types.NO;
     }
+
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.
     if (message.local_id !== undefined) {
         return editability_types.NO;
     }
+
     if (!page_params.realm_allow_message_editing) {
         return editability_types.NO;
     }
+
     if (page_params.realm_message_content_edit_limit_seconds === 0) {
         return editability_types.FULL;
     }
