@@ -1455,8 +1455,8 @@ def do_import_realm(import_dir):
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
-        logging.info("Adding to ID map: %s %s" % (item['id'], get_user_profile_by_email(item['email']).id))
-        new_user_id = get_user_profile_by_email(item['email']).id
+        logging.info("Adding to ID map: %s %s" % (item['id'], get_system_bot(item['email']).id))
+        new_user_id = get_system_bot(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
 
     # Merge in zerver_userprofile_mirrordummy
