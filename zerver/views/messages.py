@@ -95,6 +95,7 @@ class NarrowBuilder(object):
         # type: (UserProfile, str) -> None
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
+        self.user_realm = user_profile.realm
 
     def add_term(self, query, term):
         # type: (Query, Dict[str, Any]) -> Query
