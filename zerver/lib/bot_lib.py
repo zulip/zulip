@@ -19,11 +19,7 @@ from types import ModuleType
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
-# For dev setups, we can find the API in the repo itself.
-if os.path.exists(os.path.join(our_dir, '../../api')):
-    sys.path.insert(0, os.path.join(our_dir, '../../api'))
-
-from bots_api.bot_lib import RateLimit, send_reply
+from zulip_bots.lib import RateLimit, send_reply
 
 class EmbeddedBotHandler(object):
     def __init__(self, user_profile):
