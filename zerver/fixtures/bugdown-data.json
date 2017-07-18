@@ -55,6 +55,12 @@
       "bugdown_matches_marked": false
     },
     {
+      "name": "fenced_quote_with_hashtag",
+      "input": "```quote\n# line 1\n# line 2\n```",
+      "expected_output": "<blockquote>\n<p># line 1<br>\n# line 2</p>\n</blockquote>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "dangerous_block",
       "input": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\"xxxx xxxx\\xxxxx\\xxxxxx\"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)```\n\nxxxxxxx'x xxxx xxxxxxxxxx ```'xxxx'```, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?",
       "expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>\"xxxx xxxx\\xxxxx\\xxxxxx\"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx'x xxxx xxxxxxxxxx <code>'xxxx'</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
