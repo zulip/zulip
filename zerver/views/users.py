@@ -174,7 +174,7 @@ def patch_bot_backend(request, user_profile, email,
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
     if bot_owner is not None:
-        owner = get_user_profile_by_email(bot_owner)
+        owner = get_user(bot_owner, user_profile.realm)
         do_change_bot_owner(bot, owner, user_profile)
     if default_sending_stream is not None:
         if default_sending_stream == "":
