@@ -537,11 +537,16 @@ function get_message_header(message) {
 }
 
 exports.possibly_notify_new_messages_outside_viewport = function (messages, local_id) {
+    // A warning should only be displayed when the message was sent by the user and
+    // this is the tab they sent it in.
+
+    if (local_id === undefined) {
+        return;
+    }
+
     _.each(messages, function (message) {
-        // A warning should only be displayed when the message was sent by the user and
-        // this is the tab they sent it in.
-        if (!people.is_current_user(message.sender_email) ||
-            local_id === undefined) {
+        if (!people.is_my_user_id(message.sender_id)) {
+            blueslip.warn('We did not expect messages sent by others to get here');
             return;
         }
         // queue up offscreen because of narrowed, or (secondarily) offscreen
