@@ -32,6 +32,21 @@ set_global('markdown', {
     set_realm_filters: noop,
 });
 
+set_global('notifications', {
+    redraw_title: noop,
+});
+
+set_global('settings_emoji', {
+    update_custom_emoji_ui: noop,
+});
+
+set_global('settings_org', {
+    reset_realm_default_language: noop,
+    toggle_email_change_display: noop,
+    toggle_name_change_display: noop,
+    update_message_retention_days: noop,
+});
+
 // page_params is highly coupled to dispatching now
 set_global('page_params', {test_suite: false});
 var page_params = global.page_params;
