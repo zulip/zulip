@@ -16,7 +16,7 @@ def backfill_subscription_log_events(apps, schema_editor):
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
     Subscription = apps.get_model('zerver', 'Subscription')
     Message = apps.get_model('zerver', 'Message')
-    objects_to_create = []  # type: List[RealmAuditLog]
+    objects_to_create = []
 
     subs_query = Subscription.objects.select_related(
         "user_profile", "user_profile__realm", "recipient").filter(recipient__type=2)
