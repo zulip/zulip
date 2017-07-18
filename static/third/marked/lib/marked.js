@@ -541,7 +541,7 @@ inline.zulip = merge({}, inline.breaks, {
                        '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
                        '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
-  usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/m, // Match multi-word string between @** ** or match any one-word
+  usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/, // Match multi-word string between @** ** or match any one-word
   stream: /^#\*\*([^\*]+)\*\*/m,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,

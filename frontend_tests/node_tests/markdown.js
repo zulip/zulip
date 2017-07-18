@@ -234,6 +234,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
         {input: 'Test *italic*',
          expected: '<p>Test <em>italic</em></p>'},
+        {input: 'T\n#**Denmark**',
+         expected: '<p>T</p>\n<p><a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a></p>'},
+         {input: 'T\n@**Cordelia Lear**',
+          expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
+        {input: 'This is a realm filter `hello` with text after it',
+         expected: '<p>This is a realm filter <code>hello</code> with text after it</p>'},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
