@@ -127,7 +127,7 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
     for key in required_keys:
         if ticket_data.get(key) is None:
             logging.warning("Freshdesk webhook error. Payload was:")
-            logging.warning(request.body)
+            logging.warning(request.body.decode())
             return json_error(_("Missing key %s in JSON") % (key,))
 
     ticket = TicketDict(ticket_data)

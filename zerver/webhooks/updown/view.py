@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import re
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
@@ -19,7 +19,7 @@ class UnsupportedUpdownEventType(JsonableError):
     pass
 
 def send_message_for_event(event, user_profile, client, stream):
-    # type: (Dict[str, Any], UserProfile, Client, str) -> None
+    # type: (Dict[str, Any], UserProfile, Client, str) -> Optional[HttpResponse]
     try:
         event_type = get_event_type(event)
         subject = SUBJECT_TEMPLATE.format(service_url=event['check']['url'])

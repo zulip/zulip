@@ -9,7 +9,7 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Text
-from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
+from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union, cast
 from zerver.lib.str_utils import force_bytes, force_text
 from zerver.lib.html_diff import highlight_html_differences
 
@@ -833,7 +833,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
         return (False, None)
 
-    sender_email = request.POST["sender"].strip().lower()
+    sender_email = cast(Text, request.POST["sender"]).strip().lower()
     referenced_users = set([sender_email])
     if request.POST['type'] == 'private':
         for email in recipients:

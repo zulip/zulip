@@ -31,7 +31,7 @@ import ujson
 from io import BytesIO
 from six.moves import zip, urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
+from typing import Union, Any, Callable, List, Optional, TypeVar, Text, cast
 from zerver.lib.str_utils import force_bytes
 
 # This is a hack to ensure that RemoteZulipServer always exists even
@@ -131,7 +131,7 @@ def require_realm_admin(func):
 from zerver.lib.user_agent import parse_user_agent
 
 def get_client_name(request, is_json_view):
-    # type: (HttpRequest, bool) -> Text
+    # type: (HttpRequest, bool) -> Union[Text, List[Text]]
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
@@ -167,7 +167,7 @@ def process_client(request, user_profile, is_json_view=False, client_name=None,
                    remote_server_request=False):
     # type: (HttpRequest, UserProfile, bool, Optional[Text], bool) -> None
     if client_name is None:
-        client_name = get_client_name(request, is_json_view)
+        client_name = cast(Text, get_client_name(request, is_json_view))
 
     # Transitional hack for early 2014.  Eventually the ios clients
     # will all report ZulipiOS, and we can remove the next couple lines.
@@ -266,7 +266,7 @@ def api_key_only_webhook_view(client_name):
                 if request.content_type == 'application/json':
                     request_body = ujson.dumps(ujson.loads(request.body), indent=4)
                 else:
-                    request_body = str(request.body)
+                    request_body = request.body.decode()
                 message = """
 user: {email} ({realm})
 client: {client_name}
@@ -735,7 +735,7 @@ def profiled(func):
     return wrapped_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def return_success_on_head_request(view_func):
-    # type: (Callable) -> Callable
+    # type: (Callable) -> Union[Callable, HttpResponse]
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpResponse, *Any, **Any) -> Callable
