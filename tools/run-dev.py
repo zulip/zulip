@@ -187,6 +187,10 @@ else:
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')
+    if options.interface:
+        webpack_cmd += ["--host", options.interface]
+    else:
+        webpack_cmd += ["--host", "0.0.0.0"]
     cmds.append(webpack_cmd)
 for cmd in cmds:
     subprocess.Popen(cmd)
@@ -380,7 +384,6 @@ class Application(web.Application):
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
-            (r"/sockjs-node.*", WebPackHandler),
             (r"/sockjs.*", TornadoHandler),
             (r"/.*", DjangoHandler)
         ]
