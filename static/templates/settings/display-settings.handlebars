@@ -11,7 +11,13 @@
                     <i class="fa fa-pencil"></i>
                 </button>
             </a>
+        </div>
 
+        {{ partial "default_language_modal"}}
+
+        <h3 class="light">{{t "Display settings" }}</h3>
+
+        <div class="side-padded-container">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
@@ -23,23 +29,6 @@
                 <label for="high_contrast_mode" class="inline-block">{{t "Enable high contrast mode." }}</label>
             </div>
 
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
-                    {{#if page_params.left_side_userlist}}
-                      checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="left_side_userlist" class="inline-block">{{t "Display user list on left side in narrow windows." }}</label>
-            </div>
-        </div>
-
-        {{ partial "default_language_modal"}}
-
-        <h3 class="light">{{t "Display settings" }}</h3>
-
-        <div class="side-padded-container">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
