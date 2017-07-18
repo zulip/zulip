@@ -86,16 +86,9 @@ set_global('topic_list', {});
         assert.equal(social_value.text(), '42');
     }());
 
-    function set_getter(elem, stub_value) {
-        elem.get = function (idx) {
-            assert.equal(idx, 0);
-            return stub_value;
-        };
-    }
-
-    set_getter($('<hr class="stream-split">'), 'split');
-    set_getter($('<devel sidebar row>'), 'devel-sidebar');
-    set_getter($('<social sidebar row>'), 'social-sidebar');
+    var split = '<hr class="stream-split">';
+    var devel_sidebar = $('<devel sidebar row>');
+    var social_sidebar = $('<social sidebar row>');
 
     var appended_elems;
     $('#stream_filters').append = function (elems) {
@@ -105,9 +98,9 @@ set_global('topic_list', {});
     stream_list.build_stream_list();
 
     var expected_elems = [
-        'split',
-        'devel-sidebar',
-        'social-sidebar',
+        split,
+        devel_sidebar,
+        social_sidebar,
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
@@ -333,16 +326,18 @@ function initialize_stream_data() {
 
     stream_list.build_stream_list();
 
+    var split = '<hr class="stream-split">';
     var expected_elems = [
-        '<devel sidebar row html>',
-        '<Rome sidebar row html>',
-        '<test sidebar row html>',
-        'split',
-        '<announce sidebar row html>',
-        '<Denmark sidebar row html>',
-        'split',
-        '<cars sidebar row html>',
+        $('<devel sidebar row html>'),
+        $('<Rome sidebar row html>'),
+        $('<test sidebar row html>'),
+        split,
+        $('<announce sidebar row html>'),
+        $('<Denmark sidebar row html>'),
+        split,
+        $('<cars sidebar row html>'),
     ];
+
     assert.deepEqual(appended_elems, expected_elems);
 
     var streams = global.stream_sort.get_streams();
