@@ -40,7 +40,7 @@ from zerver.lib.validator import \
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, parse_usermessage_flags, email_to_domain, \
-    get_realm, get_active_streams, bulk_get_streams
+    get_realm, get_active_streams, bulk_get_streams, get_user_including_cross_realm
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -277,7 +277,7 @@ class NarrowBuilder(object):
     def by_sender(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         try:
-            sender = get_user_profile_by_email(operand)
+            sender = get_user_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
