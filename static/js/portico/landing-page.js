@@ -24,12 +24,11 @@ var ScrollTo = function () {
     });
 };
 
-var detectPath = function (pathname) {
-    var match = (pathname || window.location.pathname).match(/(\/\w+)?\/(.+)\//);
-    if (match !== null) {
-        return match[2];
-    }
-};
+function path_parts() {
+    return window.location.pathname.split('/').filter(function (chunk) {
+        return chunk !== '';
+    });
+}
 
 // these are events that are only to run on the integrations page.
 // check if the page location is integrations.
@@ -411,16 +410,16 @@ var events = function () {
         $("nav ul").addClass("show");
     });
 
-    if (detectPath() === "apps") {
+    if (path_parts().includes("apps")) {
         apps_events();
     }
 
-    if (detectPath() === "integrations") {
+    if (path_parts().includes('integrations')) {
         integration_events();
         integration_search();
     }
 
-    if (detectPath() === "hello") {
+    if (path_parts().includes('hello')) {
         hello_events();
     }
 };
