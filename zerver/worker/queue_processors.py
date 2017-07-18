@@ -5,9 +5,8 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 import signal
 import sys
 import os
-sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../api')))
 
-from bots_api.bot_lib import ExternalBotHandler, StateHandler
+from zulip_bots.lib import ExternalBotHandler, StateHandler
 from django.conf import settings
 from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
@@ -481,7 +480,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
 
     def get_bot_handler(self, service):
         # type: (Service) -> Any
-        bot_module_name = 'bots_api.bots.%s.%s' % (service.name, service.name)
+        bot_module_name = 'zulip_bots.bots.%s.%s' % (service.name, service.name)
         bot_module = importlib.import_module(bot_module_name)  # type: Any
         return bot_module.handler_class()
 
