@@ -969,12 +969,14 @@ JS_SPECS = {
 }
 
 app_srcs = JS_SPECS['app']['source_filenames']
-
-WEBPACK_STATS_FILE = 'webpack-stats-dev.json' if DEVELOPMENT else 'webpack-stats-production.json'
+if DEVELOPMENT:
+    WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
+else:
+    WEBPACK_STATS_FILE = 'webpack-stats-production.json'
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': 'webpack-bundles/',
-        'STATS_FILE': os.path.join(STATIC_ROOT, 'webpack-bundles', WEBPACK_STATS_FILE),
+        'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
     }
 }
 

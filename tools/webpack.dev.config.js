@@ -13,7 +13,7 @@ config.entry.common.push('./static/js/debug.js');
 
 config.devtool = 'eval';
 config.output.publicPath = '/webpack/';
-config.plugins.push(new BundleTracker({filename: 'static/webpack-bundles/webpack-stats-dev.json'}));
+config.plugins.push(new BundleTracker({filename: 'var/webpack-stats-dev.json'}));
 // Hot Reload of code in development
 config.plugins.push(new webpack.HotModuleReplacementPlugin());
 // Better logging from console for hot reload
