@@ -3,6 +3,7 @@ var server_events_dispatch = (function () {
 var exports = {};
 
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
+    var noop = function () {};
     switch (event.type) {
     case 'alert_words':
         alert_words.words = event.alert_words;
@@ -48,41 +49,39 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'realm':
-        if (event.op === 'update' && event.property === 'name') {
-            page_params.realm_name = event.value;
-            notifications.redraw_title();
-        } else if (event.op === 'update' && event.property === 'description') {
-            page_params.realm_description = event.value;
-            settings_org.update_realm_description(event.value);
-        } else if (event.op === 'update' && event.property === 'invite_required') {
-            page_params.realm_invite_required = event.value;
-        } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
-            page_params.realm_invite_by_admins_only = event.value;
-        } else if (event.op === 'update' && event.property === 'inline_image_preview') {
-            page_params.realm_inline_image_preview = event.value;
-        } else if (event.op === 'update' && event.property === 'inline_url_embed_preview') {
-            page_params.realm_inline_url_embed_preview = event.value;
-        } else if (event.op === 'update' && event.property === 'create_stream_by_admins_only') {
-            page_params.realm_create_stream_by_admins_only = event.value;
-            if (!page_params.is_admin) {
-                page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
+        var realm_settings = {
+            add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
+            allow_edit_history: noop,
+            create_stream_by_admins_only: noop,
+            default_language: settings_org.reset_realm_default_language,
+            description: noop,
+            email_changes_disabled: settings_org.toggle_email_change_display,
+            inline_image_preview: noop,
+            inline_url_embed_preview: noop,
+            invite_by_admins_only: noop,
+            invite_required: noop,
+            mandatory_topics: noop,
+            message_retention_days: settings_org.update_message_retention_days,
+            name: notifications.redraw_title,
+            name_changes_disabled: settings_org.toggle_name_change_display,
+            notifications_stream_id: noop,
+            restricted_to_domain: noop,
+            waiting_period_threshold: noop,
+        };
+        if (event.op === 'update' && _.has(realm_settings, event.property)) {
+            page_params['realm_' + event.property] = event.value;
+            realm_settings[event.property]();
+            } if (event.property === 'description') {
+                settings_org.update_realm_description(event.value);
+            } else if (event.property === 'create_stream_by_admins_only') {
+                if (!page_params.is_admin) {
+                    page_params.can_create_streams = (!page_params.
+                                                        realm_create_stream_by_admins_only);
+                }
+            } else if (event.property === 'notifications_stream_id') {
+                settings_org.render_notifications_stream_ui(
+                    page_params.realm_notifications_stream_id);
             }
-        } else if (event.op === 'update' && event.property === 'name_changes_disabled') {
-            page_params.realm_name_changes_disabled = event.value;
-            settings_org.toggle_name_change_display();
-        } else if (event.op === 'update' && event.property === 'email_changes_disabled') {
-            page_params.realm_email_changes_disabled = event.value;
-            settings_org.toggle_email_change_display();
-        } else if (event.op === 'update' && event.property === 'add_emoji_by_admins_only') {
-            page_params.realm_add_emoji_by_admins_only = event.value;
-            settings_emoji.update_custom_emoji_ui();
-        } else if (event.op === 'update' && event.property === 'allow_edit_history') {
-            page_params.realm_allow_edit_history = event.value;
-        } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
-            page_params.realm_restricted_to_domain = event.value;
-        } else if (event.op === 'update' && event.property === 'message_retention_days') {
-            page_params.message_retention_days = event.value;
-            settings_org.update_message_retention_days();
         } else if (event.op === 'update_dict' && event.property === 'default') {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
@@ -90,20 +89,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             if (event.data.authentication_methods !== undefined) {
                 settings_org.populate_auth_methods(event.data.authentication_methods);
             }
-        } else if (event.op === 'update' && event.property === 'notifications_stream_id') {
-            page_params.realm_notifications_stream_id = event.value;
-            settings_org.render_notifications_stream_ui(page_params.realm_notifications_stream_id);
-        } else if (event.op === 'update' && event.property === 'default_language') {
-            page_params.realm_default_language = event.value;
-            settings_org.reset_realm_default_language();
-        } else if (event.op === 'update' && event.property === 'waiting_period_threshold') {
-            page_params.realm_waiting_period_threshold = event.value;
         } else if (event.op === 'update_dict' && event.property === 'icon') {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
-        } else if (event.op === 'update' && event.property === 'mandatory_topics') {
-            page_params.realm_mandatory_topics = event.value;
         }
 
         break;
@@ -271,8 +260,19 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'update_display_settings':
+        var user_display_settings = [
+            'default_language',
+            'emoji_alt_code',
+            'emojiset',
+            'high_contrast_mode',
+            'left_side_userlist',
+            'timezone',
+            'twenty_four_hour_time',
+        ];
+        if (_.contains(user_display_settings, event.setting_name)) {
+            page_params[event.setting_name] = event.setting;
+        }
         if (event.setting_name === 'twenty_four_hour_time') {
-            page_params.twenty_four_hour_time = event.setting;
             // Rerender the whole message list UI
             home_msg_list.rerender();
             if (current_msg_list === message_list.narrowed) {
@@ -280,11 +280,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             }
         }
         if (event.setting_name === 'high_contrast_mode') {
-            page_params.high_contrast_mode = event.setting;
             $("body").toggleClass("high-contrast");
         }
         if (event.setting_name === 'emoji_alt_code') {
-            page_params.emoji_alt_code = event.setting;
             // Rerender the whole message list UI
             home_msg_list.rerender();
             if (current_msg_list === message_list.narrowed) {
@@ -294,18 +292,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.
-            page_params.left_side_userlist = event.setting;
         }
         if (event.setting_name === 'default_language') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.
-            page_params.default_language = event.setting;
-        }
-        if (event.setting_name === 'timezone') {
-            page_params.timezone = event.setting;
         }
         if (event.setting_name === 'emojiset') {
-            page_params.emojiset = event.setting;
             var sprite = new Image();
             sprite.onload = function () {
                 $("#emoji-spritesheet").attr('href', "/static/generated/emoji/" + page_params.emojiset + "_sprite.css");
