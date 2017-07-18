@@ -7,9 +7,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, RealmAuditLog, get_huddle, Realm, UserMessage, RealmDomain, \
-    clear_database, get_client, get_user_profile_by_id, \
-    email_to_username, Service, get_user_profile_by_email, \
-    DefaultStream, get_stream, get_realm
+    clear_database, get_client, get_user_profile_by_id, email_to_username, \
+    Service, get_user, DefaultStream, get_stream, get_realm
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
@@ -275,7 +274,7 @@ class Command(BaseCommand):
             # TODO: Clean up this initial bot creation code
             Service.objects.create(
                 name="test",
-                user_profile=get_user_profile_by_email("outgoing-webhook@zulip.com"),
+                user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
                 base_url="http://127.0.0.1:5002/bots/followup",
                 token="abcd1234",
                 interface=1)
