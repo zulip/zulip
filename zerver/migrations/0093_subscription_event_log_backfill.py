@@ -46,7 +46,7 @@ def reverse_code(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0091_realm_allow_edit_history'),
+        ('zerver', '0092_create_scheduledemail'),
     ]
 
     operations = [
