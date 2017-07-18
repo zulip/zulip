@@ -8,34 +8,45 @@ from django.db import migrations, models
 
 from django.utils.timezone import now as timezone_now
 
+from typing import List
+
 def backfill_subscription_log_events(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None
     migration_time = timezone_now()
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
     Subscription = apps.get_model('zerver', 'Subscription')
     Message = apps.get_model('zerver', 'Message')
+    objects_to_create = []  # type: List[RealmAuditLog]
 
     subs_query = Subscription.objects.select_related(
         "user_profile", "user_profile__realm", "recipient").filter(recipient__type=2)
     for sub in subs_query:
-        RealmAuditLog.objects.create(realm=sub.user_profile.realm,
-                                     modified_user=sub.user_profile,
-                                     modified_stream_id=sub.recipient.type_id,
-                                     event_last_message_id=0,
-                                     event_type='subscription_created',
-                                     event_time=migration_time,
-                                     backfilled=True)
+        entry = RealmAuditLog(
+            realm=sub.user_profile.realm,
+            modified_user=sub.user_profile,
+            modified_stream_id=sub.recipient.type_id,
+            event_last_message_id=0,
+            event_type='subscription_created',
+            event_time=migration_time,
+            backfilled=True)
+        objects_to_create.append(entry)
+    RealmAuditLog.objects.bulk_create(objects_to_create)
+    objects_to_create = []
 
     event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
     migration_time_for_deactivation = timezone_now()
     for sub in subs_query.filter(active=False):
-        RealmAuditLog.objects.create(realm=sub.user_profile.realm,
-                                     modified_user=sub.user_profile,
-                                     modified_stream_id=sub.recipient.type_id,
-                                     event_last_message_id=event_last_message_id,
-                                     event_type='subscription_deactivated',
-                                     event_time=migration_time_for_deactivation,
-                                     backfilled=True)
+        entry = RealmAuditLog(
+            realm=sub.user_profile.realm,
+            modified_user=sub.user_profile,
+            modified_stream_id=sub.recipient.type_id,
+            event_last_message_id=event_last_message_id,
+            event_type='subscription_deactivated',
+            event_time=migration_time_for_deactivation,
+            backfilled=True)
+        objects_to_create.append(entry)
+    RealmAuditLog.objects.bulk_create(objects_to_create)
+    objects_to_create = []
 
 def reverse_code(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None
