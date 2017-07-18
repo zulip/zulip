@@ -536,6 +536,28 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
+exports.get_local_notify_mix_reason = function (message) {
+    var row = current_msg_list.get_row(message.id);
+    if (row.length > 0) {
+        // If our message is in the current message list, we do
+        // not have a mix, so we are happy.
+        return;
+    }
+
+    if (message.type === "stream" && muting.is_topic_muted(message.stream, message.subject)) {
+        return "Sent! Your message was sent to a topic you have muted.";
+    }
+
+    if (message.type === "stream" && !stream_data.in_home_view(message.stream_id)) {
+        return "Sent! Your message was sent to a stream you have muted.";
+    }
+
+    // offscreen because it is outside narrow
+    // we can only look for these on non-search (can_apply_locally) messages
+    // see also: exports.notify_messages_outside_current_search
+    return "Sent! Your message is outside your current narrow.";
+};
+
 exports.notify_local_mixes = function (messages) {
     /*
         This code should only be called when we are locally echoing
@@ -554,33 +576,19 @@ exports.notify_local_mixes = function (messages) {
             blueslip.warn('We did not expect messages sent by others to get here');
             return;
         }
-        // queue up offscreen because of narrowed, or (secondarily) offscreen
-        // because it doesn't fit in the currently visible viewport
 
-        var note;
-        var link_class;
-        var link_msg_id = message.id;
-        var link_text;
+        var reason = exports.get_local_notify_mix_reason(message);
 
-        var row = current_msg_list.get_row(message.id);
-        if (row.length === 0) {
-            if (message.type === "stream" && muting.is_topic_muted(message.stream, message.subject)) {
-                note = "Sent! Your message was sent to a topic you have muted.";
-            } else if (message.type === "stream" && !stream_data.in_home_view(message.stream_id)) {
-                note = "Sent! Your message was sent to a stream you have muted.";
-            } else {
-                // offscreen because it is outside narrow
-                // we can only look for these on non-search (can_apply_locally) messages
-                // see also: exports.notify_messages_outside_current_search
-                note = "Sent! Your message is outside your current narrow.";
-            }
-            link_class = "compose_notification_narrow_by_subject";
-            link_text = "Narrow to " + get_message_header(message);
-        } else {
-            // return with _.each is like continue for normal for loops.
+        if (!reason) {
+            // This is more than normal, just continue on.
             return;
         }
-        exports.notify_above_composebox(note, link_class, link_msg_id, link_text);
+
+        var link_msg_id = message.id;
+        var link_class = "compose_notification_narrow_by_subject";
+        var link_text = "Narrow to " + get_message_header(message);
+
+        exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
     });
 };
 
