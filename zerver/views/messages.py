@@ -317,7 +317,7 @@ class NarrowBuilder(object):
 
             # Personals with other user; include both directions.
             try:
-                narrow_profile = get_user_profile_by_email(operand)
+                narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
