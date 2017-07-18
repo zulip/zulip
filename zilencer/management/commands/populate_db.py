@@ -8,17 +8,15 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, RealmAuditLog, get_huddle, Realm, UserMessage, RealmDomain, \
     clear_database, get_client, get_user_profile_by_id, \
-    email_to_username, Service, get_user_profile_by_email
+    email_to_username, Service, get_user_profile_by_email, \
+    DefaultStream, get_stream, get_realm
+
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
-from zerver.lib.bulk_create import bulk_create_clients, \
-    bulk_create_streams, bulk_create_users, bulk_create_huddles
-from zerver.models import DefaultStream, get_stream, get_realm
-
+from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 import random
 import os
-from optparse import make_option
 from six.moves import range
 from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
