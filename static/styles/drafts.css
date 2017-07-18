@@ -77,10 +77,15 @@
 .draft-row .draft-info-box {
     width: 100%;
     margin-bottom: 10px;
+    border-top-left-radius: 4px;
 }
 
 .draft-info-box .messagebox {
     cursor: auto;
+}
+
+.draft-info-box .message_header {
+    margin-top: 0px;
 }
 
 .draft-info-box .message_content {

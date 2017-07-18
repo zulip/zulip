@@ -49,7 +49,8 @@ function update_table_stream_color(table, stream_name, color) {
         if ($.trim($label.text()) === stream_name) {
             var $recipient_row = $label.closest(".recipient_row");
             $recipient_row.find(".pill-wrapper").css("border-color", style);
-            $recipient_row.find(".message_row").css("box-shadow", "-2px 0px 0px " + style);
+            $recipient_row.css("box-shadow", "-2px 0px 0px " + style);
+                //.find(".line").css("background-color", style);
             $label.css({background: style,
                           "border-left-color": style});
             $label.removeClass(exports.color_classes);

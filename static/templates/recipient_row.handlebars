@@ -31,32 +31,32 @@
                         {{/if}}
                     </a>
                 </span>
-            </div>
 
-            <div class="message-edit-controls">
-                {{! edit subject pencil icon }}
-                {{#if always_visible_topic_edit}}
-                    <i class="icon-vector-pencil always_visible_topic_edit"></i>
-                {{else}}
-                    {{#if on_hover_topic_edit}}
-                    <i class="icon-vector-pencil on_hover_topic_edit"></i>
+                <div class="message-edit-controls">
+                    {{! edit subject pencil icon }}
+                    {{#if always_visible_topic_edit}}
+                        <i class="icon-vector-pencil always_visible_topic_edit"></i>
+                    {{else}}
+                        {{#if on_hover_topic_edit}}
+                        <i class="icon-vector-pencil on_hover_topic_edit"></i>
+                        {{/if}}
                     {{/if}}
-                {{/if}}
 
-                {{! exterior links (e.g. to a trac ticket) }}
-                {{#each subject_links}}
-                <a href="{{this}}" target="_blank" class="no-underline">
-                    <i class="icon-vector-external-link-sign"></i>
-                </a>
-                {{/each}}
+                    {{! exterior links (e.g. to a trac ticket) }}
+                    {{#each subject_links}}
+                    <a href="{{this}}" target="_blank" class="no-underline">
+                        <i class="icon-vector-external-link-sign"></i>
+                    </a>
+                    {{/each}}
 
-                <span class="topic_edit">
-                    <span class="topic_edit_form" id="{{id}}"></span>
-                </span>
+                    <span class="topic_edit">
+                        <span class="topic_edit_form" id="{{id}}"></span>
+                    </span>
 
 
-                <i class="icon-vector-eye-close on_hover_topic_mute" data-stream-id="{{stream_id}}" data-topic-name="{{subject}}"></i>
-                <span class="recipient_row_date {{#if show_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
+                    <i class="icon-vector-eye-close on_hover_topic_mute" data-stream-id="{{stream_id}}" data-topic-name="{{subject}}"></i>
+                    <span class="recipient_row_date {{#if show_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
+                </div>
             </div>
         </div>
     </div>

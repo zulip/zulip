@@ -681,17 +681,23 @@ td.pointer {
     top: 12px;
     width: 100%;
     height: 1px;
+
+    /*
+    opacity: 0.4;
+
+    -webkit-filter: saturate(3) contrast(0.2) brightness(1.3);
+    -moz-filter: saturate(3) contrast(0.2) brightness(1.3);
+    filter: saturate(3) contrast(0.2) brightness(1.3);
+    */
+
     background-color: #eee;
 
     z-index: -1;
 }
 
 .message_list .recipient_row {
-    margin-bottom: 10px;
-}
-
-.recipient_row {
-    padding: 0px 10px;
+    margin: 0px 10px 10px 10px;
+    border-top-left-radius: 4px;
 }
 
 .stream_label {
@@ -961,7 +967,7 @@ td.pointer {
 }
 
 .message_header_private_message .message_label_clickable {
-    background-color: hsl(0, 0%, 27%);
+    background-color: #333;
     display: inline-block;
     padding: 5px 6px 2px 6px;
     font-weight: normal;
@@ -970,28 +976,7 @@ td.pointer {
     line-height: 17px;
     border-left-color: #444;
     border-radius: 4px;
-}
-
-.message_header_private_message .message_label_clickable::after,
-.draft-row .pill-wrapper::after {
-    content: " ";
-
-    position: absolute;
-    width: 5px;
-    height: 24px;
-    top: 0px;
-    right: -6px;
-
-    background-color: #fff;
-}
-
-.recipient_row .message_header_private_message::after {
-    content: " ";
-    width: 8px;
-    height: 24px;
-    background-color: #fff;
-
-    position: absolute;
+    border-bottom-left-radius: 0px;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -1015,7 +1000,10 @@ td.pointer {
     position: relative;
     display: inline-block;
     border: 1px solid transparent;
-    border-radius: 4px;
+
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-top-left-radius: 4px;
 
     background-color: #fff;
 }
@@ -1026,13 +1014,20 @@ td.pointer {
 
     padding: 0px 4px;
     margin-left: -2px;
+}
 
-    background-color: #fff;
+/* this is because there is padding on the left of the topic label along with
+   padding in the .message-edit-controls, and so that we don't have to change
+   padding in multiple places in the case of the .message-edit-controls not
+   being in the markup (drafts modal), we just add a negative margin to
+   normalize the position. */
+.message-header-contents .message-edit-controls {
+    margin-left: -4px;
 }
 
 .message-header-contents .message-edit-controls > i {
     display: inline-block;
-    padding: 6px 4px;
+    padding: 4px;
 }
 
 .mention .messagebox-content {
@@ -1100,18 +1095,19 @@ td.pointer {
 }
 
 .messagebox-content {
-    border: 1px solid transparent;
-    border-radius: 4px;
+    border: 3px solid transparent;
 }
 
 .selected_message .messagebox-content {
     border-color: #ccc;
-    background-color: #fafafa;
 }
 
 .private-message.selected_message .messagebox-content {
-    border-color: #bfd3d8;
-    background-color: #e7f0f3;
+    border-color: #aacad2;
+}
+
+.mention.selected_message .messagebox-content {
+    border-color: #e2b0a8;
 }
 
 .message_sender {
