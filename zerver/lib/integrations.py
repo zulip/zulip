@@ -34,9 +34,9 @@ features for writing and configuring integrations efficiently.
 """
 
 CATEGORIES = {
-    'meta_integration': _('Integration frameworks'),
-    'continuous_integration': _('Continuous integration'),
-    'customer_support': _('Customer support'),
+    'meta-integration': _('Integration frameworks'),
+    'continuous-integration': _('Continuous integration'),
+    'customer-support': _('Customer support'),
     'deployment': _('Deployment'),
     'communication': _('Communication'),
     'financial': _('Financial'),
@@ -44,9 +44,9 @@ CATEGORIES = {
     'marketing': _('Marketing'),
     'misc': _('Miscellaneous'),
     'monitoring': _('Monitoring tools'),
-    'project_management': _('Project management'),
+    'project-management': _('Project management'),
     'productivity': _('Productivity'),
-    'version_control': _('Version control'),
+    'version-control': _('Version control'),
 }  # type: Dict[str, str]
 
 class Integration(object):
@@ -207,38 +207,38 @@ EMBEDDED_BOTS = [
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
-    WebhookIntegration('appfollow', ['customer_support'], display_name='AppFollow'),
-    WebhookIntegration('beanstalk', ['version_control']),
-    WebhookIntegration('basecamp', ['project_management']),
+    WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
+    WebhookIntegration('beanstalk', ['version-control']),
+    WebhookIntegration('basecamp', ['project-management']),
     WebhookIntegration(
         'bitbucket2',
-        ['version_control'],
+        ['version-control'],
         logo='static/images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket',
         stream_name='bitbucket'
     ),
     WebhookIntegration(
         'bitbucket',
-        ['version_control'],
+        ['version-control'],
         display_name='Bitbucket',
         secondary_line_text='(Enterprise)',
         stream_name='commits'
     ),
-    WebhookIntegration('circleci', ['continuous_integration'], display_name='CircleCI'),
-    WebhookIntegration('codeship', ['continuous_integration', 'deployment']),
+    WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
+    WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
     WebhookIntegration('crashlytics', ['monitoring']),
-    WebhookIntegration('delighted', ['customer_support', 'marketing'], display_name='Delighted'),
+    WebhookIntegration('delighted', ['customer-support', 'marketing'], display_name='Delighted'),
     WebhookIntegration(
         'deskdotcom',
-        ['customer_support'],
+        ['customer-support'],
         logo='static/images/integrations/logos/deskcom.png',
         display_name='Desk.com',
         stream_name='desk'
     ),
-    WebhookIntegration('freshdesk', ['customer_support']),
+    WebhookIntegration('freshdesk', ['customer-support']),
     GithubIntegration(
         'github',
-        ['version_control'],
+        ['version-control'],
         function='zerver.webhooks.github.view.api_github_landing',
         display_name='GitHub',
         secondary_line_text='(deprecated)',
@@ -246,15 +246,15 @@ WEBHOOK_INTEGRATIONS = [
     ),
     GithubIntegration(
         'github_webhook',
-        ['version_control'],
+        ['version-control'],
         display_name='GitHub',
         logo='static/images/integrations/logos/github.svg',
         secondary_line_text='(webhook)',
         function='zerver.webhooks.github_webhook.view.api_github_webhook',
         stream_name='github'
     ),
-    WebhookIntegration('gitlab', ['version_control'], display_name='GitLab'),
-    WebhookIntegration('gogs', ['version_control']),
+    WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
+    WebhookIntegration('gogs', ['version-control']),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
     WebhookIntegration('hellosign', ['productivity', 'hr'], display_name='HelloSign'),
@@ -263,11 +263,11 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('homeassistant', ['misc'], display_name='Home Assistant'),
     WebhookIntegration(
         'ifttt',
-        ['meta_integration'],
+        ['meta-integration'],
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
         display_name='IFTTT'
     ),
-    WebhookIntegration('jira', ['project_management'],
+    WebhookIntegration('jira', ['project-management'],
                        secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato', ['monitoring']),
     WebhookIntegration('mention', ['marketing'], display_name='Mention'),
@@ -275,18 +275,18 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pagerduty', ['monitoring']),
     WebhookIntegration('papertrail', ['monitoring']),
     WebhookIntegration('pingdom', ['monitoring']),
-    WebhookIntegration('pivotal', ['project_management'], display_name='Pivotal Tracker'),
-    WebhookIntegration('semaphore', ['continuous_integration', 'deployment'], stream_name='builds'),
+    WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
+    WebhookIntegration('semaphore', ['continuous-integration', 'deployment'], stream_name='builds'),
     WebhookIntegration('sentry', ['monitoring']),
     WebhookIntegration('slack', ['communication']),
-    WebhookIntegration('solano', ['continuous_integration'], display_name='Solano Labs'),
+    WebhookIntegration('solano', ['continuous-integration'], display_name='Solano Labs'),
     WebhookIntegration('splunk', ['monitoring'], display_name='Splunk'),
     WebhookIntegration('stripe', ['financial'], display_name='Stripe'),
-    WebhookIntegration('taiga', ['project_management']),
-    WebhookIntegration('teamcity', ['continuous_integration']),
+    WebhookIntegration('taiga', ['project-management']),
+    WebhookIntegration('teamcity', ['continuous-integration']),
     WebhookIntegration('transifex', ['misc']),
-    WebhookIntegration('travis', ['continuous_integration'], display_name='Travis CI'),
-    WebhookIntegration('trello', ['project_management'], secondary_line_text='(webhook)'),
+    WebhookIntegration('travis', ['continuous-integration'], display_name='Travis CI'),
+    WebhookIntegration('trello', ['project-management'], secondary_line_text='(webhook)'),
     WebhookIntegration('updown', ['monitoring']),
     WebhookIntegration(
         'yo',
@@ -295,12 +295,12 @@ WEBHOOK_INTEGRATIONS = [
         display_name='Yo App'
     ),
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
-    WebhookIntegration('zapier', ['meta_integration']),
-    WebhookIntegration('zendesk', ['customer_support'])
+    WebhookIntegration('zapier', ['meta-integration']),
+    WebhookIntegration('zendesk', ['customer-support'])
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {
-    'asana': Integration('asana', 'asana', ['project_management'], doc='zerver/integrations/asana.md'),
+    'asana': Integration('asana', 'asana', ['project-management'], doc='zerver/integrations/asana.md'),
     'capistrano': Integration(
         'capistrano',
         'capistrano',
@@ -308,11 +308,11 @@ INTEGRATIONS = {
         display_name='Capistrano',
         doc='zerver/integrations/capistrano.md'
     ),
-    'codebase': Integration('codebase', 'codebase', ['version_control'],
+    'codebase': Integration('codebase', 'codebase', ['version-control'],
                             doc='zerver/integrations/codebase.md'),
     'email': EmailIntegration('email', 'email', ['communication'],
                               doc='zerver/integrations/email.md'),
-    'git': Integration('git', 'git', ['version_control'], doc='zerver/integrations/git.md'),
+    'git': Integration('git', 'git', ['version-control'], doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',
         'google-calendar',
@@ -320,18 +320,18 @@ INTEGRATIONS = {
         display_name='Google Calendar',
         doc='zerver/integrations/google-calendar.md'
     ),
-    'hubot': Integration('hubot', 'hubot', ['meta_integration'], doc='zerver/integrations/hubot.md'),
+    'hubot': Integration('hubot', 'hubot', ['meta-integration'], doc='zerver/integrations/hubot.md'),
     'jenkins': Integration(
         'jenkins',
         'jenkins',
-        ['continuous_integration'],
+        ['continuous-integration'],
         secondary_line_text='(or Hudson)',
         doc='zerver/integrations/jenkins.md'
     ),
     'jira-plugin': Integration(
         'jira-plugin',
         'jira-plugin',
-        ['project_management'],
+        ['project-management'],
         logo='static/images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
         display_name='JIRA',
@@ -341,7 +341,7 @@ INTEGRATIONS = {
     'mercurial': Integration(
         'mercurial',
         'mercurial',
-        ['version_control'],
+        ['version-control'],
         display_name='Mercurial (hg)',
         doc='zerver/integrations/mercurial.md',
         stream_name='commits',
@@ -355,31 +355,31 @@ INTEGRATIONS = {
         doc='zerver/integrations/openshift.md',
         stream_name='deployments',
     ),
-    'perforce': Integration('perforce', 'perforce', ['version_control'],
+    'perforce': Integration('perforce', 'perforce', ['version-control'],
                             doc='zerver/integrations/perforce.md'),
-    'phabricator': Integration('phabricator', 'phabricator', ['version_control'],
+    'phabricator': Integration('phabricator', 'phabricator', ['version-control'],
                                doc='zerver/integrations/phabricator.md'),
     'puppet': Integration('puppet', 'puppet', ['deployment'], doc='zerver/integrations/puppet.md'),
-    'redmine': Integration('redmine', 'redmine', ['project_management'], doc='zerver/integrations/redmine.md'),
+    'redmine': Integration('redmine', 'redmine', ['project-management'], doc='zerver/integrations/redmine.md'),
     'rss': Integration('rss', 'rss', ['communication'], display_name='RSS', doc='zerver/integrations/rss.md'),
-    'svn': Integration('svn', 'svn', ['version_control'], doc='zerver/integrations/svn.md'),
-    'trac': Integration('trac', 'trac', ['project_management'], doc='zerver/integrations/trac.md'),
+    'svn': Integration('svn', 'svn', ['version-control'], doc='zerver/integrations/svn.md'),
+    'trac': Integration('trac', 'trac', ['project-management'], doc='zerver/integrations/trac.md'),
     'trello-plugin': Integration(
         'trello-plugin',
         'trello-plugin',
-        ['project_management'],
+        ['project-management'],
         logo='static/images/integrations/logos/trello.svg',
         secondary_line_text='(legacy)',
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.md',
         stream_name='trello',
     ),
-    'twitter': Integration('twitter', 'twitter', ['customer_support', 'marketing'],
+    'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
                            doc='zerver/integrations/twitter.md'),
 }  # type: Dict[str, Integration]
 
 HUBOT_LOZENGES = {
-    'assembla': HubotLozenge('assembla', ['project_management', 'version_control']),
+    'assembla': HubotLozenge('assembla', ['project-management', 'version-control']),
     'bonusly': HubotLozenge('bonusly', ['hr']),
     'chartbeat': HubotLozenge('chartbeat', ['marketing']),
     'darksky': HubotLozenge('darksky', ['misc'], display_name='Dark Sky', logo_alt='Dark Sky logo'),
