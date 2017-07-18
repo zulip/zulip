@@ -15,15 +15,13 @@ var block = {
   code: /^( {4}[^\n]+\n*)+/,
   fences: noop,
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
-  heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
   nptable: noop,
-  lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
   blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
   list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
   html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
-  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
+  paragraph: /^((?:[^\n]+\n?(?!hr|blockquote|tag|def))+)\n*/,
   text: /^[^\n]+/
 };
 
@@ -57,8 +55,6 @@ block.html = replace(block.html)
 
 block.paragraph = replace(block.paragraph)
   ('hr', block.hr)
-  ('heading', block.heading)
-  ('lheading', block.lheading)
   ('blockquote', block.blockquote)
   ('tag', '<' + block._tag)
   ('def', block.def)
@@ -77,7 +73,6 @@ block.normal = merge({}, block);
 block.gfm = merge({}, block.normal, {
   fences: /^ *(`{3,}|~{3,})[ \.]*(\S+)? *\n([\s\S]*?)\s*\1 *(?:\n+|$)/,
   paragraph: /^/,
-  heading: /^ *(#{1,6}) +([^\n]+?) *#* *(?:\n+|$)/
 });
 
 block.gfm.paragraph = replace(block.paragraph)
@@ -208,17 +203,6 @@ Lexer.prototype.token = function(src, top, bq) {
       continue;
     }
 
-    // heading
-    if (cap = this.rules.heading.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'heading',
-        depth: cap[1].length,
-        text: cap[2]
-      });
-      continue;
-    }
-
     // table no leading pipe (gfm)
     if (top && (cap = this.rules.nptable.exec(src))) {
       src = src.substring(cap[0].length);
@@ -248,17 +232,6 @@ Lexer.prototype.token = function(src, top, bq) {
 
       this.tokens.push(item);
 
-      continue;
-    }
-
-    // lheading
-    if (cap = this.rules.lheading.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'heading',
-        depth: cap[2] === '=' ? 1 : 2,
-        text: cap[1]
-      });
       continue;
     }
 
@@ -542,7 +515,7 @@ inline.zulip = merge({}, inline.breaks, {
                        '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
   usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/, // Match multi-word string between @** ** or match any one-word
-  stream: /^#\*\*([^\*]+)\*\*/m,
+  stream: /^#\*\*([^\*]+)\*\*/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   tex: /^(\$\$([^ _$](\\\$|[^$])*)(?! )\$\$)\B/,
@@ -987,19 +960,6 @@ Renderer.prototype.html = function(html) {
   return html;
 };
 
-Renderer.prototype.heading = function(text, level, raw) {
-  return '<h'
-    + level
-    + ' id="'
-    + this.options.headerPrefix
-    + raw.toLowerCase().replace(/[^\w]+/g, '-')
-    + '">'
-    + text
-    + '</h'
-    + level
-    + '>\n';
-};
-
 Renderer.prototype.hr = function() {
   return this.options.xhtml ? '<hr/>\n' : '<hr>\n';
 };
@@ -1195,12 +1155,6 @@ Parser.prototype.tok = function() {
     }
     case 'hr': {
       return this.renderer.hr();
-    }
-    case 'heading': {
-      return this.renderer.heading(
-        this.inline.output(this.token.text),
-        this.token.depth,
-        this.token.text);
     }
     case 'code': {
       return this.renderer.code(this.token.text,
