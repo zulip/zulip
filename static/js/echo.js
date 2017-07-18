@@ -5,6 +5,7 @@ var exports = {};
 var waiting_for_id = {};
 var waiting_for_ack = {};
 var home_view_loaded = false;
+var delivery_timeout = {};
 
 function resend_message(message, row) {
     message.content = message.raw_content;
@@ -46,6 +47,44 @@ function get_next_local_id() {
     return truncate_precision(latest + local_id_increment);
 }
 
+function display_message_hang(local_id) {
+    // To insert error below the message, zid attribute of message
+    // is used as an identifier. Error is inserted below the .message_content class.
+    var message_undelivered_id = "div[zid='" + local_id + "']";
+    var message_undelivered_tag = $(message_undelivered_id).find(".message_content");
+    message_undelivered_tag.after("<div class='message_undelivered'>Your message was not sent</div>");
+    delete delivery_timeout[local_id];
+}
+
+function set_hang_timeout(local_id) {
+    delivery_timeout[local_id] = setTimeout(function () {
+        if (waiting_for_ack[local_id] !== undefined) {
+            display_message_hang(local_id);
+        }
+        delete delivery_timeout[local_id];
+    }, 15000 );
+}
+
+function clear_message_hang(id) {
+    var message_undelivered_id = "div[zid='" + id + "']";
+    $(message_undelivered_id).find(".message_undelivered").remove();
+}
+
+function clear_hang_timeout(local_id, id) {
+    // Identifies if a message has been received by the server or not.
+    // This function is only called after the message has been
+    // received by the server.
+
+    // Else accounts for the case when timer times out and message has to be
+    // removed from UI
+    if (delivery_timeout[local_id] !== undefined) {
+        clearTimeout(delivery_timeout[local_id]);
+    } else {
+        clear_message_hang(id);
+    }
+
+}
+
 function insert_local_message(message_request, local_id) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
@@ -73,6 +112,8 @@ function insert_local_message(message_request, local_id) {
 
     waiting_for_id[message.local_id] = message;
     waiting_for_ack[message.local_id] = message;
+
+    set_hang_timeout(message.local_id);
 
     if (message.type === 'stream') {
         message.display_recipient = message.stream;
@@ -166,6 +207,7 @@ exports.process_from_server = function process_from_server(messages) {
         // In case we get the sent message before we get the send ACK, reify here
         exports.reify_message_id(message.local_id, message.id);
 
+        clear_hang_timeout(message.local_id, message.id);
         var client_message = waiting_for_ack[message.local_id];
         if (client_message !== undefined) {
             if (client_message.content !== message.content) {
@@ -196,6 +238,9 @@ exports.process_from_server = function process_from_server(messages) {
 };
 
 exports.message_send_error = function message_send_error(local_id, error_response) {
+    // Clearing timeout of message not delivered to server.
+    clearTimeout(delivery_timeout[local_id]);
+    display_message_hang(local_id);
     // Error sending message, show inline
     message_store.get(local_id).failed_request = true;
     ui.show_message_failed(local_id, error_response);
