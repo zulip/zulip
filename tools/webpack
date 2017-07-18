@@ -49,7 +49,7 @@ def run_test():
         "status": "done",
         "chunks": entries
     }
-    directory = os.path.join(STATIC_PATH, 'webpack-bundles')
+    directory = 'var'
     if not os.path.exists(directory):
         os.makedirs(directory)
     with open(os.path.join(directory, 'webpack-stats-test.json'), 'w') as outfile:
