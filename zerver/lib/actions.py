@@ -2603,7 +2603,7 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     send_event(event, [user_profile.id])
 
 def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, Text, Text, Sequence[int], bool, Optional[Stream], Optional[Text]) -> int
+    # type: (UserProfile, Text, Text, Optional[Sequence[int]], bool, Optional[Stream], Optional[Text]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
@@ -2618,6 +2618,7 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
         else:
             msgs = UserMessage.objects.filter(message__recipient=recipient, user_profile=user_profile)
     else:
+        assert messages is not None
         msgs = UserMessage.objects.filter(user_profile=user_profile,
                                           message__id__in=messages)
         # Hack to let you star any message
