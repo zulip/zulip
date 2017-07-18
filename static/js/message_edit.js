@@ -352,10 +352,6 @@ exports.start = function (row, edit_box_open_callback) {
     });
 };
 
-exports.start_local_failed_edit = function (row, message) {
-    start_edit_maintaining_scroll(row, message.raw_content);
-};
-
 exports.start_topic_edit = function (recipient_row) {
     var form = $(templates.render('topic_edit_form'));
     current_msg_list.show_edit_topic(recipient_row, form);
