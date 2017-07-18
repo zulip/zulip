@@ -536,13 +536,18 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
-exports.possibly_notify_new_messages_outside_viewport = function (messages, local_id) {
-    // A warning should only be displayed when the message was sent by the user and
-    // this is the tab they sent it in.
+exports.notify_local_mixes = function (messages) {
+    /*
+        This code should only be called when we are locally echoing
+        messages.  It notifies users that their messages aren't
+        actually in the view that they composed to.
 
-    if (local_id === undefined) {
-        return;
-    }
+        This code is called after we insert messages into our
+        message list widgets.  All of the conditions here are
+        checkable locally, so we may want to execute this code
+        earlier in the codepath at some point and possibly punt
+        on local rendering.
+    */
 
     _.each(messages, function (message) {
         if (!people.is_my_user_id(message.sender_id)) {
