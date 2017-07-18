@@ -570,14 +570,39 @@ function render(template_name, args) {
     assert.equal(li.text(), 'The email will be forwarded to this stream');
 }());
 
+(function emoji_popover() {
+    var args = {
+        class: "emoji-info-popover",
+        categories: [
+            { name: "Test category 1", icon: "test-icon-1" },
+            { name: "Test category 2", icon: "test-icon-2" },
+        ],
+    };
+    var html = render('emoji_popover', args);
+    var categories = $(html).find(".emoji-popover-tab-item");
+    assert.equal(categories.length, 2);
+    var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test category 1']");
+    assert(category_1.hasClass("active"));
+    global.write_handlebars_output("emoji_popover", html);
+}());
+
 (function emoji_popover_content() {
     var args = {
         search: 'Search',
         message_id: 1,
-        emojis: [{
-            name: '100',
-            css_class: '100',
-        }],
+        emoji_categories: [
+            {
+                name: 'Test',
+                emojis: [
+                    {
+                        has_reacted: false,
+                        is_realm_emoji: false,
+                        name: '100',
+                        css_class: '100',
+                    },
+                ],
+            },
+        ],
     };
 
     var html = '<div style="height: 250px">';
@@ -587,6 +612,33 @@ function render(template_name, args) {
     var emoji_key = $(html).find(".emoji-100").attr('title');
     assert.equal(emoji_key, ':100:');
     global.write_handlebars_output("emoji_popover_content", html);
+}());
+
+(function emoji_popover_search_results() {
+    var args = {
+        message_id: 1,
+        search_results: [
+            {
+                has_reacted: false,
+                is_realm_emoji: false,
+                name: 'test-1',
+                css_class: 'test-1',
+            },
+            {
+                has_reacted: true,
+                is_realm_emoji: false,
+                name: 'test-2',
+                css_class: 'test-2',
+            },
+        ],
+    };
+    var html = "<div>";
+    html += render("emoji_popover_search_results", args);
+    html += "</div>";
+    global.write_handlebars_output("emoji_popover_search_results", html);
+    var used_emoji = $(html).find(".emoji-test-2").parent();
+    assert(used_emoji.hasClass("reaction"));
+    assert(used_emoji.hasClass("reacted"));
 }());
 
 (function group_pms() {

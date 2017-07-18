@@ -120,6 +120,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         page_params.realm_emoji = event.realm_emoji;
         emoji.update_emojis(event.realm_emoji);
         settings_emoji.populate_emoji(event.realm_emoji);
+        emoji_picker.generate_emoji_picker_data(emoji.active_realm_emojis);
         break;
 
     case 'realm_filters':

@@ -354,6 +354,10 @@ exports.process_tab_key = function () {
         return true;
     }
 
+    if (emoji_picker.reactions_popped()) {
+        return emoji_picker.navigate('tab');
+    }
+
     return false;
 };
 
@@ -381,6 +385,11 @@ exports.process_shift_tab_key = function () {
         focused_message_edit_save.closest(".message_edit_form")
                                  .find(".message_edit_content").focus();
         return true;
+    }
+
+    // Shift-tabbing from emoji catalog/search results takes you back to search textbox.
+    if (emoji_picker.reactions_popped()) {
+        return emoji_picker.navigate('shift_tab');
     }
 
     return false;
@@ -445,7 +454,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (emoji_picker.reactions_popped()) {
-        return emoji_picker.navigate(e, event_name);
+        return emoji_picker.navigate(event_name);
     }
 
     if (hotspots.is_open()) {
