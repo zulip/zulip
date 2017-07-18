@@ -108,7 +108,7 @@ exports.build_stream_list = function () {
         var sub = stream_data.get_sub(stream);
         var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
         sidebar_row.update_whether_active();
-        elems.push(sidebar_row.get_li().get(0));
+        elems.push(sidebar_row.get_li());
     }
 
     parent.empty();
@@ -116,13 +116,13 @@ exports.build_stream_list = function () {
     _.each(stream_groups.pinned_streams, add_sidebar_li);
 
     if (stream_groups.pinned_streams.length > 0) {
-        elems.push($('<hr class="stream-split">').get(0));
+        elems.push('<hr class="stream-split">');
     }
 
     _.each(stream_groups.normal_streams, add_sidebar_li);
 
     if (stream_groups.dormant_streams.length > 0) {
-        elems.push($('<hr class="stream-split">').get(0));
+        elems.push('<hr class="stream-split">');
     }
 
     _.each(stream_groups.dormant_streams, add_sidebar_li);
