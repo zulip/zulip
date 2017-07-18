@@ -65,13 +65,15 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
     if (narrow_state.active()) {
         if (narrow_state.filter().can_apply_locally()) {
             message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
-            notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
             maybe_add_narrowed_messages(messages, message_list.narrowed, true);
         }
-    } else {
-        notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
+    }
+
+
+    if (local_id) {
+        notifications.notify_local_mixes(messages);
     }
 
     activity.process_loaded_messages(messages);
