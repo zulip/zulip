@@ -6,16 +6,13 @@ from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import connection
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, List, Set, Text
-from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
-from zerver.lib.str_utils import force_bytes, force_text
+from typing import Dict, List, Set, Text, Any, AnyStr, Callable, Iterable, \
+    Optional, Tuple, Union
+from zerver.lib.str_utils import force_text
 from zerver.lib.html_diff import highlight_html_differences
-
-from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
-    has_request_variables, REQ, JsonableError, \
-    to_non_negative_int
+from zerver.decorator import authenticated_json_post_view, has_request_variables, \
+    REQ, JsonableError, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
@@ -42,10 +39,8 @@ from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
-    get_user_profile_by_email, get_stream, \
-    parse_usermessage_flags, \
-    email_to_domain, get_realm, get_active_streams, \
-    bulk_get_streams, get_user_profile_by_id
+    get_user_profile_by_email, get_stream, parse_usermessage_flags, email_to_domain, \
+    get_realm, get_active_streams, bulk_get_streams
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
