@@ -2,7 +2,7 @@ var message_events = (function () {
 
 var exports = {};
 
-function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local_id) {
+function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
     var ids = [];
     _.each(messages, function (elem) {
         ids.push(elem.id);
@@ -39,7 +39,6 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
                 {messages_are_new: messages_are_new}
             );
             unread_ops.process_visible();
-            notifications.possibly_notify_new_messages_outside_viewport(new_messages, local_id);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error: function () {
@@ -48,7 +47,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local_id);
+                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new);
                 }
             }, 5000);
         }});
@@ -69,7 +68,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
             notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, message_list.narrowed, true, local_id);
+            maybe_add_narrowed_messages(messages, message_list.narrowed, true);
         }
     } else {
         notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
