@@ -77,7 +77,14 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
 
     activity.process_loaded_messages(messages);
     message_util.do_unread_count_updates(messages);
+    exports.maybe_advance_to_recently_sent_message(messages);
+    unread_ops.process_visible();
+    notifications.received_messages(messages);
+    stream_list.update_streams_sidebar();
+    pm_list.update_private_messages();
+};
 
+exports.maybe_advance_to_recently_sent_message = function (messages) {
     if (narrow_state.narrowed_by_reply()) {
         // If you send a message when narrowed to a recipient, move the
         // pointer to it.
@@ -100,11 +107,6 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
             }
         }
     }
-
-    unread_ops.process_visible();
-    notifications.received_messages(messages);
-    stream_list.update_streams_sidebar();
-    pm_list.update_private_messages();
 };
 
 exports.update_messages = function update_messages(events) {
