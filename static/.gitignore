@@ -1,2 +1,10 @@
 min/
 source-map/
+/js/bundle.js
+/generated/emoji
+/generated/pygments_data.js
+/generated/github-contributors.json
+/locale/language_options.json
+/third/emoji-data
+/webpack-bundles
+/locale/en
