@@ -4,7 +4,7 @@ from __future__ import print_function
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from zerver.models import get_user_profile_by_email, UserProfile
+from zerver.models import get_realm, get_user, UserProfile
 import os
 from six.moves.configparser import ConfigParser
 
@@ -28,7 +28,8 @@ class Command(BaseCommand):
         email = config.get("api", "email")
 
         try:
-            user_profile = get_user_profile_by_email(email)
+            realm = get_realm("zulip")
+            user_profile = get_user(email, realm)
             user_profile.api_key = api_key
             user_profile.save(update_fields=["api_key"])
         except UserProfile.DoesNotExist:
