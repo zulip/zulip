@@ -331,7 +331,7 @@ class NarrowBuilder(object):
     def by_group_pm_with(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         try:
-            narrow_profile = get_user_profile_by_email(operand)
+            narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
