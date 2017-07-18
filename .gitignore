@@ -23,7 +23,7 @@
 *.pyc
 
 /queue_error
-.vagrant
+/.vagrant
 /var
 
 # Static build
