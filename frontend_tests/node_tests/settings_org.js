@@ -525,7 +525,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     assert(email_toggled);
     assert(email_tooltip_toggled);
 
-    settings_org.update_realm_description('realm description');
+    page_params.realm_description = 'realm description';
+    settings_org.update_realm_description();
     assert.equal($('#id_realm_description').val(), 'realm description');
 
     page_params.message_retention_days = 42;
