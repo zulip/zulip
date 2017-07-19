@@ -48,5 +48,5 @@ def json_success(data=None):
     return json_response(data=data)
 
 def json_error(msg, data=None, status=400):
-    # type: (str, Optional[Dict[str, Any]], int) -> HttpResponse
+    # type: (Text, Optional[Dict[str, Any]], int) -> HttpResponse
     return json_response(res_type="error", msg=msg, data=data, status=status)
