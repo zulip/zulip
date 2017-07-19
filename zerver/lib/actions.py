@@ -242,7 +242,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         )
 
     # We also send a notification to the Zulip administrative realm
-    admin_realm = get_user_profile_by_email(sender).realm
+    admin_realm = get_system_bot(sender).realm
     try:
         # Check whether the stream exists
         get_stream(signups_stream, admin_realm)
