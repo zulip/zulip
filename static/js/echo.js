@@ -182,8 +182,11 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
     message.id = server_id;
     delete message.local_id;
 
-    // We have the real message ID  for this message
-    $(document).trigger($.Event('message_id_changed', {old_id: local_id, new_id: server_id}));
+    var opts = {old_id: local_id, new_id: server_id};
+
+    message_store.reify_message_id(opts);
+
+    $(document).trigger($.Event('message_id_changed', opts));
 };
 
 exports.process_from_server = function process_from_server(messages) {

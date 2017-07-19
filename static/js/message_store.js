@@ -176,33 +176,25 @@ exports.add_message_metadata = function (message) {
     return message;
 };
 
-exports.initialize = function () {
-    $(document).on('message_id_changed', function (event) {
-        var old_id = event.old_id;
-        var new_id = event.new_id;
-        if (pointer.furthest_read === old_id) {
-            pointer.furthest_read = new_id;
-        }
-        if (stored_messages[old_id]) {
-            stored_messages[new_id] = stored_messages[old_id];
-            delete stored_messages[old_id];
-        }
+exports.reify_message_id = function (opts) {
+    var old_id = opts.old_id;
+    var new_id = opts.new_id;
+    if (pointer.furthest_read === old_id) {
+        pointer.furthest_read = new_id;
+    }
+    if (stored_messages[old_id]) {
+        stored_messages[new_id] = stored_messages[old_id];
+        delete stored_messages[old_id];
+    }
 
-        // This handler cannot be in the MessageList constructor, which is the logical place
-        // If it's there, the event handler creates a closure with a reference to the message
-        // list itself. When narrowing, the old narrow message list is discarded and a new one
-        // created, but due to the closure, the old list is not garbage collected. This also leads
-        // to the old list receiving the change id events, and throwing errors as it does not
-        // have the messages that you would expect in its internal data structures.
-        _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
-            if (msg_list !== undefined) {
-                msg_list.change_message_id(old_id, new_id);
+    _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
+        if (msg_list !== undefined) {
+            msg_list.change_message_id(old_id, new_id);
 
-                if (msg_list.view !== undefined) {
-                    msg_list.view.change_message_id(old_id, new_id);
-                }
+            if (msg_list.view !== undefined) {
+                msg_list.view.change_message_id(old_id, new_id);
             }
-        });
+        }
     });
 };
 
