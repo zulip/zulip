@@ -373,9 +373,10 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
-        var row = $(this).closest(".message_row");
         e.stopPropagation();
-        emoji_picker.toggle_emoji_popover(this, rows.id(row));
+
+        var message_id = rows.get_message_id(this);
+        emoji_picker.toggle_emoji_popover(this, message_id);
     });
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {

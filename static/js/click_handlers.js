@@ -119,7 +119,7 @@ $(function () {
     $("#main_div").on("click", ".message_reaction", function (e) {
         e.stopPropagation();
         var emoji_name = $(this).attr('data-emoji-name');
-        var message_id = $(this).parent().attr('data-message-id');
+        var message_id = rows.get_message_id(this);
         reactions.toggle_emoji_reaction(message_id, emoji_name);
     });
 

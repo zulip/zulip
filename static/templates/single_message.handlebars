@@ -45,7 +45,7 @@
                         <div class="edit_content"></div>
                         {{else}}
                         <div class="reactions_hover">
-                            <i class="icon-vector-smile reaction_button" data-msgid="{{msg/id}}" title="{{#tr this}}Add emoji reaction{{/tr}}"></i>
+                            <i class="icon-vector-smile reaction_button" title="{{#tr this}}Add emoji reaction{{/tr}}"></i>
                         </div>
                         {{/if}}
                         <div class="info actions_hover">
@@ -71,7 +71,7 @@
                 </div>
                 <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
                 <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
-                <div class="message_reactions" data-message-id="{{msg/id}}">{{ partial "message_reactions" }}</div>
+                <div class="message_reactions">{{ partial "message_reactions" }}</div>
             </div>
         </div>
     </div>

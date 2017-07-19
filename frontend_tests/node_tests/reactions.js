@@ -475,28 +475,6 @@ set_global('message_store', {
 
 }());
 
-(function test_initialize() {
-    var my_event = {
-        old_id: 5,
-        new_id: 99,
-    };
-
-    var new_attr;
-
-    $(".message_reactions[data-message-id='5']").attr = function (sel, value) {
-        assert.equal(sel, 'data-message-id');
-        new_attr = value;
-    };
-
-    $(document).on = function (event_name, f) {
-        assert.equal(event_name, 'message_id_changed');
-        f(my_event);
-    };
-
-    reactions.initialize();
-    assert.equal(new_attr, 99);
-}());
-
 (function test_error_handling() {
     var error_msg;
 
