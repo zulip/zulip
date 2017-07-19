@@ -392,6 +392,10 @@ exports.end = function (row) {
     }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();
+
+    // We have to blur out text fields, or else hotkeys.js
+    // thinks we are still editing.
+    row.find(".message_edit").blur();
 };
 
 exports.maybe_show_edit = function (row, id) {
