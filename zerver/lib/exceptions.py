@@ -5,12 +5,12 @@ from django.core.exceptions import PermissionDenied
 
 class JsonableError(Exception):
     msg = None  # type: Text
-    status_code = None  # type: int
+    http_status_code = 400  # type: int
 
-    def __init__(self, msg, status_code=400):
-        # type: (Text) -> None
+    def __init__(self, msg, http_status_code=400):
+        # type: (Text, int) -> None
         self.msg = msg
-        self.status_code = status_code
+        self.http_status_code = http_status_code
 
     def __str__(self):
         # type: () -> str
