@@ -22,7 +22,6 @@
 ## Byproducts of setting up and using the dev environment
 *.pyc
 
-/queue_error
 /.vagrant
 /var
 
