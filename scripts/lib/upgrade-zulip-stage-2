@@ -53,6 +53,14 @@ if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
     subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
                            os.path.join(deploy_path, "zproject/prod_settings.py")])
 
+# Ensure the hashbang on the scripts to be python3 when upgrading from git.
+# This is not run when upgrading from tarball because a tarball might already
+# have the hashbang patched.
+if args.from_git:
+    sed_cmd = ["sed", "-i", "-e", "1 s|#!/usr/bin/env python|#!/usr/bin/env python3|g",
+               "{}", ";"]
+    subprocess.check_call(["find", deploy_path, "-type", "f", '-exec'] + sed_cmd)
+
 # Now we should have an environment setup where we can run our tools;
 # first, creating the production venv.
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
