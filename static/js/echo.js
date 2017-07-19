@@ -203,8 +203,7 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
     var opts = {old_id: local_id, new_id: server_id};
 
     message_store.reify_message_id(opts);
-
-    $(document).trigger($.Event('message_id_changed', opts));
+    notifications.reify_message_id(opts);
 };
 
 exports.process_from_server = function process_from_server(messages) {
