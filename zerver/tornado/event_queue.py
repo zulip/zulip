@@ -539,10 +539,7 @@ def fetch_events(query):
             logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
                                                                         client_type_name))
     except JsonableError as e:
-        if hasattr(e, 'to_json_error_msg') and callable(e.to_json_error_msg):
-            return dict(type="error", handler_id=handler_id,
-                        message=e.to_json_error_msg())
-        raise e
+        return dict(type="error", handler_id=handler_id, message=e.to_json_error_msg())
 
     client.connect_handler(handler_id, client_type_name)
     return dict(type="async")
