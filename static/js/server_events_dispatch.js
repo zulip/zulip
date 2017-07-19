@@ -36,6 +36,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.immediate) {
             reload_options.immediate = true;
         }
+        if (event.server_generation !== page_params.server_generation) {
+            i18n.clearCache();
+        }
         reload.initiate(reload_options);
         break;
 
