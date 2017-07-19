@@ -289,6 +289,7 @@ def is_django_block_tag(tag):
         'blocktrans',
         'trans',
         'raw',
+        'with',
     ]
 
 def get_handlebars_tag(text, i):
