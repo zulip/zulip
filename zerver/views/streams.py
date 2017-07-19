@@ -389,7 +389,7 @@ def json_stream_exists(request, user_profile, stream_name=REQ("stream"),
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     except JsonableError as e:
         result = {"exists": False}
-        return json_error(e.error, data=result, status=404)
+        return json_error(e.msg, data=result, status=404)
 
     # access_stream functions return a subscription if and only if we
     # are already subscribed.

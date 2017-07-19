@@ -82,7 +82,7 @@ class RegistrationForm(forms.Form):
         try:
             return check_full_name(self.cleaned_data['full_name'])
         except JsonableError as e:
-            raise ValidationError(e.error)
+            raise ValidationError(e.msg)
 
     def clean_realm_subdomain(self):
         # type: () -> str

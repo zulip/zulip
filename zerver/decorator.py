@@ -458,7 +458,7 @@ def authenticated_rest_api_view(is_webhook=False):
                 # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
-                return json_unauthorized(e.error)
+                return json_unauthorized(e.msg)
             request.user = profile
             if is_remote_server(role):
                 assert isinstance(profile, RemoteZulipServer)  # type: ignore # https://github.com/python/mypy/issues/2957

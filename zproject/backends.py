@@ -451,7 +451,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             try:
                 full_name = check_full_name(full_name)
             except JsonableError as e:
-                raise ZulipLDAPException(e.error)
+                raise ZulipLDAPException(e.msg)
             if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
                 short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
                 short_name = ldap_user.attrs[short_name_attr][0]
