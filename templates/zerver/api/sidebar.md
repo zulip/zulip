@@ -14,6 +14,7 @@
 * [Running bots](/api/running-bots)
 * [Deploying bots](/api/deploying-bots)
 * [Writing bots](/api/writing-bots)
+* [Outgoing webhooks](/api/outgoing-webhooks)
 
 ## REST API
 
