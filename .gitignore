@@ -35,7 +35,6 @@ npm-debug.log
 
 # Test / analysis tools
 .coverage
-coverage/
 
 ## Files left by various editors and local environments
 # (Ideally these should be in everyone's respective personal gitignore files.)
