@@ -619,22 +619,23 @@ $(function () {
         window.bridge = bridge;
     }
 
-    $(document).on('message_id_changed', function (event) {
-        var old_id = event.old_id;
-        var new_id = event.new_id;
-
-        // If a message ID that we're currently storing (as a link) has changed,
-        // update that link as well
-        _.each($('#out-of-view-notification a'), function (e) {
-            var elem = $(e);
-            var msgid = elem.data('msgid');
-
-            if (msgid === old_id) {
-                elem.data('msgid', new_id);
-            }
-        });
-    });
 });
+
+exports.reify_message_id = function (opts) {
+    var old_id = opts.old_id;
+    var new_id = opts.new_id;
+
+    // If a message ID that we're currently storing (as a link) has changed,
+    // update that link as well
+    _.each($('#out-of-view-notification a'), function (e) {
+        var elem = $(e);
+        var msgid = elem.data('msgid');
+
+        if (msgid === old_id) {
+            elem.data('msgid', new_id);
+        }
+    });
+};
 
 exports.register_click_handlers = function () {
     $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_subject', function (e) {
