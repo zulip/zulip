@@ -62,6 +62,15 @@ exports.get_table = function (table_name) {
     return $('#' + table_name);
 };
 
+exports.get_message_id = function (elem) {
+    // Gets the message_id for elem, where elem is a DOM
+    // element inside a message.  This is typically used
+    // in click handlers for things like the reaction button.
+    var row = $(elem).closest(".message_row");
+    var message_id = exports.id(row);
+    return message_id;
+};
+
 exports.get_closest_group = function (element) {
     // This gets the closest message row to an element, whether it's
     // a recipient bar or message.  With our current markup,
