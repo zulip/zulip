@@ -37,8 +37,6 @@ npm-debug.log
 .coverage
 coverage/
 
-api/bots/john/assets/var/database.db
-
 ## Files left by various editors and local environments
 # (Ideally these should be in everyone's respective personal gitignore files.)
 *~
