@@ -56,10 +56,9 @@ import six
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 
 class BadNarrowOperator(JsonableError):
-    def __init__(self, desc, status_code=400):
-        # type: (str, int) -> None
+    def __init__(self, desc):
+        # type: (str) -> None
         self.desc = desc
-        self.status_code = status_code
 
     def to_json_error_msg(self):
         # type: () -> str

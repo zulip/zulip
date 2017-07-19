@@ -11,18 +11,16 @@ from django.utils.translation import ugettext as _
 from zerver.lib.exceptions import JsonableError
 
 class RequestVariableMissingError(JsonableError):
-    def __init__(self, var_name, status_code=400):
+    def __init__(self, var_name):
         self.var_name = var_name
-        self.status_code = status_code
 
     def to_json_error_msg(self):
         return _("Missing '%s' argument") % (self.var_name,)
 
 class RequestVariableConversionError(JsonableError):
-    def __init__(self, var_name, bad_value, status_code=400):
+    def __init__(self, var_name, bad_value):
         self.var_name = var_name
         self.bad_value = bad_value
-        self.status_code = status_code
 
     def to_json_error_msg(self):
         return (_("Bad value for '%(var_name)s': %(value)s") %

@@ -35,10 +35,10 @@ from six.moves import urllib
 import six
 
 class PrincipalError(JsonableError):
-    def __init__(self, principal, status_code=403):
-        # type: (Text, int) -> None
+    def __init__(self, principal):
+        # type: (Text) -> None
         self.principal = principal  # type: Text
-        self.status_code = status_code  # type: int
+        self.http_status_code = 403  # type: int
 
     def to_json_error_msg(self):
         # type: () -> Text
