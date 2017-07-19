@@ -77,6 +77,15 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+        my_html = '''
+            {% block "content" %}
+                {% with className="class" %}
+                {% include 'foobar' %}
+                {% endwith %}
+            {% endblock %}
+            '''
+        validate(text=my_html)
+
     def test_validate_no_start_tag(self):
         # type: () -> None
         my_html = '''
