@@ -151,6 +151,7 @@ i18n_urls = [
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+    url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
     url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
     url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
     url(r'^authors/$', zerver.views.users.authors_view, name='zerver.views.users.authors_view'),
