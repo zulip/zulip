@@ -262,15 +262,19 @@ def api_key_only_webhook_view(client_name):
                 rate_limit_user(request, user_profile, domain='all')
             try:
                 return view_func(request, user_profile, *args, **kwargs)
-            except Exception:
+            except Exception as err:
                 if request.content_type == 'application/json':
-                    request_body = ujson.dumps(ujson.loads(request.body), indent=4)
+                    try:
+                        request_body = ujson.dumps(ujson.loads(request.body), indent=4)
+                    except ValueError:
+                        request_body = str(request.body)
                 else:
                     request_body = str(request.body)
                 message = """
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
+content_type: {content_type}
 body:
 
 {body}
@@ -280,9 +284,10 @@ body:
                     client_name=webhook_client_name,
                     body=request_body,
                     path_info=request.META.get('PATH_INFO', None),
+                    content_type=request.content_type,
                 )
                 webhook_logger.exception(message)
-                raise
+                raise err
 
         return _wrapped_func_arguments
     return _wrapped_view_func
