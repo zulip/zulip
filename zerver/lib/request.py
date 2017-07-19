@@ -8,16 +8,7 @@ from six.moves import zip
 
 from django.utils.translation import ugettext as _
 
-class JsonableError(Exception):
-    def __init__(self, msg, status_code=400):
-        self.msg = msg
-        self.status_code = status_code
-
-    def __str__(self):
-        return self.to_json_error_msg()
-
-    def to_json_error_msg(self):
-        return self.msg
+from zerver.lib.exceptions import JsonableError
 
 class RequestVariableMissingError(JsonableError):
     def __init__(self, var_name, status_code=400):

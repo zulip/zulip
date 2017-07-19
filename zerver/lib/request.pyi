@@ -2,13 +2,9 @@
 from typing import Any, Callable, Text, TypeVar
 from django.http import HttpResponse
 
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
+from zerver.lib.exceptions import JsonableError as JsonableError
 
-class JsonableError(Exception):
-    msg = ...  # type: Text
-    status_code = ...  # type: int
-    def __init__(self, msg: Text) -> None: ...
-    def to_json_error_msg(self) -> Text: ...
+ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 class RequestVariableMissingError(JsonableError): ...
 class RequestVariableConversionError(JsonableError): ...
