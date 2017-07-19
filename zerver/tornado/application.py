@@ -9,6 +9,7 @@ from zerver.tornado.handlers import AsyncDjangoHandler
 from zerver.tornado.socket import get_sockjs_router
 from zerver.lib.queue import get_queue_client
 
+import tornado.autoreload
 import tornado.web
 
 def setup_tornado_rabbitmq():
@@ -17,6 +18,7 @@ def setup_tornado_rabbitmq():
     if settings.USING_RABBITMQ:
         queue_client = get_queue_client()
         atexit.register(lambda: queue_client.close())
+        tornado.autoreload.add_reload_hook(lambda: queue_client.close())  # type: ignore # TODO: Fix missing tornado.autoreload stub
 
 def create_tornado_application():
     # type: () -> tornado.web.Application
