@@ -213,6 +213,11 @@ class DecoratorTestCase(TestCase):
             # type: (HttpRequest, UserProfile) -> Text
             return user_profile.email
 
+        @api_key_only_webhook_view('ClientName')
+        def my_webhook_raises_exception(request, user_profile):
+            # type: (HttpRequest, UserProfile) -> None
+            raise Exception("raised by webhook function")
+
         class Request(HostRequestMock):
             GET = {}  # type: Dict[str, str]
             POST = {}  # type: Dict[str, str]
@@ -223,6 +228,7 @@ class DecoratorTestCase(TestCase):
         webhook_bot_realm = get_realm('zulip')
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
         webhook_bot_api_key = webhook_bot.api_key
+        webhook_client_name = "ZulipClientNameWebhook"
 
         request = Request()  # type: Any
         request.host = settings.EXTERNAL_HOST
@@ -253,6 +259,70 @@ class DecoratorTestCase(TestCase):
                 mock_warning.assert_called_with(
                     "User {} attempted to access webhook API on wrong "
                     "subdomain {}".format(webhook_bot_email, 'acme'))
+
+        # Test exception logging
+        exception_message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+body:
+
+{body}
+                """
+
+        # Test when content_type is application/json but request.body
+        # is not valid JSON; invalid JSON should be logged and the
+        # exception raised in the webhook function should be re-raised
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                request.body = "invalidjson"
+                request.content_type = 'application/json'
+                my_webhook_raises_exception(request)
+
+            mock_exception.assert_called_with(exception_message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name=webhook_client_name,
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                body=request.body,
+            ))
+
+        # Test when content_type is application/json and request.body
+        # is valid JSON; exception raised in the webhook function
+        # should be re-raised
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                request.body = "{}"
+                request.content_type = 'application/json'
+                my_webhook_raises_exception(request)
+
+            mock_exception.assert_called_with(exception_message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name=webhook_client_name,
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                body=ujson.dumps(ujson.loads(request.body), indent=4),
+            ))
+
+        # Test when content_type is not application/json; exception raised
+        # in the webhook function should be re-raised
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                request.body = "notjson"
+                request.content_type = 'text/plain'
+                my_webhook_raises_exception(request)
+
+            mock_exception.assert_called_with(exception_message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name=webhook_client_name,
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                body=request.body,
+            ))
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
