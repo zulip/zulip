@@ -65,12 +65,12 @@ exports.toggle_email_change_display = function () {
     $(".change_email_tooltip").toggle();
 };
 
-exports.update_realm_description = function (description) {
+exports.update_realm_description = function () {
     if (!meta.loaded) {
         return;
     }
 
-    $('#id_realm_description').val(description);
+    $('#id_realm_description').val(page_params.realm_description);
 };
 
 exports.update_message_retention_days = function () {

@@ -54,7 +54,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             allow_edit_history: noop,
             create_stream_by_admins_only: noop,
             default_language: settings_org.reset_realm_default_language,
-            description: noop,
+            description: settings_org.update_realm_description,
             email_changes_disabled: settings_org.toggle_email_change_display,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
@@ -71,9 +71,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.op === 'update' && _.has(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
-            } if (event.property === 'description') {
-                settings_org.update_realm_description(event.value);
-            } else if (event.property === 'create_stream_by_admins_only') {
+            if (event.property === 'create_stream_by_admins_only') {
                 if (!page_params.is_admin) {
                     page_params.can_create_streams = (!page_params.
                                                         realm_create_stream_by_admins_only);

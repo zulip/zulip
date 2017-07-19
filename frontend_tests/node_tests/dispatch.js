@@ -45,6 +45,7 @@ set_global('settings_org', {
     toggle_email_change_display: noop,
     toggle_name_change_display: noop,
     update_message_retention_days: noop,
+    update_realm_description: noop,
 });
 
 // page_params is highly coupled to dispatching now
