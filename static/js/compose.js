@@ -355,6 +355,34 @@ exports.send_message = function send_message(request) {
     }
 };
 
+var foo = 0;
+
+exports.test = function () {
+    foo += 1;
+
+    if (foo > 20) {
+        foo = 0;
+        return;
+    }
+
+    request = {
+        content: foo.toString(),
+        type: 'private',
+    }
+
+    function success(data) {
+        console.log('calling success', request.content, data);
+    }
+
+    function error(data) {
+        console.log('calling error', data);
+    }
+
+    exports.transmit_message(request, success, error);
+
+    setTimeout(exports.test, 300);
+}
+
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {
