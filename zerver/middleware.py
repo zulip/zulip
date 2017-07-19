@@ -17,7 +17,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
 from zerver.models import flush_per_request_caches, get_realm
-from zerver.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers

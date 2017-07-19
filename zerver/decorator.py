@@ -16,7 +16,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
     is_remote_server
-from zerver.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
