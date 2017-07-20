@@ -131,6 +131,7 @@ Contents:
    queuing
    bots-guide
    outgoing-webhooks
+   slash-commands
    custom-apps
    pointer
    markdown
