@@ -260,16 +260,22 @@ class DecoratorTestCase(TestCase):
                     "User {} attempted to access webhook API on wrong "
                     "subdomain {}".format(webhook_bot_email, 'acme'))
 
-        # Test exception logging
-        exception_message = """
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-body:
+        # Test when content_type is application/json and request.body
+        # is valid JSON; exception raised in the webhook function
+        # should be re-raised
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                request.body = "{}"
+                request.content_type = 'application/json'
+                my_webhook_raises_exception(request)
 
-{body}
-                """
+        # Test when content_type is not application/json; exception raised
+        # in the webhook function should be re-raised
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                request.body = "notjson"
+                request.content_type = 'text/plain'
+                my_webhook_raises_exception(request)
 
         # Test when content_type is application/json but request.body
         # is not valid JSON; invalid JSON should be logged and the
@@ -280,42 +286,16 @@ body:
                 request.content_type = 'application/json'
                 my_webhook_raises_exception(request)
 
-            mock_exception.assert_called_with(exception_message.format(
-                email=webhook_bot_email,
-                realm=webhook_bot_realm.string_id,
-                client_name=webhook_client_name,
-                path_info=request.META.get('PATH_INFO'),
-                content_type=request.content_type,
-                body=request.body,
-            ))
+            message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+body:
 
-        # Test when content_type is application/json and request.body
-        # is valid JSON; exception raised in the webhook function
-        # should be re-raised
-        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
-            with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = "{}"
-                request.content_type = 'application/json'
-                my_webhook_raises_exception(request)
-
-            mock_exception.assert_called_with(exception_message.format(
-                email=webhook_bot_email,
-                realm=webhook_bot_realm.string_id,
-                client_name=webhook_client_name,
-                path_info=request.META.get('PATH_INFO'),
-                content_type=request.content_type,
-                body=ujson.dumps(ujson.loads(request.body), indent=4),
-            ))
-
-        # Test when content_type is not application/json; exception raised
-        # in the webhook function should be re-raised
-        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
-            with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = "notjson"
-                request.content_type = 'text/plain'
-                my_webhook_raises_exception(request)
-
-            mock_exception.assert_called_with(exception_message.format(
+{body}
+                """
+            mock_exception.assert_called_with(message.format(
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
                 client_name=webhook_client_name,
