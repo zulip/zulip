@@ -70,8 +70,8 @@ class TopicHistoryTest(ZulipTestCase):
         stream = get_stream(stream_name, user_profile.realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
-        def create_test_message(topic, read, starred=False):
-            # type: (str, bool, bool) -> None
+        def create_test_message(topic):
+            # type: (str) -> int
 
             hamlet = self.example_user('hamlet')
             message = Message.objects.create(
@@ -82,28 +82,31 @@ class TopicHistoryTest(ZulipTestCase):
                 pub_date=timezone_now(),
                 sending_client=get_client('whatever'),
             )
-            flags = 0
-            if read:
-                flags |= UserMessage.flags.read
-
-            # use this to make sure our query isn't confused
-            # by other flags
-            if starred:
-                flags |= UserMessage.flags.starred
 
             UserMessage.objects.create(
                 user_profile=user_profile,
                 message=message,
-                flags=flags,
+                flags=0,
             )
 
-        create_test_message('topic2', read=False)
-        create_test_message('toPIc1', read=False, starred=True)
-        create_test_message('topic2', read=False)
-        create_test_message('topic2', read=True)
-        create_test_message('topic2', read=False, starred=True)
-        create_test_message('Topic2', read=False)
-        create_test_message('already_read', read=True)
+            return message.id
+
+        # our most recent topics are topic0, topic1, topic2
+
+        # Create old messages with strange spellings.
+        create_test_message('topic2')
+        create_test_message('toPIc1')
+        create_test_message('toPIc0')
+        create_test_message('topic2')
+        create_test_message('topic2')
+        create_test_message('Topic2')
+
+        # Create new messages
+        topic2_msg_id = create_test_message('topic2')
+        create_test_message('topic1')
+        create_test_message('topic1')
+        topic1_msg_id = create_test_message('topic1')
+        topic0_msg_id = create_test_message('topic0')
 
         endpoint = '/json/users/me/%d/topics' % (stream.id,)
         result = self.client_get(endpoint, dict())
@@ -112,10 +115,18 @@ class TopicHistoryTest(ZulipTestCase):
 
         # We only look at the most recent three topics, because
         # the prior fixture data may be unreliable.
-        self.assertEqual(history[:3], [
-            [u'already_read', 0],
-            [u'Topic2', 4],
-            [u'toPIc1', 1],
+        history = history[:3]
+
+        self.assertEqual([topic['name'] for topic in history], [
+            'topic0',
+            'topic1',
+            'topic2',
+        ])
+
+        self.assertEqual([topic['max_id'] for topic in history], [
+            topic0_msg_id,
+            topic1_msg_id,
+            topic2_msg_id,
         ])
 
     def test_bad_stream_id(self):

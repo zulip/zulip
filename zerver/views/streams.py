@@ -377,9 +377,6 @@ def get_topics_backend(request, user_profile,
         recipient=recipient,
     )
 
-    # Our data structure here is a list of tuples of
-    # (topic name, unread count), and it's reverse chronological,
-    # so the most recent topic is the first element of the list.
     return json_success(dict(topics=result))
 
 @authenticated_json_post_view
