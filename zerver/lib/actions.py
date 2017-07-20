@@ -242,7 +242,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         )
 
     # We also send a notification to the Zulip administrative realm
-    admin_realm = get_user_profile_by_email(sender).realm
+    admin_realm = get_system_bot(sender).realm
     try:
         # Check whether the stream exists
         get_stream(signups_stream, admin_realm)
@@ -1387,7 +1387,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
     """
     See _internal_prep_message for details of how this works.
     """
-    sender = get_user_profile_by_email(sender_email)
+    sender = get_system_bot(sender_email)
     parsed_recipients = extract_recipients(recipients)
 
     return _internal_prep_message(
@@ -3087,7 +3087,7 @@ def get_status_dict(requesting_user_profile):
 
 def get_cross_realm_dicts():
     # type: () -> List[Dict[str, Any]]
-    users = [get_user_profile_by_email(email) for email in get_cross_realm_emails()]
+    users = [get_system_bot(email) for email in get_cross_realm_emails()]
     return [{'email': user.email,
              'user_id': user.id,
              'is_admin': user.is_realm_admin,

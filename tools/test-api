@@ -20,12 +20,13 @@ from tools.lib.api_tests import test_the_api
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_user, get_realm
 
 
 with test_server_running():
     email = 'iago@zulip.com'  # Iago is an admin
-    api_key = get_user_profile_by_email(email).api_key
+    realm = get_realm("zulip")
+    api_key = get_user(email, realm).api_key
     site = 'http://127.0.0.1:9981'
 
     client = Client(

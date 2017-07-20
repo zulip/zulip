@@ -23,7 +23,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, \
-    get_user_profile_by_email, \
     get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p

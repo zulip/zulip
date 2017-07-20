@@ -10,8 +10,8 @@ using in Zulip:
 ```
 user_dict = {} # type: Dict[str, UserProfile]
 
-def get_user_profile_by_email(email):
-    # type: (str) -> UserProfile
+def get_user(email, realm):
+    # type: (str, Realm) -> UserProfile
     ... # Actual code of the function here
 ```
 

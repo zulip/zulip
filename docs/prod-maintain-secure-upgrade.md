@@ -395,8 +395,9 @@ change an email address:
 
 ```
 $ /home/zulip/deployments/current/manage.py shell
-In [1]: user_profile = get_user_profile_by_email("email@example.com")
-In [2]: do_change_user_email(user_profile, "new_email@example.com")
+In [1]: user_realm = get_realm("realm_string_id")
+In [2]: user_profile = get_user("email@example.com", user_realm)
+In [3]: do_change_user_email(user_profile, "new_email@example.com")
 ```
 
 #### manage.py dbshell
