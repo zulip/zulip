@@ -1854,3 +1854,22 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+
+class SlashCommand(models.Model):
+    command = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, unique=True)  # type: Text
+    user_profile = models.ForeignKey(UserProfile)  # type: UserProfile
+
+
+def get_slash_commands_by_realm(realm, is_active=True):
+    # type: (Realm, bool) -> List[Text]
+    commands = SlashCommand.objects.filter(user_profile__realm=realm,
+                                           user_profile__is_active=is_active).values('command')
+    commands = [command['command'] for command in commands]
+    return commands
+
+
+def get_slash_command_owner_bot(command):
+    # type: (Text) -> UserProfile
+    owner = SlashCommand.objects.get(command=command).user_profile
+    return owner
