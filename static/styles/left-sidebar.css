@@ -203,6 +203,10 @@ li.hidden-filter {
     margin-right: 15px;
 }
 
+.topic-box {
+    padding-left: 5px;
+}
+
 .topic-name {
     display: block;
     line-height: 1.3em;
