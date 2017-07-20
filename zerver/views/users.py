@@ -27,8 +27,7 @@ from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
     check_full_name, check_short_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
-    get_user_profile_by_id, get_user, get_user_profile_by_email, Service, \
-    get_user_including_cross_realm
+    get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
 from zerver.lib.create_user import random_api_key
 
 
