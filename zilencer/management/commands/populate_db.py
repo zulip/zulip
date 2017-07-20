@@ -10,7 +10,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence,
     Subscription, RealmAuditLog, get_huddle, Realm, RealmEmoji, UserMessage, \
     RealmDomain, clear_database, get_client, get_user_profile_by_id, \
     email_to_username, Service, get_user, DefaultStream, get_stream, \
-    get_realm
+    get_realm, SlashCommand
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
@@ -284,10 +284,14 @@ class Command(BaseCommand):
             create_users(zulip_realm, zulip_webhook_bots,
                          bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
             zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
+                ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
+                ("Greet User", "greet-bot@zulip.com"),
             ]
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+            bot_profile = UserProfile.objects.get(email='greet-bot@zulip.com')
+            SlashCommand.objects.create(command="greet", user_profile=bot_profile)
+
             # TODO: Clean up this initial bot creation code
             Service.objects.create(
                 name="test",
