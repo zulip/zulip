@@ -1,10 +1,3 @@
-A great open source project needs a great group chat service.  Here's
-why we think Zulip is the best choice you can make today.
-
-(Psst, I'll spoil the ending: not only is Zulip itself open source,
-but hosting on zulipchat.com is free for open source projects.
-[Sign up now](https://zulipchat.com/beta/)!)
-
 ## Great for developers
 
 * **Format code as code:** Messages take Markdown formatting,
