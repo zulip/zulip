@@ -8,7 +8,7 @@ from zerver.lib.validator import check_string, check_int
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
 
-ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: `{text}`"
+ZULIP_MESSAGE_TEMPLATE = u"**{message_sender}**: `{text}`"
 VALID_OPTIONS = {'SHOULD_NOT_BE_MAPPED': '0', 'SHOULD_BE_MAPPED': '1'}
 
 @api_key_only_webhook_view('Slack')
