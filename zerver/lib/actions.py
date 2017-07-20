@@ -174,49 +174,42 @@ def realm_user_count(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
 def get_topic_history_for_stream(user_profile, recipient):
-    # type: (UserProfile, Recipient) -> List[Tuple[str, int]]
+    # type: (UserProfile, Recipient) -> List[Dict[str, Any]]
 
-    # We tested the below query on some large prod datasets, and we never
-    # saw more than 50ms to execute it, so we think that's acceptable,
-    # but we will monitor it, and we may later optimize it further.
     query = '''
-        SELECT topic, read, count(*)
-        FROM (
-            SELECT
-                ("zerver_usermessage"."flags" & 1) as read,
-                "zerver_message"."subject" as topic,
-                "zerver_message"."id" as message_id
-            FROM "zerver_usermessage"
-            INNER JOIN "zerver_message" ON (
-                "zerver_usermessage"."message_id" = "zerver_message"."id"
-            ) WHERE (
-                "zerver_usermessage"."user_profile_id" = %s AND
-                "zerver_message"."recipient_id" = %s
-            ) ORDER BY "zerver_usermessage"."message_id" DESC
-        ) messages_for_stream
-        GROUP BY topic, read
-        ORDER BY max(message_id) desc
+        SELECT
+            "zerver_message"."subject" as topic,
+            max("zerver_message".id) as max_message_id
+        FROM "zerver_message"
+        INNER JOIN "zerver_usermessage" ON (
+            "zerver_usermessage"."message_id" = "zerver_message"."id"
+        )
+        WHERE (
+            "zerver_usermessage"."user_profile_id" = %s AND
+            "zerver_message"."recipient_id" = %s
+        )
+        GROUP BY (
+            "zerver_message"."subject"
+        )
+        ORDER BY max("zerver_message".id) DESC
     '''
     cursor = connection.cursor()
     cursor.execute(query, [user_profile.id, recipient.id])
     rows = cursor.fetchall()
     cursor.close()
 
-    topic_names = dict()  # type: Dict[str, str]
-    topic_counts = dict()  # type: Dict[str, int]
-    topics = []
-    for row in rows:
-        topic_name, read, count = row
-        if topic_name.lower() not in topic_names:
-            topic_names[topic_name.lower()] = topic_name
-        topic_name = topic_names[topic_name.lower()]
-        if topic_name not in topic_counts:
-            topic_counts[topic_name] = 0
-            topics.append(topic_name)
-        if not read:
-            topic_counts[topic_name] += count
+    canonical_topic_names = set()  # type: Set[str]
+    history = []
+    for (topic_name, max_message_id) in rows:
+        canonical_name = topic_name.lower()
+        if canonical_name in canonical_topic_names:
+            continue
 
-    history = [(topic, topic_counts[topic]) for topic in topics]
+        canonical_topic_names.add(canonical_name)
+        history.append(dict(
+            name=topic_name,
+            max_id=max_message_id))
+
     return history
 
 def send_signup_message(sender, signups_stream, user_profile,
