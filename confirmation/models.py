@@ -24,6 +24,16 @@ from six.moves import range
 import string
 from typing import Any, Dict, Optional, Text, Union
 
+class ConfirmationKeyException(Exception):
+    WRONG_LENGTH = 1
+    EXPIRED = 2
+    DOES_NOT_EXIST = 3
+
+    def __init__(self, error_type):
+        # type: (int) -> None
+        super(Exception, self).__init__()
+        self.error_type = error_type
+
 def generate_key():
     # type: () -> str
     generator = SystemRandom()
