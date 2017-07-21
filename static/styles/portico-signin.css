@@ -220,6 +220,10 @@ html {
     margin-top: 20px;
 }
 
+.new-style button:focus {
+    outline: 3px solid hsl(213, 81%, 79%);
+}
+
 .new-style button.full-width {
     width: 100%;
 }
