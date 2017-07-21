@@ -1816,6 +1816,9 @@ class Service(models.Model):
     # Valid interfaces are {generic}
     GENERIC = 1
 
+    ALLOWED_INTERFACE_TYPES = [
+        GENERIC,
+    ]
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _interfaces = {
         GENERIC: GENERIC_INTERFACE,
@@ -1836,6 +1839,6 @@ def get_bot_services(user_profile_id):
     # type: (str) -> List[Service]
     return list(Service.objects.filter(user_profile__id=user_profile_id))
 
-def get_service_profile(email, realm, service_name):
-    # type: (str, Realm, str) -> Service
-    return Service.objects.get(user_profile__email=email, user_profile__realm=realm, name=service_name)
+def get_service_profile(user_profile_id, service_name):
+    # type: (str, str) -> Service
+    return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
