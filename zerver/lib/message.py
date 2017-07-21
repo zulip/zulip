@@ -49,6 +49,12 @@ def message_to_dict_json(message, apply_markdown):
     # type: (Message, bool) -> binary_type
     return MessageDict.to_dict_uncached(message, apply_markdown)
 
+# performs the same operation as message_to_dict without caching the message dicts.
+def message_to_dict_uncached(message, apply_markdown):
+    # type: (Message, bool) -> Dict[str, Any]
+    json = MessageDict.to_dict_uncached(message, apply_markdown)
+    return extract_message_dict(json)
+
 class MessageDict(object):
     @staticmethod
     def to_dict_uncached(message, apply_markdown):
