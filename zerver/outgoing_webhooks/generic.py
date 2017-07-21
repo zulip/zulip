@@ -13,14 +13,15 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         super(GenericOutgoingWebhookService, self).__init__(base_url, token, user_profile, service_name)
 
     def process_event(self, event):
-        # type: (Dict[str, Any]) -> Tuple[Dict[str, Any], Any]
+        # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
         rest_operation = {'method': 'POST',
                           'relative_url_path': '',
-                          'base_url': event['base_url'],
+                          'base_url': self.base_url,
                           'request_kwargs': {}}
         request_data = {"data": event['command'],
-                        "message": event['message']}
-        return rest_operation, request_data
+                        "message": event['message'],
+                        "token": self.token}
+        return rest_operation, json.dumps(request_data)
 
     def process_success(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
