@@ -39,7 +39,8 @@ in the register call.
                 32
             ]
         }
-    ]
+    ],
+    "mentions": [31, 34]
 }
 ```
 

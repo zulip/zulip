@@ -390,6 +390,7 @@ def get_unread_message_ids_per_recipient(user_profile):
         'message__recipient_id',
         'message__recipient__type',
         'message__recipient__type_id',
+        'flags',
     )
 
     rows = list(user_msgs)
@@ -448,10 +449,16 @@ def get_unread_message_ids_per_recipient(user_profile):
         huddle['user_ids_string'] = huddle_users(huddle['recipient_id'])
         del huddle['recipient_id']
 
+    mentioned_message_ids = [
+        row['message_id']
+        for row in rows
+        if (row['flags'] & UserMessage.flags.mentioned) != 0]
+
     result = dict(
         pms=pm_objects,
         streams=stream_objects,
         huddles=huddle_objects,
+        mentions=mentioned_message_ids,
     )
 
     return result
@@ -514,3 +521,6 @@ def apply_unread_message_event(state, message):
 
     state[unread_key].append(new_obj)
     state[unread_key].sort(key=key_func)
+
+    if message.get('is_mentioned'):
+        state['mentions'].append(message_id)
