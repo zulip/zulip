@@ -92,6 +92,7 @@ function simulate_auth_methods() {
         non_editables
     );
 
+    non_editables.not = function () { return this; };
     non_editables.prepend = noop;
 }
 
