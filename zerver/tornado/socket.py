@@ -31,6 +31,7 @@ from zerver.middleware import record_request_start_data, record_request_stop_dat
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.sessions import get_session_user
 from zerver.tornado.event_queue import get_client_descriptor
+from zerver.tornado.exceptions import BadEventQueueIdError
 
 logger = logging.getLogger('zulip.socket')
 
@@ -137,7 +138,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         queue_id = msg['request']['queue_id']
         client = get_client_descriptor(queue_id)
         if client is None:
-            raise JsonableError(_('Bad event queue id: %s') % (queue_id,))
+            raise BadEventQueueIdError(queue_id)
 
         if user_profile.id != client.user_profile_id:
             raise JsonableError(_("You are not the owner of the queue with id '%s'") % (queue_id,))

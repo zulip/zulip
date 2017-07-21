@@ -35,6 +35,7 @@ class ErrorCode(AbstractEnum):
     QUOTA_EXCEEDED = ()
     BAD_NARROW = ()
     UNAUTHORIZED_PRINCIPAL = ()
+    BAD_EVENT_QUEUE_ID = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.

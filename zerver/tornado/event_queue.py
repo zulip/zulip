@@ -33,6 +33,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
+from zerver.tornado.exceptions import BadEventQueueIdError
 import copy
 import six
 
@@ -513,7 +514,7 @@ def fetch_events(query):
                 raise JsonableError(_("Missing 'last_event_id' argument"))
             client = get_client_descriptor(queue_id)
             if client is None:
-                raise JsonableError(_("Bad event queue id: %s") % (queue_id,))
+                raise BadEventQueueIdError(queue_id)
             if user_profile_id != client.user_profile_id:
                 raise JsonableError(_("You are not authorized to get events from this queue"))
             client.event_queue.prune(last_event_id)
