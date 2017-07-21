@@ -21,11 +21,11 @@ if "--travis" in sys.argv:
 sha1sum = generate_sha1sum_node_modules()
 npm_cache = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
 cached_node_modules = os.path.join(npm_cache, 'node_modules')
-success_stamp = os.path.join(cached_node_modules, '.success-stamp')
+current_success_stamp = os.path.join(cached_node_modules, '.success-stamp')
 
 for cache_dir_base in os.listdir(NODE_MODULES_CACHE_PATH):
     node_modules_dir = os.path.join(NODE_MODULES_CACHE_PATH, cache_dir_base)
-    if node_modules_dir == npm_cache and os.path.exists(success_stamp):
+    if node_modules_dir == npm_cache and os.path.exists(current_success_stamp):
         print("Keeping used node_modules cache dir %s" % (node_modules_dir,))
     else:
         print("Cleaning unused node_modules cache dir %s" % (node_modules_dir,))
