@@ -43,6 +43,11 @@ class RealmFilterTest(ZulipTestCase):
         data['pattern'] = 'ZUL-(?P<id>\d+)'
         data['url_format_string'] = '$fgfg'
         result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, 'Enter a valid URL.')
+
+        data['pattern'] = 'ZUL-(?P<id>\d+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/'
+        result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, 'URL format string must be in the following format: `https://example.com/%(\\w+)s`')
 
         data['url_format_string'] = 'https://realm.com/my_realm_filter/%(id)s'

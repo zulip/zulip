@@ -468,7 +468,7 @@ def filter_format_validator(value):
 class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     pattern = models.TextField(validators=[filter_pattern_validator])  # type: Text
-    url_format_string = models.TextField(validators=[URLValidator, filter_format_validator])  # type: Text
+    url_format_string = models.TextField(validators=[URLValidator(), filter_format_validator])  # type: Text
 
     class Meta(object):
         unique_together = ("realm", "pattern")
