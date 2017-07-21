@@ -54,7 +54,7 @@ documentation. Your title should be formatted as a heading by prepending
 your title with a `#`.
 
 The title of your documentation needs to be included under a fitting section
-in `templates/zerver/help/index.md` so users can access it from the user
+in `templates/zerver/help/sidebar.md` so users can access it from the user
 documentation index.
 
 ### Introduction
