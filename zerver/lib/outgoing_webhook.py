@@ -41,7 +41,7 @@ class OutgoingWebhookServiceInterface(object):
     # It should be in the appropriate form. Ex: certain services require the post data to be in
     # json form. Hence request_data returned here should be a json.
     def process_event(self, event):
-        # type: (Dict[str, Any]) -> Tuple[Dict[str, Any], Any]
+        # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
         raise NotImplementedError()
 
     # Given a successful response to the outgoing webhook REST operation, determines if response is required
@@ -125,21 +125,21 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
     request_kwargs['timeout'] = timeout
 
     try:
-        response = requests.request(http_method, final_url, data=json.dumps(request_data), **request_kwargs)
+        response = requests.request(http_method, final_url, data=request_data, **request_kwargs)
         if str(response.status_code).startswith('2'):
             response_message = service_handler.process_success(response, event)
             succeed_with_message(event, response_message)
 
         # On 50x errors, try retry
         elif str(response.status_code).startswith('5'):
-            request_retry(event, "unable to connect with the third party.")
+            request_retry(event, "Internal Server error at third party.")
         else:
             response_message = service_handler.process_failure(response, event)
             fail_with_message(event, response_message)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
-        request_retry(event, 'unable to connect with the third party.')
+        request_retry(event, 'Unable to connect with the third party.')
 
     except requests.exceptions.RequestException as e:
         response_message = "An exception occured for message `%s`! See the logs for more information." % (event["command"],)
