@@ -4,6 +4,7 @@ from typing import Any, Dict, Mapping, Optional, Text, Union
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 from django.contrib.sessions.models import Session as djSession
 try:
     from django.middleware.csrf import _compare_salted_tokens
@@ -74,11 +75,6 @@ def req_redis_key(req_id):
     # type: (Text) -> Text
     return u'socket_req_status:%s' % (req_id,)
 
-class SocketAuthError(Exception):
-    def __init__(self, msg):
-        # type: (str) -> None
-        self.msg = msg
-
 class CloseErrorInfo(object):
     def __init__(self, status_code, err_msg):
         # type: (int, str) -> None
@@ -129,22 +125,22 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         user_profile = get_user_profile(self.browser_session_id)
         if user_profile is None:
-            raise SocketAuthError('Unknown or missing session')
+            raise JsonableError(_('Unknown or missing session'))
         self.session.user_profile = user_profile
 
         if not _compare_salted_tokens(msg['request']['csrf_token'], self.csrf_token):
-            raise SocketAuthError('CSRF token does not match that in cookie')
+            raise JsonableError(_('CSRF token does not match that in cookie'))
 
         if 'queue_id' not in msg['request']:
-            raise SocketAuthError("Missing 'queue_id' argument")
+            raise JsonableError(_("Missing 'queue_id' argument"))
 
         queue_id = msg['request']['queue_id']
         client = get_client_descriptor(queue_id)
         if client is None:
-            raise SocketAuthError('Bad event queue id: %s' % (queue_id,))
+            raise JsonableError(_('Bad event queue id: %s') % (queue_id,))
 
         if user_profile.id != client.user_profile_id:
-            raise SocketAuthError("You are not the owner of the queue with id '%s'" % (queue_id,))
+            raise JsonableError(_("You are not the owner of the queue with id '%s'") % (queue_id,))
 
         self.authenticated = True
         register_connection(queue_id, self)
@@ -191,8 +187,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                remote_ip=self.session.conn_info.ip,
                                email=self.session.user_profile.email,
                                client_name='?')
-            except SocketAuthError as e:
-                response = {'result': 'error', 'msg': e.msg}
+            except JsonableError as e:
+                response = e.to_json()
                 self.session.send_message({'req_id': msg['req_id'], 'type': 'response',
                                            'response': response})
                 write_log_line(log_data, path='/socket/auth', method='SOCKET',
