@@ -1,0 +1,17 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="pitch">
+    <hr/>
+    <p class="lead">Whoops. The confirmation link has expired.</p>
+
+    <p>
+        If you're not sure how to generate a new one, shoot us a line at
+        <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+        and we'll get this resolved shortly.
+    </p>
+
+</div>
+
+{% endblock %}

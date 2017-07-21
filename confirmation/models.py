@@ -14,6 +14,8 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import send_email
@@ -33,6 +35,14 @@ class ConfirmationKeyException(Exception):
         # type: (int) -> None
         super(Exception, self).__init__()
         self.error_type = error_type
+
+def render_confirmation_key_error(request, exception):
+    # type: (HttpRequest, ConfirmationKeyException) -> HttpResponse
+    if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
+        return render(request, 'confirmation/link_malformed.html')
+    if exception.error_type == ConfirmationKeyException.EXPIRED:
+        return render(request, 'confirmation/link_expired.html')
+    return render(request, 'confirmation/link_does_not_exist.html')
 
 def generate_key():
     # type: () -> str
