@@ -31,6 +31,8 @@ class ErrorCode(AbstractEnum):
     BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
     REQUEST_VARIABLE_MISSING = ()
     REQUEST_VARIABLE_INVALID = ()
+    BAD_IMAGE = ()
+    QUOTA_EXCEEDED = ()
     BAD_NARROW = ()
     UNAUTHORIZED_PRINCIPAL = ()
 
