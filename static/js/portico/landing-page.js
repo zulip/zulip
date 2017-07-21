@@ -123,6 +123,7 @@ var update_integrations = _.debounce(function () {
 
 function hide_catalog_show_integration() {
     var $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
+    $lozenge_icon.removeClass('legacy');
 
     function show_integration(doc) {
         $('#integration-instructions-group .name').text(INTEGRATIONS[state.integration]);
