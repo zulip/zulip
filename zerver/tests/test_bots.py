@@ -18,6 +18,8 @@ from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path, get_test_image_file, tornado_redirected_to_list,
 )
+from zerver.lib.integrations import EmbeddedBotService, EMBEDDED_BOT_SERVICES
+from zerver.lib.bot_lib import get_bot_handler
 
 class BotTest(ZulipTestCase, UploadSerializeMixin):
     def assert_num_bots_equal(self, count):
@@ -951,3 +953,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info['payload_url'] = ujson.dumps('http://127.0.0.:5002/bots/followup')
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Enter a valid URL.")
+
+    def test_if_each_embedded_bot_service_exists(self):
+        # type: () -> None
+        # Each bot has its bot handler class name as Bot_nameHandler. For instance encrypt bot has
+        # its class name as EncryptHandler.
+        class_bot_handler = "<class 'zulip_bots.bots.{name}.{name}.{Name}Handler'>"
+        for embedded_bot in EMBEDDED_BOT_SERVICES:
+            embedded_bot_handler = get_bot_handler(embedded_bot.name)
+            bot_name = embedded_bot.name
+            bot_handler_class_name = class_bot_handler.format(name=bot_name, Name=bot_name.title())
+            self.assertEqual(str(type(embedded_bot_handler)), bot_handler_class_name)
