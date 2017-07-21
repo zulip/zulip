@@ -64,6 +64,27 @@ class OutgoingWebhookServiceInterface(object):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
         raise NotImplementedError()
 
+    # Make a message more readable by refactoring @-mentions in a string. Example: it replaces
+    # @**vabs22 user** to @vabs22 user in the string.
+    # It can be used to refactor the data to be sent to third party services by outgoing webhooks. Zulip's
+    # current @-mention annotation (i.e. @**_**) can be somewhat confusing for third party services,
+    # hence it can be used to make it more readable.
+    # Note: don't use it to refactor the content of message dict() data to be sent to zulip bot server,
+    # as some bots are based on @-mention trigger (Example: xkcd bot).
+    # For mentions containing multiple words, like @**Hamlet User**, it refactors them to @Hamlet User.
+    # The interface classes can also overwrite this function to create their own implementation.
+    def make_message_content_readable(self, message_content):
+        # type: (Text) -> Text
+
+        def replace_match(match):
+            # type: (Any) -> Text
+            match = match.group()
+            match = "@" + match[3:-2]
+            return match
+
+        message_content = re.sub(r'@\*\*\w+(\s\w+)?\*\*', replace_match, message_content)
+        return message_content
+
 def send_response_message(bot_id, message, response_message_content):
     # type: (str, Dict[str, Any], Text) -> None
     recipient_type_name = message['type']

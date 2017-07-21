@@ -18,7 +18,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                           'relative_url_path': '',
                           'base_url': self.base_url,
                           'request_kwargs': {}}
-        request_data = {"data": event['command'],
+        request_data = {"data": self.make_message_content_readable(event['command']),
                         "message": event['message'],
                         "token": self.token}
         return rest_operation, json.dumps(request_data)
