@@ -5,7 +5,7 @@ import ujson
 
 from typing import Optional, Any, Dict, List, Text
 from zerver.lib.str_utils import force_bytes
-
+from zerver.lib.exceptions import JsonableError
 
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
@@ -46,6 +46,13 @@ def json_response(res_type="success", msg="", data=None, status=200):
 def json_success(data=None):
     # type: (Optional[Dict[str, Any]]) -> HttpResponse
     return json_response(data=data)
+
+def json_response_from_error(exception):
+    # type: (JsonableError) -> HttpResponse
+    return json_response('error',
+                         msg=exception.msg,
+                         data=exception.data,
+                         status=exception.http_status_code)
 
 def json_error(msg, data=None, status=400):
     # type: (Text, Optional[Dict[str, Any]], int) -> HttpResponse
