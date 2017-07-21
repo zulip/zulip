@@ -377,6 +377,7 @@ def delete_display_recipient_cache(user_profile):
 # a user_profile object
 def flush_user_profile(sender, **kwargs):
     # type: (Any, **Any) -> None
+    from zerver.models import UserProfile
     user_profile = kwargs['instance']
     delete_user_profile_caches([user_profile])
 
@@ -402,6 +403,11 @@ def flush_user_profile(sender, **kwargs):
     if kwargs.get('update_fields') is None or "alert_words" in kwargs['update_fields']:
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
+    # Invalidate realm-wide slash commands cache if any user in the realm adds or deactivates a bot
+    if user_profile.is_bot and (kwargs.get('update_fields') is None or "is_active" in kwargs['update_fields']):
+        cache_delete(slash_commands_by_realm_key(user_profile.realm, True))
+        cache_delete(slash_commands_by_realm_key(user_profile.realm, False))
+
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
@@ -419,6 +425,10 @@ def flush_realm(sender, **kwargs):
 def realm_alert_words_cache_key(realm):
     # type: (Realm) -> Text
     return u"realm_alert_words:%s" % (realm.string_id,)
+
+def slash_commands_by_realm_key(realm, is_active=True):
+    # type: (Realm, bool) -> Text
+    return u"realm_slash_commands:%s,is_active:%s" % (realm.string_id, str(is_active),)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
