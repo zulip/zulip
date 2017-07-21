@@ -125,6 +125,7 @@ function hide_catalog_show_integration() {
     var $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
 
     function show_integration(doc) {
+        $('#integration-instructions-group .name').text(INTEGRATIONS[state.integration]);
         $('#integration-instructions-group').css({
             opacity: 0,
             display: 'block',

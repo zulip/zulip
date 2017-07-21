@@ -2046,6 +2046,14 @@ nav ul li.active::after {
     display: none;
 }
 
+.portico-landing.integrations .integration-instruction-block .name {
+    display: none;
+    font-size: 1.4em;
+    font-weight: 400;
+    margin: 0;
+    padding-bottom: 35px;
+}
+
 /* -- gradients -- */
 .gradients {
     width: 100%;
@@ -2427,8 +2435,8 @@ nav ul li.active::after {
     }
 
     #integration-list-link {
-        top: -40px;
-        left: 35px;
+        top: 33px;
+        left: -7px;
     }
 
     .integration-instructions {
@@ -2446,6 +2454,10 @@ nav ul li.active::after {
     .portico-landing.integrations .searchbar input {
         width: 375px;
         margin: 0 auto;
+    }
+
+    .portico-landing.integrations .integration-instruction-block .name {
+        display: block;
     }
 
     .platform.image {
