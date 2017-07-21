@@ -186,6 +186,25 @@ class GithubIntegration(WebhookIntegration):
         # type: () -> None
         return
 
+class EmbeddedBotIntegration(Integration):
+    '''
+    This class acts as a registry for bots verified as safe
+    and valid such that these are capable of being deployed on the server.
+    '''
+    DEFAULT_CLIENT_NAME = 'Zulip{name}EmbeddedBot'
+
+    def __init__(self, name, *args, **kwargs):
+        # type: (str, *Any, **Any) -> None
+        assert kwargs.get("client_name") is None
+        client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
+        super(EmbeddedBotIntegration, self).__init__(
+            name, client_name, *args, **kwargs)
+
+EMBEDDED_BOTS = [
+    EmbeddedBotIntegration('converter', []),
+    EmbeddedBotIntegration('encrypt', [])
+]  # type: List[EmbeddedBotIntegration]
+
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
     WebhookIntegration('appfollow', ['customer_support'], display_name='AppFollow'),
