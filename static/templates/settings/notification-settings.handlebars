@@ -60,16 +60,17 @@
                 </label>
             </div>
 
-            <div class="input-group">
+            <div class="input-group disableable {{#unless page_params.enable_desktop_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="pm_content_in_desktop_notifications"
                               id="pm_content_in_desktop_notifications"
+                           {{#unless page_params.enable_desktop_notifications}}disabled="disabled"{{/unless}}
                            {{#if page_params.pm_content_in_desktop_notifications}}
                            checked="checked"
                            {{/if}} />
                     <span></span>
                 </label>
-                <label for="pm_content_in_desktop_notifications" class="inline-block">
+                <label for="pm_content_in_desktop_notifications" id="pm_content_in_desktop_notifications_label" class="inline-block">
                     {{t "Include content of private messages in desktop notifications" }}
                 </label>
             </div>

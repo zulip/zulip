@@ -844,6 +844,21 @@ function render(template_name, args) {
         assert.equal($(html).find("#" + checkbox).is(":checked"), false);
     });
 
+    // Check if enable_desktop_notifications setting disables subsetting too.
+    var parent_elem = $('#pm_content_in_desktop_notifications_label').wrap("<div></div>");
+
+    $('#enable_desktop_notifications').prop('checked', false).triggerHandler('change');
+    $('#enable_desktop_notifications').change(function () {
+        assert(parent_elem.hasClass('control-label-disabled'));
+        assert.equal($('#pm_content_in_desktop_notifications').attr('disabled'), 'disabled');
+    });
+
+    $('#enable_desktop_notifications').prop('checked', true).triggerHandler('change');
+    $('#enable_desktop_notifications').change(function () {
+        assert(!parent_elem.hasClass('control-label-disabled'));
+        assert.equal($('#pm_content_in_desktop_notifications').attr('disabled'), undefined);
+    });
+
 }());
 
 (function sidebar_private_message_list() {
