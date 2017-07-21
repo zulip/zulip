@@ -54,11 +54,12 @@ class Integration(object):
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
     def __init__(self, name, client_name, categories, logo=None, secondary_line_text=None,
-                 display_name=None, doc=None, stream_name=None):
-        # type: (str, str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 display_name=None, doc=None, stream_name=None, legacy=False):
+        # type: (str, str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
+        self.legacy = legacy
         self.doc = doc
         self.doc_context = None  # type: Optional[Dict[Any, Any]]
 
@@ -105,8 +106,8 @@ class WebhookIntegration(Integration):
     DEFAULT_DOC_PATH = '{name}/doc.{ext}'
 
     def __init__(self, name, categories, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None, stream_name=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None, stream_name=None, legacy=None):
+        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super(WebhookIntegration, self).__init__(
@@ -116,7 +117,8 @@ class WebhookIntegration(Integration):
             logo=logo,
             secondary_line_text=secondary_line_text,
             display_name=display_name,
-            stream_name=stream_name
+            stream_name=stream_name,
+            legacy=legacy
         )
 
         if function is None:
@@ -144,8 +146,8 @@ class WebhookIntegration(Integration):
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
-    def __init__(self, name, categories, display_name=None, logo=None, logo_alt=None, git_url=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, categories, display_name=None, logo=None, logo_alt=None, git_url=None, legacy=False):
+        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         if logo_alt is None:
             logo_alt = "{} logo".format(name.title())
         self.logo_alt = logo_alt
@@ -155,7 +157,8 @@ class HubotLozenge(Integration):
         self.git_url = git_url
         super(HubotLozenge, self).__init__(
             name, name, categories,
-            logo=logo, display_name=display_name
+            logo=logo, display_name=display_name,
+            legacy=legacy
         )
 
 class GithubIntegration(WebhookIntegration):
@@ -164,8 +167,8 @@ class GithubIntegration(WebhookIntegration):
     We want to have one generic url with dispatch function for github service and github webhook.
     """
     def __init__(self, name, categories, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None, stream_name=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None, stream_name=None, legacy=False):
+        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         url = self.DEFAULT_URL.format(name='github')
 
         super(GithubIntegration, self).__init__(
@@ -178,7 +181,8 @@ class GithubIntegration(WebhookIntegration):
             url=url,
             display_name=display_name,
             doc=doc,
-            stream_name=stream_name
+            stream_name=stream_name,
+            legacy=legacy
         )
 
     @property
@@ -222,7 +226,8 @@ WEBHOOK_INTEGRATIONS = [
         ['version-control'],
         display_name='Bitbucket',
         secondary_line_text='(Enterprise)',
-        stream_name='commits'
+        stream_name='commits',
+        legacy=True
     ),
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
     WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
@@ -242,7 +247,8 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.github.view.api_github_landing',
         display_name='GitHub',
         secondary_line_text='(deprecated)',
-        stream_name='commits'
+        stream_name='commits',
+        legacy=True
     ),
     GithubIntegration(
         'github_webhook',
@@ -337,6 +343,7 @@ INTEGRATIONS = {
         display_name='JIRA',
         doc='zerver/integrations/jira-plugin.md',
         stream_name='jira',
+        legacy=True
     ),
     'mercurial': Integration(
         'mercurial',
@@ -373,6 +380,7 @@ INTEGRATIONS = {
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.md',
         stream_name='trello',
+        legacy=True
     ),
     'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
                            doc='zerver/integrations/twitter.md'),
