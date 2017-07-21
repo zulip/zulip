@@ -9,7 +9,7 @@ from zerver.decorator import asynchronous, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
     has_request_variables, REQ, _RespondAsynchronously
 
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_success, json_error, json_response_from_error
 from zerver.lib.validator import check_bool, check_list, check_string
 from zerver.tornado.event_queue import get_client_descriptor, \
     process_notification, fetch_events
@@ -87,5 +87,5 @@ def get_events_backend(request, user_profile, handler,
         handler._request = request
         return RespondAsynchronously
     if result["type"] == "error":
-        return json_error(result["message"])
+        return json_response_from_error(result["exception"])
     return json_success(result["response"])
