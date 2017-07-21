@@ -8,7 +8,7 @@ from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
 from django.utils.deprecation import MiddlewareMixin
 
-from zerver.lib.response import json_error
+from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.request import JsonableError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
@@ -286,7 +286,7 @@ class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request, exception):
         # type: (HttpRequest, Exception) -> Optional[HttpResponse]
         if isinstance(exception, JsonableError):
-            return json_error(exception.msg, status=exception.http_status_code)
+            return json_response_from_error(exception)
         if request.error_format == "JSON":
             logging.error(traceback.format_exc())
             return json_error(_("Internal server error"), status=500)
