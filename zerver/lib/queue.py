@@ -9,7 +9,6 @@ import ujson
 import random
 import time
 import threading
-import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
@@ -290,12 +289,6 @@ def get_queue_client():
             queue_client = SimpleQueueClient()
 
     return queue_client
-
-def setup_tornado_rabbitmq():
-    # type: () -> None
-    # When tornado is shut down, disconnect cleanly from rabbitmq
-    if settings.USING_RABBITMQ:
-        atexit.register(lambda: queue_client.close())
 
 # We using a simple lock to prevent multiple RabbitMQ messages being
 # sent to the SimpleQueueClient at the same time; this is a workaround
