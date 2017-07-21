@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import mock
 import requests
-from typing import Any, Dict, Tuple, Text
+from typing import Any, Dict, Tuple, Text, Optional
 from requests import Response
 
 from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInterface
@@ -33,12 +33,12 @@ def timeout_error(http_method, final_url, data, **request_kwargs):
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
     def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
-        return {"response_message": ""}
+        # type: (Response, Dict[Text, Any]) -> Optional[str]
+        return None
 
     def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
-        return {"response_message": ""}
+        # type: (Response, Dict[Text, Any]) -> Optional[str]
+        return None
 
 service_handler = MockServiceHandler(None, None, None, None)
 
