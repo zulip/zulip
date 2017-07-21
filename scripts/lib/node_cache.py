@@ -27,8 +27,12 @@ def generate_sha1sum_node_modules(npm_args=None):
 
     return sha1sum.hexdigest()
 
-def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=False):
-    # type: (Optional[List[str]], Optional[IO], Optional[IO], bool) -> None
+def setup_node_modules(production=False, stdout=None, stderr=None, copy_modules=False):
+    # type: (bool, Optional[IO], Optional[IO], bool) -> None
+    if production:
+        npm_args = ["--production"]
+    else:
+        npm_args = []
     sha1sum = generate_sha1sum_node_modules(npm_args)
     npm_cache = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
     cached_node_modules = os.path.join(npm_cache, 'node_modules')
@@ -36,7 +40,7 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     # Check if a cached version already exists
     if not os.path.exists(success_stamp):
         do_npm_install(npm_cache,
-                       npm_args or [],
+                       npm_args,
                        success_stamp,
                        stdout=stdout,
                        stderr=stderr,
