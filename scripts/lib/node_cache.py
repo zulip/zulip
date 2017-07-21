@@ -28,7 +28,7 @@ def generate_sha1sum_node_modules(npm_args=None):
     return sha1sum.hexdigest()
 
 def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=False):
-    # type: (Optional[List[str]], Optional[IO], Optional[IO], Optional[bool]) -> None
+    # type: (Optional[List[str]], Optional[IO], Optional[IO], bool) -> None
     sha1sum = generate_sha1sum_node_modules(npm_args)
     npm_cache = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
     cached_node_modules = os.path.join(npm_cache, 'node_modules')
@@ -52,7 +52,7 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
 
 def do_npm_install(target_path, npm_args, success_stamp, stdout=None, stderr=None,
                    copy_modules=False):
-    # type: (str, List[str], str, Optional[IO], Optional[IO], Optional[bool]) -> None
+    # type: (str, List[str], str, Optional[IO], Optional[IO], bool) -> None
     cmds = [
         ["rm", "-rf", target_path],
         ['mkdir', '-p', target_path],
