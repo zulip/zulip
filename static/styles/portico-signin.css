@@ -176,10 +176,6 @@ html {
     margin: 0px 0px 10px 10px;
 }
 
-.register-account .terms-of-service .submit-button-box button {
-    margin-top: 0px;
-}
-
 .account-creation {
     font-weight: 400;
 }
@@ -254,7 +250,7 @@ html {
 .new-style .input-box input[type=email],
 .new-style .input-box input[type=password] {
     padding: 13px 32px 11px 12px;
-    margin-top: 25px;
+    margin: 25px 0 4px;
 
     font-family: "Humbug";
     font-size: 1.2rem;
@@ -329,22 +325,6 @@ html {
     opacity: 0;
 }
 
-.new-style .input-box input[required] ~ .valid {
-    position: absolute;
-    top: 42px;
-    right: 15px;
-    width: 15px;
-    transform: translateX(10px);
-    opacity: 0;
-
-    transition: all 0.3s ease;
-}
-
-.new-style .input-box input[required]:valid ~ .valid {
-    opacity: 1;
-    transform: translateX(0);
-}
-
 .new-style .input-box label,
 .new-style .input-box input[type=text]:focus + label,
 .new-style .input-box input[type=email]:focus + label,
@@ -368,6 +348,7 @@ html {
     color: hsl(0, 54%, 61%);
     font-size: 0.7em;
     font-weight: 600;
+    text-align: left;
     height: 0;
 
     position: relative;
@@ -611,8 +592,51 @@ button.login-google-button {
     color: hsl(156, 62%, 61%);
 }
 
+#registration section {
+    padding: 10px 0 5px;
+}
+
 #registration .input-box {
-    margin: 10px;
+    display: block;
+    text-align: center;
+    width: 330px;
+    margin: 30px auto 10px;
+    position: relative;
+}
+
+#registration .input-box.with-top-space {
+    margin-top: 50px;
+}
+
+#registration .input-box label {
+    position: absolute;
+    margin: 0;
+    top: 0;
+    left: 2px;
+}
+
+#registration .register-button-box {
+    text-align: center;
+}
+
+#registration .register-button {
+    margin: 40px auto 30px;
+    width: 330px;
+    border-radius: 4px;
+}
+
+#registration #id_team_subdomain.subdomain {
+    text-align: right;
+    position: relative;
+    padding-right: 10px;
+}
+
+#registration .realm_subdomain_label {
+    font-weight: 400;
+    font-size: 1.07em;
+    position: absolute;
+    top: 37px;
+    right: 0;
 }
 
 #registration {
@@ -624,13 +648,14 @@ button.login-google-button {
 }
 
 #registration .help-box {
-    width: calc(100% - 20px);
+    width: calc(100% - 25px);
     max-width: none;
-    margin: 0px;
+    margin: 0 auto;
 }
 
 #registration .help-box.margin-top {
-    margin-top: 20px;
+    margin-top: 21px;
+    text-align: left;
 }
 
 #registration .external-host {
