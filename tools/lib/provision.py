@@ -18,7 +18,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
-from scripts.lib.node_cache import setup_node_modules, NPM_CACHE_PATH
+from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
 if False:
@@ -236,9 +236,9 @@ def main(options):
         # issue with the symlinks being improperly owned by root.
         if os.path.islink("node_modules"):
             run(["sudo", "rm", "-f", "node_modules"])
-        if not os.path.isdir(NPM_CACHE_PATH):
-            run(["sudo", "mkdir", NPM_CACHE_PATH])
-        run(["sudo", "chown", "%s:%s" % (user_id, user_id), NPM_CACHE_PATH])
+        if not os.path.isdir(NODE_MODULES_CACHE_PATH):
+            run(["sudo", "mkdir", NODE_MODULES_CACHE_PATH])
+        run(["sudo", "chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
         setup_node_modules()
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)

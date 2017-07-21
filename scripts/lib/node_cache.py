@@ -10,11 +10,11 @@ if False:
 from scripts.lib.zulip_tools import subprocess_text_output, run
 
 ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
-NPM_CACHE_PATH = "/srv/zulip-npm-cache"
+NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"
 
 if 'TRAVIS' in os.environ:
     # In Travis CI, we don't have root access
-    NPM_CACHE_PATH = "/home/travis/zulip-npm-cache"
+    NODE_MODULES_CACHE_PATH = "/home/travis/zulip-npm-cache"
 
 def generate_sha1sum_node_modules(npm_args=None):
     # type: (Optional[List[str]]) -> str
@@ -30,7 +30,7 @@ def generate_sha1sum_node_modules(npm_args=None):
 def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=False):
     # type: (Optional[List[str]], Optional[IO], Optional[IO], Optional[bool]) -> None
     sha1sum = generate_sha1sum_node_modules(npm_args)
-    npm_cache = os.path.join(NPM_CACHE_PATH, sha1sum)
+    npm_cache = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
     cached_node_modules = os.path.join(npm_cache, 'node_modules')
     success_stamp = os.path.join(cached_node_modules, '.success-stamp')
     # Check if a cached version already exists
