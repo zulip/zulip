@@ -34,12 +34,12 @@ def setup_node_modules(production=False, stdout=None, stderr=None, copy_modules=
     else:
         npm_args = []
     sha1sum = generate_sha1sum_node_modules(npm_args)
-    npm_cache = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
-    cached_node_modules = os.path.join(npm_cache, 'node_modules')
-    success_stamp = os.path.join(npm_cache, '.success-stamp')
+    target_path = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
+    cached_node_modules = os.path.join(target_path, 'node_modules')
+    success_stamp = os.path.join(target_path, '.success-stamp')
     # Check if a cached version already exists
     if not os.path.exists(success_stamp):
-        do_npm_install(npm_cache,
+        do_npm_install(target_path,
                        npm_args,
                        success_stamp,
                        stdout=stdout,
