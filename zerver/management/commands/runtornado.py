@@ -17,8 +17,8 @@ from tornado.log import app_log
 from typing import Callable
 
 from zerver.lib.debug import interactive_debug_listen
-from zerver.lib.queue import setup_tornado_rabbitmq
-from zerver.tornado.application import create_tornado_application
+from zerver.tornado.application import create_tornado_application, \
+    setup_tornado_rabbitmq
 from zerver.tornado.event_queue import add_client_gc_hook, \
     missedmessage_hook, process_notification, setup_event_queue
 from zerver.tornado.socket import respond_send_message
