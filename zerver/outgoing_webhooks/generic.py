@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Dict, Text, Tuple, Callable, Mapping
+from typing import Any, Dict, Text, Tuple, Callable, Mapping, Optional
 import json
 from requests import Response
 from zerver.models import UserProfile
@@ -13,21 +13,19 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         super(GenericOutgoingWebhookService, self).__init__(base_url, token, user_profile, service_name)
 
     def process_event(self, event):
-        # type: (Dict[str, Any]) -> Tuple[Dict[str ,Any], Dict[str, Any]]
+        # type: (Dict[str, Any]) -> Tuple[Dict[str, Any], Any]
         rest_operation = {'method': 'POST',
                           'relative_url_path': '',
                           'base_url': event['base_url'],
                           'request_kwargs': {}}
         request_data = {"data": event['command'],
                         "message": event['message']}
-        return (rest_operation, request_data)
+        return rest_operation, request_data
 
     def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
-        data = {"response_message": response.text}
-        return data
+        # type: (Response, Dict[Text, Any]) -> Optional[str]
+        return str(response.text)
 
     def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
-        data = {"response_message": "Failure! unable to communicate"}
-        return data
+        # type: (Response, Dict[Text, Any]) -> Optional[str]
+        return str(response.text)
