@@ -118,6 +118,25 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.zulip_tools import WARNING, ENDC
 from django.conf import settings
 
+if 'zproject.backends.GoogleMobileOauth2Backend' in settings.AUTHENTICATION_BACKENDS:
+    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and
+            settings.GOOGLE_OAUTH2_CLIENT_SECRET):
+        print('\n'.join([
+            WARNING,
+            "You are using the Google auth backend. Please make sure of the following:",
+            "- You have updated GOOGLE_OAUTH2_CLIENT_ID and"
+            " GOOGLE_OAUTH2_CLIENT_SECRET settings.",
+            "- You have setup an Oauth2 client ID that allows redirects, ",
+            "  e.g. https://zulip.example.com/accounts/login/google/done/.",
+            "- You have enabled the Google+ API.",
+            "  You can create OAuth2 apps from",
+            "  https://console.developers.google.com.",
+            "  -----",
+            "  http://zulip.readthedocs.io/en/latest/settings.html#testing-google-github-authentication ",
+            "  for more information on how to set up.",
+            ENDC]))
+        sys.exit(1)
+
 if 'zproject.backends.GitHubAuthBackend' in settings.AUTHENTICATION_BACKENDS:
     if not (settings.SOCIAL_AUTH_GITHUB_KEY and
             settings.SOCIAL_AUTH_GITHUB_SECRET):
@@ -130,6 +149,9 @@ if 'zproject.backends.GitHubAuthBackend' in settings.AUTHENTICATION_BACKENDS:
             "  as the callback URL in the OAuth application in GitHub.",
             "  You can create OAuth apps from ",
             "  https://github.com/settings/developers.",
+            "  -----",
+            "  http://zulip.readthedocs.io/en/latest/settings.html#testing-google-github-authentication ",
+            "  for more information on how to set up.",
             ENDC]))
         sys.exit(1)
 
