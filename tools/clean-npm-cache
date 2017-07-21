@@ -24,9 +24,9 @@ cached_node_modules = os.path.join(npm_cache, 'node_modules')
 success_stamp = os.path.join(cached_node_modules, '.success-stamp')
 
 for cache_dir_base in os.listdir(NODE_MODULES_CACHE_PATH):
-    npm_cache_dir = os.path.join(NODE_MODULES_CACHE_PATH, cache_dir_base)
-    if npm_cache_dir == npm_cache and os.path.exists(success_stamp):
-        print("Keeping used NPM cache dir %s" % (npm_cache_dir,))
+    node_modules_dir = os.path.join(NODE_MODULES_CACHE_PATH, cache_dir_base)
+    if node_modules_dir == npm_cache and os.path.exists(success_stamp):
+        print("Keeping used node_modules cache dir %s" % (node_modules_dir,))
     else:
-        print("Cleaning unused NPM cache dir %s" % (npm_cache_dir,))
-        subprocess.check_call(["sudo", "rm", "-rf", npm_cache_dir])
+        print("Cleaning unused node_modules cache dir %s" % (node_modules_dir,))
+        subprocess.check_call(["sudo", "rm", "-rf", node_modules_dir])
