@@ -7,8 +7,10 @@ import signal
 import sys
 import time
 import re
+import importlib
 from zerver.lib.actions import internal_send_message
 from zerver.models import UserProfile
+from zerver.lib.integrations import EMBEDDED_BOTS
 
 from six.moves import configparser
 
@@ -20,6 +22,16 @@ from types import ModuleType
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
 from zulip_bots.lib import RateLimit
+
+def get_bot_handler(service_name):
+    # type: (str) -> Any
+
+    # Assert that this service is present in EMBEDDED_BOTS.
+    assert any(service_name == embedded_bot_service.name for embedded_bot_service in EMBEDDED_BOTS)
+
+    bot_module_name = 'zulip_bots.bots.%s.%s' % (service_name, service_name)
+    bot_module = importlib.import_module(bot_module_name)  # type: Any
+    return bot_module.handler_class()
 
 class EmbeddedBotHandler(object):
     def __init__(self, user_profile):

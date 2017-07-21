@@ -41,7 +41,7 @@ from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
 from zulip import Client
-from zerver.lib.bot_lib import EmbeddedBotHandler
+from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
 
 import os
 import sys
@@ -476,12 +476,6 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         # type: (UserProfile) -> EmbeddedBotHandler
         return EmbeddedBotHandler(user_profile)
 
-    def get_bot_handler(self, service):
-        # type: (Service) -> Any
-        bot_module_name = 'zulip_bots.bots.%s.%s' % (service.name, service.name)
-        bot_module = importlib.import_module(bot_module_name)  # type: Any
-        return bot_module.handler_class()
-
     # TODO: Handle stateful bots properly
     def get_state_handler(self):
         # type: () -> StateHandler
@@ -497,7 +491,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         # TODO: Do we actually want to allow multiple Services per bot user?
         services = get_bot_services(user_profile_id)
         for service in services:
-            self.get_bot_handler(service).handle_message(
+            get_bot_handler(str(service.name)).handle_message(
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile),
                 state_handler=self.get_state_handler())
