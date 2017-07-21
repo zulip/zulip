@@ -86,7 +86,7 @@ class JsonTranslationTestCase(ZulipTestCase):
     @mock.patch('zerver.lib.request._')
     def test_json_error(self, mock_gettext):
         # type: (Any) -> None
-        dummy_value = "this arg is bad: '%s' (translated to German)"
+        dummy_value = "this arg is bad: '{var_name}' (translated to German)"
         mock_gettext.return_value = dummy_value
 
         email = self.example_email('hamlet')
