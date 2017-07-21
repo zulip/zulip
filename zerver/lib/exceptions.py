@@ -7,10 +7,9 @@ class JsonableError(Exception):
     msg = None  # type: Text
     http_status_code = 400  # type: int
 
-    def __init__(self, msg, http_status_code=400):
-        # type: (Text, int) -> None
+    def __init__(self, msg):
+        # type: (Text) -> None
         self.msg = msg
-        self.http_status_code = http_status_code
 
     def __str__(self):
         # type: () -> str
