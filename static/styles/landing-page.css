@@ -1981,6 +1981,10 @@ nav ul li.active::after {
     transition: all 0.3s ease;
 }
 
+.portico-landing.integrations .integration-lozenge.legacy {
+    display: none !important;
+}
+
 .portico-landing.integrations .integration-lozenge.without-category {
     height: 180px;
 }
