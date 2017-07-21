@@ -20,8 +20,8 @@ if "--travis" in sys.argv:
 
 sha1sum = generate_sha1sum_node_modules()
 npm_cache = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
-cached_node_modules = os.path.join(npm_cache, 'node_modules')
-current_success_stamp = os.path.join(cached_node_modules, '.success-stamp')
+current_cached_node_modules = os.path.join(npm_cache, 'node_modules')
+current_success_stamp = os.path.join(current_cached_node_modules, '.success-stamp')
 
 for cache_dir_base in os.listdir(NODE_MODULES_CACHE_PATH):
     node_modules_dir = os.path.join(NODE_MODULES_CACHE_PATH, cache_dir_base)
