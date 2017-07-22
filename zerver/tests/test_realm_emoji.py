@@ -103,6 +103,18 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_error(result, 'Must be a realm administrator')
 
+    def test_upload_anyone(self):
+        # type: () -> None
+        email = self.example_email('othello')
+        self.login(email)
+        realm = get_realm('zulip')
+        realm.add_emoji_by_admins_only = False
+        realm.save()
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
+        self.assert_json_success(result)
+
     def test_delete(self):
         # type: () -> None
         email = self.example_email('iago')
