@@ -199,8 +199,5 @@ class RealmEmojiTest(ZulipTestCase):
         self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
-            self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
-        with get_test_image_file('img.png') as fp1:
-                emoji_data = {'f1': fp1}
-                result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
+            result = self.client_post('/json/realm/emoji/green_tick', info=emoji_data)
         self.assert_json_error(result, 'Realm emoji with this Realm and Name already exists.')
