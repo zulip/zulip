@@ -7,6 +7,7 @@ set_global("avatar", {});
 add_dependencies({
     bot_data: 'js/bot_data.js',
     upload_widget: 'js/upload_widget.js',
+    i18n: 'i18next',
 });
 
 set_global('$', global.make_zjquery());
@@ -61,15 +62,30 @@ function test_create_bot_type_input_box_toggle(f) {
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
     var GENERIC_BOT_TYPE = '1';
 
-    $('#create_bot_type :selected').val(OUTGOING_WEBHOOK_BOT_TYPE);
+    $('#create_bot_type').val(OUTGOING_WEBHOOK_BOT_TYPE);
     f.apply();
     assert(create_payload_url.hasClass('required'));
     assert(payload_url_inputbox.visible());
 
-    $('#create_bot_type :selected').val(GENERIC_BOT_TYPE);
+    $('#create_bot_type').val(GENERIC_BOT_TYPE);
     f.apply();
     assert(!(create_payload_url.hasClass('required')));
     assert(!payload_url_inputbox.visible());
+}
+
+function test_create_bot_type_bot_short_name_label_toggle(f) {
+    var GENERIC_BOT_TYPE = '1';
+    var SLASH_COMMAND_BOT_TYPE = '5';
+
+    $('#create_bot_type').val(SLASH_COMMAND_BOT_TYPE);
+    f.apply();
+    assert($("#bot_short_name_label").text() === 'Slash command name');
+    assert($("#bot_short_name_suffix").text() === '-command');
+
+    $('#create_bot_type').val(GENERIC_BOT_TYPE);
+    f.apply();
+    assert($("#bot_short_name_label").text() === 'Username');
+    assert($("#bot_short_name_suffix").text() === '-bot');
 }
 
 (function test_set_up() {
@@ -84,6 +100,7 @@ function test_create_bot_type_input_box_toggle(f) {
     $('#create_bot_type').on = function (action, f) {
         if (action === 'change') {
             test_create_bot_type_input_box_toggle(f);
+            test_create_bot_type_bot_short_name_label_toggle(f);
         }
     };
 

@@ -47,7 +47,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
-    CustomProfileFieldValue, validate_attachment_request, get_system_bot
+    CustomProfileFieldValue, validate_attachment_request, get_system_bot, get_slash_commands_by_realm
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -695,12 +695,14 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
 def render_incoming_message(message, content, message_users, realm):
     # type: (Message, Text, Set[UserProfile], Realm) -> Text
     realm_alert_words = alert_words_in_realm(realm)
+    realm_slash_commands = set(get_slash_commands_by_realm(realm, is_active=True))
     try:
         rendered_content = render_markdown(
             message=message,
             content=content,
             realm=realm,
             realm_alert_words=realm_alert_words,
+            realm_slash_commands=realm_slash_commands,
             message_users=message_users,
         )
     except BugdownRenderingException:
@@ -806,6 +808,7 @@ def do_send_messages(messages_maybe_none):
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
             is_me_message = message['message'].is_me_message
+            triggered_slash_commands = message['message'].triggered_slash_commands
 
             for um in ums_to_create:
                 if um.user_profile.id == message['message'].sender.id and \
@@ -822,6 +825,12 @@ def do_send_messages(messages_maybe_none):
 
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
+
+            for command in triggered_slash_commands:
+                slash_trigger_event = {"command": command,
+                                       "trigger": "slash command",
+                                       "message": message_to_dict(message['message'], apply_markdown=False)}
+                queue_json_publish("slash_commands", slash_trigger_event, lambda x: None)
 
             # Prepare to collect service queue events triggered by the message.
             message['message'].service_queue_events = defaultdict(list)

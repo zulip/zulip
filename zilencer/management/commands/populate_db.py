@@ -271,6 +271,12 @@ class Command(BaseCommand):
             ]
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+
+            zulip_slash_commands = [
+                ("Greet User", "greet-command@zulip.com"),
+            ]
+            create_users(zulip_realm, zulip_slash_commands, bot_type=UserProfile.SLASH_COMMANDS)
+
             # TODO: Clean up this initial bot creation code
             Service.objects.create(
                 name="test",

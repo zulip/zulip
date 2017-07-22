@@ -55,6 +55,7 @@ queues = {
     'outgoing_webhooks',
     'notify_tornado',
     'signups',
+    'slash_commands',
     'slow_queries',
     'tornado_return',
     'user_activity'

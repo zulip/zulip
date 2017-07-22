@@ -21,7 +21,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    bot_dict_fields, flush_message, bot_profile_cache_key
+    bot_dict_fields, flush_message, bot_profile_cache_key, slash_commands_by_realm_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -538,12 +538,19 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     embedded_bots queue and then handled by a QueueProcessingWorker.
     """
     EMBEDDED_BOT = 4
+    """
+    Bot type for slash commands.
+    Short_name of bot with this type would be of the form <command>-command. Here <command> would
+    denote the name of slash command.
+    """
+    SLASH_COMMANDS = 5
 
     # For now, don't allow creating other bot types via the UI
     ALLOWED_BOT_TYPES = [
         DEFAULT_BOT,
         INCOMING_WEBHOOK_BOT,
         OUTGOING_WEBHOOK_BOT,
+        SLASH_COMMANDS,
     ]
 
     SERVICE_BOT_TYPES = [
@@ -1839,3 +1846,23 @@ def get_bot_services(user_profile_id):
 def get_service_profile(email, realm, service_name):
     # type: (str, Realm, str) -> Service
     return Service.objects.get(user_profile__email=email, user_profile__realm=realm, name=service_name)
+
+@cache_with_key(slash_commands_by_realm_key, timeout=3600 * 24)
+def get_slash_commands_by_realm(realm, is_active=None):
+    # type: (Realm, Optional[bool]) -> List[Any]
+    if is_active is None:
+        users = list(UserProfile.objects.filter(realm=realm, bot_type=UserProfile.SLASH_COMMANDS).values('short_name'))
+    else:
+        users = list(UserProfile.objects.filter(realm=realm, bot_type=UserProfile.SLASH_COMMANDS,
+                                                is_active=is_active).values('short_name'))
+    short_names = [user['short_name'] for user in users]
+    slash_commands = []
+    for short_name in short_names:
+        if short_name[-8:] != "-command":
+            raise Exception("Email id is not in standard bot form.")
+        slash_commands.append(short_name[:-8])
+    return slash_commands
+
+def get_slash_command_user_by_realm(realm, command_name):
+    # type: (Realm, str) -> UserProfile
+    return UserProfile.objects.get(realm=realm, short_name=command_name+"-command")

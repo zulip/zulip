@@ -10,6 +10,7 @@ from zerver.lib.actions import (
     do_remove_realm_emoji,
     do_set_alert_words,
     get_realm,
+    do_change_is_admin,
 )
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
@@ -36,6 +37,7 @@ from zerver.models import (
     RealmEmoji,
     RealmFilter,
     Recipient,
+    UserProfile,
 )
 
 import copy
@@ -945,6 +947,28 @@ class BugdownTest(ZulipTestCase):
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
         )
+
+    def test_slash_commands_trigger(self):
+        # type: () -> None
+        user_profile = self.example_user('hamlet')
+
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        def render(msg, content):
+            # type: (Message, Text) -> Text
+            return render_markdown(msg,
+                                   content,
+                                   realm_slash_commands=set(["user1"]),
+                                   message_users={user_profile})
+
+        content = "We have an /user1 day today!"
+        self.assertEqual(render(msg, content), "<p>We have an /user1 day today!</p>")
+        self.assertEqual(msg.triggered_slash_commands, set(["user1"]))
+
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        content = "We have a NOTHINGWORD day today!"
+        self.assertEqual(render(msg, content), "<p>We have a NOTHINGWORD day today!</p>")
+        self.assertEqual(msg.triggered_slash_commands, set())
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
