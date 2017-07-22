@@ -1685,7 +1685,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
-                                                   event_last_message_id=0,
+                                                   event_last_message_id=event_last_message_id,
                                                    event_type='subscription_created',
                                                    event_time=event_time))
     for (sub, stream) in subs_to_activate:
