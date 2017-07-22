@@ -46,19 +46,13 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Sending deactivated realm emoji fails.
         """
-        email = "iago@zulip.com"
-        self.login(email)
-        with get_test_image_file('img.png') as fp1:
-            emoji_data = {'f1': fp1}
-            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
-        self.assert_json_success(result)
-        emoji = RealmEmoji.objects.get(name="my_emoji")
+        emoji = RealmEmoji.objects.get(name="green_tick")
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
-        sender = 'hamlet@zulip.com'
-        result = self.client_put('/api/v1/messages/1/emoji_reactions/my_emoji',
+        sender = self.example_email("hamlet")
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/green_tick',
                                  **self.api_auth(sender))
-        self.assert_json_error(result, "Emoji 'my_emoji' does not exist")
+        self.assert_json_error(result, "Emoji 'green_tick' does not exist")
 
     def test_valid_emoji(self):
         # type: () -> None
@@ -116,18 +110,7 @@ class ReactionEmojiTest(ZulipTestCase):
         Reacting with valid realm emoji succeeds
         """
         sender = self.example_email("hamlet")
-        emoji_name = 'my_emoji'
-        with get_test_image_file('img.png') as fp1:
-            emoji_data = {'f1': fp1}
-            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data,
-                                      **self.api_auth(sender))
-        self.assert_json_success(result)
-        self.assertEqual(200, result.status_code)
-
-        result = self.client_get("/json/realm/emoji", **self.api_auth(sender))
-        content = ujson.loads(result.content)
-        self.assert_json_success(result)
-        self.assertTrue(emoji_name in content["emoji"])
+        emoji_name = 'green_tick'
 
         result = self.client_put('/api/v1/messages/1/emoji_reactions/%s' % (emoji_name,),
                                  **self.api_auth(sender))
