@@ -946,6 +946,15 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
         )
 
+    def test_url_to_a(self):
+        # type: () -> None
+        url = 'javascript://example.com/invalidURL'
+        converted = bugdown.url_to_a(url, url)
+        self.assertEqual(
+            converted,
+            'javascript://example.com/invalidURL',
+        )
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
         # type: () -> None
