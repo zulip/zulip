@@ -715,6 +715,19 @@ This is equivalent of running a halt followed by an up (aka rebooting
 the guest).  After this, you can do `vagrant provision` and `vagrant
 ssh`.
 
+#### ssh connection closed by remote host
+
+On running `vagrant ssh`, if you see the following error:
+
+```
+ssh_exchange_identification: Connection closed by remote host
+```
+
+It usually means the Vagrant guest is not running, which is usually
+solved by rebooting the Vagrant guest via `vagrant reload`.  See
+[Vagrant was unable to communicate with the guest machine](#vagrant-was-unable-to-communicate-with-the-guest-machine)
+for more details.
+
 #### os.symlink error
 
 If you receive the following error while running `vagrant up`:
@@ -793,6 +806,34 @@ If this is already enabled in your BIOS, double-check that you are running a
 
 For further information about troubleshooting vagrant timeout errors [see
 this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
+
+#### Vagrant was unable to communicate with the guest machine
+
+If you see the following error when you run `vagrant up`:
+
+```
+Timed out while waiting for the machine to boot. This means that
+Vagrant was unable to communicate with the guest machine within
+the configured ("config.vm.boot_timeout" value) time period.
+
+If you look above, you should be able to see the error(s) that
+Vagrant had when attempting to connect to the machine. These errors
+are usually good hints as to what may be wrong.
+
+If you're using a custom box, make sure that networking is properly
+working and you're able to connect to the machine. It is a common
+problem that networking isn't setup properly in these boxes.
+Verify that authentication configurations are also setup properly,
+as well.
+
+If the box appears to be booting properly, you may want to increase
+the timeout ("config.vm.boot_timeout") value.
+```
+
+This has a range of possible causes, that usually amount to a bug in
+Virtualbox or Vagrant.  If you see this error, you usually can fix it
+by rebooting the guest via `vagrant reload` (or equivalently, `vagrant
+halt` followed by `vagrant up`):
 
 #### Vagrant up fails with subprocess.CalledProcessError
 
