@@ -26,12 +26,12 @@ class RealmEmojiTest(ZulipTestCase):
         email = self.example_email('iago')
         self.login(email)
         realm = get_realm('zulip')
-        RealmEmoji.objects.create(realm=realm, name='my_emojy', file_name='my_emojy')
+        RealmEmoji.objects.create(realm=realm, name='my_emoji', file_name='my_emoji')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
         self.assertEqual(len(content["emoji"]), 2)
-        self.assertIsNone(content["emoji"]['my_emojy']['author'])
+        self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
     def test_list_admins_only(self):
         # type: () -> None
@@ -40,12 +40,12 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
-        check_add_realm_emoji(realm, 'my_emojy', 'my_emojy')
+        check_add_realm_emoji(realm, 'my_emoji', 'my_emoji')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
         self.assertEqual(len(content["emoji"]), 2)
-        self.assertIsNone(content["emoji"]['my_emojy']['author'])
+        self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
     def test_upload(self):
         # type: () -> None
