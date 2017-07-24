@@ -164,7 +164,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
 
     function get_unmuted_topics(stream_name) {
         var stream_id = stream_data.get_stream_id(stream_name);
-        var topics = stream_data.get_recent_topic_names(stream_id);
+        var topics = topic_data.get_recent_names(stream_id);
         topics = _.reject(topics, function (topic) {
             return muting.is_topic_muted(stream_name, topic);
         });

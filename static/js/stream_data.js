@@ -7,7 +7,6 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
-var recent_topics = new Dict(); // stream_id -> array of objects
 
 var stream_ids_by_name = new Dict({fold_case: true});
 
@@ -21,7 +20,7 @@ exports.clear_subscriptions = function () {
 exports.clear_subscriptions();
 
 exports.is_active = function (sub) {
-    return recent_topics.has(sub.stream_id) || sub.newly_subscribed;
+    return topic_data.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
 };
 
 exports.rename_sub = function (sub, new_name) {
@@ -380,44 +379,6 @@ exports.receives_audible_notifications = function (stream_name) {
     return sub.audible_notifications;
 };
 
-exports.process_message_for_recent_topics = function process_message_for_recent_topics(
-                                                message, remove_message) {
-    var current_timestamp = 0;
-    var count = 0;
-    var stream_id = message.stream_id;
-    var canon_topic = message.subject.toLowerCase();
-
-    var recents = recent_topics.get(stream_id) || [];
-
-    recents = _.filter(recents, function (item) {
-        var is_duplicate = (
-            item.name.toLowerCase() === canon_topic);
-        if (is_duplicate) {
-            current_timestamp = item.timestamp;
-            count = item.count;
-        }
-        return !is_duplicate;
-    });
-
-    if (remove_message !== undefined) {
-        count = count - 1;
-    } else {
-        count = count + 1;
-    }
-
-    if (count !== 0) {
-        recents.push({name: message.subject,
-                      count: count,
-                      timestamp: Math.max(message.timestamp, current_timestamp)});
-    }
-
-    recents.sort(function (a, b) {
-        return b.timestamp - a.timestamp;
-    });
-
-    recent_topics.set(stream_id, recents);
-};
-
 exports.get_streams_for_settings_page = function () {
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
@@ -470,23 +431,6 @@ exports.initialize_from_page_params = function () {
     delete page_params.subscriptions;
     delete page_params.unsubscribed;
     delete page_params.never_subscribed;
-};
-
-exports.get_recent_topic_names = function (stream_id) {
-    var topic_objs = recent_topics.get(stream_id);
-
-    if (!topic_objs) {
-        return [];
-    }
-
-    return _.map(topic_objs, function (obj) {
-        return obj.name;
-    });
-};
-
-exports.populate_stream_topics_for_tests = function (stream_map) {
-    // This is only used by tests.
-    recent_topics = Dict.from(stream_map);
 };
 
 exports.get_newbie_stream = function () {

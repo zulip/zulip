@@ -13,12 +13,14 @@ add_dependencies({
     narrow: 'js/narrow.js',
     hash_util: 'js/hash_util.js',
     hashchange: 'js/hashchange.js',
+    topic_data: 'js/topic_data.js',
     util: 'js/util.js',
 });
 
 set_global('blueslip', {});
 
 var stream_data = require('js/stream_data.js');
+
 var people = global.people;
 
 (function test_basics() {
@@ -240,7 +242,7 @@ var people = global.people;
     assert(!ok);
 }());
 
-(function test_process_message_for_recent_topics() {
+(function test_process_message() {
     var stream_id = 55;
 
     var rome = {
@@ -255,9 +257,9 @@ var people = global.people;
         timestamp: 101,
         subject: 'toPic1',
     };
-    stream_data.process_message_for_recent_topics(message);
+    topic_data.process_message(message);
 
-    var history = stream_data.get_recent_topic_names(rome.stream_id);
+    var history = topic_data.get_recent_names(rome.stream_id);
     assert.deepEqual(history, ['toPic1']);
 
     message = {
@@ -265,8 +267,8 @@ var people = global.people;
         timestamp: 102,
         subject: 'Topic1',
     };
-    stream_data.process_message_for_recent_topics(message);
-    history = stream_data.get_recent_topic_names(rome.stream_id);
+    topic_data.process_message(message);
+    history = topic_data.get_recent_names(rome.stream_id);
     assert.deepEqual(history, ['Topic1']);
 
     message = {
@@ -274,12 +276,12 @@ var people = global.people;
         timestamp: 103,
         subject: 'topic2',
     };
-    stream_data.process_message_for_recent_topics(message);
-    history = stream_data.get_recent_topic_names(rome.stream_id);
+    topic_data.process_message(message);
+    history = topic_data.get_recent_names(rome.stream_id);
     assert.deepEqual(history, ['topic2', 'Topic1']);
 
-    stream_data.process_message_for_recent_topics(message, true);
-    history = stream_data.get_recent_topic_names(rome.stream_id);
+    topic_data.process_message(message, true);
+    history = topic_data.get_recent_names(rome.stream_id);
     assert.deepEqual(history, ['Topic1']);
 }());
 
@@ -307,7 +309,7 @@ var people = global.people;
         timestamp: 108,
         subject: 'topic2',
     };
-    stream_data.process_message_for_recent_topics(message);
+    topic_data.process_message(message);
 
     assert(stream_data.is_active(sub));
 }());

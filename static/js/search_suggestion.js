@@ -317,7 +317,7 @@ function get_topic_suggestions(last, operators) {
         return [];
     }
 
-    var topics = stream_data.get_recent_topic_names(stream_id);
+    var topics = topic_data.get_recent_names(stream_id);
 
     if (!topics || !topics.length) {
         return [];
