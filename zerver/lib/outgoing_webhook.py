@@ -78,7 +78,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         if "response_string" in response_json:
             return str(response_json['response_string'])
         else:
-            return ""
+            return None
 
     def process_failure(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
@@ -115,10 +115,10 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def process_success(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
         response_json = json.loads(response.text)
-        response_text = ""
         if "text" in response_json:
-            response_text = response_json["text"]
-        return response_text
+            return response_json["text"]
+        else:
+            return None
 
     def process_failure(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
