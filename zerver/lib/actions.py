@@ -1086,6 +1086,29 @@ def create_streams_if_needed(realm, stream_dicts):
 
     return added_streams, existing_streams
 
+
+def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message, forwarder_user_profile, sender):
+    # type: (Set[int], bool, Optional[UserProfile], UserProfile) -> Recipient
+
+    # If the private message is just between the sender and
+    # another person, force it to be a personal internally
+
+    if not_forged_mirror_message:
+        assert forwarder_user_profile is not None
+        if forwarder_user_profile.id not in recipient_profile_ids:
+            raise ValidationError(_("User not authorized for this query"))
+
+    if (len(recipient_profile_ids) == 2 and sender.id in recipient_profile_ids):
+        recipient_profile_ids.remove(sender.id)
+
+    if len(recipient_profile_ids) > 1:
+        # Make sure the sender is included in huddle messages
+        recipient_profile_ids.add(sender.id)
+        huddle = get_huddle(list(recipient_profile_ids))
+        return get_recipient(Recipient.HUDDLE, huddle.id)
+    else:
+        return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
+
 def recipient_for_emails(emails, not_forged_mirror_message,
                          forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
@@ -1110,27 +1133,11 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         if email not in exempt_emails:
             realms.add(user_profile.realm_id)
 
-    if not_forged_mirror_message:
-        assert forwarder_user_profile is not None
-        if forwarder_user_profile.id not in recipient_profile_ids:
-            raise ValidationError(_("User not authorized for this query"))
-
     if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
-    # If the private message is just between the sender and
-    # another person, force it to be a personal internally
-    if (len(recipient_profile_ids) == 2 and
-            sender.id in recipient_profile_ids):
-        recipient_profile_ids.remove(sender.id)
-
-    if len(recipient_profile_ids) > 1:
-        # Make sure the sender is included in huddle messages
-        recipient_profile_ids.add(sender.id)
-        huddle = get_huddle(list(recipient_profile_ids))
-        return get_recipient(Recipient.HUDDLE, huddle.id)
-    else:
-        return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
+    return get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message,
+                                       forwarder_user_profile, sender)
 
 def already_sent_mirrored_message_id(message):
     # type: (Message) -> Optional[int]
