@@ -150,7 +150,7 @@ exports.add_message_metadata = function (message) {
         composebox_typeahead.add_topic(message.stream, message.subject);
         message.reply_to = message.sender_email;
 
-        stream_data.process_message_for_recent_topics(message);
+        topic_data.process_message(message);
         exports.set_topic_edit_properties(message);
 
         recent_senders.process_message_for_senders(message);

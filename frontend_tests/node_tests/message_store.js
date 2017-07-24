@@ -1,7 +1,8 @@
 add_dependencies({
     people: 'js/people.js',
-    util: 'js/util.js',
     pm_conversations: 'js/pm_conversations.js',
+    topic_data: 'js/topic_data.js',
+    util: 'js/util.js',
 });
 
 var noop = function () {};
@@ -15,8 +16,8 @@ set_global('alert_words', {
     process_message: noop,
 });
 
-set_global('stream_data' , {
-    process_message_for_recent_topics: noop,
+set_global('topic_data' , {
+    process_message: noop,
 });
 
 set_global('recent_senders', {

@@ -12,6 +12,7 @@ add_dependencies({
     typeahead_helper: 'js/typeahead_helper.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
+    topic_data: 'js/topic_data.js',
     narrow_state: 'js/narrow_state.js',
 });
 
@@ -35,7 +36,7 @@ init();
 
 set_global('narrow', {});
 
-global.stream_data.populate_stream_topics_for_tests({});
+topic_data.populate_for_tests({});
 
 (function test_basic_get_suggestions() {
     var query = 'fred';
@@ -575,7 +576,7 @@ init();
     };
 
     var recent_data = {};
-    global.stream_data.populate_stream_topics_for_tests(recent_data);
+    topic_data.populate_for_tests(recent_data);
     suggestions = search.get_suggestions('te');
     expected = [
         "te",
@@ -592,7 +593,7 @@ init();
         {name: 'test'},
     ];
 
-    global.stream_data.populate_stream_topics_for_tests(recent_data);
+    topic_data.populate_for_tests(recent_data);
 
     suggestions = search.get_suggestions('te');
     expected = [
@@ -677,7 +678,7 @@ init();
         return;
     };
 
-    global.stream_data.populate_stream_topics_for_tests({});
+    topic_data.populate_for_tests({});
 
     var suggestions = search.get_suggestions(query);
 
@@ -697,7 +698,7 @@ init();
         return;
     };
 
-    global.stream_data.populate_stream_topics_for_tests({});
+    topic_data.populate_for_tests({});
 
     var query = 'stream:of';
     var suggestions = search.get_suggestions(query);
@@ -749,7 +750,7 @@ init();
     people.add(alice);
 
 
-    global.stream_data.populate_stream_topics_for_tests({
+    topic_data.populate_for_tests({
         office: [
             {name: 'team'},
             {name: 'ignore'},
@@ -881,7 +882,7 @@ init();
         return;
     };
 
-    global.stream_data.populate_stream_topics_for_tests({});
+    topic_data.populate_for_tests({});
 
     // test allowing spaces with quotes surrounding operand
     var query = 'stream:"dev he"';

@@ -52,7 +52,7 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
     var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
 
     function build_list(active_topic, max_topics) {
-        var topic_names = stream_data.get_recent_topic_names(my_stream_id);
+        var topic_names = topic_data.get_recent_names(my_stream_id);
 
         if (active_topic) {
             active_topic = active_topic.toLowerCase();

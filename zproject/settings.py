@@ -875,6 +875,7 @@ JS_SPECS = {
             'js/compose.js',
             'js/stream_color.js',
             'js/stream_data.js',
+            'js/topic_data.js',
             'js/stream_muting.js',
             'js/stream_events.js',
             'js/stream_create.js',

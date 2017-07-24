@@ -107,6 +107,7 @@
         "admin_sections": false,
         "admin": false,
         "stream_data": false,
+        "topic_data": false,
         "list_util": false,
         "muting": false,
         "Dict": false,

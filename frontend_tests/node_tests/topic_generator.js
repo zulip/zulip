@@ -2,6 +2,7 @@ add_dependencies({
     muting: 'js/muting',
     stream_data: 'js/stream_data',
     stream_sort: 'js/stream_sort',
+    topic_data: 'js/topic_data',
     unread: 'js/unread',
 });
 
@@ -182,7 +183,7 @@ function is_odd(i) { return i % 2 === 1; }
         devel: devel_stream_id,
     };
 
-    global.stream_data.get_recent_topic_names = function (stream_id) {
+    topic_data.get_recent_names = function (stream_id) {
         switch (stream_id) {
             case muted_stream_id:
                 return ['red herring'];

@@ -186,7 +186,7 @@ exports.update_messages = function update_messages(events) {
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we update msg.subject
-                stream_data.process_message_for_recent_topics(msg, true);
+                topic_data.process_message(msg, true);
                 // Update the unread counts; again, this must be called
                 // before we update msg.subject
                 unread.update_unread_topics(msg, event);
@@ -196,7 +196,7 @@ exports.update_messages = function update_messages(events) {
                 message_store.set_topic_edit_properties(msg);
                 // Add the recent topics entry for the new topics; must
                 // be called after we update msg.subject
-                stream_data.process_message_for_recent_topics(msg);
+                topic_data.process_message(msg);
             });
         }
 
