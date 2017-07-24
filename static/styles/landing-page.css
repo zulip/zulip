@@ -2058,6 +2058,27 @@ nav ul li.active::after {
     padding-bottom: 35px;
 }
 
+.portico-landing.integrations .integration-instruction-block .categories {
+    position: absolute;
+    top: 230px;
+}
+
+.portico-landing.integrations .integration-instruction-block .categories .integration-category {
+    font-size: 0.90em;
+    font-weight: 500;
+    padding: 6px 10px;
+    margin: 3px 0;
+    width: 125px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    color: #414e67;
+}
+
+.portico-landing.integrations .integration-instruction-block .categories .integration-category:hover {
+    background-color: hsl(170, 65%, 85%);
+    color: hsl(170, 72%, 32%);
+}
+
 /* -- gradients -- */
 .gradients {
     width: 100%;
@@ -2462,6 +2483,10 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-instruction-block .name {
         display: block;
+    }
+
+    .portico-landing.integrations .integration-instruction-block .categories {
+        display: none;
     }
 
     .platform.image {
