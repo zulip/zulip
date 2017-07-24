@@ -52,13 +52,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
-    def test_process_failure(self):
-        # type: () -> None
-        response = mock.Mock(spec=Response)
-        response.text = 'test_content'
-        success_response = self.handler.process_failure(response, self.event)
-        self.assertEqual(success_response, 'test_content')
-
 mock_service = Service()
 
 class TestSlackOutgoingWebhookService(ZulipTestCase):
@@ -115,11 +108,4 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
         response.text = json.dumps({"text": 'test_content'})
         success_response = self.handler.process_success(response, self.event)
-        self.assertEqual(success_response, 'test_content')
-
-    def test_process_failure(self):
-        # type: () -> None
-        response = mock.Mock(spec=Response)
-        response.text = 'test_content'
-        success_response = self.handler.process_failure(response, self.event)
         self.assertEqual(success_response, 'test_content')

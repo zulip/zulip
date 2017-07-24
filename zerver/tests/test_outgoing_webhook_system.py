@@ -36,10 +36,6 @@ class MockServiceHandler(OutgoingWebhookServiceInterface):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
         return "Success!"
 
-    def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
-        return "Failure!"
-
 service_handler = MockServiceHandler(None, None, None, None)
 
 class DoRestCallTests(ZulipTestCase):
