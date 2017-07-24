@@ -101,12 +101,11 @@ AUTHENTICATION_BACKENDS = (
 
 # To enable Google authentication, you need to do the following:
 #
-# (1) Visit https://console.developers.google.com, setup an
-# Oauth2 client ID that allows redirects to
+# (1) Visit https://console.developers.google.com, click on Credentials on
+# the left sidebar and create a Oauth2 client ID
 # e.g. https://zulip.example.com/accounts/login/google/done/.
 #
-# (2) Then click into the APIs and Auth section (in the sidebar on the
-# left side of the page), APIs, then under "Social APIs" click on
+# (2) Go to the Library (left sidebar), then under "Social APIs" click on
 # "Google+ API" and click the button to enable the API.
 #
 # (3) put your client secret as "google_oauth2_client_secret" in
@@ -117,8 +116,8 @@ AUTHENTICATION_BACKENDS = (
 # To enable GitHub authentication, you will need to need to do the following:
 #
 # (1) Register an OAuth2 application with GitHub at one of:
-#   https://github.com/settings/applications
-#   https://github.com/organizations/ORGNAME/settings/applications
+#   https://github.com/settings/developers
+#   https://github.com/organizations/ORGNAME/settings/developers
 # Specify e.g. https://zulip.example.com/complete/github/ as the callback URL.
 #
 # (2) Put your "Client ID" as SOCIAL_AUTH_GITHUB_KEY below and your
