@@ -575,15 +575,21 @@ init();
     };
 
     var recent_data = {};
+    global.stream_data.populate_stream_topics_for_tests(recent_data);
+    suggestions = search.get_suggestions('te');
+    expected = [
+        "te",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 
     recent_data[devel_id] = [
-        {subject: 'REXX'},
+        {name: 'REXX'},
     ];
 
     recent_data[office_id] = [
-        {subject: 'team'},
-        {subject: 'ignore'},
-        {subject: 'test'},
+        {name: 'team'},
+        {name: 'ignore'},
+        {name: 'test'},
     ];
 
     global.stream_data.populate_stream_topics_for_tests(recent_data);
@@ -745,9 +751,9 @@ init();
 
     global.stream_data.populate_stream_topics_for_tests({
         office: [
-            {subject: 'team'},
-            {subject: 'ignore'},
-            {subject: 'test'},
+            {name: 'team'},
+            {name: 'ignore'},
+            {name: 'test'},
         ],
     });
 

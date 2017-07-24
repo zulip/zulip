@@ -25,7 +25,7 @@ global.compile_template('topic_list_item');
 
     var recent_topics = {};
     recent_topics[stream_id] = [
-        {subject: "coding"},
+        {name: "coding"},
     ];
     global.stream_data.populate_stream_topics_for_tests(recent_topics);
     global.unread.num_unread_for_subject = function () {

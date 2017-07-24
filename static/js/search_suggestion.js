@@ -311,21 +311,21 @@ function get_topic_suggestions(last, operators) {
         return [];
     }
 
-    var topics = stream_data.get_recent_topics(stream);
 
-    stream = stream_data.get_name(stream);
+    var stream_id = stream_data.get_stream_id(stream);
+    if (!stream_id) {
+        return [];
+    }
 
-    if (!topics) {
+    var topics = stream_data.get_recent_topic_names(stream_id);
+
+    if (!topics || !topics.length) {
         return [];
     }
 
     // Be defensive here in case stream_data.get_recent_topics gets
     // super huge, but still slice off enough topics to find matches.
     topics = topics.slice(0, 300);
-
-    topics = _.map(topics, function (topic) {
-        return topic.subject; // "subject" is just the name of the topic
-    });
 
     if (guess !== '') {
         topics = _.filter(topics, function (topic) {

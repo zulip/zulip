@@ -52,7 +52,7 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
     var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
 
     function build_list(active_topic, max_topics) {
-        var topics = stream_data.get_recent_topics_for_id(my_stream_id) || [];
+        var topic_names = stream_data.get_recent_topic_names(my_stream_id);
 
         if (active_topic) {
             active_topic = active_topic.toLowerCase();
@@ -63,10 +63,9 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
         var ul = $('<ul class="topic-list">');
         ul.attr('data-stream', my_stream_name);
 
-        _.each(topics, function (subject_obj, idx) {
+        _.each(topic_names, function (topic_name, idx) {
             var show_topic;
-            var topic_name = subject_obj.subject;
-            var num_unread = unread.num_unread_for_subject(my_stream_id, subject_obj.canon_subject);
+            var num_unread = unread.num_unread_for_subject(my_stream_id, topic_name);
 
             if (zoomed) {
                 show_topic = true;

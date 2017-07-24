@@ -385,12 +385,13 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
     var current_timestamp = 0;
     var count = 0;
     var stream_id = message.stream_id;
-    var canon_subject = exports.canonicalized_name(message.subject);
+    var canon_topic = message.subject.toLowerCase();
 
     var recents = recent_topics.get(stream_id) || [];
 
     recents = _.filter(recents, function (item) {
-        var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
+        var is_duplicate = (
+            item.name.toLowerCase() === canon_topic);
         if (is_duplicate) {
             current_timestamp = item.timestamp;
             count = item.count;
@@ -405,8 +406,7 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
     }
 
     if (count !== 0) {
-        recents.push({subject: message.subject,
-                      canon_subject: canon_subject,
+        recents.push({name: message.subject,
                       count: count,
                       timestamp: Math.max(message.timestamp, current_timestamp)});
     }
@@ -472,19 +472,16 @@ exports.initialize_from_page_params = function () {
     delete page_params.never_subscribed;
 };
 
-exports.get_recent_topics_for_id = function (stream_id) {
-    return recent_topics.get(stream_id);
-};
+exports.get_recent_topic_names = function (stream_id) {
+    var topic_objs = recent_topics.get(stream_id);
 
-exports.get_recent_topics = function (stream_name) {
-    // TODO: deprecate this and have callers use
-    //       get_recent_topics_for_id
-    var stream_id = exports.get_stream_id(stream_name);
-    if (!stream_id) {
+    if (!topic_objs) {
         return [];
     }
 
-    return recent_topics.get(stream_id);
+    return _.map(topic_objs, function (obj) {
+        return obj.name;
+    });
 };
 
 exports.populate_stream_topics_for_tests = function (stream_map) {
