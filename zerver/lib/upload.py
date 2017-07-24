@@ -11,7 +11,7 @@ from jinja2 import Markup as mark_safe
 import unicodedata
 
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.str_utils import force_text, force_str, NonBinaryStr
 
 from boto.s3.bucket import Bucket
@@ -84,10 +84,10 @@ def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
 
 class BadImageError(JsonableError):
-    pass
+    code = ErrorCode.BAD_IMAGE
 
 class ExceededQuotaError(JsonableError):
-    pass
+    code = ErrorCode.QUOTA_EXCEEDED
 
 def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
     # type: (binary_type, int) -> binary_type

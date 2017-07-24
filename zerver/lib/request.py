@@ -8,34 +8,30 @@ from six.moves import zip
 
 from django.utils.translation import ugettext as _
 
-class JsonableError(Exception):
-    def __init__(self, error, status_code=400):
-        self.error = error
-        self.status_code = status_code
-
-    def __str__(self):
-        return self.to_json_error_msg()
-
-    def to_json_error_msg(self):
-        return self.error
+from zerver.lib.exceptions import JsonableError, ErrorCode
 
 class RequestVariableMissingError(JsonableError):
-    def __init__(self, var_name, status_code=400):
-        self.var_name = var_name
-        self.status_code = status_code
+    code = ErrorCode.REQUEST_VARIABLE_MISSING
+    data_fields = ['var_name']
 
-    def to_json_error_msg(self):
-        return _("Missing '%s' argument") % (self.var_name,)
+    def __init__(self, var_name):
+        self.var_name = var_name  # type: str
+
+    @staticmethod
+    def msg_format():
+        return _("Missing '{var_name}' argument")
 
 class RequestVariableConversionError(JsonableError):
-    def __init__(self, var_name, bad_value, status_code=400):
-        self.var_name = var_name
-        self.bad_value = bad_value
-        self.status_code = status_code
+    code = ErrorCode.REQUEST_VARIABLE_INVALID
+    data_fields = ['var_name', 'bad_value']
 
-    def to_json_error_msg(self):
-        return (_("Bad value for '%(var_name)s': %(value)s") %
-                {'var_name': self.var_name, 'value': self.bad_value})
+    def __init__(self, var_name, bad_value):
+        self.var_name = var_name  # type: str
+        self.bad_value = bad_value
+
+    @staticmethod
+    def msg_format():
+        return _("Bad value for '{var_name}': {bad_value}")
 
 # Used in conjunction with @has_request_variables, below
 class REQ(object):

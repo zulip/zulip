@@ -10,9 +10,10 @@ from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Text, Any, AnyStr, Callable, Iterable, \
     Optional, Tuple, Union
 from zerver.lib.str_utils import force_text
+from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.decorator import authenticated_json_post_view, has_request_variables, \
-    REQ, JsonableError, to_non_negative_int
+    REQ, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
@@ -56,14 +57,17 @@ import six
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 
 class BadNarrowOperator(JsonableError):
-    def __init__(self, desc, status_code=400):
-        # type: (str, int) -> None
-        self.desc = desc
-        self.status_code = status_code
+    code = ErrorCode.BAD_NARROW
+    data_fields = ['desc']
 
-    def to_json_error_msg(self):
+    def __init__(self, desc):
+        # type: (str) -> None
+        self.desc = desc  # type: str
+
+    @staticmethod
+    def msg_format():
         # type: () -> str
-        return _('Invalid narrow operator: {}').format(self.desc)
+        return _('Invalid narrow operator: {desc}')
 
 Query = Any  # TODO: Should be Select, but sqlalchemy stubs are busted
 ConditionTransform = Any  # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted

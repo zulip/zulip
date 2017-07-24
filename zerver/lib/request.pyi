@@ -1,12 +1,10 @@
 # This mypy stubs file ensures that mypy can correctly analyze REQ.
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Text, TypeVar
 from django.http import HttpResponse
 
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
+from zerver.lib.exceptions import JsonableError as JsonableError
 
-class JsonableError(Exception):
-    error = ...  # type: Any
-    def to_json_error_msg(self) -> Any: ...
+ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 class RequestVariableMissingError(JsonableError): ...
 class RequestVariableConversionError(JsonableError): ...

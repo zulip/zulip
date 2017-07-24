@@ -16,7 +16,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
     is_remote_server
-from zerver.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
@@ -458,7 +458,7 @@ def authenticated_rest_api_view(is_webhook=False):
                 # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
-                return json_unauthorized(e.error)
+                return json_unauthorized(e.msg)
             request.user = profile
             if is_remote_server(role):
                 assert isinstance(profile, RemoteZulipServer)  # type: ignore # https://github.com/python/mypy/issues/2957

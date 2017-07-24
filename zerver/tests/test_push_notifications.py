@@ -643,7 +643,7 @@ class TestSendToPushBouncer(PushNotificationTest):
         # type: (mock.MagicMock) -> None
         with self.assertRaises(apn.JsonableError) as exc:
             apn.send_to_push_bouncer('register', 'register', {'data': True})
-        self.assertEqual(exc.exception.error,
+        self.assertEqual(exc.exception.msg,
                          'Error received from push notification bouncer')
 
     @mock.patch('requests.request', return_value=Result(status=400))
@@ -651,14 +651,14 @@ class TestSendToPushBouncer(PushNotificationTest):
         # type: (mock.MagicMock) -> None
         with self.assertRaises(apn.JsonableError) as exc:
             apn.send_to_push_bouncer('register', 'register', {'msg': True})
-        self.assertEqual(exc.exception.error, 'error')
+        self.assertEqual(exc.exception.msg, 'error')
 
     @mock.patch('requests.request', return_value=Result(status=400, content='/'))
     def test_400_error_when_content_is_not_serializable(self, mock_request):
         # type: (mock.MagicMock) -> None
         with self.assertRaises(apn.JsonableError) as exc:
             apn.send_to_push_bouncer('register', 'register', {'msg': True})
-        self.assertEqual(exc.exception.error,
+        self.assertEqual(exc.exception.msg,
                          'Error received from push notification bouncer')
 
     @mock.patch('requests.request', return_value=Result(status=300, content='/'))
@@ -666,7 +666,7 @@ class TestSendToPushBouncer(PushNotificationTest):
         # type: (mock.MagicMock) -> None
         with self.assertRaises(apn.JsonableError) as exc:
             apn.send_to_push_bouncer('register', 'register', {'msg': True})
-        self.assertEqual(exc.exception.error,
+        self.assertEqual(exc.exception.msg,
                          'Error received from push notification bouncer')
 
 class TestNumPushDevicesForUser(PushNotificationTest):

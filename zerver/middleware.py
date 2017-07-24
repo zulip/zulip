@@ -8,7 +8,7 @@ from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
 from django.utils.deprecation import MiddlewareMixin
 
-from zerver.lib.response import json_error
+from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.request import JsonableError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
@@ -17,7 +17,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
 from zerver.models import flush_per_request_caches, get_realm
-from zerver.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
@@ -284,14 +284,9 @@ class LogRequests(MiddlewareMixin):
 
 class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request, exception):
-        # type: (HttpRequest, Any) -> Optional[HttpResponse]
-        if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
-            try:
-                status_code = exception.status_code
-            except Exception:
-                logging.warning("Jsonable exception %s missing status code!" % (exception,))
-                status_code = 400
-            return json_error(exception.to_json_error_msg(), status=status_code)
+        # type: (HttpRequest, Exception) -> Optional[HttpResponse]
+        if isinstance(exception, JsonableError):
+            return json_response_from_error(exception)
         if request.error_format == "JSON":
             logging.error(traceback.format_exc())
             return json_error(_("Internal server error"), status=500)

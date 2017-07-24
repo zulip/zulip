@@ -6,7 +6,8 @@ from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.request import JsonableError, REQ, has_request_variables
+from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
     authenticated_json_view, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
@@ -35,15 +36,18 @@ from six.moves import urllib
 import six
 
 class PrincipalError(JsonableError):
-    def __init__(self, principal, status_code=403):
-        # type: (Text, int) -> None
-        self.principal = principal  # type: Text
-        self.status_code = status_code  # type: int
+    code = ErrorCode.UNAUTHORIZED_PRINCIPAL
+    data_fields = ['principal']
+    http_status_code = 403
 
-    def to_json_error_msg(self):
+    def __init__(self, principal):
+        # type: (Text) -> None
+        self.principal = principal  # type: Text
+
+    @staticmethod
+    def msg_format():
         # type: () -> Text
-        return ("User not authorized to execute queries on behalf of '%s'"
-                % (self.principal,))
+        return _("User not authorized to execute queries on behalf of '{principal}'")
 
 def principal_to_user_profile(agent, principal):
     # type: (UserProfile, Text) -> UserProfile
@@ -389,7 +393,7 @@ def json_stream_exists(request, user_profile, stream_name=REQ("stream"),
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     except JsonableError as e:
         result = {"exists": False}
-        return json_error(e.error, data=result, status=404)
+        return json_error(e.msg, data=result, status=404)
 
     # access_stream functions return a subscription if and only if we
     # are already subscribed.

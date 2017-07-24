@@ -39,6 +39,7 @@ IGNORED_PHRASES = [
     r'Terms of Service',
     r"URL",
     r"Ubuntu",
+    r"Updown",
     r"V5",
     r"Webathena",
     r"Windows",
