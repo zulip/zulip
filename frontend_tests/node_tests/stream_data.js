@@ -257,15 +257,8 @@ var people = global.people;
     };
     stream_data.process_message_for_recent_topics(message);
 
-    var history = stream_data.get_recent_topics('Rome');
-    assert.deepEqual(history, [
-        {
-            subject: 'toPic1',
-            canon_subject: 'topic1',
-            count: 1,
-            timestamp: 101,
-        },
-    ]);
+    var history = stream_data.get_recent_topic_names(rome.stream_id);
+    assert.deepEqual(history, ['toPic1']);
 
     message = {
         stream_id: stream_id,
@@ -273,15 +266,8 @@ var people = global.people;
         subject: 'Topic1',
     };
     stream_data.process_message_for_recent_topics(message);
-    history = stream_data.get_recent_topics('Rome');
-    assert.deepEqual(history, [
-        {
-            subject: 'Topic1',
-            canon_subject: 'topic1',
-            count: 2,
-            timestamp: 102,
-        },
-    ]);
+    history = stream_data.get_recent_topic_names(rome.stream_id);
+    assert.deepEqual(history, ['Topic1']);
 
     message = {
         stream_id: stream_id,
@@ -289,32 +275,12 @@ var people = global.people;
         subject: 'topic2',
     };
     stream_data.process_message_for_recent_topics(message);
-    history = stream_data.get_recent_topics('Rome');
-    assert.deepEqual(history, [
-        {
-            subject: 'topic2',
-            canon_subject: 'topic2',
-            count: 1,
-            timestamp: 103,
-        },
-        {
-            subject: 'Topic1',
-            canon_subject: 'topic1',
-            count: 2,
-            timestamp: 102,
-        },
-    ]);
+    history = stream_data.get_recent_topic_names(rome.stream_id);
+    assert.deepEqual(history, ['topic2', 'Topic1']);
 
     stream_data.process_message_for_recent_topics(message, true);
-    history = stream_data.get_recent_topics('Rome');
-    assert.deepEqual(history, [
-        {
-            subject: 'Topic1',
-            canon_subject: 'topic1',
-            count: 2,
-            timestamp: 102,
-        },
-    ]);
+    history = stream_data.get_recent_topic_names(rome.stream_id);
+    assert.deepEqual(history, ['Topic1']);
 }());
 
 (function test_is_active() {

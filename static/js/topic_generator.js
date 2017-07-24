@@ -163,8 +163,8 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     });
 
     function get_unmuted_topics(stream_name) {
-        var topic_objs = stream_data.get_recent_topics(stream_name) || [];
-        var topics = _.map(topic_objs, function (obj) { return obj.subject; });
+        var stream_id = stream_data.get_stream_id(stream_name);
+        var topics = stream_data.get_recent_topic_names(stream_id);
         topics = _.reject(topics, function (topic) {
             return muting.is_topic_muted(stream_name, topic);
         });

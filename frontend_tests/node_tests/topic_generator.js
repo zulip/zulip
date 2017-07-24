@@ -174,28 +174,27 @@ function is_odd(i) { return i % 2 === 1; }
         return ['announce', 'muted', 'devel', 'test here'];
     };
 
-    global.stream_data.get_recent_topics = function (stream) {
-        if (stream === 'muted') {
-            return [
-                {subject: 'red herring'},
-            ];
-        }
-        if (stream === 'devel') {
-            return [
-                {subject: 'muted'},
-                {subject: 'python'},
-            ];
-        }
+    var muted_stream_id = 400;
+    var devel_stream_id = 401;
+
+    var stream_id_dct = {
+        muted: muted_stream_id,
+        devel: devel_stream_id,
     };
 
-    var devel_stream_id = 555;
-
-    global.stream_data.get_stream_id = function (stream_name) {
-        if (stream_name === 'devel') {
-            return devel_stream_id;
+    global.stream_data.get_recent_topic_names = function (stream_id) {
+        switch (stream_id) {
+            case muted_stream_id:
+                return ['red herring'];
+            case devel_stream_id:
+                return ['muted', 'python'];
         }
 
-        return 999;
+        return [];
+    };
+
+    global.stream_data.get_stream_id = function (stream_name) {
+        return stream_id_dct[stream_name];
     };
 
     global.stream_data.name_in_home_view = function (stream_name) {
