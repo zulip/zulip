@@ -50,12 +50,6 @@ class OutgoingWebhookServiceInterface(object):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
         raise NotImplementedError()
 
-    # Given a failed outgoing webhook REST operation, returns the message to be
-    # sent back to the user (or None if no message should be sent).
-    def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
-        raise NotImplementedError()
-
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
     def process_event(self, event):
@@ -79,10 +73,6 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             return str(response_json['response_string'])
         else:
             return None
-
-    def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
-        return str(response.text)
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -119,10 +109,6 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             return response_json["text"]
         else:
             return None
-
-    def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
-        return str(response.text)
 
 AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
     GENERIC_INTERFACE: GenericOutgoingWebhookService,
@@ -213,9 +199,8 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
         elif str(response.status_code).startswith('5'):
             request_retry(event, "Internal Server error at third party.")
         else:
-            response_message = service_handler.process_failure(response, event)
-            if response_message is not None:
-                fail_with_message(event, response_message)
+            failure_message = "Third party responded with %d" % (response.status_code)
+            fail_with_message(event, failure_message)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
