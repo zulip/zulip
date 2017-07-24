@@ -12,7 +12,7 @@ from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Service
 
-class Test_GenericOutgoingWebhookService(ZulipTestCase):
+class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
@@ -61,7 +61,7 @@ class Test_GenericOutgoingWebhookService(ZulipTestCase):
 
 mock_service = Service()
 
-class Test_SlackOutgoingWebhookService(ZulipTestCase):
+class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
