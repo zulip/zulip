@@ -36,7 +36,7 @@ init();
 
 set_global('narrow', {});
 
-topic_data.populate_for_tests({});
+topic_data.reset();
 
 (function test_basic_get_suggestions() {
     var query = 'fred';
@@ -575,25 +575,24 @@ init();
         }
     };
 
-    var recent_data = {};
-    topic_data.populate_for_tests(recent_data);
+    topic_data.reset();
     suggestions = search.get_suggestions('te');
     expected = [
         "te",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    recent_data[devel_id] = [
-        {name: 'REXX'},
-    ];
+    topic_data.add_message({
+        stream_id: devel_id,
+        topic_name: 'REXX',
+    });
 
-    recent_data[office_id] = [
-        {name: 'team'},
-        {name: 'ignore'},
-        {name: 'test'},
-    ];
-
-    topic_data.populate_for_tests(recent_data);
+    _.each(['team', 'ignore', 'test'], function (topic_name) {
+        topic_data.add_message({
+            stream_id: office_id,
+            topic_name: topic_name,
+        });
+    });
 
     suggestions = search.get_suggestions('te');
     expected = [
@@ -678,7 +677,7 @@ init();
         return;
     };
 
-    topic_data.populate_for_tests({});
+    topic_data.reset();
 
     var suggestions = search.get_suggestions(query);
 
@@ -698,7 +697,7 @@ init();
         return;
     };
 
-    topic_data.populate_for_tests({});
+    topic_data.reset();
 
     var query = 'stream:of';
     var suggestions = search.get_suggestions(query);
@@ -750,13 +749,7 @@ init();
     people.add(alice);
 
 
-    topic_data.populate_for_tests({
-        office: [
-            {name: 'team'},
-            {name: 'ignore'},
-            {name: 'test'},
-        ],
-    });
+    topic_data.reset();
 
     var suggestions = search.get_suggestions(query);
 
@@ -882,7 +875,7 @@ init();
         return;
     };
 
-    topic_data.populate_for_tests({});
+    topic_data.reset();
 
     // test allowing spaces with quotes surrounding operand
     var query = 'stream:"dev he"';
