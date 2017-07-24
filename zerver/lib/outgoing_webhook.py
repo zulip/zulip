@@ -1,11 +1,12 @@
 from __future__ import absolute_import
-from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping
+from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping, Optional
 
 import requests
 import json
 import sys
 import inspect
 import logging
+import re
 from six.moves import urllib
 from functools import reduce
 from requests import Response
@@ -36,31 +37,53 @@ class OutgoingWebhookServiceInterface(object):
     # The return value should be a tuple (rest_operation, request_data), where:
     # rest_operation is a dictionary containing atleast the following keys: method, relative_url_path and
     # request_kwargs. It provides rest operation related info.
-    # request_data is a dictionary whose format can vary depending on the type of webhook service.
+    # request_data is the data to be sent to third party service.
+    # It should be in the appropriate form. Ex: certain services require the post data to be in
+    # json form. Hence request_data returned here should be a json.
     def process_event(self, event):
-        # type: (Dict[str, Any]) -> Tuple[Dict[str ,Any], Dict[str, Any]]
+        # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
         raise NotImplementedError()
 
-    # Given a successful response to the outgoing webhook REST operation, returns the message
-    # that should be sent back to the user.
+    # Given a successful response to the outgoing webhook REST operation, determines if response is required
+    # to be sent to user and in such case, returns the message that should be sent back.
     #
     # The response will be the response object obtained from REST operation.
     # The event will be the same as the input to process_command.
-    # The returned message will be a dictionary which should have "response_message" as key and response message to
-    # be sent to user as value.
+    # It returns the message to be sent back to user. If None is returned back, no response is sent back.
     def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
+        # type: (Response, Dict[Text, Any]) -> Optional[str]
         raise NotImplementedError()
 
-    # Given a failed outgoing webhook REST operation, returns the message that should be sent back to the user.
+    # Given a failed outgoing webhook REST operation, determines if response is required
+    # to be sent to user and in such case, returns the message that should be sent back.
     #
     # The response will be the response object obtained from REST operation.
     # The event will be the same as the input to process_command.
-    # The returned message will be a dictionary which should have "response_message" as key and response message to
-    # be sent to user as value.
+    # It returns the message to be sent back to user. If None is returned back, no response is sent back.
     def process_failure(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Dict[str, Any]
+        # type: (Response, Dict[Text, Any]) -> Optional[str]
         raise NotImplementedError()
+
+    # Make a message more readable by refactoring @-mentions in a string. Example: it replaces
+    # @**vabs22 user** to @vabs22 user in the string.
+    # It can be used to refactor the data to be sent to third party services by outgoing webhooks. Zulip's
+    # current @-mention annotation (i.e. @**_**) can be somewhat confusing for third party services,
+    # hence it can be used to make it more readable.
+    # Note: don't use it to refactor the content of message dict() data to be sent to zulip bot server,
+    # as some bots are based on @-mention trigger (Example: xkcd bot).
+    # For mentions containing multiple words, like @**Hamlet User**, it refactors them to @Hamlet User.
+    # The interface classes can also overwrite this function to create their own implementation.
+    def make_message_content_readable(self, message_content):
+        # type: (Text) -> Text
+
+        def replace_match(match):
+            # type: (Any) -> Text
+            match = match.group()
+            match = "@" + match[3:-2]
+            return match
+
+        message_content = re.sub(r'@\*\*\w+(\s\w+)?\*\*', replace_match, message_content)
+        return message_content
 
 def send_response_message(bot_id, message, response_message_content):
     # type: (str, Dict[str, Any], Text) -> None
@@ -81,11 +104,15 @@ def send_response_message(bot_id, message, response_message_content):
 
 def succeed_with_message(event, success_message):
     # type: (Dict[str, Any], Text) -> None
+    if success_message is None:
+        return
     success_message = "Success! " + success_message
     send_response_message(event['user_profile_id'], event['message'], success_message)
 
 def fail_with_message(event, failure_message):
     # type: (Dict[str, Any], Text) -> None
+    if failure_message is None:
+        return
     failure_message = "Failure! " + failure_message
     send_response_message(event['user_profile_id'], event['message'], failure_message)
 
@@ -119,21 +146,21 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
     request_kwargs['timeout'] = timeout
 
     try:
-        response = requests.request(http_method, final_url, data=json.dumps(request_data), **request_kwargs)
+        response = requests.request(http_method, final_url, data=request_data, **request_kwargs)
         if str(response.status_code).startswith('2'):
-            response_data = service_handler.process_success(response, event)
-            succeed_with_message(event, response_data["response_message"])
+            response_message = service_handler.process_success(response, event)
+            succeed_with_message(event, response_message)
 
         # On 50x errors, try retry
         elif str(response.status_code).startswith('5'):
-            request_retry(event, "unable to connect with the third party.")
+            request_retry(event, "Internal Server error at third party.")
         else:
-            response_data = service_handler.process_failure(response, event)
-            fail_with_message(event, response_data["response_message"])
+            response_message = service_handler.process_failure(response, event)
+            fail_with_message(event, response_message)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
-        request_retry(event, 'unable to connect with the third party.')
+        request_retry(event, 'Unable to connect with the third party.')
 
     except requests.exceptions.RequestException as e:
         response_message = "An exception occured for message `%s`! See the logs for more information." % (event["command"],)
