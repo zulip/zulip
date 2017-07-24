@@ -15,9 +15,6 @@ add_dependencies({
 
 var stream_data = require('js/stream_data.js');
 
-stream_data = {
-    canonicalized_name: stream_data.canonicalized_name,
-};
 set_global('stream_data', stream_data);
 set_global('blueslip', {});
 
@@ -91,19 +88,19 @@ var zero_counts = {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunch',
+        subject: 'luNch',
     };
 
     var other_message = {
         id: 16,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunch',
+        subject: 'lunCH',
     };
 
     unread.process_loaded_messages([message, other_message]);
 
-    count = unread.num_unread_for_subject(stream_id, 'lunch');
+    count = unread.num_unread_for_subject(stream_id, 'Lunch');
     assert.equal(count, 2);
     assert(unread.topic_has_any_unread(stream_id, 'lunch'));
     assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
@@ -114,7 +111,7 @@ var zero_counts = {
 
     unread.update_unread_topics(message, event);
 
-    count = unread.num_unread_for_subject(stream_id, 'lunch');
+    count = unread.num_unread_for_subject(stream_id, 'lUnch');
     assert.equal(count, 1);
 
     count = unread.num_unread_for_subject(stream_id, 'dinner');
