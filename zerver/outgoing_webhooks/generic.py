@@ -8,10 +8,6 @@ from zerver.lib.outgoing_webhook import OutgoingWebhookServiceInterface
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
-    def __init__(self, base_url, token, user_profile, service_name):
-        # type: (Text, Text, UserProfile, Text) -> None
-        super(GenericOutgoingWebhookService, self).__init__(base_url, token, user_profile, service_name)
-
     def process_event(self, event):
         # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
         rest_operation = {'method': 'POST',
