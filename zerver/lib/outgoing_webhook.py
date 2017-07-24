@@ -165,15 +165,11 @@ def send_response_message(bot_id, message, response_message_content):
 
 def succeed_with_message(event, success_message):
     # type: (Dict[str, Any], Text) -> None
-    if success_message is None:
-        return
     success_message = "Success! " + success_message
     send_response_message(event['user_profile_id'], event['message'], success_message)
 
 def fail_with_message(event, failure_message):
     # type: (Dict[str, Any], Text) -> None
-    if failure_message is None:
-        return
     failure_message = "Failure! " + failure_message
     send_response_message(event['user_profile_id'], event['message'], failure_message)
 
@@ -210,14 +206,16 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
         response = requests.request(http_method, final_url, data=request_data, **request_kwargs)
         if str(response.status_code).startswith('2'):
             response_message = service_handler.process_success(response, event)
-            succeed_with_message(event, response_message)
+            if response_message is not None:
+                succeed_with_message(event, response_message)
 
         # On 50x errors, try retry
         elif str(response.status_code).startswith('5'):
             request_retry(event, "Internal Server error at third party.")
         else:
             response_message = service_handler.process_failure(response, event)
-            fail_with_message(event, response_message)
+            if response_message is not None:
+                fail_with_message(event, response_message)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
