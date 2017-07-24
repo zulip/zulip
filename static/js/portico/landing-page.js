@@ -125,8 +125,31 @@ function hide_catalog_show_integration() {
     var $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
     $lozenge_icon.removeClass('legacy');
 
+    var categories = $('.integration-' + state.integration).data('categories')
+        .slice(1, -1)
+        .split(',')
+        .map(function (category) {
+            return category.trim().slice(1, -1);
+        });
+
     function show_integration(doc) {
         $('#integration-instructions-group .name').text(INTEGRATIONS[state.integration]);
+        $('#integration-instructions-group .categories .integration-category').remove();
+        categories.forEach(function (category) {
+            var link;
+            Object.keys(CATEGORIES).forEach(function (name) {
+                if (CATEGORIES[name] === category) {
+                    link = name;
+                }
+            });
+            var category_el = $('<a></a>')
+                .attr('href', '/integrations/' + link)
+                .append('<h3 class="integration-category"></h3>');
+            category_el.find('.integration-category')
+                .attr('data-category', link)
+                .text(category);
+            $('#integration-instructions-group .categories').append(category_el);
+        });
         $('#integration-instructions-group').css({
             opacity: 0,
             display: 'block',
@@ -250,6 +273,14 @@ function dispatch(action, payload) {
             update_path();
             break;
 
+        case 'SHOW_CATEGORY':
+            render(Object.assign({}, state, {
+                integration: null,
+                category: payload.category,
+            }));
+            update_path();
+            break;
+
         case 'UPDATE_QUERY':
             render(Object.assign({}, state, {
                 query: payload.query,
@@ -318,6 +349,12 @@ var integration_events = function () {
                 .removeClass('icon-vector-angle-right')
                 .addClass('icon-vector-angle-down');
         }
+    });
+
+    $('.integration-instruction-block').on('click', 'a .integration-category', function (e) {
+        var category = $(e.target).data('category');
+        dispatch('SHOW_CATEGORY', { category: category });
+        return false;
     });
 
     $('.integrations a .integration-category').on('click', function (e) {
