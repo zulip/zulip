@@ -2,10 +2,10 @@ var topic_data = (function () {
 
 var exports = {};
 
-var recent_topics = new Dict(); // stream_id -> array of objects
+var stream_dict = new Dict(); // stream_id -> array of objects
 
 exports.stream_has_topics = function (stream_id) {
-    return recent_topics.has(stream_id);
+    return stream_dict.has(stream_id);
 };
 
 exports.process_message = function (message, remove_message) {
@@ -14,7 +14,7 @@ exports.process_message = function (message, remove_message) {
     var stream_id = message.stream_id;
     var canon_topic = message.subject.toLowerCase();
 
-    var recents = recent_topics.get(stream_id) || [];
+    var recents = stream_dict.get(stream_id) || [];
 
     recents = _.filter(recents, function (item) {
         var is_duplicate = (
@@ -42,11 +42,11 @@ exports.process_message = function (message, remove_message) {
         return b.timestamp - a.timestamp;
     });
 
-    recent_topics.set(stream_id, recents);
+    stream_dict.set(stream_id, recents);
 };
 
 exports.get_recent_names = function (stream_id) {
-    var topic_objs = recent_topics.get(stream_id);
+    var topic_objs = stream_dict.get(stream_id);
 
     if (!topic_objs) {
         return [];
@@ -59,7 +59,7 @@ exports.get_recent_names = function (stream_id) {
 
 exports.populate_for_tests = function (stream_map) {
     // This is only used by tests.
-    recent_topics = Dict.from(stream_map);
+    stream_dict = Dict.from(stream_map);
 };
 
 return exports;
