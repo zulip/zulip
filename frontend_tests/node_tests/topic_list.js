@@ -24,11 +24,13 @@ global.compile_template('topic_list_item');
     var active_topic = "testing";
     var max_topics = 5;
 
-    var recent_topics = {};
-    recent_topics[stream_id] = [
-        {name: "coding"},
-    ];
-    topic_data.populate_for_tests(recent_topics);
+    topic_data.reset();
+    topic_data.add_message({
+        stream_id: stream_id,
+        topic_name: 'coding',
+        message_id: 400,
+    });
+
     global.unread.num_unread_for_subject = function () {
         return 1;
     };
