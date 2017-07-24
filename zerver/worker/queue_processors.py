@@ -38,11 +38,10 @@ from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
-from zerver.lib.outgoing_webhook import do_rest_call
+from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
 from zulip import Client
 from zerver.lib.bot_lib import EmbeddedBotHandler
-from zerver.outgoing_webhooks import get_outgoing_webhook_service_handler
 
 import os
 import sys

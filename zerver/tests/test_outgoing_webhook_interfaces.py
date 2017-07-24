@@ -7,10 +7,10 @@ import mock
 import json
 
 from requests.models import Response
+from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
+    SlackOutgoingWebhookService
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Service
-from zerver.outgoing_webhooks.generic import GenericOutgoingWebhookService
-from zerver.outgoing_webhooks.slack import SlackOutgoingWebhookService
 
 class Test_GenericOutgoingWebhookService(ZulipTestCase):
 
@@ -87,7 +87,7 @@ class Test_SlackOutgoingWebhookService(ZulipTestCase):
                                                    user_profile=None,
                                                    service_name='test-service')
 
-    @mock.patch('zerver.outgoing_webhooks.slack.get_service_profile', return_value=mock_service)
+    @mock.patch('zerver.lib.outgoing_webhook.get_service_profile', return_value=mock_service)
     def test_process_event(self, mock_get_service_profile):
         # type: (mock.Mock) -> None
         rest_operation, request_data = self.handler.process_event(self.event)
