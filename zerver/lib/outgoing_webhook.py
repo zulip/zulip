@@ -31,36 +31,27 @@ class OutgoingWebhookServiceInterface(object):
         self.user_profile = user_profile  # type: Text
         self.service_name = service_name  # type: Text
 
-    # Given an event that triggers an outgoing webhook operation, returns the REST
-    # operation that should be performed, together with the body of the request.
+    # Given an event that triggers an outgoing webhook operation, returns:
+    # - The REST operation that should be performed
+    # - The body of the request
     #
-    # The input format can vary depending on the type of webhook service.
-    # The return value should be a tuple (rest_operation, request_data), where:
-    # rest_operation is a dictionary containing atleast the following keys: method, relative_url_path and
-    # request_kwargs. It provides rest operation related info.
-    # request_data is the data to be sent to third party service.
-    # It should be in the appropriate form. Ex: certain services require the post data to be in
-    # json form. Hence request_data returned here should be a json.
+    # The REST operation is a dictionary with the following keys:
+    # - method
+    # - base_url
+    # - relative_url_path
+    # - request_kwargs
     def process_event(self, event):
         # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
         raise NotImplementedError()
 
-    # Given a successful response to the outgoing webhook REST operation, determines if response is required
-    # to be sent to user and in such case, returns the message that should be sent back.
-    #
-    # The response will be the response object obtained from REST operation.
-    # The event will be the same as the input to process_command.
-    # It returns the message to be sent back to user. If None is returned back, no response is sent back.
+    # Given a successful outgoing webhook REST operation, returns the message
+    # to sent back to the user (or None if no message should be sent).
     def process_success(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
         raise NotImplementedError()
 
-    # Given a failed outgoing webhook REST operation, determines if response is required
-    # to be sent to user and in such case, returns the message that should be sent back.
-    #
-    # The response will be the response object obtained from REST operation.
-    # The event will be the same as the input to process_command.
-    # It returns the message to be sent back to user. If None is returned back, no response is sent back.
+    # Given a failed outgoing webhook REST operation, returns the message to be
+    # sent back to the user (or None if no message should be sent).
     def process_failure(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
         raise NotImplementedError()
