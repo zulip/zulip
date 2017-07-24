@@ -34,11 +34,11 @@ def timeout_error(http_method, final_url, data, **request_kwargs):
 class MockServiceHandler(OutgoingWebhookServiceInterface):
     def process_success(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
-        return None
+        return "Success!"
 
     def process_failure(self, response, event):
         # type: (Response, Dict[Text, Any]) -> Optional[str]
-        return None
+        return "Failure!"
 
 service_handler = MockServiceHandler(None, None, None, None)
 
