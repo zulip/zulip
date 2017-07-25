@@ -1,11 +1,12 @@
 #!/bin/bash
 
-retcode=0
+set -e
 set -x
+
+retcode=0
 ./tools/run-mypy --py2 --linecoverage-report || retcode=1
 ./tools/run-mypy --py3 || retcode=1
 set +x
-
 if [ "$retcode" == "0" ]; then
     echo "The mypy static type checker for python detected no errors!"
 else
@@ -16,5 +17,10 @@ else
     echo "on mypy, how Zulip is using mypy, and how to debug common issues."
     exit "$retcode"
 fi
+set -x
 
 tools/check-py3
+
+# NB: Everything here should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.
