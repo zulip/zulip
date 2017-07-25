@@ -50,12 +50,8 @@ def json_invite_users(request, user_profile,
             return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams, body)
-
-    if ret_error is not None:
-        return json_error(data=error_data, msg=ret_error)
-    else:
-        return json_success()
+    do_invite_users(user_profile, invitee_emails, streams, body)
+    return json_success()
 
 def get_invitee_emails_set(invitee_emails_raw):
     # type: (str) -> Set[str]

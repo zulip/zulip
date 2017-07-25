@@ -37,6 +37,7 @@ class ErrorCode(AbstractEnum):
     UNAUTHORIZED_PRINCIPAL = ()
     BAD_EVENT_QUEUE_ID = ()
     CSRF_FAILED = ()
+    INVITATION_FAILED = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
