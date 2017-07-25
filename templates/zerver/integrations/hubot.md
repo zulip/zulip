@@ -39,5 +39,5 @@ result like this:
 [Source code for the hubot-zulip adapter is available on GitHub][1]
 [1]: https://github.com/zulip/hubot-zulip
 
-[Check out additional Zulip integrations available via Hubot][2]
-[2]: #hubot-integrations
+[Check out all integrations available via Hubot][2]
+[2]: https://github.com/hubot-scripts

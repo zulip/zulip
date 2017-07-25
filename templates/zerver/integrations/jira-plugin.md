@@ -1,6 +1,6 @@
 *If you are running JIRA version 5.2 or greater, or using the hosted
 JIRA provided by Atlassian, we recommend using the
-[web-hook method](#jira) above instead. This plugin supports older
+[web-hook method](./jira) above instead. This plugin supports older
 versions of JIRA.*
 
 {!create-stream.md!}

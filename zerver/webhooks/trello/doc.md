@@ -1,6 +1,6 @@
 This webhook integration for Trello is the recommended way to
 integrate with Trello, and should support all the features of
-the [legacy Trello cron-based integration](#trello-plugin).
+the [legacy Trello cron-based integration](./trello-plugin).
 
 {!create-stream.md!}
 
