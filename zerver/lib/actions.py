@@ -81,7 +81,7 @@ from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
 from zerver.lib.notifications import clear_scheduled_emails
 from zerver.lib.narrow import check_supported_events_narrow_filter
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
@@ -3153,14 +3153,21 @@ def validate_email(user_profile, email):
 
     return None, None
 
+class InvitationError(JsonableError):
+    code = ErrorCode.INVITATION_FAILED
+    data_fields = ['errors', 'sent_invitations']
+
+    def __init__(self, msg, errors, sent_invitations):
+        # type: (Text, List[Tuple[Text, str]], bool) -> None
+        self._msg = msg  # type: Text
+        self.errors = errors  # type: List[Tuple[Text, str]]
+        self.sent_invitations = sent_invitations  # type: bool
+
 def do_invite_users(user_profile, invitee_emails, streams, body=None):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> None
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
-
-    ret_error = None  # type: Optional[str]
-    ret_error_data = {}  # type: Dict[str, Union[List[Tuple[Text, str]], bool]]
 
     for email in invitee_emails:
         if email == '':
@@ -3176,15 +3183,14 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
             skipped.append((email, email_skipped))
 
     if errors:
-        ret_error = _("Some emails did not validate, so we didn't send any invitations.")
-        ret_error_data = {'errors': errors + skipped, 'sent_invitations': False}
-        return ret_error, ret_error_data
+        raise InvitationError(
+            _("Some emails did not validate, so we didn't send any invitations."),
+            errors + skipped, sent_invitations=False)
 
     if skipped and len(skipped) == len(invitee_emails):
         # All e-mails were skipped, so we didn't actually invite anyone.
-        ret_error = _("We weren't able to invite anyone.")
-        ret_error_data = {'errors': skipped, 'sent_invitations': False}
-        return ret_error, ret_error_data
+        raise InvitationError(_("We weren't able to invite anyone."),
+                              skipped, sent_invitations=False)
 
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
@@ -3203,12 +3209,10 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
                            lambda event: do_send_confirmation_email(prereg_user, user_profile, body))
 
     if skipped:
-        ret_error = _("Some of those addresses are already using Zulip, "
-                      "so we didn't send them an invitation. We did send "
-                      "invitations to everyone else!")
-        ret_error_data = {'errors': skipped, 'sent_invitations': True}
-
-    return ret_error, ret_error_data
+        raise InvitationError(_("Some of those addresses are already using Zulip, "
+                                "so we didn't send them an invitation. We did send "
+                                "invitations to everyone else!"),
+                              skipped, sent_invitations=True)
 
 def notify_realm_emoji(realm):
     # type: (Realm) -> None
