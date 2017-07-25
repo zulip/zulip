@@ -30,7 +30,7 @@ function call(args, idempotent) {
 
         if (xhr.status === 403) {
             try {
-                if (JSON.parse(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
+                if (JSON.parse(xhr.responseText).code === 'CSRF_FAILED') {
                     reload.initiate({immediate: true,
                                      save_pointer: true,
                                      save_narrow: true,

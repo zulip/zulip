@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 from django.utils.deprecation import MiddlewareMixin
 
 from zerver.lib.response import json_error, json_response_from_error
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError, ErrorCode
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from zerver.lib.utils import statsd, get_subdomain
@@ -304,10 +304,24 @@ class TagRequests(MiddlewareMixin):
         else:
             request.error_format = "HTML"
 
+class CsrfFailureError(JsonableError):
+    http_status_code = 403
+    code = ErrorCode.CSRF_FAILED
+    data_fields = ['reason']
+
+    def __init__(self, reason):
+        # type: (Text) -> None
+        self.reason = reason  # type: Text
+
+    @staticmethod
+    def msg_format():
+        # type: () -> None
+        return _("CSRF Error: {reason}")
+
 def csrf_failure(request, reason=""):
     # type: (HttpRequest, Optional[Text]) -> HttpResponse
     if request.error_format == "JSON":
-        return json_error(_("CSRF Error: %s") % (reason,), status=403)
+        return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
 
