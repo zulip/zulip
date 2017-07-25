@@ -192,7 +192,7 @@ function test_with_mock_ajax(test_params) {
     test_with_mock_ajax({
         xhr: {
             status: 403,
-            responseText: '{"msg": "CSRF Error: whatever"}',
+            responseText: '{"msg": "CSRF Fehler: etwas", "code": "CSRF_FAILED"}',
         },
 
         run_code: function () {
