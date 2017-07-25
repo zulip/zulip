@@ -299,32 +299,6 @@ html {
     border: 2px solid hsl(0, 0%, 53%);
 }
 
-.new-style .input-box input[required] ~ .required:after {
-    /* content: "*"; */
-    position: absolute;
-    top: 25px;
-    right: 5px;
-    transform: translateY(8px);
-
-    color: hsl(0, 56%, 63%);
-    font-size: 2em;
-    font-weight: 300;
-    transition: all 0.3s ease;
-}
-
-.new-style .input-box.no-validation input[required] ~ .required:after {
-    visibility: hidden;
-}
-
-.new-style .input-box.horizontal button {
-    margin-top: 25px;
-}
-
-.new-style .input-box input[required]:valid ~ .required:after {
-    transform: translateY(0px);
-    opacity: 0;
-}
-
 .new-style .input-box label,
 .new-style .input-box input[type=text]:focus + label,
 .new-style .input-box input[type=email]:focus + label,
