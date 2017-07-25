@@ -111,7 +111,7 @@ exports.build_stream_list = function () {
         elems.push(sidebar_row.get_li());
     }
 
-    parent.empty();
+    parent.children().detach();
 
     _.each(stream_groups.pinned_streams, add_sidebar_li);
 
