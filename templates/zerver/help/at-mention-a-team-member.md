@@ -17,6 +17,10 @@ email address or part of the username of the user you want to @-mention.
 When you begin typing an email address or username, autocomplete suggestions
 will appear.
 
+    !!! tip ""
+        You can type `@**all**` to mention everyone subscribed to the stream you
+        send the message to.
+
     ![Mention](/static/images/help/mention-screenshot.png)
 
     Once you select an autocomplete suggestion, the name or email address of
