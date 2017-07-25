@@ -455,15 +455,16 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # type: (Text, List[Dict[Text, Text]], List[Dict[Text, Any]], List[Dict[Text, Any]]) -> Element
         """
         Use data from the twitter API to turn links, mentions and media into A
-        tags.
+        tags. Also convert unicode emojis to images.
 
-        This works by using the urls, user_mentions and media data from the
-        twitter API.
+        This works by using the urls, user_mentions and media data from
+        the twitter API and searching for unicode emojis in the text using
+        `unicode_emoji_regex`.
 
-        The first step is finding the locations of the URLs, mentions and media
-        in the text. For each match we build a dictionary with the start
-        location, end location, the URL to link to, and the text to show in the
-        link.
+        The first step is finding the locations of the URLs, mentions, media and
+        emoji in the text. For each match we build a dictionary with type, the start
+        location, end location, the URL to link to, and the text(codepoint and title
+        in case of emojis) to be used in the link(image in case of emojis).
 
         Next we sort the matches by start location. And for each we add the
         text from the end of the last link to the start of the current link to
@@ -473,13 +474,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         Finally we add any remaining text to the last node.
         """
 
-        to_linkify = []  # type: List[Dict[Text, Any]]
+        to_process = []  # type: List[Dict[Text, Any]]
         # Build dicts for URLs
         for url_data in urls:
             short_url = url_data["url"]
             full_url = url_data["expanded_url"]
             for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
-                to_linkify.append({
+                to_process.append({
+                    'type': 'url',
                     'start': match.start(),
                     'end': match.end(),
                     'url': short_url,
@@ -490,7 +492,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             screen_name = user_mention['screen_name']
             mention_string = u'@' + screen_name
             for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE):
-                to_linkify.append({
+                to_process.append({
+                    'type': 'mention',
                     'start': match.start(),
                     'end': match.end(),
                     'url': u'https://twitter.com/' + force_text(urllib.parse.quote(force_str(screen_name))),
@@ -501,14 +504,28 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             short_url = media_item['url']
             expanded_url = media_item['expanded_url']
             for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
-                to_linkify.append({
+                to_process.append({
+                    'type': 'media',
                     'start': match.start(),
                     'end': match.end(),
                     'url': short_url,
                     'text': expanded_url,
                 })
+        # Build dicts for emojis
+        for match in re.finditer(unicode_emoji_regex, text, re.IGNORECASE):
+            orig_syntax = match.group('syntax')
+            codepoint = unicode_emoji_to_codepoint(orig_syntax)
+            if codepoint in codepoint_to_name:
+                display_string = ':' + codepoint_to_name[codepoint] + ':'
+                to_process.append({
+                    'type': 'emoji',
+                    'start': match.start(),
+                    'end': match.end(),
+                    'codepoint': codepoint,
+                    'title': display_string,
+                })
 
-        to_linkify.sort(key=lambda x: x['start'])
+        to_process.sort(key=lambda x: x['start'])
         p = current_node = markdown.util.etree.Element('p')
 
         def set_text(text):
@@ -522,16 +539,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 current_node.tail = text
 
         current_index = 0
-        for link in to_linkify:
+        for item in to_process:
             # The text we want to link starts in already linked text skip it
-            if link['start'] < current_index:
+            if item['start'] < current_index:
                 continue
             # Add text from the end of last link to the start of the current
             # link
-            set_text(text[current_index:link['start']])
-            current_index = link['end']
-            current_node = a = url_to_a(link['url'], link['text'])
-            p.append(a)
+            set_text(text[current_index:item['start']])
+            current_index = item['end']
+            if item['type'] != 'emoji':
+                current_node = elem = url_to_a(item['url'], item['text'])
+            else:
+                current_node = elem = make_emoji(item['codepoint'], item['title'])
+            p.append(elem)
 
         # Add any unused text
         set_text(text[current_index:])

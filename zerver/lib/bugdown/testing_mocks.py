@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
@@ -180,6 +181,44 @@ MEDIA_TWEET = """{
   ]
 }"""
 
+EMOJI_TWEET = """{
+  "created_at": "Sat Sep 10 22:23:38 +0000 2011",
+  "id_str": "287977969287315460",
+  "in_reply_to_user_id_str": "783214",
+  "text": "Zulip is 💯% open-source!",
+  "lang": "en",
+  "id": 287977969287315460,
+  "in_reply_to_user_id": 783214,
+  "favorite_count": 3,
+  "user": {
+    "profile_sidebar_fill_color": "efefef",
+    "name": "Eoin McMillan ",
+    "profile_image_url": "http://a1.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png",
+    "created_at": "Mon May 16 20:07:59 +0000 2011",
+    "location": "Twitter",
+    "profile_link_color": "009999",
+    "id_str": "299862462",
+    "favourites_count": 0,
+    "url": "http://www.eoin.me",
+    "id": 299862462,
+    "utc_offset": null,
+    "profile_image_url_https": "https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png",
+    "listed_count": 0,
+    "followers_count": 9,
+    "lang": "en",
+    "profile_text_color": "333333",
+    "profile_background_image_url_https": "https://si0.twimg.com/images/themes/theme14/bg.gif",
+    "description": "Eoin's photography account. See @mceoin for tweets.",
+    "geo_enabled": false,
+    "profile_background_color": "131516",
+    "time_zone": null,
+    "statuses_count": 255,
+    "friends_count": 0,
+    "profile_background_image_url": "http://a1.twimg.com/images/themes/theme14/bg.gif",
+    "screen_name": "imeoin",
+    "statuses_count": 270
+  }
+}"""
 
 def twitter(tweet_id):
     # type: (Text) -> Optional[Dict[Text, Any]]
@@ -189,5 +228,7 @@ def twitter(tweet_id):
         return ujson.loads(MENTION_IN_LINK_TWEET)
     elif tweet_id == "287977969287315459":
         return ujson.loads(MEDIA_TWEET)
+    elif tweet_id == "287977969287315460":
+        return ujson.loads(EMOJI_TWEET)
     else:
         return None
