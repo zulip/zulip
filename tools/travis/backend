@@ -13,14 +13,15 @@ set -x
 ./tools/test-tools
 ./tools/test-backend --coverage
 ./tools/test-migrations
-# test-run-dev temporarily disabled due to weird Travis CI issues.
-#./tools/test-run-dev
 ./tools/optimize-svg
 ./tools/test-documentation
 ./tools/test-help-documentation.py
 ./tools/test-api
+
+# Some test suites disabled in CI for being flaky
+#./tools/test-run-dev
+#./tools/test-queue-worker-reload
+
 python manage.py makemessages --locale en
 python -W ignore tools/check-capitalization --no-generate
 python -W ignore tools/check-frontend-i18n --no-generate
-# Some test suites disabled in CI for being flaky
-#./tools/test-queue-worker-reload
