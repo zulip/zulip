@@ -1109,9 +1109,8 @@ def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message
     else:
         return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
 
-def recipient_for_emails(emails, not_forged_mirror_message,
-                         forwarder_user_profile, sender):
-    # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
+def validate_recipient_user_profiles(user_profiles, sender):
+    # type: (List[UserProfile], UserProfile) -> Set[int]
     recipient_profile_ids = set()
 
     # We exempt cross-realm bots from the check that all the recipients
@@ -1121,20 +1120,32 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     if sender.email not in exempt_emails:
         realms.add(sender.realm_id)
 
+    for user_profile in user_profiles:
+        if (not user_profile.is_active and not user_profile.is_mirror_dummy) or \
+                user_profile.realm.deactivated:
+            raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
+        recipient_profile_ids.add(user_profile.id)
+        if user_profile.email not in exempt_emails:
+            realms.add(user_profile.realm_id)
+
+    if len(realms) > 1:
+        raise ValidationError(_("You can't send private messages outside of your organization."))
+
+    return recipient_profile_ids
+
+def recipient_for_emails(emails, not_forged_mirror_message,
+                         forwarder_user_profile, sender):
+    # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
+
+    user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
             user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid email '%s'") % (email,))
-        if (not user_profile.is_active and not user_profile.is_mirror_dummy) or \
-                user_profile.realm.deactivated:
-            raise ValidationError(_("'%s' is no longer using Zulip.") % (email,))
-        recipient_profile_ids.add(user_profile.id)
-        if email not in exempt_emails:
-            realms.add(user_profile.realm_id)
+        user_profiles.append(user_profile)
 
-    if len(realms) > 1:
-        raise ValidationError(_("You can't send private messages outside of your organization."))
+    recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
 
     return get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message,
                                        forwarder_user_profile, sender)
