@@ -32,7 +32,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <input type='hidden' name='timezone' id='timezone'/>
                     <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
-                    <div class="required"></div>
                 </div>
 
                 <div class="input-box">
@@ -84,7 +83,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             placeholder="Acme or Aκμή"
                             value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
                             name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
-                        <div class="required"></div>
                     </div>
                     <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
                     {% if form.realm_name.errors %}
@@ -115,7 +113,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             {% if realms_have_subdomains %}
                             <p class="realm_subdomain_label">.{{ external_host }}</p>
                             {% endif %}
-                            <div class="required"></div>
                             <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                         </div>
                         {% if form.realm_subdomain.errors %}
