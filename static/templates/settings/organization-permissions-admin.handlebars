@@ -1,6 +1,6 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
-        <h3 class="light">{{t "Organization permissions" }}</h3>
+        <h3 class="light">{{t "Joining the organization" }}</h3>
 
         <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
         <div class="alert" id="admin-realm-invite-required-status"></div>
@@ -38,7 +38,7 @@
                 </label>
                 <label for="id_realm_invite_required" id="realm_invite_required_label" class="inline-block"
                     title="{{t 'If checked, users must be invited in order to join your organization.' }}">
-                    {{t "E-mail invitation required" }}
+                    {{t "Users cannot join without an invitation" }}
                 </label>
             </div>
 
@@ -51,7 +51,130 @@
                 </label>
                 <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block"
                     title="{{t 'If checked, only administrators may invite new users.' }}">
-                    {{t "Only admins may invite" }}
+                    {{t "Only admins can invite new users" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "User identity" }}</h3>
+        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_name_changes_disabled" name="realm_name_changes_disabled"
+                           {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_name_changes_disabled" id="id_realm_name_changes_disabled_label" class="inline-block"
+                    title="{{t 'If checked, users will be unable to change their name.' }}">
+                    {{t "Prevent users from changing their name" }}
+                </label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_email_changes_disabled" name="realm_email_changes_disabled"
+                           {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_email_changes_disabled" id="id_realm_email_changes_disabled_label" class="inline-block"
+                    title="{{t 'If checked, users will be unable to change their email address.' }}">
+                    {{t "Prevent users from changing their email address" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Streams & custom emoji" }}</h3>
+        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only"
+                           {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" class="inline-block"
+                    title="{{t 'If checked, only administrators may create new streams.' }}">
+                    {{t "Prevent users from creating streams" }}
+                </label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_add_emoji_by_admins_only" name="realm_add_emoji_by_admins_only"
+                           {{#if realm_add_emoji_by_admins_only}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block"
+                    title="{{t 'If checked, only administrators may add new emoji.'}}">
+                    {{t "Prevent users from adding custom emoji" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Message editing" }}</h3>
+        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
+                           {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_allow_message_editing" class="inline-block"
+                    title="{{t 'If checked, users can edit the content and topics of their old messages.' }}">
+                    {{t "Users can edit their messages" }}
+                </label>
+            </div>
+
+            <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
+                <label for="id_realm_message_content_edit_limit_minutes"
+                    id="id_realm_message_content_edit_limit_minutes_label"
+                    title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}">
+                    {{t 'Message edit limit in minutes (0 for no limit)' }}
+                </label>
+                <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                       name="realm_message_content_edit_limit_minutes"
+                       class="admin-realm-message-content-edit-limit-minutes"
+                       value="{{ realm_message_content_edit_limit_minutes }}"
+                  {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_allow_edit_history" name="realm_allow_edit_history"
+                           {{#if realm_allow_edit_history}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block"
+                    title="{{t 'If checked, users will be able view message edit history.'}}">
+                    {{t "Enable message edit history" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Message feed" }}</h3>
+        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+            {{#if false}}
+            <div class="input-group">
+                <label for="realm_message_retention_days"
+                    id="id_realm_message_retention_days_label"
+                    title="{{t 'Messages older than the configured number of days will be automatically deleted' }}">
+                    {{t 'Messages retention period in days (blank means messages are retained forever)' }}
+                </label>
+                <input type="text" id="id_realm_message_retention_days"
+                  name="realm_message_retention_days"
+                  class="admin-realm-message-retention-days"
+                  value="{{ realm_message_retention_days }}"/>
+            </div>
+            {{/if}}
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_mandatory_topics" name="realm_mandatory_topics"
+                           {{#if realm_mandatory_topics}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_mandatory_topics" id="id_realm_mandatory_topics_label" class="inline-block"
+                    title="{{t 'If checked, topics are required.'}}">
+                    {{t "Require topics in stream messages" }}
                 </label>
             </div>
 
@@ -82,117 +205,6 @@
                 </label>
             </div>
             {{/if}}
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only"
-                           {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" class="inline-block"
-                    title="{{t 'If checked, only administrators may create new streams.' }}">
-                    {{t "Only admins may create streams" }}
-                </label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_name_changes_disabled" name="realm_name_changes_disabled"
-                           {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_name_changes_disabled" id="id_realm_name_changes_disabled_label" class="inline-block"
-                    title="{{t 'If checked, users will be unable to change their name.' }}">
-                    {{t "Prevent users from changing their name" }}
-                </label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_email_changes_disabled" name="realm_email_changes_disabled"
-                           {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_email_changes_disabled" id="id_realm_email_changes_disabled_label" class="inline-block"
-                    title="{{t 'If checked, users will be unable to change their email address.' }}">
-                    {{t "Prevent users from changing their email address" }}
-                </label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_add_emoji_by_admins_only" name="realm_add_emoji_by_admins_only"
-                           {{#if realm_add_emoji_by_admins_only}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block"
-                    title="{{t 'If checked, only administrators may add new emoji.'}}">
-                    {{t "Only admins may add emoji" }}
-                </label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
-                           {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_allow_message_editing" class="inline-block"
-                    title="{{t 'If checked, users can edit the content and topics of their old messages.' }}">
-                    {{t "Users can edit old messages" }}
-                </label>
-            </div>
-
-            <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
-                <label for="id_realm_message_content_edit_limit_minutes"
-                    id="id_realm_message_content_edit_limit_minutes_label"
-                    title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}">
-                    {{t 'Message edit limit in minutes (0 for no limit)' }}
-                </label>
-                <input type="text" id="id_realm_message_content_edit_limit_minutes"
-                       name="realm_message_content_edit_limit_minutes"
-                       class="admin-realm-message-content-edit-limit-minutes"
-                       value="{{ realm_message_content_edit_limit_minutes }}"
-                  {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_allow_edit_history" name="realm_allow_edit_history"
-                           {{#if realm_allow_edit_history}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block"
-                    title="{{t 'If checked, users will be able view message edit history.'}}">
-                    {{t "Users can view message edit history" }}
-                </label>
-            </div>
-
-            {{#if false}}
-            <div class="input-group">
-                <label for="realm_message_retention_days"
-                    id="id_realm_message_retention_days_label"
-                    title="{{t 'Messages older than the configured number of days will be automatically deleted' }}">
-                    {{t 'Messages retention period in days (blank means messages are retained forever)' }}
-                </label>
-                <input type="text" id="id_realm_message_retention_days"
-                  name="realm_message_retention_days"
-                  class="admin-realm-message-retention-days"
-                  value="{{ realm_message_retention_days }}"/>
-            </div>
-            {{/if}}
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_mandatory_topics" name="realm_mandatory_topics"
-                           {{#if realm_mandatory_topics}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_mandatory_topics" id="id_realm_mandatory_topics_label" class="inline-block"
-                    title="{{t 'If checked, topics are required.'}}">
-                    {{t "Require topics in messages to streams" }}
-                </label>
-            </div>
         </div>
 
         {{#if is_admin }}

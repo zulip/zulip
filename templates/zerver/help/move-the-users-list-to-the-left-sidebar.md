@@ -13,5 +13,5 @@ steps.
 {!settings.md!}
 
 2. Select the option labeled
-    **Display user list on left side in narrow windows**, then reload the page
+    **User list on left sidebar in narrow windows**, then reload the page
     in order for the change to take effect.

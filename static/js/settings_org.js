@@ -25,7 +25,7 @@ exports.populate_realm_domains = function (realm_domains) {
         domains = i18n.t("None");
         $("#id_realm_restricted_to_domain").prop("disabled", true);
     }
-    $("#realm_restricted_to_domains_label").text(i18n.t("New users restricted to the following domains: __domains__", {domains: domains}));
+    $("#realm_restricted_to_domains_label").text(i18n.t("Restrict new users to the following email domains: __domains__", {domains: domains}));
 
     var realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();

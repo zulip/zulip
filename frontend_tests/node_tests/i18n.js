@@ -17,7 +17,7 @@ i18n.init({
         fr: {
             translation: {
                 "Quote and reply": "French translation",
-                "You'll receive notifications when a message arrives and Zulip isn't in focus or the message is offscreen.": "Some French text with Zulip",
+                "Notifications are triggered when a message arrives and Zulip isn't in focus or the message is offscreen.": "Some French text with Zulip",
             },
         },
     },
