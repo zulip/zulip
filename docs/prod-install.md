@@ -1,33 +1,34 @@
 # Production Installation
 
-Make sure you want to install a Zulip production server; if you'd
+Make sure you want to install a Zulip production server. If you'd
 instead like to test or develop a new feature, we recommend the
 [Zulip server development environment](dev-overview.html#requirements) instead.
 
 You will need an Ubuntu system that satisfies
 [the installation requirements](prod-requirements.html).  In short,
 you need:
-* A Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit server
+* Either a dedicated machine, or a fresh VM on an existing machine.
+* Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial, 64-bit.
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
 
 ## Step 0: Subscribe
 
-Please subscribe to low-traffic [the Zulip announcements Google
+Please subscribe to the low-traffic [Zulip announcements Google
 Group](https://groups.google.com/forum/#!forum/zulip-announce) to get
 announcements about new releases, security issues, etc.
 
 ## Step 1: Install SSL Certificates
 
-Zulip runs over https only and requires ssl certificates in order to
+Zulip runs over `https` only, and requires SSL certificates in order to
 work. It looks for the certificates in `/etc/ssl/private/zulip.key`
 and `/etc/ssl/certs/zulip.combined-chain.crt`.  Note that Zulip uses
 `nginx` as its webserver and thus [expects a chained certificate
-bundle](http://nginx.org/en/docs/http/configuring_https_servers.html)
+bundle](http://nginx.org/en/docs/http/configuring_https_servers.html).
 
 If you need an SSL certificate, see [our SSL certificate
 documentation](ssl-certificates.html).  If you already have an SSL
-certificate, just install (or symlink) them into place at the above
+certificate, just install (or symlink) it into place at the above
 paths, and move on to the next step.
 
 ## Step 2: Download and install latest release
@@ -50,7 +51,7 @@ Then, run the Zulip install script:
 ```
 
 This may take a while to run, since it will install a large number of
-dependencies. It also creates `zulip` user, which will be used to run
+dependencies. It also creates a `zulip` user, which will be used to run
 the various Zulip servers.
 
 The Zulip install script is designed to be idempotent, so if it fails,
@@ -68,7 +69,7 @@ heading `### MANDATORY SETTINGS`.
 These settings include:
 
 - `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
-  Zulip installation (aka what users will type in their web
+  Zulip installation (i.e., what users will type in their web
   browser). This should of course match the DNS name you configured to
   point to your server and for which you configured SSL certificates.
   If you plan to use multiple domains, add the others to
@@ -83,14 +84,14 @@ These settings include:
   when needed (don't forget to set `email_password` in the
   `zulip-secrets.conf` file!).  We highly recommend reading our
   [production email docs](prod-email.html) and following the test
-  procedure discussed there to make sure you've setup outgoing email
+  procedure discussed there to make sure you've set up outgoing email
   correctly, since outgoing email is the most common configuration
-  problem. You may also want to update `NOREPLY_EMAIL_ADDRESS`
+  problem. You may also want to update `NOREPLY_EMAIL_ADDRESS`.
 
 - If desired, you can also configure additional
   [authentication backends](prod-authentication-methods.html) while
   you're editing /etc/zulip/settings.py.  Note, however, that the
-  default (email) backend must be enabled when you complete step 5
+  default (email) backend must be enabled when you complete Step 5
   (creating an organization) below.
 
 ## Step 4: Initialize Zulip database
@@ -126,14 +127,14 @@ command](prod-maintain-secure-upgrade.html#management-commands) :
   /home/zulip/deployments/current/manage.py generate_realm_creation_link
   ```
 
-  This will print out a secure 1-time use link that allows creation of a
+  This will print out a secure one-time-use link that allows creation of a
   new Zulip organization on your server.  For most servers, you will
   only ever do this once, but you can run `manage.py
   generate_realm_creation_link` again if you want to host another
   organization on your Zulip server.
 
-* Open the link generated with your web browser. You'll see the create
-organization page ([screenshot here](_static/zulip-create-realm.png)).
+* Open the generated link with your web browser. You'll see the "Create
+organization" page ([screenshot here](_static/zulip-create-realm.png)).
 Enter your email address and click *Create organization*.
 
 * Check your email to find the confirmation email and click the
@@ -161,8 +162,8 @@ Corporate Organization:
 Next, you'll likely want to do one of the following:
 
 * [Read our advice for new organization administrators][realm-admin-docs]
-* [Customize your Zulip organization](prod-customize.html).
-* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
+* [Customize your Zulip organization](prod-customize.html)
+* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html)
 
 ## Troubleshooting
 
@@ -171,8 +172,8 @@ If you get an error after `scripts/setup/install` completes, check
 [troubleshooting section](prod-troubleshooting.html) for advice on how
 to debug.  If that doesn't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
-in the [Zulip developerment community server](chat-zulip-org.html) for
+in the [Zulip development community server](chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
-traceback and we'll try to help you out!
+traceback, and we'll try to help you out!
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
