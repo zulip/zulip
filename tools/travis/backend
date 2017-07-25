@@ -1,8 +1,4 @@
 #!/bin/bash
-# This script is very similar to tools/test-all (what one runs
-# locally).  Possibly they should be merged, though it's worth noting,
-# they are intentionally different (basically some slow stuff is not
-# worth running in `test-all`).
 
 source tools/travis/activate-venv
 
@@ -10,6 +6,10 @@ set -e
 set -x
 
 ./tools/lint --pep8 # Include the slow and thus non-default pep8 linter check
+python manage.py makemessages --locale en
+python -W ignore tools/check-capitalization --no-generate
+python -W ignore tools/check-frontend-i18n --no-generate
+
 ./tools/test-tools
 ./tools/test-backend --coverage
 ./tools/test-migrations
@@ -17,11 +17,9 @@ set -x
 ./tools/test-documentation
 ./tools/test-help-documentation.py
 ./tools/test-api
+#./tools/test-run-dev  # Disabled in CI because flaky.
+#./tools/test-queue-worker-reload  # Disabled in CI because flaky.
 
-# Some test suites disabled in CI for being flaky
-#./tools/test-run-dev
-#./tools/test-queue-worker-reload
-
-python manage.py makemessages --locale en
-python -W ignore tools/check-capitalization --no-generate
-python -W ignore tools/check-frontend-i18n --no-generate
+# NB: Everything here should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.
