@@ -1211,8 +1211,8 @@ def check_send_message(sender, client, message_type_name, message_to,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
-    message = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content, realm, forged, forged_timestamp,
+    message = check_message(sender, client, message_type_name, subject_name,
+                            message_content, message_to, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
     return do_send_messages([message])[0]
 
@@ -1276,17 +1276,19 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
-def check_message(sender, client, message_type_name, message_to,
-                  subject_name, message_content_raw, realm=None, forged=False,
+def check_message(sender, client, message_type_name, subject_name,
+                  message_content_raw, message_to=None, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
+    # type: (UserProfile, Client, Text, Optional[Text], Text, Optional[Sequence[Text]], Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
         message_to = [sender.default_sending_stream.name]
-    if len(message_to) == 0:
+
+    if message_to is not None and len(message_to) == 0:
         raise JsonableError(_("Message must have recipients"))
+
     message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
@@ -1396,7 +1398,7 @@ def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients
 
     try:
         return check_message(sender, get_client("Internal"), recipient_type_name,
-                             parsed_recipients, subject, content, realm=realm)
+                             subject, content, message_to=parsed_recipients, realm=realm)
     except JsonableError as e:
         logging.error(u"Error queueing internal message by %s: %s" % (sender.email, e))
 
