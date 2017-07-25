@@ -8,7 +8,7 @@ import os
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView, APIView, HelpView
+from zerver.views.integrations import IntegrationView, APIView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.webhooks import github_dispatcher
 
@@ -543,7 +543,9 @@ urls += [
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
-urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]
+urls += [url(r'^help/(?P<article>.*)$',
+             MarkdownDirectoryView.as_view(template_name='zerver/help/main.html',
+                                           path_template='/zerver/help/%s.md'))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls

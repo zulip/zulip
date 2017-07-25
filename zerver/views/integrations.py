@@ -50,9 +50,8 @@ class APIView(ApiURLView):
     template_name = 'zerver/api.html'
 
 
-class HelpView(ApiURLView):
-    template_name = 'zerver/help/main.html'
-    path_template = 'zerver/help/%s.md'
+class MarkdownDirectoryView(ApiURLView):
+    path_template = ""
 
     def get_path(self, article):
         # type: (str) -> str
@@ -65,7 +64,7 @@ class HelpView(ApiURLView):
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
         article = kwargs["article"]
-        context = super(HelpView, self).get_context_data()  # type: Dict[str, Any]
+        context = super().get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
         try:
             loader.get_template(path)
@@ -81,7 +80,7 @@ class HelpView(ApiURLView):
     def get(self, request, article=""):
         # type: (HttpRequest, str) -> HttpResponse
         path = self.get_path(article)
-        result = super(HelpView, self).get(self, article=article)
+        result = super().get(self, article=article)
         try:
             loader.get_template(path)
         except loader.TemplateDoesNotExist:
