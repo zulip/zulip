@@ -530,6 +530,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/accounts_send_confirm.html',
              'templates/zerver/integrations/index.html',
              'templates/zerver/help/main.html',
+             'templates/zerver/api/main.html',
              'templates/analytics/realm_summary_table.html',
              'templates/corporate/zephyr.html',
              'templates/corporate/zephyr-mirror.html',

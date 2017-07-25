@@ -63,6 +63,7 @@ def check_html_templates(templates, all_dups):
         'id_terms',
         'send_confirm',
         'register',
+        'footer',
     ]
     bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
                     if (ids not in IGNORE_IDS) and len(fns) > 1}

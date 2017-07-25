@@ -76,6 +76,57 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.app.api-docs .sidebar {
+    background-color: #fff;
+    border-right: 1px solid #ddd;
+    color: #444;
+}
+
+.app.api-docs .sidebar h2 {
+    color: #444;
+}
+
+.app.api-docs .sidebar li {
+    opacity: 0.8;
+}
+
+.code-section ul.nav {
+    margin: 0;
+}
+
+.code-section ul.nav li {
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 0;
+
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0px 0px;
+
+    cursor: pointer;
+}
+
+.code-section ul.nav li.active {
+    color: hsl(176, 46%, 41%);
+}
+
+.code-section .blocks {
+    padding: 20px;
+
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+
+    border-radius: 0px 4px 4px 4px;
+}
+
+.code-section .blocks > div {
+    display: none;
+}
+
+.code-section .blocks > .active {
+    display: block;
+}
+
 .app.help {
     position: fixed;
     width: 100vw;
