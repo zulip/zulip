@@ -10,6 +10,19 @@ and an authentication mechanism.  Or, you can check out the
 
 ## Server
 
+#### General
+
+The installer expects Zulip to be the only thing running on the
+system; it will install system packages with `apt` (like nginx,
+postgresql, and redis) and configure them for its own use.  We
+recommend using either a fresh machine instance in a cloud provider,
+a fresh VM, or a dedicated machine.
+
+#### Operating System
+
+Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are supported for running
+Zulip in production. 64-bit is recommended.
+
 #### Hardware Specifications
 
 * CPU and Memory: For installations with 100+ users you'll need a
@@ -47,11 +60,6 @@ and an authentication mechanism.  Or, you can check out the
   that Zulip can properly manage inline image previews.  You'll also
   need outgoing SMTP access to your SMTP server (the standard port for
   this is 587) so that Zulip can send email.
-
-#### Operating System
-
-Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are supported for running
-Zulip in production. 64-bit is recommended.
 
 #### Domain name
 
