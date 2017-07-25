@@ -1415,6 +1415,23 @@ def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients
 
     return None
 
+def internal_prep_message_to_user_profiles(realm, sender, recipient_user_profiles, content):
+    # type: (Realm, UserProfile,  List[UserProfile], Text) -> Optional[Dict[str, Any]]
+
+    if len(content) > MAX_MESSAGE_LENGTH:
+        content = content[0:3900] + "\n\n[message was too long and has been truncated]"
+
+    if realm is None:
+        raise RuntimeError("None is not a valid realm for internal_prep_message_to_user_profiles!")
+
+    try:
+        return check_message(sender, get_client("Internal"), 'private', '',
+                             content, realm=realm, recipient_user_profiles=recipient_user_profiles)
+    except JsonableError as e:
+        logging.error(u"Error queueing internal message by %s: %s" % (sender.email, e))
+
+    return None
+
 def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
                           subject, content):
     # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
