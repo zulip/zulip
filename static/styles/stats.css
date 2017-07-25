@@ -130,6 +130,12 @@ hr {
     margin-right: 10px;
 }
 
+.docs_link a {
+    font-weight: 300;
+    color: inherit;
+    text-decoration: none;
+}
+
 .tooltip-inner {
     padding: 10px;
     max-width: 350px;
