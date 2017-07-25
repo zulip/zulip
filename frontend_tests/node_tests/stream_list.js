@@ -23,6 +23,8 @@ var return_true = function () { return true; };
 
 set_global('topic_list', {});
 
+set_global('marked', function (s) { return 'rendered: ' + s; });
+
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
@@ -60,6 +62,9 @@ set_global('topic_list', {});
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/devel');
+            var stream_name = $.create('devel-stream-name');
+            stream_name.tooltip = noop;
+            $('<devel sidebar row>').set_find_results('.stream-name', stream_name);
             return '<devel sidebar row>';
         };
 
@@ -79,6 +84,9 @@ set_global('topic_list', {});
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/social');
+            var stream_name = $.create('social-stream-name');
+            stream_name.tooltip = noop;
+            $('<social sidebar row>').set_find_results('.stream-name', stream_name);
             return '<social sidebar row>';
         };
 
@@ -93,6 +101,12 @@ set_global('topic_list', {});
     var appended_elems;
     $('#stream_filters').append = function (elems) {
         appended_elems = elems;
+    };
+
+    $('#stream_filters').children = function () {
+        return {
+            detach: noop,
+        };
     };
 
     stream_list.build_stream_list();
@@ -465,7 +479,11 @@ function initialize_stream_data() {
 
     global.templates.render = function (template_name, data) {
         assert.equal(template_name, 'stream_sidebar_row');
-        return '<div>stub-html-' + data.name;
+        var html = '<div>stub-html-' + data.name;
+        var stream_name = $.create('stream-name-' + data.name);
+        stream_name.tooltip = noop;
+        $(html).set_find_results('.stream-name', stream_name);
+        return html;
     };
 
     // Test this code with stubs above...
