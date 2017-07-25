@@ -1269,7 +1269,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                (sender.full_name, stream_name, error_msg))
 
     internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
-                                  sender.bot_owner.email, content)
+                                  sender.bot_owner, content)
 
     sender.last_reminder = timezone_now()
     sender.save(update_fields=['last_reminder'])
@@ -1494,9 +1494,9 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
 
     do_send_messages([msg])
 
-def internal_send_private_message(realm, sender, recipient_email, content):
-    # type: (Realm, UserProfile, Text, Text) -> None
-    message = internal_prep_private_message(realm, sender, recipient_email, content)
+def internal_send_private_message(realm, sender, recipient_user_profile, content):
+    # type: (Realm, UserProfile, UserProfile, Text) -> None
+    message = internal_prep_message_to_user_profiles(realm, sender, [recipient_user_profile], content)
     if message is None:
         return
     do_send_messages([message])
