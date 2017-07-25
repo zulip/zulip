@@ -1990,20 +1990,15 @@ class SubscriptionAPITest(ZulipTestCase):
                                     {"subscriptions": ujson.dumps(streams_to_remove)})
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
-    def helper_subscriptions_exists(self, stream, exists, subscribed):
+    def helper_subscriptions_exists(self, stream, expect_success, subscribed):
         # type: (Text, bool, bool) -> None
         """
-        A helper function that calls /json/subscriptions/exists on a stream and
-        verifies that the returned JSON dictionary has the exists and
-        subscribed values passed in as parameters. (If subscribed should not be
-        present, pass in None.)
+        Call /json/subscriptions/exists on a stream and expect a certain result.
         """
         result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream})
         json = ujson.loads(result.content)
-        self.assertIn("exists", json)
-        self.assertEqual(json["exists"], exists)
-        if exists:
+        if expect_success:
             self.assert_json_success(result)
         else:
             self.assertEqual(result.status_code, 404)
@@ -2066,8 +2061,6 @@ class SubscriptionAPITest(ZulipTestCase):
                                   {"stream": stream_name, "autosubscribe": "false"})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertIn("exists", json)
-        self.assertTrue(json["exists"])
         self.assertIn("subscribed", json)
         self.assertFalse(json["subscribed"])
 
@@ -2075,8 +2068,6 @@ class SubscriptionAPITest(ZulipTestCase):
                                   {"stream": stream_name, "autosubscribe": "true"})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertIn("exists", json)
-        self.assertTrue(json["exists"])
         self.assertIn("subscribed", json)
         self.assertTrue(json["subscribed"])
 
@@ -2105,8 +2096,6 @@ class SubscriptionAPITest(ZulipTestCase):
                                   {"stream": stream_name, "autosubscribe": "false"})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertIn("exists", json)
-        self.assertTrue(json["exists"])
         self.assertIn("subscribed", json)
         self.assertTrue(json["subscribed"])
 
