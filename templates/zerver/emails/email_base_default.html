@@ -13,6 +13,7 @@
             border: none;
             -ms-interpolation-mode: bicubic;
             max-width: 100%;
+            vertical-align: bottom;
             }
 
             body {
@@ -56,12 +57,10 @@
 
             max-width: 500px;
             padding: 10px;
-            width: 500px;
             }
             /* This should also be a block element, so that it will fill 100% of the .container */
 
             .content {
-            position: relative;
             box-sizing: border-box;
             display: block;
             margin: 20px auto 0 auto;
@@ -80,7 +79,7 @@
 
             .wrapper {
             box-sizing: border-box;
-            padding: 30px 20px 20px 20px;
+            padding: 0px 20px 20px 20px;
             }
 
             .footer {
@@ -159,7 +158,7 @@
             BUTTONS
             ------------------------------------- */
 
-            button {
+            .button {
             display: block;
             padding: 10px 0px;
             margin: 20px auto;
@@ -171,17 +170,13 @@
             outline: none;
             color: #ffffff;
             font-family: sans-serif;
+            text-decoration: none;
+            text-align: center;
             }
 
-            button a {
-            color: inherit;
-            text-decoration: none;
-            display: block;
-            }
-
-            button a:hover {
-            text-decoration: none;
+            a.button:hover {
             color: #ccf7eb;
+            text-decoration: none;
             }
 
             /* -------------------------------------
@@ -199,13 +194,6 @@
             mso-hide: all;
             visibility: hidden;
             width: 0;
-            }
-
-            .graphic-wrapper {
-            position: relative;
-            height: 100px;
-            z-index: 100;
-            margin-bottom: 10px;
             }
 
             /* -------------------------------------
@@ -227,7 +215,7 @@
             }
 
             table[class=body] .wrapper {
-            padding: 75px 10px 10px 10px;
+            padding: 0px 10px 10px 10px;
             }
 
             table[class=body] .article {
@@ -290,9 +278,9 @@
                 <td>&nbsp;</td>
                 <td class="container">
                     <div class="content">
-                        <div class="graphic-wrapper">
+                        <a href="#" style="pointer-events:none;cursor:default!important;z-index: 100;">
                             {% block illustration %}{% endblock %}
-                        </div>
+                        </a>
                         {% block preheader %}{% endblock %}
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table class="main">
