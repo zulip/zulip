@@ -954,6 +954,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Enter a valid URL.")
 
+    def test_get_bot_handler(self):
+        # type: () -> None
+        # Test for valid service.
+        test_service_name = 'converter'
+        test_bot_handler = get_bot_handler(test_service_name)
+        self.assertEqual(str(type(test_bot_handler)), "<class 'zulip_bots.bots.converter.converter.ConverterHandler'>")
+
+        # Test for invalid service.
+        test_service_name = "incorrect_bot_service_foo"
+        test_bot_handler = get_bot_handler(test_service_name)
+        self.assertEqual(test_bot_handler, None)
+
     def test_if_each_embedded_bot_service_exists(self):
         # type: () -> None
         # Each bot has its bot handler class name as Bot_nameHandler. For instance encrypt bot has
