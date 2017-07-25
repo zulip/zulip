@@ -49,6 +49,13 @@ def json_success(data=None):
 
 def json_response_from_error(exception):
     # type: (JsonableError) -> HttpResponse
+    '''
+    This should only be needed in middleware; in app code, just raise.
+
+    When app code raises a JsonableError, the JsonErrorHandler
+    middleware takes care of transforming it into a response by
+    calling this function.
+    '''
     return json_response('error',
                          msg=exception.msg,
                          data=exception.data,
