@@ -51,9 +51,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if description is not None and len(description) > 1000:
         return json_error(_("Realm description is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
-        return json_error(_("At least one authentication method must be enabled."),
-                          data={"reason": "no authentication"},
-                          status=403)
+        return json_error(_("At least one authentication method must be enabled."))
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.

@@ -2104,7 +2104,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.login(self.example_email("iago"))
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': False})})
-        self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
+        self.assert_json_error(result, 'At least one authentication method must be enabled.')
         realm = get_realm('zulip')
         self.assertTrue(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))
