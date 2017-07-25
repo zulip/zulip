@@ -89,6 +89,7 @@
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
+* [Analytics](/help/analytics)
 
 ## Misc
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
