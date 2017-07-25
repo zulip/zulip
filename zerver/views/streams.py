@@ -392,13 +392,11 @@ def json_stream_exists(request, user_profile, stream_name=REQ("stream"),
     try:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     except JsonableError as e:
-        result = {"exists": False}
-        return json_error(e.msg, data=result, status=404)
+        return json_error(e.msg, status=404)
 
     # access_stream functions return a subscription if and only if we
     # are already subscribed.
-    result = {"exists": True,
-              "subscribed": sub is not None}
+    result = {"subscribed": sub is not None}
 
     # If we got here, we're either subscribed or the stream is public.
     # So if we're not yet subscribed and autosubscribe is enabled, we
