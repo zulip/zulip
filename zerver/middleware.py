@@ -12,8 +12,9 @@ from django.core.exceptions import DisallowedHost
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser, \
-    RateLimitedObject
+    RateLimitedObject, RateLimitedIP
 from django.shortcuts import redirect, render
+from zerver.lib.utils import get_ip
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.http import cookie_date
@@ -319,11 +320,18 @@ class RateLimitMiddleware(MiddlewareMixin):
             entity = RateLimitedUser(request.user)
             response = self._process_response(entity, request, response)
 
+        if settings.IP_RATE_LIMITING:
+            ip = get_ip(request)
+            if ip:
+                response  = self._process_response(RateLimitedIP(ip),
+                                                   request, response,
+                                                   prefix='_ip')
+
         return response
 
     def _process_response(self, entity, request, response, prefix=''):
         # type: (RateLimitedObject, HttpRequest, HttpResponse, Text) -> HttpResponse
-        if not settings.RATE_LIMITING:
+        if not (settings.RATE_LIMITING or settings.IP_RATE_LIMITING):
             return response
 
         header_prefix = prefix.title().replace('_', '-')
@@ -342,15 +350,26 @@ class RateLimitMiddleware(MiddlewareMixin):
                 response[header] = str(getattr(request, attr))
         return response
 
+    def is_rate_limit_applied(self, request, prefix):
+        # type: (HttpRequest, str) -> bool
+        return getattr(request, '{}_ratelimit_over_limit'.format(prefix), False)
+
     def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
-        if isinstance(exception, RateLimited):
-            resp = json_error(
-                _("API usage exceeded rate limit"),
-                data={'retry-after': request._ratelimit_secs_to_freedom},
-                status=429
-            )
-            resp['Retry-After'] = request._ratelimit_secs_to_freedom
-            return resp
+        if not isinstance(exception, RateLimited):
+            return None
+
+        for prefix in ('', '_ip'):
+            if self.is_rate_limit_applied(request, prefix):
+                attr = '{}_ratelimit_secs_to_freedom'.format(prefix)
+                secs_to_freedom = getattr(request, attr)
+                resp = json_error(
+                    _("API usage exceeded rate limit"),
+                    data={'retry-after': secs_to_freedom},
+                    status=429
+                )
+                resp['Retry-After'] = secs_to_freedom
+                return resp
+
         return None
 
 class FlushDisplayRecipientCache(MiddlewareMixin):

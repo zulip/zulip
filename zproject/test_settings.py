@@ -77,6 +77,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 
 TEST_SUITE = True
 RATE_LIMITING = False
+IP_RATE_LIMITING = False
 # Don't use rabbitmq from the test suite -- the user_profile_ids for
 # any generated queue elements won't match those being used by the
 # real app.

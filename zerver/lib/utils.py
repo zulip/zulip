@@ -12,8 +12,17 @@ from time import sleep
 from itertools import zip_longest
 
 from django.conf import settings
+from django.http import HttpRequest
 
 T = TypeVar('T')
+
+def get_ip(request: HttpRequest) -> str:
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def statsd_key(val: Any, clean_periods: bool=False) -> str:
     if not isinstance(val, str):

@@ -53,6 +53,17 @@ class RateLimitedUser(RateLimitedObject):
             return result
         return rules
 
+class RateLimitedIP(RateLimitedObject):
+    def __init__(self, ip: Text, domain: Text='all') -> None:
+        self.ip = ip
+        self.domain = domain
+
+    def key_fragment(self) -> Text:
+        return "ip:{}:{}".format(self.ip, self.domain)
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return rules
+
 def bounce_redis_key_prefix_for_testing(test_name: Text) -> None:
     global KEY_PREFIX
     KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'

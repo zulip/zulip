@@ -14,12 +14,11 @@ from django.conf import settings
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server
+from zerver.lib.utils import statsd, is_remote_server, get_ip
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
-
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left, RateLimitedUser, RateLimitedObject
-from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
+    api_calls_left, RateLimitedUser, RateLimitedObject, RateLimitedIP
+from zerver.lib.request import REQ, has_request_variables, RequestVariableMissingError
 from django.core.handlers import base
 
 from functools import wraps
@@ -633,6 +632,10 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: Text) -> No
     the rate limit information"""
     rate_limit_entity(request, RateLimitedUser(user, domain=domain))
 
+def rate_limit_ip(request, ip, domain):
+    # type: (HttpRequest, Text, Text) -> None
+    rate_limit_entity(request, RateLimitedIP(ip, domain=domain), prefix='_ip')
+
 def rate_limit_entity(request, entity, prefix=''):
     # type: (HttpRequest, RateLimitedObject, Text) -> None
     """Returns whether or not an entity was rate limited. Will raise a RateLimited exception
@@ -687,6 +690,14 @@ def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Ca
                         rate_limit_user(request, user, domain)
                     else:
                         logging.debug(not_authenticated_msg)
+
+            if settings.IP_RATE_LIMITING:
+                ip = get_ip(request)
+                if ip:
+                    rate_limit_ip(request, ip, domain)
+                else:
+                    logging.debug("Requested rate-limiting on {} but IP not "
+                                  "available!".format(func.__name__))
 
             return func(request, *args, **kwargs)
         return wrapped_func

@@ -11,6 +11,7 @@ from zerver.lib.rate_limiter import (
     remove_ratelimit_rule,
     RateLimitedUser,
     RateLimitedObject,
+    RateLimitedIP,
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
@@ -125,3 +126,40 @@ class RateLimitUserTests(RateLimitTests):
         user = self.example_user('cordelia')
         email = user.email
         self._test_hit_ratelimits(RateLimitedUser(user), email)
+
+class RateLimitIPTests(RateLimitTests):
+    header_prefix = '-Ip'
+
+    def setUp(self):
+        # type: () -> None
+        settings.IP_RATE_LIMITING = True
+        add_ratelimit_rule(1, 5)
+
+    def tearDown(self):
+        # type: () -> None
+        settings.IP_RATE_LIMITING = False
+        remove_ratelimit_rule(1, 5)
+
+    def test_headers(self):
+        # type: () -> None
+        email = self.example_email('hamlet')
+        ip = '192.168.1.1'
+        with mock.patch('zerver.middleware.get_ip', return_value=ip), \
+                mock.patch('zerver.decorator.get_ip', return_value=ip):
+            self._test_headers(RateLimitedIP(ip), email)
+
+    def test_ratelimit_decrease(self):
+        # type: () -> None
+        email = self.example_email('hamlet')
+        ip = '192.168.1.1'
+        with mock.patch('zerver.middleware.get_ip', return_value=ip), \
+                mock.patch('zerver.decorator.get_ip', return_value=ip):
+            self._test_ratelimit_decrease(RateLimitedIP(ip), email)
+
+    def test_hit_ratelimits(self):
+        # type: () -> None
+        email = self.example_email('hamlet')
+        ip = '192.168.1.1'
+        with mock.patch('zerver.middleware.get_ip', return_value=ip), \
+                mock.patch('zerver.decorator.get_ip', return_value=ip):
+            self._test_hit_ratelimits(RateLimitedIP(ip), email)
