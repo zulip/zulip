@@ -4,7 +4,37 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
-There are some significant database migrations that will be in the
+This section lists notable unreleased changes; it is generally updated
+bursts.
+
+Highlights:
+
+- Added a new "incoming webhook" bot type, limited to only sending
+  messages into Zulip, for better security.
+- Dramatically improved the search typeahead experience when using
+  multiple operators.
+- Overhauled the emails sent by Zulip to be more consistent and
+  readable.
+- Completely redesigned the /integrations and /apps pages to be
+  more usable and more attractive.
+- Redesigned several settings subpages to be visually cleaner.
+- Redesigned the /help/ documentation site to have a nice sidebar
+  index.
+- Added support for outgoing webhooks.
+- We're now recommending the new electron desktop app to everyone.
+  Users should upgrade to the new desktop app; the legacy desktop app
+  from 2014 doesn't support useful browser features like local
+  storage and will be deprecated completely soon.
+- Added a new API for fetching unread messages organized by topic to
+  support the mobile apps.  The React Native app will likely start
+  requiring Zulip 1.7 soon.  We don't intend to break app
+  compatibility with older server versions often, but it makes sense
+  in this case, since the new API is critical for providing a great
+  mobile experience.
+
+Release notes:
+
+* There are some significant database migrations that will be in the
 next release that can take a long time to run.  Fortunately, these can
 be run without downtime before the rest of the upgrade, by using the
 following postgres queries (run these inside `manage.py dbshell`):
@@ -31,6 +61,62 @@ first two indexes took about 1 minute each with chat.zulip.org's 75M
 UserMessage rows (from `select COUNT(*) from zerver_usermessage;`),
 with no user-facing service disruption.  The third index took more
 like 10 minutes.
+
+Full feature Changelog:
+
+- Simplified the process for installing a new Zulip server.
+- Added support for changing the notifications stream.
+- Added development tools to make iterating on emails and error pages
+easy.
+- Added 'u' hotkey to show a user's profile.
+- Added '-' hotkey to toggle collapsing a message.
+- Added an organization setting to require topics in stream messages.
+- Added an organization setting to control whether edit history is available.
+- Added a confirmation dialogue when inviting many users to a new stream.
+- Improved design for /stats page and added a link to it in the gear menu.
+- Improved how timestamps are displayed across the product.
+- Improved the appearance of mention/compose typeahead.
+- Significantly improved sort ordering for the emoji picker.
+- Fixed most accessibility errors detected by major accessibility
+  checker tools.
+- Extracted Zulip's Python API and bots ecosystem into its own
+  repository, zulip/python-zulip-api.
+- Enter hotkey now opens compose in empty narrows.
+- Significantly improved performance of "starred messages" and
+  "mentions" database queries through new indexes.
+- Upgraded to Django 1.11.x.
+- Redesigned Zulip's error pages to feature cute illustrations.
+- Dramatically improved the user typeahead algorithm to suggest
+  relevant users even in large organizations with 1000s of accounts.
+- Fixed log rotation structural issues which wasted a lot of disk.
+- Updated notification settings to not require a "save changes" button.
+- Rewrote the documentation for almost all of our integrations to be
+  much clearer and more consistent through use of Markdown and macros.
+- Restructured Zulip's management commands to use a common system for
+  accessing realms and users.
+- Made starting editing a message you just sent not require a round trip.
+- Dramatically increased test coverage of the frontend codebase.
+- Changed the right sidebar search to ignore diacritics.
+- Overhauled error handling in the new user registration flows.
+- Fixed minor bugs in several webhook integrations.
+- Fixed several local echo bugs involving mentions and line-wrapping.
+- Fixed various inconsistent old-style buttons in settings pages.
+- Fixed some obscure bugs with uploading files.
+- Fixed issues with deactivating realm emoji.
+- Fixed rendering of emoji in tweet previews.
+- Fixed buggy translation caching which filled local storage.
+- Fixed handling of desktop and mobile apps in new-login emails.
+- Fixed caching of source repository in upgrade-zulip-from-git.
+- Fixed numerous minor internationalization bugs.
+- Fixed rendering of realm emoji in missed-message emails.
+- Zulip now will gracefully handle the Postgres server being restarted.
+- Simplified the settings for configuring senders for our emails.
+- Emoji can now be typed with spaces, e.g. entering "robot face" in
+  the typeahead as well as "robot_face".
+- Improved title and alt text for unicode emoji.
+- Removed the obsolete shortname-based syntax
+- Removed the old django-guardian dependency.
+- Partially completed migration to webpack as our static asset bundler.
 
 ### 1.6.0 -- 2017-06-06
 
