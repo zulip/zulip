@@ -137,16 +137,30 @@ var timerender = require('js/timerender.js');
         twenty_four_hour_time: false,
     });
 
-    // timestamp with hour > 12
+    // timestamp with hour > 12, same year
     var timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
-    var expected = 'Apr 12, 2019 05:52 PM';
-    var actual = timerender.absolute_time(timestamp);
+    var today = new Date(timestamp);
+    var expected = 'Apr 12 05:52 PM';
+    var actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
 
-    // timestamp with hour < 12
+    // timestamp with hour > 12, different year
+    today.setFullYear(today.getFullYear() + 1);
+    expected = 'Apr 12, 2019 05:52 PM';
+    actual = timerender.absolute_time(timestamp, today);
+    assert.equal(expected, actual);
+
+    // timestamp with hour < 12, same year
     timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
+    today = new Date(timestamp);
+    expected = 'May 18 07:12 AM';
+    actual = timerender.absolute_time(timestamp, today);
+    assert.equal(expected, actual);
+
+    // timestamp with hour < 12, different year
+    today.setFullYear(today.getFullYear() + 1);
     expected = 'May 18, 2017 07:12 AM';
-    actual = timerender.absolute_time(timestamp);
+    actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
 }());
 
@@ -155,16 +169,30 @@ var timerender = require('js/timerender.js');
         twenty_four_hour_time: true,
     });
 
-    // timestamp with hour > 12
-    var timestamp = 1555091573000; // 4/12/2019 17:52:53 (UTC+0)
-    var expected = 'Apr 12, 2019 17:52';
-    var actual = timerender.absolute_time(timestamp);
+    // timestamp with hour > 12, same year
+    var timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
+    var today = new Date(timestamp);
+    var expected = 'Apr 12 17:52';
+    var actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
 
-    // timestamp with hour < 12
+    // timestamp with hour > 12, different year
+    today.setFullYear(today.getFullYear() + 1);
+    expected = 'Apr 12, 2019 17:52';
+    actual = timerender.absolute_time(timestamp, today);
+    assert.equal(expected, actual);
+
+    // timestamp with hour < 12, same year
     timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
+    today = new Date(timestamp);
+    expected = 'May 18 07:12';
+    actual = timerender.absolute_time(timestamp, today);
+    assert.equal(expected, actual);
+
+    // timestamp with hour < 12, different year
+    today.setFullYear(today.getFullYear() + 1);
     expected = 'May 18, 2017 07:12';
-    actual = timerender.absolute_time(timestamp);
+    actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
 }());
 
