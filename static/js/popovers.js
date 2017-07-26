@@ -36,7 +36,7 @@ var list_of_popovers = [];
 function load_medium_avatar(user_email) {
     var sender_avatar_medium = new Image();
     sender_avatar_medium.src= "avatar/" + user_email + "/medium";
-    $(sender_avatar_medium).load(function () {
+    $(sender_avatar_medium).on("load", function () {
         $(".popover-avatar").css("background-image","url("+$(this).attr("src")+")");
     });
 }
