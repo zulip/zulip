@@ -396,7 +396,7 @@ class BugdownTest(ZulipTestCase):
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
-        emoji_in_tweet_html = """Zulip is <img alt=":hundred_points:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4af.png" title=":hundred_points:">% open-source!"""
+        emoji_in_tweet_html = """Zulip is <img alt=":hundred_points:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4af.png" title="hundred points">% open-source!"""
 
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
             # type: (Text, Text, Text) -> Text
