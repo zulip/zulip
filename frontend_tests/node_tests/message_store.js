@@ -1,7 +1,6 @@
 add_dependencies({
     people: 'js/people.js',
     pm_conversations: 'js/pm_conversations.js',
-    topic_data: 'js/topic_data.js',
     util: 'js/util.js',
 });
 
@@ -17,7 +16,7 @@ set_global('alert_words', {
 });
 
 set_global('topic_data' , {
-    process_message: noop,
+    add_message: noop,
 });
 
 set_global('recent_senders', {
