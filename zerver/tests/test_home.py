@@ -419,7 +419,7 @@ class HomeTest(ZulipTestCase):
             result = self.client_get('/apps/')
         self.assertEqual(result.status_code, 200)
         html = result.content.decode('utf-8')
-        self.assertIn('Appsolutely', html)
+        self.assertIn('Apps for every platform.', html)
 
     def test_generate_204(self):
         # type: () -> None
