@@ -662,32 +662,30 @@ def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Ca
         @wraps(func)
         def wrapped_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
 
-            # It is really tempting to not even wrap our original function
-            # when settings.RATE_LIMITING is False, but it would make
-            # for awkward unit testing in some situations.
-            if not settings.RATE_LIMITING:
-                return func(request, *args, **kwargs)
-
             if client_is_exempt_from_rate_limiting(request):
                 return func(request, *args, **kwargs)
 
-            try:
-                user = request.user
-            except Exception:
-                # TODO: This logic is not tested, and I'm not sure we are
-                # doing the right thing here.
-                user = None
-
-            if not user:
-                logging.error("Requested rate-limiting on %s but user is not authenticated!" %
-                              func.__name__)
-                return func(request, *args, **kwargs)
-
-            # Rate-limiting data is stored in redis
-            # We also only support rate-limiting authenticated
-            # views right now.
-            # TODO(leo) - implement per-IP non-authed rate limiting
-            rate_limit_user(request, user, domain)
+            if settings.RATE_LIMITING:
+                # User based rate limiting. Works when a user is logged in.
+                not_authenticated_msg = (
+                    "Requested rate-limiting on {} but user is not "
+                    "authenticated!".format(func.__name__)
+                )
+                try:
+                    user = request.user
+                except Exception:
+                    # Not authed. Ignore and move to IP based rate limiting.
+                    logging.debug(not_authenticated_msg)
+                else:
+                    # This function can raise RateLimited exception which is
+                    # processed by
+                    # zerver.middleware.RateLimitMiddleware.process_exception.
+                    if request.user.is_authenticated():
+                        # Now this decorator can be added to a non-authed view
+                        # so it is important to check if the user is authed.
+                        rate_limit_user(request, user, domain)
+                    else:
+                        logging.debug(not_authenticated_msg)
 
             return func(request, *args, **kwargs)
         return wrapped_func

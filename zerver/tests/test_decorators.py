@@ -411,6 +411,9 @@ class RateLimitTestCase(TestCase):
             user = 'stub'  # any non-None value here exercises the correct code path
 
         req = Request()
+        user = mock.MagicMock()
+        user.is_authenticated = lambda: True
+        req.user = user
 
         def f(req: Any) -> str:
             return 'some value'
