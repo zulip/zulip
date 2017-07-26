@@ -235,11 +235,20 @@ exports.absolute_time = (function () {
         return str;
     };
 
-    return function (timestamp) {
+    return function (timestamp, today) {
+        if (typeof today === 'undefined') {
+             today = new Date();
+        }
         var date = new Date(timestamp);
+        var is_older_year = (today.getFullYear() - date.getFullYear()) > 0;
         var H_24 = page_params.twenty_four_hour_time;
-
-        return MONTHS[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear() + " " + fmt_time(date, H_24);
+        var str = MONTHS[date.getMonth()] + " " + date.getDate();
+        // include year if message date is from a previous year
+        if (is_older_year) {
+            str += ", " + date.getFullYear();
+        }
+        str += " " + fmt_time(date, H_24);
+        return str;
     };
 }());
 
