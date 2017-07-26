@@ -69,22 +69,6 @@ exports.topic_history = function () {
     return self;
 };
 
-exports.process_message = function (message, remove_message) {
-    if (remove_message) {
-        exports.remove_message({
-            stream_id: message.stream_id,
-            topic_name: message.subject,
-        });
-        return;
-    }
-
-    exports.add_message({
-        stream_id: message.stream_id,
-        topic_name: message.subject,
-        message_id: message.id,
-    });
-};
-
 exports.remove_message = function (opts) {
     var stream_id = opts.stream_id;
     var name = opts.topic_name;

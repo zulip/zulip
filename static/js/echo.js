@@ -152,9 +152,18 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
 exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     message.raw_content = raw_content;
     if (new_topic !== undefined) {
-        topic_data.process_message(message, true);
+        topic_data.remove_message({
+            stream_id: message.stream_id,
+            topic_name: message.subject,
+        });
+
         message.subject = new_topic;
-        topic_data.process_message(message);
+
+        topic_data.add_message({
+            stream_id: message.stream_id,
+            topic_name: message.subject,
+            message_id: message.id,
+        });
     }
 
     markdown.apply_markdown(message);
