@@ -12,8 +12,21 @@ var emoji_moneybag = {
     emoji_name: 'moneybag',
     emoji_url: 'TBD',
 };
+var emoji_japanese_post_office = {
+    emoji_name: 'japanese_post_office',
+    emoji_url: 'TBD',
+};
+var emoji_panda_face = {
+    emoji_name: 'panda_face',
+    emoji_url: 'TBD',
+};
+var emoji_see_no_evil = {
+    emoji_name: 'see_no_evil',
+    emoji_url: 'TBD',
+};
 
-var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium ];
+var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
+                   emoji_panda_face, emoji_see_no_evil ];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -130,6 +143,7 @@ global.people.add(deactivated_user);
     // emoji
     fake_this.completing = 'emoji';
     fake_this.query = ':octo';
+    fake_this.token = 'octo';
     var item = {
         emoji_name: 'octopus',
     };
@@ -139,11 +153,13 @@ global.people.add(deactivated_user);
     assert.equal(actual_value, expected_value);
 
     fake_this.query = ' :octo';
+    fake_this.token = 'octo';
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = ' :octopus: ';
     assert.equal(actual_value, expected_value);
 
     fake_this.query = '{:octo';
+    fake_this.token = 'octo';
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = '{ :octopus: ';
     assert.equal(actual_value, expected_value);
@@ -747,10 +763,14 @@ global.people.add(deactivated_user);
     assert_typeahead_equals("hi emoj:i", false);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
+    assert_typeahead_equals("hi emoji :da_", emoji_list);
+    assert_typeahead_equals("hi emoji :da ", emoji_list);
     assert_typeahead_equals("hi emoji\n:da", emoji_list);
     assert_typeahead_equals("hi emoji\n :ra", emoji_list);
     assert_typeahead_equals(":la", emoji_list);
     assert_typeahead_equals(" :lee", emoji_list);
+    assert_typeahead_equals("hi :see no", emoji_list);
+    assert_typeahead_equals("hi :japanese post of", emoji_list);
 
     assert_typeahead_equals("#", false);
     assert_typeahead_equals("# ", false);
@@ -853,4 +873,33 @@ global.people.add(deactivated_user);
     assert(th_render_person_called);
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
+}());
+
+(function test_typeahead_results() {
+    function compose_typeahead_results(completing,items,token) {
+        // items -> emoji array, token -> simulates text in input
+        var matcher = ct.compose_content_matcher.bind({completing: completing, token: token});
+        var sorter = ct.compose_matches_sorter.bind({completing: completing, token: token});
+        var matches = [];
+        _.each(items, function (item) {
+            if (matcher(item)) {
+                matches.push(item);
+            }
+        });
+        var sorted_matches = sorter(matches);
+        return sorted_matches;
+    }
+
+    function assert_emoji_matches(input, expected) {
+        var returned = compose_typeahead_results('emoji', emoji_list, input);
+        assert.deepEqual(returned, expected);
+    }
+
+    assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD"},
+        {emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da_', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da ', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('notaemoji', []);
 }());

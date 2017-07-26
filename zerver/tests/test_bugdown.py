@@ -506,7 +506,7 @@ class BugdownTest(ZulipTestCase):
         def emoji_img(name, file_name, realm_id):
             # type: (Text, Text, int) -> Text
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (
-                name, get_emoji_url(file_name, realm_id), name)
+                name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " "))
 
         realm = get_realm('zulip')
         check_add_realm_emoji(realm, "test", 'test.png')
@@ -536,11 +536,11 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title=":coffee:"></p>')
+        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="coffee"></p>')
 
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title=":coffee:"><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title=":coffee:"></p>')
+        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="coffee"><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="coffee"></p>')
 
     def test_same_markup(self):
         # type: () -> None
