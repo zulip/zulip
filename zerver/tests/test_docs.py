@@ -34,7 +34,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/about/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
         self._test('/en/about/', 'Cambridge, Massachusetts')
-        self._test('/apps/', 'Appsolutely')
+        self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Talk about multiple topics at once')
         self._test('/hello/', 'productive group chat')
         self._test('/why-zulip/', 'all stakeholders can see and')
