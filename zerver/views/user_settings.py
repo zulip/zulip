@@ -26,7 +26,8 @@ from zerver.lib.users import check_change_full_name
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
-from confirmation.models import get_object_from_key
+from confirmation.models import get_object_from_key, render_confirmation_key_error, \
+    ConfirmationKeyException
 
 @zulip_login_required
 def confirm_email_change(request, confirmation_key):
@@ -36,26 +37,23 @@ def confirm_email_change(request, confirmation_key):
         raise JsonableError(_("Email address changes are disabled in this organization."))
 
     confirmation_key = confirmation_key.lower()
-    obj = get_object_from_key(confirmation_key)
-    confirmed = False
-    new_email = old_email = None  # type: Text
-    if obj:
-        confirmed = True
-        assert isinstance(obj, EmailChangeStatus)
-        new_email = obj.new_email
-        old_email = obj.old_email
+    try:
+        obj = get_object_from_key(confirmation_key)
+    except ConfirmationKeyException as exception:
+        return render_confirmation_key_error(request, exception)
 
-        do_change_user_email(obj.user_profile, obj.new_email)
+    assert isinstance(obj, EmailChangeStatus)
+    new_email = obj.new_email
+    old_email = obj.old_email
 
-        context = {'realm': obj.realm,
-                   'new_email': new_email,
-                   }
-        send_email('zerver/emails/notify_change_in_email', to_email=old_email,
-                   from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
-                   context=context)
+    do_change_user_email(obj.user_profile, obj.new_email)
+
+    context = {'realm': obj.realm, 'new_email': new_email}
+    send_email('zerver/emails/notify_change_in_email', to_email=old_email,
+               from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
+               context=context)
 
     ctx = {
-        'confirmed': confirmed,
         'new_email': new_email,
         'old_email': old_email,
     }

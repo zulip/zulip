@@ -28,7 +28,7 @@ class EmailChangeTestCase(ZulipTestCase):
         key = generate_key()
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
-        self.assert_in_success_response(["Whoops"], response)
+        self.assert_in_success_response(["Whoops. We couldn't find your confirmation link in the system."], response)
 
     def test_confirm_email_change_with_invalid_key(self):
         # type: () -> None
@@ -36,7 +36,7 @@ class EmailChangeTestCase(ZulipTestCase):
         key = 'invalid key'
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
-        self.assert_in_success_response(["Whoops"], response)
+        self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
 
     def test_email_change_when_not_logging_in(self):
         # type: () -> None
@@ -63,7 +63,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     type=Confirmation.EMAIL_CHANGE)
         url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
-        self.assert_in_success_response(["Whoops"], response)
+        self.assert_in_success_response(["Whoops. The confirmation link has expired."], response)
 
     def test_confirm_email_change(self):
         # type: () -> None
