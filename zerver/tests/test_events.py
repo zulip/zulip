@@ -74,7 +74,8 @@ from zerver.lib.events import (
     fetch_initial_state_data,
 )
 from zerver.lib.message import render_markdown
-from zerver.lib.test_helpers import POSTRequestMock, get_subscription
+from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
+    stub_event_queue_user_events
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -133,25 +134,28 @@ class EventsEndpointTest(ZulipTestCase):
             result = self.client_post('/json/register', **self.api_auth(email))
         self.assert_json_error(result, "Could not allocate event queue")
 
-        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:11'):
-            with mock.patch('zerver.lib.events.get_user_events',
-                            return_value=[]):
-                result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
-                                          **self.api_auth(email))
+        return_event_queue = '15:11'
+        return_user_events = []  # type: (List[Any])
+        with stub_event_queue_user_events(return_event_queue, return_user_events):
+            result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
+                                      **self.api_auth(email))
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertEqual(result_dict['last_event_id'], -1)
         self.assertEqual(result_dict['queue_id'], '15:11')
 
-        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:12'):
-            with mock.patch('zerver.lib.events.get_user_events',
-                            return_value=[{
-                                'id': 6,
-                                'type': 'pointer',
-                                'pointer': 15,
-                            }]):
-                result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
-                                          **self.api_auth(email))
+        return_event_queue = '15:12'
+        return_user_events = [
+            {
+                'id': 6,
+                'type': 'pointer',
+                'pointer': 15,
+            }
+        ]
+        with stub_event_queue_user_events(return_event_queue, return_user_events):
+            result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
+                                      **self.api_auth(email))
+
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -159,17 +163,12 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict['queue_id'], '15:12')
 
         # Now test with `fetch_event_types` not matching the event
-        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:13'):
-            with mock.patch('zerver.lib.events.get_user_events',
-                            return_value=[{
-                                'id': 6,
-                                'type': 'pointer',
-                                'pointer': 15,
-                            }]):
-                result = self.client_post('/json/register',
-                                          dict(event_types=ujson.dumps(['pointer']),
-                                               fetch_event_types=ujson.dumps(['message'])),
-                                          **self.api_auth(email))
+        return_event_queue = '15:13'
+        with stub_event_queue_user_events(return_event_queue, return_user_events):
+            result = self.client_post('/json/register',
+                                      dict(event_types=ujson.dumps(['pointer']),
+                                           fetch_event_types=ujson.dumps(['message'])),
+                                      **self.api_auth(email))
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -180,17 +179,11 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict['queue_id'], '15:13')
 
         # Now test with `fetch_event_types` matching the event
-        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:13'):
-            with mock.patch('zerver.lib.events.get_user_events',
-                            return_value=[{
-                                'id': 6,
-                                'type': 'pointer',
-                                'pointer': 15,
-                            }]):
-                result = self.client_post('/json/register',
-                                          dict(fetch_event_types=ujson.dumps(['pointer']),
-                                               event_types=ujson.dumps(['message'])),
-                                          **self.api_auth(email))
+        with stub_event_queue_user_events(return_event_queue, return_user_events):
+            result = self.client_post('/json/register',
+                                      dict(fetch_event_types=ujson.dumps(['pointer']),
+                                           event_types=ujson.dumps(['message'])),
+                                      **self.api_auth(email))
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertEqual(result_dict['last_event_id'], 6)
