@@ -23,11 +23,11 @@ To add a static file to the app (JavaScript, CSS, images, etc), first
 add it to the appropriate place under `static/`.
 
 - Third-party files that we haven't patched should be installed via
-  `npm`, so that it's easy to upgrade them and third-party code
+  `yarn`, so that it's easy to upgrade them and third-party code
   doesn't bloat the Zulip repository.  You can then access them in
   `webpack.assets.json` via their paths under `node_modules`.
   You'll want to add these to the `package.json` in the root of the
-  repository, and then provision (to have `npm` download them) before
+  repository, and then provision (to have `yarn` download them) before
   continuing.  Your commit should also update `PROVISION_VERSION` in
   `version.py`.  When adding modules to `package.json`, please pin
   specific versions of them (don't using carets `^`, tildes `~`, etc).

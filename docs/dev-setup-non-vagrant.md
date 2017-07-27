@@ -46,7 +46,7 @@ should work.
 Install the following non-Python dependencies:
  * libffi-dev — needed for some Python extensions
  * postgresql 9.1 or later — our database (client, server, headers)
- * nodejs 0.10 (and npm)
+ * nodejs 0.10 (and yarn)
  * memcached (and headers)
  * rabbitmq-server
  * libldap2-dev
@@ -69,7 +69,7 @@ sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python-dev \
     python3-dev python-virtualenv hunspell-en-us nodejs \
-    nodejs-legacy npm git yui-compressor puppet gettext postgresql
+    nodejs-legacy git yui-compressor puppet gettext postgresql
 
 # If using Ubuntu, install PGroonga from its PPA
 sudo add-apt-repository -ys ppa:groonga/ppa
@@ -128,7 +128,7 @@ sudo apt-get update
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python-dev \
-    hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
+    hunspell-en-us nodejs nodejs-legacy git yui-compressor \
     puppet gettext tsearch-extras
 ```
 
@@ -146,7 +146,7 @@ https://github.com/zulip/zulip.git`
 sudo dnf install libffi-devel memcached rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
     postgresql-devel postgresql libmemcached-devel freetype-devel \
-    nodejs npm yuicompressor closure-compiler gettext
+    nodejs yuicompressor closure-compiler gettext
 ```
 
 Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
@@ -324,7 +324,7 @@ Now run these commands:
 
 ```
 sudo ./scripts/lib/install-node
-npm install
+yarn install
 ./tools/install-mypy
 sudo mkdir /srv/zulip-emoji-cache
 sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
@@ -364,10 +364,10 @@ proxy in the environment as follows:
  export http_proxy=http://proxy_host:port
  ```
 
-- And set the npm proxy and https-proxy using:
+- And set the yarn proxy and https-proxy using:
  ```
- npm config set proxy http://proxy_host:port
- npm config set https-proxy http://proxy_host:port
+ yarn config set proxy http://proxy_host:port
+ yarn config set https-proxy http://proxy_host:port
  ```
 
 ## Using Docker (experimental)

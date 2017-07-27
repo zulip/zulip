@@ -32,8 +32,9 @@ script:
   - unset GEM_PATH
   - mispipe "./tools/travis/$TEST_SUITE" ts
 cache:
-  - apt: false
-  - directories:
+  yarn: true
+  apt: false
+  directories:
     - $HOME/zulip-venv-cache
     - $HOME/zulip-npm-cache
     - $HOME/zulip-emoji-cache

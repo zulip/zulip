@@ -192,7 +192,7 @@ def install_apt_deps():
 def main(options):
     # type: (Any) -> int
 
-    # npm install and management commands expect to be run from the root of the
+    # yarn and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)
 
@@ -226,11 +226,11 @@ def main(options):
     else:
         print("No need to apt operations.")
 
-    # Here we install nvm, node, and npm.
+    # Here we install node.
     run(["sudo", "scripts/lib/install-node"])
 
-    # Install NPM packages before running other scripts so that if a script
-    # requires any NPM package it can use it.
+    # This is a wrapper around `yarn`, which we run last since
+    # it can often fail due to network issues beyond our control.
     try:
         # Hack: We remove `node_modules` as root to work around an
         # issue with the symlinks being improperly owned by root.
@@ -239,9 +239,9 @@ def main(options):
         if not os.path.isdir(NODE_MODULES_CACHE_PATH):
             run(["sudo", "mkdir", NODE_MODULES_CACHE_PATH])
         run(["sudo", "chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
-        setup_node_modules()
+        setup_node_modules(prefer_offline=True)
     except subprocess.CalledProcessError:
-        print(WARNING + "`npm install` failed; retrying..." + ENDC)
+        print(WARNING + "`yarn install` failed; retrying..." + ENDC)
         setup_node_modules()
 
     # Import tools/setup_venv.py instead of running it so that we get an
