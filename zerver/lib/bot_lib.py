@@ -76,5 +76,5 @@ class EmbeddedBotHandler(object):
             our_dir, '..', 'bots', bot_name, bot_name + '.conf'))
         section = section or bot_name
         config = configparser.ConfigParser()
-        config.readfp(open(conf_file_path))  # type: ignore
+        config.readfp(open(conf_file_path))  # type: ignore # likely typeshed issue
         return dict(config.items(section))

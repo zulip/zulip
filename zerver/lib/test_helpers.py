@@ -171,7 +171,7 @@ def stdout_suppressed():
     """Redirect stdout to /dev/null."""
 
     with open(os.devnull, 'a') as devnull:
-        stdout, sys.stdout = sys.stdout, devnull  # type: ignore
+        stdout, sys.stdout = sys.stdout, devnull  # type: ignore # monkey-patching
         yield stdout
         sys.stdout = stdout
 

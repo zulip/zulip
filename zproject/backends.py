@@ -244,7 +244,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         """
         try:
             # Call the auth_complete method of BaseOAuth2 is Python Social Auth
-            return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore
+            return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
         except AuthFailed:
             return None
         except SocialAuthBaseException as e:
