@@ -406,7 +406,7 @@ def get_profile_backend(request, user_profile):
 
     return json_success(result)
 
-def authors_view(request):
+def about_view(request):
     # type: (HttpRequest) -> HttpResponse
 
     with open(settings.CONTRIBUTORS_DATA) as f:
@@ -414,6 +414,6 @@ def authors_view(request):
 
     return render(
         request,
-        'zerver/authors.html',
+        'zerver/about.html',
         context=data,
     )
