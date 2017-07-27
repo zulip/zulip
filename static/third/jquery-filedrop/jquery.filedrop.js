@@ -341,7 +341,7 @@
 
         if (xhr.responseText) {
           try {
-            serverResponse = jQuery.parseJSON(xhr.responseText);
+            serverResponse = JSON.parse(xhr.responseText);
           }
           catch (e) {
             serverResponse = xhr.responseText;

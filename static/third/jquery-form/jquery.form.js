@@ -644,10 +644,7 @@ $.fn.ajaxSubmit = function(options) {
             }
             return (doc && doc.documentElement && doc.documentElement.nodeName != 'parsererror') ? doc : null;
         };
-        var parseJSON = $.parseJSON || function(s) {
-            /*jslint evil:true */
-            return window['eval']('(' + s + ')');
-        };
+        var parseJSON = $.parseJSON || JSON.parse;
 
         var httpData = function( xhr, type, s ) { // mostly lifted from jq1.4.4
 

@@ -311,7 +311,7 @@ $.get({
         update_last_full_update(data.end_times);
     },
     error: function (xhr) {
-        $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
+        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
     },
 });
 
@@ -533,7 +533,7 @@ $.get({
         update_last_full_update(data.end_times);
     },
     error: function (xhr) {
-        $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
+        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
     },
 });
 
@@ -651,7 +651,7 @@ $.get({
         update_last_full_update(data.end_times);
     },
     error: function (xhr) {
-        $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
+        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
     },
 });
 
@@ -723,6 +723,6 @@ $.get({
         update_last_full_update(data.end_times);
     },
     error: function (xhr) {
-        $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
+        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
     },
 });
