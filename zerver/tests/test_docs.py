@@ -137,7 +137,7 @@ class IntegrationTest(TestCase):
             context['subscriptions_html'],
             '<a target="_blank" href="../../#streams">streams page</a>')
 
-class AuthorsPageTest(ZulipTestCase):
+class AboutPageTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         """ Manual installation which did not execute `tools/provision`
@@ -154,16 +154,15 @@ class AuthorsPageTest(ZulipTestCase):
 
     def test_endpoint(self):
         # type: () -> None
-        result = self.client_get('/authors/')
+        result = self.client_get('/about/')
         self.assert_in_success_response(
-            ['Contributors', 'Statistic last Updated:', 'commits',
-             '@timabbott'],
+            ['Contributors', 'commits', '@timabbott'],
             result
         )
 
     def test_split_by(self):
         # type: () -> None
         """Utility function primarily used in authors page"""
-        flat_list = [1, 2, 3, 4, 5, 6, 7]
-        expected_result = [[1, 2], [3, 4], [5, 6], [7, None]]
-        self.assertEqual(split_by(flat_list, 2, None), expected_result)
+        flat_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        self.assertEqual(split_by(flat_list, 3, None), expected_result)
