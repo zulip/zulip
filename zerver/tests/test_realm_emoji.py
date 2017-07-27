@@ -19,19 +19,19 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 1)
+        self.assertEqual(len(content["emoji"]), 2)
 
     def test_list_no_author(self):
         # type: () -> None
         email = self.example_email('iago')
         self.login(email)
         realm = get_realm('zulip')
-        RealmEmoji.objects.create(realm=realm, name='my_emojy', file_name='my_emojy')
+        RealmEmoji.objects.create(realm=realm, name='my_emoji', file_name='my_emoji')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 1)
-        self.assertIsNone(content["emoji"]['my_emojy']['author'])
+        self.assertEqual(len(content["emoji"]), 2)
+        self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
     def test_list_admins_only(self):
         # type: () -> None
@@ -40,12 +40,12 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
-        check_add_realm_emoji(realm, 'my_emojy', 'my_emojy')
+        check_add_realm_emoji(realm, 'my_emoji', 'my_emoji')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 1)
-        self.assertIsNone(content["emoji"]['my_emojy']['author'])
+        self.assertEqual(len(content["emoji"]), 2)
+        self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
     def test_upload(self):
         # type: () -> None
@@ -62,12 +62,12 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         content = ujson.loads(result.content)
         self.assert_json_success(result)
-        self.assertEqual(len(content["emoji"]), 1)
+        self.assertEqual(len(content["emoji"]), 2)
         self.assertIn('author', content["emoji"]['my_emoji'])
         self.assertEqual(
             content["emoji"]['my_emoji']['author']['email'], email)
 
-        realm_emoji = RealmEmoji.objects.get(realm=get_realm('zulip'))
+        realm_emoji = RealmEmoji.objects.get(name='my_emoji')
         self.assertEqual(
             str(realm_emoji),
             '<RealmEmoji(zulip): my_emoji my_emoji.png>'
@@ -103,6 +103,18 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_error(result, 'Must be a realm administrator')
 
+    def test_upload_anyone(self):
+        # type: () -> None
+        email = self.example_email('othello')
+        self.login(email)
+        realm = get_realm('zulip')
+        realm.add_emoji_by_admins_only = False
+        realm.save()
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
+        self.assert_json_success(result)
+
     def test_delete(self):
         # type: () -> None
         email = self.example_email('iago')
@@ -118,7 +130,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         # We only mark an emoji as deactivated instead of
         # removing it from the database.
-        self.assertEqual(len(emojis), 1)
+        self.assertEqual(len(emojis), 2)
         self.assertEqual(emojis["my_emoji"]["deactivated"], True)
 
     def test_delete_admins_only(self):
@@ -187,8 +199,5 @@ class RealmEmojiTest(ZulipTestCase):
         self.login(email)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
-            self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
-        with get_test_image_file('img.png') as fp1:
-                emoji_data = {'f1': fp1}
-                result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
+            result = self.client_post('/json/realm/emoji/green_tick', info=emoji_data)
         self.assert_json_error(result, 'Realm emoji with this Realm and Name already exists.')

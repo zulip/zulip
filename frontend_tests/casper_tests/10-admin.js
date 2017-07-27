@@ -119,16 +119,16 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.emoji_row', function () {
-        casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'mouseface');
+    casper.waitUntilVisible('tr#emoji_mouseface', function () {
+        casper.test.assertSelectorHasText('tr#emoji_mouseface .emoji_name', 'mouseface');
         casper.test.assertExists('.emoji_row img[src="/user_avatars/1/emoji/mouseface.png"]');
-        casper.click('.emoji_row button.delete');
+        casper.click('tr#emoji_mouseface button.delete');
     });
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('.emoji_row', function () {
-        casper.test.assertDoesntExist('.emoji_row');
+    casper.waitWhileVisible('tr#emoji_mouseface', function () {
+        casper.test.assertDoesntExist('tr#emoji_mouseface');
     });
 });
 
