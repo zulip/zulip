@@ -1312,7 +1312,7 @@ nav ul li.active::after {
     position: relative;
 
     padding: 100px 50px 50px 50px;
-    background: linear-gradient(35deg, #0d7373, #6ae4c8);
+    background: linear-gradient(35deg, #003b52, #45b59b);
     height: 600px;
 
     color: #fff;
