@@ -491,7 +491,11 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         # TODO: Do we actually want to allow multiple Services per bot user?
         services = get_bot_services(user_profile_id)
         for service in services:
-            get_bot_handler(str(service.name)).handle_message(
+            bot_handler = get_bot_handler(str(service.name))
+            if bot_handler is None:
+                logging.error("Error: User %s has bot with invalid embedded bot service %s" % (user_profile_id, service.name))
+                continue
+            bot_handler.handle_message(
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile),
                 state_handler=self.get_state_handler())
