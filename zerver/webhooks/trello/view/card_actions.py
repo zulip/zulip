@@ -56,12 +56,14 @@ def prettify_date(date_string):
     return date_string.replace('T', ' ').replace('.000', '').replace('Z', ' UTC')
 
 def process_card_action(payload, action_type):
-    # type: (Mapping[str, Any], Text) -> Tuple[Text, Text]
+    # type: (Mapping[str, Any], Text) -> Optional[Tuple[Text, Text]]
     action_type = get_proper_action(payload, action_type)
-    return get_subject(payload), get_body(payload, action_type)
+    if action_type is not None:
+        return get_subject(payload), get_body(payload, action_type)
+    return None
 
 def get_proper_action(payload, action_type):
-    # type: (Mapping[str, Any], Text) -> Text
+    # type: (Mapping[str, Any], Text) -> Optional[Text]
     if action_type == 'updateCard':
         data = get_action_data(payload)
         old_data = data['old']
@@ -82,6 +84,10 @@ def get_proper_action(payload, action_type):
             return ARCHIVE
         if old_data.get('closed') and card_data.get('closed') is False:
             return REOPEN
+        # we don't support events for when a card is moved up or down
+        # within a single list
+        if old_data.get('pos'):
+            return None
         raise UnknownUpdateCardAction()
 
     return action_type

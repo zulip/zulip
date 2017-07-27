@@ -22,7 +22,11 @@ def api_trello_webhook(request, user_profile, payload=REQ(argument_type='body'),
     payload = ujson.loads(request.body)
     action_type = payload['action'].get('type')
     try:
-        subject, body = get_subject_and_body(payload, action_type)
+        message = get_subject_and_body(payload, action_type)
+        if message is None:
+            return json_success()
+        else:
+            subject, body = message
     except UnsupportedAction:
         return json_error(_('Unsupported action_type: {action_type}'.format(action_type=action_type)))
 
