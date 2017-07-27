@@ -1,25 +1,26 @@
 #!/usr/bin/env bash
 set -e
 
-ZULIP_PATH=$(dirname "$0")
-node_version=6.6.0
-npm_version=3.10.3
-
-current_npm_version="none"
-if hash npm 2>/dev/null; then
-    current_npm_version="$(npm --version)"
+ZULIP_PATH="$(dirname "$0")/../.."
+ZULIP_SRV="/srv"
+if [ "$TRAVIS" ] ; then
+    ZULIP_SRV="/home/travis"
 fi
+YARN_BIN="$ZULIP_SRV/zulip-yarn/bin/yarn"
+node_version=6.6.0
+yarn_version=0.27.5
+
 current_node_version="none"
 if hash node 2>/dev/null; then
     current_node_version="$(node --version)"
 fi
 
-if [ "$current_npm_version" = "$npm_version" ] && [ "$current_node_version" = "v$node_version" ]; then
-    echo "Node version $node_version and npm version $npm_version are already installed."
+if [ "$($YARN_BIN --version 2>/dev/null)" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ]; then
+    echo "Node version $node_version and yarn version $yarn_version are already installed."
     exit 0
 fi
 
-if true; then
+if [ "$current_node_version" != "v$node_version" ]; then
     export NVM_DIR=/usr/local/nvm
     if ! [ -e "$NVM_DIR/nvm.sh" ]; then
         wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash
@@ -28,7 +29,6 @@ if true; then
     source "$NVM_DIR/nvm.sh"
     nvm install "$node_version" && nvm alias default "$node_version"
     export NODE_BIN="$(nvm which default)"
-    export NPM_BIN=$(echo "$NODE_BIN" | sed 's/node$/npm/')
 
     # Fix messed-up uid=500 and group write bits produced by nvm
     n=$(which node)
@@ -36,9 +36,10 @@ if true; then
     chown -R root:root "$n"
     chmod -R go-w "$n"
 
-    # Install node and npm wrappers to /usr/local/bin
-    cp "$ZULIP_PATH/../../scripts/setup/node-wrapper" /usr/local/bin/node
+    # Install node wrapper to /usr/local/bin
+    cp "$ZULIP_PATH/scripts/setup/node-wrapper" /usr/local/bin/node
     sed -i "s|NODE_PATH|$NODE_BIN|" /usr/local/bin/node
-    cp "$ZULIP_PATH/../../scripts/setup/npm-wrapper" /usr/local/bin/npm
-    sed -i "s|NPM_PATH|$NPM_BIN|" /usr/local/bin/npm
 fi
+
+# Install yarn if not installed
+bash "$ZULIP_PATH/scripts/lib/third/install-yarn.sh" "$ZULIP_SRV" --version "$yarn_version"

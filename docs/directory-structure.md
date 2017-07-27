@@ -61,7 +61,7 @@ templating systems.
 
 * `static/third/` Third-party JavaScript and CSS that has been vendored.
 
-* `node_modules/` Third-party JavaScript installed via `npm`.
+* `node_modules/` Third-party JavaScript installed via `yarn`.
 
 * `static/assets/` For assets not to be served to the web (e.g. the system to
                    generate our favicons).

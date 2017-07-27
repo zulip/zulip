@@ -1,2 +1,0 @@
-#!/bin/bash
-NPM_PATH "$@"
