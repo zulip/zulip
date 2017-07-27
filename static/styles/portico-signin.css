@@ -60,6 +60,30 @@ html {
     font-weight: 600;
 }
 
+.register-page-container.closed-realm .right-side {
+    display: none;
+}
+
+.register-page-container.closed-realm .left-side {
+    border-right: none;
+}
+
+.register-page-container .invite-required {
+    display: none;
+    line-height: 1;
+}
+
+.register-page-container .invite-required i {
+    margin-right: 5px;
+}
+
+.register-page-container.closed-realm .invite-required {
+    display: block;
+
+    color: #aaa;
+    font-weight: normal;
+}
+
 .new-style .inline-block {
     text-align: left;
 }

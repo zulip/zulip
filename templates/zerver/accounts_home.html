@@ -15,7 +15,7 @@ $(function () {
         <div class="lead">
             <h1 class="get-started">{{ _("Sign up for Zulip") }}</h1>
         </div>
-        <div class="app-main register-page-container white-box">
+        <div class="app-main register-page-container white-box {% if realm_invite_required %}closed-realm{% endif %}">
             <div class="register-form new-style">
                 {% if realm_name %}
                 <div class="left-side">
@@ -29,8 +29,14 @@ $(function () {
                     <div class="description">
                         {{ realm_description|safe }}
                     </div>
+
+                    <div class="invite-required">
+                        <hr />
+                        <i class="fa fa-lock"></i>{{ _("You need an invitation to join this organization.") }}
+                    </div>
                 </div>
                 {% endif %}
+
                 <div class="right-side">
                     {% if no_auth_enabled %}
                         <div class="alert">
