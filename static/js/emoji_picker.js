@@ -31,28 +31,6 @@ function promote_popular(a, b) {
     return util.strcmp(a.name, b.name);
 }
 
-function compute_placement(elt) {
-    var approx_popover_height = 400;
-    var approx_popover_width = 400;
-    var distance_from_bottom = message_viewport.height() - elt.offset().top;
-    var distance_from_right = message_viewport.width() - elt.offset().left;
-    var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
-    var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
-    var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
-    var will_extend_beyond_right_of_viewport = distance_from_right < (approx_popover_width / 2);
-    var placement = 'bottom';
-    if (will_extend_beyond_bottom_of_viewport && !will_extend_beyond_top_of_viewport) {
-        placement = 'top';
-    }
-    if (will_extend_beyond_right_of_viewport && !will_extend_beyond_left_of_viewport) {
-        placement = 'left';
-    }
-    if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
-        placement = 'right';
-    }
-    return placement;
-}
-
 function generate_emoji_picker_content(id) {
     var emojis = _.clone(emoji.emojis_name_to_css_class);
 
@@ -137,7 +115,7 @@ exports.toggle_emoji_popover = function (element, id) {
     if (elt.data('popover') === undefined) {
         elt.prop('title', '');
         elt.popover({
-            placement: compute_placement(elt),
+            placement: popovers.compute_placement(elt),
             title:     "",
             content:   generate_emoji_picker_content(id),
             trigger:   "manual",
