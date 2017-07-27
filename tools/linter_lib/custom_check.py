@@ -15,10 +15,9 @@ def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
     RuleList = List[Dict[str, Any]]
 
-    def custom_check_file(fn, identifier, rules, skip_rules=None, max_length=None):
-        # type: (str, str, RuleList, Optional[Any], Optional[int]) -> bool
+    def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
+        # type: (str, str, RuleList, str, Optional[Any], Optional[int]) -> bool
         failed = False
-        color = next(colors)
 
         line_tups = []
         for i, line in enumerate(open(fn)):
@@ -419,11 +418,12 @@ def build_custom_checkers(by_lang):
     def check_custom_checks_py():
         # type: () -> bool
         failed = False
+        color = next(colors)
 
         for fn in by_lang['py']:
             if 'custom_check.py' in fn:
                 continue
-            if custom_check_file(fn, 'py', python_rules, max_length=140):
+            if custom_check_file(fn, 'py', python_rules, color, max_length=140):
                 failed = True
         return failed
 
@@ -431,30 +431,37 @@ def build_custom_checkers(by_lang):
         # type: () -> bool
         failed = False
 
+        color = next(colors)
         for fn in by_lang['js']:
-            if custom_check_file(fn, 'js', js_rules):
+            if custom_check_file(fn, 'js', js_rules, color):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['sh']:
-            if custom_check_file(fn, 'sh', bash_rules):
+            if custom_check_file(fn, 'sh', bash_rules, color):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['css']:
-            if custom_check_file(fn, 'css', css_rules):
+            if custom_check_file(fn, 'css', css_rules, color):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['handlebars']:
-            if custom_check_file(fn, 'handlebars', handlebars_rules):
+            if custom_check_file(fn, 'handlebars', handlebars_rules, color):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['html']:
-            if custom_check_file(fn, 'html', jinja2_rules):
+            if custom_check_file(fn, 'html', jinja2_rules, color):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['json']:
-            if custom_check_file(fn, 'json', json_rules):
+            if custom_check_file(fn, 'json', json_rules, color):
                 failed = True
 
+        color = next(colors)
         markdown_docs_length_exclude = {
             "api/bots/converter/readme.md",
             "docs/bots-guide.md",
@@ -476,15 +483,17 @@ def build_custom_checkers(by_lang):
             rules = markdown_rules
             if fn.startswith("templates/zerver/help"):
                 rules = help_markdown_rules
-            if custom_check_file(fn, 'md', rules, max_length=max_length):
+            if custom_check_file(fn, 'md', rules, color, max_length=max_length):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['txt'] + by_lang['text']:
-            if custom_check_file(fn, 'txt', txt_rules):
+            if custom_check_file(fn, 'txt', txt_rules, color):
                 failed = True
 
+        color = next(colors)
         for fn in by_lang['yaml']:
-            if custom_check_file(fn, 'yaml', txt_rules):
+            if custom_check_file(fn, 'yaml', txt_rules, color):
                 failed = True
 
         return failed
