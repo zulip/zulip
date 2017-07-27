@@ -25,12 +25,16 @@ exports.topic_history = function () {
             topics.set(opts.name, {
                 message_id: message_id,
                 pretty_name: name,
+                historical: false,
                 count: 1,
             });
             return;
         }
 
-        existing.count += 1;
+        if (!existing.historical) {
+            existing.count += 1;
+        }
+
         if (message_id > existing.message_id) {
             existing.message_id = message_id;
             existing.pretty_name = name;
@@ -44,12 +48,50 @@ exports.topic_history = function () {
             return;
         }
 
+        if (existing.historical) {
+            // We can't trust that a topic rename applied to
+            // the entire history of historical topic, so we
+            // will always leave it in the sidebar.
+            return;
+        }
+
         if (existing.count <= 1) {
             topics.del(topic_name);
             return;
         }
 
         existing.count -= 1;
+    };
+
+    self.add_history = function (server_history) {
+        // This method populates historical topics from the
+        // server.  We have less data about these than the
+        // client can maintain for newer topics.
+
+        _.each(server_history, function (obj) {
+            var name = obj.name;
+            var message_id = obj.max_id;
+
+            var existing = topics.get(name);
+
+            if (existing) {
+                if (!existing.historical) {
+                    // Trust out local data more, since it
+                    // maintains counts.
+                    return;
+                }
+            }
+
+            // If we get here, we are either finding out about
+            // the topic for the first time, or we are getting
+            // more current data for it.
+
+            topics.set(name, {
+                message_id: message_id,
+                pretty_name: name,
+                historical: true,
+            });
+        });
     };
 
     self.get_recent_names = function () {
@@ -107,6 +149,11 @@ exports.add_message = function (opts) {
         name: name,
         message_id: message_id,
     });
+};
+
+exports.add_history = function (stream_id, server_history) {
+    var history = exports.find_or_create(stream_id);
+    history.add_history(server_history);
 };
 
 exports.get_recent_names = function (stream_id) {
