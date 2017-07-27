@@ -30,7 +30,7 @@ exports.down = function (with_centering) {
         // FIXME: this doesn't work for End because rows.last_visible()
         // always returns a message.
         var current_msg_table = rows.get_table(current_msg_list.table_name);
-        message_viewport.scrollTop(current_msg_table.outerHeight(true) -
+        message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
                                    message_viewport.height() * 0.1);
         unread_ops.mark_current_list_as_read();
     }

@@ -23,6 +23,20 @@ $(function () {
     // This requires that we used Django's {% csrf_token %} somewhere on the page.
     csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value');
 
+
+    // This is an issue fix where in jQuery v3 the result of outerHeight on a node
+    // that doesn’t exist is now “undefined” rather than “null”, which means it
+    // will no longer cast to a Number but rather NaN. For this, we create the
+    // `safeOuterHeight` and `safeOuterWidth` functions to safely return a result
+    // (or 0).
+    $.fn.safeOuterHeight = function () {
+        return $(this).outerHeight.apply(this, arguments) || 0;
+    };
+
+    $.fn.safeOuterWidth = function () {
+        return $(this).outerWidth.apply(this, arguments) || 0;
+    };
+
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {

@@ -55,7 +55,7 @@ exports.update = function () {
     var floating_recipient_bar = $("#floating_recipient_bar");
     var floating_recipient_bar_top = floating_recipient_bar.offset().top;
     var floating_recipient_bar_bottom =
-        floating_recipient_bar_top + floating_recipient_bar.outerHeight();
+        floating_recipient_bar_top + floating_recipient_bar.safeOuterHeight();
 
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.
@@ -91,7 +91,7 @@ exports.update = function () {
     // Hide if the bottom of our floating stream/subject label is not
     // lower than the bottom of current_label (since that means we're
     // covering up a label that already exists).
-    var header_height = $(current_label).find('.message_header').outerHeight();
+    var header_height = $(current_label).find('.message_header').safeOuterHeight();
     if (floating_recipient_bar_bottom <=
         (current_label.offset().top + header_height)) {
         // hide floating_recipient_bar and use .temp-show-date to force display

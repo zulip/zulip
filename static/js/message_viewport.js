@@ -28,7 +28,7 @@ exports.message_viewport_info = function () {
     var element_just_above_us = $(".floating_recipient");
 
     res.visible_top = element_just_above_us.offset().top
-        + element_just_above_us.outerHeight();
+        + element_just_above_us.safeOuterHeight();
 
     var element_just_below_us = $("#compose");
 
@@ -132,7 +132,7 @@ function add_to_visible(candidates, visible,
 
 var top_of_feed = new util.CachedValue({
     compute_value: function () {
-        return $(".floating_recipient").offset().top + $(".floating_recipient").outerHeight();
+        return $(".floating_recipient").offset().top + $(".floating_recipient").safeOuterHeight();
     },
 });
 
@@ -296,7 +296,7 @@ exports.recenter_view = function (message, opts) {
     var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
 
     var message_top = message.offset().top;
-    var message_height = message.outerHeight(true);
+    var message_height = message.safeOuterHeight(true);
     var message_bottom = message_top + message_height;
 
     var is_above = message_top < top_threshold;
@@ -359,7 +359,7 @@ exports.keep_pointer_in_view = function () {
 
         // If at least part of the message is below top_threshold (10% from
         // the top), then we also leave it alone.
-        var bottom_offset = message_top + next_row.outerHeight(true);
+        var bottom_offset = message_top + next_row.safeOuterHeight(true);
         if (bottom_offset >= top_threshold) {
             return true;
         }
