@@ -371,7 +371,7 @@ var events = function () {
             $(".portico-landing").removeClass("show");
             setTimeout(function () {
                 window.location.href = $(this).attr("href");
-            }.on(this), 500);
+            }.bind(this), 500);
         }
     });
 
