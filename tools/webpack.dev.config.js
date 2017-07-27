@@ -19,6 +19,9 @@ config.plugins.push(new webpack.HotModuleReplacementPlugin());
 // Better logging from console for hot reload
 config.plugins.push(new webpack.NamedModulesPlugin());
 
+// script-loader should load sourceURL in dev
+config.plugins.push(new webpack.LoaderOptionsPlugin({debug: true}));
+
 config.devServer = {
     clientLogLevel: "warning",
     hot: true,
