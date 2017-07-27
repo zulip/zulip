@@ -54,6 +54,8 @@ parser.add_argument('--scripts-only', dest='scripts_only', action='store_true', 
                     help="""Only type check extensionless python scripts""")
 parser.add_argument('--strict-optional', dest='strict_optional', action='store_true', default=False,
                     help="""Use the --strict-optional flag with mypy""")
+parser.add_argument('--warn-unused-ignores', dest='warn_unused_ignores', action='store_true', default=False,
+                    help="""Use the --warn-unused-ignores flag with mypy""")
 parser.add_argument('--no-ignore-missing-imports', dest='ignore_missing_imports', action='store_false', default=True,
                     help="""Don't use the --ignore-missing-imports flag with mypy""")
 parser.add_argument('--quick', action='store_true', default=False,
@@ -108,6 +110,8 @@ if args.linecoverage_report:
     extra_args.append("var/linecoverage-report")
 if args.disallow_untyped_defs:
     extra_args.append("--disallow-untyped-defs")
+if args.warn_unused_ignores:
+    extra_args.append("--warn-unused-ignores")
 if args.strict_optional:
     extra_args.append("--strict-optional")
 if args.ignore_missing_imports:
