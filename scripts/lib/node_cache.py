@@ -20,28 +20,35 @@ if 'TRAVIS' in os.environ:
 NODE_MODULES_CACHE_PATH = os.path.join(ZULIP_SRV_PATH, 'zulip-npm-cache')
 YARN_BIN = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/bin/yarn')
 
-def generate_sha1sum_node_modules(yarn_args=None):
-    # type: (Optional[List[str]]) -> str
+DEFAULT_PRODUCTION = False
+
+def get_yarn_args(production):
+    # type: (bool) -> List[str]
+    if production:
+        yarn_args = ["--prod"]
+    else:
+        yarn_args = []
+    return yarn_args
+
+def generate_sha1sum_node_modules(production=DEFAULT_PRODUCTION):
+    # type: (bool) -> str
     sha1sum = hashlib.sha1()
     sha1sum.update(subprocess_text_output(['cat', 'package.json']).encode('utf8'))
     sha1sum.update(subprocess_text_output(['cat', 'yarn.lock']).encode('utf8'))
     sha1sum.update(subprocess_text_output([YARN_BIN, '--version']).encode('utf8'))
     sha1sum.update(subprocess_text_output(['node', '--version']).encode('utf8'))
-    if yarn_args is not None:
-        sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))
+    yarn_args = get_yarn_args(production=production)
+    sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))
 
     return sha1sum.hexdigest()
 
-def setup_node_modules(production=False, stdout=None, stderr=None, copy_modules=False,
+def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None, copy_modules=False,
                        prefer_offline=False):
     # type: (bool, Optional[IO], Optional[IO], bool, bool) -> None
-    if production:
-        yarn_args = ["--prod"]
-    else:
-        yarn_args = []
+    yarn_args = get_yarn_args(production=production)
     if prefer_offline:
         yarn_args.append("--prefer-offline")
-    sha1sum = generate_sha1sum_node_modules(yarn_args)
+    sha1sum = generate_sha1sum_node_modules(production=production)
     target_path = os.path.join(NODE_MODULES_CACHE_PATH, sha1sum)
     cached_node_modules = os.path.join(target_path, 'node_modules')
     success_stamp = os.path.join(target_path, '.success-stamp')
