@@ -12,7 +12,7 @@ from django.conf import settings
 from importlib import import_module
 from six.moves import filter, map
 from typing import (
-    Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple
+    cast, Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
@@ -21,13 +21,19 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.hotspots import get_next_hotspots
+from zerver.lib.message import (
+    apply_unread_message_event,
+    get_unread_message_ids_per_recipient,
+)
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
-from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
-    do_get_streams, get_default_streams_for_realm, \
-    gather_subscriptions_helper, get_cross_realm_dicts, \
+from zerver.lib.actions import (
+    validate_user_access_to_subscribers_helper,
+    do_get_streams, get_default_streams_for_realm,
+    gather_subscriptions_helper, get_cross_realm_dicts,
     get_status_dict, streams_to_dicts_sorted
+)
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
@@ -151,10 +157,12 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
 
-    if want('update_message_flags'):
-        # There's no initial data for message flag updates, client will
-        # get any updates during a session from get_events()
-        pass
+    if want('update_message_flags') and want('message'):
+        # Keeping unread_msgs updated requires both message flag updates and
+        # message updates. This is due to the fact that new messages will not
+        # generate a flag update so we need to use the flags field in the
+        # message event.
+        state['unread_msgs'] = get_unread_message_ids_per_recipient(user_profile)
 
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
@@ -177,6 +185,23 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     return state
 
+
+def remove_message_id_from_unread_mgs(state, remove_id):
+    # type: (Dict[str, Dict[str, List[Any]]], int) -> None
+    for message_type in ['pms', 'streams', 'huddles']:
+        threads = state['unread_msgs'][message_type]
+        for obj in threads:
+            msg_ids = obj['unread_message_ids']
+            if remove_id in msg_ids:
+                msg_ids.remove(remove_id)
+        state['unread_msgs'][message_type] = [
+            obj for obj in threads
+            if obj['unread_message_ids']
+        ]
+
+    if remove_id in state['unread_msgs']['mentions']:
+        state['unread_msgs']['mentions'].remove(remove_id)
+
 def apply_events(state, events, user_profile, include_subscribers=True,
                  fetch_event_types=None):
     # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, Optional[Iterable[str]]) -> None
@@ -193,10 +218,13 @@ def apply_events(state, events, user_profile, include_subscribers=True,
             continue
         apply_event(state, event, user_profile, include_subscribers)
 
+
 def apply_event(state, event, user_profile, include_subscribers):
     # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
+        apply_unread_message_event(state['unread_msgs'], event['message'])
+
     elif event['type'] == "hotspots":
         state['hotspots'] = event['hotspots']
     elif event['type'] == "custom_profile_fields":
@@ -399,8 +427,13 @@ def apply_event(state, event, user_profile, include_subscribers):
         presence_user_profile = get_user(event['email'], user_profile.realm)
         state['presences'][event['email']] = UserPresence.get_status_dict_by_user(presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
-        # The client will get the updated message directly
-        pass
+        # The client will get the updated message directly but we need to
+        # update the subjects of out unread message ids
+        if 'subject' in event and 'unread_msgs' in state:
+            for obj in state['unread_msgs']['streams']:
+                if obj['stream_id'] == event['stream_id']:
+                    if obj['topic'] == event['orig_subject']:
+                        obj['topic'] = event['subject']
     elif event['type'] == "delete_message":
         max_message = Message.objects.filter(
             usermessage__user_profile=user_profile).order_by('-id').first()
@@ -408,6 +441,9 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['max_message_id'] = max_message.id
         else:
             state['max_message_id'] = -1
+
+        remove_id = event['message_id']
+        remove_message_id_from_unread_mgs(state, remove_id)
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass
@@ -415,8 +451,11 @@ def apply_event(state, event, user_profile, include_subscribers):
         # Typing notification events are transient and thus ignored
         pass
     elif event['type'] == "update_message_flags":
-        # The client will get the message with the updated flags directly
-        pass
+        # The client will get the message with the updated flags directly but
+        # we need to keep the unread_msgs updated.
+        if event['flag'] == 'read' and event['operation'] == 'add':
+            for remove_id in event['messages']:
+                remove_message_id_from_unread_mgs(state, remove_id)
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])
@@ -477,6 +516,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     events = get_user_events(user_profile, queue_id, -1)
     apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
                  fetch_event_types=fetch_event_types)
+
     if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']
     else:

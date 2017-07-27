@@ -456,7 +456,43 @@ class EventsRegisterTest(ZulipTestCase):
         required_keys.append(('id', check_int))
         return check_dict_only(required_keys)
 
-    def test_send_message_events(self):
+    def test_mentioned_send_message_events(self):
+        # type: () -> None
+        user = self.example_user('hamlet')
+        content = 'mentioning... @**' + user.full_name + '**'
+        self.do_test(
+            lambda: self.send_message(self.example_email('cordelia'),
+                                      "Verona",
+                                      Recipient.STREAM,
+                                      content)
+
+        )
+
+    def test_pm_send_message_events(self):
+        # type: () -> None
+        self.do_test(
+            lambda: self.send_message(self.example_email('cordelia'),
+                                      self.example_email('hamlet'),
+                                      Recipient.PERSONAL,
+                                      'hola')
+
+        )
+
+    def test_huddle_send_message_events(self):
+        # type: () -> None
+        huddle = [
+            self.example_email('hamlet'),
+            self.example_email('othello'),
+        ]
+        self.do_test(
+            lambda: self.send_message(self.example_email('cordelia'),
+                                      huddle,
+                                      Recipient.HUDDLE,
+                                      'hola')
+
+        )
+
+    def test_stream_send_message_events(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('message')),
@@ -519,7 +555,7 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content),
-            state_change_expected=False,
+            state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -578,6 +614,39 @@ class EventsRegisterTest(ZulipTestCase):
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+    def test_update_read_flag_removes_unread_msg_ids(self):
+        # type: () -> None
+
+        user_profile = self.example_user('hamlet')
+        mention = '@**' + user_profile.full_name + '**'
+
+        for content in ['hello', mention]:
+            message = self.send_message(
+                self.example_email('cordelia'),
+                "Verona",
+                Recipient.STREAM,
+                content
+            )
+
+            self.do_test(
+                lambda: do_update_message_flags(user_profile, 'add', 'read',
+                                                [message], False, None, None),
+                state_change_expected=True,
+            )
+
+    def test_send_message_to_existing_recipient(self):
+        # type: () -> None
+        self.send_message(
+            self.example_email('cordelia'),
+            "Verona",
+            Recipient.STREAM,
+            "hello 1"
+        )
+        self.do_test(
+            lambda: self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM, "hello 2"),
+            state_change_expected=True,
+        )
 
     def test_send_reaction(self):
         # type: () -> None
@@ -1567,6 +1636,62 @@ class FetchInitialStateDataTest(ZulipTestCase):
         UserMessage.objects.filter(user_profile=user_profile).delete()
         result = fetch_initial_state_data(user_profile, None, "")
         self.assertEqual(result['max_message_id'], -1)
+
+    def test_unread_msgs(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        sender_id = cordelia.id
+        sender_email = cordelia.email
+        user_profile = self.example_user('hamlet')
+        othello = self.example_user('othello')
+
+        # our tests rely on order
+        assert(sender_email < user_profile.email)
+        assert(user_profile.email < othello.email)
+
+        pm1_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello1")
+        pm2_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello2")
+
+        stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
+
+        huddle_message_id = self.send_message(sender_email,
+                                              [user_profile.email, othello.email],
+                                              Recipient.HUDDLE,
+                                              'hello3')
+
+        def get_unread_data():
+            # type: () -> Dict[str, Any]
+            result = fetch_initial_state_data(user_profile, None, "")['unread_msgs']
+            return result
+
+        result = get_unread_data()
+
+        unread_pm = result['pms'][0]
+        self.assertEqual(unread_pm['sender_id'], sender_id)
+        self.assertEqual(unread_pm['unread_message_ids'], [pm1_message_id, pm2_message_id])
+
+        unread_stream = result['streams'][0]
+        self.assertEqual(unread_stream['stream_id'], get_stream('Denmark', user_profile.realm).id)
+        self.assertEqual(unread_stream['topic'], 'test')
+        self.assertEqual(unread_stream['unread_message_ids'], [stream_message_id])
+
+        huddle_string = ','.join(str(uid) for uid in sorted([sender_id, user_profile.id, othello.id]))
+
+        unread_huddle = result['huddles'][0]
+        self.assertEqual(unread_huddle['user_ids_string'], huddle_string)
+        self.assertEqual(unread_huddle['unread_message_ids'], [huddle_message_id])
+
+        self.assertEqual(result['mentions'], [])
+
+        um = UserMessage.objects.get(
+            user_profile_id=user_profile.id,
+            message_id=stream_message_id
+        )
+        um.flags |= UserMessage.flags.mentioned
+        um.save()
+
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [stream_message_id])
 
 class EventQueueTest(TestCase):
     def test_one_event(self):

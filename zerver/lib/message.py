@@ -344,3 +344,179 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
         message.is_me_message = Message.is_status_message(content, rendered_content)
 
     return rendered_content
+
+def huddle_users(recipient_id):
+    # type: (int) -> str
+    display_recipient = get_display_recipient_by_id(recipient_id,
+                                                    Recipient.HUDDLE,
+                                                    None)  # type: ignore
+    user_ids = [obj['id'] for obj in display_recipient]  # type: ignore
+    user_ids = sorted(user_ids)
+    return ','.join(str(uid) for uid in user_ids)
+
+def aggregate_dict(input_rows, lookup_fields, input_field, output_field):
+    # type: (List[Dict[str, Any]], List[str], str, str) -> List[Dict[str, Any]]
+    lookup_dict = dict()  # type: Dict[Any, Dict]
+
+    for input_row in input_rows:
+        lookup_key = tuple([input_row[f] for f in lookup_fields])
+        if lookup_key not in lookup_dict:
+            obj = {}
+            for f in lookup_fields:
+                obj[f] = input_row[f]
+            obj[output_field] = []
+            lookup_dict[lookup_key] = obj
+
+        lookup_dict[lookup_key][output_field].append(input_row[input_field])
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+def get_unread_message_ids_per_recipient(user_profile):
+    # type: (UserProfile) -> Dict[str, List[Dict[str, Any]]]
+    user_msgs = UserMessage.objects.filter(
+        user_profile=user_profile
+    ).extra(
+        where=[UserMessage.where_unread()]
+    ).values(
+        'message_id',
+        'message__sender_id',
+        'message__subject',
+        'message__recipient_id',
+        'message__recipient__type',
+        'message__recipient__type_id',
+        'flags',
+    )
+
+    rows = list(user_msgs)
+
+    pm_msgs = [
+        dict(
+            sender_id=row['message__sender_id'],
+            message_id=row['message_id'],
+        ) for row in rows
+        if row['message__recipient__type'] == Recipient.PERSONAL]
+
+    pm_objects = aggregate_dict(
+        input_rows=pm_msgs,
+        lookup_fields=[
+            'sender_id',
+        ],
+        input_field='message_id',
+        output_field='unread_message_ids',
+    )
+
+    stream_msgs = [
+        dict(
+            stream_id=row['message__recipient__type_id'],
+            topic=row['message__subject'],
+            message_id=row['message_id'],
+        ) for row in rows
+        if row['message__recipient__type'] == Recipient.STREAM]
+
+    stream_objects = aggregate_dict(
+        input_rows=stream_msgs,
+        lookup_fields=[
+            'stream_id',
+            'topic',
+        ],
+        input_field='message_id',
+        output_field='unread_message_ids',
+    )
+
+    huddle_msgs = [
+        dict(
+            recipient_id=row['message__recipient_id'],
+            message_id=row['message_id'],
+        ) for row in rows
+        if row['message__recipient__type'] == Recipient.HUDDLE]
+
+    huddle_objects = aggregate_dict(
+        input_rows=huddle_msgs,
+        lookup_fields=[
+            'recipient_id',
+        ],
+        input_field='message_id',
+        output_field='unread_message_ids',
+    )
+
+    for huddle in huddle_objects:
+        huddle['user_ids_string'] = huddle_users(huddle['recipient_id'])
+        del huddle['recipient_id']
+
+    mentioned_message_ids = [
+        row['message_id']
+        for row in rows
+        if (row['flags'] & UserMessage.flags.mentioned) != 0]
+
+    result = dict(
+        pms=pm_objects,
+        streams=stream_objects,
+        huddles=huddle_objects,
+        mentions=mentioned_message_ids,
+    )
+
+    return result
+
+def apply_unread_message_event(state, message):
+    # type: (Dict[str, List[Dict[str, Any]]], Dict[str, Any]) -> None
+    message_id = message['id']
+    if message['type'] == 'stream':
+        message_type = 'stream'
+    elif message['type'] == 'private':
+        others = [
+            recip for recip in message['display_recipient']
+            if recip['id'] != message['sender_id']
+        ]
+        if len(others) <= 1:
+            message_type = 'private'
+        else:
+            message_type = 'huddle'
+
+    if message_type == 'stream':
+        unread_key = 'streams'
+        stream_id = message['stream_id']
+        topic = message['subject']
+
+        my_key = (stream_id, topic)  # type: ignore
+
+        key_func = lambda obj: (obj['stream_id'], obj['topic'])
+        new_obj = dict(
+            stream_id=stream_id,
+            topic=topic,
+            unread_message_ids=[message_id],
+        )
+    elif message_type == 'private':
+        unread_key = 'pms'
+        sender_id = message['sender_id']
+
+        my_key = sender_id  # type: ignore
+        key_func = lambda obj: obj['sender_id']
+        new_obj = dict(
+            sender_id=sender_id,
+            unread_message_ids=[message_id],
+        )
+    else:
+        unread_key = 'huddles'
+        display_recipient = message['display_recipient']
+        user_ids = [obj['id'] for obj in display_recipient]
+        user_ids = sorted(user_ids)
+        my_key = ','.join(str(uid) for uid in user_ids)  # type: ignore
+        key_func = lambda obj: obj['user_ids_string']
+        new_obj = dict(
+            user_ids_string=my_key,
+            unread_message_ids=[message_id],
+        )
+
+    for obj in state[unread_key]:
+        if key_func(obj) == my_key:
+            obj['unread_message_ids'].append(message_id)
+            obj['unread_message_ids'].sort()
+            return
+
+    state[unread_key].append(new_obj)
+    state[unread_key].sort(key=key_func)
+
+    if message.get('is_mentioned'):
+        state['mentions'].append(message_id)
