@@ -546,10 +546,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    function initClipboard(selector) {
-        return new Clipboard(selector);
-    }
-    initClipboard('.copy_link');
+    new Clipboard('.copy_link');
 
     $('body').on('click', '.copy_link', function (e) {
         popovers.hide_actions_popover();
