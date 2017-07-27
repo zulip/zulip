@@ -62,16 +62,19 @@ def zulip_default_context(request):
         realm_icon = get_realm_icon_url(realm)
         realm_description_raw = realm.description or "The coolest place in the universe."
         realm_description = convert(realm_description_raw, message_realm=realm)
+        realm_open = not realm.invite_required and not realm.restricted_to_domain
     else:
         realm_uri = settings.SERVER_URI
         realm_name = None
         realm_icon = None
         realm_description = None
+        realm_open = None
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
     about_link_disabled = settings.ABOUT_LINK_DISABLED
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
+
     if settings.SUBDOMAINS_HOMEPAGE and get_subdomain(request) == "":
         register_link_disabled = True
         login_link_disabled = True
@@ -96,6 +99,7 @@ def zulip_default_context(request):
         'external_api_uri': settings.EXTERNAL_API_URI,
         'external_host': settings.EXTERNAL_HOST,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
+        'realm_open': realm_open,
         'realm_uri': realm_uri,
         'realm_name': realm_name,
         'realm_icon': realm_icon,
