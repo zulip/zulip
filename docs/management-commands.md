@@ -10,8 +10,8 @@ command.  The key thing distinguishing these from production scripts
 commands can access the database.
 
 While Zulip takes advantage of built-in Django management commands for
-things like, we have dozens that we've written for a range of
-purposes:
+things like managing Django migrations, we also have dozens that we've
+written for a range of purposes:
 
 * Cron jobs to do regular updates, e.g. `update_analytics_counts.py`,
   `sync_ldap_user_data`, etc.
@@ -45,8 +45,10 @@ project.
   looking up users by email well (if there's a unique user with that
   email, just modify it without requiring the user to specify the
   realm as well, but if there's a collision, throw a nice error).
-* Avoid writing a lot of code in management commands; it's often hard
-  to maintain and thus at risk of bit rot.  Look for code in
+* Avoid writing a lot of code in management commands; management
+  commands are annoying to unit test, and thus easier to maintain if
+  all the interesting logic is in a nice function that is unit tested
+  (and ideally, also used in Zulip's existing code).  Look for code in
   `zerver/lib/` that already does what you need.  For most actions,
   you can just call a `do_change_foo` type function from
   `zerver/lib/actions.py` to do all the work; this is usually far
