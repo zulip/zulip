@@ -42,7 +42,7 @@ renew with this command:
 
 If you aren't able to use Let's Encrypt, you can generate a
 self-signed ssl certificate.  We recommend getting a real certificate
-using LetsEncrypt over this approach because your browser (and some of
+using Let's Encrypt over this approach because your browser (and some of
 the Zulip clients) will complain when connecting to your server that
 the certificate isn't signed.
 
