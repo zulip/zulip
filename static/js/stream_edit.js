@@ -196,6 +196,7 @@ function show_subscription_settings(sub_row) {
             },
         },
     }).init();
+    ui.update_scrollbar($(".subscriber_list_container"));
 
     sub_settings.find('input[name="principal"]').typeahead({
         source: people.get_realm_persons, // This is a function.
@@ -238,6 +239,7 @@ exports.show_settings_for = function (node) {
     $(".nothing-selected").hide();
 
     ui.update_scrollbar($("#subscription_overlay .settings"));
+    ui.set_up_scrollbar($("#subscription_overlay .subscriber_list_container"));
 
     sub_settings.addClass("show");
 
