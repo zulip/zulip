@@ -467,7 +467,7 @@ with_overrides(function (override) {
 with_overrides(function (override) {
     // hotspots
     var event = event_fixtures.hotspots;
-    override('hotspots.show', noop);
+    override('hotspots.load_new', noop);
     dispatch(event);
     assert_same(page_params.hotspots, event.hotspots);
 });
