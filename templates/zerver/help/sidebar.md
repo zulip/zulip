@@ -103,7 +103,7 @@
 * [The Zulip browser window](/help/the-zulip-browser-window)
 * [Zulip glossary](/help/zulip-glossary)
 
-## Administration
+## Guides
 
 * [Getting your organization started with Zulip](/help/getting-your-organization-started-with-zulip)
 
