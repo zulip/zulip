@@ -1,16 +1,27 @@
 # Customize Zulip
 
 Once you've got Zulip setup, you'll likely want to configure it the
-way you like.  Most configuration can be done by a realm administrator
-on the web (see
-[the documentation for realm administrators][realm-admin-docs]); this
-page discusses those additional configuration items that can be done
-by a system administrator.
+way you like.
+
+## Making changes
+
+Most configuration can be done by a realm administrator, on the web.
+For those settings, see [the documentation for realm
+administrators][realm-admin-docs].
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
 
+This page discusses additional configuration that a system
+administrator can do.  To change any of the following settings, edit
+the `/etc/zulip/settings.py` file on your Zulip server, and then
+restart the server with the following command:
+```
+su zulip -c /home/zulip/deployments/current/scripts/restart-server
+```
 
-## Authentication Backends
+## Specific settings
+
+### Authentication Backends
 
 `AUTHENTICATION_BACKENDS` is a list of enabled authentication mechanisms. By
 default the email backend is enabled.
@@ -21,7 +32,7 @@ that backend as documented in the `settings.py` file. See
 the [section on Authentication](prod-authentication-methods.html) for more detail on the available
 authentication backends and how to configure them.
 
-## Mobile and desktop apps
+### Mobile and desktop apps
 
 The Zulip apps expect to be talking to to servers with a properly
 signed SSL certificate, in most cases and will not accept a
@@ -43,7 +54,7 @@ By the end of summer 2017, all of the Zulip apps will have full
 support for multiple accounts, potentially on different Zulip servers,
 with a convenient UI for switching between them.
 
-## Terms of service and Privacy policy
+### Terms of service and Privacy policy
 
 Zulip allows you to configure your server's Terms of Service and
 Privacy Policy pages (`/terms` and `/privacy`, respectively).  You can
@@ -53,7 +64,7 @@ support for included HTML).  A good approach is to use paths like
 `/etc/zulip/terms.md`, so that it's easy to back up your policy
 configuration along with your other Zulip server configuration.
 
-## Miscellaneous server settings
+### Miscellaneous server settings
 
 Zulip has dozens of settings documented in the comments in
 `/etc/zulip/settings.py`; you can review
