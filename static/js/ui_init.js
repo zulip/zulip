@@ -245,6 +245,8 @@ $(function () {
         ui.switchToFullWidth();
     }
 
+    ui.set_up_scrollbar($(".informational-overlays .modal-body"));
+
     // initialize other stuff
     reload.initialize();
     server_events.initialize();
