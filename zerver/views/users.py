@@ -17,14 +17,15 @@ from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
+    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, notify_created_bot, \
+    do_update_outgoing_webhook_service
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url
 from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
-    check_full_name, check_short_name
+    check_full_name, check_short_name, check_valid_interface_type
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
@@ -158,10 +159,12 @@ def get_stream_name(stream):
 def patch_bot_backend(request, user_profile, email,
                       full_name=REQ(default=None),
                       bot_owner=REQ(default=None),
+                      service_payload_url=REQ(validator=check_url, default=None),
+                      service_interface=REQ(validator=check_int, default=1),
                       default_sending_stream=REQ(default=None),
                       default_events_register_stream=REQ(default=None),
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[int], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
         bot = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -192,6 +195,10 @@ def patch_bot_backend(request, user_profile, email,
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(bot, default_all_public_streams)
 
+    if service_payload_url is not None:
+        check_valid_interface_type(service_interface)
+        do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
+
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
@@ -214,7 +221,9 @@ def patch_bot_backend(request, user_profile, email,
     # Default bots have no owner.
     if bot.bot_owner is not None:
         json_result['bot_owner'] = bot.bot_owner.email
-
+    if service_payload_url is not None:
+        json_result['service_interface'] = service_interface
+        json_result['service_payload_url'] = service_payload_url
     return json_success(json_result)
 
 @has_request_variables
@@ -246,10 +255,11 @@ def add_outgoing_webhook_service(name, user_profile, base_url, interface, token)
 def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name_raw=REQ("short_name"),
                     bot_type=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
                     payload_url=REQ(validator=check_url, default=None),
+                    interface_type=REQ(validator=check_int, default=Service.GENERIC),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name = check_short_name(short_name_raw)
     service_name = short_name
     short_name += "-bot"
@@ -265,6 +275,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     except UserProfile.DoesNotExist:
         pass
     check_valid_bot_type(bot_type)
+    check_valid_interface_type(interface_type)
 
     if len(request.FILES) == 0:
         avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
@@ -300,8 +311,9 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
         add_outgoing_webhook_service(name=service_name,
                                      user_profile=bot_profile,
                                      base_url=payload_url,
-                                     interface=1,
+                                     interface=interface_type,
                                      token=random_api_key())
+    notify_created_bot(bot_profile)
 
     json_result = dict(
         api_key=bot_profile.api_key,

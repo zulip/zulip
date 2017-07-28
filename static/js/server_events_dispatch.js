@@ -98,6 +98,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'realm_bot':
         if (event.op === 'add') {
             bot_data.add(event.bot);
+            bot_data.add_services(event.service);
             settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'remove') {
             bot_data.deactivate(event.bot.email);
@@ -108,6 +109,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;
             }
             bot_data.update(event.bot.email, event.bot);
+            bot_data.update_service(event.bot.email, event.service);
             settings_users.update_user_data(event.bot.user_id, event.bot);
         }
         break;

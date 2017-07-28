@@ -55,11 +55,21 @@
                             <label for="create_bot_short_name" generated="true" class="text-error"></label>
                         </div>
                     </div>
-                    <div class="input-group" id="payload_url_inputbox">
-                        <label for="create_payload_url">{{t "Outgoing webhook service base URL" }}</label>
-                        <input type="text" name="payload_url" id="create_payload_url"
-                            maxlength=100 placeholder="https://hostname.example.com/bots/followup" value="" />
-                        <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
+                    <div id="payload_url_inputbox">
+                        <div class="input-group">
+                            <label for="create_payload_url">{{t "Base URL" }}</label>
+                            <input type="text" name="payload_url" id="create_payload_url"
+                                maxlength=100 placeholder="https://hostname.example.com/bots/followup" value="" />
+                            <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
+                        </div>
+                        <div class="input-group">
+                            <label for="interface_type">{{t "Interface" }}</label>
+                            <select name="interface_type" id="create_interface_type">
+                                <option value="1">{{t "Generic" }}</option>
+                                <option value="2">{{t "Slack's outgoing webhooks" }}</option>
+                            </select>
+                            <div><label for="create_interface_type" generated="true" class="text-error"></label></div>
+                        </div>
                     </div>
                     <div class="input-group">
                         <div id="bot_avatar_file"></div>

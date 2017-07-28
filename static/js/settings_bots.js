@@ -1,7 +1,7 @@
 var settings_bots = (function () {
 
 var exports = {};
-
+var OUTGOING_WEBHOOK = "Outgoing webhook";
 function add_bot_row(info) {
     info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
@@ -26,7 +26,7 @@ exports.type_id_to_string = function (type_id) {
     } else if (type_id === 2) {
         return i18n.t("Incoming webhook");
     } else if (type_id === 3) {
-        return i18n.t("Outgoing webhook");
+        return i18n.t(OUTGOING_WEBHOOK);
     }
 };
 
@@ -123,6 +123,8 @@ exports.set_up = function () {
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
     var GENERIC_BOT_TYPE = '1';
 
+    var GENERIC_INTERFACE = '1';
+
     $('#create_bot_form').validate({
         errorClass: 'text-error',
         success: function () {
@@ -133,6 +135,7 @@ exports.set_up = function () {
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var payload_url = $('#create_payload_url').val();
+            var interface_type = $('#create_interface_type').val();
             var formData = new FormData();
 
             formData.append('csrfmiddlewaretoken', csrf_token);
@@ -143,6 +146,7 @@ exports.set_up = function () {
             // If the selected bot_type is Outgoing webhook
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
                 formData.append('payload_url', JSON.stringify(payload_url));
+                formData.append('interface_type', interface_type);
             }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
@@ -162,6 +166,7 @@ exports.set_up = function () {
                     $('#payload_url_inputbox').hide();
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
                     $('#create_bot_button').show();
+                    $('#create_interface_type').val(GENERIC_INTERFACE);
                     create_avatar_widget.clear();
                     $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
                     $("#bots_lists_navbar .active-bots-tab").addClass("active");
@@ -248,12 +253,22 @@ exports.set_up = function () {
         var old_full_name = bot_info.find(".name").text();
         var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
         var bot_email = bot_info.find(".email .value").text();
+        var bot_type = bot_info.find(".type .value").text();
 
         $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
         $("#settings_page .edit_bot .select-form").text("").append(owner_select);
         $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
         $("#settings_page .edit_bot_form").attr("data-email", bot_email);
         $(".edit_bot_email").text(bot_email);
+
+        if (bot_type === OUTGOING_WEBHOOK) {
+            var service = bot_data.get_service(bot_email);
+            $("#settings_page .edit_bot #service_data").show();
+            $("#settings_page .edit_bot #edit_service_base_url").val(service.base_url);
+            $("#settings_page .edit_bot #edit_service_interface").val(service.interface);
+        } else {
+            $("#settings_page .edit_bot #service_data").hide();
+        }
 
         avatar_widget.clear();
 
@@ -290,6 +305,13 @@ exports.set_up = function () {
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner', bot_owner);
+                if (bot_type === OUTGOING_WEBHOOK) {
+                    var service_payload_url = $("#settings_page .edit_bot #edit_service_base_url").val();
+                    var service_interface = $("#settings_page .edit_bot #edit_service_interface :selected").val();
+                    formData.append('service_payload_url', JSON.stringify(service_payload_url));
+                    formData.append('service_interface', service_interface);
+                }
+
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });

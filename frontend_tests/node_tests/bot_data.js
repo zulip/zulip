@@ -15,6 +15,8 @@ set_global('document', null);
 var page_params = {
     realm_bots: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
     is_admin: false,
+    realm_services: [{email: 'testbot@zulip.com', base_url: 'http://example.domain.com',
+        interface:1, name: 'test'}],
 };
 set_global('page_params', page_params);
 
@@ -36,6 +38,8 @@ var bot_data = require('js/bot_data.js');
 bot_data.initialize();
 // Our startup logic should have added Bot 0 from page_params.
 assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
+assert.equal(bot_data.get_service('testbot@zulip.com').base_url, 'http://example.domain.com');
+assert.equal(bot_data.get_service('testbot@zulip.com').name, 'test');
 
 (function () {
     var test_bot = {
@@ -44,6 +48,38 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         full_name: 'Bot 1',
         extra: 'Not in data',
     };
+
+    var test_service_1 = {
+        base_url: 'http://example.domain1.com',
+        interface: 1,
+        name: 'test1',
+        token: 'abcd',
+        email: 'bot1@zulip.com',
+    };
+
+    var test_service_2 = {
+        base_url: 'http://example.domain2.com',
+        interface: 1,
+        name: 'test2',
+        token: 'abcd',
+        email: 'bot1@zulip.com',
+    };
+
+    (function test_add_service() {
+        bot_data.add_service(test_service_1);
+
+        var service = bot_data.get_service('bot1@zulip.com');
+        assert.equal('http://example.domain1.com', service.base_url);
+        assert.equal('test1', service.name);
+    }());
+
+    (function test_update_service() {
+        bot_data.update_service('bot1@zulip.com', test_service_2);
+
+        var service = bot_data.get_service('bot1@zulip.com');
+        assert.equal('http://example.domain2.com', service.base_url);
+        assert.equal('test2', service.name);
+    }());
 
     (function test_add() {
         bot_data.add(test_bot);

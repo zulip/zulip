@@ -13,7 +13,7 @@ from typing import Any, Dict, List
 
 from zerver.lib.actions import do_change_stream_invite_only
 from zerver.models import get_realm, get_stream, \
-    Realm, Stream, UserProfile, get_user, get_bot_services
+    Realm, Stream, UserProfile, get_user, get_bot_services, Service
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path, get_test_image_file, tornado_redirected_to_list,
@@ -123,7 +123,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream=None,
                          default_events_register_stream=None,
                          default_all_public_streams=False,
-                         owner=self.example_email('hamlet'))
+                         owner=self.example_email('hamlet')),
+                service=[],
             ),
             event['event']
         )
@@ -291,7 +292,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream='Denmark',
                          default_events_register_stream=None,
                          default_all_public_streams=False,
-                         owner=self.example_email('hamlet'))
+                         owner=self.example_email('hamlet')),
+                service=[],
             ),
             event['event']
         )
@@ -361,7 +363,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream=None,
                          default_events_register_stream='Denmark',
                          default_all_public_streams=False,
-                         owner=self.example_email('hamlet'))
+                         owner=self.example_email('hamlet')),
+                service=[],
             ),
             event['event']
         )
@@ -574,6 +577,30 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('othello'))
         bot = self.get_bot()
         self.assertEqual('The Bot of Hamlet', bot['full_name'])
+
+    def test_patch_outgoing_webhook_bot_baseurl_interface(self):
+        # type: () -> None
+        self.login(self.example_email('hamlet'))
+        bot_info = {
+            'full_name': u'The Bot of Hamlet',
+            'short_name': u'hambot',
+            'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
+            'payload_url': ujson.dumps("http://hostname.domain1.com"),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'service_payload_url': ujson.dumps("http://hostname.domain2.com"),
+            'service_interface': 1,
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_success(result)
+
+        service_interface = ujson.loads(result.content)['service_interface']
+        self.assertEqual(service_interface, 1)
+
+        service_payload_url = ujson.loads(result.content)['service_payload_url']
+        self.assertEqual(service_payload_url, "http://hostname.domain2.com")
 
     @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self):
@@ -976,3 +1003,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             bot_name = embedded_bot.name
             bot_handler_class_name = class_bot_handler.format(name=bot_name, Name=bot_name.title())
             self.assertEqual(str(type(embedded_bot_handler)), bot_handler_class_name)
+
+    def test_outgoing_webhook_interface_type(self):
+        # type: () -> None
+        self.login(self.example_email('hamlet'))
+        bot_info = {
+            'full_name': 'Outgoing Webhook test bot',
+            'short_name': 'outgoingservicebot',
+            'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
+            'payload_url': ujson.dumps('http://127.0.0.1:5002/bots/followup'),
+            'interface_type': -1,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Invalid interface type')
+
+        bot_info['interface_type'] = Service.GENERIC
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)

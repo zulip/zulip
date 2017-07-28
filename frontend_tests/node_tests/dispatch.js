@@ -203,6 +203,13 @@ var event_fixtures = {
             full_name: 'The Bot',
             // etc.
         },
+        service: [
+            {
+                email: 'the-bot@example.com',
+                base_url: 'http://hostname.example.com/abc',
+                interface: 1,
+            },
+        ],
     },
 
     realm_bot__remove: {
@@ -221,6 +228,11 @@ var event_fixtures = {
             email: 'the-bot@example.com',
             user_id: 4321,
             full_name: 'The Bot Has A New Name',
+        },
+        service: {
+            email: 'the-bot@example.com',
+            base_url: 'http://hostname.example.com/abc',
+            interface: 1,
         },
     },
 
@@ -563,14 +575,20 @@ with_overrides(function (override) {
     // realm_bot
     var event = event_fixtures.realm_bot__add;
     global.with_stub(function (bot_stub) {
-        global.with_stub(function (admin_stub) {
-            override('bot_data.add', bot_stub.f);
-            override('settings_users.update_user_data', admin_stub.f);
-            dispatch(event);
-            var args = bot_stub.get_args('bot');
-            assert_same(args.bot, event.bot);
+        global.with_stub(function (services_stub) {
+            global.with_stub(function (admin_stub) {
+                override('bot_data.add', bot_stub.f);
+                override('bot_data.add_services', services_stub.f);
+                override('settings_users.update_user_data', admin_stub.f);
+                dispatch(event);
+                var args = bot_stub.get_args('bot');
+                assert_same(args.bot, event.bot);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+                var services_args = services_stub.get_args('services');
+                assert_same(services_args.services, event.service);
+
+                args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            });
         });
     });
 
@@ -589,19 +607,26 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm_bot__update;
     global.with_stub(function (bot_stub) {
-        global.with_stub(function (admin_stub) {
-            override('bot_data.update', bot_stub.f);
-            override('settings_users.update_user_data', admin_stub.f);
+        global.with_stub(function (service_stub) {
+            global.with_stub(function (admin_stub) {
+                override('bot_data.update', bot_stub.f);
+                override('bot_data.update_service', service_stub.f);
+                override('settings_users.update_user_data', admin_stub.f);
 
-            dispatch(event);
+                dispatch(event);
 
-            var args = bot_stub.get_args('email', 'bot');
-            assert_same(args.email, event.bot.email);
-            assert_same(args.bot, event.bot);
+                var args = bot_stub.get_args('email', 'bot');
+                assert_same(args.email, event.bot.email);
+                assert_same(args.bot, event.bot);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
-            assert_same(args.update_user_id, event.bot.user_id);
-            assert_same(args.update_bot_data, event.bot);
+                var service_args = service_stub.get_args('email', 'service_update');
+                assert_same(service_args.email, event.bot.email);
+                assert_same(service_args.service_update, event.service);
+
+                args = admin_stub.get_args('update_user_id', 'update_bot_data');
+                assert_same(args.update_user_id, event.bot.user_id);
+                assert_same(args.update_bot_data, event.bot);
+            });
         });
     });
 });
