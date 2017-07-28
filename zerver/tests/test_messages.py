@@ -39,6 +39,7 @@ from zerver.models import (
 from zerver.lib.actions import (
     check_message,
     check_send_message,
+    do_deactivate_user,
     do_set_realm_property,
     extract_recipients,
     do_create_user,
@@ -884,6 +885,29 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "to": "nonexistent"})
         self.assert_json_error(result, "Invalid email 'nonexistent'")
+
+    def test_personal_message_to_deactivated_user(self):
+        # type: () -> None
+        """
+        Sending a personal message to a deactivated user returns error JSON.
+        """
+        target_user_profile = self.example_user("othello")
+        do_deactivate_user(target_user_profile)
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages", {
+            "type": "private",
+            "content": "Test message",
+            "client": "test suite",
+            "to": self.example_email("othello")})
+        self.assert_json_error(result, "'othello@zulip.com' is no longer using Zulip.")
+
+        result = self.client_post("/json/messages", {
+            "type": "private",
+            "content": "Test message",
+            "client": "test suite",
+            "to": ujson.dumps([self.example_email("othello"),
+                               self.example_email("cordelia")])})
+        self.assert_json_error(result, "'othello@zulip.com' is no longer using Zulip.")
 
     def test_invalid_type(self):
         # type: () -> None
