@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
+from django.db.models import F, Max
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, RealmAuditLog, get_huddle, Realm, RealmEmoji, UserMessage, \
@@ -369,6 +370,16 @@ class Command(BaseCommand):
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)
+
+            if not options["test_suite"]:
+                # Update pointer of each user to point to the last message in their
+                # UserMessage rows with sender_id=user_profile_id.
+                users = list(UserMessage.objects.filter(
+                    message__sender_id=F('user_profile_id')).values(
+                    'user_profile_id').annotate(pointer=Max('message_id')))
+                for user in users:
+                    UserProfile.objects.filter(id=user['user_profile_id']).update(
+                        pointer=user['pointer'])
 
             self.stdout.write("Successfully populated test database.\n")
 
