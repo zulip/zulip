@@ -1,5 +1,6 @@
 ## Guides
 
+* [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Getting your organization started with Zulip](/help/getting-your-organization-started-with-zulip)
 
 ## Account Basics
