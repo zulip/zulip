@@ -25,7 +25,8 @@ var block = {
   text: /^[^\n]+/
 };
 
-block.bullet = /(?:[*+-]|\d+\.)/;
+// Zulip modification: Remove numbers from this pattern.
+block.bullet = /(?:[*+-])/;
 block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
 block.item = replace(block.item, 'gm')
   (/bull/g, block.bullet)
