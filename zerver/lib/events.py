@@ -222,7 +222,8 @@ def apply_event(state, event, user_profile, include_subscribers):
     # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
-        apply_unread_message_event(state['unread_msgs'], event['message'])
+        if 'unread_msgs' in state:
+            apply_unread_message_event(state['unread_msgs'], event['message'])
 
     elif event['type'] == "hotspots":
         state['hotspots'] = event['hotspots']
