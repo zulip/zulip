@@ -1,4 +1,4 @@
-var config = require('./webpack.config.js');
+var config = require('./webpack.config.js')();
 var BundleTracker = require('webpack-bundle-tracker');
 
 config.devtool = 'source-map';
