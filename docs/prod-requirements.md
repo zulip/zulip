@@ -66,15 +66,16 @@ Zulip in production. 64-bit is recommended.
 You should already have a domain name available for your Zulip
 production instance. In order to generate valid SSL certificates with Let's
 Encrypt, and to enable other services such as Google Authentication, you'll
-need to update the domains A record to point to your production server.
+need to update the domain's A record to point to your production server.
 
 ## Credentials needed
 
 #### SSL Certificate
 
-* SSL Certificate for the host you're putting this on (e.g. zulip.example.com).
-  The installation instructions contain documentation for how to get an SSL
-  certificate for free using [LetsEncrypt](https://letsencrypt.org/).
+* An SSL certificate for the host you're putting this on (e.g.,
+  zulip.example.com).  If you don't have an SSL solution already, read
+  about [getting an SSL certificate for free](ssl-certificates.html) using
+  Let's Encrypt.
 
 #### Outgoing email
 

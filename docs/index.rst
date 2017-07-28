@@ -49,6 +49,7 @@ Contents:
    :maxdepth: 2
    :caption: Zulip in production
 
+   Production overview <prod>
    prod-requirements
    Installing a production server <prod-install>
    prod-troubleshooting
