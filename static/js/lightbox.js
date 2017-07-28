@@ -140,14 +140,14 @@ exports.open = function (image, options) {
 
 exports.show_from_selected_message = function () {
     var $message = $(".selected_message");
-    var $image = $message.find("img");
+    var $image = $message.find(".message_content img");
 
     while ($image.length === 0) {
         $message = $message.prev();
         if ($message.length === 0) {
             break;
         }
-        $image = $message.find("img");
+        $image = $message.find(".message_content img");
     }
 
     if ($image.length !== 0) {
