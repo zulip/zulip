@@ -29,5 +29,5 @@ the Enter key or clicking the **Send** button, depending on your settings.
 
 !!! tip ""
     You can always cancel your message by clicking the x (<i
-    class="icon-vector-remove"></i>) icon located at the top-right corner of
+    class="icon-vector-remove"></i>) icon located at the top right corner of
     your compose box or pressing the `Esc` key.

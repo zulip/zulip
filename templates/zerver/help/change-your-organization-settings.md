@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-1. Click on the chevron next to the gear icon in the top-right of the screen to
+1. Click on the chevron next to the gear icon in the top right of the screen to
 reveal a dropdown menu.
 
 2. Select [Manage organization](/#organization/organization-settings) from the
