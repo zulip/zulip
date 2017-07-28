@@ -1,20 +1,27 @@
-var path = require('path');
-var assets = require('./webpack.assets.json');
-var BundleTracker = require('webpack-bundle-tracker');
-var webpack = require('webpack');
+import { resolve } from 'path';
+import * as BundleTracker from 'webpack-bundle-tracker';
+import * as webpack from 'webpack';
 
+const assets = require('./webpack.assets.json');
 
-module.exports = function (env) {
-    var production = env === "production";
-    var config = {
-        context: path.resolve(__dirname, "../"),
+// Only use the Webpack 2.0 Rule definitions.
+interface Config extends webpack.Configuration {
+  module: {
+    rules: webpack.NewUseRule[]
+  }
+}
+
+export default (env?: string) : Config => {
+    const production: boolean = env === "production";
+    let config: Config = {
+        context: resolve(__dirname, "../"),
         entry: assets,
         module: {
             rules: [
                 // Run the typescript compilier on .ts files before webpack
                 {
                     test: /\.tsx?$/,
-                    loader: 'ts-loader',
+                    use: 'ts-loader',
                 },
                 // This loads and transforms sourcemap files from other compiliers.
                 // The typescript comilier will generate a sourcemap and
@@ -22,7 +29,7 @@ module.exports = function (env) {
                 {
                     enforce: 'pre',
                     test: /\.js$/,
-                    loader: "source-map-loader",
+                    use: "source-map-loader",
                 },
                 {
                     enforce: 'pre',
@@ -57,7 +64,7 @@ module.exports = function (env) {
             ],
         },
         output: {
-            path: path.resolve(__dirname, '../static/webpack-bundles'),
+            path: resolve(__dirname, '../static/webpack-bundles'),
             filename: production ? '[name]-[hash].js' : '[name].js',
         },
         resolve: {
@@ -71,13 +78,13 @@ module.exports = function (env) {
         ];
     } else {
         // Built webpack dev asset reloader
-        config.entry.common.unshift('webpack/hot/dev-server');
+        config.entry['common'].unshift('webpack/hot/dev-server');
         // Use 0.0.0.0 so that we can set a port but still use the host
         // the browser is connected to.
-        config.entry.common.unshift('webpack-dev-server/client?http://0.0.0.0:9994');
+        config.entry['common'].unshift('webpack-dev-server/client?http://0.0.0.0:9994');
 
         // Out JS debugging tools
-        config.entry.common.push('./static/js/debug.js');
+        config.entry['common'].push('./static/js/debug.js');
 
         config.output.publicPath = '/webpack/';
         config.plugins = [
