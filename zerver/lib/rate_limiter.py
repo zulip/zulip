@@ -150,10 +150,9 @@ def api_calls_left(user, domain='all'):
     max_calls = max_api_calls(user)
     return _get_api_calls_left(user, domain, max_window, max_calls)
 
-def is_ratelimited(user, domain='all'):
-    # type: (UserProfile, Text) -> Tuple[bool, float]
+def is_ratelimited(entity):
+    # type: (RateLimitedObject) -> Tuple[bool, float]
     "Returns a tuple of (rate_limited, time_till_free)"
-    entity = RateLimitedUser(user, domain=domain)
     list_key, set_key, blocking_key = entity.get_keys()
 
     rules = entity.rules()

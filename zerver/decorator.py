@@ -18,7 +18,7 @@ from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
     is_remote_server
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left
+    api_calls_left, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -653,7 +653,8 @@ def rate_limit_user(request, user, domain):
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
 
-    ratelimited, time = is_ratelimited(user, domain)
+    entity = RateLimitedUser(user, domain=domain)
+    ratelimited, time = is_ratelimited(entity)
     request._ratelimit_applied_limits = True
     request._ratelimit_secs_to_freedom = time
     request._ratelimit_over_limit = ratelimited
