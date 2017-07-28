@@ -414,7 +414,6 @@ var hello_events = function () {
 };
 
 var apps_events = function () {
-    var version;
     var info = {
         windows: {
             image: "/static/images/landing-page/microsoft.png",
@@ -448,35 +447,33 @@ var apps_events = function () {
         },
     };
 
-    var nav_version = {
-        Win: "windows",
-        MacIntel: "mac",
-        Linux: "linux",
-        iP: "ios",
-    };
+    var version;
 
-    // if the hash is not a valid section, then identify it.
-    version = window.location.hash.replace(/^#/, "");
+    function get_version_from_path() {
+        var result;
+        var parts = path_parts();
 
-    if (info[version]) {
-        window.location.hash = version;
-    } else {
-        for (var x in nav_version) {
-            if (navigator.platform.indexOf(x) !== -1) {
-                window.location.hash = nav_version[x];
-                version = nav_version[x];
-                break;
+        Object.keys(info).forEach(function (version) {
+            if (parts.includes(version)) {
+                result = version;
             }
-        }
+        });
 
-        if (!version || !info[version]) {
-            version = "mac";
-        }
-
-        window.location.hash = version;
+        // display Mac app by default
+        result = result || 'mac';
+        return result;
     }
 
-    var update_version = function (version) {
+    function get_path_from_version() {
+        return '/apps/' + version;
+    }
+
+    function update_path() {
+        var next_path = get_path_from_version();
+        history.pushState(version, '', next_path);
+    }
+
+    var update_page = function () {
         var version_info = info[version];
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
@@ -484,16 +481,29 @@ var apps_events = function () {
         $(".image img").attr("src", version_info.image);
     };
 
-
-    window.onhashchange = function () {
-        update_version(window.location.hash.substr(1));
-    };
-
-    update_version(version);
-
-    $(".apps > .icon").click(function () {
+    $(window).on('popstate', function () {
+        version = get_version_from_path();
+        update_page();
         $("body").animate({ scrollTop: 0 }, 200);
     });
+
+    $(".apps a .icon").click(function (e) {
+        var next_version = $(e.target).closest('a')
+            .attr('href')
+            .replace('/apps/', '');
+        version = next_version;
+
+        update_path();
+        update_page();
+        $("body").animate({ scrollTop: 0 }, 200);
+
+        return false;
+    });
+
+    // init
+    version = get_version_from_path();
+    history.replaceState(version, '', get_path_from_version());
+    update_page();
 };
 
 var events = function () {
