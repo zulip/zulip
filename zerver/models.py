@@ -1276,7 +1276,7 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
     def where_unread():
         # type: () -> str
         # Use this for Django ORM queries where we are getting lots
-        # of rows.  This customer SQL plays nice with our partial indexes.
+        # of rows.  This custom SQL plays nice with our partial indexes.
         # Grep the code for example usage.
         return 'flags & 1 = 0'
 
