@@ -1,104 +1,96 @@
-## Great for developers
+The Zulip core developers have decades of combined experience writing and
+maintaining free and open source software. We use Zulip to keep contributors
+engaged, efficiently make decisions, and fashion the day-to-day experience
+of being a part of our project. No other chat product comes close to Zulip
+in facilitating contributor engagement, making efficient use of maintainers'
+time, and upholding the values of the FOSS community.
 
-* **Format code as code:** Messages take Markdown formatting,
-  [including code
-  blocks](/help/format-your-message-using-markdown#code), making it
-  super easy to discuss some code or paste an error message.
+If you haven't read [why Zulip](/why-zulip), read that first. We've also
+collected a list of features we think will be of particular interest for
+open source communities using Zulip.
 
-* **Clear permalinks:** Have a design discussion in chat and want to
-  link to it in your bug tracker or a commit message?  [Two
-  clicks](/help/share-a-message-or-conversation) makes a permanent
-  link.  The URL transparently shows where the discussion happened,
-  and for everyone who clicks through, Zulip's topic threading
-  provides a focused view on that conversation.
+**Free hosting at zulipchat.com**
 
-* **Easy custom linkification:** Want to refer to issues or code
-  reviews with short notation like `#1234`, `T1234` — or any other
-  style of your own?  Set up any regex as a [custom linkification
-  filter](/help/add-a-custom-linkification-filter) for your
-  organization.
+No catch; the hosting is supported by (and is identical to) zulipchat.com's
+commercial offerings. This offer extends to any community involved in
+supporting free and open source software: development projects, foundations,
+meetups, hackathons, conference committees, and more. If you’re not sure
+whether your organization qualifies, send us an email at
+support@zulipchat.com.
 
-* **Plays well with others:** With [60+ integrations](/integrations)
-  including GitHub, Travis CI, JIRA, and Stripe, chances are Zulip
-  already integrates with the tools you use every day; and our API
-  makes it easy to add more.
+**Scale to thousands of users**
 
-* **Everything in its place:** Troubleshooting in chat for users or
-  new developers becomes much more manageable with Zulip's topic
-  threading: each issue in a channel can be discussed in its own
-  thread.
+For those running Zulip at home, we’ve done a lot of work to ensure that
+drive-by members of the community don’t consume too many disk or CPU
+resources. A Zulip server with 1000 active members and 10000 inactive
+members takes about as many resources as a Zulip server with 1000 active
+members.
 
-## Great for productivity
+**Join without an invitation**
 
-* **Clearer conversations:** With Zulip's unique model of threading by
-  topic, your community can have more than one conversation in a
-  channel at the same time, without the confusion and talking-over
-  caused by traditional models like IRC and Slack.
+Allow anyone to
+[join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
+You can also link to your Zulip with a [badge](/help/join-zulip-chat-badge)
+in your readme document.
 
-* **Full service:** No need to settle for a limited "try it out" tier.
-  You're welcome to [host Zulip
-  yourself](https://zulip.readthedocs.io/en/latest/prod-install.html),
-  or [sign up at zulipchat.com](https://zulipchat.com/beta/) for
-  commercially-supported hosting — free for open source projects.
+**Authenticate with GitHub**
 
-* **Fast full-text search:** Feeling dejà vu about an issue someone's
-  reporting? Searching your full message history is a snap.
-
-* **Proven model:** [Stop by
-  chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html),
-  Zulip's own development community, to see it in action for a large
-  project with ~5000 messages/week, essentially all of it productive
-  developer discussion.
-
-## Great for open communities
-
-* **Web, mobile, desktop:** Sleek, modern [apps for every
-  platform](/apps/) make Zulip an inclusive choice for everyone in
-  your community.
-
-* **Walls optional:** Take down the barrier to participation created
-  by making people interested in your community ask for an invitation
-  before they can enter — use [one
-  checkbox](/help/allow-anyone-to-join-without-an-invitation) to open
-  your Zulip organization for anyone to join.
-
-* **Badges:** Want to link to your Zulip organization with a nice
-  badge in your README?  [Done.](/help/join-zulip-chat-badge)
-
-<!--- This needs better documentation. -->
-* **GitHub auth?** [We've got that.][github-auth]
-
+Allow (or require) users to
+[authenticate with their GitHub account][github-auth], instead of with their
+email address.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
-* **Scale:** Zulip scales well to large communities — it's loved by
-  communities as large as 1000 users and beyond.
+**Quality data export**
 
-## Zulip ❤​ open source
+Our high quality export and import tools ensure you can always move from
+[zulipchat.com](https://zulipchat.com) hosting to your own servers.
 
-* **Free and open source software:** Zulip itself is open source,
-  [under the Apache License 2.0](https://github.com/zulip/zulip/blob/master/LICENSE).
+**Syntax highlighting**
 
-* **Free for open source:** Full, commercially-supported hosting at
-  zulipchat.com is free for open source communities.  [Sign up
-  today!](https://zulipchat.com/beta/))
+[Full Markdown support](/help/format-your-message-using-markdown), including
+syntax highlighting, makes it easy to discuss code, paste an error message,
+or explain a complicated point. Full LaTeX support as well.
 
-<!--- This needs better — any! — documentation. -->
-* **Your data is yours:** Zulip's high-quality export and import tools
-  enable migrating a community smoothly from one host to another.
-  So if you start out running on zulipchat.com, you can always choose
-  later to move to your own servers, and vice versa.
+**Permalink from issues to chat**
 
-* **The open source leader:** Zulip is the leading open source group
-  chat option, with far more contributor momentum than any other.
-  Some numbers:
+[Permalink to Zulip conversations](/help/share-a-message-or-conversation)
+from your issue tracker. Zulip’s topic-based threading keeps conversations
+coherent and organized.
 
-    * Over 300 contributors in the Zulip server project alone — a
-      figure reached in only 18 months.
+**Link from chat to issues**
 
-    * 75 people working on Zulip at the PyCon sprints in Portland in
-      May 2017.
+Efficiently refer to issues or code reviews with notation like `#1234` or
+`T1234`. You can set up any regex as a
+[custom linkification filter](/help/add-a-custom-linkification-filter) for
+your organization.
 
-    * In the [Zulip Server 1.6
-      release](https://blog.zulip.org/2017/06/06/zulip-server-1-6-released/)
-      in June 2017, over 3100 new commits since 1.5, by over 150
-      different people.
+**Hundreds of integrations**
+
+Get events from GitHub, Travis CI, JIRA, and
+[hundreds of other tools](/integrations) right in Zulip. Topics give each
+issue its own place for discussion.
+
+**Free and open source**
+
+Don’t like something? You can
+[open an issue](https://github.com/zulip/zulip/issues),
+[submit a patch](http://zulip.readthedocs.io/en/latest/dev-overview.html),
+[fork the project](https://github.com/zulip/zulip), or chat with us directly
+at [chat.zulip.org](https://chat.zulip.org). All code, including the
+[desktop](https://github.com/zulip/zulip-electron) and
+[mobile](https://github.com/zulip/zulip-mobile) apps, is under the Apache 2
+license.
+
+**Proven model**
+
+Check out [chat.zulip.org](https://chat.zulip.org) to see Zulip in action
+for a project with ~5000 messages of developer discussion a week. The Zulip
+project is the largest and fastest-growing open source group chat product,
+both by number of contributors (300+) and by commit velocity (more than
+Docker and Django combined).
+
+**Public archive (coming soon)**
+
+Allow search engines to index your chat, with a read-only view of your
+public streams. Zulip’s topic-based threading keeps conversations coherent
+and organized, enabling a meaningful archive.
