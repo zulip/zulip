@@ -41,9 +41,16 @@ Omit both <email> and <full name> for interactive user creation.
                             dest='password',
                             type=str,
                             default='',
-                            help='password of new user.  Note that we recommend against setting '
+                            help='password of new user. For development only.'
+                                 'Note that we recommend against setting '
                                  'passwords this way, since they can be snooped by any user account '
-                                 'on the server via `ps -ef`.')
+                                 'on the server via `ps -ef` or by any superuser with'
+                                 'read access to the user\'s bash history.')
+        parser.add_argument('--password-file',
+                            dest='password_file',
+                            type=str,
+                            default='',
+                            help='The file containing the password of the new user.')
         parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
                             help='email address of new user')
         parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
@@ -85,7 +92,12 @@ parameters, or specify no parameters for interactive user creation.""")
                 full_name = input("Full name: ")
 
         try:
-            pw = options.get('password', initial_password(email))
+            if 'password' in options:
+                pw = options['password']
+            if 'password_file' in options:
+                pw = open(options['password_file'], 'r').read()
+            else:
+                pw = initial_password(email).encode()
             notify_new_user(do_create_user(email, pw,
                                            realm, full_name, email_to_username(email)),
                             internal=True)
