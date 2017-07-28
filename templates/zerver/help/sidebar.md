@@ -1,3 +1,7 @@
+## Guides
+
+* [Getting your organization started with Zulip](/help/getting-your-organization-started-with-zulip)
+
 ## Account Basics
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
@@ -102,10 +106,6 @@
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
 * [The Zulip browser window](/help/the-zulip-browser-window)
 * [Zulip glossary](/help/zulip-glossary)
-
-## Guides
-
-* [Getting your organization started with Zulip](/help/getting-your-organization-started-with-zulip)
 
 ## Organization Settings
 
