@@ -467,6 +467,7 @@ exports.launch = function (hash) {
         exports.change_state(hash);
 
         ui.set_up_scrollbar($("#subscription_overlay .streams-list"));
+        ui.set_up_scrollbar($("#subscription_overlay .settings"));
 
     });
     if (!get_active_data().id) {

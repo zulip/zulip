@@ -236,6 +236,9 @@ exports.show_settings_for = function (node) {
     var sub_settings = settings_for_sub(sub);
 
     $(".nothing-selected").hide();
+
+    ui.update_scrollbar($("#subscription_overlay .settings"));
+
     sub_settings.addClass("show");
 
     show_subscription_settings(sub_settings);
