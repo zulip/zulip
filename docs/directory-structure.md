@@ -85,7 +85,8 @@ templating systems.
 These are distinguished from scripts, below, by needing to run a
 Django context (i.e. with database access).
 
-* `zerver/management/commands/` Management commands one might run at a
+* `zerver/management/commands/`
+  [Management commands](management-commands.html) one might run at a
   production deployment site (e.g. scripts to change a value or
   deactivate a user properly).
 

@@ -134,6 +134,7 @@ Contents:
    pointer
    markdown
    realms
+   management-commands
    front-end-build-process
    schema-migrations
    html_css
