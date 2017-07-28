@@ -395,7 +395,8 @@ exports.compose_matches_sorter = function (matches) {
         return typeahead_helper.sort_emojis(matches, this.token);
     } else if (this.completing === 'mention') {
         return typeahead_helper.sort_recipients(matches, this.token,
-                                                compose_state.stream_name());
+                                                compose_state.stream_name(),
+                                                compose_state.subject());
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {

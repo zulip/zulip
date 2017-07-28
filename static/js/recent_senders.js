@@ -22,7 +22,7 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     stream_id = stream_id.toString();
 
     var topic_dict = senders.get(stream_id);
-    if (topic_dict !== undefined) {
+    if (topic !== undefined && topic_dict !== undefined) {
         var sender_timestamps = topic_dict.get(topic);
         if (sender_timestamps !== undefined) {
             var b_timestamp = sender_timestamps.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
@@ -30,6 +30,10 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
             return b_timestamp - a_timestamp;
         }
     }
+
+    // TODO: We should also compare by stream (and maybe also by
+    // overall message recency in the realm) in the common case where
+    // there's no traffic on the current topic from this user.
 
     return 0;
 };
