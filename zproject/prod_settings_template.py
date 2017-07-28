@@ -186,7 +186,7 @@ ENABLE_FILE_LINKS = False
 # be the S3 access and secret keys that you want to use, and setting
 # the S3_AUTH_UPLOADS_BUCKET and S3_AVATAR_BUCKET to be the S3 buckets
 # you've created to store file uploads and user avatars, respectively.
-# Then restart Zulip (scripts/restart-zulip).
+# Then restart Zulip (scripts/restart-server).
 #
 # (2) Edit /etc/nginx/sites-available/zulip-enterprise to comment out
 # the nginx configuration for /user_uploads and /user_avatars (see
