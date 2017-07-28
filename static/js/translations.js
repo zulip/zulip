@@ -56,6 +56,10 @@ i18next.ensure_i18n = function (callback) {
 
 // garbage collect all old i18n translation maps in localStorage.
 $(function () {
+    if (!localstorage.supported()) {
+        return;
+    }
+
     // this collects all localStorage keys that match the format of:
     //   i18next:dddddddddd:w+ => 1484902202:en
     // these are all language translation strings.
