@@ -855,6 +855,24 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_success(result)
 
+    def test_personal_message_copying_self(self):
+        # type: () -> None
+        """
+        Sending a personal message to yourself plus another user is succesful,
+        and counts as a message just to that user.
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages", {
+            "type": "private",
+            "content": "Test message",
+            "client": "test suite",
+            "to": ujson.dumps([self.example_email("othello"),
+                               self.example_email("hamlet")])})
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        # Verify that we're not actually on the "recipient list"
+        self.assertNotIn("Hamlet", str(msg.recipient))
+
     def test_personal_message_to_nonexistent_user(self):
         # type: () -> None
         """
