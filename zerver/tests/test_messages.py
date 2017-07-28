@@ -960,6 +960,19 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": self.mit_email("starnine")})
         self.assert_json_success(result)
 
+    def test_mirrored_personal_to_someone_else(self):
+        # type: () -> None
+        """
+        Sending a mirrored personal message to someone else is not allowed.
+        """
+        self.login(self.mit_email("starnine"))
+        result = self.client_post("/json/messages", {"type": "private",
+                                                     "sender": self.mit_email("sipbtest"),
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": self.mit_email("espuser")})
+        self.assert_json_error(result, "User not authorized for this query")
+
     def test_duplicated_mirrored_huddle(self):
         # type: () -> None
         """
