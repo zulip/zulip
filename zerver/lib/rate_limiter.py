@@ -19,37 +19,60 @@ import logging
 
 client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
-def _rules_for_user(user):
-    # type: (UserProfile) -> List[Tuple[int, int]]
-    if user.rate_limits != "":
-        result = []  # type: List[Tuple[int, int]]
-        for limit in user.rate_limits.split(','):
-            (seconds, requests) = limit.split(':', 2)
-            result.append((int(seconds), int(requests)))
-        return result
-    return rules
 
 KEY_PREFIX = u''
+
+class RateLimitedObject(object):
+    def get_keys(self):
+        # type: () -> List[Text]
+        key_fragment = self.key_fragment()
+        return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
+                for keytype in ['list', 'zset', 'block']]
+
+    def key_fragment(self):
+        # type: () -> Text
+        raise NotImplemented
+
+    def rules(self):
+        # type: () -> List[Tuple[int, int]]
+        raise NotImplemented
+
+class RateLimitedUser(RateLimitedObject):
+    def __init__(self, user, domain='all'):
+        # type: (UserProfile, Text) -> None
+        self.user = user
+        self.domain = domain
+
+    def key_fragment(self):
+        # type: () -> Text
+        return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
+
+    def rules(self):
+        # type: () -> List[Tuple[int, int]]
+        if self.user.rate_limits != "":
+            result = []  # type: List[Tuple[int, int]]
+            for limit in self.user.rate_limits.split(','):
+                (seconds, requests) = limit.split(':', 2)
+                result.append((int(seconds), int(requests)))
+            return result
+        return rules
 
 def bounce_redis_key_prefix_for_testing(test_name):
     # type: (Text) -> None
     global KEY_PREFIX
     KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
 
-def redis_key(user, domain):
-    # type: (UserProfile, Text) -> List[Text]
-    """Return the redis keys for this user"""
-    return ["%sratelimit:%s:%s:%s:%s" % (KEY_PREFIX, type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
-
 def max_api_calls(user):
     # type: (UserProfile) -> int
     "Returns the API rate limit for the highest limit"
-    return _rules_for_user(user)[-1][1]
+    entity = RateLimitedUser(user)
+    return entity.rules()[-1][1]
 
 def max_api_window(user):
     # type: (UserProfile) -> int
     "Returns the API time window for the highest limit"
-    return _rules_for_user(user)[-1][0]
+    entity = RateLimitedUser(user)
+    return entity.rules()[-1][0]
 
 def add_ratelimit_rule(range_seconds, num_requests):
     # type: (int , int) -> None
@@ -67,7 +90,8 @@ def remove_ratelimit_rule(range_seconds, num_requests):
 def block_user(user, seconds, domain='all'):
     # type: (UserProfile, int, Text) -> None
     "Manually blocks a user id for the desired number of seconds"
-    _, _, blocking_key = redis_key(user, domain)
+    entity = RateLimitedUser(user, domain=domain)
+    _, _, blocking_key = entity.get_keys()
     with client.pipeline() as pipe:
         pipe.set(blocking_key, 1)
         pipe.expire(blocking_key, seconds)
@@ -75,7 +99,8 @@ def block_user(user, seconds, domain='all'):
 
 def unblock_user(user, domain='all'):
     # type: (UserProfile, str) -> None
-    _, _, blocking_key = redis_key(user, domain)
+    entity = RateLimitedUser(user, domain=domain)
+    _, _, blocking_key = entity.get_keys()
     client.delete(blocking_key)
 
 def clear_user_history(user, domain='all'):
@@ -84,12 +109,14 @@ def clear_user_history(user, domain='all'):
     This is only used by test code now, where it's very helpful in
     allowing us to run tests quickly, by giving a user a clean slate.
     '''
-    for key in redis_key(user, domain):
+    entity = RateLimitedUser(user, domain=domain)
+    for key in entity.get_keys():
         client.delete(key)
 
 def _get_api_calls_left(user, domain, range_seconds, max_calls):
     # type: (UserProfile, Text, int, int) -> Tuple[int, float]
-    list_key, set_key, _ = redis_key(user, domain)
+    entity = RateLimitedUser(user, domain=domain)
+    list_key, set_key, _ = entity.get_keys()
     # Count the number of values in our sorted set
     # that are between now and the cutoff
     now = time.time()
@@ -119,16 +146,17 @@ def api_calls_left(user, domain='all'):
     # type: (UserProfile, Text) -> Tuple[int, float]
     """Returns how many API calls in this range this client has, as well as when
        the rate-limit will be reset to 0"""
-    max_window = _rules_for_user(user)[-1][0]
-    max_calls = _rules_for_user(user)[-1][1]
+    max_window = max_api_window(user)
+    max_calls = max_api_calls(user)
     return _get_api_calls_left(user, domain, max_window, max_calls)
 
 def is_ratelimited(user, domain='all'):
     # type: (UserProfile, Text) -> Tuple[bool, float]
     "Returns a tuple of (rate_limited, time_till_free)"
-    list_key, set_key, blocking_key = redis_key(user, domain)
+    entity = RateLimitedUser(user, domain=domain)
+    list_key, set_key, blocking_key = entity.get_keys()
 
-    rules = _rules_for_user(user)
+    rules = entity.rules()
 
     if len(rules) == 0:
         return False, 0.0
@@ -177,7 +205,8 @@ def is_ratelimited(user, domain='all'):
 def incr_ratelimit(user, domain='all'):
     # type: (UserProfile, Text) -> None
     """Increases the rate-limit for the specified user"""
-    list_key, set_key, _ = redis_key(user, domain)
+    entity = RateLimitedUser(user, domain=domain)
+    list_key, set_key, _ = entity.get_keys()
     now = time.time()
 
     # If we have no rules, we don't store anything
