@@ -54,20 +54,6 @@ i18next.ensure_i18n = function (callback) {
     }
 };
 
-i18next.clearCache = function () {
-    // this collects all localStorage keys that match the format of:
-    //   i18next:dddddddddd:w+ => 1484902202:en
-    // these are all language translation strings.
-    var translations = Object.keys(localStorage).filter(function (key) {
-        return /^i18next:\d{10}:\w+$/.test(key);
-    });
-
-    // remove all translations.
-    translations.forEach(function (translation_key) {
-        localStorage.removeItem(translation_key);
-    });
-};
-
 // garbage collect all old i18n translation maps in localStorage.
 $(function () {
     // this collects all localStorage keys that match the format of:
