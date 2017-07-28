@@ -197,7 +197,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
          expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
         {input: '1. an\n2. ordered \n3. list',
-         expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
+         expected: '<p>1. an<br>\n2. ordered<br>\n3. list</p>'},
         {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
          expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
         {input: 'This is a @**Cordelia Lear** mention',
