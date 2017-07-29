@@ -131,7 +131,7 @@ function insert_local_message(message_request, local_id) {
 }
 
 exports.try_deliver_locally = function try_deliver_locally(message_request) {
-    if (markdown.contains_bugdown(message_request.content)) {
+    if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
 

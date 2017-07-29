@@ -18,23 +18,23 @@ sender of a message, and they are (ideally) identical to the backend
 rendering.
 
 The JavaScript markdown implementation has a function,
-`markdown.contains_bugdown`, that is used to check whether a message
+`markdown.contains_backend_only_syntax`, that is used to check whether a message
 contains any syntax that needs to be rendered to HTML on the backend.
-If `markdown.contains_bugdown` returns true, the frontend simply won't
+If `markdown.contains_backend_only_syntax` returns true, the frontend simply won't
 echo the message for the sender until it receives the rendered HTML
-from the backend.  If there is a bug where `markdown.contains_bugdown`
+from the backend.  If there is a bug where `markdown.contains_backend_only_syntax`
 returns false incorrectly, the frontend will discover this when the
 backend returns the newly sent message, and will update the HTML based
 on the authoritative backend rendering (which would cause a change in
 the rendering that is visible only to the sender shortly after a
 message is sent).  As a result, we try to make sure that
-`markdown.contains_bugdown` is always correct.
+`markdown.contains_backend_only_syntax` is always correct.
 
 ## Testing
 
 The Python-Markdown implementation is tested by
 `zerver/tests/test_bugdown.py`, and the marked.js implementation and
-`markdown.contains_bugdown` are tested by
+`markdown.contains_backend_only_syntax` are tested by
 `frontend_tests/node_tests/markdown.js`.  A shared set of fixed test data
 ("test fixtures") is present in `zerver/fixtures/bugdown-data.json`,
 and is automatically used by both test suites; as a result, it the
@@ -59,7 +59,7 @@ places:
 
 * The backend markdown processor (`zerver/lib/bugdown/__init__.py`).
 * The frontend markdown processor (`static/js/markdown.js` and sometimes
-  `static/third/marked/lib/marked.js`), or `markdown.contains_bugdown` if
+  `static/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
 * If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
 * The test suite, probably via adding entries to `zerver/fixtures/bugdown-data.json`.

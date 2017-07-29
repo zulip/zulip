@@ -1149,8 +1149,8 @@ function test_with_mock_socket(test_params) {
             assert($("#preview_message_area").visible());
         }
 
-        function setup_mock_markdown_contains_bugdown(msg_content, return_val) {
-            markdown.contains_bugdown = function (msg) {
+        function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
+            markdown.contains_backend_only_syntax = function (msg) {
                 assert.equal(msg, msg_content);
                 return return_val;
             };
@@ -1183,7 +1183,7 @@ function test_with_mock_socket(test_params) {
                         assert.equal(spinner, $("#markdown_preview_spinner"));
                         destroy_indicator_called = true;
                     };
-                    setup_mock_markdown_contains_bugdown(msg, true);
+                    setup_mock_markdown_contains_backend_only_syntax(msg, true);
 
                     func(param);
 
@@ -1212,7 +1212,7 @@ function test_with_mock_socket(test_params) {
         var make_indicator_called = false;
         $("#new_message_content").val('```foobarfoobar```');
         setup_visibilities();
-        setup_mock_markdown_contains_bugdown('```foobarfoobar```', true);
+        setup_mock_markdown_contains_backend_only_syntax('```foobarfoobar```', true);
         loading.make_indicator = function (spinner) {
             assert.equal(spinner, $("#markdown_preview_spinner"));
             make_indicator_called = true;
@@ -1227,7 +1227,7 @@ function test_with_mock_socket(test_params) {
         var apply_markdown_called = false;
         $("#new_message_content").val('foobarfoobar');
         setup_visibilities();
-        setup_mock_markdown_contains_bugdown('foobarfoobar', false);
+        setup_mock_markdown_contains_backend_only_syntax('foobarfoobar', false);
         mock_channel_post('foobarfoobar');
         markdown.apply_markdown = function (msg) {
             assert.equal(msg, 'foobarfoobar');

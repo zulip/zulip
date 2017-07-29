@@ -723,7 +723,7 @@ exports.initialize = function () {
         if (message.length === 0) {
             $("#preview_content").html(i18n.t("Nothing to preview"));
         } else {
-            if (markdown.contains_bugdown(message))  {
+            if (markdown.contains_backend_only_syntax(message))  {
                 var spinner = $("#markdown_preview_spinner").expectOne();
                 loading.make_indicator(spinner);
             } else {
@@ -732,7 +732,7 @@ exports.initialize = function () {
                 // marked.js frontend processor, we render using the
                 // frontend markdown processor message (but still
                 // render server-side to ensure the preview is
-                // accurate; if the `markdown.contains_bugdown` logic is
+                // accurate; if the `markdown.contains_backend_only_syntax` logic is
                 // incorrect wrong, users will see a brief flicker).
                 $("#preview_content").html(markdown.apply_markdown(message));
             }
@@ -741,13 +741,13 @@ exports.initialize = function () {
                 idempotent: true,
                 data: {content: message},
                 success: function (response_data) {
-                    if (markdown.contains_bugdown(message)) {
+                    if (markdown.contains_backend_only_syntax(message)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
                     $("#preview_content").html(response_data.rendered);
                 },
                 error: function () {
-                    if (markdown.contains_bugdown(message)) {
+                    if (markdown.contains_backend_only_syntax(message)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
                     $("#preview_content").html(i18n.t("Failed to generate preview"));

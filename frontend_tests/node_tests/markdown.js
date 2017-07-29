@@ -141,11 +141,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                  ];
 
     no_markup.forEach(function (content) {
-        assert.equal(markdown.contains_bugdown(content), false);
+        assert.equal(markdown.contains_backend_only_syntax(content), false);
     });
 
     markup.forEach(function (content) {
-        assert.equal(markdown.contains_bugdown(content), true);
+        assert.equal(markdown.contains_backend_only_syntax(content), true);
     });
 }());
 

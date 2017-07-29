@@ -24,7 +24,7 @@ var backend_only_markdown_re = [
     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
 ];
 
-exports.contains_bugdown = function (content) {
+exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
     var markedup = _.find(backend_only_markdown_re, function (re) {
