@@ -45,12 +45,33 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         extra: 'Not in data',
     };
 
+    var test_outgoing_webhook_bot = {
+        email: 'bot2@zulip.com',
+        avatar_url: '',
+        full_name: 'Bot 2',
+        extra: 'Not in data',
+        services: [{
+            base_url: 'http://example.domain1.com',
+            interface: 1,
+            name: 'test1',
+        }],
+    };
+
     (function test_add() {
         bot_data.add(test_bot);
 
         var bot = bot_data.get('bot1@zulip.com');
         assert.equal('Bot 1', bot.full_name);
         assert.equal(undefined, bot.extra);
+    }());
+
+    (function test_get_bot_service() {
+        bot_data.add(test_outgoing_webhook_bot);
+
+        var bot_service = bot_data.get_bot_service('bot2@zulip.com');
+        assert.equal('http://example.domain1.com', bot_service.base_url);
+        assert.equal(1, bot_service.interface);
+        assert.equal('test1', bot_service.name);
     }());
 
     (function test_update() {
