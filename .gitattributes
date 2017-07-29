@@ -19,7 +19,6 @@
 /templates/corporate export-ignore
 /templates/zilencer export-ignore
 /puppet/zulip_internal export-ignore
-/zproject/local_settings.py export-ignore
 /zproject/test_settings.py export-ignore
 /zerver/fixtures export-ignore
 /zerver/tests export-ignore
