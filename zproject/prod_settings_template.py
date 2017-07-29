@@ -171,8 +171,14 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 #BROWSER_ERROR_REPORTING = False
 
 # Controls whether or not Zulip will provide inline image preview when
-# a link to an image is referenced in a message.
-INLINE_IMAGE_PREVIEW = True
+# a link to an image is referenced in a message.  Note: this feature
+# can also be disabled in a realm's organization settings.
+#INLINE_IMAGE_PREVIEW = True
+
+# Controls whether or not Zulip will provide inline previews of
+# websites that are referenced in links in messages.  Note: this feature
+# can also be disabled in a realm's organization settings.
+#INLINE_URL_EMBED_PREVIEW = False
 
 # Controls whether or not Zulip will parse links starting with
 # "file:///" as a hyperlink (useful if you have e.g. an NFS share).
