@@ -50,7 +50,7 @@ TARBALL=$TMPDIR/$prefix.tar
 git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
 
-if tar -tf "$TARBALL" | grep -q -e zilencer -e zproject/local_settings.py -e puppet/zulip_internal; then
+if tar -tf "$TARBALL" | grep -q -e zilencer -e puppet/zulip_internal; then
 	echo "Excluded files remain in tarball!";
 	echo "Versions of git 1.8.1.1 - 1.8.1.6 have broken .gitattributes syntax";
 	exit 1;
