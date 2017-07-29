@@ -12,7 +12,7 @@ var realm_filter_map = {};
 var realm_filter_list = [];
 
 // Regexes that match some of our common bugdown markup
-var bugdown_re = [
+var backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
@@ -27,7 +27,7 @@ var bugdown_re = [
 exports.contains_bugdown = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
-    var markedup = _.find(bugdown_re, function (re) {
+    var markedup = _.find(backend_only_markdown_re, function (re) {
         return re.test(content);
     });
     return markedup !== undefined;
