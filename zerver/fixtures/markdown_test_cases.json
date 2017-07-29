@@ -4,7 +4,7 @@
       "name": "codeblock_hilite",
       "input": "Hamlet said:\n~~~~.python \ndef speak(self):\n    x = 1\n~~~~",
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span>def speak(self):\n    x = 1\n</pre></div>"
     },
     {
       "name": "basic_paragraph",
@@ -76,13 +76,13 @@
       "name": "four_space_code_block",
       "input": "    def foo(): pass",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>def foo(): pass\n</pre></div>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<div class=\"codehilite\"><pre>def foo(): pass\n</pre></div>"
     },
     {
       "name": "two_space_not_code_block",
       "input": "  notcode",
       "expected_output": "<p>notcode</p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p>  notcode</p>"
     },
     {
       "name": "ulist_standard",
@@ -118,7 +118,7 @@
       "name": "ulist_list_two_space_indent",
       "input": "* I am outer list\n  I am something inside",
       "expected_output": "<ul>\n<li>I am outer list<br>\n  I am something inside</li>\n</ul>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<ul>\n<li>I am outer list<br>\nI am something inside</li>\n</ul>"
     },
     {
       "name": "ulist_codeblock",
@@ -376,13 +376,13 @@
       "name": "safe_html_unclosed_tag",
       "input": "<script src=http://xx.com/xss.js<b>",
       "expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;</p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;\n\n</p>"
     },
     {
       "name": "safe_html_unclosed_tag_and_quotes",
       "input": "<script src=\"http://xx.com/xss.js\"<b>",
       "expected_output": "<p>&lt;script src=\"http://xx.com/xss.js\"&lt;b&gt;</p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p>&lt;script src=&quot;http://xx.com/xss.js&quot;&lt;b&gt;\n\n</p>"
     },
     {
       "name": "safe_html_in_code",

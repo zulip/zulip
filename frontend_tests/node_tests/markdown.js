@@ -156,7 +156,10 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         markdown.apply_markdown(message);
         var output = message.content;
 
-        if (test.bugdown_matches_marked) {
+        if (test.marked_expected_output) {
+            assert.notEqual(test.expected_output, output);
+            assert.equal(test.marked_expected_output, output);
+        } else if (test.bugdown_matches_marked) {
             assert.equal(test.expected_output, output);
         } else {
             assert.notEqual(test.expected_output, output);
