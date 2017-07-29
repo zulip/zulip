@@ -2,6 +2,7 @@
 set -eux
 
 usage() {
+    set +x
     echo "Usage: $0 <ZULIP_VERSION>" >&2
     exit 1
 }
@@ -60,6 +61,7 @@ tar -cf "$TARBALL" "$prefix"
 rm -rf "$prefix"
 
 if tar -tf "$TARBALL" | grep -q -e ^zerver/tests; then
+    set +x
     echo "BUG: Excluded files remain in tarball!"
     exit 1
 fi
@@ -92,14 +94,12 @@ EOF
 
 # update-prod-static generates the prod-static directory.
 # See COLLECTSTATIC in settings.py
-set +x
 # We do a bit of gymnastics to have update-prod-static.log be easily
 # visible to the user and end up in the same directory as the final
 # release tarball.
 USER_PROD_STATIC_LOGPATH="${TMPDIR}/update-prod-static.log"
 BUILD_PROD_STATIC_LOGPATH="${TMP_CHECKOUT}/var/log/update-prod-static.log"
 ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
-set -x
 
 ./tools/update-prod-static $authors_not_required || (
     set +x
@@ -124,4 +124,6 @@ tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/ver
 rm -rf "$prefix"
 
 gzip "$TARBALL"
+
+set +x
 echo "Generated $TARBALL.gz"
