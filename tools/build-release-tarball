@@ -110,8 +110,6 @@ echo "$version" > version
 rm -f "$USER_PROD_STATIC_LOGPATH"
 mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 
-rm -f zproject/dev-secrets.conf
-
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
 
