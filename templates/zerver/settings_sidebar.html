@@ -22,6 +22,20 @@
                         <label for="bot_owner_select">{{ _("Owner") }}</label>
                         <div class="select-form"></div>
                     </div>
+                    <div id="service_data">
+                        <div class="">
+                            <label for="edit_payload_url">{{ _("Base URL") }}</label>
+                            <input id="edit_payload_url" type="text" name="payload_url" class="edit_payload_url required" maxlength=50 />
+                            <div><label for="edit_payload_url" generated="true" class="text-error"></label></div>
+                        </div>
+                        <div class="">
+                            <label for="edit_interface_type">{{ _("Outgoing webhook message format") }}</label>
+                            <select id="edit_interface_type" name="interface_type" default="1">
+                                <option value="1">{{ _("Zulip") }}</option>
+                                <option value="2">{{ _("Slack compatible") }}</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="avatar-section">
                         <label for="bot_avatar_file_input">Avatar</label>
                         <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{ _('Upload avatar') }}" />
