@@ -92,8 +92,6 @@ rabbitmq_password = 'not_used_here'
 initial_password_salt = 'not_used_here'
 EOF
 
-# update-prod-static generates the prod-static directory.
-# See COLLECTSTATIC in settings.py
 # We do a bit of gymnastics to have update-prod-static.log be easily
 # visible to the user and end up in the same directory as the final
 # release tarball.
