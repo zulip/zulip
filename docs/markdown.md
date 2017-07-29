@@ -36,7 +36,7 @@ The Python-Markdown implementation is tested by
 `zerver/tests/test_bugdown.py`, and the marked.js implementation and
 `markdown.contains_backend_only_syntax` are tested by
 `frontend_tests/node_tests/markdown.js`.  A shared set of fixed test data
-("test fixtures") is present in `zerver/fixtures/bugdown-data.json`,
+("test fixtures") is present in `zerver/fixtures/markdown_test_cases.json`,
 and is automatically used by both test suites; as a result, it the
 preferred place to add new tests for Zulip's markdown system.
 
@@ -62,7 +62,7 @@ places:
   `static/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
 * If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
-* The test suite, probably via adding entries to `zerver/fixtures/bugdown-data.json`.
+* The test suite, probably via adding entries to `zerver/fixtures/markdown_test_cases.json`.
 * The in-app markdown documentation (`templates/zerver/markdown_help.html`).
 * The list of changes to markdown at the end of this document.
 

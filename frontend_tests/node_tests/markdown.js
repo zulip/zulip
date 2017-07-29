@@ -100,7 +100,7 @@ var markdown = require('js/markdown.js');
 
 markdown.initialize();
 
-var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver/fixtures/bugdown-data.json'), 'utf8', 'r'));
+var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver/fixtures/markdown_test_cases.json'), 'utf8', 'r'));
 
 (function test_bugdown_detection() {
 
