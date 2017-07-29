@@ -105,13 +105,14 @@ ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
     echo -e "Check ${TMPDIR}/update-prod-static.log for more information.\033[0m"
     exit 1
 )
-echo "$GITID" > build_id
-echo "$version" > version
 rm -f "$USER_PROD_STATIC_LOGPATH"
 mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
+
+echo "$GITID" > build_id
+echo "$version" > version
 
 cd "$TMPDIR"
 
