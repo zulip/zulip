@@ -35,10 +35,30 @@ message is sent).  As a result, we try to make sure that
 The Python-Markdown implementation is tested by
 `zerver/tests/test_bugdown.py`, and the marked.js implementation and
 `markdown.contains_backend_only_syntax` are tested by
-`frontend_tests/node_tests/markdown.js`.  A shared set of fixed test data
-("test fixtures") is present in `zerver/fixtures/markdown_test_cases.json`,
-and is automatically used by both test suites; as a result, it the
-preferred place to add new tests for Zulip's markdown system.
+`frontend_tests/node_tests/markdown.js`.
+
+A shared set of fixed test data ("test fixtures") is present in
+`zerver/fixtures/markdown_test_cases.json`, and is automatically used
+by both test suites; as a result, it the preferred place to add new
+tests for Zulip's markdown system.  Some important notes on reading
+this file:
+
+* `expected_output` is the expected output for the backend markdown
+  processor.
+* When the frontend processor doesn't support a feature and it should
+  just be rendered on the backend, we set `backend_only_rendering` to
+  `true` in the fixtures; this will automatically verify that
+  `markdown.contains_backend_only_syntax` rejects the syntax, ensuring
+  it will be rendered only by the backend processor.
+* When the two processors disagree, we set `expected_marked_output` in
+  the fixtures; this will ensure that the syntax stays that way.  If
+  the differenes are important (i.e. not just whitespace), we should
+  also open an issue on GitHub to track the problem.
+* When those above settings are not in use, we set
+  `bugdown_matches_marked` is the predescessor to the more descriptive
+  `backend_only_rendering` and `expected_marked_output` fields, and
+  when `false`, should be replaced be one of those.  We plan to
+  eliminate it once we're out of cases where it is `false`.
 
 If you're going to manually test some changes in the frontend Markdown
 implementation, the easiest way to do this is as follows:
