@@ -34,6 +34,11 @@ set_global('stream_edit', {});
 set_global('markdown', {});
 set_global('loading', {});
 
+set_global('sent_messages', {
+    start_tracking_message: noop,
+    report_server_ack: noop,
+});
+
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
 global.document.location.protocol = 'https:';
@@ -261,72 +266,23 @@ people.add(bob);
     $("#send-status").show();
     $("#compose-send-button").attr('disabled', 'disabled');
     $("#sending-indicator").show();
-    var set_timeout_called = false;
-    global.patch_builtin('setTimeout', function (func, delay) {
-        assert.equal(delay, 5000);
-        func();
-        set_timeout_called = true;
-    });
-    var server_events_triggered;
-    global.server_events = {
-        restart_get_events: function () {
-            server_events_triggered = true;
-        },
-    };
+
     var reify_message_id_checked;
     echo.reify_message_id = function (local_id, message_id) {
         assert.equal(local_id, 1001);
         assert.equal(message_id, 12);
         reify_message_id_checked = true;
     };
-    var test_date = 'Wed Jun 28 2017 22:12:48 GMT+0000 (UTC)';
-    compose.send_message_success(1001, 12, new Date(test_date), false);
+
+    compose.send_message_success(1001, 12, false);
+
     assert.equal($("#new_message_content").val(), '');
     assert($("#new_message_content").is_focused());
     assert(!$("#send-status").visible());
     assert.equal($("#compose-send-button").prop('disabled'), false);
     assert(!$("#sending-indicator").visible());
-    assert.equal(_.keys(compose.send_times_data).length, 1);
-    assert.equal(compose.send_times_data[12].start.getTime(), new Date(test_date).getTime());
-    assert(!compose.send_times_data[12].locally_echoed);
+
     assert(reify_message_id_checked);
-    assert(server_events_triggered);
-    assert(set_timeout_called);
-}());
-
-(function test_mark_rendered_content_disparity() {
-    compose.mark_rendered_content_disparity(13, true);
-    assert.deepEqual(compose.send_times_data[13], { rendered_content_disparity: true });
-}());
-
-(function test_report_as_received() {
-    var msg = {
-        id: 12,
-        sent_by_me: true,
-    };
-    var set_timeout_called = false;
-    global.patch_builtin('setTimeout', function (func, delay) {
-        assert.equal(delay, 0);
-        func();
-        set_timeout_called = true;
-    });
-    compose.send_times_data[12].locally_echoed = true;
-    channel.post = function (payload) {
-        assert.equal(payload.url, '/json/report_send_time');
-        assert.equal(typeof(payload.data.time), 'string');
-        assert(payload.data.locally_echoed);
-        assert(!payload.data.rendered_content_disparity);
-    };
-    compose.report_as_received(msg);
-    assert.equal(typeof(compose.send_times_data[12].received), 'object');
-    assert.equal(typeof(compose.send_times_data[12].displayed), 'object');
-    assert(set_timeout_called);
-
-    delete compose.send_times_data[13];
-    msg.id = 13;
-    compose.report_as_received(msg);
-    assert.equal(typeof(compose.send_times_data[13].received), 'object');
-    assert.equal(typeof(compose.send_times_data[13].displayed), 'object');
 }());
 
 (function test_send_message() {
@@ -337,7 +293,6 @@ people.add(bob);
         stub_state.local_id_counter = 0;
         stub_state.send_msg_ajax_post_called = 0;
         stub_state.get_events_running_called = 0;
-        stub_state.server_events_triggered = 0;
         stub_state.reify_message_id_checked = 0;
         return stub_state;
     }
@@ -346,9 +301,6 @@ people.add(bob);
         func();
     });
     global.server_events = {
-        restart_get_events: function () {
-            stub_state.server_events_triggered += 1;
-        },
         assert_get_events_running: function () {
             stub_state.get_events_running_called += 1;
         },
@@ -392,7 +344,7 @@ people.add(bob);
             assert.equal(typeof(message_id), 'number');
             stub_state.reify_message_id_checked += 1;
         };
-        compose.send_times_data = {};
+
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
         $("#new_message_content").val('[foobar]' +
@@ -409,10 +361,8 @@ people.add(bob);
             get_events_running_called: 1,
             reify_message_id_checked: 1,
             send_msg_ajax_post_called: 1,
-            server_events_triggered: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert.equal($("#new_message_content").val(), '');
         assert($("#new_message_content").is_focused());
         assert(!$("#send-status").visible());
@@ -444,10 +394,8 @@ people.add(bob);
             get_events_running_called: 1,
             reify_message_id_checked: 0,
             send_msg_ajax_post_called: 1,
-            server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(reload_initiate_triggered);
     }());
@@ -485,10 +433,8 @@ people.add(bob);
             get_events_running_called: 1,
             reify_message_id_checked: 0,
             send_msg_ajax_post_called: 1,
-            server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -511,6 +457,10 @@ people.add(bob);
             return;
         };
 
+        sent_messages.get_new_local_id = function () {
+            return 'loc-55';
+        };
+
         compose.send_message();
 
         var state = {
@@ -518,10 +468,8 @@ people.add(bob);
             get_events_running_called: 1,
             reify_message_id_checked: 0,
             send_msg_ajax_post_called: 1,
-            server_events_triggered: 0,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal(_.keys(compose.send_times_data).length, 1);
         assert(server_error_triggered);
         assert(!reload_initiate_triggered);
         assert(xhr_error_msg_checked);
@@ -792,9 +740,10 @@ function test_with_mock_socket(test_params) {
     // socket_user_agent field will be added.
     var request = {foo: 'bar'};
 
-    // Our success function gets passed all the way through to
-    // socket.send, so we can just use a stub to test that.
-    var success = 'success-function-stub';
+    var success_func_checked = false;
+    var success = function () {
+        success_func_checked = true;
+    };
 
     // Our error function gets wrapped, so we set up a real
     // function to test the wrapping mechanism.
@@ -818,8 +767,8 @@ function test_with_mock_socket(test_params) {
                 socket_user_agent: 'unittest_transmit_message',
             });
 
-            // Our success function never gets wrapped.
-            assert.equal(send_args.success, success);
+            send_args.success({});
+            assert(success_func_checked);
 
             // Our error function does get wrapped, so we test by
             // using socket.send's error callback, which should
@@ -1258,25 +1207,6 @@ function test_with_mock_socket(test_params) {
         assert($("#markdown_preview").visible());
     }());
 
-    (function test_message_id_changed_document() {
-        var handler = $(document).get_on_handler('message_id_changed');
-        compose.send_times_data = {
-            1031: {
-                data: 'Test data!',
-            },
-        };
-        event.old_id = 1031;
-        event.new_id = 1045;
-
-        handler(event);
-
-        var send_times_data = {
-            1045: {
-                data: 'Test data!',
-            },
-        };
-        assert.deepEqual(compose.send_times_data, send_times_data);
-    }());
 }());
 
 (function test_upload_started() {

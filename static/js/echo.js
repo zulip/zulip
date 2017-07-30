@@ -9,26 +9,34 @@ function resend_message(message, row) {
     message.content = message.raw_content;
     var retry_spinner = row.find('.refresh-failed-message');
     retry_spinner.toggleClass('rotating', true);
+
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
     message.queue_id = page_params.queue_id;
-    var start_time = new Date();
-    compose.transmit_message(message, function success(data) {
-        retry_spinner.toggleClass('rotating', false);
 
+    var local_id = message.local_id;
+
+    function on_success(data) {
         var message_id = data.id;
+        var locally_echoed = true;
 
         retry_spinner.toggleClass('rotating', false);
-        compose.send_message_success(message.local_id, message_id, start_time, true);
+
+        compose.send_message_success(local_id, message_id, locally_echoed);
 
         // Resend succeeded, so mark as no longer failed
         message_store.get(message_id).failed_request = false;
         ui.show_failed_message_success(message_id);
-    }, function error(response) {
-        exports.message_send_error(message.local_id, response);
+    }
+
+    function on_error(response) {
+        exports.message_send_error(local_id, response);
         retry_spinner.toggleClass('rotating', false);
         blueslip.log("Manual resend of message failed");
-    });
+    }
+
+    sent_messages.start_resend(local_id);
+    compose.transmit_message(message, on_success, on_error);
 }
 
 function truncate_precision(float) {
@@ -205,18 +213,18 @@ exports.process_from_server = function process_from_server(messages) {
     var msgs_to_rerender = [];
     messages = _.filter(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
-        exports.reify_message_id(message.local_id, message.id);
 
         var client_message = waiting_for_ack[message.local_id];
         if (client_message !== undefined) {
+            exports.reify_message_id(message.local_id, message.id);
+
             if (client_message.content !== message.content) {
                 client_message.content = message.content;
                 updated = true;
-                compose.mark_rendered_content_disparity(message.id, true);
+                sent_messages.mark_disparity(message.local_id);
             }
             msgs_to_rerender.push(client_message);
             locally_processed_ids.push(client_message.id);
-            compose.report_as_received(client_message);
             delete waiting_for_ack[client_message.id];
             return false;
         }
