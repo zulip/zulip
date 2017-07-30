@@ -128,6 +128,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'MAX_ICON_FILE_SIZE': 5,
                     'MAX_EMOJI_FILE_SIZE': 5,
                     'ERROR_REPORTING': True,
+                    'USE_ERROR_FILES': True,
                     'BROWSER_ERROR_REPORTING': False,
                     'STAGING_ERROR_NOTIFICATIONS': False,
                     'EVENT_LOGS_ENABLED': False,
@@ -1034,7 +1035,8 @@ LOGGING_NOT_DISABLED = True
 
 DEFAULT_ZULIP_HANDLERS = (
     (['zulip_admins'] if ERROR_REPORTING else []) +
-    ['console', 'file', 'errors_file']
+    ['console', 'file'] +
+    (['errors_file'] if USE_ERROR_FILES else [])
 )
 
 LOGGING = {
