@@ -29,6 +29,7 @@ SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
         "xenial",
+        "zesty",
     ],
 }
 
@@ -107,6 +108,7 @@ POSTGRES_VERSION_MAP = {
     "stretch": "9.6",
     "trusty": "9.3",
     "xenial": "9.5",
+    "zesty": "9.6",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -148,6 +150,11 @@ APT_DEPENDENCIES = {
         "postgresql-9.5",
         "postgresql-9.5-tsearch-extras",
         "postgresql-9.5-pgroonga",
+    ],
+    "zesty": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.6",
+        "postgresql-9.6-pgroonga",
+        "virtualenv",
     ],
 }
 
