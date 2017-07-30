@@ -179,20 +179,6 @@ function send_message_ajax(request, success, error) {
     });
 }
 
-function report_send_time(send_time, receive_time, display_time, locally_echoed, rendered_changed) {
-    var data = {time: send_time.toString(),
-                received: receive_time.toString(),
-                displayed: display_time.toString(),
-                locally_echoed: locally_echoed};
-    if (locally_echoed) {
-        data.rendered_content_disparity = rendered_changed;
-    }
-    channel.post({
-        url: '/json/report_send_time',
-        data: data,
-    });
-}
-
 var socket;
 if (page_params.use_websockets) {
     socket = new Socket("/sockjs");
@@ -211,61 +197,6 @@ function send_message_socket(request, success, error) {
     });
 }
 
-exports.send_times_data = {};
-function maybe_report_send_times(message_id) {
-    var data = exports.send_times_data[message_id];
-    if (data.send_finished === undefined || data.received === undefined ||
-        data.displayed === undefined) {
-        // We report the data once we have both the send and receive times
-        return;
-    }
-    report_send_time(data.send_finished - data.start,
-                     data.received - data.start,
-                     data.displayed - data.start,
-                     data.locally_echoed,
-                     data.rendered_content_disparity || false);
-}
-
-function mark_end_to_end_receive_time(message_id) {
-    if (exports.send_times_data[message_id] === undefined) {
-        exports.send_times_data[message_id] = {};
-    }
-    exports.send_times_data[message_id].received = new Date();
-    maybe_report_send_times(message_id);
-}
-
-function mark_end_to_end_display_time(message_id) {
-    exports.send_times_data[message_id].displayed = new Date();
-    maybe_report_send_times(message_id);
-}
-
-exports.mark_rendered_content_disparity = function (message_id, changed) {
-    if (exports.send_times_data[message_id] === undefined) {
-        exports.send_times_data[message_id] = {};
-    }
-    exports.send_times_data[message_id].rendered_content_disparity = changed;
-};
-
-exports.report_as_received = function report_as_received(message) {
-    if (message.sent_by_me) {
-        mark_end_to_end_receive_time(message.id);
-        setTimeout(function () {
-            mark_end_to_end_display_time(message.id);
-        }, 0);
-    }
-};
-
-function process_send_time(message_id, start_time, locally_echoed) {
-    var send_finished = new Date();
-    if (exports.send_times_data[message_id] === undefined) {
-        exports.send_times_data[message_id] = {};
-    }
-    exports.send_times_data[message_id].start = start_time;
-    exports.send_times_data[message_id].send_finished = send_finished;
-    exports.send_times_data[message_id].locally_echoed  = locally_echoed;
-    maybe_report_send_times(message_id);
-}
-
 function clear_compose_box() {
     $("#new_message_content").val('').focus();
     drafts.delete_draft_after_send();
@@ -276,25 +207,25 @@ function clear_compose_box() {
     resize.resize_bottom_whitespace();
 }
 
-exports.send_message_success = function (local_id, message_id, start_time, locally_echoed) {
+exports.send_message_success = function (local_id, message_id, locally_echoed) {
     if (!locally_echoed) {
         clear_compose_box();
     }
 
-    process_send_time(message_id, start_time, locally_echoed);
-
     echo.reify_message_id(local_id, message_id);
-
-    setTimeout(function () {
-        if (exports.send_times_data[message_id].received === undefined) {
-            blueslip.log("Restarting get_events due to delayed receipt of sent message " + message_id);
-            server_events.restart_get_events();
-        }
-    }, 5000);
 };
 
-exports.transmit_message = function (request, success, error) {
-    delete exports.send_times_data[request.id];
+exports.transmit_message = function (request, on_success, error) {
+
+    function success(data) {
+        // Call back to our callers to do things like closing the compose
+        // box and turning off spinners and reifying locally echoed messages.
+        on_success(data);
+
+        // Once everything is done, get ready to report times to the server.
+        sent_messages.report_server_ack(request.local_id);
+    }
+
     if (page_params.use_websockets) {
         send_message_socket(request, success, error);
     } else {
@@ -313,27 +244,41 @@ exports.send_message = function send_message(request) {
         request.to = JSON.stringify([request.to]);
     }
 
-    var start_time = new Date();
     var local_id;
+    var locally_echoed;
 
     local_id = echo.try_deliver_locally(request);
-    if (local_id !== undefined) {
-        // We delivered this message locally
-        request.local_id = local_id;
+    if (local_id) {
+        // We are rendering this message locally with an id
+        // like 92l99.01 that corresponds to a reasonable
+        // approximation of the id we'll get from the server
+        // in terms of sorting messages.
+        locally_echoed = true;
+    } else {
+        // We are not rendering this message locally, but we
+        // track the message's life cycle with an id like
+        // loc-1, loc-2, loc-3,etc.
+        locally_echoed = false;
+        local_id = sent_messages.get_new_local_id();
     }
 
-    var locally_echoed = local_id !== undefined;
+    request.local_id = local_id;
+
+    sent_messages.start_tracking_message({
+        local_id: local_id,
+        locally_echoed: locally_echoed,
+    });
 
     request.locally_echoed = locally_echoed;
 
     function success(data) {
-        exports.send_message_success(local_id, data.id, start_time, locally_echoed);
+        exports.send_message_success(local_id, data.id, locally_echoed);
     }
 
     function error(response) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
-        if (!request.locally_echoed) {
+        if (!locally_echoed) {
             compose_error(response, $('#new_message_content'));
             return;
         }
@@ -893,15 +838,6 @@ exports.initialize = function () {
             compose_actions.start("stream", {});
         }
     }
-
-    $(document).on('message_id_changed', function (event) {
-        if (exports.send_times_data[event.old_id] !== undefined) {
-            var value = exports.send_times_data[event.old_id];
-            delete exports.send_times_data[event.old_id];
-            exports.send_times_data[event.new_id] =
-                _.extend({}, exports.send_times_data[event.old_id], value);
-        }
-    });
 };
 
 return exports;

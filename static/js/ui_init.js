@@ -267,6 +267,7 @@ $(function () {
     pm_list.initialize();
     stream_list.initialize();
     drafts.initialize();
+    sent_messages.initialize();
     compose.initialize();
 });
 

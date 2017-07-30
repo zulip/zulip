@@ -19,14 +19,6 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
     $('#first_run_message').remove();
 
     msg_list.add_messages(messages, opts);
-
-    if (msg_list === home_msg_list && opts.messages_are_new) {
-        _.each(messages, function (message) {
-            if (message.local_id === undefined) {
-                compose.report_as_received(message);
-            }
-        });
-    }
 };
 
 
