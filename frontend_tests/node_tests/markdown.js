@@ -229,8 +229,15 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p><img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="poop"></p>'},
         {input: '\u{1f937}',
          expected: '<p>\u{1f937}</p>' },
+        // Test only those realm filters which don't return True for
+        // `contains_backend_only_syntax()`. Those which return True
+        // are tested separately.
         {input: 'This is a realm filter #1234 with text after it',
          expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+        {input: '#1234is not a realm filter.',
+         expected: '<p>#1234is not a realm filter.</p>'},
+        {input: 'A pattern written as #1234is not a realm filter.',
+         expected: '<p>A pattern written as #1234is not a realm filter.</p>'},
         {input: 'This is a realm filter with ZGROUP_123:45 groups',
          expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
         {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
@@ -335,12 +342,22 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     assert(message.flags.indexOf('mentioned') === -1);
 }());
 
+(function test_backend_only_realm_filters() {
+    var backend_only_realm_filters = [
+        'Here is the PR-#123.',
+        'Function abc() was introduced in (PR)#123.',
+    ];
+    backend_only_realm_filters.forEach(function (content) {
+        assert.equal(markdown.contains_backend_only_syntax(content), true);
+    });
+}());
+
 (function test_python_to_js_filter() {
     // The only way to reach python_to_js_filter is indirectly, hence the call
     // to set_realm_filters.
     markdown.set_realm_filters([[ '/a(?im)a/g'], [ '/a(?L)a/g' ]]);
     var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
-    var expected_value = [ /\/aa\/g/gim, /\/aa\/g/g ];
+    var expected_value = [ /\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g ];
     assert.deepEqual(actual_value, expected_value);
 }());
 
