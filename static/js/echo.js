@@ -205,14 +205,15 @@ exports.process_from_server = function process_from_server(messages) {
     var msgs_to_rerender = [];
     messages = _.filter(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
-        exports.reify_message_id(message.local_id, message.id);
 
         var client_message = waiting_for_ack[message.local_id];
         if (client_message !== undefined) {
+            exports.reify_message_id(message.local_id, message.id);
+
             if (client_message.content !== message.content) {
                 client_message.content = message.content;
                 updated = true;
-                compose.mark_rendered_content_disparity(message.id, true);
+                sent_messages.mark_disparity(message.local_id);
             }
             msgs_to_rerender.push(client_message);
             locally_processed_ids.push(client_message.id);
