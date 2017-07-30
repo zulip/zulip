@@ -87,12 +87,10 @@ subprocess.check_call(['./manage.py', 'compilemessages'],
 
 # Move the source maps out of the serve/ directory and into their
 # proper place.
-subprocess.check_call(['rm', '-rf', 'prod-static/source-map'],
-                      stdout=fp, stderr=fp)
 subprocess.check_call(['mkdir', '-p', 'prod-static'],  # Needed if PRODUCTION
                       stdout=fp, stderr=fp)
-subprocess.check_call(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'),
-                       'prod-static/source-map'],
+subprocess.check_call(['cp', '-r', os.path.join(settings.STATIC_ROOT, 'source-map'),
+                       'prod-static'],
                       stdout=fp, stderr=fp)
 
 # Move language_options.json to the production release
