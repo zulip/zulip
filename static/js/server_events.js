@@ -68,8 +68,9 @@ function get_events_success(events) {
         case 'message':
             var msg = event.message;
             msg.flags = event.flags;
-            if (event.local_message_id !== undefined) {
+            if (event.local_message_id) {
                 msg.local_id = event.local_message_id;
+                sent_messages.report_event_received(event.local_message_id);
             }
             messages.push(msg);
             break;
