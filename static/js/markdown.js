@@ -30,7 +30,16 @@ exports.contains_backend_only_syntax = function (content) {
     var markedup = _.find(backend_only_markdown_re, function (re) {
         return re.test(content);
     });
-    return markedup !== undefined;
+
+    // If a realm filter doesn't start with some specified characters
+    // then don't render it locally. It is workaround for the fact that
+    // javascript regex doesn't support lookbehind.
+    var false_filter_match = _.find(realm_filter_list, function (re) {
+        var pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
+        var regex = new RegExp(pattern);
+        return regex.test(content);
+    });
+    return markedup !== undefined || false_filter_match !== undefined;
 };
 
 function push_uniquely(lst, elem) {
@@ -221,6 +230,15 @@ function python_to_js_filter(pattern, url) {
         });
         pattern = pattern.replace(inline_flag_re, "");
     }
+    // Ideally we should have been checking that realm filters
+    // begin with certain characters but since there is no
+    // support for negative lookbehind in javascript, we check
+    // for this condition in `contains_backend_only_syntax()`
+    // function. If the condition is satisfied then the message
+    // is rendered locally, otherwise, we return false there and
+    // message is rendered on the backend which has proper support
+    // for negative lookbehind.
+    pattern = pattern + /(?![\w])/.source;
     return [new RegExp(pattern, js_flags), url];
 }
 
