@@ -893,15 +893,6 @@ exports.initialize = function () {
             compose_actions.start("stream", {});
         }
     }
-
-    $(document).on('message_id_changed', function (event) {
-        if (exports.send_times_data[event.old_id] !== undefined) {
-            var value = exports.send_times_data[event.old_id];
-            delete exports.send_times_data[event.old_id];
-            exports.send_times_data[event.new_id] =
-                _.extend({}, exports.send_times_data[event.old_id], value);
-        }
-    });
 };
 
 return exports;
