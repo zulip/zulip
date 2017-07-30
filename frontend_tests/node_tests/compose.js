@@ -261,8 +261,6 @@ people.add(bob);
     $("#send-status").show();
     $("#compose-send-button").attr('disabled', 'disabled');
     $("#sending-indicator").show();
-    global.feature_flags.log_send_times = true;
-    global.feature_flags.collect_send_times = true;
     var set_timeout_called = false;
     global.patch_builtin('setTimeout', function (func, delay) {
         assert.equal(delay, 5000);

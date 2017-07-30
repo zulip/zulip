@@ -211,7 +211,6 @@ function send_message_socket(request, success, error) {
     });
 }
 
-exports.send_times_log = [];
 exports.send_times_data = {};
 function maybe_report_send_times(message_id) {
     var data = exports.send_times_data[message_id];
@@ -258,13 +257,6 @@ exports.report_as_received = function report_as_received(message) {
 
 function process_send_time(message_id, start_time, locally_echoed) {
     var send_finished = new Date();
-    var send_time = (send_finished - start_time);
-    if (feature_flags.log_send_times) {
-        blueslip.log("send time: " + send_time);
-    }
-    if (feature_flags.collect_send_times) {
-        exports.send_times_log.push(send_time);
-    }
     if (exports.send_times_data[message_id] === undefined) {
         exports.send_times_data[message_id] = {};
     }

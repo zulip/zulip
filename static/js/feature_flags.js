@@ -2,10 +2,6 @@ var feature_flags = (function () {
 
 var exports = {};
 
-// Manually-flipped debugging flags
-exports.log_send_times = false;
-exports.collect_send_times = false;
-
 // Experimental modification to support much wider message views.
 exports.full_width = false;
 
