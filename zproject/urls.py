@@ -153,6 +153,7 @@ i18n_urls = [
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
     url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
     url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
+    url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
     url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
     url(r'^authors/$', zerver.views.users.authors_view, name='zerver.views.users.authors_view'),
 
