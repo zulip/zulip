@@ -68,10 +68,9 @@ def max_api_calls(user):
     entity = RateLimitedUser(user)
     return entity.rules()[-1][1]
 
-def max_api_window(user):
-    # type: (UserProfile) -> int
+def max_api_window(entity):
+    # type: (RateLimitedObject) -> int
     "Returns the API time window for the highest limit"
-    entity = RateLimitedUser(user)
     return entity.rules()[-1][0]
 
 def add_ratelimit_rule(range_seconds, num_requests):
@@ -143,7 +142,8 @@ def api_calls_left(user, domain='all'):
     # type: (UserProfile, Text) -> Tuple[int, float]
     """Returns how many API calls in this range this client has, as well as when
        the rate-limit will be reset to 0"""
-    max_window = max_api_window(user)
+    entity = RateLimitedUser(user, domain=domain)
+    max_window = max_api_window(entity)
     max_calls = max_api_calls(user)
     return _get_api_calls_left(user, domain, max_window, max_calls)
 
@@ -242,7 +242,7 @@ def incr_ratelimit(user, domain='all'):
                     pipe.zrem(set_key, last_val)
 
                 # Set the TTL for our keys as well
-                api_window = max_api_window(user)
+                api_window = max_api_window(entity)
                 pipe.expire(list_key, api_window)
                 pipe.expire(set_key, api_window)
 
