@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lint all commit messages that are newer than upstream/master if running
-# locally or the commits in the push or PR if in TravisCI.
+# locally or the commits in the push or PR if in Travis CI.
 
 # The rules can be found in /.gitlint
 

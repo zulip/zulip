@@ -37,14 +37,14 @@ with these details in mind:
 
 - We provide **many tools to help you submit quality code.** These include
   [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], continuous
-  integration with [TravisCI][travis-ci], and [mypy][zulip-rtd-mypy].
+  integration with [Travis CI][travis-ci], and [mypy][zulip-rtd-mypy].
 
 - We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
 pull requests to create a better GitHub workflow for contributors.
 
 Finally, take a quick look at [Zulip-specific Git scripts][self-zulip-tools],
 install the [Zulip developer environment][zulip-rtd-dev-overview], and then
-[configure your fork for use with TravisCI][self-travisci].
+[configure your fork for use with Travis CI][self-travisci].
 
 ***
 
@@ -345,7 +345,7 @@ This step is optional, but recommended.
 The Zulip Server project is configured to use [Travis CI][travis-ci]
 to test and create builds upon each new commit and pull
 request. Travis CI is free for open source projects and it's easy to
-configure for your own fork of Zulip. After doing so, TravisCI will
+configure for your own fork of Zulip. After doing so, Travis CI will
 run tests for new refs you push to GitHub and email you the outcome
 (you can also view the results in the web interface).
 
