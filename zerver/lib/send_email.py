@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.mail.message import sanitize_address
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
@@ -43,7 +44,10 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         from_name = "Zulip"
     if from_address is None:
         from_address = FromAddress.NOREPLY
-    from_email = formataddr((from_name, from_address))
+    try:
+        from_email = sanitize_address((from_name, from_address), "ascii")
+    except UnicodeError:
+        from_email = sanitize_address((from_name, from_address), "utf-8")
     reply_to = None
     if reply_to_email is not None:
         reply_to = [reply_to_email]

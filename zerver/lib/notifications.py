@@ -6,6 +6,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
+from django.core.mail.message import sanitize_address
 from zerver.decorator import statsd_increment
 from zerver.lib.send_email import send_future_email, \
     send_email_from_dict, FromAddress
@@ -281,10 +282,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     from zerver.lib.email_mirror import create_missed_message_address
     reply_to_address = create_missed_message_address(user_profile, missed_messages[0])
-    if reply_to_address == FromAddress.NOREPLY:
-        reply_to_name = None
-    else:
-        reply_to_name = "Zulip"
 
     senders = list(set(m.sender for m in missed_messages))
     if (missed_messages[0].recipient.type == Recipient.HUDDLE):
@@ -303,8 +300,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         else:
             huddle_display_name = u"%s, and %s others" % (', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
+        reply_to_name = huddle_display_name
     elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
+        reply_to_name = missed_messages[0].sender.full_name
     else:
         # Keep only the senders who actually mentioned the user
         #
@@ -314,6 +313,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
                            UserMessage.objects.filter(message=m, user_profile=user_profile,
                                                       flags=UserMessage.flags.mentioned).exists()))
         context.update({'at_mention': True})
+        reply_to_name = "#" + cast(Text, get_display_recipient(missed_messages[0].recipient))
 
     context.update({
         'sender_str': ", ".join(sender.full_name for sender in senders),
@@ -335,12 +335,20 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             'reply_to_zulip': False,
         })
 
+    if reply_to_address == FromAddress.NOREPLY:
+        reply_to_name = ""
+
+    try:
+        reply_to_email = sanitize_address((reply_to_name, reply_to_address), 'ascii')
+    except UnicodeError:
+        reply_to_email = sanitize_address((reply_to_name, reply_to_address), 'utf-8')
+
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
         'to_user_id': user_profile.id,
         'from_name': from_name,
         'from_address': from_address,
-        'reply_to_email': formataddr((reply_to_name, reply_to_address)),
+        'reply_to_email': reply_to_email,
         'context': context}
     queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
 
