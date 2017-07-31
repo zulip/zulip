@@ -120,15 +120,13 @@ Django context (i.e. with database access).
 
 ### API and Bots
 
-* `api/` Zulip's Python API bindings (released separately).
+* See the [Zulip API repository](https://github.com/zulip/python-zulip-api).
+  Zulip's Python API bindings, a number of Zulip integrations and
+  bots, and a framework for running and testing Zulip bots, used to be
+  developed in the main Zulip server repo but are now in their own repo.
 
-* `api/examples/` API examples.
-
-* `api/integrations/` Integrations distributed as part of the Zulip API bundle.
-
-* `api/bots/` Bots distributed as part of the Zulip API bundle.
-
-* `api/bots_api/` Framework for running and testing bots in `api/bots/`.
+* `templates/zerver/integrations/` (within `templates/zerver/`, above).
+  Documentation for these integrations.
 
 -------------------------------------------------------------------------
 
