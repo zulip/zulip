@@ -48,11 +48,6 @@ def serve_file_backend(request, user_profile, realm_id_str, filename):
 
     return serve_s3(request, path_id)
 
-@authenticated_json_post_view
-def json_upload_file(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return upload_file_backend(request, user_profile)
-
 def upload_file_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) == 0:

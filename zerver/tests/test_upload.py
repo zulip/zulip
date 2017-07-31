@@ -136,7 +136,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Use MAX_FILE_UPLOAD_SIZE of 0, because the next increment
         # would be 1MB.
         with self.settings(MAX_FILE_UPLOAD_SIZE=0):
-            result = self.client_post("/json/upload_file", {'f1': fp})
+            result = self.client_post("/json/user_uploads", {'f1': fp})
         self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
 
     def test_multiple_upload_failure(self):
@@ -150,7 +150,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp2 = StringIO("pshaw!")
         fp2.name = "b.txt"
 
-        result = self.client_post("/json/upload_file", {'f1': fp, 'f2': fp2})
+        result = self.client_post("/json/user_uploads", {'f1': fp, 'f2': fp2})
         self.assert_json_error(result, "You may only upload one file at a time")
 
     def test_no_file_upload_failure(self):
@@ -160,7 +160,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
 
-        result = self.client_post("/json/upload_file")
+        result = self.client_post("/json/user_uploads")
         self.assert_json_error(result, "You must specify a file to upload")
 
     def test_download_non_existent_file(self):
@@ -175,7 +175,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_file_upload_authed(self):
         # type: () -> None
         """
-        A call to /json/upload_file should return a uri and actually create an
+        A call to /json/user_uploads should return a uri and actually create an
         entry in the database. This entry will be marked unclaimed till a message
         refers it.
         """
@@ -183,7 +183,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
 
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)
@@ -209,7 +209,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         json = ujson.loads(result.content)
         uri = json["uri"]
 
@@ -226,7 +226,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         json = ujson.loads(result.content)
         uri = json["uri"]
 
@@ -251,14 +251,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
-        result = self.client_post("/json/upload_file", {'file': d1})
+        result = self.client_post("/json/user_uploads", {'file': d1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d1_path_id = re.sub('/user_uploads/', '', uri)
 
         d2 = StringIO("zulip!")
         d2.name = "dummy_2.txt"
-        result = self.client_post("/json/upload_file", {'file': d2})
+        result = self.client_post("/json/user_uploads", {'file': d2})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d2_path_id = re.sub('/user_uploads/', '', uri)
@@ -298,7 +298,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
-        result = self.client_post("/json/upload_file", {'file': d1})
+        result = self.client_post("/json/user_uploads", {'file': d1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d1_path_id = re.sub('/user_uploads/', '', uri)
@@ -318,7 +318,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
-        result = self.client_post("/json/upload_file", {'file': d1})
+        result = self.client_post("/json/user_uploads", {'file': d1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d1_path_id = re.sub('/user_uploads/', '', uri)
@@ -360,12 +360,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         f3.name = "file3.txt"
 
         self.login(self.example_email("hamlet"))
-        result = self.client_post("/json/upload_file", {'file': f1})
+        result = self.client_post("/json/user_uploads", {'file': f1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         f1_path_id = re.sub('/user_uploads/', '', uri)
 
-        result = self.client_post("/json/upload_file", {'file': f2})
+        result = self.client_post("/json/user_uploads", {'file': f2})
         json = ujson.loads(result.content)
         uri = json["uri"]
         f2_path_id = re.sub('/user_uploads/', '', uri)
@@ -375,7 +375,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         msg_id = self.send_message(self.example_email("hamlet"), "test", Recipient.STREAM, body, "test")
 
-        result = self.client_post("/json/upload_file", {'file': f3})
+        result = self.client_post("/json/user_uploads", {'file': f3})
         json = ujson.loads(result.content)
         uri = json["uri"]
         f3_path_id = re.sub('/user_uploads/', '', uri)
@@ -423,7 +423,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             fp = StringIO("bah!")
             fp.name = urllib.parse.quote(expected)
 
-            result = self.client_post("/json/upload_file", {'f1': fp})
+            result = self.client_post("/json/user_uploads", {'f1': fp})
             content = ujson.loads(result.content)
             assert sanitize_name(expected) in content['uri']
 
@@ -436,7 +436,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
-        result = self.client_post("/json/upload_file", {'file': d1})
+        result = self.client_post("/json/user_uploads", {'file': d1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d1_path_id = re.sub('/user_uploads/', '', uri)
@@ -451,12 +451,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         d2 = StringIO("zulip!")
         d2.name = "dummy_2.txt"
-        result = self.client_post("/json/upload_file", {'file': d2})
+        result = self.client_post("/json/user_uploads", {'file': d2})
         self.assert_json_success(result)
 
         d3 = StringIO("zulip!")
         d3.name = "dummy_3.txt"
-        result = self.client_post("/json/upload_file", {'file': d3})
+        result = self.client_post("/json/user_uploads", {'file': d3})
         self.assert_json_error(result, "Upload would exceed your maximum quota.")
 
     def test_cross_realm_file_access(self):
@@ -493,7 +493,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(user2_email, 'test')
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         json = ujson.loads(result.content)
         uri = json["uri"]
         fp_path_id = re.sub('/user_uploads/', '', uri)
@@ -529,7 +529,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         json = ujson.loads(result.content)
         uri = json["uri"]
         fp_path_id = re.sub('/user_uploads/', '', uri)
@@ -564,7 +564,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         json = ujson.loads(result.content)
         uri = json["uri"]
         fp_path_id = re.sub('/user_uploads/', '', uri)
@@ -950,7 +950,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
 
         json = ujson.loads(result.content)
         uri = json["uri"]
@@ -1017,7 +1017,7 @@ class S3Test(ZulipTestCase):
     def test_file_upload_authed(self):
         # type: () -> None
         """
-        A call to /json/upload_file should return a uri and actually create an object.
+        A call to /json/user_uploads should return a uri and actually create an object.
         """
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
@@ -1026,7 +1026,7 @@ class S3Test(ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
 
-        result = self.client_post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)

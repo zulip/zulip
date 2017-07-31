@@ -644,7 +644,7 @@ people.add(bob);
 }());
 
 function verify_filedrop_payload(payload) {
-    assert.equal(payload.url, '/json/upload_file');
+    assert.equal(payload.url, '/json/user_uploads');
     assert.equal(payload.fallback_id, 'file_input');
     assert.equal(payload.paramname, 'file');
     assert.equal(payload.maxfilesize, 512);

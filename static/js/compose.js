@@ -871,7 +871,7 @@ exports.initialize = function () {
     }
 
     $("#compose").filedrop({
-        url: "/json/upload_file",
+        url: "/json/user_uploads",
         fallback_id: "file_input",
         paramname: "file",
         maxfilesize: page_params.maxfilesize,
