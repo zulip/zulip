@@ -46,7 +46,7 @@ var zero_counts = {
     home_unread_messages: 0,
     mentioned_message_count: 0,
     stream_count: new Dict(),
-    subject_count: new Dict(),
+    topic_count: new Dict(),
     pm_count: new Dict(),
     unread_in_current_view: 0,
 };
@@ -78,7 +78,7 @@ var zero_counts = {
 (function test_changing_subjects() {
     // Summary: change the subject of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
-    var count = unread.num_unread_for_subject('social', 'lunch');
+    var count = unread.num_unread_for_topic('social', 'lunch');
     assert.equal(count, 0);
 
     var stream_id = 100;
@@ -100,7 +100,7 @@ var zero_counts = {
 
     unread.process_loaded_messages([message, other_message]);
 
-    count = unread.num_unread_for_subject(stream_id, 'Lunch');
+    count = unread.num_unread_for_topic(stream_id, 'Lunch');
     assert.equal(count, 2);
     assert(unread.topic_has_any_unread(stream_id, 'lunch'));
     assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
@@ -111,10 +111,10 @@ var zero_counts = {
 
     unread.update_unread_topics(message, event);
 
-    count = unread.num_unread_for_subject(stream_id, 'lUnch');
+    count = unread.num_unread_for_topic(stream_id, 'lUnch');
     assert.equal(count, 1);
 
-    count = unread.num_unread_for_subject(stream_id, 'dinner');
+    count = unread.num_unread_for_topic(stream_id, 'dinner');
     assert.equal(count, 1);
 
     event = {
@@ -123,12 +123,12 @@ var zero_counts = {
 
     unread.update_unread_topics(other_message, event);
 
-    count = unread.num_unread_for_subject(stream_id, 'lunch');
+    count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, 0);
     assert(!unread.topic_has_any_unread(stream_id, 'lunch'));
     assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
 
-    count = unread.num_unread_for_subject(stream_id, 'snack');
+    count = unread.num_unread_for_topic(stream_id, 'snack');
     assert.equal(count, 1);
     assert(unread.topic_has_any_unread(stream_id, 'snack'));
     assert(!unread.topic_has_any_unread(wrong_stream_id, 'snack'));
@@ -143,12 +143,12 @@ var zero_counts = {
     // cleanup
     message.subject = 'dinner';
     unread.process_read_message(message);
-    count = unread.num_unread_for_subject(stream_id, 'dinner');
+    count = unread.num_unread_for_topic(stream_id, 'dinner');
     assert.equal(count, 0);
 
     other_message.subject = 'snack';
     unread.process_read_message(other_message);
-    count = unread.num_unread_for_subject(stream_id, 'snack');
+    count = unread.num_unread_for_topic(stream_id, 'snack');
     assert.equal(count, 0);
 }());
 
@@ -198,13 +198,13 @@ stream_data.get_stream_id = function () {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 }());
 
-(function test_num_unread_for_subject() {
-    // Test the num_unread_for_subject() function using many
+(function test_num_unread_for_topic() {
+    // Test the num_unread_for_topic() function using many
     // messages.
     unread.declare_bankruptcy();
 
     var stream_id = 301;
-    var count = unread.num_unread_for_subject(stream_id, 'lunch');
+    var count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, 0);
 
     var message = {
@@ -220,7 +220,7 @@ stream_data.get_stream_id = function () {
         unread.process_loaded_messages([message]);
     }
 
-    count = unread.num_unread_for_subject(stream_id, 'lunch');
+    count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, num_msgs);
 
     for (i = 0; i < num_msgs; i += 1) {
@@ -228,7 +228,7 @@ stream_data.get_stream_id = function () {
         unread.process_read_message(message);
     }
 
-    count = unread.num_unread_for_subject(stream_id, 'lunch');
+    count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, 0);
 }());
 
@@ -404,6 +404,16 @@ stream_data.get_stream_id = function () {
 }());
 
 (function test_declare_bankruptcy() {
+    var message = {
+        id: 16,
+        type: 'whatever',
+        stream_id: 1999,
+        subject: 'whatever',
+        mentioned: true,
+    };
+
+    unread.process_loaded_messages([message]);
+
     unread.declare_bankruptcy();
 
     var counts = unread.get_counts();

@@ -31,7 +31,7 @@ global.compile_template('topic_list_item');
         message_id: 400,
     });
 
-    global.unread.num_unread_for_subject = function () {
+    global.unread.num_unread_for_topic = function () {
         return 1;
     };
 

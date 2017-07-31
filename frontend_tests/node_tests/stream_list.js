@@ -409,7 +409,7 @@ function initialize_stream_data() {
     stream_count.set(stream_id, 0);
     var counts = {
         stream_count: stream_count,
-        subject_count: new Dict(),
+        topic_count: new Dict(),
         mentioned_message_count: 222,
         home_unread_messages: 333,
     };
@@ -439,7 +439,7 @@ function initialize_stream_data() {
 
     var topic_count = new Dict({fold_case: true});
     topic_count.set('lunch', '555');
-    counts.subject_count.set(stream_id, topic_count);
+    counts.topic_count.set(stream_id, topic_count);
 
     stream_list.update_dom_with_unread_counts(counts);
 
