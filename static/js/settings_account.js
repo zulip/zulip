@@ -155,7 +155,7 @@ exports.set_up = function () {
         data.email = $('.email_change_container').find("input[name='email']").val();
 
         channel.patch({
-            url: '/json/settings/change',
+            url: '/json/settings',
             data: data,
             success: function (data) {
                 if ('account_email' in data) {

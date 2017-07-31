@@ -122,8 +122,8 @@ class RealmTest(ZulipTestCase):
         email = user_profile.email
         self.login(email)
         do_set_realm_property(user_profile.realm, 'name_changes_disabled', True)
-        url = '/json/settings/change'
-        result = self.client_post(url, data)
+        url = '/json/settings'
+        result = self.client_patch(url, data)
         self.assertEqual(result.status_code, 200)
         # Since the setting fails silently, no message is returned
         self.assert_in_response("", result)

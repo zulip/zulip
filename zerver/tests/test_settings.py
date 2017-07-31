@@ -61,12 +61,12 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_successful_change_settings(self):
         # type: () -> None
         """
-        A call to /json/settings/change with valid parameters changes the user's
+        A call to /json/settings with valid parameters changes the user's
         settings correctly and returns correct values.
         """
         self.login(self.example_email("hamlet"))
-        json_result = self.client_post(
-            "/json/settings/change",
+        json_result = self.client_patch(
+            "/json/settings",
             dict(
                 full_name='Foo Bar',
                 old_password=initial_password(self.example_email("hamlet")),
@@ -91,8 +91,8 @@ class ChangeSettingsTest(ZulipTestCase):
         full_name = user.full_name
 
         with self.settings(NAME_CHANGES_DISABLED=True):
-            json_result = self.client_post("/json/settings/change",
-                                           dict(full_name='Foo Bar'))
+            json_result = self.client_patch("/json/settings",
+                                            dict(full_name='Foo Bar'))
 
         # We actually fail silently here, since this only happens if
         # somebody is trying to game our API, and there's no reason to
@@ -103,13 +103,13 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(user.full_name, full_name)
 
         # Now try a too-long name
-        json_result = self.client_post("/json/settings/change",
-                                       dict(full_name='x' * 1000))
+        json_result = self.client_patch("/json/settings",
+                                        dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
 
         # Now try a too-short name
-        json_result = self.client_post("/json/settings/change",
-                                       dict(full_name='x'))
+        json_result = self.client_patch("/json/settings",
+                                        dict(full_name='x'))
         self.assert_json_error(json_result, 'Name too short!')
 
     def test_illegal_characters_in_name_changes(self):
@@ -118,8 +118,8 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login(email)
 
         # Now try a name with invalid characters
-        json_result = self.client_post("/json/settings/change",
-                                       dict(full_name='Opheli*'))
+        json_result = self.client_patch("/json/settings",
+                                        dict(full_name='Opheli*'))
         self.assert_json_error(json_result, 'Invalid characters in name!')
 
     # This is basically a don't-explode test.
@@ -151,8 +151,8 @@ class ChangeSettingsTest(ZulipTestCase):
         new_password and confirm_password must match
         """
         self.login(self.example_email("hamlet"))
-        result = self.client_post(
-            "/json/settings/change",
+        result = self.client_patch(
+            "/json/settings",
             dict(
                 new_password="mismatched_password",
                 confirm_password="not_the_same",
@@ -166,8 +166,8 @@ class ChangeSettingsTest(ZulipTestCase):
         new_password and confirm_password must match
         """
         self.login(self.example_email("hamlet"))
-        result = self.client_post(
-            "/json/settings/change",
+        result = self.client_patch(
+            "/json/settings",
             dict(
                 old_password='bad_password',
                 new_password="ignored",
@@ -183,8 +183,8 @@ class ChangeSettingsTest(ZulipTestCase):
         probably use a patch interface for these changes.)
         """
         self.login(self.example_email("hamlet"))
-        result = self.client_post("/json/settings/change",
-                                  dict(old_password='ignored',))
+        result = self.client_patch("/json/settings",
+                                   dict(old_password='ignored',))
         self.assert_json_error(result, "No new data supplied")
 
     def do_test_change_user_display_setting(self, setting_name):

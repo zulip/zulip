@@ -324,6 +324,8 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.hotspots.mark_hotspot_as_read'}),
 
     # settings -> zerver.views.user_settings
+    url(r'^settings$', rest_dispatch,
+        {'PATCH': 'zerver.views.user_settings.json_change_settings'}),
     url(r'^settings/display$', rest_dispatch,
         {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
     url(r'^settings/notifications$', rest_dispatch,

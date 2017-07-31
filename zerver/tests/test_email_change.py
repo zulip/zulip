@@ -103,9 +103,9 @@ class EmailChangeTestCase(ZulipTestCase):
         data = {'email': 'hamlet-new@zulip.com'}
         email = self.example_email("hamlet")
         self.login(email)
-        url = '/json/settings/change'
+        url = '/json/settings'
         self.assertEqual(len(mail.outbox), 0)
-        result = self.client_post(url, data)
+        result = self.client_patch(url, data)
         self.assertEqual(len(mail.outbox), 1)
         self.assert_in_success_response(['Check your email for a confirmation link.'], result)
         email_message = mail.outbox[0]
@@ -132,8 +132,8 @@ class EmailChangeTestCase(ZulipTestCase):
         email = user_profile.email
         self.login(email)
         do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
-        url = '/json/settings/change'
-        result = self.client_post(url, data)
+        url = '/json/settings'
+        result = self.client_patch(url, data)
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Email address changes are disabled in this organization.",
@@ -145,9 +145,9 @@ class EmailChangeTestCase(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         self.login(email)
-        url = '/json/settings/change'
+        url = '/json/settings'
         self.assertEqual(len(mail.outbox), 0)
-        result = self.client_post(url, data)
+        result = self.client_patch(url, data)
         self.assertEqual(len(mail.outbox), 1)
         self.assert_in_success_response(['Check your email for a confirmation link.'], result)
         email_message = mail.outbox[0]
@@ -172,8 +172,8 @@ class EmailChangeTestCase(ZulipTestCase):
         data = {'email': 'hamlet-new'}
         email = self.example_email("hamlet")
         self.login(email)
-        url = '/json/settings/change'
-        result = self.client_post(url, data)
+        url = '/json/settings'
+        result = self.client_patch(url, data)
         self.assert_in_response('Invalid address', result)
 
     def test_post_same_email(self):
@@ -181,7 +181,7 @@ class EmailChangeTestCase(ZulipTestCase):
         data = {'email': self.example_email("hamlet")}
         email = self.example_email("hamlet")
         self.login(email)
-        url = '/json/settings/change'
-        result = self.client_post(url, data)
+        url = '/json/settings'
+        result = self.client_patch(url, data)
         self.assertEqual('success', result.json()['result'])
         self.assertEqual('', result.json()['msg'])

@@ -1023,6 +1023,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         patch_endpoints = [
+            "/api/v1/settings",
             "/api/v1/settings/display",
             "/api/v1/settings/notifications",
             "/api/v1/settings/ui",

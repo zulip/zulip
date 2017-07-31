@@ -65,7 +65,6 @@ class PublicURLTest(ZulipTestCase):
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
                            "/json/invite_users",
-                           "/json/settings/change",
                            "/json/subscriptions/exists",
                            "/api/v1/users/me/subscriptions/properties",
                            "/json/fetch_api_key",
@@ -77,12 +76,17 @@ class PublicURLTest(ZulipTestCase):
                            "/api/v1/fetch_api_key",
                            ],
                      }
+        patch_urls = {
+            401: ["/json/settings"],
+        }
         put_urls = {401: ["/json/users/me/pointer"],
                     }
         for status_code, url_set in six.iteritems(get_urls):
             self.fetch("client_get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
             self.fetch("client_post", url_set, status_code)
+        for status_code, url_set in six.iteritems(patch_urls):
+            self.fetch("client_patch", url_set, status_code)
         for status_code, url_set in six.iteritems(put_urls):
             self.fetch("client_put", url_set, status_code)
 

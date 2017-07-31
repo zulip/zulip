@@ -82,7 +82,7 @@ def json_change_ui_settings(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
+@human_users_only
 @has_request_variables
 def json_change_settings(request, user_profile,
                          full_name=REQ(default=""),
