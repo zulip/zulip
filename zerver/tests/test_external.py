@@ -8,8 +8,9 @@ from zerver.forms import email_is_not_mit_mailing_list
 
 from zerver.lib.rate_limiter import (
     add_ratelimit_rule,
-    clear_user_history,
+    clear_history,
     remove_ratelimit_rule,
+    RateLimitedUser,
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
@@ -78,7 +79,7 @@ class RateLimitTests(ZulipTestCase):
         # type: () -> None
         user = self.example_user('hamlet')
         email = user.email
-        clear_user_history(user)
+        clear_history(RateLimitedUser(user))
 
         result = self.send_api_message(email, "some stuff")
         self.assertTrue('X-RateLimit-Remaining' in result)
@@ -89,7 +90,7 @@ class RateLimitTests(ZulipTestCase):
         # type: () -> None
         user = self.example_user('hamlet')
         email = user.email
-        clear_user_history(user)
+        clear_history(RateLimitedUser(user))
         result = self.send_api_message(email, "some stuff")
         limit = int(result['X-RateLimit-Remaining'])
 
@@ -101,7 +102,7 @@ class RateLimitTests(ZulipTestCase):
         # type: () -> None
         user = self.example_user('cordelia')
         email = user.email
-        clear_user_history(user)
+        clear_history(RateLimitedUser(user))
 
         start_time = time.time()
         for i in range(6):

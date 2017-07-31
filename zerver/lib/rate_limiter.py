@@ -103,13 +103,12 @@ def unblock_user(user, domain='all'):
     _, _, blocking_key = entity.get_keys()
     client.delete(blocking_key)
 
-def clear_user_history(user, domain='all'):
-    # type: (UserProfile, Text) -> None
+def clear_history(entity):
+    # type: (RateLimitedObject) -> None
     '''
     This is only used by test code now, where it's very helpful in
     allowing us to run tests quickly, by giving a user a clean slate.
     '''
-    entity = RateLimitedUser(user, domain=domain)
     for key in entity.get_keys():
         client.delete(key)
 
