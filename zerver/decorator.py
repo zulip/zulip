@@ -664,7 +664,7 @@ def rate_limit_user(request, user, domain):
         raise RateLimited()
 
     incr_ratelimit(entity)
-    calls_remaining, time_reset = api_calls_left(user, domain)
+    calls_remaining, time_reset = api_calls_left(entity)
 
     request._ratelimit_remaining = calls_remaining
     request._ratelimit_secs_to_freedom = time_reset

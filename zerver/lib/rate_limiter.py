@@ -108,9 +108,8 @@ def clear_history(entity):
     for key in entity.get_keys():
         client.delete(key)
 
-def _get_api_calls_left(user, domain, range_seconds, max_calls):
-    # type: (UserProfile, Text, int, int) -> Tuple[int, float]
-    entity = RateLimitedUser(user, domain=domain)
+def _get_api_calls_left(entity, range_seconds, max_calls):
+    # type: (RateLimitedObject, int, int) -> Tuple[int, float]
     list_key, set_key, _ = entity.get_keys()
     # Count the number of values in our sorted set
     # that are between now and the cutoff
@@ -137,14 +136,13 @@ def _get_api_calls_left(user, domain, range_seconds, max_calls):
 
     return calls_left, time_reset
 
-def api_calls_left(user, domain='all'):
-    # type: (UserProfile, Text) -> Tuple[int, float]
+def api_calls_left(entity):
+    # type: (RateLimitedObject) -> Tuple[int, float]
     """Returns how many API calls in this range this client has, as well as when
        the rate-limit will be reset to 0"""
-    entity = RateLimitedUser(user, domain=domain)
     max_window = max_api_window(entity)
     max_calls = max_api_calls(entity)
-    return _get_api_calls_left(user, domain, max_window, max_calls)
+    return _get_api_calls_left(entity, max_window, max_calls)
 
 def is_ratelimited(entity):
     # type: (RateLimitedObject) -> Tuple[bool, float]
