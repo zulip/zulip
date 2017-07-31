@@ -2,11 +2,12 @@ from __future__ import absolute_import
 
 from collections import defaultdict
 from django.db import transaction
+from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 from typing import DefaultDict, List
 
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
-    Subscription, Message, Recipient
+    Subscription, Message, Recipient, UserActivity, Realm
 
 def filter_by_subscription_history(
         user_profile, all_stream_messages, all_stream_subscription_logs):
@@ -190,3 +191,25 @@ def maybe_catch_up_soft_deactivated_user(user_profile):
             event_type='user_soft_activated',
             event_time=timezone_now()
         )
+
+def get_users_for_soft_deactivation(realm, inactive_for_days):
+    # type: (Realm, int) -> List[UserProfile]
+    users_activity = list(UserActivity.objects.filter(
+        user_profile__realm=realm,
+        user_profile__is_active=True,
+        user_profile__is_bot=False,
+        user_profile__long_term_idle=False).values(
+        'user_profile_id').annotate(last_visit=Max('last_visit')))
+    user_ids_to_deactivate = []
+    today = timezone_now()
+    for user_activity in users_activity:
+        if (today - user_activity['last_visit']).days > inactive_for_days:
+            user_ids_to_deactivate.append(user_activity['user_profile_id'])
+    users_to_deactivate = list(UserProfile.objects.filter(
+        id__in=user_ids_to_deactivate))
+    return users_to_deactivate
+
+def do_soft_activate_users(users):
+    # type: (List[UserProfile]) -> None
+    for user_profile in users:
+        maybe_catch_up_soft_deactivated_user(user_profile)
