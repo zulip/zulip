@@ -1,8 +1,12 @@
 from __future__ import absolute_import
 
 from django.db import transaction
+from django.db.models import Max
 
-from zerver.models import UserProfile, UserMessage, RealmAuditLog
+from zerver.models import (
+    UserProfile, UserMessage, RealmAuditLog, Realm, UserActivity
+)
+from zerver.lib.message import maybe_catch_up_soft_deactivated_user
 
 from django.utils.timezone import now as timezone_now
 
@@ -33,3 +37,24 @@ def do_soft_deactivate_users(users):
             )
             realm_logs.append(log)
         RealmAuditLog.objects.bulk_create(realm_logs)
+
+def get_users_for_soft_deactivation(realm, inactive_for_days):
+    # type: (Realm, int) -> List[UserProfile]
+    users_activity = list(UserActivity.objects.filter(
+        user_profile__realm=realm,
+        user_profile__is_bot=False,
+        user_profile__long_term_idle=False).values(
+        'user_profile_id').annotate(last_visit=Max('last_visit')))
+    user_ids_to_deactivate = []
+    today = timezone_now()
+    for user in users_activity:
+        if (today - user['last_visit']).days > inactive_for_days:
+            user_ids_to_deactivate.append(user['user_profile_id'])
+    users_to_deactivate = list(UserProfile.objects.filter(
+        id__in=user_ids_to_deactivate))
+    return users_to_deactivate
+
+def do_soft_activate_users(users):
+    # type: (List[UserProfile]) -> None
+    for user in users:
+        maybe_catch_up_soft_deactivated_user(user)
