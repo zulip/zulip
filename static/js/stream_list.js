@@ -334,8 +334,8 @@ exports.update_dom_with_unread_counts = function (counts) {
         set_stream_unread_count(stream_id, count);
     });
 
-    // counts.subject_count maps streams to hashes of topics to counts
-    counts.subject_count.each(function (subject_hash, stream_id) {
+    // counts.topic_count maps streams to hashes of topics to counts
+    counts.topic_count.each(function (subject_hash, stream_id) {
         subject_hash.each(function (count, subject) {
             topic_list.set_count(stream_id, subject, count);
         });
