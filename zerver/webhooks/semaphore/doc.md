@@ -1,5 +1,3 @@
-## Semaphore
-
 See build and deploy statuses on Semaphore right in Zulip with the
 Zulip Semaphore plugin!
 

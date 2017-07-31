@@ -1,5 +1,3 @@
-## WordPress
-
 See WordPress.com blog notifications in Zulip!
 
 Support for self-installed blogs using software from <a href="">
