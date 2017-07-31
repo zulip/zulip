@@ -8,7 +8,8 @@ from django.db import IntegrityError, connection
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import has_request_variables, REQ, require_realm_admin
+from zerver.decorator import has_request_variables, REQ, require_realm_admin, \
+    human_users_only
 from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 do_remove_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
@@ -77,6 +78,7 @@ def update_realm_custom_profile_field(request, user_profile, field_id,
         return json_error(_('A field with that name already exists.'))
     return json_success()
 
+@human_users_only
 @has_request_variables
 def update_user_custom_profile_data(
         request,
