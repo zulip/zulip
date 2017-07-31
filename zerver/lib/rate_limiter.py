@@ -197,10 +197,9 @@ def is_ratelimited(entity):
     # No api calls recorded yet
     return False, 0.0
 
-def incr_ratelimit(user, domain='all'):
-    # type: (UserProfile, Text) -> None
-    """Increases the rate-limit for the specified user"""
-    entity = RateLimitedUser(user, domain=domain)
+def incr_ratelimit(entity):
+    # type: (RateLimitedObject) -> None
+    """Increases the rate-limit for the specified entity"""
     list_key, set_key, _ = entity.get_keys()
     now = time.time()
 

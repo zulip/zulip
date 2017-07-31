@@ -663,7 +663,7 @@ def rate_limit_user(request, user, domain):
         statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
         raise RateLimited()
 
-    incr_ratelimit(user, domain)
+    incr_ratelimit(entity)
     calls_remaining, time_reset = api_calls_left(user, domain)
 
     request._ratelimit_remaining = calls_remaining
