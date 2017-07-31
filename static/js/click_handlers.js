@@ -61,7 +61,44 @@ $(function () {
             (target.is(".highlight") && target.parent().is("a"));
     }
 
-    $("#main_div").on("click", ".messagebox", function (e) {
+    function initialize_long_tap() {
+        var MS_DELAY = 750;
+        var meta = {
+            touchdown: false,
+        };
+
+        $("#main_div").on("touchstart", ".messagebox", function () {
+            meta.touchdown = true;
+            meta.invalid = false;
+
+            setTimeout(function () {
+                if (meta.touchdown === true && !meta.invalid) {
+                    $(this).trigger("longtap");
+                }
+            }.bind(this), MS_DELAY);
+        });
+
+        $("#main_div").on("touchend", ".messagebox", function () {
+            meta.touchdown = false;
+        });
+
+        $("#main_div").on("touchmove", ".messagebox", function () {
+            meta.invalid = true;
+        });
+
+        $("#main_div").on("contextmenu", ".messagebox", function (e) {
+            e.preventDefault();
+        });
+    }
+
+    // this initializes the trigger that will give off the longtap event, which
+    // there is no point in running if we are on desktop since this isn't a
+    // standard event that we would want to support.
+    if (util.is_mobile()) {
+        initialize_long_tap();
+    }
+
+    var select_message_function = function (e) {
         if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
@@ -98,7 +135,16 @@ $(function () {
             e.stopPropagation();
             popovers.hide_all();
         }
-    });
+    };
+
+    // if on normal non-mobile experience, a `click` event should run the message
+    // selection function which will open the compose box  and select the message.
+    if (!util.is_mobile()) {
+        $("#main_div").on("click", ".messagebox", select_message_function);
+    // on the other hand, on mobile it should be done with a long tap.
+    } else {
+        $("#main_div").on("longtap", ".messagebox", select_message_function);
+    }
 
     function toggle_star(message_id) {
         // Update the message object pointed to by the various message
