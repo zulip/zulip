@@ -404,6 +404,16 @@ stream_data.get_stream_id = function () {
 }());
 
 (function test_declare_bankruptcy() {
+    var message = {
+        id: 16,
+        type: 'whatever',
+        stream_id: 1999,
+        subject: 'whatever',
+        mentioned: true,
+    };
+
+    unread.process_loaded_messages([message]);
+
     unread.declare_bankruptcy();
 
     var counts = unread.get_counts();

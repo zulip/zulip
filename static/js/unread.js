@@ -218,6 +218,7 @@ exports.process_read_message = function (message) {
 exports.declare_bankruptcy = function () {
     unread_privates = new Dict();
     exports.unread_topic_counter.clear();
+    unread_mentioned = new Dict();
 };
 
 exports.num_unread_current_messages = function () {
