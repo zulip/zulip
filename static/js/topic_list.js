@@ -65,7 +65,7 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
 
         _.each(topic_names, function (topic_name, idx) {
             var show_topic;
-            var num_unread = unread.num_unread_for_subject(my_stream_id, topic_name);
+            var num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
 
             if (zoomed) {
                 show_topic = true;

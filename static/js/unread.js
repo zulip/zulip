@@ -270,7 +270,7 @@ exports.num_unread_for_stream = function (stream_id) {
     return exports.unread_topic_counter.get_stream_count(stream_id);
 };
 
-exports.num_unread_for_subject = function (stream_id, subject) {
+exports.num_unread_for_topic = function (stream_id, subject) {
     return exports.unread_topic_counter.get(stream_id, subject);
 };
 
