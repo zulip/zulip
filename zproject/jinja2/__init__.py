@@ -20,6 +20,7 @@ def environment(**options):
     env.globals.update({
         'static': staticfiles_storage.url,
         'url': reverse,
+        'render_markdown_path': render_markdown_path,
         'minified_js': minified_js,
     })
 
@@ -28,6 +29,5 @@ def environment(**options):
     env.filters['slugify'] = slugify
     env.filters['pluralize'] = pluralize
     env.filters['display_list'] = display_list
-    env.filters['render_markdown_path'] = render_markdown_path
 
     return env

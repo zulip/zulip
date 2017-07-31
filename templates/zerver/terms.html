@@ -7,7 +7,7 @@
 <div class="app terms-page inline-block">
     <div class="app-main terms-page-container">
         {% if terms_of_service %}
-            {{ terms_of_service|render_markdown_path }}
+            {{ render_markdown_path(terms_of_service) }}
         {% else %}
             {% trans %}
             This installation of Zulip does not have a configured terms of service.

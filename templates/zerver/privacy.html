@@ -8,7 +8,7 @@
     <div class="app-main terms-page-container">
 
         {% if privacy_policy %}
-            {{ privacy_policy|render_markdown_path }}
+            {{ render_markdown_path(privacy_policy) }}
         {% else %}
             {% trans %}
             This installation of Zulip does not have a configured privacy policy.
