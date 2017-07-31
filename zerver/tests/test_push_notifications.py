@@ -173,7 +173,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
     def test_invalid_apns_token(self):
         # type: () -> None
         endpoints = [
-            ('/json/users/me/apns_device_token', 'apple-token'),
+            ('/api/v1/remotes/push/register', 'apple-token'),
         ]
 
         for endpoint, method in endpoints:
