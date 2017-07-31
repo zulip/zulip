@@ -39,7 +39,7 @@ The Python-Markdown implementation is tested by
 
 A shared set of fixed test data ("test fixtures") is present in
 `zerver/fixtures/markdown_test_cases.json`, and is automatically used
-by both test suites; as a result, it the preferred place to add new
+by both test suites; as a result, it is the preferred place to add new
 tests for Zulip's markdown system.  Some important notes on reading
 this file:
 
@@ -55,10 +55,11 @@ this file:
   the differenes are important (i.e. not just whitespace), we should
   also open an issue on GitHub to track the problem.
 * When those above settings are not in use, we set
-  `bugdown_matches_marked` is the predescessor to the more descriptive
-  `backend_only_rendering` and `expected_marked_output` fields, and
-  when `false`, should be replaced be one of those.  We plan to
-  eliminate it once we're out of cases where it is `false`.
+  `bugdown_matches_marked` to `false`.  `bugdown_matches_marked` is
+  the predescessor to the more descriptive `backend_only_rendering`
+  and `expected_marked_output` fields, and when `false`, should be
+  replaced be one of those.  We plan to eliminate it once we're out of
+  cases where it is `false`.
 
 If you're going to manually test some changes in the frontend Markdown
 implementation, the easiest way to do this is as follows:
