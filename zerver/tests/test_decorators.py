@@ -1016,6 +1016,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/presence",
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
+            "/api/v1/users/me/hotspots",
         ]
         for endpoint in post_endpoints:
             result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))
