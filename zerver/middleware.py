@@ -331,10 +331,11 @@ class RateLimitMiddleware(MiddlewareMixin):
         if not settings.RATE_LIMITING:
             return response
 
-        from zerver.lib.rate_limiter import max_api_calls
+        from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser
         # Add X-RateLimit-*** headers
         if hasattr(request, '_ratelimit_applied_limits'):
-            response['X-RateLimit-Limit'] = str(max_api_calls(request.user))
+            entity = RateLimitedUser(request.user)
+            response['X-RateLimit-Limit'] = str(max_api_calls(entity))
             if hasattr(request, '_ratelimit_secs_to_freedom'):
                 response['X-RateLimit-Reset'] = str(int(time.time() + request._ratelimit_secs_to_freedom))
             if hasattr(request, '_ratelimit_remaining'):

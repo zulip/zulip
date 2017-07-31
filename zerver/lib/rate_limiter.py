@@ -62,10 +62,9 @@ def bounce_redis_key_prefix_for_testing(test_name):
     global KEY_PREFIX
     KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
 
-def max_api_calls(user):
-    # type: (UserProfile) -> int
+def max_api_calls(entity):
+    # type: (RateLimitedObject) -> int
     "Returns the API rate limit for the highest limit"
-    entity = RateLimitedUser(user)
     return entity.rules()[-1][1]
 
 def max_api_window(entity):
@@ -144,7 +143,7 @@ def api_calls_left(user, domain='all'):
        the rate-limit will be reset to 0"""
     entity = RateLimitedUser(user, domain=domain)
     max_window = max_api_window(entity)
-    max_calls = max_api_calls(user)
+    max_calls = max_api_calls(entity)
     return _get_api_calls_left(user, domain, max_window, max_calls)
 
 def is_ratelimited(entity):
@@ -221,7 +220,7 @@ def incr_ratelimit(user, domain='all'):
                 pipe.watch(list_key)
 
                 # Get the last elem that we'll trim (so we can remove it from our sorted set)
-                last_val = pipe.lindex(list_key, max_api_calls(user) - 1)
+                last_val = pipe.lindex(list_key, max_api_calls(entity) - 1)
 
                 # Restart buffered execution
                 pipe.multi()
@@ -230,7 +229,7 @@ def incr_ratelimit(user, domain='all'):
                 pipe.lpush(list_key, now)
 
                 # Trim our list to the oldest rule we have
-                pipe.ltrim(list_key, 0, max_api_calls(user) - 1)
+                pipe.ltrim(list_key, 0, max_api_calls(entity) - 1)
 
                 # Add our new value to the sorted set that we keep
                 # We need to put the score and val both as timestamp,

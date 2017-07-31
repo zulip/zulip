@@ -35,7 +35,7 @@ class Command(BaseCommand):
         except Exception:
             user = None
         entity = RateLimitedUser(user)
-        max_calls = max_api_calls(user=user)
+        max_calls = max_api_calls(entity)
 
         age = int(client.ttl(key))
         if age < 0:
