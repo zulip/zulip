@@ -286,7 +286,7 @@ exports.get_counts = function () {
     res.mentioned_message_count = unread_mentioned.num_items();
 
     // This sets stream_count, topic_count, and home_unread_messages
-    var topic_res = exports.unread_topic_counter.get_counts(res);
+    var topic_res = exports.unread_topic_counter.get_counts();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
     res.topic_count = topic_res.topic_count;
