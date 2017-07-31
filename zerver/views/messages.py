@@ -1158,11 +1158,6 @@ def render_message_backend(request, user_profile, content=REQ()):
     rendered_content = render_markdown(message, content, realm=user_profile.realm)
     return json_success({"rendered": rendered_content})
 
-@authenticated_json_post_view
-def json_messages_in_narrow(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return messages_in_narrow_backend(request, user_profile)
-
 @has_request_variables
 def messages_in_narrow_backend(request, user_profile,
                                msg_ids = REQ(validator=check_list(check_int)),

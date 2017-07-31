@@ -8,9 +8,8 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
         ids.push(elem.id);
     });
 
-    channel.post({
-        url:      '/json/messages_in_narrow',
-        idempotent: true,
+    channel.get({
+        url:      '/json/messages/matches_narrow',
         data:     {msg_ids: JSON.stringify(ids),
                    narrow:  JSON.stringify(narrow_state.public_operators())},
         timeout:  5000,

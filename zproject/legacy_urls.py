@@ -33,5 +33,4 @@ legacy_urls = [
     url(r'^json/report_send_time$', zerver.views.report.json_report_send_time),
     url(r'^json/report_narrow_time$', zerver.views.report.json_report_narrow_time),
     url(r'^json/report_unnarrow_time$', zerver.views.report.json_report_unnarrow_time),
-    url(r'^json/messages_in_narrow$', zerver.views.messages.json_messages_in_narrow),
 ]

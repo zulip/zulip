@@ -263,6 +263,8 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.messages.update_message_flags'}),
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
         {'GET': 'zerver.views.messages.get_message_edit_history'}),
+    url(r'^messages/matches_narrow$', rest_dispatch,
+        {'GET': 'zerver.views.messages.messages_in_narrow_backend'}),
 
     url(r'^users/me/subscriptions/properties$', rest_dispatch,
         {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
