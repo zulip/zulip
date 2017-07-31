@@ -100,6 +100,11 @@
         padding: 0px;
     }
 
+    .input-append .user-list-filter {
+        /* input should be 100% - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 12px - 2px);
+    }
+
     .screen-narrow-show {
         display: inline-block !important;
     }
