@@ -6,9 +6,62 @@ var unread = (function () {
 var exports = {};
 
 var unread_mentioned = new Dict();
-var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
+
+exports.unread_pm_counter = (function () {
+    var self = {};
+    var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
+
+    self.clear = function () {
+        unread_privates = new Dict();
+    };
+
+    self.add = function (message) {
+        var user_ids_string = people.pm_reply_user_string(message);
+        if (user_ids_string) {
+            unread_privates.setdefault(user_ids_string, new Dict());
+            unread_privates.get(user_ids_string).set(message.id, true);
+        }
+    };
+
+    self.del = function (message) {
+        var user_ids_string = people.pm_reply_user_string(message);
+        if (user_ids_string) {
+            var dict = unread_privates.get(user_ids_string);
+            if (dict) {
+                dict.del(message.id);
+            }
+        }
+    };
+
+    self.get_counts = function () {
+        var pm_dict = new Dict(); // Hash by user_ids_string -> count
+        var total_count = 0;
+        unread_privates.each(function (obj, user_ids_string) {
+            var count = obj.num_items();
+            pm_dict.set(user_ids_string, count);
+            total_count += count;
+        });
+        return {
+            total_count: total_count,
+            pm_dict: pm_dict,
+        };
+    };
+
+    self.num_unread = function (user_ids_string) {
+        if (!user_ids_string) {
+            return 0;
+        }
+
+        if (!unread_privates.has(user_ids_string)) {
+            return 0;
+        }
+        return unread_privates.get(user_ids_string).num_items();
+    };
+
+    return self;
+}());
 
 exports.unread_topic_counter = (function () {
     var self = {};
@@ -168,11 +221,7 @@ exports.process_loaded_messages = function (messages) {
         }
 
         if (message.type === 'private') {
-            var user_ids_string = people.pm_reply_user_string(message);
-            if (user_ids_string) {
-                unread_privates.setdefault(user_ids_string, new Dict());
-                unread_privates.get(user_ids_string).set(message.id, true);
-            }
+            exports.unread_pm_counter.add(message);
         }
 
         if (message.type === 'stream') {
@@ -192,13 +241,7 @@ exports.process_loaded_messages = function (messages) {
 exports.process_read_message = function (message) {
 
     if (message.type === 'private') {
-        var user_ids_string = people.pm_reply_user_string(message);
-        if (user_ids_string) {
-            var dict = unread_privates.get(user_ids_string);
-            if (dict) {
-                dict.del(message.id);
-            }
-        }
+        exports.unread_pm_counter.del(message);
     }
 
     if (message.type === 'stream') {
@@ -216,7 +259,7 @@ exports.process_read_message = function (message) {
 };
 
 exports.declare_bankruptcy = function () {
-    unread_privates = new Dict();
+    exports.unread_pm_counter.clear();
     exports.unread_topic_counter.clear();
     unread_mentioned = new Dict();
 };
@@ -241,7 +284,6 @@ exports.get_counts = function () {
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
     res.mentioned_message_count = unread_mentioned.num_items();
-    res.pm_count = new Dict(); // Hash by user_ids_string -> count
 
     // This sets stream_count, topic_count, and home_unread_messages
     var topic_res = exports.unread_topic_counter.get_counts(res);
@@ -249,14 +291,10 @@ exports.get_counts = function () {
     res.stream_count = topic_res.stream_count;
     res.topic_count = topic_res.topic_count;
 
-    var pm_count = 0;
-    unread_privates.each(function (obj, user_ids_string) {
-        var count = obj.num_items();
-        res.pm_count.set(user_ids_string, count);
-        pm_count += count;
-    });
-    res.private_message_count = pm_count;
-    res.home_unread_messages += pm_count;
+    var pm_res = exports.unread_pm_counter.get_counts();
+    res.pm_count = pm_res.pm_dict;
+    res.private_message_count = pm_res.total_count;
+    res.home_unread_messages += pm_res.total_count;
 
     if (narrow_state.active()) {
         res.unread_in_current_view = exports.num_unread_current_messages();
@@ -280,16 +318,8 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 };
 
 exports.num_unread_for_person = function (user_ids_string) {
-    if (!user_ids_string) {
-        return 0;
-    }
-
-    if (!unread_privates.has(user_ids_string)) {
-        return 0;
-    }
-    return unread_privates.get(user_ids_string).num_items();
+    return exports.unread_pm_counter.num_unread(user_ids_string);
 };
-
 
 return exports;
 }());
