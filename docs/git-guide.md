@@ -342,11 +342,23 @@ first-time contributors][zulip-rtd-dev-first-time].
 
 This step is optional, but recommended.
 
-Zulip Server is configured to use [Travis CI][travis-ci] to test and create
-builds upon each new commit and pull request. Travis CI is free for open source
-projects and it's easy to configure for your own fork of Zulip. After doing so,
-TravisCI will run tests for new refs you push to GitHub and email you the
-outcome (you can also view the results in the web interface).
+The Zulip Server project is configured to use [Travis CI][travis-ci]
+to test and create builds upon each new commit and pull
+request. Travis CI is free for open source projects and it's easy to
+configure for your own fork of Zulip. After doing so, TravisCI will
+run tests for new refs you push to GitHub and email you the outcome
+(you can also view the results in the web interface).
+
+Running Travis CI against your fork can help save both you and the
+Zulip maintainers time by making it easy to test a change fully before
+submitting a pull request.  We generally recommend a worfklow where as
+you make changes, you use a fast edit-refresh cycle running individual
+tests locally until your changes work.  But then once you've gotten
+the tests you'd expect to be relevant to your changes working, push a
+branch to Travis CI to run the full test suite before you create a
+pull request.  While you wait for Travis CI to run, you can start
+working on your next task.  When the tests finish, you can create a
+pull request that you already know passes the tests.
 
 First, sign in to [Travis CI][travis-ci] with your GitHub account and authorize
 Travis CI to access your GitHub account and repositories. Once you've done
