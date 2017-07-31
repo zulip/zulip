@@ -416,9 +416,13 @@ the `knight` management command:
 
 If you need to manage the IRC, Jabber, or Zephyr mirrors, you will
 need to create API super users.  To do this, use `./manage.py knight`
-with the `--permission=api_super_user` argument.  See
-`api/integrations/irc-mirror.py` and
-`api/integrations/jabber_mirror.py` for further detail on these.
+with the `--permission=api_super_user` argument.  See the respective
+integration scripts for these mirrors (under
+[`zulip/integrations/`][integrations-source] in the [Zulip Python API
+repo][python-api-repo]) for further detail on these.
+
+[integrations-source]: https://github.com/zulip/python-zulip-api/tree/master/zulip/integrations
+[python-api-repo]: https://github.com/zulip/python-zulip-api
 
 #### Exporting users and realms with manage.py export
 
