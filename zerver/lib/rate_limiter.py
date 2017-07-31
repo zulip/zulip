@@ -96,9 +96,8 @@ def block_access(entity, seconds):
         pipe.expire(blocking_key, seconds)
         pipe.execute()
 
-def unblock_user(user, domain='all'):
-    # type: (UserProfile, str) -> None
-    entity = RateLimitedUser(user, domain=domain)
+def unblock_access(entity):
+    # type: (RateLimitedObject) -> None
     _, _, blocking_key = entity.get_keys()
     client.delete(blocking_key)
 

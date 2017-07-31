@@ -5,7 +5,7 @@ from typing import Any
 
 from argparse import ArgumentParser
 from zerver.models import UserProfile
-from zerver.lib.rate_limiter import block_access, unblock_user, RateLimitedUser
+from zerver.lib.rate_limiter import block_access, unblock_access, RateLimitedUser
 from zerver.lib.management import ZulipBaseCommand
 
 from optparse import make_option
@@ -69,4 +69,4 @@ class Command(ZulipBaseCommand):
                 block_access(RateLimitedUser(user, domain=options['domain']),
                              options['seconds'])
             elif operation == 'unblock':
-                unblock_user(user, options['domain'])
+                unblock_access(RateLimitedUser(user, domain=options['domain']))
