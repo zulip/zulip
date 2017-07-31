@@ -135,5 +135,4 @@ class JsonableError(Exception):
         return self.msg
 
 class RateLimited(PermissionDenied):
-    def __init__(self, msg: str="") -> None:
-        super().__init__(msg)
+    pass
