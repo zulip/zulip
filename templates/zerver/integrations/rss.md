@@ -1,5 +1,3 @@
-### RSS
-
 Get service alerts, news, and new blog posts right in Zulip with our
 RSS integration!
 
