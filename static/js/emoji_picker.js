@@ -115,7 +115,9 @@ exports.toggle_emoji_popover = function (element, id) {
     if (elt.data('popover') === undefined) {
         elt.prop('title', '');
         elt.popover({
-            placement: popovers.compute_placement(elt),
+            // temporary patch for handling popover placement of `viewport_center`
+            placement: popovers.compute_placement(elt) === 'viewport_center' ?
+                'right' : popovers.compute_placement(elt),
             title:     "",
             content:   generate_emoji_picker_content(id),
             trigger:   "manual",
