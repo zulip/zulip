@@ -17,13 +17,6 @@ class zulip_ops::staging_app_frontend {
     target => '/etc/nginx/sites-available/zulip-staging',
     notify => Service["nginx"],
   }
-  file { "/etc/cron.d/active-user-stats":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_ops/cron.d/active-user-stats",
-  }
   file { "/etc/cron.d/clearsessions":
     ensure => file,
     owner  => "root",

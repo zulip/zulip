@@ -1,3 +1,0 @@
-MAILTO=root
-
-*/10 * * * *   zulip cd /home/zulip/deployments/current && ./manage.py active_user_stats
