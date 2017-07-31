@@ -91,7 +91,7 @@ class JsonTranslationTestCase(ZulipTestCase):
 
         email = self.example_email('hamlet')
         self.login(email)
-        result = self.client_post("/json/invite_users",
+        result = self.client_post("/json/invites",
                                   HTTP_ACCEPT_LANGUAGE='de')
 
         expected_error = u"this arg is bad: 'invitee_emails' (translated to German)"

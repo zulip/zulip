@@ -64,7 +64,7 @@ class PublicURLTest(ZulipTestCase):
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
-                           "/json/invite_users",
+                           "/json/invites",
                            "/json/subscriptions/exists",
                            "/api/v1/users/me/subscriptions/properties",
                            "/json/fetch_api_key",

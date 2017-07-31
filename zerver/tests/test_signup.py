@@ -359,7 +359,7 @@ class InviteUserTest(ZulipTestCase):
         streams should be a list of strings.
         """
 
-        return self.client_post("/json/invite_users",
+        return self.client_post("/json/invites",
                                 {"invitee_emails": users,
                                  "stream": streams,
                                  "custom_body": body})
@@ -387,7 +387,7 @@ class InviteUserTest(ZulipTestCase):
     def test_successful_invite_user(self):
         # type: () -> None
         """
-        A call to /json/invite_users with valid parameters causes an invitation
+        A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
         self.login(self.example_email("hamlet"))
@@ -399,7 +399,7 @@ class InviteUserTest(ZulipTestCase):
     def test_successful_invite_user_with_custom_body(self):
         # type: () -> None
         """
-        A call to /json/invite_users with valid parameters causes an invitation
+        A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
         self.login(self.example_email("hamlet"))
@@ -412,7 +412,7 @@ class InviteUserTest(ZulipTestCase):
     def test_successful_invite_user_with_name(self):
         # type: () -> None
         """
-        A call to /json/invite_users with valid parameters causes an invitation
+        A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
         self.login(self.example_email("hamlet"))
@@ -425,7 +425,7 @@ class InviteUserTest(ZulipTestCase):
     def test_successful_invite_user_with_name_and_normal_one(self):
         # type: () -> None
         """
-        A call to /json/invite_users with valid parameters causes an invitation
+        A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
         self.login(self.example_email("hamlet"))
@@ -463,7 +463,7 @@ class InviteUserTest(ZulipTestCase):
     def test_successful_invite_user_with_notifications_stream(self):
         # type: () -> None
         """
-        A call to /json/invite_users with valid parameters unconditionally
+        A call to /json/invites with valid parameters unconditionally
         subscribes the invitee to the notifications stream if it exists and is
         public.
         """
@@ -533,8 +533,9 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login(self.example_email("hamlet"))
         self.assert_json_error(
-            self.client_post("/json/invite_users", {"invitee_emails": "foo@zulip.com",
-                                                    "custom_body": ''}),
+            self.client_post("/json/invites",
+                             {"invitee_emails": "foo@zulip.com",
+                              "custom_body": ''}),
             "You must specify at least one stream for invitees to join.")
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
@@ -565,7 +566,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login(self.example_email("hamlet"))
         self.assert_json_error(
-            self.client_post("/json/invite_users",
+            self.client_post("/json/invites",
                              {"invitee_emails": self.example_email("hamlet"),
                               "stream": ["Denmark"],
                               "custom_body": ''}),
@@ -585,7 +586,7 @@ earl-test@zulip.com""", ["Denmark"]))
         existing = [self.example_email("hamlet"), u"othello@zulip.com"]
         new = [u"foo-test@zulip.com", u"bar-test@zulip.com"]
 
-        result = self.client_post("/json/invite_users",
+        result = self.client_post("/json/invites",
                                   {"invitee_emails": "\n".join(existing + new),
                                    "stream": ["Denmark"],
                                    "custom_body": ''})

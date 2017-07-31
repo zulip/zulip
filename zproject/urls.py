@@ -244,6 +244,10 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.users.patch_bot_backend',
          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
 
+    # invites -> zerver.views.invite
+    url(r'^invites$', rest_dispatch,
+        {'POST': 'zerver.views.invite.invite_users_backend'}),
+
     # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,
