@@ -1344,6 +1344,10 @@ $ ls -l .git/hooks
 pre-commit -> ../../tools/pre-commit
 ```
 
+### Set up Travis CI integration
+
+You might also wish to [configure your fork for use with Travis CI][self-travisci].
+
 ### Reset to pull request
 
 `tools/reset-to-pull-request` is a short-cut for [checking out a pull request
