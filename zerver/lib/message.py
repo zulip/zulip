@@ -391,7 +391,7 @@ def get_unread_message_ids_per_recipient(user_profile):
         'message__recipient__type',
         'message__recipient__type_id',
         'flags',
-    )
+    ).order_by("message_id")
 
     rows = list(user_msgs)
 
