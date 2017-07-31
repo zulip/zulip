@@ -616,24 +616,40 @@ exports.set_userlist_placement = function (placement) {
 };
 
 exports.compute_placement = function (elt) {
-    var approx_popover_height = 400;
-    var approx_popover_width = 400;
-    var distance_from_bottom = message_viewport.height() - elt.offset().top;
-    var distance_from_right = message_viewport.width() - elt.offset().left;
-    var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
-    var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
-    var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
-    var will_extend_beyond_right_of_viewport = distance_from_right < (approx_popover_width / 2);
-    var placement = 'bottom';
-    if (will_extend_beyond_bottom_of_viewport && !will_extend_beyond_top_of_viewport) {
+    var popover_height = 350;
+    var popover_width = 350;
+
+    var client_rect = elt.get(0).getBoundingClientRect();
+    var distance_from_top = client_rect.top;
+    var distance_from_bottom = message_viewport.height() - client_rect.bottom;
+    var distance_from_left = client_rect.left;
+    var distance_from_right = message_viewport.width() - client_rect.right;
+
+    var elt_will_fit_horizontally =
+        distance_from_left + elt.width() / 2 > popover_width / 2 &&
+        distance_from_right + elt.width() / 2 > popover_width / 2;
+
+    var elt_will_fit_vertically =
+        distance_from_bottom + elt.height() / 2 > popover_height / 2 &&
+        distance_from_top + elt.height() / 2 > popover_height / 2;
+
+    // default to placing the popover in the center of the screen
+    var placement = 'viewport_center';
+
+    // prioritize left/right over top/bottom
+    if (distance_from_top > popover_height && elt_will_fit_horizontally) {
         placement = 'top';
     }
-    if (will_extend_beyond_right_of_viewport && !will_extend_beyond_left_of_viewport) {
+    if (distance_from_bottom > popover_height && elt_will_fit_horizontally) {
+        placement = 'bottom';
+    }
+    if (distance_from_left > popover_width && elt_will_fit_vertically) {
         placement = 'left';
     }
-    if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
+    if (distance_from_right > popover_width && elt_will_fit_vertically) {
         placement = 'right';
     }
+
     return placement;
 };
 
