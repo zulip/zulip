@@ -29,33 +29,33 @@ exports.unread_topic_counter = (function () {
         unread_topics = num_dict();
     };
 
-    self.update = function (stream_id, subject, new_subject, msg_id) {
+    self.update = function (stream_id, topic, new_topic, msg_id) {
         if (unread_topics.has(stream_id) &&
-            unread_topics.get(stream_id).has(subject) &&
-            unread_topics.get(stream_id).get(subject).get(msg_id)) {
-            // Move the unread subject count to the new subject
-            unread_topics.get(stream_id).get(subject).del(msg_id);
-            if (unread_topics.get(stream_id).get(subject).num_items() === 0) {
-                unread_topics.get(stream_id).del(subject);
+            unread_topics.get(stream_id).has(topic) &&
+            unread_topics.get(stream_id).get(topic).get(msg_id)) {
+            // Move the unread topic count to the new topic
+            unread_topics.get(stream_id).get(topic).del(msg_id);
+            if (unread_topics.get(stream_id).get(topic).num_items() === 0) {
+                unread_topics.get(stream_id).del(topic);
             }
-            unread_topics.get(stream_id).setdefault(new_subject, num_dict());
-            unread_topics.get(stream_id).get(new_subject).set(msg_id, true);
+            unread_topics.get(stream_id).setdefault(new_topic, num_dict());
+            unread_topics.get(stream_id).get(new_topic).set(msg_id, true);
         }
     };
 
-    self.add = function (stream_id, subject, msg_id) {
+    self.add = function (stream_id, topic, msg_id) {
         unread_topics.setdefault(stream_id, str_dict());
-        unread_topics.get(stream_id).setdefault(subject, num_dict());
-        unread_topics.get(stream_id).get(subject).set(msg_id, true);
+        unread_topics.get(stream_id).setdefault(topic, num_dict());
+        unread_topics.get(stream_id).get(topic).set(msg_id, true);
     };
 
 
-    self.del = function (stream_id, subject, msg_id) {
+    self.del = function (stream_id, topic, msg_id) {
         var stream_dict = unread_topics.get(stream_id);
         if (stream_dict) {
-            var subject_dict = stream_dict.get(subject);
-            if (subject_dict) {
-                subject_dict.del(msg_id);
+            var topic_dict = stream_dict.get(topic);
+            if (topic_dict) {
+                topic_dict.del(msg_id);
             }
         }
     };
@@ -79,11 +79,11 @@ exports.unread_topic_counter = (function () {
             if (unread_topics.has(stream_id)) {
                 res.subject_count.set(stream_id, str_dict());
                 var stream_count = 0;
-                unread_topics.get(stream_id).each(function (msgs, subject) {
-                    var subject_count = msgs.num_items();
-                    res.subject_count.get(stream_id).set(subject, subject_count);
-                    if (!muting.is_topic_muted(sub.name, subject)) {
-                        stream_count += subject_count;
+                unread_topics.get(stream_id).each(function (msgs, topic) {
+                    var topic_count = msgs.num_items();
+                    res.subject_count.get(stream_id).set(topic, topic_count);
+                    if (!muting.is_topic_muted(sub.name, topic)) {
+                        stream_count += topic_count;
                     }
                 });
                 res.stream_count.set(stream_id, stream_count);
@@ -104,9 +104,9 @@ exports.unread_topic_counter = (function () {
             return 0;
         }
 
-        unread_topics.get(stream_id).each(function (msgs, subject) {
+        unread_topics.get(stream_id).each(function (msgs, topic) {
             var sub = stream_data.get_sub_by_id(stream_id);
-            if (sub && !muting.is_topic_muted(sub.name, subject)) {
+            if (sub && !muting.is_topic_muted(sub.name, topic)) {
                 stream_count += msgs.num_items();
             }
         });
@@ -114,11 +114,11 @@ exports.unread_topic_counter = (function () {
         return stream_count;
     };
 
-    self.get = function (stream_id, subject) {
+    self.get = function (stream_id, topic) {
         var num_unread = 0;
         if (unread_topics.has(stream_id) &&
-            unread_topics.get(stream_id).has(subject)) {
-            num_unread = unread_topics.get(stream_id).get(subject).num_items();
+            unread_topics.get(stream_id).has(topic)) {
+            num_unread = unread_topics.get(stream_id).get(topic).num_items();
         }
         return num_unread;
     };
