@@ -41,8 +41,9 @@ products, ordered here by which types we prefer to write:
 2. **[Python script integrations](#python-script-and-plugin-integrations)**
    (examples: SVN, Git), where we can get the service to call our integration
    (by shelling out or otherwise), passing in the required data.  Our preferred
-   model for these is to ship these integrations in our API release tarballs
-   (by writing the integration in `api/integrations`).
+   model for these is to ship these integrations in the
+   [Zulip Python API distribution](https://github.com/zulip/python-zulip-api/tree/master/zulip),
+   within the `integrations` directory there.
 
 3. **[Plugin integrations](#python-script-and-plugin-integrations)** (examples:
    Jenkins, Hubot, Trac) where the user needs to install a plugin into their
