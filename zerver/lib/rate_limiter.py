@@ -87,10 +87,9 @@ def remove_ratelimit_rule(range_seconds, num_requests):
     global rules
     rules = [x for x in rules if x[0] != range_seconds and x[1] != num_requests]
 
-def block_user(user, seconds, domain='all'):
-    # type: (UserProfile, int, Text) -> None
-    "Manually blocks a user id for the desired number of seconds"
-    entity = RateLimitedUser(user, domain=domain)
+def block_access(entity, seconds):
+    # type: (RateLimitedObject, int) -> None
+    "Manually blocks an entity for the desired number of seconds"
     _, _, blocking_key = entity.get_keys()
     with client.pipeline() as pipe:
         pipe.set(blocking_key, 1)
