@@ -241,7 +241,7 @@ html {
 .new-style button {
     display: inline-block;
     vertical-align: top;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
 .new-style button:focus {
