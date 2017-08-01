@@ -327,18 +327,18 @@ nav .column-right {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 0px;
+    margin-top: 10px;
     z-index: 100;
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
+    width: 240px;
     padding-left: 0px;
 }
 
 .app-main .column-right .right-sidebar {
-    padding-left: 15px;
-    width: 235px;
+    padding-left: 10px;
+    width: 240px;
 }
 
 .app-main .column-middle {
@@ -2043,7 +2043,7 @@ div.floating_recipient {
 }
 
 #floating_recipient_bar {
-    top: 50px;
+    top: 55px;
 }
 
 .message-header-contents {
@@ -2225,7 +2225,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: -43px;
+    top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
