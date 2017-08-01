@@ -55,10 +55,6 @@ exports.process_message_for_recent_private_messages = function (message) {
 
     var user_ids_string = user_ids.join(',');
 
-    if (!user_ids_string) {
-        blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
-        return;
-    }
     exports.insert_recent_private_message(user_ids_string, message.timestamp);
 };
 

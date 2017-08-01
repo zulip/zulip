@@ -110,6 +110,18 @@ exports.is_known_user_id = function (user_id) {
     return people_by_user_id_dict.has(user_id);
 };
 
+function sort_numerically(user_ids) {
+    user_ids = _.map(user_ids, function (user_id) {
+        return parseInt(user_id, 10);
+    });
+
+    user_ids.sort(function (a, b) {
+        return a - b;
+    });
+
+    return user_ids;
+}
+
 exports.huddle_string = function (message) {
     if (message.type !== 'private') {
         return;
@@ -130,7 +142,8 @@ exports.huddle_string = function (message) {
     if (user_ids.length <= 1) {
         return;
     }
-    user_ids.sort();
+
+    user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
 };
@@ -175,7 +188,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
         return;
     }
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
 };
@@ -221,7 +234,7 @@ exports.email_list_to_user_ids_string = function (emails) {
         return;
     }
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
 };
@@ -292,7 +305,7 @@ function sorted_other_user_ids(user_ids) {
         user_ids = [my_user_id];
     }
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids;
 }
@@ -392,7 +405,7 @@ exports.pm_with_operand_ids = function (operand) {
         return person.user_id;
     });
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids;
 };
