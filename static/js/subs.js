@@ -324,12 +324,19 @@ exports.setup_page = function (callback) {
     function initialize_components() {
         var stream_filter_toggle = components.toggle({
             name: "stream-filter-toggle",
-            selected: 0,
             values: [
-                { label: i18n.t("Subscribed") },
-                { label: i18n.t("All streams") },
+                { label: i18n.t("Subscribed"), key: "subscribed" },
+                { label: i18n.t("All streams"), key: "all-streams" },
             ],
-            callback: function () {
+            callback: function (value, key) {
+                // if you aren't on a particular stream (`streams/:id/:name`)
+                // then redirect to `streams/all` when you click "all-streams".
+                if (key === "all-streams") {
+                    window.location.hash = "streams/all";
+                } else if (key === "subscribed") {
+                    window.location.hash = "streams/subscribed";
+                }
+
                 actually_filter_streams();
                 remove_temporarily_miscategorized_streams();
             },
@@ -425,11 +432,12 @@ exports.change_state = (function () {
             // if in #streams/new form.
             if (hash.arguments[0] === "new") {
                 exports.new_stream_clicked();
-                components.toggle.lookup("stream-filter-toggle").goto("All streams");
+                components.toggle.lookup("stream-filter-toggle").goto("all-streams");
             } else if (hash.arguments[0] === "all") {
-                components.toggle.lookup("stream-filter-toggle").goto("All streams");
+                components.toggle.lookup("stream-filter-toggle").goto("all-streams");
             } else if (hash.arguments[0] === "subscribed") {
-                components.toggle.lookup("stream-filter-toggle").goto("Subscribed");
+                components.toggle.lookup("stream-filter-toggle").goto("subscribed"
+              );
             // if the first argument is a valid number.
             } else if (/\d+/.test(hash.arguments[0])) {
                 var $stream_row = $(".stream-row[data-stream-id='" + hash.arguments[0] + "']");
