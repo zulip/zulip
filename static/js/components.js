@@ -55,7 +55,7 @@ exports.toggle = (function () {
 
                     if (meta.last_value !== opts.values[id].label) {
                         meta.last_value = opts.values[id].label;
-                        opts.callback(meta.last_value, opts.values[id].key);
+                        opts.callback(meta.last_value, opts.values[id].key, {});
                     }
                 }
             });
@@ -79,7 +79,12 @@ exports.toggle = (function () {
             },
             // go through the process of finding the correct tab for a given name,
             // and when found, select that one and provide the proper callback.
-            goto: function (name) {
+            // supply a payload of data; since this is a custom event, we'll pass
+            // the data through to the callback.
+            goto: function (name, payload) {
+                // there are cases in which you would want to set this tab, but
+                // not to run the content inside the callback because it doesn't
+                // need to be initialized.
                 var value = _.find(opts.values, function (o) {
                     return o.label === name || o.key === name;
                 });
@@ -90,7 +95,7 @@ exports.toggle = (function () {
                     meta.$ind_tab.removeClass("selected");
                     meta.$ind_tab.filter("[data-tab-id='" + idx + "']").addClass("selected");
 
-                    opts.callback(value.label, value.key);
+                    opts.callback(value.label, value.key, payload || {});
 
                     meta.last_value = idx;
                 }
