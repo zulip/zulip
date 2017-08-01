@@ -132,10 +132,10 @@ class IntegrationTest(TestCase):
         add_integrations_context(context)
         self.assertEqual(
             context['settings_html'],
-            '<a href="../#settings">Zulip settings page</a>')
+            '<a href="../../#settings">Zulip settings page</a>')
         self.assertEqual(
             context['subscriptions_html'],
-            '<a target="_blank" href="../#streams">streams page</a>')
+            '<a target="_blank" href="../../#streams">streams page</a>')
 
 class AuthorsPageTest(ZulipTestCase):
     def setUp(self):
