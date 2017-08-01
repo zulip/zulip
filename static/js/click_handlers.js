@@ -728,15 +728,19 @@ $(function () {
                 { label: i18n.t("Settings"), key: "settings" },
                 { label: i18n.t("Organization"), key: "organization" },
             ],
-            callback: function (name, key) {
+            callback: function (name, key, payload) {
                 $(".sidebar li").hide();
 
                 if (key === "organization") {
                     $("li.admin").show();
-                    $("li[data-section='organization-settings']").click();
+                    if (!payload.dont_switch_tab) {
+                        $("li[data-section='organization-settings']").click();
+                    }
                 } else {
                     $("li:not(.admin)").show();
-                    $("li[data-section='your-account']").click();
+                    if (!payload.dont_switch_tab) {
+                        $("li[data-section='your-account']").click();
+                    }
                 }
             },
         }).get();
