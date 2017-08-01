@@ -8,6 +8,45 @@ var asset_map = {
 
 };
 
+var ls;
+var KEY;
+var lightbox_settings = {
+    canvas_enabled: false,
+    zoom_speed: 1,
+};
+
+exports.initialize = function () {
+    // save the canvas preferences for the lightbox in the "lightbox-canvas-settings"
+    // key.
+    ls = localstorage();
+    ls.version = 1;
+
+    KEY = "lightbox-canvas-settings";
+
+    var saved_settings = ls.get(KEY);
+
+    if (!saved_settings) {
+        ls.set(KEY, lightbox_settings);
+    } else {
+        lightbox_settings = saved_settings;
+    }
+
+    $(".lightbox-canvas-trigger input")
+        .prop("checked", lightbox_settings.canvas_enabled)
+        .change(function () {
+            var $img = $("#lightbox_overlay").find(".image-preview img");
+
+            lightbox_settings.canvas_enabled = this.checked;
+            ls.set(KEY, lightbox_settings);
+
+            if (!$img.length) {
+                $img = $("#lightbox_overlay").find(".image-preview canvas")[0].image;
+            }
+
+            exports.open($img);
+        });
+};
+
 function render_lightbox_list_images(preview_source) {
     if (!is_open) {
         var images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
@@ -39,7 +78,7 @@ function display_image(payload, options) {
 
         $("#lightbox_overlay .image-preview").html(canvas).show();
         var photo = new LightboxCanvas(canvas);
-        photo.speed(2.3);
+        photo.speed(2.3 * lightbox_settings.zoom_speed);
     } else {
         var img = new Image();
         img.src = payload.source;
@@ -213,16 +252,6 @@ $(function () {
         if (/^(next|prev)$/.test(direction)) {
             lightbox[direction]();
         }
-    });
-
-    $("#lightbox_overlay").on("change", ".lightbox-canvas-trigger input", function () {
-        var $img = $("#lightbox_overlay").find(".image-preview img");
-
-        if (!$img.length) {
-            $img = $("#lightbox_overlay").find(".image-preview canvas")[0].image;
-        }
-
-        exports.open($img);
     });
 
     $("#lightbox_overlay .image-preview").on("dblclick", "img, canvas", function (e) {
