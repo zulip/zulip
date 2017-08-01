@@ -55,26 +55,216 @@ function path_parts() {
     });
 }
 
-// these are events that are only to run on the integrations page.
-// check if the page location is integrations.
-var integration_events = function () {
-    var integrations = $('.integration-lozenges').children().toArray();
-    var scroll_top = 0;
+var INITIAL_STATE = {
+    category: 'all',
+    integration: null,
+    query: '',
+};
 
-    $("a.title")
-        .addClass("show-integral")
-        .prepend($("<span class='integral'>∫</span>"))
-        .hover(function () {
-            $(".integral").css("display", "inline");
-            var width = $(".integral").width();
-            $("a.title").css("left", -1 * width);
-        },
-        function () {
-            $(".integral").css("display", "none");
-                $("a.title").css("left", 0);
+var state = Object.assign({}, INITIAL_STATE);
+
+function update_path() {
+    var next_path;
+    if (state.integration) {
+        next_path = $('.integration-lozenge[data-name="' + state.integration + '"]')
+            .closest('a').attr('href');
+    } else if (state.category) {
+        next_path = $('.integration-category[data-category="' + state.category + '"]')
+            .closest('a').attr('href');
+    } else {
+        next_path = '/';
+    }
+
+    window.history.pushState(state, '', next_path);
+}
+
+function update_categories() {
+    $('.integration-lozenges').css('opacity', 0);
+    $('.integration-category').removeClass('selected');
+    $('[data-category="' + state.category + '"]').addClass('selected');
+    $('.integration-lozenges').animate(
+        { opacity: 1 },
+        { duration: 400 }
+    );
+}
+
+var update_integrations = _.debounce(function () {
+    var max_scrollY = window.scrollY;
+
+    var integrations = $('.integration-lozenges').children().toArray();
+    integrations.forEach(function (integration) {
+        var $integration = $(integration).find('.integration-lozenge');
+        var $integration_category = $integration.find('.integration-category');
+
+        if (state.category !== 'all') {
+            $integration_category.css('display', 'none');
+            $integration.addClass('without-category');
+        } else {
+            $integration_category.css('display', '');
+            $integration.removeClass('without-category');
+        }
+
+        if (!$integration.hasClass('integration-create-your-own')) {
+            var display =
+                fuzzysearch(state.query, $integration.data('name').toLowerCase()) &&
+                ($integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1 ||
+                 state.category === 'all');
+
+            if (display) {
+                $integration.css('display', 'inline-block');
+            } else {
+                $integration.css('display', 'none');
             }
+        }
+
+        document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
+    });
+}, 50);
+
+function hide_catalog_show_integration() {
+    var $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
+
+    function show_integration(doc) {
+        $('#integration-instructions-group').css({
+            opacity: 0,
+            display: 'block',
+        });
+        $('.integration-instructions').css('display', 'none');
+        $('#' + state.integration + '.integration-instructions .help-content').html(doc);
+        $('#integration-instruction-block .integration-lozenge').remove();
+        $("#integration-instruction-block")
+            .append($lozenge_icon)
+            .css('display', 'block');
+        $('.integration-instructions#' + state.integration).css('display', 'block');
+        $("#integration-list-link").css('display', 'block');
+
+        $("html, body").animate(
+            { scrollTop: 0 },
+            { duration: 200 }
+        );
+        $('#integration-instructions-group').animate(
+            { opacity: 1 },
+            { duration: 300 }
+        );
+    }
+
+    function hide_catalog(doc) {
+        $(".integration-categories-dropdown").css('display', 'none');
+        $(".integrations .catalog").addClass('hide');
+        $(".extra, #integration-main-text, #integration-search").css("display", "none");
+
+        show_integration(doc);
+    }
+
+    $.get({
+        url: '/integrations/doc-html/' + state.integration,
+        dataType: 'html',
+        success: hide_catalog,
+        error: function (err) {
+            blueslip.error("Integration documentation for '" + state.integration + "' not found.", err);
+        },
+    });
+}
+
+function hide_integration_show_catalog() {
+    function show_catalog() {
+        $("html, body").animate(
+            { scrollTop: 0 },
+            { duration: 200 }
         );
 
+        $(".integration-categories-dropdown").css('display', '');
+        $(".integrations .catalog").removeClass('hide');
+        $(".extra, #integration-main-text, #integration-search").css("display", "block");
+    }
+
+    function hide_integration() {
+        $('#integration-instruction-block').css('display', 'none');
+        $('#integration-instructions-group').css('display', 'none');
+        $('.inner-content').css({ padding: '' });
+        $("#integration-instruction-block .integration-lozenge").remove();
+        show_catalog();
+    }
+
+    hide_integration();
+}
+
+function get_state_from_path() {
+    var result = Object.assign({}, INITIAL_STATE);
+    result.query = state.query;
+
+    var parts = path_parts();
+    if (parts[1] === 'doc' && INTEGRATIONS[parts[2]]) {
+        result.integration = parts[2];
+    } else if (CATEGORIES[parts[1]]) {
+        result.category = parts[1];
+    }
+
+    return result;
+}
+
+function render(next_state) {
+    var previous_state = Object.assign({}, state);
+    state = next_state;
+
+    if (previous_state.integration !== next_state.integration) {
+        if (next_state.integration !== null) {
+            hide_catalog_show_integration();
+        } else {
+            hide_integration_show_catalog();
+        }
+    }
+
+    if (previous_state.category !== next_state.category) {
+        update_categories();
+        update_integrations();
+    }
+
+    if (previous_state.query !== next_state.query) {
+        update_integrations();
+    }
+}
+
+function dispatch(action, payload) {
+    switch (action) {
+        case 'CHANGE_CATEGORY':
+            render(Object.assign({}, state, {
+                category: payload.category,
+            }));
+            update_path();
+            break;
+
+        case 'SHOW_INTEGRATION':
+            render(Object.assign({}, state, {
+                integration: payload.integration,
+            }));
+            update_path();
+            break;
+
+        case 'HIDE_INTEGRATION':
+            render(Object.assign({}, state, {
+                integration: null,
+            }));
+            update_path();
+            break;
+
+        case 'UPDATE_QUERY':
+            render(Object.assign({}, state, {
+                query: payload.query,
+            }));
+            break;
+
+        case 'LOAD_PATH':
+            render(get_state_from_path());
+            break;
+
+        default:
+            blueslip.error('Invalid action dispatched on /integrations.');
+            break;
+    }
+}
+
+var integration_events = function () {
     function adjust_font_sizing() {
         $('.integration-lozenge').toArray().forEach(function (integration) {
             var $integration_name = $(integration).find('.integration-name');
@@ -96,106 +286,10 @@ var integration_events = function () {
             }
         });
     }
-
     adjust_font_sizing();
-    $(window).resize(adjust_font_sizing);
-
-    var $lozenge_icon;
-    var currentblock;
-    var instructionbox = $("#integration-instruction-block");
-    var hashes = $('.integration-instructions').map(function () {
-        return this.id || null;
-    }).get();
-
-    var show_integration = function (hash) {
-        // the version of the hash without the leading "#".
-        var _hash = hash.replace(/^#/, "");
-        var integration_name = _hash;
-
-        $.get({
-            url: '/integrations/doc-html/' + integration_name,
-            dataType: 'html',
-            success: function (doc) {
-                $('#' + integration_name + '.integration-instructions .help-content').html(doc);
-            },
-            error: function (err) {
-                blueslip.error("Integration documentation for '" + integration_name + "' not found.", err);
-            },
-        });
-
-        // clear out the integrations instructions that may exist in the instruction
-        // block from a previous hash.
-        $("#integration-instruction-block .integration-instructions")
-            .appendTo("#integration-instructions-group");
-
-        if (hashes.indexOf(_hash) > -1) {
-            $lozenge_icon = $(".integration-lozenges .integration-lozenge.integration-" + _hash).clone(true);
-            currentblock = $(hash);
-            instructionbox.hide().children(".integration-lozenge").replaceWith($lozenge_icon);
-            instructionbox.append($lozenge_icon);
-
-            $(".inner-content").removeClass("show");
-            setTimeout(function () {
-                instructionbox.hide();
-                $(".integration-categories-dropdown").css('display', 'none');
-                $(".integrations .catalog").addClass('hide');
-                $(".extra, #integration-main-text, #integration-search").css("display", "none");
-
-                instructionbox.append(currentblock);
-                instructionbox.show();
-                $("#integration-list-link").css("display", "block");
-
-                $(".inner-content").addClass("show");
-            }, 300);
-
-            $("html, body").animate({ scrollTop: 0 }, 200);
-        }
-    };
-
-    function update_hash() {
-        var hash = window.location.hash;
-
-        if (hash && hash !== '#' && hash !== '#hubot-integrations') {
-            scroll_top = $("body").scrollTop();
-            show_integration(window.location.hash);
-        } else if (currentblock && $lozenge_icon) {
-            $(".inner-content").removeClass("show");
-            setTimeout(function () {
-                $("#integration-list-link").css("display", "none");
-                $(".extra, #integration-main-text, #integration-search").show();
-                instructionbox.hide();
-                $lozenge_icon.remove();
-                currentblock.appendTo("#integration-instructions-group");
-
-                $(".inner-content").addClass("show");
-                $(".integration-categories-dropdown").css('display', '');
-                $(".integrations .catalog").removeClass('hide');
-
-                $('html, body').animate({ scrollTop: scroll_top }, 0);
-            }, 300);
-        } else {
-            $(".inner-content").addClass("show");
-            $(".integration-categories-dropdown").removeClass('hide');
-            $(".integrations .catalog").removeClass('hide');
-        }
-
-        adjust_font_sizing();
-    }
-
-    window.onhashchange = update_hash;
-    update_hash();
-
-    // this needs to happen because when you link to "#" it will scroll to the
-    // top of the page.
-    $("#integration-list-link").click(function (e) {
-        var scroll_height = $("body").scrollTop();
-        window.location.hash = "#";
-        $("body").scrollTop(scroll_height);
-
-        e.preventDefault();
-    });
 
     $('#integration-search input[type="text"]').keypress(function (e) {
+        var integrations = $('.integration-lozenges').children().toArray();
         if (e.which === 13 && e.target.value !== '') {
             for (var i = 0; i < integrations.length; i += 1) {
                 var integration = $(integrations[i]).find('.integration-lozenge');
@@ -224,85 +318,49 @@ var integration_events = function () {
         }
     });
 
-    $(window).scroll(function () {
-         if (document.body.scrollTop > 330) {
-             $('.integration-categories-sidebar').addClass('sticky');
-         } else {
-             $('.integration-categories-sidebar').removeClass('sticky');
+    $('.integrations a .integration-category').on('click', function (e) {
+        var category = $(e.target).data('category');
+        dispatch('CHANGE_CATEGORY', { category: category });
+        return false;
+    });
+
+    $('.integrations a .integration-lozenge').on('click', function (e) {
+        if (!$(e.target).closest('.integration-lozenge').hasClass('integration-create-your-own')) {
+            var integration = $(e.target).closest('.integration-lozenge').data('name');
+            dispatch('SHOW_INTEGRATION', { integration: integration });
+            return false;
         }
     });
-};
 
-
-function integration_search() {
-    var integrations = $('.integration-lozenges').children().toArray();
-    var current_category = 'All';
-    var current_query = '';
-
-    function update_categories() {
-        $('.integration-category').removeClass('selected');
-        $('[data-category="' + current_category + '"]').addClass('selected');
-    }
-
-    var update_integrations = _.debounce(function () {
-        integrations.forEach(function (integration) {
-            var $integration = $(integration).find('.integration-lozenge');
-            var $integration_category = $integration.find('.integration-category');
-
-            if (current_category !== 'All') {
-                $integration_category.css('display', 'none');
-                $integration.addClass('without-category');
-            } else {
-                $integration_category.css('display', '');
-                $integration.removeClass('without-category');
-            }
-
-            if (!$integration.hasClass('integration-create-your-own')) {
-                var display =
-                    fuzzysearch(current_query, $integration.data('name').toLowerCase()) &&
-                    ($integration.data('categories').indexOf(current_category) !== -1 ||
-                     current_category === 'All');
-
-                if (display) {
-                    $integration.css('display', 'inline-block');
-                } else {
-                    $integration.css('display', 'none');
-                }
-            }
-        });
-    }, 50);
-
-    function change_category(category) {
-        $('.integration-lozenges').css('opacity', 0);
-
-        current_category = category;
-        update_categories();
-        update_integrations();
-
-        $('.integration-lozenges').animate(
-            { opacity: 1 },
-            { duration: 400 }
-        );
-    }
-
-    function run_search(query) {
-        current_query = query.toLowerCase();
-        update_integrations();
-    }
-
-    $('.integrations .integration-category').on('click', function (e) {
-        var category = $(e.target).data('category');
-
-        if (category !== current_category) {
-            change_category(category);
-        }
+    $('a#integration-list-link span, a#integration-list-link i').on('click', function () {
+        dispatch('HIDE_INTEGRATION');
+        return false;
     });
 
     $(".integrations .searchbar input[type='text']").on('input', function (e) {
-        run_search(e.target.value);
+        dispatch('UPDATE_QUERY', { query : e.target.value.toLowerCase() });
     });
-}
 
+    $(window).scroll(function () {
+        if (document.body.scrollTop > 330) {
+            $('.integration-categories-sidebar').addClass('sticky');
+        } else {
+             $('.integration-categories-sidebar').removeClass('sticky');
+        }
+    });
+
+    $(window).on('resize', function () {
+        adjust_font_sizing();
+    });
+
+    $(window).on('popstate', function () {
+        if (window.location.pathname.startsWith('/integrations')) {
+            dispatch('LOAD_PATH');
+        } else {
+            window.location = window.location.href;
+        }
+    });
+};
 
 var hello_events = function () {
     var counter = 0;
@@ -442,7 +500,7 @@ var events = function () {
     if (path_parts().includes('integrations')) {
         integration_events();
         load_data();
-        integration_search();
+        dispatch('LOAD_PATH');
     }
 
     if (path_parts().includes('hello')) {

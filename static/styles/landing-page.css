@@ -1816,10 +1816,8 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .padded-content .inner-content {
-    opacity: 0;
-    pointer-events: none;
-
     transition: all 0.3s ease;
+    min-height: 800px;
 }
 
 .portico-landing.integrations .padded-content .inner-content.show {
@@ -1948,6 +1946,7 @@ nav ul li.active::after {
     margin: 3px 0;
     border-radius: 5px;
     transition: all 0.3s ease;
+    color: #414e67;
 }
 
 .portico-landing.integrations .integration-categories-sidebar h4.selected,
@@ -2031,6 +2030,11 @@ nav ul li.active::after {
 
 
 /* -- integration instructions -- */
+
+.portico-landing.integrations #integration-instructions-group {
+    padding: 0 50px;
+    display: none;
+}
 
 .portico-landing.integrations .integration-instruction-block .integration-lozenge {
     width: 125px;
@@ -2714,6 +2718,10 @@ nav ul li.active::after {
 
     .portico-landing.integrations .main .padded-content {
         padding: 40px 0;
+    }
+
+    .portico-landing.integrations #integration-instructions-group {
+        padding: 0 25px;
     }
 
     .main .padded-content {

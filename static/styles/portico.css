@@ -644,10 +644,6 @@ a.bottom-signup-button {
     margin-left: 180px;
 }
 
-#integration-instructions-group {
-    display: none;
-}
-
 .api-page-header,
 .authors-page-header,
 .integrations-page-header,
@@ -715,8 +711,6 @@ a.bottom-signup-button {
 
 .integration-instruction-block {
     position: relative;
-    margin-top: 15px;
-    padding: 0 40px;
 }
 
 #integration-list-link {
