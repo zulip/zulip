@@ -255,7 +255,6 @@ WEBHOOK_INTEGRATIONS = [
         ['version-control'],
         display_name='GitHub',
         logo='static/images/integrations/logos/github.svg',
-        secondary_line_text='(webhook)',
         function='zerver.webhooks.github_webhook.view.api_github_webhook',
         stream_name='github'
     ),
@@ -273,8 +272,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
         display_name='IFTTT'
     ),
-    WebhookIntegration('jira', ['project-management'],
-                       secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
+    WebhookIntegration('jira', ['project-management'], display_name='JIRA'),
     WebhookIntegration('librato', ['monitoring']),
     WebhookIntegration('mention', ['marketing'], display_name='Mention'),
     WebhookIntegration('newrelic', ['monitoring'], display_name='New Relic'),
@@ -292,7 +290,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('teamcity', ['continuous-integration']),
     WebhookIntegration('transifex', ['misc']),
     WebhookIntegration('travis', ['continuous-integration'], display_name='Travis CI'),
-    WebhookIntegration('trello', ['project-management'], secondary_line_text='(webhook)'),
+    WebhookIntegration('trello', ['project-management']),
     WebhookIntegration('updown', ['monitoring']),
     WebhookIntegration(
         'yo',
