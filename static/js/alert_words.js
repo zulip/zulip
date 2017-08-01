@@ -13,9 +13,6 @@ function escape_user_regex(value) {
     return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
 }
 
-var find_href_backwards = /href=['"][\w:\/\.]+$/;
-var find_title_backwards = /title=['"][\w:\/\.]+$/;
-
 exports.process_message = function (message) {
     if (!exports.notifies(message)) {
         return;
@@ -32,9 +29,16 @@ exports.process_message = function (message) {
                                '(' + after_punctuation + ')' , 'ig');
         message.content = message.content.replace(regex, function (match, before, word,
                                                                    after, offset, content) {
-            // Don't munge URL hrefs
+            // Logic for ensuring that we don't muck up rendered HTML.
             var pre_match = content.substring(0, offset);
-            if (find_href_backwards.exec(pre_match) || find_title_backwards.exec(pre_match)) {
+            // We want to find the position of the `<` and `>` only in the
+            // match and the string before it. So, don't include the last
+            // character of match in `check_string`. This covers the corner
+            // case when there is an alert word just before `<` or `>`.
+            var check_string = pre_match + match.substring(0, match.length - 1);
+            var in_tag = check_string.lastIndexOf('<') > check_string.lastIndexOf('>');
+            // Matched word is inside a HTML tag so don't perform any highlighting.
+            if (in_tag === true) {
                 return before + word + after;
             }
             return before + "<span class='alert-word'>" + word + "</span>" + after;
