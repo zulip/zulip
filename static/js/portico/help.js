@@ -44,7 +44,6 @@ const Ps = require('perfect-scrollbar');
     Ps.initialize($(".sidebar")[0], {
         suppressScrollX: true,
         useKeyboard: false,
-        // Picked so that each mousewheel bump moves 1 emoji down.
         wheelSpeed: 0.68,
     });
 
