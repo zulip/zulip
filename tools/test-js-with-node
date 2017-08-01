@@ -149,7 +149,7 @@ if options.coverage and ret == 0:
         print("But also check out the include/exclude lists in `tools/test-js-with-node`.")
         print("To run this check locally, use `test-js-with-node --coverage`.")
     else:
-        print("All enforced fully covered files still have 100% test coverage!")
+        print("Success: All enforced fully covered files still have 100% test coverage!")
     print("=============================================================================")
     print()
 
