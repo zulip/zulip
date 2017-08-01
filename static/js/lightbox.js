@@ -235,6 +235,12 @@ $(function () {
         $("#lightbox_overlay .lightbox-canvas-trigger").click();
         e.preventDefault();
     });
+
+    $("#lightbox_overlay .player-container").on("click", function () {
+        if ($(this).is(".player-container")) {
+            overlays.close_active();
+        }
+    });
 });
 
 return exports;
