@@ -40,7 +40,7 @@ contain "walk", "walks", "walked", etc.
 To see a list of all search operators in Zulip, click the search (<i
 class="icon-vector-search"></i>) icon on the left side of the search bar.
 You can alternatively click the cog (<i class="icon-vector-cog"></i>) icon
-in the upper right corner of the right sidebar and choose **Search help**
+in the top right corner of the right sidebar and choose **Search help**
 from the dropdown menu that appears.
 
 ![Search help](/static/images/help/search-help.png)
