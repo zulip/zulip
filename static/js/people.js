@@ -310,6 +310,17 @@ function sorted_other_user_ids(user_ids) {
     return user_ids;
 }
 
+exports.pm_lookup_key = function (user_ids_string) {
+    /*
+        The server will sometimes include our own user id
+        in keys for PMs, but we only want our user id if
+        we sent a message to ourself.
+    */
+    var user_ids = user_ids_string.split(',');
+    user_ids = sorted_other_user_ids(user_ids);
+    return user_ids.join(',');
+};
+
 exports.pm_with_user_ids = function (message) {
     if (message.type !== 'private') {
         return;

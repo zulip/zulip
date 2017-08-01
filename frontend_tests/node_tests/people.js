@@ -86,6 +86,12 @@ initialize();
     assert.equal(people.is_my_user_id(undefined), false);
 }());
 
+(function test_pm_lookup_key() {
+    assert.equal(people.pm_lookup_key('30'), '30');
+    assert.equal(people.pm_lookup_key('32,30'), '32');
+    assert.equal(people.pm_lookup_key('101,32,30'), '32,101');
+}());
+
 (function test_get_recipients() {
     assert.equal(people.get_recipients('30'), 'Me Myself');
     assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
