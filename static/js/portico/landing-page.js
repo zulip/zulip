@@ -80,8 +80,21 @@ function update_path() {
 
 function update_categories() {
     $('.integration-lozenges').css('opacity', 0);
+
     $('.integration-category').removeClass('selected');
     $('[data-category="' + state.category + '"]').addClass('selected');
+
+    var $dropdown_label = $('.integration-categories-dropdown .dropdown-category-label');
+    var $dropdown_icon = $('.integration-categories-dropdown i');
+    if (state.category === INITIAL_STATE.category) {
+        $dropdown_label.text(i18n.t('Filter by category'));
+    } else {
+        $dropdown_label.text(CATEGORIES[state.category]);
+        $dropdown_icon
+            .removeClass('icon-vector-angle-right')
+            .addClass('icon-vector-angle-down');
+    }
+
     $('.integration-lozenges').animate(
         { opacity: 1 },
         { duration: 400 }
@@ -339,13 +352,13 @@ var integration_events = function () {
         var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
         $dropdown_list.toggle();
 
-        var $dropdown_icon = $('.integration-categories-dropdown i');
-        if ($dropdown_list.css('display') === 'none') {
-            $dropdown_icon
+        if ($dropdown_list.css('display') === 'none' &&
+            state.category === INITIAL_STATE.category) {
+            $('.integration-categories-dropdown i')
                 .removeClass('icon-vector-angle-down')
                 .addClass('icon-vector-angle-right');
         } else {
-            $dropdown_icon
+            $('.integration-categories-dropdown i')
                 .removeClass('icon-vector-angle-right')
                 .addClass('icon-vector-angle-down');
         }
