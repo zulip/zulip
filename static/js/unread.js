@@ -16,6 +16,28 @@ exports.unread_pm_counter = (function () {
         unread_privates = new Dict();
     };
 
+    self.set_pms = function (pms) {
+        _.each(pms, function (obj) {
+            var user_ids_string = obj.sender_id.toString();
+            self.set(user_ids_string, obj.unread_message_ids);
+        });
+    };
+
+    self.set_huddles = function (huddles) {
+        _.each(huddles, function (obj) {
+            var user_ids_string = people.pm_lookup_key(obj.user_ids_string);
+            self.set(user_ids_string, obj.unread_message_ids);
+        });
+    };
+
+    self.set = function (user_ids_string, unread_message_ids) {
+        var dict = unread_privates.setdefault(user_ids_string, new Dict());
+
+        _.each(unread_message_ids, function (msg_id) {
+            dict.set(msg_id, true);
+        });
+    };
+
     self.add = function (message) {
         var user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
@@ -93,6 +115,21 @@ exports.unread_topic_counter = (function () {
             unread_topics.get(stream_id).setdefault(new_topic, num_dict());
             unread_topics.get(stream_id).get(new_topic).set(msg_id, true);
         }
+    };
+
+    self.set_streams = function (objs) {
+        _.each(objs, function (obj) {
+            var stream_id = obj.stream_id;
+            var topic = obj.topic;
+            var unread_message_ids = obj.unread_message_ids;
+
+            var stream_dict = unread_topics.setdefault(stream_id, str_dict());
+            var topic_dict = stream_dict.setdefault(topic, num_dict());
+
+            _.each(unread_message_ids, function (msg_id) {
+                topic_dict.set(msg_id, true);
+            });
+        });
     };
 
     self.add = function (stream_id, topic, msg_id) {
@@ -199,6 +236,12 @@ exports.unread_mentions_counter = (function () {
 
     self.clear = function () {
         mentions = new Dict();
+    };
+
+    self.set_mentions = function (message_ids) {
+        _.each(message_ids, function (message_id) {
+            mentions.set(message_id, true);
+        });
     };
 
     self.add = function (message_id) {
@@ -342,6 +385,15 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 
 exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
+};
+
+exports.initialize = function () {
+    var unread_msgs = page_params.unread_msgs;
+
+    exports.unread_pm_counter.set_huddles(unread_msgs.huddles);
+    exports.unread_pm_counter.set_pms(unread_msgs.pms);
+    exports.unread_topic_counter.set_streams(unread_msgs.streams);
+    exports.unread_mentions_counter.set_mentions(unread_msgs.mentions);
 };
 
 return exports;

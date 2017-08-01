@@ -17,6 +17,7 @@ var stream_data = require('js/stream_data.js');
 
 set_global('stream_data', stream_data);
 set_global('blueslip', {});
+set_global('page_params', {});
 
 var Dict = global.Dict;
 var muting = global.muting;
@@ -444,9 +445,55 @@ stream_data.get_stream_id = function () {
     assert.equal(count, 1);
 }());
 
+(function test_server_counts() {
+    // note that user_id 30 is "me"
+
+    page_params.unread_msgs = {
+        pms: [
+            {
+                sender_id: 101,
+                unread_message_ids: [
+                    31, 32, 60, 61, 62, 63,
+                ],
+            },
+        ],
+        huddles: [
+            {
+                user_ids_string: "4,6,30,101",
+                unread_message_ids: [
+                    34, 50,
+                ],
+            },
+        ],
+        streams: [
+            {
+                stream_id: 1,
+                topic: "test",
+                unread_message_ids: [
+                    33, 35, 36,
+                ],
+            },
+        ],
+        mentions: [31, 34, 40, 41],
+    };
+
+    unread.declare_bankruptcy();
+    unread.initialize();
+
+    assert.equal(unread.num_unread_for_person('101'), 6);
+    assert.equal(unread.num_unread_for_person('4,6,101'), 2);
+    assert.equal(unread.num_unread_for_person('30'), 0);
+
+    assert.equal(unread.num_unread_for_topic(0, 'bogus'), 0);
+    assert.equal(unread.num_unread_for_topic(1, 'bogus'), 0);
+    assert.equal(unread.num_unread_for_topic(1, 'test'), 3);
+
+    assert.equal(unread.unread_mentions_counter.count(), 4);
+}());
 
 (function test_message_unread() {
     // Test some code that might be overly defensive, for line coverage sake.
+    unread.declare_bankruptcy();
     assert(!unread.message_unread(undefined));
     assert(unread.message_unread({flags: []}));
     assert(!unread.message_unread({flags: ['read']}));
