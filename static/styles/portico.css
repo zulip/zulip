@@ -1110,7 +1110,8 @@ input.new-organization-button {
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0, 0%, 40%);
-    background: #fff;
+
+    background-color: #eee;
 
     overflow: auto;
 
@@ -1124,6 +1125,7 @@ input.new-organization-button {
 
     min-height: calc(100% - 60px - 50px);
 
+    background: #fff;
 }
 
 .markdown a {
