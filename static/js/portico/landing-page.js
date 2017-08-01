@@ -6,6 +6,31 @@ const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases
 const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
 const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
 
+// these constants are populated immediately with data from the DOM on page load
+// name -> display name
+var INTEGRATIONS = {};
+var CATEGORIES = {};
+
+function load_data() {
+    $('.integration-lozenge').toArray().forEach(function (integration) {
+        var name = $(integration).data('name');
+        var display_name = $(integration).find('.integration-name').text().trim();
+
+        if (display_name && name) {
+            INTEGRATIONS[name] = display_name;
+        }
+    });
+
+    $('.integration-category').toArray().forEach(function (category) {
+        var name = $(category).data('category');
+        var display_name = $(category).text().trim();
+
+        if (display_name && name) {
+            CATEGORIES[name] = display_name;
+        }
+    });
+}
+
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
 // (as specified like `scroll-to='0px'`).
@@ -416,6 +441,7 @@ var events = function () {
 
     if (path_parts().includes('integrations')) {
         integration_events();
+        load_data();
         integration_search();
     }
 
