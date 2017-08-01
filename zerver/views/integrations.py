@@ -97,8 +97,8 @@ def add_integrations_context(context):
     context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
 
     if "html_settings_links" in context and context["html_settings_links"]:
-        settings_html = '<a href="../#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="../#streams">streams page</a>'
+        settings_html = '<a href="../../#settings">Zulip settings page</a>'
+        subscriptions_html = '<a target="_blank" href="../../#streams">streams page</a>'
     else:
         settings_html = 'Zulip settings page'
         subscriptions_html = 'streams page'
