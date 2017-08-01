@@ -249,6 +249,7 @@ $(function () {
     reload.initialize();
     server_events.initialize();
     people.initialize();
+    unread.initialize();
     bot_data.initialize(); // Must happen after people.initialize()
     message_fetch.initialize();
     emoji.initialize();
