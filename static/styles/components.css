@@ -250,6 +250,60 @@
     vertical-align: top;
 }
 
+/* -- iOS style toggle checkbox -- */
+.new-style label.toggle input {
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+}
+
+label.toggle input + span {
+    display: inline-block;
+    position: relative;
+    box-shadow: inset 0 0 0px 1px #d5d5d5;
+    text-indent: -5000px;
+    height: 25px;
+    width: 45px;
+    border-radius: 15px;
+}
+
+label.toggle input + span::before,
+label.toggle input + span::after {
+    content: "";
+    position: absolute;
+    display: block;
+    height: 25px;
+    width: 25px;
+    top: 0px;
+    left: 0px;
+
+    border-radius: 15px;
+
+    -moz-transition: .25s ease-in-out;
+    -webkit-transition: .25s ease-in-out;
+    transition: .25s ease-in-out;
+}
+
+label.toggle input + span::before {
+    background: rgba(19, 191, 17, 0);
+}
+
+label.toggle input + span::after {
+    background: white;
+    box-shadow: inset 0 0 0 1px rgba(61, 199, 148, 0.75), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+label.toggle input:checked + span::before {
+    width: 45px;
+    background-color: #13bf11;
+}
+
+label.toggle input:checked + span::after {
+    left: 20px;
+    box-shadow: inset 0 0 0 1px #13bf11, 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+/* -- end iOS toggle -- */
+
 .new-style label.checkbox input[type=checkbox] {
     display: none;
 }

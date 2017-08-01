@@ -75,7 +75,7 @@ exports.open = function (image, options) {
     if (!options) {
         options = {
             // default to showing standard images.
-            lightbox_canvas: $(".lightbox-canvas-trigger").hasClass("enabled"),
+            lightbox_canvas: $(".lightbox-canvas-trigger input").prop("checked"),
         };
     }
 
@@ -215,20 +215,14 @@ $(function () {
         }
     });
 
-    $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
+    $("#lightbox_overlay").on("change", ".lightbox-canvas-trigger input", function () {
         var $img = $("#lightbox_overlay").find(".image-preview img");
 
-        if ($img.length) {
-            $(this).addClass("enabled");
-            // the `lightbox.open` function will see the enabled class and
-            // enable the `LightboxCanvas` class.
-            exports.open($img);
-        } else {
+        if (!$img.length) {
             $img = $("#lightbox_overlay").find(".image-preview canvas")[0].image;
-
-            $(this).removeClass("enabled");
-            exports.open($img);
         }
+
+        exports.open($img);
     });
 
     $("#lightbox_overlay .image-preview").on("dblclick", "img, canvas", function (e) {

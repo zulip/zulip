@@ -6,10 +6,11 @@
         </div>
         <div class="exit" aria-label="{{ _('Close') }}"><span aria-hidden="true">x</span></div>
         <div class="image-actions">
-            <div class="lightbox-canvas-trigger">
+            <label class="lightbox-canvas-trigger toggle">
                 <div class="title">{{ _('Pan &amp; Zoom') }}</div>
-                <div class="status" data-disabled="{{ _('Disabled') }}" data-enabled="{{ _('Enabled') }}"></div>
-            </div>
+                <input type="checkbox" name="toggle" class="toggle" />
+                <span></span>
+            </label>
             <a class="button small open icon" target="_blank">
                 <span class="text">{{ _('Open') }}</span>
             </a>
