@@ -32,6 +32,10 @@ class RateLimitedObject:
     def rules(self) -> List[Tuple[int, int]]:
         raise NotImplementedError()
 
+    def get_id(self):
+        # type: () -> Text
+        return self.key_fragment().replace(':', '.')
+
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user: UserProfile, domain: Text='all') -> None:
         self.user = user

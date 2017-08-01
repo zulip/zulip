@@ -18,7 +18,7 @@ from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left, RateLimitedUser
+    api_calls_left, RateLimitedUser, RateLimitedObject
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -630,22 +630,28 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: Text) -> No
     """Returns whether or not a user was rate limited. Will raise a RateLimited exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
+    rate_limit_entity(request, RateLimitedUser(user, domain=domain))
 
-    entity = RateLimitedUser(user, domain=domain)
+def rate_limit_entity(request, entity, prefix=''):
+    # type: (HttpRequest, RateLimitedObject, Text) -> None
+    """Returns whether or not an entity was rate limited. Will raise a RateLimited exception
+    if the entity has been rate limited, otherwise returns and modifies request to contain
+    the rate limit information"""
+
     ratelimited, time = is_ratelimited(entity)
-    request._ratelimit_applied_limits = True
-    request._ratelimit_secs_to_freedom = time
-    request._ratelimit_over_limit = ratelimited
-    # Abort this request if the user is over their rate limits
+    setattr(request, '{}_ratelimit_applied_limits'.format(prefix), True)
+    setattr(request, '{}_ratelimit_secs_to_freedom'.format(prefix), time)
+    setattr(request, '{}_ratelimit_over_limit'.format(prefix), ratelimited)
+    # Abort this request if the entity is over their rate limits
     if ratelimited:
-        statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
+        statsd.incr("ratelimiter.limited.{}".format(entity.get_id()))
         raise RateLimited()
 
     incr_ratelimit(entity)
     calls_remaining, time_reset = api_calls_left(entity)
 
-    request._ratelimit_remaining = calls_remaining
-    request._ratelimit_secs_to_freedom = time_reset
+    setattr(request, '{}_ratelimit_remaining'.format(prefix), calls_remaining)
+    setattr(request, '{}_ratelimit_secs_to_freedom'.format(prefix), time_reset)
 
 def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
