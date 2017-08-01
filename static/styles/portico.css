@@ -1278,7 +1278,9 @@ input.new-organization-button {
 
 .markdown img {
     vertical-align: top;
-    box-shadow: 0px 0px 40px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.05);
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .markdown img.inline {
