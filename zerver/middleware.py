@@ -11,6 +11,8 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import DisallowedHost
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
+from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser, \
+    RateLimitedObject
 from django.shortcuts import redirect, render
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
@@ -313,18 +315,31 @@ def csrf_failure(request: HttpRequest, reason: Text="") -> HttpResponse:
 
 class RateLimitMiddleware(MiddlewareMixin):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        if hasattr(request, 'user'):
+            entity = RateLimitedUser(request.user)
+            response = self._process_response(entity, request, response)
+
+        return response
+
+    def _process_response(self, entity, request, response, prefix=''):
+        # type: (RateLimitedObject, HttpRequest, HttpResponse, Text) -> HttpResponse
         if not settings.RATE_LIMITING:
             return response
 
-        from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser
+        header_prefix = prefix.title().replace('_', '-')
         # Add X-RateLimit-*** headers
-        if hasattr(request, '_ratelimit_applied_limits'):
-            entity = RateLimitedUser(request.user)
-            response['X-RateLimit-Limit'] = str(max_api_calls(entity))
-            if hasattr(request, '_ratelimit_secs_to_freedom'):
-                response['X-RateLimit-Reset'] = str(int(time.time() + request._ratelimit_secs_to_freedom))
-            if hasattr(request, '_ratelimit_remaining'):
-                response['X-RateLimit-Remaining'] = str(request._ratelimit_remaining)
+        attr = '{}_ratelimit_applied_limits'.format(prefix)
+        if hasattr(request, attr):
+            header = 'X{}-RateLimit-Limit'.format(header_prefix)
+            response[header] = str(max_api_calls(entity))
+            attr = '{}_ratelimit_secs_to_freedom'.format(prefix)
+            if hasattr(request, attr):
+                header = 'X{}-RateLimit-Reset'.format(header_prefix)
+                response[header] = str(int(time.time() + getattr(request, attr)))
+            attr = '{}_ratelimit_remaining'.format(prefix)
+            if hasattr(request, attr):
+                header = 'X{}-RateLimit-Remaining'.format(header_prefix)
+                response[header] = str(getattr(request, attr))
         return response
 
     def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
