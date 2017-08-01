@@ -215,7 +215,7 @@ html {
 }
 
 .register-account .terms-of-service .input-group {
-    margin: 0px 0px 10px 10px;
+    margin: 0px 30px 10px 32px;
 }
 
 .account-creation {
@@ -612,8 +612,14 @@ button.login-google-button {
     color: hsl(156, 62%, 61%);
 }
 
+#registration {
+    width: auto;
+    padding: 0;
+    margin: 30px;
+}
+
 #registration section {
-    padding: 10px 0 5px;
+    margin: 30px;
 }
 
 #registration .input-box {
@@ -640,7 +646,7 @@ button.login-google-button {
 }
 
 #registration .register-button {
-    margin: 40px auto 30px;
+    margin: 25px auto 30px;
     width: 330px;
     border-radius: 4px;
 }
@@ -657,10 +663,6 @@ button.login-google-button {
     position: absolute;
     top: 37px;
     right: 0;
-}
-
-#registration {
-    width: 700px;
 }
 
 #registration .input-box.full-width {
