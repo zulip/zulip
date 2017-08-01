@@ -174,6 +174,8 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 # a link to an image is referenced in a message.
 INLINE_IMAGE_PREVIEW = True
 
+INLINE_URL_EMBED_PREVIEW = False
+
 # Controls whether or not Zulip will parse links starting with
 # "file:///" as a hyperlink (useful if you have e.g. an NFS share).
 ENABLE_FILE_LINKS = False
