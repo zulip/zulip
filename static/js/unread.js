@@ -5,7 +5,6 @@ var unread = (function () {
 
 var exports = {};
 
-var unread_mentioned = new Dict();
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
@@ -194,6 +193,29 @@ exports.unread_topic_counter = (function () {
     return self;
 }());
 
+exports.unread_mentions_counter = (function () {
+    var self = {};
+    var mentions = new Dict(); // msg_id -> true
+
+    self.clear = function () {
+        mentions = new Dict();
+    };
+
+    self.add = function (message_id) {
+        mentions.set(message_id, true);
+    };
+
+    self.del = function (message_id) {
+        mentions.del(message_id);
+    };
+
+    self.count = function () {
+        return mentions.num_items();
+    };
+
+    return self;
+}());
+
 exports.message_unread = function (message) {
     if (message === undefined) {
         return false;
@@ -233,7 +255,7 @@ exports.process_loaded_messages = function (messages) {
         }
 
         if (message.mentioned) {
-            unread_mentioned.set(message.id, true);
+            exports.unread_mentions_counter.add(message.id);
         }
     });
 };
@@ -255,13 +277,14 @@ exports.process_read_message = function (message) {
             message.id
         );
     }
-    unread_mentioned.del(message.id);
+
+    exports.unread_mentions_counter.del(message.id);
 };
 
 exports.declare_bankruptcy = function () {
     exports.unread_pm_counter.clear();
     exports.unread_topic_counter.clear();
-    unread_mentioned = new Dict();
+    exports.unread_mentions_counter.clear();
 };
 
 exports.num_unread_current_messages = function () {
@@ -283,7 +306,7 @@ exports.get_counts = function () {
     // pretty cheap, even if you don't care about all the counts, and you
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
-    res.mentioned_message_count = unread_mentioned.num_items();
+    res.mentioned_message_count = exports.unread_mentions_counter.count();
 
     // This sets stream_count, topic_count, and home_unread_messages
     var topic_res = exports.unread_topic_counter.get_counts();
