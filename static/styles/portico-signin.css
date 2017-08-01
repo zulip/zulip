@@ -24,7 +24,9 @@ html {
     min-width: 0px;
 
     background-color: #fff;
-    box-shadow: 0px 0px 100px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .find-team-page-container #find_my_team i {
