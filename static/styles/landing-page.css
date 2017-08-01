@@ -2043,7 +2043,7 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-instruction-block .integration-lozenge {
     width: 125px;
     height: 170px;
-    margin: 0 0 20px 0;
+    margin: 0 21px;
 }
 
 .portico-landing.integrations .integration-instruction-block .integration-lozenge .integration-category {
@@ -2066,9 +2066,10 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-instruction-block .categories .integration-category {
     font-size: 0.90em;
     font-weight: 500;
-    padding: 6px 10px;
+    padding: 6px 10px 6px 3px;
     margin: 3px 0;
-    width: 125px;
+    width: 165px;
+    text-align: center;
     border-radius: 5px;
     transition: all 0.3s ease;
     color: #414e67;
