@@ -10,6 +10,7 @@ from zerver.lib.rate_limiter import (
     clear_history,
     remove_ratelimit_rule,
     RateLimitedUser,
+    RateLimitedObject,
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
@@ -48,6 +49,24 @@ class MITNameTest(ZulipTestCase):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
 
 class RateLimitTests(ZulipTestCase):
+    header_prefix = ''
+
+    def send_api_message(self, email: Text, content: Text) -> HttpResponse:
+        return self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                         "to": "Verona",
+                                                         "client": "test suite",
+                                                         "content": content,
+                                                         "subject": "Test subject"})
+
+    def _test_headers(self, entity, email):
+        # type: (RateLimitedObject, Text) -> None
+        clear_history(entity)
+        result = self.send_api_message(email, "some stuff")
+        self.assertTrue('X{}-RateLimit-Remaining'.format(self.header_prefix) in result)
+        self.assertTrue('X{}-RateLimit-Limit'.format(self.header_prefix) in result)
+        self.assertTrue('X{}-RateLimit-Reset'.format(self.header_prefix) in result)
+
+class RateLimitUserTests(RateLimitTests):
 
     def setUp(self) -> None:
         settings.RATE_LIMITING = True
@@ -57,22 +76,10 @@ class RateLimitTests(ZulipTestCase):
         settings.RATE_LIMITING = False
         remove_ratelimit_rule(1, 5)
 
-    def send_api_message(self, email: Text, content: Text) -> HttpResponse:
-        return self.api_post(email, "/api/v1/messages", {"type": "stream",
-                                                         "to": "Verona",
-                                                         "client": "test suite",
-                                                         "content": content,
-                                                         "subject": "Test subject"})
-
     def test_headers(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
-        clear_history(RateLimitedUser(user))
-
-        result = self.send_api_message(email, "some stuff")
-        self.assertTrue('X-RateLimit-Remaining' in result)
-        self.assertTrue('X-RateLimit-Limit' in result)
-        self.assertTrue('X-RateLimit-Reset' in result)
+        self._test_headers(RateLimitedUser(user), email)
 
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user('hamlet')
