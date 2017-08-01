@@ -434,6 +434,7 @@ input.text-error {
 
 .footer .footer-navigation {
     margin-left: 0px;
+    margin-right: 0px;
 }
 
 .header {
@@ -1102,10 +1103,9 @@ input.new-organization-button {
     position: absolute;
     right: 0px;
     /* 100vw - sidebar width - paddingTop - paddingBottom */
-    width: calc(100vw - 340px - 30px - 30px);
-    padding: 20px 30px 100px 30px;
+    width: calc(100vw - 340px);
 
-    min-height: calc(100vh - 64px - 100px - 20px);
+    height: calc(100vh - 64px);
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
@@ -1118,8 +1118,12 @@ input.new-organization-button {
 }
 
 .markdown .content {
-    max-width: 1000px;
+    padding: 30px 30px 80px 30px;
+    max-width: 768px;
     margin-left: 0px;
+
+    min-height: calc(100% - 60px - 50px);
+
 }
 
 .markdown a {
@@ -1246,8 +1250,11 @@ input.new-organization-button {
 }
 
 .markdown .footer {
+    position: relative;
+    margin-top: -64px;
     height: auto;
-    width: calc(100% - 40px);
+    width: 100%;
+    max-width: calc(768px + 30px + 30px);
 }
 
 @media (max-height: 678px) {
@@ -1276,10 +1283,13 @@ input.new-organization-button {
 
 @media (max-width: 1000px) {
     .app.help .markdown {
-        padding-top: 40px;
-        width: calc(100vw - 40px);
-        height: calc(100vh - 64px - 10px - 10px - 55px - 40px);
+        width: calc(100vw);
+        height: calc(100vh - 64px);
         left: 0;
+    }
+
+    .app.help .markdown .content {
+        max-width: none;
     }
 
     .app.help .hamburger {
@@ -1348,6 +1358,13 @@ input.new-organization-button {
     }
 }
 
+@media (max-width: 648px) {
+    /* this is when the .markdown .footer collapses to two lines. */
+    .markdown .footer {
+        margin-top: -95px;
+    }
+}
+
 @media (max-width: 500px) {
     .center-container {
         display: block;
@@ -1368,11 +1385,6 @@ input.new-organization-button {
     }
 
     .app.help .markdown {
-        position: absolute;
-        top: 0;
-        padding-left: 20px;
-        padding-right: 20px;
-        width: calc(100vw - 40px);
         height: auto;
     }
 
