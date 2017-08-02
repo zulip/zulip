@@ -820,13 +820,12 @@ with_overrides(function (override) {
 with_overrides(function (override) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
-    override('unread_ops.mark_messages_as_read', noop);
 
     global.with_stub(function (stub) {
-        override('message_store.get', stub.f);
+        override('unread_ops.process_read_messages_event', stub.f);
         dispatch(event);
-        var args = stub.get_args('message_id');
-        assert_same(args.message_id, 999);
+        var args = stub.get_args('message_ids');
+        assert_same(args.message_ids, [999]);
     });
 });
 
