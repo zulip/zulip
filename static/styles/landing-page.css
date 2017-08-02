@@ -210,11 +210,12 @@ nav {
     color: #fff;
 
     padding: 40px;
+
+    z-index: 4;
 }
 
 nav.white {
     background-color: #fff;
-    z-index: 2;
 }
 
 nav.white li a,
@@ -224,6 +225,10 @@ nav.white li a:visited {
 }
 
 nav.white ul li.active::after {
+    color: #444;
+}
+
+nav.white .brand.logo span {
     color: #444;
 }
 
@@ -377,54 +382,273 @@ nav ul li.active::after {
 }
 
 /* -- features page css -- */
-.features-app .main {
-    background-color: #fff;
-}
+.portico-landing.features-app {
+    position: relative;
 
-.features-app p {
-    line-height: 1.3;
-}
-
-.feature-page-header {
     padding-top: 0px;
-    text-align: left;
+
+    z-index: 2;
 }
 
-.feature-block .flex {
+.portico-landing.features-app section {
+    max-width: 1440px;
+    margin: 40px auto;
+    padding: 0px 30px;
+    color: #2a3241;
+}
+
+.portico-landing.features-app section.hero {
     display: flex;
-    justify-content: flex-start;
     align-items: center;
-    height: 110px;
+    justify-content: center;
+
+    height: 400px;
+    padding: 100px 100px 50px 100px;
+
+    margin: 0;
+
+    max-width: none;
+
+    color: #fff;
+
+    background-color: hsla(0, 0%, 0%, 0.1);
 }
 
-.feature-block .icon-container {
-    width: 70px;
-    min-width: 70px;
+.portico-landing.features-app section.hero .copy {
+    width: 800px;
+    margin: 0 auto;
+
     text-align: center;
 }
 
-.feature-block i {
-    float: none;
+.portico-landing.features-app section.hero h1 {
+    margin: 0;
+    font-size: 3.7em;
 }
 
-.feature-block i:before {
-    background: -webkit-linear-gradient(65deg, hsl(169, 41%, 31%), hsl(170, 54%, 61%));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.portico-landing.features-app section.hero h2 {
+    font-size: 1.8em;
+    margin: 30px auto 0 auto;
+
+    width: 600px;
+    line-height: 1.3;
 }
 
-.feature-block .block h4 {
+.portico-landing.features-app section.hero .image {
+    height: 400px;
+    width: 40%;
+    background-color: rgba(0,0,0,0.05);
+}
+
+.portico-landing.features-app section.keyboard-shortcuts {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    max-width: none;
+    padding: 50px;
+    /* this should only be a thing if the section above is not white */
+    margin-top: 0px;
+    background-color: #2a3241;
+    color: #e1eafb;
+}
+
+.portico-landing.features-app section.keyboard-shortcuts::after {
+    content: " ";
+    display: block;
+
+    position: absolute;
+    top: -170px;
+    right: 0;
+
+    width: 685px;
+    height: 170px;
+
+    background-image: url(/static/images/landing-page/wave.png);
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+
+    z-index: 1;
+}
+
+.portico-landing.features-app section.keyboard-shortcuts h3 {
+    font-size: 3em;
+}
+
+.portico-landing.features-app section.keyboard-shortcuts .feature-block {
+    width: 50%;
+}
+
+.portico-landing.features-app section.keyboard-shortcuts p {
+    font-size: 1.2em;
+}
+
+.portico-landing.features-app section.keyboard-shortcuts a.cta {
     font-size: 1em;
-    font-weight: 400;
-    text-transform: uppercase;
-    color: hsl(0, 0%, 66%);
-    margin-left: 15px;
 }
 
-.feature-block .block p {
-    font-size: 1rem;
-    margin-left: 15px;
-    margin-bottom: 0px;
+.portico-landing.features-app section.keyboard-shortcuts img {
+    width: 600px;
+    margin-left: 100px;
+}
+
+.portico-landing.features-app section.messages {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 50px auto;
+    padding: 0px 50px;
+}
+
+.portico-landing.features-app section.messages .image {
+    width: calc(100% - 500px - 100px);
+    margin: 50px 0px 50px 50px;
+}
+
+.portico-landing.features-app section.messages .features {
+    width: 500px;
+}
+
+.portico-landing.features-app section.messages .features h2 {
+    margin: 0;
+}
+
+.portico-landing.features-app section.messages .features .feature-block {
+    display: block;
+    margin: 30px 0px;
+}
+
+.portico-landing.features-app section.notifications {
+    position: relative;
+
+    padding: 50px 100px;
+    max-width: calc(1000px);
+
+    background-color: #fff;
+    border-radius: 10px;
+
+    box-shadow: 10px 20px 80px rgba(0,0,0,0.15);
+}
+
+.portico-landing.features-app section.notifications .envelope {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.portico-landing.features-app section.notifications h2 {
+    position: relative;
+
+    margin-bottom: 120px;
+    top: -0px;
+}
+
+.portico-landing.features-app section.notifications .feature-list {
+    position: relative;
+
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+
+    margin: 35px 0px 0px 20px;
+
+    z-index: 1;
+}
+
+.portico-landing.features-app section.notifications {
+    margin: 100px auto 150px auto;
+    text-align: center;
+}
+
+.portico-landing.features-app section.notifications .feature-list h3 {
+    position: relative;
+
+    margin: 15px 0px 15px 50px;
+
+    font-size: 1.2em;
+    font-weight: 400;
+
+    color: #888;
+}
+
+.portico-landing.features-app section.notifications .feature-list h3::before {
+    content: " ";
+    display: block;
+    position: absolute;
+
+    left: -35px;
+    top: 0px;
+    width: 20px;
+    height: 20px;
+
+    border-radius: 4px;
+
+    background-image: url(/static/images/checkbox-valid.svg);
+    background-size: 100% auto;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.portico-landing.features-app section.notifications .image-block {
+    width: 400px;
+    height: 280px;
+
+    background: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.2));
+    border-radius: 4px;
+
+    background-image: url(/static/images/landing-page/notifications.jpg);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: inline-block;
+}
+
+.portico-landing.features-app .cta::after {
+    content: "\2192";
+
+    margin-left: 5px;
+    transform: scaleX(2);
+
+    transition: all 0.3s ease;
+}
+
+.portico-landing.features-app .cta:hover::after {
+    margin-left: 10px;
+}
+
+.portico-landing.features-app section .feature-block {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.portico-landing.features-app section .headliner .feature-block {
+    margin: 0px 10px;
+    width: calc(100% - 250px - 20px);
+}
+
+.portico-landing.features-app section h2 {
+    font-size: 2.5em;
+    margin: 0px 10px;
+    line-height: 1.6;
+}
+
+.portico-landing.features-app section > .feature-block {
+    margin: 10px;
+    width: calc(33% - 20px);
+}
+
+.portico-landing.features-app .feature-block h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.portico-landing.features-app .feature-block p {
+    margin: 0;
+
+    opacity: 0.6;
 }
 
 /* -- hello page -- */
@@ -1900,21 +2124,6 @@ nav ul li.active::after {
     }
 }
 
-@media (max-width: 1340px) {
-    .features .feature-box.open-source .text-content {
-        display: block;
-        height: auto;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
-    .features .feature-box.open-source .contrib-graph {
-        width: 100%;
-        margin: 0;
-        height: calc(50vw * 0.5);
-    }
-}
-
 @media (max-width: 1295px) {
     .portico-landing.hello .apps .right-side {
         display: none;
@@ -1937,12 +2146,6 @@ nav ul li.active::after {
 
     .portico-landing.hello .apps .left-side .content {
         margin: 0px auto 50px;
-    }
-}
-
-@media (max-width: 1100px) {
-    .feature-block .flex {
-        height: 130px;
     }
 }
 
@@ -1991,13 +2194,13 @@ nav ul li.active::after {
         stroke: #4e9da0 !important;
     }
 
-    .feature-block .flex {
-        height: 150px;
+    .portico-landing.features-app section .headliner .image {
+        width: 200px;
+        height: 200px;
     }
 
-    .features-app .main {
-        margin: 0px auto;
-        width: calc(100% - 40px);
+    .portico-landing.features-app section .headliner .feature-box {
+        width: calc(100% - 200px - 20px);
     }
 }
 
@@ -2164,11 +2367,22 @@ nav ul li.active::after {
     .portico-landing.integrations .integration-lozenge .integration-category {
         font-size: .8em;
     }
+
+    .portico-landing.features-app section .headliner {
+        display: inline-flex;
+
+        width: auto;
+        height: 250px;
+
+        margin: 50px;
+
+        justify-content: center;
+        align-items: center;
+    }
 }
 
 @media (max-width: 768px) {
-    nav,
-    .features {
+    nav {
         padding-left: 50px;
         padding-right: 50px;
     }
@@ -2217,11 +2431,6 @@ nav ul li.active::after {
         margin-left: 0px;
     }
 
-    .feature-block .flex {
-        height: auto;
-        padding: 10px;
-    }
-
     .portico-landing.integrations .portico-page-header {
         padding-top: 20px;
     }
@@ -2264,6 +2473,10 @@ nav ul li.active::after {
     nav .hamburger {
         position: relative;
         z-index: 10;
+    }
+
+    .portico-landing.features-app section {
+        padding: 0px 20px;
     }
 }
 

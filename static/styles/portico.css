@@ -499,66 +499,6 @@ input.text-error {
     background-size: cover;
 }
 
-
-.feature-block {
-    width: 49%;
-    display: inline-block;
-    vertical-align: top;
-    margin-bottom: 20px;
-}
-
-.feature-block h4 {
-    font-size: 22px;
-    font-weight: 300;
-    margin-left: 60px;
-    margin-top: 0px;
-}
-
-.feature-block i {
-    float: left;
-    color: hsl(207, 22%, 58%);
-}
-
-.feature-block p {
-    margin-left: 60px;
-}
-
-.feature-block.left p,
-.feature-block.left h4 {
-    margin-right: 40px;
-}
-
-.feature-line.dark {
-    background: hsl(202, 56%, 91%);
-    color: black;
-}
-
-.feature-line.light {
-    background: white;
-}
-
-
-.feature-line .feature-text {
-    width: 49%;
-    display: inline-block;
-    vertical-align: middle;
-    margin-top: 30px;
-    margin-bottom: 30px;
-}
-
-.feature-line .platform-text {
-    width: 39%;
-    text-align: left;
-    display: inline-block;
-    padding-top: 30px;
-    padding-bottom: 30px;
-    vertical-align: middle;
-}
-
-.feature-line .centered-content {
-    text-align: center;
-}
-
 a.bottom-signup-button {
     color: #fff !important;
     text-decoration: none !important;
@@ -567,62 +507,6 @@ a.bottom-signup-button {
     margin-top: 30px;
     margin-bottom: 30px;
     font-weight: 300;
-}
-
-.feature-line .platform {
-    margin-left: 50px;
-    text-align: center;
-    display: inline-block;
-    padding-top: 30px;
-    padding-bottom: 30px;
-}
-
-.feature-line .platform-icons {
-    display: inline-block;
-    width: 60%;
-    vertical-align: middle;
-    text-align: right;
-}
-
-.platform-icon {
-    font-size: 40px;
-    display: block;
-    padding-top: 30px;
-    padding-bottom: 30px;
-}
-
-.feature-line .tagline {
-    display: block;
-    font-weight: 300;
-    font-size: 30px;
-    line-height: 32px;
-}
-
-.feature-line .description {
-    display: block;
-    font-size: 18px;
-    line-height: 23px;
-    padding-top: 20px;
-}
-
-.feature-illustration {
-    width: 50%;
-    display: inline-block;
-    text-align: right;
-}
-
-.feature-image {
-    display: inline-block;
-    width: 100%;
-    max-width: 422px;
-    height: auto;
-    margin-top: 30px;
-    margin-bottom: 30px;
-}
-
-.feature-image.shadow {
-    border-radius: 6px;
-    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.4);
 }
 
 .login-page,
@@ -759,7 +643,6 @@ a.bottom-signup-button {
 
 .api-page-header,
 .authors-page-header,
-.feature-page-header,
 .integrations-page-header,
 .register-page-header {
     font-weight: 300;
@@ -788,7 +671,6 @@ a.bottom-signup-button {
 
 .api-page-header,
 .authors-page-header,
-.feature-page-header,
 .integrations-page-header {
     padding-top: 56px;
 }
@@ -876,10 +758,6 @@ a.bottom-signup-button {
     border-color: hsl(198, 100%, 48%);
     border-style: solid;
     color: hsl(207, 89%, 54%);
-}
-
-.feature-page-header {
-    width: auto;
 }
 
 .login-page {
@@ -1382,29 +1260,6 @@ input.new-organization-button {
 }
 
 @media (max-width: 950px) {
-
-    .feature-line .feature-text {
-        width: 100%;
-        display: inline-block;
-        vertical-align: middle;
-    }
-
-    .feature-line .tagline {
-        text-align: center;
-    }
-
-    .feature-illustration {
-        width: 100%;
-        display: block;
-        text-align: center;
-    }
-
-    .feature-image {
-        width: 422px;
-        max-width: 100%;
-        margin-top: 0px;
-    }
-
     .footer-main {
         text-align: center;
     }
@@ -1442,25 +1297,6 @@ input.new-organization-button {
 
     .app.help .sidebar.show {
         transform: translateX(340px);
-    }
-
-    .feature-line .platform-text {
-        display: block;
-        width: 100%;
-        text-align: center;
-    }
-
-    .feature-line .platform-icons {
-        display: block;
-        width: 100%;
-        text-align: center;
-    }
-
-    .feature-line .platform {
-        float: none;
-        margin-left: 20px;
-        margin-right: 20px;
-        display: inline-block;
     }
 }
 
@@ -1506,17 +1342,6 @@ input.new-organization-button {
         display: inline-block;
         margin-top: 10px;
     }
-
-    .feature-block {
-        width: 100%;
-        display: block;
-    }
-
-    .feature-block.left p,
-    .feature-block.left h4 {
-        margin-right: 0px;
-    }
-
 }
 
 @media (max-width: 500px) {
