@@ -554,6 +554,19 @@ exports.MessageList.prototype = {
         return this._items;
     },
 
+    first_unread_message_id: function MessageList_first_unread_message_id() {
+        var first_unread = _.find(this._items, function (message) {
+            return unread.message_unread(message);
+        });
+
+        if (first_unread) {
+            return first_unread.id;
+        }
+
+        // if no unread, return the bottom message
+        return this.last().id;
+    },
+
     // Returns messages from the given message list in the specified range, inclusive
     message_range: function MessageList_message_range(start, end) {
         if (start === -1) {

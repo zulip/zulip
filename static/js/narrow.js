@@ -169,12 +169,7 @@ exports.activate = function (raw_operators, opts) {
     function maybe_select_closest() {
         if (! message_list.narrowed.empty()) {
             if (opts.select_first_unread) {
-                then_select_id = message_list.narrowed.last().id;
-                var first_unread =
-                    _.find(message_list.narrowed.all_messages(), unread.message_unread);
-                if (first_unread) {
-                    then_select_id = first_unread.id;
-                }
+                then_select_id = message_list.narrowed.first_unread_message_id();
             }
 
             var preserve_pre_narrowing_screen_position =
@@ -407,12 +402,7 @@ exports.deactivate = function () {
             // We read some unread messages in a narrow. Instead of going back to
             // where we were before the narrow, go to our first unread message (or
             // the bottom of the feed, if there are no unread messages).
-            var first_unread = _.find(current_msg_list.all_messages(), unread.message_unread);
-            if (first_unread) {
-                message_id_to_select = first_unread.id;
-            } else {
-                message_id_to_select = current_msg_list.last().id;
-            }
+            message_id_to_select = current_msg_list.first_unread_message_id();
         } else {
             // We narrowed, but only backwards in time (ie no unread were read). Try
             // to go back to exactly where we were before narrowing.
