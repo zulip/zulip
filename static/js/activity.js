@@ -453,6 +453,8 @@ exports.initialize = function () {
     exports.build_user_sidebar();
     exports.update_huddles();
 
+    ui.set_up_scrollbar($("#user_presences"));
+
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
     focus_ping(false);

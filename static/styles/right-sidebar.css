@@ -16,6 +16,11 @@
     overflow: auto;
 }
 
+#user_presences {
+    position: relative;
+    height: 100%;
+}
+
 #user_presences:hover,
 #group-pms:hover {
     overflow-y: auto;
