@@ -33,6 +33,10 @@ var HOTSPOT_LOCATIONS = {
     },
 };
 
+// popover illustration url(s)
+var WHALE = '/static/images/hotspots/whale.svg';
+
+
 exports.map_hotspots_to_DOM = function (hotspots, locations) {
     hotspots.forEach(function (hotspot) {
         hotspot.location = locations[hotspot.name];
@@ -216,6 +220,7 @@ function insert_hotspot_into_DOM(hotspot) {
         name: hotspot.name,
         title: hotspot.title,
         description: hotspot.description,
+        img: WHALE,
     });
 
     var hotspot_icon_HTML =
