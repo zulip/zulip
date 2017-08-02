@@ -18,8 +18,12 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.upload import upload_backend
 
+import zerver.lib.generate_data
+
 import random
 import os
+import ujson
+import itertools
 from six.moves import range
 from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
@@ -401,8 +405,17 @@ def send_messages(data):
     # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any]]) -> int
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
-    texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
-    offset = random.randint(0, len(texts))
+    # check to see if the test file exists. If not, run the generator to create it
+
+    filename = "var/test_messages.json"
+
+    if not os.path.isfile(filename):
+        # generate the test file
+        zerver.lib.generate_data.create_test_data()
+
+    with open(filename, "r") as infile:
+        dialog = ujson.load(infile)
+    texts = itertools.cycle(dialog)
 
     recipient_streams = [klass.id for klass in
                          Recipient.objects.filter(type=Recipient.STREAM)]  # type: List[int]
@@ -420,11 +433,8 @@ def send_messages(data):
         saved_data = {}  # type: Dict[str, Any]
         message = Message()
         message.sending_client = get_client('populate_db')
-        length = random.randint(1, 5)
-        lines = (t.strip() for t in texts[offset: offset + length])
-        message.content = '\n'.join(lines)
-        offset += length
-        offset = offset % len(texts)
+
+        message.content = next(texts)
 
         randkey = random.randint(1, random_max)
         if (num_messages > 0 and
