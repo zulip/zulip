@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 $ ./tools/js-dep-visualizer.py
 $ dot -Tpng var/zulip-deps.dot -o var/zulip-deps.png
