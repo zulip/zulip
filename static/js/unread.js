@@ -266,18 +266,6 @@ exports.declare_bankruptcy = function () {
     exports.unread_mentions_counter.clear();
 };
 
-exports.num_unread_current_messages = function () {
-    var num_unread = 0;
-
-    _.each(current_msg_list.all_messages(), function (msg) {
-        if ((msg.id > current_msg_list.selected_id()) && exports.message_unread(msg)) {
-            num_unread += 1;
-        }
-    });
-
-    return num_unread;
-};
-
 exports.get_counts = function () {
     var res = {};
 
@@ -297,12 +285,6 @@ exports.get_counts = function () {
     res.pm_count = pm_res.pm_dict;
     res.private_message_count = pm_res.total_count;
     res.home_unread_messages += pm_res.total_count;
-
-    if (narrow_state.active()) {
-        res.unread_in_current_view = exports.num_unread_current_messages();
-    } else {
-        res.unread_in_current_view = res.home_unread_messages;
-    }
 
     return res;
 };

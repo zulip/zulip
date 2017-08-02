@@ -48,7 +48,6 @@ var zero_counts = {
     stream_count: new Dict(),
     topic_count: new Dict(),
     pm_count: new Dict(),
-    unread_in_current_view: 0,
 };
 
 (function test_empty_counts_while_narrowed() {
@@ -418,31 +417,6 @@ stream_data.get_stream_id = function () {
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
 }());
-
-(function test_num_unread_current_messages() {
-    var count = unread.num_unread_current_messages();
-    assert.equal(count, 0);
-
-    var message = {
-        id: 15,
-    };
-    current_msg_list.all_messages = function () {
-        return [message];
-    };
-
-    // It's a little suspicious that num_unread_current_messages()
-    // is using the pointer as a hint for filtering out unread
-    // messages, but right now, it's impossible for unread messages
-    // to be above the pointer in a narrowed view, so unread.js uses
-    // this for optimization purposes.
-    current_msg_list.selected_id = function () {
-        return 11; // less than our message's id
-    };
-
-    count = unread.num_unread_current_messages();
-    assert.equal(count, 1);
-}());
-
 
 (function test_message_unread() {
     // Test some code that might be overly defensive, for line coverage sake.
