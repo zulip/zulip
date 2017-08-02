@@ -1826,9 +1826,9 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
             user_profile,
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
-        self.assert_in_response('You attempted to login using the email account',
+        self.assert_in_response('No account found for',
                                 result)
-        self.assert_in_response('new@zulip.com, but this email address does not',
+        self.assert_in_response('new@zulip.com. Would you like to register instead?',
                                 result)
 
     def test_invalid_subdomain(self):
