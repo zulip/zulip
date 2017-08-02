@@ -77,30 +77,30 @@ exports.unread_topic_counter = (function () {
     }
 
     var unread_topics = num_dict(); // dict of stream -> topic -> msg id
+    var reverse_lookup = num_dict();
 
     self.clear = function () {
         unread_topics = num_dict();
+        reverse_lookup = num_dict();
     };
 
-    self.update = function (stream_id, topic, new_topic, msg_id) {
-        self.del(stream_id, topic, msg_id);
+    self.update = function (msg_id, stream_id, new_topic) {
+        self.del(msg_id);
         self.add(stream_id, new_topic, msg_id);
     };
 
     self.add = function (stream_id, topic, msg_id) {
         unread_topics.setdefault(stream_id, str_dict());
-        unread_topics.get(stream_id).setdefault(topic, num_dict());
-        unread_topics.get(stream_id).get(topic).set(msg_id, true);
+        var dict = unread_topics.get(stream_id).setdefault(topic, num_dict());
+        dict.set(msg_id, true);
+        reverse_lookup.set(msg_id, dict);
     };
 
-
-    self.del = function (stream_id, topic, msg_id) {
-        var stream_dict = unread_topics.get(stream_id);
-        if (stream_dict) {
-            var topic_dict = stream_dict.get(topic);
-            if (topic_dict) {
-                topic_dict.del(msg_id);
-            }
+    self.del = function (msg_id) {
+        var dict = reverse_lookup.get(msg_id);
+        if (dict) {
+            dict.del(msg_id);
+            reverse_lookup.del(msg_id);
         }
     };
 
@@ -219,10 +219,9 @@ exports.message_unread = function (message) {
 exports.update_unread_topics = function (msg, event) {
     if (event.subject !== undefined) {
         exports.unread_topic_counter.update(
+            msg.id,
             msg.stream_id,
-            msg.subject,
-            event.subject,
-            msg.id
+            event.subject
         );
     }
 };
@@ -259,15 +258,7 @@ exports.process_read_message = function (message) {
     }
 
     if (message.type === 'stream') {
-        if (message.stream_id === undefined) {
-            blueslip.error('No stream_id found for message ' + message.id);
-            return;
-        }
-        exports.unread_topic_counter.del(
-            message.stream_id,
-            message.subject,
-            message.id
-        );
+        exports.unread_topic_counter.del(message.id);
     }
 
     exports.unread_mentions_counter.del(message.id);
