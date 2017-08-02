@@ -7,6 +7,10 @@ add_dependencies({
     i18n: 'i18next',
 });
 
+set_global('ui', {
+    update_scrollbar: function () {},
+});
+
 set_global('channel', {});
 
 var subs = require('js/subs.js');

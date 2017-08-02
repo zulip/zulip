@@ -5,6 +5,10 @@ set_global('page_params', {
     user_id: 5,
 });
 
+set_global('ui', {
+    set_up_scrollbar: function () {},
+});
+
 set_global('feature_flags', {});
 
 set_global('document', {
