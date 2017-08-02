@@ -83,17 +83,8 @@ exports.unread_topic_counter = (function () {
     };
 
     self.update = function (stream_id, topic, new_topic, msg_id) {
-        if (unread_topics.has(stream_id) &&
-            unread_topics.get(stream_id).has(topic) &&
-            unread_topics.get(stream_id).get(topic).get(msg_id)) {
-            // Move the unread topic count to the new topic
-            unread_topics.get(stream_id).get(topic).del(msg_id);
-            if (unread_topics.get(stream_id).get(topic).num_items() === 0) {
-                unread_topics.get(stream_id).del(topic);
-            }
-            unread_topics.get(stream_id).setdefault(new_topic, num_dict());
-            unread_topics.get(stream_id).get(new_topic).set(msg_id, true);
-        }
+        self.del(stream_id, topic, msg_id);
+        self.add(stream_id, new_topic, msg_id);
     };
 
     self.add = function (stream_id, topic, msg_id) {
