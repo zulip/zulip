@@ -110,6 +110,18 @@ exports.is_known_user_id = function (user_id) {
     return people_by_user_id_dict.has(user_id);
 };
 
+function sort_numerically(user_ids) {
+    user_ids = _.map(user_ids, function (user_id) {
+        return parseInt(user_id, 10);
+    });
+
+    user_ids.sort(function (a, b) {
+        return a - b;
+    });
+
+    return user_ids;
+}
+
 exports.huddle_string = function (message) {
     if (message.type !== 'private') {
         return;
@@ -130,7 +142,8 @@ exports.huddle_string = function (message) {
     if (user_ids.length <= 1) {
         return;
     }
-    user_ids.sort();
+
+    user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
 };
@@ -175,7 +188,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
         return;
     }
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
 };
@@ -221,7 +234,7 @@ exports.email_list_to_user_ids_string = function (emails) {
         return;
     }
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
 };
@@ -278,6 +291,36 @@ exports.pm_reply_to = function (message) {
     return reply_to;
 };
 
+function sorted_other_user_ids(user_ids) {
+    // This excludes your own user id unless you're the only user
+    // (i.e. you sent a message to yourself).
+
+    var other_user_ids = _.filter(user_ids, function (user_id) {
+        return !people.is_my_user_id(user_id);
+    });
+
+    if (other_user_ids.length >= 1) {
+        user_ids = other_user_ids;
+    } else {
+        user_ids = [my_user_id];
+    }
+
+    user_ids = sort_numerically(user_ids);
+
+    return user_ids;
+}
+
+exports.pm_lookup_key = function (user_ids_string) {
+    /*
+        The server will sometimes include our own user id
+        in keys for PMs, but we only want our user id if
+        we sent a message to ourself.
+    */
+    var user_ids = user_ids_string.split(',');
+    user_ids = sorted_other_user_ids(user_ids);
+    return user_ids.join(',');
+};
+
 exports.pm_with_user_ids = function (message) {
     if (message.type !== 'private') {
         return;
@@ -292,19 +335,7 @@ exports.pm_with_user_ids = function (message) {
         return elem.user_id || elem.id;
     });
 
-    var other_user_ids = _.filter(user_ids, function (user_id) {
-        return !people.is_my_user_id(user_id);
-    });
-
-    if (other_user_ids.length >= 1) {
-        user_ids = other_user_ids;
-    } else {
-        user_ids = [my_user_id];
-    }
-
-    user_ids.sort();
-
-    return user_ids;
+    return sorted_other_user_ids(user_ids);
 };
 
 exports.pm_with_url = function (message) {
@@ -385,7 +416,7 @@ exports.pm_with_operand_ids = function (operand) {
         return person.user_id;
     });
 
-    user_ids.sort();
+    user_ids = sort_numerically(user_ids);
 
     return user_ids;
 };

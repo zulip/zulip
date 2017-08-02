@@ -210,19 +210,6 @@ var message_store = require('js/message_store.js');
     });
     message_store.process_message_for_recent_private_messages(message);
     assert.equal(num_partner, 0);
-
-    message = {
-        type: 'private',
-        display_recipient: [{}],
-    };
-
-    // Test edge case with no recipient
-    global.with_stub(function (stub) {
-        blueslip.warn = stub.f;
-        message_store.process_message_for_recent_private_messages(message);
-        var warn = stub.get_args("message");
-        assert.equal(warn.message, "Unknown reply_to in message: ");
-    });
 }());
 
 (function test_message_id_change() {

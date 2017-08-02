@@ -48,8 +48,8 @@ exports.get_li_for_user_ids_string = function (user_ids_string) {
     return convo_li;
 };
 
-function set_pm_conversation_count(conversation, count) {
-    var pm_li = pm_list.get_conversation_li(conversation);
+function set_pm_conversation_count(user_ids_string, count) {
+    var pm_li = pm_list.get_li_for_user_ids_string(user_ids_string);
     var count_span = pm_li.find('.private_message_count');
     var value_span = count_span.find('.value');
 
@@ -197,8 +197,7 @@ exports.update_dom_with_unread_counts = function (counts) {
     set_count("global", "private", counts.private_message_count);
     counts.pm_count.each(function (count, user_ids_string) {
         // TODO: just use user_ids_string in our markup
-        var emails_string = people.user_ids_string_to_emails_string(user_ids_string);
-        set_pm_conversation_count(emails_string, count);
+        set_pm_conversation_count(user_ids_string, count);
     });
 
 

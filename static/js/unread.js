@@ -5,7 +5,6 @@ var unread = (function () {
 
 var exports = {};
 
-var unread_mentioned = new Dict();
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
@@ -15,6 +14,28 @@ exports.unread_pm_counter = (function () {
 
     self.clear = function () {
         unread_privates = new Dict();
+    };
+
+    self.set_pms = function (pms) {
+        _.each(pms, function (obj) {
+            var user_ids_string = obj.sender_id.toString();
+            self.set(user_ids_string, obj.unread_message_ids);
+        });
+    };
+
+    self.set_huddles = function (huddles) {
+        _.each(huddles, function (obj) {
+            var user_ids_string = people.pm_lookup_key(obj.user_ids_string);
+            self.set(user_ids_string, obj.unread_message_ids);
+        });
+    };
+
+    self.set = function (user_ids_string, unread_message_ids) {
+        var dict = unread_privates.setdefault(user_ids_string, new Dict());
+
+        _.each(unread_message_ids, function (msg_id) {
+            dict.set(msg_id, true);
+        });
     };
 
     self.add = function (message) {
@@ -94,6 +115,21 @@ exports.unread_topic_counter = (function () {
             unread_topics.get(stream_id).setdefault(new_topic, num_dict());
             unread_topics.get(stream_id).get(new_topic).set(msg_id, true);
         }
+    };
+
+    self.set_streams = function (objs) {
+        _.each(objs, function (obj) {
+            var stream_id = obj.stream_id;
+            var topic = obj.topic;
+            var unread_message_ids = obj.unread_message_ids;
+
+            var stream_dict = unread_topics.setdefault(stream_id, str_dict());
+            var topic_dict = stream_dict.setdefault(topic, num_dict());
+
+            _.each(unread_message_ids, function (msg_id) {
+                topic_dict.set(msg_id, true);
+            });
+        });
     };
 
     self.add = function (stream_id, topic, msg_id) {
@@ -194,6 +230,35 @@ exports.unread_topic_counter = (function () {
     return self;
 }());
 
+exports.unread_mentions_counter = (function () {
+    var self = {};
+    var mentions = new Dict(); // msg_id -> true
+
+    self.clear = function () {
+        mentions = new Dict();
+    };
+
+    self.set_mentions = function (message_ids) {
+        _.each(message_ids, function (message_id) {
+            mentions.set(message_id, true);
+        });
+    };
+
+    self.add = function (message_id) {
+        mentions.set(message_id, true);
+    };
+
+    self.del = function (message_id) {
+        mentions.del(message_id);
+    };
+
+    self.count = function () {
+        return mentions.num_items();
+    };
+
+    return self;
+}());
+
 exports.message_unread = function (message) {
     if (message === undefined) {
         return false;
@@ -233,7 +298,7 @@ exports.process_loaded_messages = function (messages) {
         }
 
         if (message.mentioned) {
-            unread_mentioned.set(message.id, true);
+            exports.unread_mentions_counter.add(message.id);
         }
     });
 };
@@ -255,13 +320,14 @@ exports.process_read_message = function (message) {
             message.id
         );
     }
-    unread_mentioned.del(message.id);
+
+    exports.unread_mentions_counter.del(message.id);
 };
 
 exports.declare_bankruptcy = function () {
     exports.unread_pm_counter.clear();
     exports.unread_topic_counter.clear();
-    unread_mentioned = new Dict();
+    exports.unread_mentions_counter.clear();
 };
 
 exports.num_unread_current_messages = function () {
@@ -283,7 +349,7 @@ exports.get_counts = function () {
     // pretty cheap, even if you don't care about all the counts, and you
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
-    res.mentioned_message_count = unread_mentioned.num_items();
+    res.mentioned_message_count = exports.unread_mentions_counter.count();
 
     // This sets stream_count, topic_count, and home_unread_messages
     var topic_res = exports.unread_topic_counter.get_counts();
@@ -319,6 +385,15 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 
 exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
+};
+
+exports.initialize = function () {
+    var unread_msgs = page_params.unread_msgs;
+
+    exports.unread_pm_counter.set_huddles(unread_msgs.huddles);
+    exports.unread_pm_counter.set_pms(unread_msgs.pms);
+    exports.unread_topic_counter.set_streams(unread_msgs.streams);
+    exports.unread_mentions_counter.set_mentions(unread_msgs.mentions);
 };
 
 return exports;

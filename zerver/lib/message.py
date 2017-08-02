@@ -30,6 +30,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Text, Union
 
 RealmAlertWords = Dict[int, List[Text]]
 
+MAX_UNREAD_MESSAGES = 5000
+
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
     return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
@@ -391,9 +393,12 @@ def get_unread_message_ids_per_recipient(user_profile):
         'message__recipient__type',
         'message__recipient__type_id',
         'flags',
-    ).order_by("message_id")
+    ).order_by("-message_id")
 
-    rows = list(user_msgs)
+    # Limit unread messages for performance reasons.
+    user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
+
+    rows = list(reversed(user_msgs))
 
     pm_msgs = [
         dict(
