@@ -332,10 +332,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             });
             break;
         case 'read':
-            var msgs_to_update = _.map(event.messages, function (message_id) {
-                return message_store.get(message_id);
-            });
-            unread_ops.mark_messages_as_read(msgs_to_update, {from: "server"});
+            unread_ops.process_read_messages_event(event.messages);
             break;
         }
         break;

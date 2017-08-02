@@ -36,6 +36,45 @@ function process_newly_read_message(message, options) {
     notifications.close_notification(message);
 }
 
+exports.process_read_messages_event = function (message_ids) {
+    /*
+        This code has a lot in common with mark_messages_as_read,
+        but there are subtle differences due to the fact that the
+        server can tell us about unread messages that we didn't
+        actually read locally (and which we may not have even
+        loaded locally).
+    */
+    var options = {from: 'server'};
+    var processed = false;
+
+    _.each(message_ids, function (message_id) {
+        if (!unread.id_flagged_as_unread(message_id)) {
+            // Don't do anything if the message is already read.
+            return;
+        }
+
+        if (current_msg_list === message_list.narrowed) {
+            // I'm not sure this entirely makes sense for all server
+            // notifications.
+            unread.messages_read_in_narrow = true;
+        }
+
+        unread.mark_as_read(message_id);
+        processed = true;
+
+        var message = message_store.get(message_id);
+
+        if (message) {
+            process_newly_read_message(message, options);
+        }
+    });
+
+    if (processed) {
+        unread_ui.update_unread_counts();
+    }
+};
+
+
 // Takes a list of messages and marks them as read
 exports.mark_messages_as_read = function mark_messages_as_read(messages, options) {
     options = options || {};
@@ -50,10 +89,7 @@ exports.mark_messages_as_read = function mark_messages_as_read(messages, options
             unread.messages_read_in_narrow = true;
         }
 
-        if (options.from !== "server") {
-            message_flags.send_read(message);
-        }
-
+        message_flags.send_read(message);
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
 
