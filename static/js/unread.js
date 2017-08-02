@@ -11,26 +11,27 @@ exports.messages_read_in_narrow = false;
 exports.unread_pm_counter = (function () {
     var self = {};
     var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
+    var reverse_lookup = new Dict(); // msg_id -> enclosing dict
 
     self.clear = function () {
         unread_privates = new Dict();
+        reverse_lookup = new Dict();
     };
 
     self.add = function (message) {
         var user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
-            unread_privates.setdefault(user_ids_string, new Dict());
-            unread_privates.get(user_ids_string).set(message.id, true);
+            var dict = unread_privates.setdefault(user_ids_string, new Dict());
+            dict.set(message.id, true);
+            reverse_lookup.set(message.id, dict);
         }
     };
 
-    self.del = function (message) {
-        var user_ids_string = people.pm_reply_user_string(message);
-        if (user_ids_string) {
-            var dict = unread_privates.get(user_ids_string);
-            if (dict) {
-                dict.del(message.id);
-            }
+    self.del = function (message_id) {
+        var dict = reverse_lookup.get(message_id);
+        if (dict) {
+            dict.del(message_id);
+            reverse_lookup.del(message_id);
         }
     };
 
@@ -263,7 +264,7 @@ exports.process_loaded_messages = function (messages) {
 exports.process_read_message = function (message) {
 
     if (message.type === 'private') {
-        exports.unread_pm_counter.del(message);
+        exports.unread_pm_counter.del(message.id);
     }
 
     if (message.type === 'stream') {
