@@ -162,7 +162,9 @@ function stubbing(func_name_to_stub, test_function) {
     set_global('emoji_picker', {
         reactions_popped: return_false,
     });
-
+    set_global('hotspots', {
+        is_open: return_false,
+    });
 
     // All letters should return false if we are composing text.
     hotkey.processing_text = return_true;

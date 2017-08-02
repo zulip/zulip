@@ -247,6 +247,10 @@ function insert_hotspot_into_DOM(hotspot) {
     }, (hotspot.delay * 100));
 }
 
+exports.is_open = function () {
+    return $('.hotspot.overlay').hasClass('show');
+};
+
 exports.load_new = function (new_hotspots) {
     exports.map_hotspots_to_DOM(new_hotspots, HOTSPOT_LOCATIONS);
     new_hotspots.forEach(insert_hotspot_into_DOM);
