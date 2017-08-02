@@ -141,6 +141,7 @@ Contents:
    html_css
    hashchange-system
    emoji
+   hotspots
    full-text-search
    email
    analytics
