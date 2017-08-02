@@ -66,6 +66,16 @@ class RateLimitTests(ZulipTestCase):
         self.assertTrue('X{}-RateLimit-Limit'.format(self.header_prefix) in result)
         self.assertTrue('X{}-RateLimit-Reset'.format(self.header_prefix) in result)
 
+    def _test_ratelimit_decrease(self, entity, email):
+        # type: (RateLimitedObject, Text) -> None
+        clear_history(entity)
+        result = self.send_api_message(email, "some stuff")
+        limit = int(result['X{}-RateLimit-Remaining'.format(self.header_prefix)])
+
+        result = self.send_api_message(email, "some stuff 2")
+        newlimit = int(result['X{}-RateLimit-Remaining'.format(self.header_prefix)])
+        self.assertEqual(limit, newlimit + 1)
+
 class RateLimitUserTests(RateLimitTests):
 
     def setUp(self) -> None:
@@ -84,13 +94,7 @@ class RateLimitUserTests(RateLimitTests):
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
-        clear_history(RateLimitedUser(user))
-        result = self.send_api_message(email, "some stuff")
-        limit = int(result['X-RateLimit-Remaining'])
-
-        result = self.send_api_message(email, "some stuff 2")
-        newlimit = int(result['X-RateLimit-Remaining'])
-        self.assertEqual(limit, newlimit + 1)
+        self._test_ratelimit_decrease(RateLimitedUser(user), email)
 
     def test_hit_ratelimits(self) -> None:
         user = self.example_user('cordelia')
