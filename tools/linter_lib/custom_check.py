@@ -263,7 +263,9 @@ def build_custom_checkers(by_lang):
     '''},
         # Directly fetching Message objects in e.g. views code is often a security bug.
         {'pattern': '[^r][M]essage.objects.get',
-         'exclude': set(["zerver/tests", "zerver/worker/queue_processors.py"]),
+         'exclude': set(["zerver/tests",
+                         "zerver/lib/onboarding.py",
+                         "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
          },
         {'pattern': '[S]tream.objects.get',

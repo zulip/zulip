@@ -5,8 +5,9 @@ from django.conf import settings
 
 from zerver.lib.actions import set_default_streams, bulk_add_subscriptions, \
     internal_prep_stream_message, internal_send_private_message, \
-    create_stream_if_needed, create_streams_if_needed, do_send_messages
-from zerver.models import Realm, UserProfile, Reaction, get_system_bot
+    create_stream_if_needed, create_streams_if_needed, do_send_messages, \
+    do_add_reaction
+from zerver.models import Realm, UserProfile, Message, Reaction, get_system_bot
 
 from typing import Any, Dict, List, Mapping, Text
 
@@ -47,6 +48,7 @@ def setup_initial_private_stream(user):
 
 def send_initial_realm_messages(realm):
     # type: (Realm) -> None
+    welcome_bot = get_system_bot(settings.WELCOME_BOT)
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
@@ -81,6 +83,15 @@ def send_initial_realm_messages(realm):
          "or two words will do it!"},
     ]  # type: List[Dict[str, Text]]
     messages = [internal_prep_stream_message(
-        realm, get_system_bot(settings.WELCOME_BOT),
+        realm, welcome_bot,
         message['stream'], message['topic'], message['content']) for message in welcome_messages]
-    do_send_messages(messages)
+    message_ids = do_send_messages(messages)
+
+    # We find the one of our just-sent messages with turtle.png in it,
+    # and react to it.  This is a bit hacky, but works and is kinda a
+    # 1-off thing.
+    turtle_message = Message.objects.get(
+        id__in=message_ids,
+        subject='topic demonstration',
+        content__icontains='cute/turtle.png')
+    do_add_reaction(welcome_bot, turtle_message, 'turtle')
