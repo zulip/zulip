@@ -239,10 +239,10 @@ function insert_hotspot_into_DOM(hotspot) {
         // reposition on any event that might update the UI
         ['resize', 'scroll', 'onkeydown', 'click']
         .forEach(function (event_name) {
-            window.addEventListener(event_name, function () {
+            window.addEventListener(event_name, _.debounce(function () {
                 place_icon(hotspot);
                 place_popover(hotspot);
-            }, true);
+            }, 10), true);
         });
     }, (hotspot.delay * 100));
 }
