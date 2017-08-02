@@ -1,5 +1,31 @@
 var localstorage = (function () {
 
+// create a shim for localStorage in case it doesn't exist to keep things stored
+// correctly in a map that will unfortunately be deleted anyways on page reload.
+var __localStorage = typeof localStorage !== "undefined" ? localStorage : (function () {
+    var map = {};
+
+    return {
+        getItem: function (key) {
+            return map[key];
+        },
+        setItem: function (key, value) {
+            map[key] = value;
+            return value;
+        },
+        removeItem: function (key) {
+            delete map[key];
+            return true;
+        },
+        fake: true,
+    };
+}());
+
+if (__localStorage.fake) {
+    blueslip.warn("Error! 'localStorage' not found on this browser. Any changes with" +
+        " the lightbox will not be saved.");
+}
+
 var ls = {
     // parse JSON without throwing an error.
     parseJSON: function (str) {
@@ -32,7 +58,7 @@ var ls = {
 
     getData: function (version, name) {
         var key = this.formGetter(version, name);
-        var data = localStorage.getItem(key);
+        var data = __localStorage.getItem(key);
         data = ls.parseJSON(data);
 
         if (data) {
@@ -51,25 +77,25 @@ var ls = {
         var key = this.formGetter(version, name);
         var val = this.formData(data, expires);
 
-        localStorage.setItem(key, JSON.stringify(val));
+        __localStorage.setItem(key, JSON.stringify(val));
     },
 
     // remove the key from localStorage and from memory.
     removeData: function (version, name) {
         var key = this.formGetter(version, name);
 
-        localStorage.removeItem(key);
+        __localStorage.removeItem(key);
     },
 
     // Remove keys which match a regex.
     removeDataRegex: function (version, regex) {
         var key_regex = new RegExp(this.formGetter(version, regex));
-        var keys = Object.keys(localStorage).filter(function (key) {
+        var keys = Object.keys(__localStorage).filter(function (key) {
             return key_regex.test(key);
         });
 
         keys.forEach(function (key) {
-            localStorage.removeItem(key);
+            __localStorage.removeItem(key);
         });
     },
 

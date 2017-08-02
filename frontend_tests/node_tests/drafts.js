@@ -1,5 +1,10 @@
 set_global('$', global.make_zjquery());
 set_global('window', {});
+set_global('blueslip', {
+    warn: function () {
+        return false;
+    },
+});
 
 add_dependencies({
     localstorage: 'js/localstorage',
@@ -154,4 +159,3 @@ var draft_2 = {
     overlay.addClass("show");
     assert(drafts.drafts_overlay_open());
 }());
-
