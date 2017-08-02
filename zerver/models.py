@@ -57,7 +57,12 @@ STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[Text], AbstractSet[Text])
 # so add a local cache as well as the remote cache cache.
 per_request_display_recipient_cache = {}  # type: Dict[int, List[Dict[str, Any]]]
 def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
-    # type: (int, int, int) -> Union[Text, List[Dict[str, Any]]]
+    # type: (int, int, Optional[int]) -> Union[Text, List[Dict[str, Any]]]
+    """
+    returns: an object describing the recipient (using a cache).
+    If the type is a stream, the type_id must be an int; a string is returned.
+    Otherwise, type_id may be None; an array of recipient dicts is returned.
+    """
     if recipient_id not in per_request_display_recipient_cache:
         result = get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
         per_request_display_recipient_cache[recipient_id] = result
@@ -81,13 +86,14 @@ def flush_per_request_caches():
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
 def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id):
-    # type: (int, int, int) -> Union[Text, List[Dict[str, Any]]]
+    # type: (int, int, Optional[int]) -> Union[Text, List[Dict[str, Any]]]
     """
     returns: an appropriate object describing the recipient.  For a
     stream this will be the stream name as a string.  For a huddle or
     personal, it will be an array of dicts about each recipient.
     """
     if recipient_type == Recipient.STREAM:
+        assert recipient_type_id is not None
         stream = Stream.objects.get(id=recipient_type_id)
         return stream.name
 
