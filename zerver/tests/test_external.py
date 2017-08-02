@@ -76,6 +76,31 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result['X{}-RateLimit-Remaining'.format(self.header_prefix)])
         self.assertEqual(limit, newlimit + 1)
 
+    def _test_hit_ratelimits(self, entity, email):
+        # type: (RateLimitedObject, Text) -> None
+        clear_history(entity)
+
+        start_time = time.time()
+        for i in range(6):
+            with mock.patch('time.time', return_value=(start_time + i * 0.1)):
+                result = self.send_api_message(email, "some stuff %s" % (i,))
+
+        self.assertEqual(result.status_code, 429)
+        json = result.json()
+        self.assertEqual(json.get("result"), "error")
+        self.assertIn("API usage exceeded rate limit", json.get("msg"))
+        self.assertEqual(json.get('retry-after'), 0.5)
+        self.assertTrue('Retry-After' in result)
+        self.assertEqual(result['Retry-After'], '0.5')
+
+        # We actually wait a second here, rather than force-clearing our history,
+        # to make sure the rate-limiting code automatically forgives a user
+        # after some time has passed.
+        with mock.patch('time.time', return_value=(start_time + 1.0)):
+            result = self.send_api_message(email, "Good message")
+
+            self.assert_json_success(result)
+
 class RateLimitUserTests(RateLimitTests):
 
     def setUp(self) -> None:
@@ -99,25 +124,4 @@ class RateLimitUserTests(RateLimitTests):
     def test_hit_ratelimits(self) -> None:
         user = self.example_user('cordelia')
         email = user.email
-        clear_history(RateLimitedUser(user))
-
-        start_time = time.time()
-        for i in range(6):
-            with mock.patch('time.time', return_value=(start_time + i * 0.1)):
-                result = self.send_api_message(email, "some stuff %s" % (i,))
-
-        self.assertEqual(result.status_code, 429)
-        json = result.json()
-        self.assertEqual(json.get("result"), "error")
-        self.assertIn("API usage exceeded rate limit", json.get("msg"))
-        self.assertEqual(json.get('retry-after'), 0.5)
-        self.assertTrue('Retry-After' in result)
-        self.assertEqual(result['Retry-After'], '0.5')
-
-        # We actually wait a second here, rather than force-clearing our history,
-        # to make sure the rate-limiting code automatically forgives a user
-        # after some time has passed.
-        with mock.patch('time.time', return_value=(start_time + 1.0)):
-            result = self.send_api_message(email, "Good message")
-
-            self.assert_json_success(result)
+        self._test_hit_ratelimits(RateLimitedUser(user), email)
