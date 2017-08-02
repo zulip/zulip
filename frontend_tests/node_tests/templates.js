@@ -1126,26 +1126,6 @@ function render(template_name, args) {
 
 }());
 
-(function tutorial() {
-    var tutorials = [
-        'tutorial_home',
-        'tutorial_message',
-        'tutorial_reply',
-        'tutorial_stream',
-        'tutorial_subject',
-        'tutorial_title',
-    ];
-    var html = '';
-    _.each(tutorials, function (tutorial) {
-        var args = {
-            placement: 'left',
-            title: 'Title',
-        };
-        html = render(tutorial, args);
-        global.write_handlebars_output(tutorial, html);
-    });
-}());
-
 (function typeahead_list_item() {
     var args = {
         primary: 'primary-text',

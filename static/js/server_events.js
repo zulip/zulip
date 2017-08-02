@@ -4,7 +4,6 @@ var exports = {};
 
 var waiting_on_homeview_load = true;
 
-var events_stored_during_tutorial = [];
 var events_stored_while_loading = [];
 
 var get_events_xhr;
@@ -38,16 +37,6 @@ function get_events_success(events) {
                            ex.stack);
         }
     });
-
-    if (tutorial.is_running()) {
-        events_stored_during_tutorial = events_stored_during_tutorial.concat(events);
-        return;
-    }
-
-    if (events_stored_during_tutorial.length > 0) {
-        events = events_stored_during_tutorial.concat(events);
-        events_stored_during_tutorial = [];
-    }
 
     if (waiting_on_homeview_load) {
         events_stored_while_loading = events_stored_while_loading.concat(events);

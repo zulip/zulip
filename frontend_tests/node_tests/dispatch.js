@@ -12,11 +12,6 @@ set_global('$', function () {
 
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
-set_global('tutorial', {
-    is_running: function () {
-        return false;
-    },
-});
 set_global('home_msg_list', {
     rerender: noop,
     select_id: noop,

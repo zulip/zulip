@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Text
+from typing import Any, List, Dict, Mapping, Optional, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -15,19 +15,20 @@ from django.core import validators
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain, get_system_bot
+    get_realm, get_realm_by_email_domain
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
-    do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    user_email_is_unique, create_streams_with_welcome_messages, \
-    compute_mit_user_fullname, internal_send_private_message
+    do_activate_user, do_create_user, do_create_realm, \
+    user_email_is_unique, compute_mit_user_fullname
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ
+from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+    setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
 from zerver.lib.timezone import get_all_timezones
@@ -63,16 +64,6 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address,
                                domain=domain,
                                salt='zerver.views.auth')
     return response
-
-def send_initial_pms(user):
-    # type: (UserProfile) -> None
-    content = """Welcome to Zulip!
-
-This is a great place to test formatting, sending, and editing messages.
-Click anywhere on this message to reply. A compose box will open at the bottom of the screen."""
-
-    internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
-                                  user.email, content)
 
 @require_post
 def accounts_register(request):
@@ -203,11 +194,7 @@ def accounts_register(request):
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
             realm = do_create_realm(string_id, realm_name)[0]
-
-            stream_info = settings.DEFAULT_NEW_REALM_STREAMS
-
-            create_streams_with_welcome_messages(realm, stream_info)
-            set_default_streams(realm, stream_info)
+            setup_initial_streams(realm)
         assert(realm is not None)
 
         full_name = form.cleaned_data['full_name']
@@ -232,10 +219,12 @@ def accounts_register(request):
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
+        send_initial_pms(user_profile)
+
         if first_in_realm:
             do_change_is_admin(user_profile, True)
-
-        send_initial_pms(user_profile)
+            setup_initial_private_stream(user_profile)
+            send_initial_realm_messages(realm)
 
         if realm_creation and settings.REALMS_HAVE_SUBDOMAINS:
             # Because for realm creation, registration happens on the
