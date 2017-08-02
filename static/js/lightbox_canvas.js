@@ -41,6 +41,14 @@ var LightboxCanvas = (function () {
         attachEvents: function (canvas, context, meta) {
             var mousedown = false;
 
+            // wheelEvent.deltaMode is a value that describes what the unit is
+            // for the `deltaX`, `deltaY`, and `deltaZ` properties.
+            const DELTA_MODE = {
+                PIXEL: 0,
+                LINE: 1,
+                PAGE: 2,
+            };
+
             // give object structure in `mousedown`, because its props are only
             // ever set once `mousedown` + `mousemove` is triggered.
             var lastPosition = {};
@@ -68,6 +76,16 @@ var LightboxCanvas = (function () {
 
                 // this is to reverese scrolling directions for the image.
                 var delta = meta.direction * e.deltaY;
+
+                if (e.deltaMode === DELTA_MODE.LINE) {
+                    // the vertical height in pixels of an approximate line.
+                    delta *= 15;
+                }
+
+                if (e.deltaMode === DELTA_MODE.PAGE) {
+                    // the vertical height in pixels of an approximate page.
+                    delta *= 300;
+                }
 
                 // this is calculated as the user defined speed times the normalizer
                 // (which just is what it takes to take the raw delta and transform
