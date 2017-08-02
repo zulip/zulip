@@ -12,7 +12,7 @@ from django.core.exceptions import DisallowedHost
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser, \
-    RateLimitedObject, RateLimitedIP
+    RateLimitedObject, RateLimitedIP, RateLimitedEmail
 from django.shortcuts import redirect, render
 from zerver.lib.utils import get_ip
 from django.utils.cache import patch_vary_headers
@@ -327,11 +327,20 @@ class RateLimitMiddleware(MiddlewareMixin):
                                                    request, response,
                                                    prefix='_ip')
 
+        if settings.EMAIL_RATE_LIMITING:
+            prefix = '_email'
+            attr = '{}_ratelimit_value'.format(prefix)
+            if hasattr(request, attr):
+                email = getattr(request, attr)
+                response  = self._process_response(
+                    RateLimitedEmail(email), request, response, prefix=prefix)
+
         return response
 
     def _process_response(self, entity, request, response, prefix=''):
         # type: (RateLimitedObject, HttpRequest, HttpResponse, Text) -> HttpResponse
-        if not (settings.RATE_LIMITING or settings.IP_RATE_LIMITING):
+        if not (settings.RATE_LIMITING or settings.IP_RATE_LIMITING or
+                settings.EMAIL_RATE_LIMITING):
             return response
 
         header_prefix = prefix.title().replace('_', '-')
@@ -358,7 +367,7 @@ class RateLimitMiddleware(MiddlewareMixin):
         if not isinstance(exception, RateLimited):
             return None
 
-        for prefix in ('', '_ip'):
+        for prefix in ('', '_ip', '_email'):
             if self.is_rate_limit_applied(request, prefix):
                 attr = '{}_ratelimit_secs_to_freedom'.format(prefix)
                 secs_to_freedom = getattr(request, attr)

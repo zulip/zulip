@@ -64,6 +64,17 @@ class RateLimitedIP(RateLimitedObject):
     def rules(self) -> List[Tuple[int, int]]:
         return rules
 
+class RateLimitedEmail(RateLimitedObject):
+    def __init__(self, email: Text, domain: Text='all') -> None:
+        self.email = email
+        self.domain = domain
+
+    def key_fragment(self) -> Text:
+        return "email:{}:{}".format(self.email, self.domain)
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return rules
+
 def bounce_redis_key_prefix_for_testing(test_name: Text) -> None:
     global KEY_PREFIX
     KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'

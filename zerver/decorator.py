@@ -17,7 +17,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server, get_ip
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left, RateLimitedUser, RateLimitedObject, RateLimitedIP
+    api_calls_left, RateLimitedUser, RateLimitedObject, RateLimitedIP, \
+    RateLimitedEmail
 from zerver.lib.request import REQ, has_request_variables, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -635,6 +636,13 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: Text) -> No
 def rate_limit_ip(request, ip, domain):
     # type: (HttpRequest, Text, Text) -> None
     rate_limit_entity(request, RateLimitedIP(ip, domain=domain), prefix='_ip')
+
+def rate_limit_email(request, email, domain):
+    # type: (HttpRequest, Text, Text) -> None
+    prefix = '_email'
+    setattr(request, '{}_ratelimit_value'.format(prefix), email)
+    rate_limit_entity(request, RateLimitedEmail(email, domain=domain),
+                      prefix=prefix)
 
 def rate_limit_entity(request, entity, prefix=''):
     # type: (HttpRequest, RateLimitedObject, Text) -> None
