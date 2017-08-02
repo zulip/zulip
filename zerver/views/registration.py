@@ -15,20 +15,20 @@ from django.core import validators
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain, get_system_bot
+    get_realm, get_realm_by_email_domain
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
-    do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    user_email_is_unique, create_stream_if_needed, create_streams_if_needed, \
-    compute_mit_user_fullname, do_send_messages, bulk_add_subscriptions, \
-    internal_prep_stream_message, internal_send_private_message
+    do_activate_user, do_create_user, do_create_realm, \
+    user_email_is_unique, compute_mit_user_fullname
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ
+from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+    setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
 from zerver.lib.timezone import get_all_timezones
@@ -64,81 +64,6 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address,
                                domain=domain,
                                salt='zerver.views.auth')
     return response
-
-def send_initial_pms(user):
-    # type: (UserProfile) -> None
-    content = (
-        "Hello, and welcome to Zulip!\n\nThis is a private message from me, Welcome Bot. "
-        "Here are some tips to get you started:\n"
-        "* Download our [Desktop and mobile apps](/apps)\n"
-        "* Customize your account and notifications on your [Settings page](#settings).\n"
-        "* Check out our !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n\n"
-        "The most important shortcut is `r` or `Enter` to reply.\n\n"
-        "Practice sending a few messages by replying to this conversation. If you're not into "
-        "keyboards, that's okay too; clicking anywhere on this message will also do the trick!")
-
-    internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
-                                  user.email, content)
-
-def setup_initial_streams(realm):
-    # type: (Realm) -> None
-    stream_dicts = [
-        {'name': "general"},
-        {'name': "new members",
-         'description': "For welcoming and onboarding new members. If you haven't yet, "
-         "introduce yourself in a new thread using your name as the topic!"},
-        {'name': "zulip",
-         'description': "For discussing Zulip, Zulip tips and tricks, and asking "
-         "questions about how Zulip works"}]  # type: List[Mapping[str, Any]]
-    create_streams_if_needed(realm, stream_dicts)
-    set_default_streams(realm, {stream['name']: {} for stream in stream_dicts})
-
-# For the first user in a realm
-def setup_initial_private_stream(user):
-    # type: (UserProfile) -> None
-    stream, _ = create_stream_if_needed(user.realm, "core team", invite_only=True,
-                                        stream_description="A private stream for core team members.")
-    bulk_add_subscriptions([stream], [user])
-
-def send_initial_realm_messages(realm):
-    # type: (Realm) -> None
-    # Make sure each stream created in the realm creation process has at least one message below
-    # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
-    # view slightly less overwhelming
-    welcome_messages = [
-        {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-         'topic': "welcome",
-         'content': "This is a message on stream `%s` with the topic `welcome`. We'll use this stream "
-         "for system-generated notifications." % (Realm.DEFAULT_NOTIFICATION_STREAM_NAME,)},
-        {'stream': "core team",
-         'topic': "private streams",
-         'content': "This is a private stream. Only admins and people you invite "
-         "to the stream will be able to see that this stream exists."},
-        {'stream': "general",
-         'topic': "welcome",
-         'content': "Welcome to #**general**."},
-        {'stream': "new members",
-         'topic': "onboarding",
-         'content': "A #**new members** stream is great for onboarding new members.\n\nIf you're "
-         "reading this and aren't the first person here, introduce yourself in a new thread "
-         "using your name as the topic! Type `c` or click on `New Topic` at the bottom of the "
-         "screen to start a new topic."},
-        {'stream': "zulip",
-         'topic': "topic demonstration",
-         'content': "Here is a message in one topic. Replies to this message will go to this topic."},
-        {'stream': "zulip",
-         'topic': "topic demonstration",
-         'content': "A second message in this topic."},
-        {'stream': "zulip",
-         'topic': "second topic",
-         'content': "This is a message in a second topic.\n\nTopics are similar to email subjects, "
-         "in that each conversation should get its own topic. Keep them short, though; one "
-         "or two words will do it!"},
-    ]  # type: List[Dict[str, Text]]
-    messages = [internal_prep_stream_message(
-        realm, get_system_bot(settings.WELCOME_BOT),
-        message['stream'], message['topic'], message['content']) for message in welcome_messages]
-    do_send_messages(messages)
 
 @require_post
 def accounts_register(request):
