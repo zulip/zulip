@@ -18,6 +18,19 @@ exports.replace_emoji_with_text = function (element) {
     });
 };
 
+exports.set_up_scrollbar = function (element) {
+    element.perfectScrollbar({
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+    });
+};
+
+exports.update_scrollbar = function (element) {
+    element.scrollTop = 0;
+    element.perfectScrollbar('update');
+};
+
 function update_message_in_all_views(message_id, callback) {
     _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
         if (list === undefined) {
