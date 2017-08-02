@@ -260,8 +260,8 @@ all the arguments for every single command. There are
 You can run some files directly, without specifying a program to interpret
 them.
 
-That's why you may have seen cases when some Python scripts are called with
-`python`:
+That's why you may have seen cases, in the Zulip codebase or
+elsewhere, when some Python scripts are called with `python`:
 
 ```
 $ python my_program.py
@@ -273,34 +273,43 @@ While other times, `python` isn't used:
 $ ./my_program.py
 ```
 
-In the latter, it's skipped because `my_program.py` already specifies in it
-which interpreter should be used (in this case, `python`).
+In the latter case, the operating system will look at the beginning of
+the script to identify what interpreter (like `python` in this
+example) to run it with.
 
-This is indicated in the very first line of the script files, and it's called
-a **shebang**. In Python scripts, it looks like this:
-
-```
-#!/usr/bin/env python
-```
-
-With this, you're telling the shell: "if I tell you to run this, ask
-`/usr/bin/env python` how to understand it".
-
-`/usr/bin/env` is a way to identify where `python` is installed. If it was in
-`/usr/bin/python`, you could use the shebang `#!/usr/bin/python`, but `env`
-allows more flexibility (since not everyone has their Python interpreter
-there).
-
-Another example of shebang is the one used in Bash scripts. In those cases,
-`#!/bin/sh` is used.
-
-The result is that the shell calls the program specified in the shebang, with
-the script as a parameter. So, returning to our example with `my_program.py`,
-when you run `./my_program.py`, what happens under the hood is:
+The note telling the OS how to interpret the file goes on the file's
+very first line, and it's called a **shebang**. In our Python scripts,
+it looks like this:
 
 ```
-$ /usr/bin/env python my_program.py
+#!/usr/bin/env python3
 ```
+
+With this, you're telling the operating system: "if I tell you to run
+this, ask `/usr/bin/env python3` how to understand it".
+
+The result is that the operating system is asked to run the script, it
+runs the command specified in the shebang, with the script filename
+added as a command-line argument. So, returning to our example with
+`my_program.py`, when you run `./my_program.py`, what happens under
+the hood is equivalent to:
+
+```
+$ /usr/bin/env python3 ./my_program.py
+```
+
+The purpose of `/usr/bin/env` in our shebangs is as a way to locate
+the `python3` program in your current environment, the same one the
+shell would use if you ran `python3 my_program.py`.  You may see
+Python scripts outside of Zulip with a shebang like
+`#!/usr/bin/python3`; but because of the way Python virtualenvs work,
+this has the effect of running the script outside of any currently
+activated virtualenv.  We use `/usr/bin/env` to keep our scripts
+running inside the virtualenv where we've installed all our
+dependencies.
+
+Another example of a shebang is the one used in Bash scripts. In those
+cases, `#!/bin/bash` or `#!/bin/sh` is used.
 
 ## Understanding commands
 
