@@ -53,3 +53,6 @@ will appear under the message as an emoji reaction.
 !!! tip ""
     Hover over an emoji reaction on a message to see who reacted to the
     message with the particular emoji.
+
+!!! warn ""
+    **Note:** You can change Zulip to [display emoji reactions as text](/help/enable-high-contrast-mode).
