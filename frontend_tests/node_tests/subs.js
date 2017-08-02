@@ -1,7 +1,6 @@
 global.stub_out_jquery();
 
 set_global('templates', {});
-set_global('ui', {});
 zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');
@@ -103,12 +102,6 @@ run_test('filter_table', () => {
         sub_table_append.push(rows);
     };
 
-    var ui_called = false;
-    ui.update_scrollbar = function (elem) {
-        ui_called = true;
-        assert.equal(elem, $("#subscription_overlay .streams-list"));
-    };
-
     // Search with single keyword
     subs.filter_table({input: "Po", subscribed_only: false});
     assert($(".stream-row-denmark").hasClass("notdisplayed"));
@@ -117,7 +110,6 @@ run_test('filter_table', () => {
     assert($(".stream-row-cpp").hasClass("notdisplayed"));
 
     // assert these once and call it done
-    assert(ui_called);
     assert(scrolltop_called);
     assert(tooltip_called);
     assert.deepEqual(sub_table_append, [

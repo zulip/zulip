@@ -438,8 +438,6 @@ exports.filter_table = function (query) {
         });
     });
 
-    ui.update_scrollbar($("#subscription_overlay .streams-list"));
-
     var all_stream_ids = [].concat(
         buckets.name,
         buckets.desc,
@@ -616,7 +614,11 @@ exports.change_state = (function () {
                 get_active_data().row.removeClass("active");
                 stream_row.addClass("active");
 
-                scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
+                var simplebar = $("#subscription_overlay #streams-list-container")[0].simplebar;
+                var scrollbar = simplebar.getScrollElement();
+                var position = stream_row.position().top - $(scrollbar.firstChild).position().top;
+
+                scrollbar.scrollTop = position;
 
                 setTimeout(function () {
                     if (hash.arguments[0] === get_active_data().id) {
@@ -641,11 +643,11 @@ exports.launch = function (hash) {
             overlay: $("#subscription_overlay"),
             on_close: exports.close,
         });
+
+        ui.set_up_simplebar($("#subscription_overlay #streams-list-container"));
+        ui.set_up_simplebar($("#subscription_overlay #right-scroll-container"));
+
         exports.change_state(hash);
-
-        ui.set_up_scrollbar($("#subscription_overlay .streams-list"));
-        ui.set_up_scrollbar($("#subscription_overlay .settings"));
-
     });
     if (!get_active_data().id) {
         $('#search_stream_name').focus();

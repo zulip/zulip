@@ -49,7 +49,6 @@ exports.rerender_subscribers_list = function (sub) {
             exports.sort_but_pin_current_user_on_top(emails);
             subscribers_list.data(emails);
             subscribers_list.render();
-            ui.update_scrollbar($(".subscriber_list_container"));
         }
         $(".subscriber_list_settings_container").show();
     }
@@ -213,7 +212,7 @@ function show_subscription_settings(sub_row) {
         },
     }).init();
 
-    ui.set_up_scrollbar($(".subscriber_list_container"));
+    ui.set_up_simplebar($(".subscriber_list_container"));
 
     sub_settings.find('input[name="principal"]').typeahead({
         source: people.get_realm_persons, // This is a function.
@@ -255,7 +254,7 @@ exports.show_settings_for = function (node) {
 
     $(".nothing-selected").hide();
 
-    ui.update_scrollbar($("#subscription_overlay .settings"));
+    ui.reset_simplebar($("#subscription_overlay #right-scroll-container"));
 
     sub_settings.addClass("show");
 
@@ -448,7 +447,7 @@ exports.change_stream_name = function (e) {
         error: function (xhr) {
             new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
-            ui.update_scrollbar($("#subscription_overlay .settings"));
+            ui.reset_simplebar($("#subscription_overlay #right-scroll-container"));
         },
     });
 };
@@ -481,7 +480,7 @@ exports.change_stream_description = function (e) {
         error: function (xhr) {
             sub_settings.find('.stream-description-editable').html(sub.rendered_description);
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
-            ui.update_scrollbar($("#subscription_overlay .settings"));
+            ui.reset_simplebar($("#subscription_overlay #right-scroll-container"));
         },
     });
 };
@@ -611,7 +610,7 @@ exports.initialize = function () {
             }
             stream_subscription_info_elem.addClass('text-success')
                 .removeClass('text-error');
-            ui.update_scrollbar($("#subscription_overlay .settings"));
+            ui.reset_simplebar($("#subscription_overlay #right-scroll-container"));
         }
 
         function removal_failure() {

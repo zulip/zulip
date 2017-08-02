@@ -581,12 +581,9 @@ form#add_new_subscription {
     margin-right: 8px;
 }
 
-.streams-list {
-    position: relative;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    height: calc(100% - 45px);
-    width: 100%;
+#right-scroll-container,
+#streams-list-container {
+    height: calc(95vh - 88px);
 }
 
 .stream-row {
@@ -915,13 +912,6 @@ form#add_new_subscription {
     font-weight: 800;
 }
 
-#subscription_overlay .settings {
-    position: relative;
-    height: calc(100% - 45px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
 #subscription_overlay .subscription_settings {
     display: none;
     position: relative;
@@ -1078,10 +1068,8 @@ form#add_new_subscription {
         height: 95%;
     }
 
-    #subscription_overlay .settings {
-        overflow: auto;
-        height: calc(100% - 20px);
-        -webkit-overflow-scrolling: touch;
+    #subscription_overlay #right-scroll-container {
+        height: calc(95vh - 44px);
     }
 }
 
