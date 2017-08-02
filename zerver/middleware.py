@@ -352,6 +352,7 @@ class RateLimitMiddleware(MiddlewareMixin):
             )
             resp['Retry-After'] = request._ratelimit_secs_to_freedom
             return resp
+        return None
 
 class FlushDisplayRecipientCache(MiddlewareMixin):
     def process_response(self, request, response):
