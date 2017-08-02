@@ -41,7 +41,9 @@ exports.mark_messages_as_read = function mark_messages_as_read(messages, options
         message.flags = message.flags || [];
         message.flags.push('read');
         message.unread = false;
-        unread.process_read_message(message, options);
+
+        unread.mark_as_read(message.id);
+
         home_msg_list.show_message_as_read(message, options);
         message_list.all.show_message_as_read(message, options);
         if (message_list.narrowed) {

@@ -142,13 +142,11 @@ var zero_counts = {
     unread.update_unread_topics(other_message, event);
 
     // cleanup
-    message.subject = 'dinner';
-    unread.process_read_message(message);
+    unread.mark_as_read(message.id);
     count = unread.num_unread_for_topic(stream_id, 'dinner');
     assert.equal(count, 0);
 
-    other_message.subject = 'snack';
-    unread.process_read_message(other_message);
+    unread.mark_as_read(other_message.id);
     count = unread.num_unread_for_topic(stream_id, 'snack');
     assert.equal(count, 0);
 }());
@@ -226,7 +224,7 @@ stream_data.get_stream_id = function () {
 
     for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
-        unread.process_read_message(message);
+        unread.mark_as_read(message.id);
     }
 
     count = unread.num_unread_for_topic(stream_id, 'lunch');
@@ -272,7 +270,7 @@ stream_data.get_stream_id = function () {
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 1);
     assert.equal(counts.stream_count.get(stream_id), 1);
-    unread.process_read_message(message);
+    unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
 
@@ -299,7 +297,7 @@ stream_data.get_stream_id = function () {
 
     stream_data.get_sub_by_id = function () { return; };
 
-    unread.process_read_message(message);
+    unread.mark_as_read(message.id);
     var counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
 }());
@@ -336,7 +334,7 @@ stream_data.get_stream_id = function () {
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 1);
     assert.equal(counts.pm_count.get('999'), 1);
-    unread.process_read_message(message);
+    unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
     assert.equal(counts.pm_count.get('999'), 0);
@@ -399,7 +397,7 @@ stream_data.get_stream_id = function () {
 
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 1);
-    unread.process_read_message(message);
+    unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
 }());
@@ -463,7 +461,7 @@ stream_data.get_stream_id = function () {
         display_recipient: [{id: 9999}],
     };
 
-    unread.process_read_message(message);
+    unread.mark_as_read(message.id);
     var counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
 }());

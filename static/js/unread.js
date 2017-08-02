@@ -251,17 +251,13 @@ exports.process_loaded_messages = function (messages) {
     });
 };
 
-exports.process_read_message = function (message) {
-
-    if (message.type === 'private') {
-        exports.unread_pm_counter.del(message.id);
-    }
-
-    if (message.type === 'stream') {
-        exports.unread_topic_counter.del(message.id);
-    }
-
-    exports.unread_mentions_counter.del(message.id);
+exports.mark_as_read = function (message_id) {
+    // We don't need to check anything about the message, since all
+    // the following methods are cheap and work fine even if message_id
+    // was never set to unread.
+    exports.unread_pm_counter.del(message_id);
+    exports.unread_topic_counter.del(message_id);
+    exports.unread_mentions_counter.del(message_id);
 };
 
 exports.declare_bankruptcy = function () {
