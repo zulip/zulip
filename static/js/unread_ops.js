@@ -20,6 +20,22 @@ exports.mark_all_as_read = function mark_all_as_read(cont) {
         success:  cont});
 };
 
+function process_newly_read_message(message, options) {
+    // This code gets called when a message becomes newly read, whether
+    // due to local things like advancing the pointer, or due to us
+    // getting notified by the server that a message has been read.
+    message.flags = message.flags || [];
+    message.flags.push('read');
+    message.unread = false;
+
+    home_msg_list.show_message_as_read(message, options);
+    message_list.all.show_message_as_read(message, options);
+    if (message_list.narrowed) {
+        message_list.narrowed.show_message_as_read(message, options);
+    }
+    notifications.close_notification(message);
+}
+
 // Takes a list of messages and marks them as read
 exports.mark_messages_as_read = function mark_messages_as_read(messages, options) {
     options = options || {};
@@ -38,18 +54,9 @@ exports.mark_messages_as_read = function mark_messages_as_read(messages, options
             message_flags.send_read(message);
         }
 
-        message.flags = message.flags || [];
-        message.flags.push('read');
-        message.unread = false;
-
         unread.mark_as_read(message.id);
+        process_newly_read_message(message, options);
 
-        home_msg_list.show_message_as_read(message, options);
-        message_list.all.show_message_as_read(message, options);
-        if (message_list.narrowed) {
-            message_list.narrowed.show_message_as_read(message, options);
-        }
-        notifications.close_notification(message);
         processed = true;
     });
 
