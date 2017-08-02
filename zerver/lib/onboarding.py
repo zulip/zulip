@@ -70,7 +70,7 @@ def send_initial_realm_messages(realm):
          'content': "Here is a message in one topic. Replies to this message will go to this topic."},
         {'stream': "zulip",
          'topic': "topic demonstration",
-         'content': "A second message in this topic."},
+         'content': "A second message in this topic. With [turtles](/static/images/cute/turtle.png)!"},
         {'stream': "zulip",
          'topic': "second topic",
          'content': "This is a message in a second topic.\n\nTopics are similar to email subjects, "
