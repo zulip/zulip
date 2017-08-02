@@ -2,7 +2,7 @@
 .hotspot-icon {
     position: fixed;
     cursor: pointer;
-    z-index: 103;
+    z-index: 100;
 }
 
 .hotspot-icon .dot {
@@ -177,4 +177,9 @@
 .hotspot-popover.arrow-right:before {
     border-left-color: hsl(0, 0%, 80%);
     margin-top: -13px;
+}
+
+/* individual icon z-indexing */
+#hotspot_stream_settings_icon {
+    z-index: 103;
 }
