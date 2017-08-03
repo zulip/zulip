@@ -28,8 +28,13 @@ VENV_DEPENDENCIES = [
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python-dev",
+    "python3-pip",
     "python-pip",
-    "python-virtualenv",
+    "python-virtualenv",    # Trusty lacks `python3-virtualenv`.
+                            # Fortunately we don't need the library,
+                            # only the command, and this suffices.
+    "python3-six",
+    "python-six",
     "libxml2-dev",          # Used for installing talon
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
