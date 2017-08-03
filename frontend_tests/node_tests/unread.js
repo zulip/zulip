@@ -107,6 +107,9 @@ var zero_counts = {
     assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
     assert(!unread.topic_has_any_unread(stream_id, 'NOT lunch'));
 
+    count = unread.num_unread_for_topic(stream_id, 'NOT lunch');
+    assert.equal(count, 0);
+
     var event = {
         subject: 'dinner',
     };
