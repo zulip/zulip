@@ -557,7 +557,8 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    return ((request.client and request.client.name.lower() == 'internal') and
+    return ((hasattr(request, 'client') and request.client and
+             request.client.name.lower() == 'internal') and
             (is_local_addr(request.META['REMOTE_ADDR']) or
              settings.DEBUG_RATE_LIMITING))
 
