@@ -10,6 +10,37 @@ var unread_messages = new Dict();
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
+function make_id_set() {
+    /* This is just a basic set class where
+       elements should be numeric ids.
+    */
+
+    var self = {};
+    var ids = new Dict();
+
+    self.clear = function () {
+        ids.clear();
+    };
+
+    self.add = function (id) {
+        ids.set(id, true);
+    };
+
+    self.del = function (id) {
+        ids.del(id);
+    };
+
+    self.count = function () {
+        return ids.num_items();
+    };
+
+    self.is_empty = function () {
+        return ids.is_empty();
+    };
+
+    return self;
+}
+
 exports.unread_pm_counter = (function () {
     var self = {};
     var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
@@ -23,16 +54,16 @@ exports.unread_pm_counter = (function () {
     self.add = function (message) {
         var user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
-            var dict = unread_privates.setdefault(user_ids_string, new Dict());
-            dict.set(message.id, true);
-            reverse_lookup.set(message.id, dict);
+            var id_set = unread_privates.setdefault(user_ids_string, make_id_set());
+            id_set.add(message.id);
+            reverse_lookup.set(message.id, id_set);
         }
     };
 
     self.del = function (message_id) {
-        var dict = reverse_lookup.get(message_id);
-        if (dict) {
-            dict.del(message_id);
+        var id_set = reverse_lookup.get(message_id);
+        if (id_set) {
+            id_set.del(message_id);
             reverse_lookup.del(message_id);
         }
     };
@@ -40,8 +71,8 @@ exports.unread_pm_counter = (function () {
     self.get_counts = function () {
         var pm_dict = new Dict(); // Hash by user_ids_string -> count
         var total_count = 0;
-        unread_privates.each(function (obj, user_ids_string) {
-            var count = obj.num_items();
+        unread_privates.each(function (id_set, user_ids_string) {
+            var count = id_set.count();
             pm_dict.set(user_ids_string, count);
             total_count += count;
         });
@@ -59,7 +90,7 @@ exports.unread_pm_counter = (function () {
         if (!unread_privates.has(user_ids_string)) {
             return 0;
         }
-        return unread_privates.get(user_ids_string).num_items();
+        return unread_privates.get(user_ids_string).count();
     };
 
     return self;
@@ -93,15 +124,15 @@ exports.unread_topic_counter = (function () {
 
     self.add = function (stream_id, topic, msg_id) {
         unread_topics.setdefault(stream_id, str_dict());
-        var dict = unread_topics.get(stream_id).setdefault(topic, num_dict());
-        dict.set(msg_id, true);
-        reverse_lookup.set(msg_id, dict);
+        var id_set = unread_topics.get(stream_id).setdefault(topic, make_id_set());
+        id_set.add(msg_id);
+        reverse_lookup.set(msg_id, id_set);
     };
 
     self.del = function (msg_id) {
-        var dict = reverse_lookup.get(msg_id);
-        if (dict) {
-            dict.del(msg_id);
+        var id_set = reverse_lookup.get(msg_id);
+        if (id_set) {
+            id_set.del(msg_id);
             reverse_lookup.del(msg_id);
         }
     };
@@ -126,7 +157,7 @@ exports.unread_topic_counter = (function () {
                 res.topic_count.set(stream_id, str_dict());
                 var stream_count = 0;
                 unread_topics.get(stream_id).each(function (msgs, topic) {
-                    var topic_count = msgs.num_items();
+                    var topic_count = msgs.count();
                     res.topic_count.get(stream_id).set(topic, topic_count);
                     if (!muting.is_topic_muted(sub.name, topic)) {
                         stream_count += topic_count;
@@ -153,7 +184,7 @@ exports.unread_topic_counter = (function () {
         unread_topics.get(stream_id).each(function (msgs, topic) {
             var sub = stream_data.get_sub_by_id(stream_id);
             if (sub && !muting.is_topic_muted(sub.name, topic)) {
-                stream_count += msgs.num_items();
+                stream_count += msgs.count();
             }
         });
 
@@ -164,7 +195,7 @@ exports.unread_topic_counter = (function () {
         var num_unread = 0;
         if (unread_topics.has(stream_id) &&
             unread_topics.get(stream_id).has(topic)) {
-            num_unread = unread_topics.get(stream_id).get(topic).num_items();
+            num_unread = unread_topics.get(stream_id).get(topic).count();
         }
         return num_unread;
     };
@@ -187,28 +218,7 @@ exports.unread_topic_counter = (function () {
     return self;
 }());
 
-exports.unread_mentions_counter = (function () {
-    var self = {};
-    var mentions = new Dict(); // msg_id -> true
-
-    self.clear = function () {
-        mentions = new Dict();
-    };
-
-    self.add = function (message_id) {
-        mentions.set(message_id, true);
-    };
-
-    self.del = function (message_id) {
-        mentions.del(message_id);
-    };
-
-    self.count = function () {
-        return mentions.num_items();
-    };
-
-    return self;
-}());
+exports.unread_mentions_counter = make_id_set();
 
 exports.message_unread = function (message) {
     if (message === undefined) {
