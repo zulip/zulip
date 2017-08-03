@@ -222,8 +222,6 @@ var LightboxCanvas = (function () {
                 canvas.width = parent.height * meta.ratio * 2;
                 canvas.style.width = parent.height * meta.ratio + "px";
             }
-
-            blueslip.warn("Please specify a 'data-width' or 'data-height' argument for canvas.");
         },
     };
 
