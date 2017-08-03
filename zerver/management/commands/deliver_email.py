@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-"""
+"""\
 Deliver email messages that have been queued by various things
 (at this time invitation reminders and day1/day2 followup emails).
 
-This management command is run via supervisor. Do not run on multiple machines,
-as you may encounter multiple sends in a specific race condition.
+This management command is run via supervisor.  Do not run on multiple
+machines, as you may encounter multiple sends in a specific race
+condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
+on all but one machine to make the command have no effect.)
 """
 
 from __future__ import absolute_import
@@ -48,13 +50,10 @@ Usage: ./manage.py deliver_email
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        # TODO: this only acquires a lock on the system, not on the DB:
-        # be careful not to run this on multiple systems.
 
-        # In the meantime, we have an option to prevent this job from
-        # running on >1 machine
         if settings.EMAIL_DELIVERER_DISABLED:
-            return
+            while True:
+                time.sleep(10*9)
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
