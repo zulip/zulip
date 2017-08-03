@@ -26,7 +26,7 @@ exports.mark_messages_as_read = function mark_messages_as_read(messages, options
     var processed = false;
 
     _.each(messages, function (message) {
-        if (!unread.message_unread(message)) {
+        if (!unread.id_flagged_as_unread(message.id)) {
             // Don't do anything if the message is already read.
             return;
         }

@@ -5,6 +5,8 @@ var unread = (function () {
 
 var exports = {};
 
+var unread_messages = new Dict();
+
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
@@ -216,6 +218,10 @@ exports.message_unread = function (message) {
            message.flags.indexOf('read') === -1;
 };
 
+exports.id_flagged_as_unread = function (message_id) {
+    return unread_messages.has(message_id);
+};
+
 exports.update_unread_topics = function (msg, event) {
     if (event.subject !== undefined) {
         exports.unread_topic_counter.update(
@@ -232,6 +238,8 @@ exports.process_loaded_messages = function (messages) {
         if (!unread) {
             return;
         }
+
+        unread_messages.set(message.id, true);
 
         if (message.type === 'private') {
             exports.unread_pm_counter.add(message);
@@ -258,12 +266,14 @@ exports.mark_as_read = function (message_id) {
     exports.unread_pm_counter.del(message_id);
     exports.unread_topic_counter.del(message_id);
     exports.unread_mentions_counter.del(message_id);
+    unread_messages.del(message_id);
 };
 
 exports.declare_bankruptcy = function () {
     exports.unread_pm_counter.clear();
     exports.unread_topic_counter.clear();
     exports.unread_mentions_counter.clear();
+    unread_messages.clear();
 };
 
 exports.get_counts = function () {
