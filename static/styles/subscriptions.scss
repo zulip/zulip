@@ -586,6 +586,10 @@ form#add_new_subscription {
     height: calc(95vh - 88px);
 }
 
+#right-scroll-container.stream-creation-active {
+    height: calc(95vh - 148px);
+}
+
 .stream-row {
     padding: 15px 10px 11px 10px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
@@ -732,12 +736,6 @@ form#add_new_subscription {
     -webkit-overflow-scrolling: touch;
 }
 
-#subscription_overlay #stream-creation .modal-footer {
-    position: absolute;
-    bottom: 0;
-    width: calc(100% - 27px);
-}
-
 #stream-creation .stream-creation-body {
     padding: 15px;
 }
@@ -763,7 +761,7 @@ form#add_new_subscription {
 #stream_creation_form #stream_creating_indicator:not(:empty) {
     position: absolute;
     width: 100% !important;
-    height: calc(100% - 105px) !important;
+    height: 100% !important;
     display: flex !important;
     justify-content: center;
     align-items: center;
@@ -1070,6 +1068,10 @@ form#add_new_subscription {
 
     #subscription_overlay #right-scroll-container {
         height: calc(95vh - 44px);
+    }
+
+    #subscription_overlay #right-scroll-container.stream-creation-active {
+        height: calc(95vh - 104px);
     }
 }
 

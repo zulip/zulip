@@ -9,10 +9,12 @@ exports.show_subs_pane = {
     nothing_selected: function () {
         $(".nothing-selected, #stream_settings_title").show();
         $("#add_new_stream_title, .settings, #stream-creation").hide();
+        $("#right-scroll-container").removeClass('stream-creation-active');
     },
     settings: function () {
         $(".settings, #stream_settings_title").show();
         $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
+        $("#right-scroll-container").removeClass('stream-creation-active');
     },
 };
 
