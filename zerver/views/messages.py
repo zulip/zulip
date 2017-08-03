@@ -632,7 +632,7 @@ def get_messages_backend(request, user_profile,
         # Build the query for the narrow
         num_extra_messages = 0
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
-        search_term = None  # type: Optional[Dict[str, Any]]
+        search_term = {}  # type: Dict[str, Any]
         for term in narrow:
             if term['operator'] == 'search':
                 if not is_search:
