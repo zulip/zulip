@@ -12,12 +12,14 @@ from zerver.lib.rate_limiter import (
     RateLimitedUser,
     RateLimitedObject,
     RateLimitedIP,
+    RateLimitedEmail,
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.utils import get_ip
 
 import DNS
 import mock
@@ -163,3 +165,121 @@ class RateLimitIPTests(RateLimitTests):
         with mock.patch('zerver.middleware.get_ip', return_value=ip), \
                 mock.patch('zerver.decorator.get_ip', return_value=ip):
             self._test_hit_ratelimits(RateLimitedIP(ip), email)
+
+class EmailAuthTests(RateLimitTests):
+    header_prefix = '-Email'
+
+    def setUp(self):
+        # type: () -> None
+        settings.EMAIL_RATE_LIMITING = True
+        add_ratelimit_rule(1, 5)
+        self.old_auth_backends = settings.AUTHENTICATION_BACKENDS
+        settings.AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',)
+        self.email = self.example_email('hamlet')
+
+    def tearDown(self):
+        # type: () -> None
+        settings.EMAIL_RATE_LIMITING = False
+        remove_ratelimit_rule(1, 5)
+        settings.AUTHENTICATION_BACKENDS = self.old_auth_backends
+
+    def send_api_message(self, email, password):
+        # type: (Text, Text) -> HttpResponse
+        return self.client_post("/accounts/login/",
+                                info={"username": email, "password": password})
+
+    def _test_hit_ratelimits(self, entity, email):
+        # type: (RateLimitedObject, Text) -> None
+        clear_history(entity)
+
+        start_time = time.time()
+        for i in range(6):
+            with mock.patch('time.time', return_value=(start_time + i * 0.1)):
+                result = self.send_api_message(email, "some stuff %s" % (i,))
+
+        self.assertEqual(result.status_code, 429)
+        json = result.json()
+        self.assertEqual(json.get("result"), "error")
+        self.assertIn("API usage exceeded rate limit", json.get("msg"))
+        self.assertEqual(json.get('retry-after'), 0.5)
+        self.assertTrue('Retry-After' in result)
+        self.assertEqual(result['Retry-After'], '0.5')
+
+        # We actually wait a second here, rather than force-clearing our history,
+        # to make sure the rate-limiting code automatically forgives a user
+        # after some time has passed.
+        with mock.patch('time.time', return_value=(start_time + 1.0)):
+            result = self.send_api_message(email, "password")
+            self.assertEqual(result.status_code, 200)
+
+class EmailRateLimitForEmaiAuthTests(EmailAuthTests):
+    """
+    These tests check password based authentication against email rate limiting.
+    """
+    header_prefix = '-Email'
+
+    def setUp(self):
+        # type: () -> None
+        settings.EMAIL_RATE_LIMITING = True
+        super(EmailRateLimitForEmaiAuthTests, self).setUp()
+
+    def tearDown(self):
+        # type: () -> None
+        settings.EMAIL_RATE_LIMITING = False
+        super(EmailRateLimitForEmaiAuthTests, self).tearDown()
+
+    def test_headers(self):
+        # type: () -> None
+        self._test_headers(RateLimitedEmail(self.email), self.email)
+
+    def test_ratelimit_decrease(self):
+        # type: () -> None
+        self._test_ratelimit_decrease(RateLimitedEmail(self.email), self.email)
+
+    def test_hit_ratelimits(self):
+        # type: () -> None
+        self._test_hit_ratelimits(RateLimitedEmail(self.email), self.email)
+
+class IPRateLimitForEmailAuthTests(EmailAuthTests):
+    """
+    These tests check password based authentication against IP rate limiting.
+    """
+    header_prefix = '-Ip'
+
+    def setUp(self):
+        # type: () -> None
+        settings.IP_RATE_LIMITING = True
+        self.ip = '192.168.1.1'
+        super(IPRateLimitForEmailAuthTests, self).setUp()
+
+    def tearDown(self):
+        # type: () -> None
+        settings.IP_RATE_LIMITING = False
+        super(IPRateLimitForEmailAuthTests, self).tearDown()
+
+    def test_get_ip(self):
+        # type: () -> None
+        request = mock.MagicMock()
+        request.META = {'HTTP_X_FORWARDED_FOR': self.ip}
+        self.assertEqual(self.ip, get_ip(request))
+
+        request.META = {'REMOTE_ADDR': self.ip}
+        self.assertEqual(self.ip, get_ip(request))
+
+        request.META = {}
+        self.assertEqual(None, get_ip(request))
+
+    def test_headers(self):
+        # type: () -> None
+        with mock.patch('zproject.backends.get_ip', return_value=self.ip):
+            self._test_headers(RateLimitedIP(self.ip), self.email)
+
+    def test_ratelimit_decrease(self):
+        # type: () -> None
+        with mock.patch('zproject.backends.get_ip', return_value=self.ip):
+            self._test_ratelimit_decrease(RateLimitedIP(self.ip), self.email)
+
+    def test_hit_ratelimits(self):
+        # type: () -> None
+        with mock.patch('zproject.backends.get_ip', return_value=self.ip):
+            self._test_hit_ratelimits(RateLimitedEmail(self.ip), self.email)

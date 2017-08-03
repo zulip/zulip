@@ -12,6 +12,8 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
     GithubTeamOAuth2
 from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
+from zerver.lib.utils import get_ip
+from zerver.decorator import rate_limit_ip, rate_limit_email
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
@@ -299,8 +301,15 @@ class EmailAuthBackend(ZulipAuthMixin):
             # specify which backend to use when not using
             # EmailAuthBackend, username and password should always be set.
             raise AssertionError("Invalid call to authenticate for EmailAuthBackend")
+
         if realm is None:
             return None
+        if settings.IP_RATE_LIMITING:
+            ip = get_ip(request)
+            if ip:
+                rate_limit_ip(request, ip, 'all')
+        if settings.EMAIL_RATE_LIMITING:
+            rate_limit_email(request, username, 'all')
         if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data['password_auth_disabled'] = True
