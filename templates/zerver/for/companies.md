@@ -20,6 +20,10 @@ If you haven't read [why Zulip](/why-zulip), read that first. We've also
 collected a list of features we think will be of particular interest for
 companies using Zulip.
 
+<div class="illustration">
+<img src="/static/images/for/cloud.png" alt="" class="ilu-right"/>
+</div>
+
 ### On-premise and in the cloud
 
 High quality export and import tools make it easy to start with Zulip in the
@@ -50,6 +54,10 @@ team could have a go at it for a week?
 ### Scale to thousands of users
 
 Zulip teams are still snappy at thousands of users.
+
+<div class="illustration">
+<img src="/static/images/for/lock2.png" alt="" class="ilu-left"/>
+</div>
 
 ### Hundreds of integrations
 

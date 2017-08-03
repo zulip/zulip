@@ -33,6 +33,10 @@ earliest communities, the Recurse Center, wrote an
 about how they use Zulip, which has suggestions for conventions you might
 want to include as you build your community.
 
+<div class="illustration">
+<img src="/static/images/for/lemonade.png" alt="" class="ilu-right"/>
+</div>
+
 Two additional points of note:
 
 * **Pay as you go**: We host many pro-social groups for free, and

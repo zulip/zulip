@@ -9,6 +9,10 @@ If you haven't read [why Zulip](/why-zulip), read that first. We've also
 collected a list of features we think will be of particular interest for
 open source communities using Zulip.
 
+<div class="illustration">
+<img src="/static/images/for/scale.png" alt="" class="ilu-left"/>
+</div>
+
 ### Free hosting at zulipchat.com
 
 No catch; the hosting is supported by (and is identical to) zulipchat.com's
@@ -32,6 +36,10 @@ Allow anyone to
 [join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
 You can also link to your Zulip with a [badge](/help/join-zulip-chat-badge)
 in your readme document.
+
+<div class="illustration">
+<img src="/static/images/for/lock.png" alt="" class="ilu-right"/>
+</div>
 
 ### Authenticate with GitHub
 
@@ -75,6 +83,10 @@ any time.
 Get events from GitHub, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
+
+<div class="illustration">
+<img src="/static/images/for/opensource.png" alt="" class="ilu-left"/>
+</div>
 
 ### Free and open source
 

@@ -2582,6 +2582,28 @@ nav ul li.active::after {
     }
 }
 
+.illustration img {
+    max-width: 200px;
+    margin: 40px 20px 40px 20px;
+    display: block;
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.illustration .ilu-left {
+    float: left;
+    margin: 0px 20px 0px -100px;
+}
+
+.illustration .ilu-right {
+    float: right;
+    margin: 40px -100px 40px 20px;
+}
+
 /* -- media queries -- */
 @media (max-width: 1426px) {
     .portico-landing.hello .integrations .integration-icons .hide-1 {
@@ -2935,6 +2957,17 @@ nav ul li.active::after {
 }
 
 @media (max-width: 768px) {
+    .illustration {
+        height: 250px;
+    }
+
+    .illustration img.ilu-left,
+    .illustration img.ilu-right {
+        height: 100%;
+        float: none;
+        margin: auto;
+    }
+
     nav {
         padding-left: 50px;
         padding-right: 50px;
