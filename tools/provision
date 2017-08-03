@@ -10,26 +10,28 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
-if [ -n "$TRAVIS" ]; then
-    PYTHON=python
-else
-    PYTHON=python3
-fi
-
 #Make the script independent of the location from where it is
 #executed
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 cd "$PARENT_PATH"
 mkdir -p ../var/log
 LOG_PATH="../var/log/provision.log"
-PROVISION_PATH="lib/provision.py"
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
+
+PROVISION_PATH="./lib/provision.py"
+if [ -n "$TRAVIS" ]; then
+    # In CI, we let PATH provide the Python version.
+    PROVISION_CMD=("$PROVISION_PATH")
+else
+    # In dev, we force Python 3.
+    PROVISION_CMD=(python3 "$PROVISION_PATH")
+fi
 
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-"$PYTHON" "$PROVISION_PATH" "$@" 2>&1 | tee -a "$LOG_PATH"
+"${PROVISION_CMD[@]}" "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
 if [ $failed = 1 ]; then
