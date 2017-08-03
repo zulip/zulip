@@ -1,0 +1,54 @@
+database:
+  image: "quay.io/galexrt/zulip-postgresql-tsearchextras:latest"
+  environment:
+    DB_NAME: zulip
+    DB_USER: zulip
+    DB_PASS: zulip
+  volumes:
+    - "/opt/docker/zulip/postgresql:/var/lib/postgresql:rw"
+memcached:
+  image: "quay.io/sameersbn/memcached:latest"
+  restart: always
+rabbitmq:
+  image: "rabbitmq:3.5.5"
+  hostname: zulip-rabbit
+  restart: always
+  environment:
+      RABBITMQ_DEFAULT_USER: "zulip"
+      RABBITMQ_DEFAULT_PASS: "zulip"
+redis:
+  image: "quay.io/sameersbn/redis:latest"
+  volumes:
+    - "/opt/docker/zulip/redis:/var/lib/redis:rw"
+zulip:
+  image: "quay.io/galexrt/docker-zulip:latest"
+  ports:
+    - "8080:80"
+    - "8443:443"
+  links:
+    - database
+    - memcached
+    - rabbitmq
+    - redis
+  environment:
+    DB_HOST: "database"
+    DB_USER: "zulip"
+    DB_PASS: "zulip"
+    SETTING_MEMCACHED_LOCATION: "memcached:11211"
+    SETTING_RABBITMQ_HOST: "rabbitmq"
+    SETTING_REDIS_HOST: "redis"
+    SECRETS_email_password: "123456789"
+    SECRETS_rabbitmq_password: "zulip"
+    ZULIP_AUTH_BACKENDS: "EmailAuthBackend"
+    SETTING_EXTERNAL_HOST: "example.com"
+    SETTING_ZULIP_ADMINISTRATOR: "admin@example.com"
+    SETTING_ADMIN_DOMAIN: "example.com"
+    SETTING_NOREPLY_EMAIL_ADDRESS: "noreply@example.com"
+    SETTING_DEFAULT_FROM_EMAIL: "Zulip <noreply@example.com>"
+    SETTING_EMAIL_HOST: "smtp.example.com"
+    SETTING_EMAIL_HOST_USER: "noreply@example.com"
+    ZULIP_USER_EMAIL: "example@example.com"
+    ZULIP_USER_PASS: "zulip"
+    ZULIP_USER_DOMAIN: "example.com"
+  volumes:
+    - "/opt/docker/zulip/zulip:/data:rw"
