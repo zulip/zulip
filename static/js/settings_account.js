@@ -161,7 +161,7 @@ exports.set_up = function () {
                 if ('account_email' in data) {
                     settings_change_success(data.account_email);
                 } else {
-                    settings_change_error(i18n.t("Error changing settings: No new data supplied."));
+                    settings_change_success(i18n.t("No changes made."));
                 }
             },
             error: function (xhr) {
