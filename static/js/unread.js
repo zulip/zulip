@@ -145,25 +145,23 @@ exports.unread_pm_counter = (function () {
     return self;
 }());
 
+function make_per_stream_bucketer() {
+    return make_bucketer({
+        fold_case: true, // bucket keys are topics
+        make_bucket: make_id_set,
+    });
+}
+
 exports.unread_topic_counter = (function () {
     var self = {};
 
-    function str_dict() {
-        // Use this when keys are topics
-        return new Dict({fold_case: true});
-    }
-
-    function num_dict() {
-        // Use this for message ids.
-        return new Dict();
-    }
-
-    var unread_topics = num_dict(); // dict of stream -> topic -> msg id
-    var reverse_lookup = num_dict();
+    var bucketer = make_bucketer({
+        fold_case: false, // bucket keys are stream_ids
+        make_bucket: make_per_stream_bucketer,
+    });
 
     self.clear = function () {
-        unread_topics = num_dict();
-        reverse_lookup = num_dict();
+        bucketer.clear();
     };
 
     self.update = function (msg_id, stream_id, new_topic) {
@@ -172,26 +170,38 @@ exports.unread_topic_counter = (function () {
     };
 
     self.add = function (stream_id, topic, msg_id) {
-        unread_topics.setdefault(stream_id, str_dict());
-        var id_set = unread_topics.get(stream_id).setdefault(topic, make_id_set());
-        id_set.add(msg_id);
-        reverse_lookup.set(msg_id, id_set);
+        bucketer.add({
+            bucket_key: stream_id,
+            item_id: msg_id,
+            add_callback: function (per_stream_bucketer) {
+                per_stream_bucketer.add({
+                    bucket_key: topic,
+                    item_id: msg_id,
+                });
+            },
+        });
     };
 
     self.del = function (msg_id) {
-        var id_set = reverse_lookup.get(msg_id);
-        if (id_set) {
-            id_set.del(msg_id);
-            reverse_lookup.del(msg_id);
-        }
+        bucketer.del(msg_id);
     };
+
+    function str_dict() {
+        // Use this when keys are topics
+        return new Dict({fold_case: true});
+    }
+
+    function num_dict() {
+        // Use this for stream ids.
+        return new Dict();
+    }
 
     self.get_counts = function () {
         var res = {};
         res.stream_unread_messages = 0;
         res.stream_count = num_dict();  // hash by stream_id -> count
         res.topic_count = num_dict(); // hash of hashes (stream_id, then topic -> count)
-        unread_topics.each(function (_, stream_id) {
+        bucketer.each(function (per_stream_bucketer, stream_id) {
 
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
@@ -199,23 +209,21 @@ exports.unread_topic_counter = (function () {
             // so that callers have a view of the **current** world.
             var sub = stream_data.get_sub_by_id(stream_id);
             if (!sub || !stream_data.is_subscribed(sub.name)) {
-                return true;
+                return;
             }
 
-            if (unread_topics.has(stream_id)) {
-                res.topic_count.set(stream_id, str_dict());
-                var stream_count = 0;
-                unread_topics.get(stream_id).each(function (msgs, topic) {
-                    var topic_count = msgs.count();
-                    res.topic_count.get(stream_id).set(topic, topic_count);
-                    if (!muting.is_topic_muted(sub.name, topic)) {
-                        stream_count += topic_count;
-                    }
-                });
-                res.stream_count.set(stream_id, stream_count);
-                if (stream_data.in_home_view(stream_id)) {
-                    res.stream_unread_messages += stream_count;
+            res.topic_count.set(stream_id, str_dict());
+            var stream_count = 0;
+            per_stream_bucketer.each(function (msgs, topic) {
+                var topic_count = msgs.count();
+                res.topic_count.get(stream_id).set(topic, topic_count);
+                if (!muting.is_topic_muted(sub.name, topic)) {
+                    stream_count += topic_count;
                 }
+            });
+            res.stream_count.set(stream_id, stream_count);
+            if (stream_data.in_home_view(stream_id)) {
+                res.stream_unread_messages += stream_count;
             }
 
         });
@@ -226,11 +234,13 @@ exports.unread_topic_counter = (function () {
     self.get_stream_count = function (stream_id) {
         var stream_count = 0;
 
-        if (!unread_topics.has(stream_id)) {
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+
+        if (!per_stream_bucketer) {
             return 0;
         }
 
-        unread_topics.get(stream_id).each(function (msgs, topic) {
+        per_stream_bucketer.each(function (msgs, topic) {
             var sub = stream_data.get_sub_by_id(stream_id);
             if (sub && !muting.is_topic_muted(sub.name, topic)) {
                 stream_count += msgs.count();
@@ -241,27 +251,32 @@ exports.unread_topic_counter = (function () {
     };
 
     self.get = function (stream_id, topic) {
-        var num_unread = 0;
-        if (unread_topics.has(stream_id) &&
-            unread_topics.get(stream_id).has(topic)) {
-            num_unread = unread_topics.get(stream_id).get(topic).count();
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+        if (!per_stream_bucketer) {
+            return 0;
         }
-        return num_unread;
+
+        var topic_bucket = per_stream_bucketer.get_bucket(topic);
+        if (!topic_bucket) {
+            return 0;
+        }
+
+        return topic_bucket.count();
     };
 
     self.topic_has_any_unread = function (stream_id, topic) {
-        var stream_dct = unread_topics.get(stream_id);
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
 
-        if (!stream_dct) {
+        if (!per_stream_bucketer) {
             return false;
         }
 
-        var topic_dct = stream_dct.get(topic);
-        if (!topic_dct) {
+        var id_set = per_stream_bucketer.get_bucket(topic);
+        if (!id_set) {
             return false;
         }
 
-        return !topic_dct.is_empty();
+        return !id_set.is_empty();
     };
 
     return self;
