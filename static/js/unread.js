@@ -41,37 +41,84 @@ function make_id_set() {
     return self;
 }
 
-exports.unread_pm_counter = (function () {
+function make_bucketer(options) {
     var self = {};
-    var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
-    var reverse_lookup = new Dict(); // msg_id -> enclosing dict
+
+    var key_to_bucket = new Dict({fold_case: options.fold_case});
+    var reverse_lookup = new Dict();
 
     self.clear = function () {
-        unread_privates = new Dict();
-        reverse_lookup = new Dict();
+        key_to_bucket.clear();
+        reverse_lookup.clear();
+    };
+
+    self.add = function (opts) {
+        var bucket_key = opts.bucket_key;
+        var item_id = opts.item_id;
+        var add_callback = opts.add_callback;
+
+        var bucket = key_to_bucket.get(bucket_key);
+        if (!bucket) {
+            bucket = options.make_bucket();
+            key_to_bucket.set(bucket_key, bucket);
+        }
+        if (add_callback) {
+            add_callback(bucket, item_id);
+        } else {
+            bucket.add(item_id);
+        }
+        reverse_lookup.set(item_id, bucket);
+    };
+
+    self.del = function (item_id) {
+        var bucket = reverse_lookup.get(item_id);
+        if (bucket) {
+            bucket.del(item_id);
+            reverse_lookup.del(item_id);
+        }
+    };
+
+    self.get_bucket = function (bucket_key) {
+        return key_to_bucket.get(bucket_key);
+    };
+
+    self.each = function (callback) {
+        key_to_bucket.each(callback);
+    };
+
+    return self;
+}
+
+exports.unread_pm_counter = (function () {
+    var self = {};
+
+    var bucketer = make_bucketer({
+        fold_case: false,
+        make_bucket: make_id_set,
+    });
+
+    self.clear = function () {
+        bucketer.clear();
     };
 
     self.add = function (message) {
         var user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
-            var id_set = unread_privates.setdefault(user_ids_string, make_id_set());
-            id_set.add(message.id);
-            reverse_lookup.set(message.id, id_set);
+            bucketer.add({
+                bucket_key: user_ids_string,
+                item_id: message.id,
+            });
         }
     };
 
     self.del = function (message_id) {
-        var id_set = reverse_lookup.get(message_id);
-        if (id_set) {
-            id_set.del(message_id);
-            reverse_lookup.del(message_id);
-        }
+        bucketer.del(message_id);
     };
 
     self.get_counts = function () {
         var pm_dict = new Dict(); // Hash by user_ids_string -> count
         var total_count = 0;
-        unread_privates.each(function (id_set, user_ids_string) {
+        bucketer.each(function (id_set, user_ids_string) {
             var count = id_set.count();
             pm_dict.set(user_ids_string, count);
             total_count += count;
@@ -87,10 +134,12 @@ exports.unread_pm_counter = (function () {
             return 0;
         }
 
-        if (!unread_privates.has(user_ids_string)) {
+        var bucket = bucketer.get_bucket(user_ids_string);
+
+        if (!bucket) {
             return 0;
         }
-        return unread_privates.get(user_ids_string).count();
+        return bucket.count();
     };
 
     return self;
