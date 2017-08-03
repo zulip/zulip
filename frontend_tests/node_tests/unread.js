@@ -97,7 +97,9 @@ var zero_counts = {
         subject: 'lunCH',
     };
 
+    assert(!unread.id_flagged_as_unread(15));
     unread.process_loaded_messages([message, other_message]);
+    assert(unread.id_flagged_as_unread(15));
 
     count = unread.num_unread_for_topic(stream_id, 'Lunch');
     assert.equal(count, 2);
