@@ -56,7 +56,6 @@ body {
     padding-bottom: 0;
 }
 
-.footer,
 .push {
     height: 56px;
 }
@@ -441,16 +440,56 @@ input.text-error {
 }
 
 .footer {
+    margin: 20px;
     position: absolute;
     bottom: 0;
     z-index: 100;
-    width: 100%;
+    width: calc(100% - 40px);
+
+    text-align: center;
 }
 
 .footer .footer-navigation {
     margin-left: 0px;
     margin-right: 0px;
 }
+
+/* -- new footer -- */
+.footer {
+    font-size: 0.9em;
+}
+
+.footer a {
+    color: inherit !important;
+}
+
+.footer section {
+    width: 25%;
+    max-width: 220px;
+
+    display: inline-block;
+    vertical-align: top;
+    margin-right: -4px;
+
+    text-align: left;
+}
+
+.footer section h3 {
+    text-transform: uppercase;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.footer section ul {
+    color: #aaa;
+
+    list-style-type: none;
+    margin-left: 0;
+
+    font-weight: 400;
+}
+
+/* -- end new footer -- */
 
 .header {
     padding: 20px 0 15px;
@@ -525,19 +564,8 @@ a.bottom-signup-button {
     font-weight: 300;
 }
 
-.login-page,
-.apps-page,
-.register-page,
-.portico-page,
-.api-page {
-    min-height: 100%;
-    height: auto;
-}
-
 .portico-page {
-    /* height of the white portico navbar */
-    min-height: calc(100% - 87px);
-    padding-bottom: 71px;
+    margin-bottom: 210px;
 }
 
 .signup-signature {
@@ -1137,7 +1165,8 @@ input.new-organization-button {
     position: absolute;
     right: 0px;
     /* 100vw - sidebar width - paddingTop - paddingBottom */
-    width: calc(100vw - 340px);
+    width: calc(100vw - 340px - 30px);
+    padding: 0px 30px 0px 30px;
 
     height: calc(100vh - 64px);
     font-weight: 400;
@@ -1153,11 +1182,11 @@ input.new-organization-button {
 }
 
 .markdown .content {
-    padding: 30px 30px 80px 30px;
+    padding: 30px 30px 235px 30px;
     max-width: 768px;
     margin-left: 0px;
 
-    min-height: calc(100% - 60px - 50px);
+    min-height: calc(100% - 215px - 50px);
 
     background: #fff;
 }
@@ -1287,10 +1316,10 @@ input.new-organization-button {
 
 .markdown .footer {
     position: relative;
-    margin-top: -64px;
+    margin-top: -240px;
     height: auto;
-    width: 100%;
-    max-width: calc(768px + 30px + 30px);
+    width: calc(100% - 40px);
+    max-width: calc(768px + 20px);
 }
 
 @media (max-height: 678px) {

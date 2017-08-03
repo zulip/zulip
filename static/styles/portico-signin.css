@@ -10,7 +10,7 @@ html {
 }
 
 .flex.full-page {
-    min-height: calc(100vh - 170px);
+    min-height: calc(100vh - 275px);
     height: auto;
 }
 
