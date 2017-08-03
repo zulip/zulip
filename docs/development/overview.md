@@ -34,7 +34,8 @@ recommended)**:
 * On **other Linux** distributions, you'll need to follow slightly different
   instructions to **[install manually][install-generic]**.
 * On **macOS and Linux** (Ubuntu recommended), you can install **[using
-  Docker][install-docker]**, though support for this remains experimental.
+  Docker][dev-setup-non-vagrant.html#using-docker-experimental]**, though
+  support for this remains experimental.
 
 Unfortunately, the only supported method to install on Windows is the [Vagrant
 method][install-vagrant].
