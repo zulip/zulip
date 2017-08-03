@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import time
 import ujson
 
 from typing import Any, Callable, Dict, List, Set, Text
@@ -101,6 +102,81 @@ def show_all_unread(user_profile):
 
     # print(user_profile.pointer)
 
+def get_timing(message, f):
+    # type: (str, Callable) -> None
+    start = time.time()
+    print(message)
+    f()
+    elapsed = time.time() - start
+    print('elapsed time: %.03f\n' % (elapsed,))
+
+
+def fix_unsubscribed(user_profile):
+    # type: (UserProfile) -> None
+    where_clause = '''
+        INNER JOIN zerver_message ON (
+            zerver_message.id = zerver_usermessage.message_id
+        )
+        INNER JOIN zerver_recipient ON (
+            zerver_recipient.id = zerver_message.recipient_id
+        )
+        INNER JOIN zerver_subscription ON (
+            zerver_subscription.user_profile_id = '%s' AND
+            zerver_subscription.recipient_id = zerver_recipient.id
+        )
+        WHERE (
+            zerver_usermessage.user_profile_id = %s AND
+            zerver_recipient.type = 2 AND
+            (zerver_usermessage.flags & 1) = 0 AND
+            (NOT zerver_subscription.active)
+        )
+        ORDER BY zerver_message.id
+    '''
+
+    from django.db import connection
+
+    cursor = connection.cursor()
+
+    def execute(query):
+        # type: (str) -> None
+        cursor.execute(query, [user_profile.id, user_profile.id])
+
+    def find():
+        # type: () -> None
+        query = '''
+            SELECT
+                zerver_usermessage.id
+            FROM zerver_usermessage
+        ''' + where_clause
+        execute(query)
+        rows = cursor.fetchall()
+        print('rows found: %d' % (len(rows),))
+
+    get_timing(
+        'finding unread messages for non-active streams',
+        find
+    )
+
+    fix_query = '''
+        UPDATE zerver_usermessage
+        SET flags = flags | 1
+        WHERE id IN (
+            SELECT zerver_usermessage.id
+            FROM zerver_usermessage
+    ''' + where_clause + ')'
+    print(fix_query)
+
+    def fix():
+        # type: () -> None
+        execute(fix_query)
+
+    get_timing(
+        'fixing unread messages for non-active streams',
+        fix
+    )
+
+    cursor.close()
+
 class Command(ZulipBaseCommand):
     help = """Troubleshoot/fix problems related to unread counts."""
 
@@ -108,6 +184,11 @@ class Command(ZulipBaseCommand):
         # type: (ArgumentParser) -> None
         parser.add_argument('email', metavar='<email>', type=str,
                             help='email address to spelunk')
+        parser.add_argument('--fix',
+                            action="store_true",
+                            dest='fix',
+                            default=False,
+                            help='fix unread messsages for inactive streams')
         self.add_realm_args(parser, True)
 
     def handle(self, *args, **options):
@@ -120,5 +201,7 @@ class Command(ZulipBaseCommand):
             print("e-mail %s doesn't exist in the realm %s, skipping" % (email, realm))
             return
 
-        show_all_unread(user_profile)
-
+        if options['fix']:
+            fix_unsubscribed(user_profile)
+        else:
+            show_all_unread(user_profile)
