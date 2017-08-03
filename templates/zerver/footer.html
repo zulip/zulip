@@ -1,43 +1,54 @@
 <div class="footer">
-    <div class="footer-main">
-        <ul class="footer-navigation">
+    <section>
+        <h3>Main</h3>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/features/">Features</a></li>
+            <li><a href="/plans/ &amp; Pricing">Plans &amp; Pricing</a></li>
             {% if about_link_disabled %}
             {% else %}
-            <li><a class="no-style" href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
+            <li><a href="/about/">About</a></li>
             {% endif %}
-
-            <li><a class="no-style" href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/features">{{ _('Features') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/help">{{ _('User documentation') }}</a></li>
-
+        </ul>
+    </section>
+    <section>
+        <h3>Apps and integrations</h3>
+        <ul>
+            <li><a href="/apps/">Apps</a></li>
+            <li><a href="/integrations/">Integrations</a></li>
+            <li><a href="/api/">API</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>Help and social</h3>
+        <ul>
+            <li><a href="/help/">Help Center</a></li>
+            <li><a href="https://github.com/zulip/">GitHub</a></li>
+            <li><a href="https://twitter.com/@zulip/">Twitter</a></li>
+            <li><a href="#">Contributing</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>Accounts</h3>
+        <ul>
+            {% if open_realm_creation %}
+            <li><a href="/create_realm/">Create an organization</a></li>
+            {% endif %}
+            {% if find_team_link_disabled %}
+            {% else %}
+            <li><a href="/find_my_team/">Find account</a></li>
+            {% endif %}
             {% if login_link_disabled %}
             {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{login_url}}">{{ _('Log in') }}</a></li>
+            <li><a href="/login/">Login</a></li>
             {% endif %}
-
             {% if register_link_disabled %}
             {% elif only_sso %}
             {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ url('register') }}">{{ _('Register') }}</a></li>
+            <li><a href="/register/">Register</a></li>
             {% endif %}
-
-            {% if open_realm_creation %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a></li>
-            {% endif %}
-
-            {% if find_team_link_disabled %}
-            {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/find_my_team">{{ _('Find my team') }}</a></li>
-            {% endif %}
+            <li><a href="/terms/">Terms of service</a></li>
+            <li><a href="/privacy/">Privacy policy</a></li>
         </ul>
-    </div>
+    </section>
 </div>
