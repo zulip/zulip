@@ -389,6 +389,25 @@ exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
 };
 
+exports.set_read_flag = function (message) {
+    /*
+        Our data structures allow us to know if a message_id is unread/read,
+        but we also need to set message.unread for our rendering code.
+
+        We also have code that uses message.flags, so we maintain that data
+        as well. The server sends us flags (e.g. ['read', 'starred']), so
+        our code on the "edges" needs that representation.
+
+        It is kind of painful to have three different representations, but
+        we fortunately only set read/unread in a few places in our code.
+    */
+    message.flags = message.flags || [];
+    if (!_.contains(message.flags, 'read')) {
+        message.flags.push('read');
+    }
+    message.unread = false;
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

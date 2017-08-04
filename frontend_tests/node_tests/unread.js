@@ -424,6 +424,18 @@ stream_data.get_stream_id = function () {
 }());
 
 (function test_message_unread() {
+    var message = {flags: ['starred'], unread: true};
+    assert(unread.message_unread(message));
+
+    unread.set_read_flag(message);
+    assert(!unread.message_unread(message));
+    assert(!message.unread);
+
+    // idempotency
+    unread.set_read_flag(message);
+    assert(!unread.message_unread(message));
+    assert.deepEqual(message.flags, ['starred', 'read']);
+
     // Test some code that might be overly defensive, for line coverage sake.
     assert(!unread.message_unread(undefined));
     assert(unread.message_unread({flags: []}));
