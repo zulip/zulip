@@ -2695,8 +2695,6 @@ img.emoji {
 }
 
 .right .tooltip-inner {
-    width: 600px;
-    max-height: 60px;
     font-size: 12px;
     word-break: break-all;
 }
