@@ -106,6 +106,20 @@ exports.set_topic_edit_properties = function (message) {
     }
 };
 
+exports.set_message_booleans = function (message, flags) {
+    function convert_flag(flag_name) {
+        return flags.indexOf(flag_name) >= 0;
+    }
+
+    message.historical = convert_flag('historical');
+    message.starred = convert_flag('starred');
+    message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
+    message.mentioned_me_directly =  convert_flag('mentioned');
+    message.collapsed = convert_flag('collapsed');
+    message.alerted = convert_flag('has_alert_word');
+    message.is_me_message = convert_flag('is_me_message');
+};
+
 exports.add_message_metadata = function (message) {
     var cached_msg = stored_messages[message.id];
     if (cached_msg !== undefined) {
@@ -121,15 +135,8 @@ exports.add_message_metadata = function (message) {
     message.sent_by_me = people.is_current_user(message.sender_email);
 
     message.flags = message.flags || [];
-    message.historical = (message.flags !== undefined &&
-                          message.flags.indexOf('historical') !== -1);
-    message.starred = message.flags.indexOf("starred") !== -1;
-    message.mentioned = message.flags.indexOf("mentioned") !== -1 ||
-                        message.flags.indexOf("wildcard_mentioned") !== -1;
-    message.mentioned_me_directly = message.flags.indexOf("mentioned") !== -1;
-    message.collapsed = message.flags.indexOf("collapsed") !== -1;
-    message.alerted = message.flags.indexOf("has_alert_word") !== -1;
-    message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
+
+    exports.set_message_booleans(message, message.flags);
 
     people.extract_people_from_message(message);
 
