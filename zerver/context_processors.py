@@ -85,6 +85,10 @@ def zulip_default_context(request):
     if settings.ZILENCER_ENABLED:
         apps_page_url = '/apps/'
 
+    user_is_authenticated = False
+    if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
+        user_is_authenticated = request.user.is_authenticated.value
+
     return {
         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
@@ -121,6 +125,7 @@ def zulip_default_context(request):
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_quality': settings.PASSWORD_MIN_ZXCVBN_QUALITY,
         'zulip_version': ZULIP_VERSION,
+        'user_is_authenticated': user_is_authenticated,
     }
 
 

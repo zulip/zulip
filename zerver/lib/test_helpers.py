@@ -277,13 +277,14 @@ class HostRequestMock(object):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
-    def __init__(self, host=settings.EXTERNAL_HOST):
-        # type: (Text) -> None
+    def __init__(self, user_profile=None, host=settings.EXTERNAL_HOST):
+        # type: (UserProfile, Text) -> None
         self.host = host
         self.GET = {}  # type: Dict[str, Any]
         self.POST = {}  # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
+        self.user = user_profile
 
     def get_host(self):
         # type: () -> Text
