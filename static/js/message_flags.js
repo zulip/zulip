@@ -98,10 +98,6 @@ exports.send_starred = function send_starred(messages, value) {
     send_flag(messages, "starred", value);
 };
 
-exports.send_force_expand = function send_force_expand(messages, value) {
-    send_flag(messages, "force_expand", value);
-};
-
 exports.send_force_collapse = function send_force_collapse(messages, value) {
     send_flag(messages, "force_collapse", value);
 };
