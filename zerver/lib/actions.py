@@ -1216,6 +1216,18 @@ def check_send_message(sender, client, message_type_name, message_to,
                             forwarder_user_profile, local_id, sender_queue_id)
     return do_send_messages([message])[0]
 
+def check_send_message_to_user_profiles(sender, client, user_profiles, message_content,
+                                        realm=None, forged=False, forged_timestamp=None,
+                                        forwarder_user_profile=None, local_id=None,
+                                        sender_queue_id=None):
+    # type: (UserProfile, Client, List[UserProfile], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
+
+    message = check_message(sender, client, 'private', "", message_content, realm=realm,
+                            forged=forged, forged_timestamp=forged_timestamp,
+                            forwarder_user_profile=forwarder_user_profile, local_id=local_id,
+                            sender_queue_id=sender_queue_id, recipient_user_profiles=user_profiles)
+    return do_send_messages([message])[0]
+
 def check_stream_name(stream_name):
     # type: (Text) -> None
     if stream_name.strip() == "":
