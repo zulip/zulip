@@ -125,9 +125,7 @@ exports.update_messages = function update_messages(events) {
         }
         msgs_to_rerender.push(msg);
 
-        msg.alerted = event.flags.indexOf("has_alert_word") !== -1;
-        msg.mentioned = event.flags.indexOf("mentioned") !== -1 ||
-                        event.flags.indexOf("wildcard_mentioned") !== -1;
+        message_store.set_message_booleans(msg, event.flags);
 
         condense.un_cache_message_content_height(msg.id);
 
