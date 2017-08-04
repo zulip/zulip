@@ -117,6 +117,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/base.html',
             'zerver/api_content.json',
             'zerver/handlebars_compilation_failed.html',
+            'zerver/portico-header.html',
         ]
 
         integrations_regexp = re.compile('zerver/integrations/.*.html')
