@@ -205,6 +205,12 @@ class TestCrossRealmPMs(ZulipTestCase):
                 JsonableError,
                 'You can\'t send private messages outside of your organization.')
 
+        def assert_invalid_email():
+            # type: () -> Any
+            return self.assertRaisesRegex(
+                JsonableError,
+                'Invalid email ')
+
         random_zulip_email = 'random@zulip.com'
         user1_email = 'user1@1.example.com'
         user1a_email = 'user1a@1.example.com'
@@ -230,7 +236,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         assert_message_received(user1a, user1)
 
         # Cross-realm bots in the zulip.com realm can PM any realm
-        self.send_message(feedback_email, user2_email, Recipient.PERSONAL)
+        self.direct_send_message_to_user_profiles(feedback_email, get_user(user2_email, r2))
         assert_message_received(user2, feedback_bot)
 
         # All users can PM cross-realm bots in the zulip.com realm
@@ -255,29 +261,29 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         # Prevent old loophole where I could send PMs to other users as long
         # as I copied a cross-realm bot from the same realm.
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, [user3_email, support_email], Recipient.PERSONAL)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, [user2_email, feedback_email],
                               Recipient.PERSONAL)
 
         with assert_disallowed():
-            self.send_message(feedback_email, [user1_email, user2_email],
-                              Recipient.PERSONAL)
+            self.direct_send_message_to_user_profiles(feedback_email,
+                                                      [get_user(user1_email, r1), get_user(user2_email, r2)])
 
         # Users on the different realms can not PM each other
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, user2_email, Recipient.PERSONAL)
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, random_zulip_email, Recipient.PERSONAL)
 
         # Users on three different realms can not PM each other
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
 
 class ExtractedRecipientsTest(TestCase):
