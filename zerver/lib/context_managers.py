@@ -6,11 +6,11 @@ from __future__ import absolute_import
 
 import fcntl
 from contextlib import contextmanager
-from typing import Iterator
+from typing import Iterator, IO, Any, Union
 
 @contextmanager
 def flock(lockfile, shared=False):
-    # type: (int, bool) -> Iterator[None]
+    # type: (Union[int, IO[Any]], bool) -> Iterator[None]
     """Lock a file object using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX."""
