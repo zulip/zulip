@@ -5,6 +5,8 @@
   "description": "",
   "main": "",
   "dependencies": {
+    "@types/node": "8.0.17",
+    "@types/webpack": "3.0.5",
     "clipboard": "1.5.16",
     "emoji-datasource": "3.0.0",
     "expose-loader": "0.7.3",
@@ -26,6 +28,7 @@
     "source-map-loader": "0.2.1",
     "string.prototype.codepointat": "0.2.0",
     "ts-loader": "2.1.0",
+    "ts-node": "3.3.0",
     "typescript": "2.3.3",
     "underscore": "1.8.3",
     "webpack": "2.5.1",
