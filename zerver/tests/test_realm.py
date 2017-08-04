@@ -6,7 +6,7 @@ import ujson
 
 from django.http import HttpResponse
 from mock import patch
-from typing import Any, Dict, List, Text, Union
+from typing import Any, Dict, List, Text, Union, Mapping
 
 from zerver.lib.actions import (
     do_change_is_admin,
@@ -40,7 +40,7 @@ class RealmTest(ZulipTestCase):
         # type: () -> None
         realm = get_realm('zulip')
         new_name = u'Puliz'
-        events = []  # type: List[Dict[str, Any]]
+        events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'name', new_name)
         event = events[0]['event']
@@ -55,7 +55,7 @@ class RealmTest(ZulipTestCase):
         # type: () -> None
         realm = get_realm('zulip')
         new_description = u'zulip dev group'
-        events = []  # type: List[Dict[str, Any]]
+        events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'description', new_description)
         event = events[0]['event']
@@ -73,7 +73,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         new_description = u'zulip dev group'
         data = dict(description=ujson.dumps(new_description))
-        events = []  # type: List[Dict[str, Any]]
+        events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/realm', data)
             self.assert_json_success(result)

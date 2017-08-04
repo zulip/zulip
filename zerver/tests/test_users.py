@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import (Any, Dict, Iterable, List,
+from typing import (Any, Dict, Iterable, List, Mapping,
                     Optional, TypeVar, Text, Union)
 
 from django.http import HttpResponse
@@ -91,7 +91,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(is_admin=ujson.dumps(True))
 
-        events = []  # type: List[Dict[str, Any]]
+        events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/othello@zulip.com', req)
         self.assert_json_success(result)
