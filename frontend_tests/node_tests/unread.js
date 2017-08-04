@@ -97,13 +97,18 @@ var zero_counts = {
         subject: 'lunCH',
     };
 
+    assert(!unread.id_flagged_as_unread(15));
     unread.process_loaded_messages([message, other_message]);
+    assert(unread.id_flagged_as_unread(15));
 
     count = unread.num_unread_for_topic(stream_id, 'Lunch');
     assert.equal(count, 2);
     assert(unread.topic_has_any_unread(stream_id, 'lunch'));
     assert(!unread.topic_has_any_unread(wrong_stream_id, 'lunch'));
     assert(!unread.topic_has_any_unread(stream_id, 'NOT lunch'));
+
+    count = unread.num_unread_for_topic(stream_id, 'NOT lunch');
+    assert.equal(count, 0);
 
     var event = {
         subject: 'dinner',
@@ -419,6 +424,18 @@ stream_data.get_stream_id = function () {
 }());
 
 (function test_message_unread() {
+    var message = {flags: ['starred'], unread: true};
+    assert(unread.message_unread(message));
+
+    unread.set_read_flag(message);
+    assert(!unread.message_unread(message));
+    assert(!message.unread);
+
+    // idempotency
+    unread.set_read_flag(message);
+    assert(!unread.message_unread(message));
+    assert.deepEqual(message.flags, ['starred', 'read']);
+
     // Test some code that might be overly defensive, for line coverage sake.
     assert(!unread.message_unread(undefined));
     assert(unread.message_unread({flags: []}));

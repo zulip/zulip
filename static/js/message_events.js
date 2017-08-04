@@ -56,8 +56,8 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 exports.insert_new_messages = function insert_new_messages(messages, locally_echoed) {
     messages = _.map(messages, message_store.add_message_metadata);
 
-    // You must add add messages to home_msg_list BEFORE
-    // calling unread.process_loaded_messages.
+    unread.process_loaded_messages(messages);
+
     message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
     message_util.add_messages(messages, message_list.all, {messages_are_new: true});
 
@@ -76,7 +76,10 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
     }
 
     activity.process_loaded_messages(messages);
-    message_util.do_unread_count_updates(messages);
+
+    unread_ui.update_unread_counts();
+    resize.resize_page_components();
+
     exports.maybe_advance_to_recently_sent_message(messages);
     unread_ops.process_visible();
     notifications.received_messages(messages);
@@ -122,9 +125,7 @@ exports.update_messages = function update_messages(events) {
         }
         msgs_to_rerender.push(msg);
 
-        msg.alerted = event.flags.indexOf("has_alert_word") !== -1;
-        msg.mentioned = event.flags.indexOf("mentioned") !== -1 ||
-                        event.flags.indexOf("wildcard_mentioned") !== -1;
+        message_store.set_message_booleans(msg, event.flags);
 
         condense.un_cache_message_content_height(msg.id);
 

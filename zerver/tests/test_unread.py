@@ -88,11 +88,9 @@ class PointerTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         # Ensure the pointer is not set (-1)
         self.assertEqual(self.example_user('hamlet').pointer, -1)
+
         # Mark all existing messages as read
-        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                           "op": "add",
-                                                           "flag": "read",
-                                                           "all": ujson.dumps(True)})
+        result = self.client_post("/json/mark_all_as_read")
         self.assert_json_success(result)
 
         # Send a new message (this will be unread)
@@ -210,29 +208,6 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertEqual(msg['flags'], ['read'])
             elif msg['id'] == self.unread_msg_ids[1]:
                 self.assertEqual(msg['flags'], [])
-
-    def test_update_all_flags(self):
-        # type: () -> None
-        self.login(self.example_email("hamlet"))
-
-        message_ids = [self.send_message(self.example_email("hamlet"), self.example_email("iago"),
-                                         Recipient.PERSONAL, "test"),
-                       self.send_message(self.example_email("hamlet"), self.example_email("cordelia"),
-                                         Recipient.PERSONAL, "test2")]
-
-        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
-                                                           "op": "add",
-                                                           "flag": "read"})
-        self.assert_json_success(result)
-
-        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                           "op": "remove",
-                                                           "flag": "read",
-                                                           "all": ujson.dumps(True)})
-        self.assert_json_success(result)
-
-        for msg in self.get_messages():
-            self.assertEqual(msg['flags'], [])
 
     def test_mark_all_in_stream_read(self):
         # type: () -> None

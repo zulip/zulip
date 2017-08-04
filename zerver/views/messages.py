@@ -19,7 +19,8 @@ from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message, do_delete_message
+    extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
+    do_mark_all_as_read
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import (
     generic_bulk_cached_fetch,
@@ -792,14 +793,10 @@ def get_messages_backend(request, user_profile,
 def update_message_flags(request, user_profile,
                          messages=REQ(validator=check_list(check_int)),
                          operation=REQ('op'), flag=REQ(),
-                         all=REQ(validator=check_bool, default=False),
                          stream_name=REQ(default=None),
                          topic_name=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, List[int], Text, Text, bool, Optional[Text], Optional[Text]) -> HttpResponse
-    if all:
-        target_count_str = "all"
-    else:
-        target_count_str = str(len(messages))
+    # type: (HttpRequest, UserProfile, List[int], Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
+    target_count_str = str(len(messages))
     log_data_str = "[%s %s/%s]" % (operation, flag, target_count_str)
     request._log_data["extra"] = log_data_str
     stream = None
@@ -816,7 +813,7 @@ def update_message_flags(request, user_profile,
             if not topic_exists:
                 raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
     count = do_update_message_flags(user_profile, operation, flag, messages,
-                                    all, stream, topic_name)
+                                    stream, topic_name)
 
     # If we succeed, update log data str with the actual count for how
     # many messages were updated.
@@ -826,6 +823,17 @@ def update_message_flags(request, user_profile,
 
     return json_success({'result': 'success',
                          'messages': messages,
+                         'msg': ''})
+
+@has_request_variables
+def mark_all_as_read(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    count = do_mark_all_as_read(user_profile)
+
+    log_data_str = "[mark_all_as_read: %s updated" % (count,)
+    request._log_data["extra"] = log_data_str
+
+    return json_success({'result': 'success',
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):

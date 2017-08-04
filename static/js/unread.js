@@ -5,41 +5,121 @@ var unread = (function () {
 
 var exports = {};
 
+var unread_messages = new Dict();
+
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
-exports.unread_pm_counter = (function () {
+function make_id_set() {
+    /* This is just a basic set class where
+       elements should be numeric ids.
+    */
+
     var self = {};
-    var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
-    var reverse_lookup = new Dict(); // msg_id -> enclosing dict
+    var ids = new Dict();
 
     self.clear = function () {
-        unread_privates = new Dict();
-        reverse_lookup = new Dict();
+        ids.clear();
+    };
+
+    self.add = function (id) {
+        ids.set(id, true);
+    };
+
+    self.del = function (id) {
+        ids.del(id);
+    };
+
+    self.count = function () {
+        return ids.num_items();
+    };
+
+    self.is_empty = function () {
+        return ids.is_empty();
+    };
+
+    return self;
+}
+
+function make_bucketer(options) {
+    var self = {};
+
+    var key_to_bucket = new Dict({fold_case: options.fold_case});
+    var reverse_lookup = new Dict();
+
+    self.clear = function () {
+        key_to_bucket.clear();
+        reverse_lookup.clear();
+    };
+
+    self.add = function (opts) {
+        var bucket_key = opts.bucket_key;
+        var item_id = opts.item_id;
+        var add_callback = opts.add_callback;
+
+        var bucket = key_to_bucket.get(bucket_key);
+        if (!bucket) {
+            bucket = options.make_bucket();
+            key_to_bucket.set(bucket_key, bucket);
+        }
+        if (add_callback) {
+            add_callback(bucket, item_id);
+        } else {
+            bucket.add(item_id);
+        }
+        reverse_lookup.set(item_id, bucket);
+    };
+
+    self.del = function (item_id) {
+        var bucket = reverse_lookup.get(item_id);
+        if (bucket) {
+            bucket.del(item_id);
+            reverse_lookup.del(item_id);
+        }
+    };
+
+    self.get_bucket = function (bucket_key) {
+        return key_to_bucket.get(bucket_key);
+    };
+
+    self.each = function (callback) {
+        key_to_bucket.each(callback);
+    };
+
+    return self;
+}
+
+exports.unread_pm_counter = (function () {
+    var self = {};
+
+    var bucketer = make_bucketer({
+        fold_case: false,
+        make_bucket: make_id_set,
+    });
+
+    self.clear = function () {
+        bucketer.clear();
     };
 
     self.add = function (message) {
         var user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
-            var dict = unread_privates.setdefault(user_ids_string, new Dict());
-            dict.set(message.id, true);
-            reverse_lookup.set(message.id, dict);
+            bucketer.add({
+                bucket_key: user_ids_string,
+                item_id: message.id,
+            });
         }
     };
 
     self.del = function (message_id) {
-        var dict = reverse_lookup.get(message_id);
-        if (dict) {
-            dict.del(message_id);
-            reverse_lookup.del(message_id);
-        }
+        bucketer.del(message_id);
     };
 
     self.get_counts = function () {
         var pm_dict = new Dict(); // Hash by user_ids_string -> count
         var total_count = 0;
-        unread_privates.each(function (obj, user_ids_string) {
-            var count = obj.num_items();
+        bucketer.each(function (id_set, user_ids_string) {
+            var count = id_set.count();
             pm_dict.set(user_ids_string, count);
             total_count += count;
         });
@@ -54,34 +134,34 @@ exports.unread_pm_counter = (function () {
             return 0;
         }
 
-        if (!unread_privates.has(user_ids_string)) {
+        var bucket = bucketer.get_bucket(user_ids_string);
+
+        if (!bucket) {
             return 0;
         }
-        return unread_privates.get(user_ids_string).num_items();
+        return bucket.count();
     };
 
     return self;
 }());
 
+function make_per_stream_bucketer() {
+    return make_bucketer({
+        fold_case: true, // bucket keys are topics
+        make_bucket: make_id_set,
+    });
+}
+
 exports.unread_topic_counter = (function () {
     var self = {};
 
-    function str_dict() {
-        // Use this when keys are topics
-        return new Dict({fold_case: true});
-    }
-
-    function num_dict() {
-        // Use this for message ids.
-        return new Dict();
-    }
-
-    var unread_topics = num_dict(); // dict of stream -> topic -> msg id
-    var reverse_lookup = num_dict();
+    var bucketer = make_bucketer({
+        fold_case: false, // bucket keys are stream_ids
+        make_bucket: make_per_stream_bucketer,
+    });
 
     self.clear = function () {
-        unread_topics = num_dict();
-        reverse_lookup = num_dict();
+        bucketer.clear();
     };
 
     self.update = function (msg_id, stream_id, new_topic) {
@@ -90,26 +170,38 @@ exports.unread_topic_counter = (function () {
     };
 
     self.add = function (stream_id, topic, msg_id) {
-        unread_topics.setdefault(stream_id, str_dict());
-        var dict = unread_topics.get(stream_id).setdefault(topic, num_dict());
-        dict.set(msg_id, true);
-        reverse_lookup.set(msg_id, dict);
+        bucketer.add({
+            bucket_key: stream_id,
+            item_id: msg_id,
+            add_callback: function (per_stream_bucketer) {
+                per_stream_bucketer.add({
+                    bucket_key: topic,
+                    item_id: msg_id,
+                });
+            },
+        });
     };
 
     self.del = function (msg_id) {
-        var dict = reverse_lookup.get(msg_id);
-        if (dict) {
-            dict.del(msg_id);
-            reverse_lookup.del(msg_id);
-        }
+        bucketer.del(msg_id);
     };
+
+    function str_dict() {
+        // Use this when keys are topics
+        return new Dict({fold_case: true});
+    }
+
+    function num_dict() {
+        // Use this for stream ids.
+        return new Dict();
+    }
 
     self.get_counts = function () {
         var res = {};
         res.stream_unread_messages = 0;
         res.stream_count = num_dict();  // hash by stream_id -> count
         res.topic_count = num_dict(); // hash of hashes (stream_id, then topic -> count)
-        unread_topics.each(function (_, stream_id) {
+        bucketer.each(function (per_stream_bucketer, stream_id) {
 
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
@@ -117,23 +209,21 @@ exports.unread_topic_counter = (function () {
             // so that callers have a view of the **current** world.
             var sub = stream_data.get_sub_by_id(stream_id);
             if (!sub || !stream_data.is_subscribed(sub.name)) {
-                return true;
+                return;
             }
 
-            if (unread_topics.has(stream_id)) {
-                res.topic_count.set(stream_id, str_dict());
-                var stream_count = 0;
-                unread_topics.get(stream_id).each(function (msgs, topic) {
-                    var topic_count = msgs.num_items();
-                    res.topic_count.get(stream_id).set(topic, topic_count);
-                    if (!muting.is_topic_muted(sub.name, topic)) {
-                        stream_count += topic_count;
-                    }
-                });
-                res.stream_count.set(stream_id, stream_count);
-                if (stream_data.in_home_view(stream_id)) {
-                    res.stream_unread_messages += stream_count;
+            res.topic_count.set(stream_id, str_dict());
+            var stream_count = 0;
+            per_stream_bucketer.each(function (msgs, topic) {
+                var topic_count = msgs.count();
+                res.topic_count.get(stream_id).set(topic, topic_count);
+                if (!muting.is_topic_muted(sub.name, topic)) {
+                    stream_count += topic_count;
                 }
+            });
+            res.stream_count.set(stream_id, stream_count);
+            if (stream_data.in_home_view(stream_id)) {
+                res.stream_unread_messages += stream_count;
             }
 
         });
@@ -144,14 +234,16 @@ exports.unread_topic_counter = (function () {
     self.get_stream_count = function (stream_id) {
         var stream_count = 0;
 
-        if (!unread_topics.has(stream_id)) {
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+
+        if (!per_stream_bucketer) {
             return 0;
         }
 
-        unread_topics.get(stream_id).each(function (msgs, topic) {
+        per_stream_bucketer.each(function (msgs, topic) {
             var sub = stream_data.get_sub_by_id(stream_id);
             if (sub && !muting.is_topic_muted(sub.name, topic)) {
-                stream_count += msgs.num_items();
+                stream_count += msgs.count();
             }
         });
 
@@ -159,54 +251,38 @@ exports.unread_topic_counter = (function () {
     };
 
     self.get = function (stream_id, topic) {
-        var num_unread = 0;
-        if (unread_topics.has(stream_id) &&
-            unread_topics.get(stream_id).has(topic)) {
-            num_unread = unread_topics.get(stream_id).get(topic).num_items();
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+        if (!per_stream_bucketer) {
+            return 0;
         }
-        return num_unread;
+
+        var topic_bucket = per_stream_bucketer.get_bucket(topic);
+        if (!topic_bucket) {
+            return 0;
+        }
+
+        return topic_bucket.count();
     };
 
     self.topic_has_any_unread = function (stream_id, topic) {
-        var stream_dct = unread_topics.get(stream_id);
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
 
-        if (!stream_dct) {
+        if (!per_stream_bucketer) {
             return false;
         }
 
-        var topic_dct = stream_dct.get(topic);
-        if (!topic_dct) {
+        var id_set = per_stream_bucketer.get_bucket(topic);
+        if (!id_set) {
             return false;
         }
 
-        return !topic_dct.is_empty();
+        return !id_set.is_empty();
     };
 
     return self;
 }());
 
-exports.unread_mentions_counter = (function () {
-    var self = {};
-    var mentions = new Dict(); // msg_id -> true
-
-    self.clear = function () {
-        mentions = new Dict();
-    };
-
-    self.add = function (message_id) {
-        mentions.set(message_id, true);
-    };
-
-    self.del = function (message_id) {
-        mentions.del(message_id);
-    };
-
-    self.count = function () {
-        return mentions.num_items();
-    };
-
-    return self;
-}());
+exports.unread_mentions_counter = make_id_set();
 
 exports.message_unread = function (message) {
     if (message === undefined) {
@@ -214,6 +290,10 @@ exports.message_unread = function (message) {
     }
     return message.flags === undefined ||
            message.flags.indexOf('read') === -1;
+};
+
+exports.id_flagged_as_unread = function (message_id) {
+    return unread_messages.has(message_id);
 };
 
 exports.update_unread_topics = function (msg, event) {
@@ -232,6 +312,8 @@ exports.process_loaded_messages = function (messages) {
         if (!unread) {
             return;
         }
+
+        unread_messages.set(message.id, true);
 
         if (message.type === 'private') {
             exports.unread_pm_counter.add(message);
@@ -258,12 +340,14 @@ exports.mark_as_read = function (message_id) {
     exports.unread_pm_counter.del(message_id);
     exports.unread_topic_counter.del(message_id);
     exports.unread_mentions_counter.del(message_id);
+    unread_messages.del(message_id);
 };
 
 exports.declare_bankruptcy = function () {
     exports.unread_pm_counter.clear();
     exports.unread_topic_counter.clear();
     exports.unread_mentions_counter.clear();
+    unread_messages.clear();
 };
 
 exports.get_counts = function () {
@@ -303,6 +387,25 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 
 exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
+};
+
+exports.set_read_flag = function (message) {
+    /*
+        Our data structures allow us to know if a message_id is unread/read,
+        but we also need to set message.unread for our rendering code.
+
+        We also have code that uses message.flags, so we maintain that data
+        as well. The server sends us flags (e.g. ['read', 'starred']), so
+        our code on the "edges" needs that representation.
+
+        It is kind of painful to have three different representations, but
+        we fortunately only set read/unread in a few places in our code.
+    */
+    message.flags = message.flags || [];
+    if (!_.contains(message.flags, 'read')) {
+        message.flags.push('read');
+    }
+    message.unread = false;
 };
 
 return exports;
