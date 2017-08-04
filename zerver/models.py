@@ -428,13 +428,12 @@ def get_realm_emoji_uncached(realm):
     d = {}
     from zerver.lib.emoji import get_emoji_url
     for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
+        author = None
         if row.author:
             author = {
                 'id': row.author.id,
                 'email': row.author.email,
                 'full_name': row.author.full_name}
-        else:
-            author = None
         d[row.name] = dict(source_url=get_emoji_url(row.file_name, row.realm_id),
                            deactivated=row.deactivated,
                            author=author)
@@ -1696,7 +1695,7 @@ class UserPresence(models.Model):
     def status_from_string(status):
         # type: (NonBinaryStr) -> Optional[int]
         if status == 'active':
-            status_val = UserPresence.ACTIVE
+            status_val = UserPresence.ACTIVE  # type: Optional[int] # See https://github.com/python/mypy/issues/2611
         elif status == 'idle':
             status_val = UserPresence.IDLE
         else:

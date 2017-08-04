@@ -56,19 +56,19 @@ def zulip_default_context(request):
     """
     realm = get_realm_from_request(request)
 
-    if realm is not None:
+    if realm is None:
+        realm_uri = settings.SERVER_URI
+        realm_name = None
+        realm_icon = None
+        realm_description = None
+        realm_invite_required = False
+    else:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
         realm_description_raw = realm.description or "The coolest place in the universe."
         realm_description = convert(realm_description_raw, message_realm=realm)
         realm_invite_required = realm.invite_required
-    else:
-        realm_uri = settings.SERVER_URI
-        realm_name = None
-        realm_icon = None
-        realm_description = None
-        realm_invite_required = False
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
