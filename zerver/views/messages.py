@@ -778,22 +778,23 @@ def update_message_flags(request, user_profile,
                          stream_name=REQ(default=None),
                          topic_name=REQ(default=None)):
     # type: (HttpRequest, UserProfile, List[int], Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
+
+    if stream_name is not None:
+        # TODO: We should just have different endpoints for
+        #       the stream/topic options.
+        return update_stream_topic_message_flags(
+            request=request,
+            user_profile=user_profile,
+            operation=operation,
+            flag=flag,
+            stream_name=stream_name,
+            topic_name=topic_name)
+
     target_count_str = str(len(messages))
     log_data_str = "[%s %s/%s]" % (operation, flag, target_count_str)
     request._log_data["extra"] = log_data_str
     stream = None
-    if stream_name is not None:
-        try:
-            stream = get_stream(stream_name, user_profile.realm)
-        except Stream.DoesNotExist:
-            raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
-        if topic_name:
-            topic_exists = UserMessage.objects.filter(user_profile=user_profile,
-                                                      message__recipient__type_id=stream.id,
-                                                      message__recipient__type=Recipient.STREAM,
-                                                      message__subject__iexact=topic_name).exists()
-            if not topic_exists:
-                raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
+
     count = do_update_message_flags(user_profile, operation, flag, messages,
                                     stream, topic_name)
 
@@ -816,6 +817,37 @@ def mark_all_as_read(request, user_profile):
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
+                         'msg': ''})
+
+def update_stream_topic_message_flags(request,
+                                      user_profile,
+                                      operation,
+                                      flag,
+                                      stream_name,
+                                      topic_name):
+    # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
+    try:
+        stream = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
+
+    if topic_name:
+        topic_exists = UserMessage.objects.filter(user_profile=user_profile,
+                                                  message__recipient__type_id=stream.id,
+                                                  message__recipient__type=Recipient.STREAM,
+                                                  message__subject__iexact=topic_name).exists()
+        if not topic_exists:
+            raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
+
+    messages = []  # type: List[int]
+    count = do_update_message_flags(user_profile, operation, flag, messages,
+                                    stream, topic_name)
+
+    log_data_str = "[%s %s/%s updated]" % (operation, flag, count)
+    request._log_data["extra"] = log_data_str
+
+    return json_success({'result': 'success',
+                         'messages': messages,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):
