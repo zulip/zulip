@@ -3,8 +3,15 @@ class zulip_ops::stats {
   include zulip_ops::apache
   include zulip::supervisor
 
-  $stats_packages = [ "libssl-dev", "zlib1g-dev", "python-twisted", "python-django", "python-django-tagging",
-                      "python-carbon", "python-cairo", "python-graphite-web", "python-whisper", "redis-server" ]
+  $stats_packages = [ "libssl-dev", "zlib1g-dev", "redis-server",
+                      # "python3-twisted", "python3-django", # missing on trusty
+                      # "python3-django-tagging", # missing on trusty and xenial!
+                      "python-twisted", "python-django", "python-django-tagging",
+                      "python-carbon", "python-graphite-web", # can't find these anywhere! did this ever work?
+                      "python3-cairo",
+                      # "python3-whisper", # missing on trusty and xenial!
+                      "python-cairo", "python-whisper"
+                      ]
   package { $stats_packages: ensure => "installed" }
 
   file { "/root/setup_disks.sh":

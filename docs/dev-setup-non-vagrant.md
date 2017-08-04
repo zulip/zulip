@@ -50,8 +50,8 @@ Install the following non-Python dependencies:
  * memcached (and headers)
  * rabbitmq-server
  * libldap2-dev
- * python-dev
  * python3-dev
+ * python-dev
  * python-virtualenv
  * redis-server — rate limiting
  * tsearch-extras — better text search
@@ -67,8 +67,8 @@ https://github.com/zulip/zulip.git`
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
-    postgresql-server-dev-all libmemcached-dev python-dev \
-    python3-dev python-virtualenv hunspell-en-us nodejs \
+    postgresql-server-dev-all libmemcached-dev python3-dev \
+    python-dev python-virtualenv hunspell-en-us nodejs \
     nodejs-legacy git yui-compressor puppet gettext postgresql
 
 # If using Ubuntu, install PGroonga from its PPA
@@ -127,7 +127,7 @@ sudo add-apt-repository ppa:tabbott/zulip
 sudo apt-get update
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
-    postgresql-server-dev-all libmemcached-dev python-dev \
+    postgresql-server-dev-all libmemcached-dev python3-dev python-dev \
     hunspell-en-us nodejs nodejs-legacy git yui-compressor \
     puppet gettext tsearch-extras
 ```
