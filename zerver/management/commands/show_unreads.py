@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Set, Text
 
 from argparse import ArgumentParser
 from django.core.management.base import CommandError
+from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import (
@@ -109,62 +110,89 @@ def get_timing(message, f):
 
 def fix_unsubscribed(user_profile):
     # type: (UserProfile) -> None
-    where_clause = '''
-        INNER JOIN zerver_message ON (
-            zerver_message.id = zerver_usermessage.message_id
-        )
-        INNER JOIN zerver_recipient ON (
-            zerver_recipient.id = zerver_message.recipient_id
-        )
-        INNER JOIN zerver_subscription ON (
-            zerver_subscription.user_profile_id = '%s' AND
-            zerver_subscription.recipient_id = zerver_recipient.id
-        )
-        WHERE (
-            zerver_usermessage.user_profile_id = %s AND
-            zerver_recipient.type = 2 AND
-            (zerver_usermessage.flags & 1) = 0 AND
-            (NOT zerver_subscription.active)
-        )
-        ORDER BY zerver_message.id
-    '''
-
-    from django.db import connection
 
     cursor = connection.cursor()
 
-    def execute(query):
-        # type: (str) -> None
-        cursor.execute(query, [user_profile.id, user_profile.id])
+    recipient_ids = []
 
-    def find():
+    def find_recipients():
         # type: () -> None
         query = '''
             SELECT
-                zerver_usermessage.id
-            FROM zerver_usermessage
-        ''' + where_clause
-        execute(query)
+                zerver_subscription.recipient_id
+            FROM
+                zerver_subscription
+            INNER JOIN zerver_recipient ON (
+                zerver_recipient.id = zerver_subscription.recipient_id
+            )
+            WHERE (
+                zerver_subscription.user_profile_id = '%s' AND
+                zerver_recipient.type = 2 AND
+                (NOT zerver_subscription.active)
+            )
+        '''
+        cursor.execute(query, [user_profile.id])
         rows = cursor.fetchall()
-        print('rows found: %d' % (len(rows),))
+        for row in rows:
+            recipient_ids.append(row[0])
+        print (recipient_ids)
+
+    get_timing(
+        'get recipients',
+        find_recipients
+    )
+
+    if not recipient_ids:
+        return
+
+    user_message_ids = []
+
+    def find():
+        # type: () -> None
+        recips = ', '.join(str(id) for id in recipient_ids)
+
+        query = '''
+            SELECT
+                zerver_usermessage.id
+            FROM
+                zerver_usermessage
+            INNER JOIN zerver_message ON (
+                zerver_message.id = zerver_usermessage.message_id
+            )
+            WHERE (
+                zerver_usermessage.user_profile_id = %s AND
+                (zerver_usermessage.flags & 1) = 0 AND
+                zerver_message.recipient_id in (%s)
+            )
+        ''' % (user_profile.id, recips)
+
+        print('''
+            EXPLAIN analyze''' + query.rstrip() + ';')
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            user_message_ids.append(row[0])
+        print('rows found: %d' % (len(user_message_ids),))
 
     get_timing(
         'finding unread messages for non-active streams',
         find
     )
 
-    fix_query = '''
-        UPDATE zerver_usermessage
-        SET flags = flags | 1
-        WHERE id IN (
-            SELECT zerver_usermessage.id
-            FROM zerver_usermessage
-    ''' + where_clause + ')'
-    print(fix_query)
+    if not user_message_ids:
+        return
 
     def fix():
         # type: () -> None
-        execute(fix_query)
+        um_id_list = ', '.join(str(id) for id in user_message_ids)
+        query = '''
+            UPDATE zerver_usermessage
+            SET flags = flags | 1
+            WHERE id IN (%s)
+        ''' % (um_id_list,)
+
+        cursor.execute(query)
 
     get_timing(
         'fixing unread messages for non-active streams',
