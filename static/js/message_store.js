@@ -111,6 +111,7 @@ exports.set_message_booleans = function (message, flags) {
         return flags.indexOf(flag_name) >= 0;
     }
 
+    message.unread = !convert_flag('read');
     message.historical = convert_flag('historical');
     message.starred = convert_flag('starred');
     message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
