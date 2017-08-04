@@ -2600,14 +2600,11 @@ def do_mark_all_as_read(user_profile):
     statsd.incr("mark_all_as_read", count)
     return count
 
-def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, Text, Text, Optional[Sequence[int]], bool, Optional[Stream], Optional[Text]) -> int
+def do_update_message_flags(user_profile, operation, flag, messages, stream_obj, topic_name):
+    # type: (UserProfile, Text, Text, Optional[Sequence[int]], Optional[Stream], Optional[Text]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
-    if all:
-        log_statsd_event('bankruptcy')
-        msgs = UserMessage.objects.filter(user_profile=user_profile)
-    elif stream_obj is not None:
+    if stream_obj is not None:
         recipient = get_recipient(Recipient.STREAM, stream_obj.id)
         if topic_name:
             msgs = UserMessage.objects.filter(message__recipient=recipient,
@@ -2656,7 +2653,7 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
              'operation': operation,
              'flag': flag,
              'messages': messages,
-             'all': all}
+             'all': False}
     send_event(event, [user_profile.id])
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)

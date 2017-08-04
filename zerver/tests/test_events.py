@@ -588,7 +588,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred',
-                                            [message], False, None, None),
+                                            [message], None, None),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -602,7 +602,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'remove', 'starred',
-                                            [message], False, None, None),
+                                            [message], None, None),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -624,7 +624,7 @@ class EventsRegisterTest(ZulipTestCase):
 
             self.do_test(
                 lambda: do_update_message_flags(user_profile, 'add', 'read',
-                                                [message], False, None, None),
+                                                [message], None, None),
                 state_change_expected=True,
             )
 
