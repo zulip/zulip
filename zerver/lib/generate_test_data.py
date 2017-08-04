@@ -198,10 +198,12 @@ def remove_line_breaks(fh):
         if text != "":
             para.append(text)
         else:
-            if para is not None:
+            if para:
                 results.append(" ".join(para))
             # reset the paragraph
             para = []
+    if para:
+        results.append(" ".join(para))
 
     return results
 
