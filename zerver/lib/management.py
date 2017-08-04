@@ -25,7 +25,8 @@ class ZulipBaseCommand(BaseCommand):
             dest='realm_id',
             required=required,
             type=str,
-            help='The numeric or string ID (subdomain) of the Zulip organization to modify.')
+            help='The numeric or string ID (subdomain) of the Zulip organization to modify. '
+                 'You can use the command list_realms to find ID of the realms in this server.')
 
     def get_realm(self, options):
         # type: (Dict[str, Any]) -> Optional[Realm]
