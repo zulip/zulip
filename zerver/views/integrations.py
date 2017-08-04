@@ -73,6 +73,7 @@ class HelpView(ApiURLView):
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not path.endswith("/index.md")
+        context["page_is_help_center"] = True
         return context
 
     def get(self, request, article=""):

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from django.http import HttpRequest
 from django.conf import settings
 
