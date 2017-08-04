@@ -6,7 +6,7 @@ from typing import Any
 from argparse import ArgumentParser
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_update_message_flags
+from zerver.lib.actions import do_mark_all_as_read
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message
 
@@ -28,7 +28,7 @@ class Command(ZulipBaseCommand):
             except CommandError:
                 print("e-mail %s doesn't exist in the realm %s, skipping" % (email, realm))
                 continue
-            do_update_message_flags(user_profile, "add", "read", None, True, None, None)
+            do_mark_all_as_read(user_profile)
 
             messages = Message.objects.filter(
                 usermessage__user_profile=user_profile).order_by('-id')[:1]
