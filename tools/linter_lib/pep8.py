@@ -17,6 +17,7 @@ def check_pep8(files):
         pep8 = subprocess.Popen(
             ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        assert pep8.stdout is not None  # Implied by use of subprocess.PIPE
         for line in iter(pep8.stdout.readline, b''):
             print_err('pep8', color, line)
             failed = True

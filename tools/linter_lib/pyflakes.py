@@ -17,6 +17,7 @@ def check_pyflakes(options, by_lang):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
 
+    assert pyflakes.stdout is not None  # Implied by use of subprocess.PIPE
     for ln in iter(pyflakes.stdout.readline, b''):
         if options.full or not (
             b'imported but unused' in ln or
