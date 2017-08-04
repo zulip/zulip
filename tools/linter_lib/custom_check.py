@@ -11,9 +11,9 @@ from .printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple
 
+RuleList = List[Dict[str, Any]]
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
-    RuleList = List[Dict[str, Any]]
 
     def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
         # type: (str, str, RuleList, str, Optional[Any], Optional[int]) -> bool
