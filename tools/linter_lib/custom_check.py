@@ -11,7 +11,9 @@ from .printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple
 
-RuleList = List[Dict[str, Any]]
+RuleList = List[Dict[str, Any]]  # mypy currently requires Aliases at global scope
+# https://github.com/python/mypy/issues/3145
+
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
 
