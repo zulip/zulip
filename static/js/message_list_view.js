@@ -249,7 +249,6 @@ MessageListView.prototype = {
 
             message_container.contains_mention =
                 notifications.speaking_at_me(message_container.msg);
-            message_container.msg.unread = unread.message_unread(message_container.msg);
             self._maybe_format_me_message(message_container);
 
             prev = message_container;
