@@ -210,7 +210,8 @@ def google_oauth2_csrf(request, value):
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
-    return redirect_to_main_site(request, url)
+    is_signup = bool(request.GET.get('is_signup'))
+    return redirect_to_main_site(request, url, is_signup=is_signup)
 
 def redirect_to_main_site(request, url, is_signup=False):
     # type: (HttpRequest, Text, bool) -> HttpResponse
@@ -247,6 +248,7 @@ def start_social_signup(request, backend):
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')
+    is_signup = request.GET.get('is_signup', '')
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
 
     if settings.REALMS_HAVE_SUBDOMAINS:
@@ -255,7 +257,7 @@ def send_oauth_request_to_google(request):
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp)
+    csrf_state = '%s:%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp, is_signup)
 
     # Now compute the CSRF hash with the other parameters as an input
     csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
@@ -283,7 +285,7 @@ def finish_google_oauth2(request):
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 4:
+    if csrf_state is None or len(csrf_state.split(':')) != 5:
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
@@ -291,9 +293,11 @@ def finish_google_oauth2(request):
     if hmac_value != google_oauth2_csrf(request, csrf_data):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
-    cur_time, subdomain, mobile_flow_otp = csrf_data.split(':')
+    cur_time, subdomain, mobile_flow_otp, is_signup = csrf_data.split(':')
     if mobile_flow_otp == '0':
         mobile_flow_otp = None
+
+    is_signup = True if is_signup == '1' else False
 
     resp = requests.post(
         'https://www.googleapis.com/oauth2/v3/token',
@@ -352,14 +356,16 @@ def finish_google_oauth2(request):
         invalid_subdomain = bool(return_data.get('invalid_subdomain'))
         return login_or_register_remote_user(request, email_address, user_profile,
                                              full_name, invalid_subdomain,
-                                             mobile_flow_otp=mobile_flow_otp)
+                                             mobile_flow_otp=mobile_flow_otp,
+                                             is_signup=is_signup)
 
     try:
         realm = Realm.objects.get(string_id=subdomain)
     except Realm.DoesNotExist:
         return redirect_to_subdomain_login_url()
 
-    return redirect_and_log_into_subdomain(realm, full_name, email_address)
+    return redirect_and_log_into_subdomain(
+        realm, full_name, email_address, is_signup=is_signup)
 
 def authenticate_remote_user(request, email_address, subdomain=None):
     # type: (HttpRequest, str, Optional[Text]) -> Tuple[UserProfile, Dict[str, Any]]

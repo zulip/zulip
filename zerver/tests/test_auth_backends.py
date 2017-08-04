@@ -750,8 +750,8 @@ class ResponseMock(object):
 
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response, account_response, subdomain=None,
-                           mobile_flow_otp=None):
-        # type: (ResponseMock, ResponseMock, Optional[str], Optional[str]) -> HttpResponse
+                           mobile_flow_otp=None, is_signup=None):
+        # type: (ResponseMock, ResponseMock, Optional[str], Optional[str], Optional[str]) -> HttpResponse
         url = "/accounts/login/google/"
         params = {}
         headers = {}
@@ -760,6 +760,8 @@ class GoogleOAuthTest(ZulipTestCase):
         if mobile_flow_otp is not None:
             params['mobile_flow_otp'] = mobile_flow_otp
             headers['HTTP_USER_AGENT'] = "ZulipAndroid"
+        if is_signup is not None:
+            params['is_signup'] = is_signup
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
@@ -978,11 +980,13 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                 emails=[dict(type="account",
                                              value=email)])
             account_response = ResponseMock(200, account_data)
-            result = self.google_oauth2_test(token_response, account_response, 'zulip')
+            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+                                             is_signup='1')
 
             data = unsign_subdomain_cookie(result)
+            name = 'Full Name'
             self.assertEqual(data['email'], email)
-            self.assertEqual(data['name'], 'Full Name')
+            self.assertEqual(data['name'], name)
             self.assertEqual(data['subdomain'], 'zulip')
             self.assertEqual(result.status_code, 302)
             parsed_url = urllib.parse.urlparse(result.url)
@@ -991,27 +995,26 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
             result = self.client_get(result.url)
-            self.assert_in_response('No account found for',
-                                    result)
-            self.assert_in_response('newuser@zulip.com. Would you like to register instead?',
-                                    result)
-            # Click confirm registration button.
-            result = self.client_post('/register/',
-                                      {'email': email})
             self.assertEqual(result.status_code, 302)
-            self.client_get(result.url)
-            assert Confirmation.objects.all().count() == 1
             confirmation = Confirmation.objects.all().first()
-            url = confirmation_url(confirmation.confirmation_key, realm.host, Confirmation.USER_REGISTRATION)
-            result = self.client_get(url)
-            key_match = re.search('value="(?P<key>[0-9a-z]+)" name="key"', result.content.decode("utf-8"))
-            result = self.client_post('/accounts/register/',
-                                      {'full_name': "New User",
-                                       'password': 'test_password',
-                                       'key': key_match.group("key"),
-                                       'terms': True})
+            confirmation_key = confirmation.confirmation_key
+            self.assertIn('do_confirm/' + confirmation_key, result.url)
+            result = self.client_get(result.url)
+            self.assert_in_response('action="/accounts/register/"', result)
+            data = {"from_confirmation": "1",
+                    "full_name": name,
+                    "key": confirmation_key}
+            result = self.client_post('/accounts/register/', data)
+            self.assert_in_response("You're almost there", result)
+
+            # Click confirm registration button.
+            result = self.client_post(
+                '/accounts/register/',
+                {'full_name': name,
+                 'key': confirmation_key,
+                 'terms': True})
+
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "http://zulip.testserver/")
             user_profile = get_user(email, realm)
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -1167,7 +1170,7 @@ class GoogleLoginTest(GoogleOAuthTest):
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more:")
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more::")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')

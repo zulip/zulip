@@ -79,6 +79,7 @@ $(function () {
                         {% if google_auth_enabled %}
                         <div class="register-google">
                             <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
+                                <input type='hidden' name='is_signup' value='1' />
                                 <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
                             </form>
                         </div>
