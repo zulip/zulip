@@ -76,7 +76,11 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
     }
 
     activity.process_loaded_messages(messages);
-    message_util.do_unread_count_updates(messages);
+
+    unread.process_loaded_messages(messages);
+    unread_ui.update_unread_counts();
+    resize.resize_page_components();
+
     exports.maybe_advance_to_recently_sent_message(messages);
     unread_ops.process_visible();
     notifications.received_messages(messages);
