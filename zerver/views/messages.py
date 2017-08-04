@@ -793,14 +793,10 @@ def get_messages_backend(request, user_profile,
 def update_message_flags(request, user_profile,
                          messages=REQ(validator=check_list(check_int)),
                          operation=REQ('op'), flag=REQ(),
-                         all=REQ(validator=check_bool, default=False),
                          stream_name=REQ(default=None),
                          topic_name=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, List[int], Text, Text, bool, Optional[Text], Optional[Text]) -> HttpResponse
-    if all:
-        target_count_str = "all"
-    else:
-        target_count_str = str(len(messages))
+    # type: (HttpRequest, UserProfile, List[int], Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
+    target_count_str = str(len(messages))
     log_data_str = "[%s %s/%s]" % (operation, flag, target_count_str)
     request._log_data["extra"] = log_data_str
     stream = None
@@ -817,7 +813,7 @@ def update_message_flags(request, user_profile,
             if not topic_exists:
                 raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
     count = do_update_message_flags(user_profile, operation, flag, messages,
-                                    all, stream, topic_name)
+                                    stream, topic_name)
 
     # If we succeed, update log data str with the actual count for how
     # many messages were updated.
