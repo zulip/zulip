@@ -9,7 +9,6 @@ class zulip::static_asset_compiler {
                                      $closure_compiler_package,
                                      "nodejs",
                                      "nodejs-legacy",
-                                     "npm",
                                      "yui-compressor",
                                      # Used by makemessages i18n
                                      "gettext",

@@ -1460,6 +1460,19 @@ $ tools/clean-branches --reviews
 Deleting local branch review-original-5156 (was 5a1e982)
 ```
 
+### Merge conflict on yarn.lock file
+
+If there is a merge conflict on yarn.lock, yarn.lock, yarn should be run to
+regenerate the file. *Important* don't delete the yarn.lock file. Checkout the
+latest one from origin/master so that yarn knows the previous asset versions.
+
+Run the following commands
+```
+git checkout origin/master -- yarn.lock
+yarn install
+git add yarn.lock
+git rebase --continue
+```
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [gitbook-git-rebase]: https://git-scm.com/docs/git-rebase

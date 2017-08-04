@@ -886,50 +886,23 @@ gigabytes of RAM, which is the minimum Zulip
 not, go to your VM settings and increase the RAM, then restart
 the VM.
 
-##### npm install errors
-
-The `tools/provision` script may encounter an error related to `npm install`
-that looks something like:
+##### yarn install warnings
 
 ```
-==> default: + npm install
-==> default: Traceback (most recent call last):
-==> default:   File "/srv/zulip/tools/provision", line 195, in <module>
-==> default:
-==> default: sys.exit(main())
-==> default:   File "/srv/zulip/tools/provision", line 191, in main
-==> default:
-==> default: run(["npm", "install"])
-==> default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 78, in run
-==> default:
-==> default: raise subprocess.CalledProcessError(rc, args)
-==> default: subprocess
-==> default: .
-==> default: CalledProcessError
-==> default: :
-==> default: Command '['npm', 'install']' returned non-zero exit status 34
-The SSH command responded with a non-zero exit status. Vagrant
-assumes that this means the command failed. The output for this command
-should be in the log above. Please read the output to determine what
-went wrong.
+$ yarn install
+yarn install v0.24.5
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+warning fsevents@1.1.1: The platform "linux" is incompatible with this module.
+info "fsevents@1.1.1" is an optional dependency and failed compatibility check. Excluding it from installation.
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+$ browserify node_modules/sockjs-client/lib/entry.js --standalone SockJS > node_modules/sockjs-client/sockjs.js
+Done in 23.50s.
 ```
 
-Usually this error is not fatal. Try connecting to the development
-environment and re-trying the command from withing the virtual
-machine:
-
-```
-christie@win10 ~/zulip
-$ vagrant ssh
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd zulip
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
-$ npm install
-npm WARN optional Skipping failed optional dependency /chokidar/fsevents:
-npm WARN notsup Not compatible with your operating system or architecture: fsevents@1.0.12
-```
-
-These are just warnings so it is okay to proceed and start the Zulip server.
+These are warnings produced by spammy third party JavaScript packages.
+It is okay to proceed and start the Zulip server.
 
 #### vagrant-lxc errors
 
