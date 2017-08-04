@@ -54,7 +54,6 @@ def parse_file(config, gens, corpus_file):
     with open(corpus_file, "r") as infile:
         # OUR DATA: we need to seperate the person talking and what they say
         paragraphs = remove_line_breaks(infile)
-        paragraphs = process_dialog(paragraphs)
         paragraphs = add_flair(paragraphs, gens)
 
     return paragraphs
@@ -150,37 +149,6 @@ def add_link(text, link):
 
     return " ".join(vals)
 
-def remove_actions(line):
-    # type: (str) -> str
-
-    # Sure, we can regex, but why hassle with that?
-    newVal = line
-    if "[" in line:
-        posOne = line.index("[")
-        posTwo = line.index("]")
-
-        if posTwo < len(line):
-            newVal = line[:posOne] + line[posTwo + 1:]
-        else:
-            newVal = line[:posOne]
-
-    if newVal != line:
-        newVal = remove_actions(newVal)
-
-    return newVal
-
-def process_dialog(paragraphs):
-    # type: (List[str]) -> List[str]
-
-    results = []
-    for dialog in paragraphs:
-        tup_result = get_dialog(dialog)
-        if tup_result is not None:
-            if tup_result[0] is not None:
-                results.append(tup_result)
-
-    return results
-
 def remove_line_breaks(fh):
     # type: (Any) -> List[str]
 
@@ -191,10 +159,6 @@ def remove_line_breaks(fh):
 
     for line in fh:
         text = line.strip()
-        # this is the standard notification to mark the end of Gutenberg stuff
-        if text.startswith("***END OF THE PROJECT GUTENBERG"):
-            break
-
         if text != "":
             para.append(text)
         else:
@@ -206,24 +170,6 @@ def remove_line_breaks(fh):
         results.append(" ".join(para))
 
     return results
-
-def get_dialog(line):
-    # type: (str) -> Any
-
-    # We've got a line from the play,
-    # let's see if it's a line or dialog or something else.
-
-    actor = ""
-    if '.' in line:
-        strpos = line.index('.')
-        if strpos > 0:
-            actor = line[:strpos]
-            vals = actor.split()
-            if len(vals) < 2:
-                return remove_actions(line[strpos + 2:].strip())
-            else:
-                # no actor, so not a line of dialog
-                return None
 
 def write_file(paragraphs, filename):
     # type: (List[str], str) -> None
