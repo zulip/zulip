@@ -250,6 +250,10 @@ v1_api_and_json_patterns = [
     url(r'^invites$', rest_dispatch,
         {'POST': 'zerver.views.invite.invite_users_backend'}),
 
+    # mark messages as read (in bulk)
+    url(r'^mark_all_as_read$', rest_dispatch,
+        {'POST': 'zerver.views.messages.mark_all_as_read'}),
+
     # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,

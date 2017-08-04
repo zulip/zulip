@@ -10,12 +10,8 @@ exports.mark_all_as_read = function mark_all_as_read(cont) {
     unread_ui.update_unread_counts();
 
     channel.post({
-        url:      '/json/messages/flags',
+        url:      '/json/mark_all_as_read',
         idempotent: true,
-        data:     {messages: JSON.stringify([]),
-                   all:      true,
-                   op:       'add',
-                   flag:     'read'},
         success:  cont});
 };
 

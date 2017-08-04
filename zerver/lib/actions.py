@@ -2574,6 +2574,32 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
 
+def do_mark_all_as_read(user_profile):
+    # type: (UserProfile) -> int
+    log_statsd_event('bankruptcy')
+
+    msgs = UserMessage.objects.filter(
+        user_profile=user_profile
+    ).extra(
+        where=[UserMessage.where_unread()]
+    )
+
+    count = msgs.update(
+        flags=F('flags').bitor(UserMessage.flags.read)
+    )
+
+    event = dict(
+        type='update_message_flags',
+        operation='add',
+        flag='read',
+        messages=[],  # we don't send messages, since the client reloads anyway
+        all=True
+    )
+    send_event(event, [user_profile.id])
+
+    statsd.incr("mark_all_as_read", count)
+    return count
+
 def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
     # type: (UserProfile, Text, Text, Optional[Sequence[int]], bool, Optional[Stream], Optional[Text]) -> int
     flagattr = getattr(UserMessage.flags, flag)
