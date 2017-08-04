@@ -88,7 +88,7 @@ def stub_event_queue_user_events(event_queue_return, user_events_return):
 
 @contextmanager
 def simulated_queue_client(client):
-    # type: (type) -> Iterator[None]
+    # type: (Callable) -> Iterator[None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
