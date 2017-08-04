@@ -906,6 +906,13 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             confirmation = Confirmation.objects.all().first()
             confirmation_key = confirmation.confirmation_key
             self.assertIn('do_confirm/' + confirmation_key, result.url)
+            result = self.client_get(result.url)
+            self.assert_in_response('action="/accounts/register/"', result)
+            data = {"from_confirmation": "1",
+                    "full_name": data['name'],
+                    "key": confirmation_key}
+            result = self.client_post('/accounts/register/', data)
+            self.assert_in_response("You're almost there", result)
 
     def test_log_into_subdomain_when_email_is_none(self):
         # type: () -> None

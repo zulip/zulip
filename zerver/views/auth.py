@@ -44,8 +44,8 @@ import requests
 import time
 import ujson
 
-def maybe_send_to_registration(request, email, full_name=''):
-    # type: (HttpRequest, Text, Text) -> HttpResponse
+def maybe_send_to_registration(request, email, full_name='', password_required=True):
+    # type: (HttpRequest, Text, Text, bool) -> HttpResponse
     form = HomepageForm({'email': email}, realm=get_realm_from_request(request))
     request.verified_email = None
     if form.is_valid():
@@ -56,9 +56,11 @@ def maybe_send_to_registration(request, email, full_name=''):
             try:
                 prereg_user = PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
             except PreregistrationUser.DoesNotExist:
-                prereg_user = create_preregistration_user(email, request)
+                prereg_user = create_preregistration_user(email, request,
+                                                          password_required=password_required)
         else:
-            prereg_user = create_preregistration_user(email, request)
+            prereg_user = create_preregistration_user(email, request,
+                                                      password_required=password_required)
 
         return redirect("".join((
             create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
@@ -93,7 +95,8 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         # associated Zulip user account.
         if is_signup:
             # If they're trying to sign up, send them over to the PreregistrationUser flow.
-            return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
+            return maybe_send_to_registration(request, remote_user_to_email(remote_username),
+                                              full_name, password_required=False)
 
         # Otherwise, we send them to a special page that asks if they
         # want to register or provided the wrong email and want to go back.
