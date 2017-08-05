@@ -34,6 +34,7 @@ from zerver.models import (
     Realm,
     RealmFilter,
     Recipient,
+    UserProfile,
 )
 
 import copy
@@ -958,6 +959,31 @@ class BugdownTest(ZulipTestCase):
             converted,
             'javascript://example.com/invalidURL',
         )
+
+    def test_slash_commands_trigger(self):
+        # type: () -> None
+
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        def render(msg, content):
+            # type: (Message, Text) -> Text
+            return render_markdown(msg,
+                                   content,
+                                   realm_slash_commands=set(["user1"]),
+                                   message_users={user_profile})
+
+        content = "/user1 welcome to zulip."
+        self.assertEqual(render(msg, content), "<p>/user1 welcome to zulip.</p>")
+        self.assertEqual(msg.triggered_slash_command, "user1")
+
+        content = "user1 welcome to zulip."
+        self.assertEqual(render(msg, content), "<p>user1 welcome to zulip.</p>")
+        self.assertEqual(msg.triggered_slash_command, None)
+
+        content = "welcome to zulip /user1."
+        self.assertEqual(render(msg, content), "<p>welcome to zulip /user1.</p>")
+        self.assertEqual(msg.triggered_slash_command, None)
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):

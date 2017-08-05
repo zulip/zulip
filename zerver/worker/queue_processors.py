@@ -42,6 +42,7 @@ from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_servi
 from zerver.models import get_bot_services
 from zulip import Client
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
+from zerver.slash_commands import get_slash_command_handler_class
 
 import os
 import sys
@@ -499,3 +500,12 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile),
                 state_handler=self.get_state_handler())
+
+
+@assign_queue('slash_commands')
+class SlashCommandsWorker(QueueProcessingWorker):
+    def consume(self, event):
+        # type: (Mapping[str, Any]) -> None
+        command_handler = get_slash_command_handler_class(event['command'])
+        command_handler_instance = command_handler()
+        command_handler_instance.handle_event(event)

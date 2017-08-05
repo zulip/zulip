@@ -21,7 +21,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    bot_dict_fields, flush_message, bot_profile_cache_key
+    bot_dict_fields, flush_message, bot_profile_cache_key, slash_commands_by_realm_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -1860,3 +1860,22 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+
+class SlashCommand(models.Model):
+    command = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, unique=True)  # type: Text
+    user_profile = models.ForeignKey(UserProfile)  # type: UserProfile
+
+@cache_with_key(slash_commands_by_realm_key, timeout=3600 * 24)
+def get_slash_commands_by_realm(realm, is_active=True):
+    # type: (Realm, bool) -> List[Text]
+    commands = SlashCommand.objects.filter(user_profile__realm=realm,
+                                           user_profile__is_active=is_active).values('command')
+    commands = [command['command'] for command in commands]
+    return commands
+
+
+def get_slash_command_owner_bot(command):
+    # type: (Text) -> UserProfile
+    owner = SlashCommand.objects.get(command=command).user_profile
+    return owner

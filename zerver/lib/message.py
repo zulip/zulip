@@ -23,7 +23,8 @@ from zerver.models import (
     Stream,
     UserProfile,
     UserMessage,
-    Reaction
+    Reaction,
+    get_slash_commands_by_realm,
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Text, Union
@@ -49,6 +50,12 @@ def message_to_dict(message, apply_markdown):
 def message_to_dict_json(message, apply_markdown):
     # type: (Message, bool) -> binary_type
     return MessageDict.to_dict_uncached(message, apply_markdown)
+
+# performs the same operation as message_to_dict without caching the message dicts.
+def message_to_dict_uncached(message, apply_markdown):
+    # type: (Message, bool) -> Dict[str, Any]
+    json = MessageDict.to_dict_uncached(message, apply_markdown)
+    return extract_message_dict(json)
 
 class MessageDict(object):
     @staticmethod
@@ -293,8 +300,9 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, realm=None, realm_alert_words=None, message_users=None):
-    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Set[UserProfile]) -> Text
+def render_markdown(message, content, realm=None, realm_alert_words=None, realm_slash_commands=None,
+                    message_users=None):
+    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[Text]], Set[UserProfile]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
@@ -311,6 +319,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
         message.is_me_message = False
         message.mentions_user_ids = set()
         message.alert_words = set()
+        message.triggered_slash_command = None
         message.links_for_preview = set()
 
         if realm is None:
@@ -332,6 +341,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(content, message=message, message_realm=realm,
                                        possible_words=possible_words,
+                                       realm_slash_commands=realm_slash_commands,
                                        sent_by_bot=sent_by_bot)
 
     if message is not None:
