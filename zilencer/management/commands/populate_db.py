@@ -240,13 +240,16 @@ class Command(BaseCommand):
         personals_pairs = [random.sample(user_profiles_ids, 2)
                            for i in range(options["num_personals"])]
 
+        # Generate a new set of test data.
+        create_test_data()
+
         threads = options["threads"]
-        jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int]]]
+        jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]]
         for i in range(threads):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append((count, personals_pairs, options, self.stdout.write))
+            jobs.append((count, personals_pairs, options, self.stdout.write, random.randint(0, 10**10)))
 
         for job in jobs:
             send_messages(job)
@@ -402,15 +405,14 @@ def get_recipient_by_id(rid):
 # - multiple messages per subject
 # - both single and multi-line content
 def send_messages(data):
-    # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any]]) -> int
-    (tot_messages, personals_pairs, options, output) = data
-    random.seed(os.getpid())
-
-    # Generate a new set of test data.
-    create_test_data()
+    # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]) -> int
+    (tot_messages, personals_pairs, options, output, random_seed) = data
+    print(random_seed)
+    random.seed(random_seed)
 
     with open("var/test_messages.json", "r") as infile:
         dialog = ujson.load(infile)
+    random.shuffle(dialog)
     texts = itertools.cycle(dialog)
 
     recipient_streams = [klass.id for klass in
