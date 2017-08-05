@@ -16,8 +16,6 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
 sys.path.append(os.path.dirname(TOOLS_DIR))
-from lib import sanity_check
-sanity_check.check_venv(__file__)
 from lib.test_script import get_provisioning_status
 
 exclude_common = """
