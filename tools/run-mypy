@@ -15,6 +15,11 @@ from typing import cast, Dict, List
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
+sys.path.append(os.path.dirname(TOOLS_DIR))
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+from lib.test_script import get_provisioning_status
+
 exclude_common = """
 zproject/settings.py
 zproject/test_settings.py
@@ -47,11 +52,21 @@ parser.add_argument('--no-ignore-missing-imports', dest='ignore_missing_imports'
                     help="""Don't use the --ignore-missing-imports flag with mypy""")
 parser.add_argument('--quick', action='store_true', default=False,
                     help="""Use the --quick flag with mypy""")
+parser.add_argument('--force', default=False,
+                    action="store_true",
+                    help='Run tests despite possible provisioning problems.')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--py2', default=False, action='store_true', help="Use Python 2 mode")
 group.add_argument('--py3', default=False, action='store_true', help="Use Python 3 mode")
 args = parser.parse_args()
+
+if not args.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
 
 if args.py2:
     py_version = 2
