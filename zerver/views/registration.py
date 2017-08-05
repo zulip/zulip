@@ -199,7 +199,6 @@ def accounts_register(request):
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
-        first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
         timezone = u""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
@@ -221,7 +220,7 @@ def accounts_register(request):
 
         send_initial_pms(user_profile)
 
-        if first_in_realm:
+        if realm_creation:
             do_change_is_admin(user_profile, True)
             setup_initial_private_stream(user_profile)
             send_initial_realm_messages(realm)
