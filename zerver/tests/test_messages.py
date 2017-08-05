@@ -59,6 +59,8 @@ import ujson
 from six.moves import range
 from typing import Any, List, Optional, Text
 
+from collections import namedtuple
+
 class TopicHistoryTest(ZulipTestCase):
     def test_topics_history(self):
         # type: () -> None
@@ -1645,15 +1647,13 @@ class EditMessageTest(ZulipTestCase):
         self.check_message(id6, subject="topic3")
 
 class MirroredMessageUsersTest(ZulipTestCase):
-    class Request(object):
-        pass
-
     def test_invalid_sender(self):
         # type: () -> None
         user = self.example_user('hamlet')
         recipients = []  # type: List[Text]
-        request = self.Request()
-        request.POST = dict()  # no sender
+
+        Request = namedtuple('Request', ['POST'])
+        request = Request(POST=dict())  # no sender
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -1669,11 +1669,10 @@ class MirroredMessageUsersTest(ZulipTestCase):
         sender = user
 
         recipients = []  # type: List[Text]
-        request = self.Request()
-        request.POST = dict(
-            sender=sender.email,
-            type='private')
-        request.client = client
+
+        Request = namedtuple('Request', ['POST', 'client'])
+        request = Request(POST = dict(sender=sender.email, type='private'),
+                          client = client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -1690,14 +1689,13 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.mit_user('starnine')
         sender = user
 
+        Request = namedtuple('Request', ['POST', 'client'])
+
         for client_name in ['zephyr_mirror', 'irc_mirror', 'jabber_mirror']:
             client = get_client(name=client_name)
 
-            request = self.Request()
-            request.POST = dict(
-                sender=sender.email,
-                type='private')
-            request.client = client
+            request = Request(POST = dict(sender=sender.email, type='private'),
+                              client = client)
 
             (valid_input, mirror_sender) = \
                 create_mirrored_message_users(request, user, recipients)
@@ -1719,11 +1717,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients = [user.email, new_user_email]
 
         # Now make the request.
-        request = self.Request()
-        request.POST = dict(
-            sender=sender.email,
-            type='private')
-        request.client = client
+        Request = namedtuple('Request', ['POST', 'client'])
+        request = Request(POST = dict(sender=sender.email, type='private'),
+                          client = client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -1751,11 +1747,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients = ['stream_name']
 
         # Now make the request.
-        request = self.Request()
-        request.POST = dict(
-            sender=sender_email,
-            type='stream')
-        request.client = client
+        Request = namedtuple('Request', ['POST', 'client'])
+        request = Request(POST = dict(sender=sender_email, type='stream'),
+                          client = client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -1775,11 +1769,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients = [self.nonreg_email('alice'), 'bob@irc.zulip.com', self.nonreg_email('cordelia')]
 
         # Now make the request.
-        request = self.Request()
-        request.POST = dict(
-            sender=sender.email,
-            type='private')
-        request.client = client
+        Request = namedtuple('Request', ['POST', 'client'])
+        request = Request(POST = dict(sender=sender.email, type='private'),
+                          client = client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -1805,11 +1797,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients = [self.nonreg_email('alice'), self.nonreg_email('bob'), self.nonreg_email('cordelia')]
 
         # Now make the request.
-        request = self.Request()
-        request.POST = dict(
-            sender=sender.email,
-            type='private')
-        request.client = client
+        Request = namedtuple('Request', ['POST', 'client'])
+        request = Request(POST = dict(sender=sender.email, type='private'),
+                          client = client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
