@@ -16,6 +16,7 @@ from zerver.lib.bugdown import (
     url_embed_preview_enabled_for_realm
 )
 from zerver.lib.cache import (
+    delete_user_profile_caches,
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
@@ -616,6 +617,8 @@ def do_deactivate_stream(stream, log=True):
 
 def do_change_user_email(user_profile, new_email):
     # type: (UserProfile, Text) -> None
+    delete_user_profile_caches([user_profile])
+
     user_profile.email = new_email
     user_profile.save(update_fields=["email"])
 

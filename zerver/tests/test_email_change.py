@@ -125,6 +125,10 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_in_success_response(["This confirms that the email address"],
                                         response)
 
+        # Now confirm trying to change your email back doesn't throw an immediate error
+        result = self.client_patch(url, {"email": "hamlet@zulip.com"})
+        self.assert_in_success_response(['Check your email for a confirmation link.'], result)
+
     def test_unauthorized_email_change(self):
         # type: () -> None
         data = {'email': 'hamlet-new@zulip.com'}
