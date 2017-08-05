@@ -43,7 +43,7 @@ var LightboxCanvas = (function () {
 
             // wheelEvent.deltaMode is a value that describes what the unit is
             // for the `deltaX`, `deltaY`, and `deltaZ` properties.
-            const DELTA_MODE = {
+            var DELTA_MODE = {
                 PIXEL: 0,
                 LINE: 1,
                 PAGE: 2,
