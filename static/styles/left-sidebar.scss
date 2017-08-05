@@ -296,6 +296,7 @@ li.top_left_starred_messages {
 .topic-name {
     /* TODO: We should figure out how to remove this without changing the spacing */
     line-height: 1.1;
+    white-space: pre;
 }
 
 .all-messages-arrow i,
