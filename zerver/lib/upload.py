@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 from typing import Any, Dict, Mapping, Optional, Tuple, Text
 
 from django.utils.translation import ugettext as _
@@ -107,16 +107,23 @@ def resize_emoji(image_data, size=DEFAULT_EMOJI_SIZE):
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
         if image_format == 'GIF' and im.is_animated:
-            if im.size[0] > size or im.size[1] > size:
+            if im.size[0] != im.size[1]:
+                raise JsonableError(
+                    _("Animated emoji must be have same width and height."))
+            elif im.size[0] > size:
                 raise JsonableError(
                     _("Animated emoji can't be larger than 64px in width or height."))
             else:
                 return image_data
-        im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+        im.thumbnail((size, size), Image.ANTIALIAS)
+        final_image = Image.new('RGBA', (size, size), '#FFFFFF')
+        left = int((size - im.size[0]) / 2)
+        top = int((size - im.size[1]) / 2)
+        final_image.paste(im, (left, top))
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
     out = io.BytesIO()
-    im.save(out, format=image_format)
+    final_image.save(out, format=image_format)
     return out.getvalue()
 
 
