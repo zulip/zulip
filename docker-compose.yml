@@ -52,3 +52,4 @@ zulip:
     ZULIP_USER_DOMAIN: "example.com"
   volumes:
     - "/opt/docker/zulip/zulip:/data:rw"
+  tty: true
