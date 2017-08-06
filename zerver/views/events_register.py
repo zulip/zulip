@@ -19,7 +19,7 @@ def _default_all_public_streams(user_profile, all_public_streams):
 def _default_narrow(user_profile, narrow):
     # type: (UserProfile, Iterable[Sequence[Text]]) -> Iterable[Sequence[Text]]
     default_stream = user_profile.default_events_register_stream  # type: Optional[Stream]
-    if not narrow and user_profile.default_events_register_stream is not None:
+    if not narrow and default_stream is not None:
         narrow = [['stream', default_stream.name]]
     return narrow
 
