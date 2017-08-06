@@ -57,9 +57,9 @@ def prettify_date(date_string):
 
 def process_card_action(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Optional[Tuple[Text, Text]]
-    action_type = get_proper_action(payload, action_type)
-    if action_type is not None:
-        return get_subject(payload), get_body(payload, action_type)
+    proper_action = get_proper_action(payload, action_type)
+    if proper_action is not None:
+        return get_subject(payload), get_body(payload, proper_action)
     return None
 
 def get_proper_action(payload, action_type):

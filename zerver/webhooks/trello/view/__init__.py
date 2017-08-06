@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
 import ujson
-from typing import Mapping, Any, Tuple, Text
+from typing import Mapping, Any, Tuple, Text, Optional
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from zerver.lib.actions import check_send_message
@@ -34,7 +34,7 @@ def api_trello_webhook(request, user_profile, payload=REQ(argument_type='body'),
     return json_success()
 
 def get_subject_and_body(payload, action_type):
-    # type: (Mapping[str, Any], Text) -> Tuple[Text, Text]
+    # type: (Mapping[str, Any], Text) -> Optional[Tuple[Text, Text]]
     if action_type in SUPPORTED_CARD_ACTIONS:
         return process_card_action(payload, action_type)
     if action_type in SUPPORTED_BOARD_ACTIONS:
