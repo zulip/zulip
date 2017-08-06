@@ -265,6 +265,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^r][M]essage.objects.get',
          'exclude': set(["zerver/tests",
                          "zerver/lib/onboarding.py",
+                         "zerver/management/commands/add_mock_conversation.py",
                          "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
          },
