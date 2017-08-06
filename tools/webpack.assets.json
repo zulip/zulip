@@ -2,8 +2,8 @@
     "activity": "./static/third/sorttable/sorttable.js",
     "api": "./static/js/portico/api.js",
     "common": [
-               "./node_modules/jquery/dist/jquery.min.js",
-               "./node_modules/underscore/underscore-min.js",
+               "./node_modules/jquery/dist/jquery.js",
+               "./node_modules/underscore/underscore.js",
                "./static/js/blueslip.js",
                "./static/third/bootstrap/js/bootstrap.js",
                "./static/js/common.js",
