@@ -218,11 +218,15 @@ body.night-mode .popover.right .arrow {
     border-right-color: hsl(235, 18%, 7%);
 }
 
+body.night-mode #searchbox a.search_icon,
+body.night-mode #searchbox .search_button,
 body.night-mode .close,
 body.night-mode ul.filters li:hover .arrow {
     color: hsl(236, 33%, 80%);
 }
 
+body.night-mode #searchbox a.search_icon:hover,
+body.night-mode #searchbox .search_button:hover,
 body.night-mode .close:hover,
 body.night-mode ul.filters li .arrow:hover {
     color: hsl(0, 0%, 100%);
@@ -257,6 +261,7 @@ body.night-mode .emoji-popover-top {
     background-color: hsla(0, 0%, 0%, 0.2);
 }
 
+body.night-mode #searchbox,
 body.night-mode .drafts-header,
 body.night-mode .nav > li > a:hover,
 body.night-mode .subscriptions-header,
