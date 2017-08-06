@@ -190,7 +190,7 @@ def get_test_image_file(filename):
     return open(os.path.join(test_avatar_dir, filename), 'rb')
 
 def avatar_disk_path(user_profile, medium=False):
-    # type: (UserProfile, bool) -> str
+    # type: (UserProfile, bool) -> Text
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
                                     avatar_url_path.split("/")[-2],
