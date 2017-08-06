@@ -54,7 +54,7 @@ def get_user_profile(session_id):
 connections = dict()  # type: Dict[Union[int, str], SocketConnection]
 
 def get_connection(id):
-    # type: (Union[int, str]) -> SocketConnection
+    # type: (Union[int, str]) -> Optional[SocketConnection]
     return connections.get(id)
 
 def register_connection(id, conn):
@@ -68,6 +68,7 @@ def register_connection(id, conn):
 
 def deregister_connection(conn):
     # type: (SocketConnection) -> None
+    assert conn.client_id is not None
     del connections[conn.client_id]
 
 redis_client = get_redis_client()
@@ -94,7 +95,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         self.authenticated = False
         self.session.user_profile = None
-        self.close_info = None  # type: CloseErrorInfo
+        self.close_info = None  # type: Optional[CloseErrorInfo]
         self.did_close = False
 
         try:
