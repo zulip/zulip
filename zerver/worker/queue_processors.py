@@ -63,7 +63,7 @@ class WorkerDeclarationException(Exception):
     pass
 
 def assign_queue(queue_name, enabled=True, queue_type="consumer"):
-    # type: (str, bool, Optional[str]) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
+    # type: (str, bool, str) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
     def decorate(clazz):
         # type: (QueueProcessingWorker) -> QueueProcessingWorker
         clazz.queue_name = queue_name
