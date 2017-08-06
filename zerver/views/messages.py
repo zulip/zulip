@@ -20,7 +20,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
-    do_mark_all_as_read
+    do_mark_all_as_read, do_mark_stream_messages_as_read
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import (
     generic_bulk_cached_fetch,
@@ -790,18 +790,10 @@ def update_message_flags(request, user_profile,
             stream_name=stream_name,
             topic_name=topic_name)
 
+    count = do_update_message_flags(user_profile, operation, flag, messages)
+
     target_count_str = str(len(messages))
-    log_data_str = "[%s %s/%s]" % (operation, flag, target_count_str)
-    request._log_data["extra"] = log_data_str
-    stream = None
-
-    count = do_update_message_flags(user_profile, operation, flag, messages,
-                                    stream, topic_name)
-
-    # If we succeed, update log data str with the actual count for how
-    # many messages were updated.
-    if count != len(messages):
-        log_data_str = "[%s %s/%s] actually %s" % (operation, flag, target_count_str, count)
+    log_data_str = "[%s %s/%s] actually %s" % (operation, flag, target_count_str, count)
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
@@ -826,6 +818,9 @@ def update_stream_topic_message_flags(request,
                                       stream_name,
                                       topic_name):
     # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
+    assert(operation == 'add')
+    assert(flag == 'read')
+
     try:
         stream = get_stream(stream_name, user_profile.realm)
     except Stream.DoesNotExist:
@@ -839,15 +834,12 @@ def update_stream_topic_message_flags(request,
         if not topic_exists:
             raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
 
-    messages = []  # type: List[int]
-    count = do_update_message_flags(user_profile, operation, flag, messages,
-                                    stream, topic_name)
+    count = do_mark_stream_messages_as_read(user_profile, stream, topic_name)
 
     log_data_str = "[%s %s/%s updated]" % (operation, flag, count)
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
-                         'messages': messages,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):

@@ -2620,53 +2620,69 @@ def do_mark_all_as_read(user_profile):
     statsd.incr("mark_all_as_read", count)
     return count
 
-def do_update_message_flags(user_profile, operation, flag, messages, stream_obj, topic_name):
-    # type: (UserProfile, Text, Text, Optional[Sequence[int]], Optional[Stream], Optional[Text]) -> int
+def do_mark_stream_messages_as_read(user_profile, stream, topic_name=None):
+    # type: (UserProfile, Optional[Stream], Optional[Text]) -> int
+    log_statsd_event('mark_stream_as_read')
+
+    msgs = UserMessage.objects.filter(
+        user_profile=user_profile
+    )
+
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+    msgs = msgs.filter(message__recipient=recipient)
+
+    if topic_name:
+        msgs = msgs.filter(message__subject__iexact=topic_name)
+
+    msgs = msgs.extra(
+        where=[UserMessage.where_unread()]
+    )
+
+    message_ids = list(msgs.values_list('message__id', flat=True))
+
+    count = msgs.update(
+        flags=F('flags').bitor(UserMessage.flags.read)
+    )
+
+    event = dict(
+        type='update_message_flags',
+        operation='add',
+        flag='read',
+        messages=message_ids,
+        all=False,
+    )
+    send_event(event, [user_profile.id])
+
+    statsd.incr("mark_stream_as_read", count)
+    return count
+
+def do_update_message_flags(user_profile, operation, flag, messages):
+    # type: (UserProfile, Text, Text, Optional[Sequence[int]]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
-    if stream_obj is not None:
-        recipient = get_recipient(Recipient.STREAM, stream_obj.id)
-        if topic_name:
-            msgs = UserMessage.objects.filter(message__recipient=recipient,
-                                              user_profile=user_profile,
-                                              message__subject__iexact=topic_name)
-        else:
-            msgs = UserMessage.objects.filter(message__recipient=recipient, user_profile=user_profile)
-    else:
-        assert messages is not None
-        msgs = UserMessage.objects.filter(user_profile=user_profile,
-                                          message__id__in=messages)
-        # Hack to let you star any message
-        if msgs.count() == 0:
-            if not len(messages) == 1:
-                raise JsonableError(_("Invalid message(s)"))
-            if flag != "starred":
-                raise JsonableError(_("Invalid message(s)"))
-            # Validate that the user could have read the relevant message
-            message = access_message(user_profile, messages[0])[0]
+    assert messages is not None
+    msgs = UserMessage.objects.filter(user_profile=user_profile,
+                                      message__id__in=messages)
+    # Hack to let you star any message
+    if msgs.count() == 0:
+        if not len(messages) == 1:
+            raise JsonableError(_("Invalid message(s)"))
+        if flag != "starred":
+            raise JsonableError(_("Invalid message(s)"))
+        # Validate that the user could have read the relevant message
+        message = access_message(user_profile, messages[0])[0]
 
-            # OK, this is a message that you legitimately have access
-            # to via narrowing to the stream it is on, even though you
-            # didn't actually receive it.  So we create a historical,
-            # read UserMessage message row for you to star.
-            UserMessage.objects.create(user_profile=user_profile,
-                                       message=message,
-                                       flags=UserMessage.flags.historical | UserMessage.flags.read)
+        # OK, this is a message that you legitimately have access
+        # to via narrowing to the stream it is on, even though you
+        # didn't actually receive it.  So we create a historical,
+        # read UserMessage message row for you to star.
+        UserMessage.objects.create(user_profile=user_profile,
+                                   message=message,
+                                   flags=UserMessage.flags.historical | UserMessage.flags.read)
 
-    # The filter() statements below prevent postgres from doing a lot of
-    # unnecessary work, which is a big deal for users updating lots of
-    # flags (e.g. bankruptcy).  This patch arose from seeing slow calls
-    # to POST /json/messages/flags in the logs.  The filter() statements
-    # are kind of magical; they are actually just testing the one bit.
     if operation == 'add':
-        msgs = msgs.filter(flags=~flagattr)
-        if stream_obj:
-            messages = list(msgs.values_list('message__id', flat=True))
         count = msgs.update(flags=F('flags').bitor(flagattr))
     elif operation == 'remove':
-        msgs = msgs.filter(flags=flagattr)
-        if stream_obj:
-            messages = list(msgs.values_list('message__id', flat=True))
         count = msgs.update(flags=F('flags').bitand(~flagattr))
 
     event = {'type': 'update_message_flags',
