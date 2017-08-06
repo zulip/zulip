@@ -100,7 +100,7 @@ class LogEventsTest(ZulipTestCase):
     def test_with_missing_event_log_dir_setting(self):
         # type: () -> None
         with self.settings(EVENT_LOG_DIR=None):
-            log_event(None)
+            log_event(dict())
 
     def test_log_event_mkdir(self):
         # type: () -> None
