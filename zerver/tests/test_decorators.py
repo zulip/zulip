@@ -960,7 +960,7 @@ class TestInternalNotifyView(TestCase):
         req = self.Request(
             POST=dict(secret=secret),
             META=dict(REMOTE_ADDR='127.0.0.1'),
-        )
+        )  # type: HttpRequest
 
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
