@@ -2,7 +2,7 @@
 .hotspot-icon {
     position: fixed;
     cursor: pointer;
-    z-index: 103;
+    z-index: 100;
 }
 
 .hotspot-icon .dot {
@@ -72,18 +72,26 @@
     color: white;
 }
 
-.hotspot.overlay .hotspot-popover-bottom {
+.hotspot.overlay .hotspot-popover-content {
     background-color: white;
     padding: 15px;
-    height: 130px;
+}
+
+.hotspot.overlay .hotspot-popover-bottom {
+    background-color: white;
+    height: 90px;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
 }
 
-.hotspot.overlay .hotspot-confirm {
+.hotspot.overlay .hotspot-img {
     position: absolute;
-    bottom: 18px;
-    right: 18px;
+    bottom: 10px;
+    left: 4px;
+    height: 83px;
+}
+
+.hotspot.overlay .hotspot-confirm {
     border: none;
     background-color: hsl(164, 44%, 47%);
     color: white;
@@ -92,6 +100,9 @@
     width: 70px;
     height: 28px;
     border-radius: 4px;
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
 }
 
 /* arrows */
@@ -166,4 +177,9 @@
 .hotspot-popover.arrow-right:before {
     border-left-color: hsl(0, 0%, 80%);
     margin-top: -13px;
+}
+
+/* individual icon z-indexing */
+#hotspot_stream_settings_icon {
+    z-index: 103;
 }

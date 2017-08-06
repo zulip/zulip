@@ -251,6 +251,11 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
+    if (hotspots.is_open()) {
+        $(e.target).find('.hotspot.overlay.show .hotspot-confirm').click();
+        return false;
+    }
+
     if (emoji_picker.reactions_popped()) {
         if (emoji_picker.is_composition(e.target)) {
             e.target.click();
@@ -441,6 +446,10 @@ exports.process_hotkey = function (e, hotkey) {
 
     if (emoji_picker.reactions_popped()) {
         return emoji_picker.navigate(e, event_name);
+    }
+
+    if (hotspots.is_open()) {
+        return false;
     }
 
     if (overlays.info_overlay_open()) {
