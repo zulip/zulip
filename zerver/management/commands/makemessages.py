@@ -30,15 +30,13 @@ http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja
 """
 from __future__ import absolute_import
 
-from typing import Any, Dict, Iterable, Optional, Mapping, Set, Tuple, Text
+from typing import Any, Dict, Iterable, Mapping, Text
 
 from argparse import ArgumentParser
 import os
 import re
 import glob
 import json
-from six.moves import filter
-from six.moves import map
 from six.moves import zip
 
 import django
