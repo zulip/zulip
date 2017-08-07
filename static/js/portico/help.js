@@ -39,6 +39,16 @@ const Ps = require('perfect-scrollbar');
         $(".sidebar").removeClass("show");
 
         e.preventDefault();
+
+        var container = $(".markdown")[0];
+        container.scrollTop = 0;
+        Ps.update(container);
+    });
+
+    Ps.initialize($(".markdown")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
     });
 
     Ps.initialize($(".sidebar")[0], {
@@ -46,6 +56,10 @@ const Ps = require('perfect-scrollbar');
         useKeyboard: false,
         wheelSpeed: 0.68,
     });
+
+    window.onresize = function () {
+        Ps.update($(".markdown")[0]);
+    };
 
     window.addEventListener("popstate", function () {
         var path = window.location.pathname;

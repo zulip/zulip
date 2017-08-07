@@ -1392,7 +1392,7 @@ input.new-organization-button {
     }
 
     .app.help .markdown {
-        height: auto;
+        height: 100%;
     }
 
     .app.help .footer-main {
