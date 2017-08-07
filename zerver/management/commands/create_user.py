@@ -6,18 +6,19 @@ from typing import Any
 import sys
 import argparse
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.core import validators
 
-from zerver.models import Realm, get_realm, email_to_username
+from zerver.models import email_to_username
 from zerver.lib.actions import do_create_user
 from zerver.lib.actions import notify_new_user
 from zerver.lib.initial_password import initial_password
+from zerver.lib.management import ZulipBaseCommand
 from six.moves import input
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Create the specified user with a default initial password.
 
 A user MUST have ALREADY accepted the Terms of Service before creating their
@@ -33,10 +34,6 @@ Omit both <email> and <full name> for interactive user creation.
                             action="store_true",
                             default=False,
                             help='Acknowledgement that the user has already accepted the ToS.')
-        parser.add_argument('--realm',
-                            dest='string_id',
-                            type=str,
-                            help='The name of the existing realm to which to add the user.')
         parser.add_argument('--password',
                             dest='password',
                             type=str,
@@ -55,21 +52,14 @@ Omit both <email> and <full name> for interactive user creation.
                             help='email address of new user')
         parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
                             help='full name of new user')
+        self.add_realm_args(parser, True, "The name of the existing realm to which to add the user.")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         if not options["tos"]:
             raise CommandError("""You must confirm that this user has accepted the
 Terms of Service by passing --this-user-has-accepted-the-tos.""")
-
-        if not options["string_id"]:
-            raise CommandError("""Please specify a realm by passing --realm.""")
-
-        try:
-            realm = get_realm(options["string_id"])
-        except Realm.DoesNotExist:
-            raise CommandError("Realm does not exist.")
-
+        realm = self.get_realm(options)
         try:
             email = options['email']
             full_name = options['full_name']
