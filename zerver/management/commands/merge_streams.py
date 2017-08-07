@@ -3,17 +3,13 @@ from __future__ import print_function
 
 from typing import Any, List
 
-from django.core.management.base import BaseCommand
-
 from zerver.lib.actions import bulk_remove_subscriptions, bulk_add_subscriptions, \
     do_deactivate_stream
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
-from zerver.lib.str_utils import force_text
-from zerver.models import Realm, get_realm, get_stream, Subscription, \
-    Recipient, get_recipient, Message
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import get_stream, Subscription, Recipient, get_recipient, Message
 
 from argparse import ArgumentParser
-import sys
 
 def bulk_delete_cache_keys(message_ids_to_clear):
     # type: (List[int]) -> None
@@ -27,24 +23,20 @@ def bulk_delete_cache_keys(message_ids_to_clear):
 
         message_ids_to_clear = message_ids_to_clear[5000:]
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Merge two streams."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('realm', metavar='<realm>', type=str,
-                            help='realm in which to merge the streams')
         parser.add_argument('stream_to_keep', type=str,
                             help='name of stream to keep')
         parser.add_argument('stream_to_destroy', type=str,
                             help='name of stream to merge into the stream being kept')
+        self.add_realm_args(parser, True)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        string_id = options['realm']
-        encoding = sys.getfilesystemencoding()
-
-        realm = get_realm(force_text(string_id, encoding))
+        realm = self.get_realm(options)
         stream_to_keep = get_stream(options["stream_to_keep"], realm)
         stream_to_destroy = get_stream(options["stream_to_destroy"], realm)
 
