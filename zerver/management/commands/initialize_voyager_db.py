@@ -8,6 +8,7 @@ from django.contrib.sites.models import Site
 from zerver.models import UserProfile, Realm, get_client, email_to_username
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_users
+from zerver.models import get_system_bot
 
 from argparse import ArgumentParser
 
@@ -52,7 +53,7 @@ class Command(BaseCommand):
             bot.save()
 
         # Initialize the email gateway bot as an API Super User
-        email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
         email_gateway_bot.is_api_super_user = True
         email_gateway_bot.save()
 
