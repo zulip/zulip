@@ -133,8 +133,10 @@ def get_type(request, payload):
     raise UnknownTriggerType("We don't support {} event type".format(event_key))
 
 def get_body_based_on_type(type):
-    # type: (str) -> Any
-    return GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
+    # type: (str) -> Callable[[Dict[str, Any]], Text]
+    fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
+    assert callable(fn)  # type parameter should be pre-checked, so not None
+    return fn
 
 def get_push_bodies(payload):
     # type: (Dict[str, Any]) -> List[Text]
