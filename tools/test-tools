@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     sys.path.insert(0, root_dir)
 
-    loader = unittest.TestLoader()  # type: ignore # https://github.com/python/typeshed/issues/372
+    loader = unittest.TestLoader()
 
     if args.coverage:
         import coverage

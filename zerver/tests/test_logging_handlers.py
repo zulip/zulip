@@ -79,7 +79,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             raise Exception("Testing Error!")
         except Exception:
             exc_info = sys.exc_info()
-        record = self.logger.makeRecord('name', logging.ERROR, 'function', 16, 'message', None, exc_info)  # type: ignore # https://github.com/python/typeshed/pull/1100
+        record = self.logger.makeRecord('name', logging.ERROR, 'function', 16, 'message', None, exc_info)
         handler.emit(record)
 
     def run_handler(self, record):
@@ -105,7 +105,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
 
             global captured_request
             global captured_exc_info
-            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,  # type: ignore # https://github.com/python/typeshed/pull/1100
+            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
                                             'message\nmoremesssage\nmore', None,
                                             None)
             record.request = captured_request  # type: ignore # this field is dynamically added
@@ -130,7 +130,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
 
             global captured_request
             global captured_exc_info
-            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15, 'message', None, captured_exc_info)  # type: ignore # https://github.com/python/typeshed/pull/1100
+            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15, 'message', None, captured_exc_info)
             record.request = captured_request  # type: ignore # this field is dynamically added
 
             report = self.run_handler(record)
