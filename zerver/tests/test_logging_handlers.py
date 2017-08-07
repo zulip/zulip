@@ -61,10 +61,10 @@ class AdminZulipHandlerTest(ZulipTestCase):
         settings.LOGGING_NOT_DISABLED = True
 
     def get_admin_zulip_handler(self):
-        # type: () -> Any
+        # type: () -> AdminZulipHandler
         return [
             h for h in logging.getLogger('').handlers
-            if h.__class__.__name__ == "AdminZulipHandler"
+            if isinstance(h, AdminZulipHandler)
         ][0]
 
     def test_basic(self):
