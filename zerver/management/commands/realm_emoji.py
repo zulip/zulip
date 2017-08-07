@@ -6,12 +6,12 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import Realm, get_realm
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
+from zerver.lib.management import ZulipBaseCommand
 import sys
 import six
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Manage emoji for the specified realm
 
 Example: ./manage.py realm_emoji --realm=zulip.com --op=add robotheart \\
@@ -29,11 +29,6 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('-r', '--realm',
-                            dest='string_id',
-                            type=str,
-                            required=True,
-                            help='The subdomain or string_id of the realm.')
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -43,10 +38,11 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
                             help="name of the emoji")
         parser.add_argument('img_url', metavar='<image url>', type=str, nargs='?',
                             help="URL of image to display for the emoji")
+        self.add_realm_args(parser, True)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["string_id"])
+        realm = self.get_realm(options)
         if options["op"] == "show":
             for name, url in six.iteritems(realm.get_emoji()):
                 print(name, url)
