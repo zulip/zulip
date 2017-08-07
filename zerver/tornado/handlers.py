@@ -212,7 +212,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 response = None
 
                 # Apply request middleware
-                for middleware_method in self._request_middleware:  # type: ignore # Should be List[Callable[[WSGIRequest], Any]] https://github.com/JukkaL/mypy/issues/1174
+                for middleware_method in self._request_middleware:
                     response = middleware_method(request)
                     if response:
                         break
