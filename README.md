@@ -103,7 +103,8 @@ discussion mailing list](#community) and uses [GitHub issues
 ][gh-issues].  There are also lists for the [Android][email-android]
 and [iOS][email-ios] apps.  Feel free to send any questions or
 suggestions of areas where you'd love to see more documentation to the
-relevant list!  Please report any security issues you discover to
+relevant list! Check out our [bug report guidelines][bug-report]
+before submitting. Please report any security issues you discover to
 zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
@@ -159,6 +160,7 @@ and posting on whether or not it worked is valuable.
 [transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
 [code-review]: https://chat.zulip.org/#narrow/stream/code.20review
+[bug-report]: http://zulip.readthedocs.io/en/latest/bug-reports.html
 
 ## Google Summer of Code
 
