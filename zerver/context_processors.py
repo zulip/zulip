@@ -89,6 +89,15 @@ def zulip_default_context(request):
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
         user_is_authenticated = request.user.is_authenticated.value
 
+    if settings.DEVELOPMENT:
+        secrets_path = "zproject/dev-secrets.conf"
+        settings_path = "zproject/dev_settings.py"
+        settings_comments_path = "zproject/prod_settings_template.py"
+    else:
+        secrets_path = "/etc/zulip/zulip-secrets.conf"
+        settings_path = "/etc/zulip/settings.py"
+        settings_comments_path = "/etc/zulip/settings.py"
+
     return {
         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
@@ -126,6 +135,9 @@ def zulip_default_context(request):
         'password_min_quality': settings.PASSWORD_MIN_ZXCVBN_QUALITY,
         'zulip_version': ZULIP_VERSION,
         'user_is_authenticated': user_is_authenticated,
+        'settings_path': settings_path,
+        'secrets_path': secrets_path,
+        'settings_comments_path': settings_comments_path,
     }
 
 

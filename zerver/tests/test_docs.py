@@ -166,3 +166,33 @@ class AboutPageTest(ZulipTestCase):
         flat_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         self.assertEqual(split_by(flat_list, 3, None), expected_result)
+
+class ConfigErrorTest(ZulipTestCase):
+    @override_settings(GOOGLE_OAUTH2_CLIENT_ID=None)
+    def test_google(self):
+        # type: () -> None
+        result = self.client_get("/accounts/login/google/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/google')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["GOOGLE_OAUTH2_CLIENT_ID"], result)
+
+    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
+    def test_github(self):
+        # type: () -> None
+        result = self.client_get("/accounts/login/social/github")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/github')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
+
+    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
+    @override_settings(DEVELOPMENT=False)
+    def test_github_production_error(self):
+        # type: () -> None
+        """Test the !DEVELOPMENT code path of config-error."""
+        result = self.client_get("/accounts/login/social/github")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/github')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)

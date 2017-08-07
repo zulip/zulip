@@ -1,0 +1,89 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="error_page" style="padding-bottom: 60px;">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/500art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">Configuration error</h1>
+                    <br/>
+                    {% if google_error %}
+                    <p>
+                        You are using the <b>Google auth backend</b>,
+                        but it is not properly configured. Please
+                        check the following:
+                    </p>
+                    <ul>
+                        <li>
+                            You have created a Google Oauth2 client
+                            and enabled the Google+ API. You can
+                            create OAuth2 apps
+                            at <a href="https://console.developers.google.com">https://console.developers.google.com</a>.
+                        </li>
+                        <li>
+                            You have configured your OAuth2 client to
+                            allow redirects to your server's Google
+                            auth URL:
+                            <code>{{ server_uri }}/accounts/login/google/done/</code>.
+                        </li>
+                        <li>
+                            You have
+                            set <code>GOOGLE_OAUTH2_CLIENT_ID</code>
+                            in <code>{{ settings_path }}</code>
+                            and <code>google_oauth2_client_secret</code>
+                            in <code>{{ secrets_path }}</code>.
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                    {% if github_error %}
+                    <p>
+                        You are using the <b>GitHub auth backend</b>,
+                        but it is not properly configured. Please
+                        check the following:
+                    </p>
+                    <ul>
+                        <li>
+                            You have added <code>{{ server_uri }}/complete/github/</code>
+                            as the callback URL in the OAuth application in
+                            GitHub. You can create OAuth apps
+                            from <a href="https://github.com/settings/developers">GitHub's
+                            developer site</a>.
+                        </li>
+                        <li>
+                            You have set <code>SOCIAL_AUTH_GITHUB_KEY</code>
+                            in <code>{{ settings_path }}</code>
+                            and <code>social_auth_github_secret</code>
+                            in <code>{{ secrets_path }}</code> with
+                            the values from your OAuth application.
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                    <p>After making your changes, remember to restart
+                    the Zulip server.</p>
+
+                    {% if development %}
+                    <p>
+                        For more information, have a look at
+                        the <a href="http://zulip.readthedocs.io/en/latest/settings.html#testing-google-github-authentication">authentication
+                        setup guide</a> for the development environment.
+                    </p>
+                    {% else %}
+                    <p>
+                        For more information, have a look at
+                        our <a href="http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html">authentication
+                        setup guide</a> and the comments in <code>{{ settings_comments_path }}</code>.
+                    </p>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

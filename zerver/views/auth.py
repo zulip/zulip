@@ -81,6 +81,10 @@ def redirect_to_subdomain_login_url():
     redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
 
+def redirect_to_config_error(error_type):
+    # type: (str) -> HttpResponseRedirect
+    return HttpResponseRedirect("/config-error/%s" % (error_type,))
+
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
                                   invalid_subdomain=False, mobile_flow_otp=None,
                                   is_signup=False):
@@ -210,6 +214,10 @@ def google_oauth2_csrf(request, value):
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
+
+    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
+        return redirect_to_config_error("google")
+
     is_signup = bool(request.GET.get('is_signup'))
     return redirect_to_main_site(request, url, is_signup=is_signup)
 
@@ -238,6 +246,9 @@ def redirect_to_main_site(request, url, is_signup=False):
 def start_social_login(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
+    if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and settings.SOCIAL_AUTH_GITHUB_SECRET):
+        return redirect_to_config_error("github")
+
     return redirect_to_main_site(request, backend_url)
 
 def start_social_signup(request, backend):
