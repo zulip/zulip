@@ -1,0 +1,41 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'">
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="error_page" style="padding-bottom: 60px;">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/500art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">Configuration error</h1>
+                    <p>Seems like you haven't properly configured authentication!</p>
+                    <p>Try restarting the development environment, as it is possible some changes you made require a restart.</p>
+                    <br/>
+                    {% if google_auth_enabled %}
+                    <p>You are using the <b>Google auth backend</b>. Please make sure of the following:</p>
+                    <p>- You have updated GOOGLE_OAUTH2_CLIENT_ID and GOOGLE_OAUTH2_CLIENT_SECRET settings.</p>
+                    <p>- You have setup an Oauth2 client ID that allows redirects, e.g. <code>https://zulip.example.com/accounts/login/google/done/</code>.</p>
+                    <p>- You have enabled the Google+ API. You can create OAuth2 apps from <code>https://console.developers.google.com</code>.</p>
+                    {% endif %}
+
+                    {% if github_auth_enabled %}
+                    <p>You are using the <b>GitHub auth backend</b>. Please make sure of the following:</p>
+                    <p>- You have updated SOCIAL_AUTH_GITHUB_KEY and SOCIAL_AUTH_GITHUB_SECRET settings.</p>
+                    <p>- You have added <code>http://localhost:9991/complete/github/</code> as the callback URL in the OAuth application in GitHub. You can create OAuth apps from <code>https://github.com/settings/developers</code>.</p>
+                    {% endif %}
+
+                    <p>For more information, have a look at our <a href="http://zulip.readthedocs.io/en/latest/settings.html#testing-google-github-authentication">authentication setup guide</a>.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
