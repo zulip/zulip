@@ -106,6 +106,7 @@ Contents:
    chat-zulip-org
    zulipbot-usage
    accessibility
+   bug-reports
 
 .. _code-testing:
 
