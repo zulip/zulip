@@ -4,15 +4,12 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand, CommandError
-from django.core.exceptions import ValidationError
+from django.core.management.base import BaseCommand
 
 import glob
 import logging
 import os
 import shutil
-import tempfile
-import ujson
 
 from zerver.lib.export import export_usermessages_batch
 
