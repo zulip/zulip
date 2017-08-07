@@ -45,7 +45,7 @@ You can use the command list_realms to find ID of the realms in this server."""
                 return Realm.objects.get(id=val)
             return Realm.objects.get(string_id=val)
         except Realm.DoesNotExist:
-            raise CommandError("The is no realm with id '%s'. Aborting." %
+            raise CommandError("There is no realm with id '%s'. Aborting." %
                                (options["realm_id"],))
 
     def get_user(self, email, realm):
