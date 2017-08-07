@@ -4,14 +4,13 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser
-from optparse import make_option
 
-from django.core.management.base import BaseCommand
-from zerver.models import RealmFilter, all_realm_filters, get_realm
+from zerver.models import all_realm_filters
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
+from zerver.lib.management import ZulipBaseCommand
 import sys
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Create a link filter rule for the specified realm.
 
 NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
@@ -27,11 +26,6 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('-r', '--realm',
-                            dest='string_id',
-                            type=str,
-                            required=True,
-                            help='The subdomain or string_id of the realm to adjust filters for.')
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -41,10 +35,11 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
                             help="regular expression to match")
         parser.add_argument('url_format_string', metavar='<url pattern>', type=str, nargs='?',
                             help="format string to substitute")
+        self.add_realm_args(parser, True)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["string_id"])
+        realm = self.get_realm(options)
         if options["op"] == "show":
             print("%s: %s" % (realm.string_id, all_realm_filters().get(realm.id, [])))
             sys.exit(0)
