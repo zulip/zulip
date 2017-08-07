@@ -4,21 +4,19 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-from django.core.management.base import BaseCommand, CommandError
-from django.core.exceptions import ValidationError
+from django.core.management.base import CommandError
 
 import os
 import shutil
 import subprocess
 import tempfile
-import ujson
 
 from zerver.lib.export import (
     do_export_realm, do_write_stats_file_for_realm_export
 )
-from zerver.models import get_realm
+from zerver.lib.management import ZulipBaseCommand
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Exports all data from a Zulip realm
 
     This command exports all significant data from a Zulip realm.  The
@@ -95,8 +93,6 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('realm', metavar='<realm>', type=str,
-                            help="realm to export")
         parser.add_argument('--output',
                             dest='output_dir',
                             action="store",
@@ -107,14 +103,11 @@ class Command(BaseCommand):
                             action="store",
                             default=6,
                             help='Threads to use in exporting UserMessage objects in parallel')
+        self.add_realm_args(parser, True)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        try:
-            realm = get_realm(options["realm"])
-        except ValidationError:
-            raise CommandError("No such realm.")
-
+        realm = self.get_realm(options)
         output_dir = options["output_dir"]
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
