@@ -173,9 +173,19 @@ exports.zoom_in = function () {
         return;
     }
 
-    exports.rebuild(active_widget.get_parent(), active_widget.get_stream_id());
-    $('#stream-filters-container').scrollTop(0);
-    $('#stream-filters-container').perfectScrollbar('update');
+    var stream_id = active_widget.get_stream_id();
+
+    function on_success() {
+        exports.rebuild(active_widget.get_parent(), stream_id);
+        $('#stream-filters-container').scrollTop(0);
+        $('#stream-filters-container').perfectScrollbar('update');
+    }
+
+    if (feature_flags.use_server_topic_history) {
+        topic_data.get_server_history(stream_id, on_success);
+    } else {
+        on_success();
+    }
 };
 
 exports.zoom_out = function (options) {
