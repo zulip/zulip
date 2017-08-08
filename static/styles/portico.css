@@ -1583,7 +1583,16 @@ input.new-organization-button {
     margin: 0 auto;
 }
 
+.portico-page.error {
+    padding-bottom: 0px;
+}
+
+.portico-page.error .portico-page-container {
+    padding: 0;
+}
+
 .error_page {
+    min-height: calc(100vh - 64px);
     background-color: #c9e9e0;
     font-family: 'Humbug', Helvetica, Arial, sans-serif;
 }
