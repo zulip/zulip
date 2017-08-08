@@ -833,26 +833,28 @@ nav ul li.active::after {
     font-weight: normal;
 }
 
-.portico-landing.hello .col-2 {
-    width: 60%;
+.portico-landing.hello .col-3-5,
+.portico-landing.hello .col-2,
+.portico-landing.hello .col-4 {
     margin-right: -4px;
     display: inline-block;
     vertical-align: top;
+}
+
+.portico-landing.hello .col-3-5 {
+    width: 60%;
+}
+
+.portico-landing.hello .col-2 {
+    width: 49.9%;
 }
 
 .portico-landing.hello .col-3 {
     width: 33.3%;
-    margin-right: -4px;
-    display: inline-block;
-    vertical-align: top;
 }
-
 
 .portico-landing.hello .col-4 {
     width: 20%;
-    margin-right: -4px;
-    display: inline-block;
-    vertical-align: top;
 }
 
 /* -- compare css -- */
@@ -1165,27 +1167,59 @@ nav ul li.active::after {
     background-color: #fff;
 }
 
-.portico-landing.hello .features .col-3 {
+.portico-landing.hello .features .col-2 {
     text-align: center;
 
     position: relative;
     z-index: 1;
 }
 
-.portico-landing.hello .features .col-3 img {
+.portico-landing.hello .features .col-2 img {
     margin-bottom: 20px;
     width: 100%;
     max-width: 300px;
 }
 
-.portico-landing.hello .features .col-3 .il-block {
+.portico-landing.hello .features .col-2 .il-block {
     display: inline-block;
     width: 75%;
     text-align: left;
 }
 
-.portico-landing.hello .features .col-3 h2 {
+.portico-landing.hello .features .col-2 h2 {
     font-weight: normal;
+}
+
+.portico-landing.hello .open-source {
+    text-align: center;
+
+    position: relative;
+    z-index: 1;
+
+    background-color: #262d3a;
+    color: hsl(220, 15%, 76%);
+}
+
+.portico-landing.hello .open-source img {
+    margin: 20px 2%;
+    width: 28%;
+    max-width: 500px;
+}
+
+.portico-landing.hello .open-source .il-block {
+    display: inline-block;
+    vertical-align: top;
+    width: 50%;
+    max-width: 700px;
+    text-align: left;
+}
+
+.portico-landing.hello .open-source h2 {
+    font-weight: normal;
+}
+
+.portico-landing.hello .open-source img {
+    display: inline-block;
 }
 
 .portico-landing.hello .testimonials {
@@ -2506,7 +2540,7 @@ nav ul li.active::after {
         padding: 43px 73px;
     }
 
-    .portico-landing.hello .features .col-3 {
+    .portico-landing.hello .features .col-2 {
         width: 100%;
     }
 
