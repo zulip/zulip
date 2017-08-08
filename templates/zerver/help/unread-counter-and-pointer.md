@@ -58,15 +58,15 @@ search box, Zulip will instead select the first unread message
 matching that narrow, or if there are none, the most recent message
 matching that narrow.
 
-* When you narrow back to your home view, you will automatically be
-taken to the same message that was selected in the home view before
+* When you narrow to the All messages view, you will automatically be
+taken to the same message that was selected in that view before
 you narrowed. If you read new messages in your previous narrow, you
-will be fast-forwarded to the first unread message in the home view.
+will be fast-forwarded to the first unread message in the All messages view.
 
-* When you open a new browser window or tab to the home view, Zulip
-will select the lowest message in your home view, which is usually
+* When you open a new browser window or tab to the All messages view, Zulip
+will select the lowest message in that view, which is usually
 just before the first unread message.
 
 * When you load a new browser tab or window to a narrowed view, Zulip
 will exhibit behavior similar to when you narrow to that view after
-loading the browser window to your home view.
+loading the browser window to your All messages view.

@@ -430,7 +430,7 @@ function get_special_filter_suggestions(last, operators) {
 
     // Only show home if there's an empty bar
     if (operators.length === 0 && last_string === '') {
-        suggestions.unshift({search_string: '', description: 'Home'});
+        suggestions.unshift({search_string: '', description: 'All messages'});
     }
     return suggestions;
 }

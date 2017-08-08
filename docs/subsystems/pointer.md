@@ -51,22 +51,22 @@ or in muted topics within non-muted streams.)
 ### Unnarrow: previous sequence
 
 When you unnarrow using e.g. the escape key, you will automatically be
-taken to the same message that was selected in the home view before
+taken to the same message that was selected in the All messages view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted
-message in the home view (or the bottom of the feed if there is
-none). This makes for a nice experience reading threads via the home
+message in the All messages view (or the bottom of the feed if there is
+none). This makes for a nice experience reading threads via the All messages
 view in sequence.
 
-### New home view: "high watermark"
+### New All messages view: "high watermark"
 
-When you open a new browser window or tab to the home view (a.k.a. the
+When you open a new browser window or tab to the All messages view (a.k.a. the
 interleaved view you get if you visit `/`), Zulip will select the
-furthest down that your cursor has ever reached in the home
+furthest down that your cursor has ever reached in the All messages
 view. Because of the logic around unnarrowing in the last bullet, this
-is usually just before the first unread message in the home view, but
-if you never go to the home view, or you leave messages unread on some
-streams in your home view, this can lag.
+is usually just before the first unread message in the All messages view, but
+if you never go to the All messages view, or you leave messages unread on some
+streams in your All messages view, this can lag.
 
 We plan to change this to automatically advance the pointer in a way
 similar to the unnarrow logic.
@@ -75,7 +75,7 @@ similar to the unnarrow logic.
 
 When you load a new browser tab or window to a narrowed view, Zulip
 will select the message closest to your pointer, which is what you
-would have got had you loaded the browser window to your home view and
+would have got had you loaded the browser window to your All messages view and
 then clicked on the nearest message matching your narrow (which might
 have been offscreen).
 

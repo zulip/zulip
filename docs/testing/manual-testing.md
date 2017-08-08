@@ -51,7 +51,7 @@ Try using all the navigation hotkeys:
 
 Try narrowing from the message view:
 - Hotkeys
-    - use Esc to go to home
+    - use Esc to go to All messages
     - use s to narrow to a stream (select message first
       and verify in sidebar)
     - use S to narrow to the topic (and verify in sidebar)
@@ -63,7 +63,7 @@ Try narrowing from the message view:
     - narrow to a group PM
 - Click on the Zulip logo
     - narrow to a topic
-    - click on the Zulip logo (and verify you're in the home view)
+    - click on the Zulip logo (and verify you're in the All messages view)
 
 ### Message editing ###
 
@@ -123,7 +123,7 @@ For each of the above types of messages, you will want to cycle
 through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
-- Go to Home view.
+- Go to All Messages view.
 - Go to Private Messages view.
 - Go to Private Messages w/Hamlet.
 - Go to Private Messages w/Hamlet and Othello.
@@ -391,8 +391,8 @@ Test per-stream options:
 - Do mute and unmute, have Hamlet send messages
 - Test notifications on/off, have Hamlet send messages
 - Test pin and unpin, view left sidebar
-- Change stream color, and then view the left sidebar and the Home
-  message view
+- Change stream color, and then view the left sidebar and the All
+  messages view
 - Verify stream subscriber counts in the main stream view
 
 ### User Settings ###
