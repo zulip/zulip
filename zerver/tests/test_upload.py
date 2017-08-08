@@ -1037,7 +1037,7 @@ class S3Test(ZulipTestCase):
         response = self.client_get(uri)
         redirect_url = response['Location']
 
-        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())  # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
+        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
 
         self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"

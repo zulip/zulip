@@ -2,7 +2,8 @@
 # high-level documentation on how this system works.
 from __future__ import absolute_import
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
-    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union, \
+    Deque
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -233,7 +234,7 @@ def compute_full_event_type(event):
 class EventQueue(object):
     def __init__(self, id):
         # type: (str) -> None
-        self.queue = deque()  # type: ignore # type signature should Deque[Dict[str, Any]] but we need https://github.com/python/mypy/pull/2845 to be merged
+        self.queue = deque()  # type: Deque[Dict[str, Any]]
         self.next_event_id = 0  # type: int
         self.id = id  # type: str
         self.virtual_events = {}  # type: Dict[str, Dict[str, Any]]
@@ -472,7 +473,7 @@ def setup_event_queue():
         load_event_queues()
         atexit.register(dump_event_queues)
         # Make sure we dump event queues even if we exit via signal
-        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))  # type: ignore # https://github.com/python/mypy/issues/2955
+        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
         tornado.autoreload.add_reload_hook(dump_event_queues)  # type: ignore # TODO: Fix missing tornado.autoreload stub
 
     try:

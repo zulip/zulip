@@ -97,7 +97,7 @@ class LocalUploader(Uploader):
     def write_local_file(self, path, file_data):
         # type: (Text, binary_type) -> None
         self.mkdirs(path)
-        with open(path, 'wb') as f:  # type: ignore # likely mypy bug
+        with open(path, 'wb') as f:
             f.write(file_data)
 
     def upload_files(self, response, resized_image, dst_path_id):

@@ -200,7 +200,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         with self.assertRaises(ValueError):
             process_count_stat(stat, installation_epoch() + 65*self.MINUTE)
         with self.assertRaises(ValueError):
-            process_count_stat(stat, installation_epoch().replace(tzinfo=None) + self.HOUR)  # type: ignore # https://github.com/python/typeshed/pull/1347
+            process_count_stat(stat, installation_epoch().replace(tzinfo=None) + self.HOUR)
 
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
     # It is important that do_delete_counts_at_hour not delete any of the collected

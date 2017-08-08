@@ -90,4 +90,4 @@ def print_types_to(file_obj):
 
 def print_types(func):
     # type: (FuncT) -> FuncT
-    return print_types_to(sys.stdout)(func)  # type: ignore # https://github.com/python/mypy/issues/1551
+    return print_types_to(sys.stdout)(func)
