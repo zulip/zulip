@@ -1,5 +1,7 @@
 var topic_data = require('js/topic_data.js');
 
+set_global('channel', {});
+
 (function test_basics() {
     var stream_id = 55;
 
@@ -126,3 +128,34 @@ var topic_data = require('js/topic_data.js');
 
 
 
+(function test_server_history_end_to_end() {
+    topic_data.reset();
+
+    var stream_id = 99;
+
+    var topics = [
+        { name: 'topic3', max_id: 501 },
+        { name: 'topic2', max_id: 31 },
+        { name: 'topic1', max_id: 30 },
+    ];
+
+    var get_success_callback;
+    var on_success_called;
+
+    channel.get = function (opts) {
+        assert.equal(opts.url, '/json/users/me/99/topics');
+        assert.deepEqual(opts.data, {});
+        get_success_callback = opts.success;
+    };
+
+    topic_data.get_server_history(stream_id, function () {
+        on_success_called = true;
+    });
+
+    get_success_callback({topics: topics});
+
+    assert(on_success_called);
+
+    var history = topic_data.get_recent_names(stream_id);
+    assert.deepEqual(history, ['topic3', 'topic2', 'topic1']);
+}());
