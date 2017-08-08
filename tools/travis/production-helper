@@ -36,7 +36,7 @@ service rabbitmq-server stop
 rm -rf /var/lib/rabbitmq/mnesia/
 
 # Install Zulip
-env TRAVIS=1 /root/zulip/scripts/setup/install
+env TRAVIS=1 PYTHON=" " /root/zulip/scripts/setup/install
 
 cat >>/etc/zulip/settings.py <<EOF
 # Travis CI override settings above

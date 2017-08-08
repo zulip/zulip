@@ -14,6 +14,9 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 # Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
+# Python version to use; default to python3.
+# To use Python 2, set this env var to python2
+PYTHON="${PYTHON:python3}"
 
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
@@ -41,7 +44,7 @@ apt-get install -y puppet git python python3 python-six python3-six crudini $ADD
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
-    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
+    $PYTHON "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
 fi
 
 "$ZULIP_PATH"/scripts/lib/install-node

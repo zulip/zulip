@@ -313,6 +313,7 @@ def build_custom_checkers(by_lang):
         {'pattern': 'python[23]',
          'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
+                         'scripts/lib/upgrade-zulip-stage-2',
                          'scripts/lib/setup_venv.py']),
          'description': 'Explicit python invocations should not include a version'},
         {'pattern': '(^|\s)open\s*\(',
