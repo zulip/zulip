@@ -19,19 +19,10 @@ LOG_PATH="../var/log/provision.log"
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
 
-PROVISION_PATH="./lib/provision.py"
-if [ -n "$TRAVIS" ]; then
-    # In CI, we let PATH provide the Python version.
-    PROVISION_CMD=("$PROVISION_PATH")
-else
-    # In dev, we force Python 3.
-    PROVISION_CMD=(python3 "$PROVISION_PATH")
-fi
-
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-"${PROVISION_CMD[@]}" "$@" 2>&1 | tee -a "$LOG_PATH"
+python3 ./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
 if [ $failed = 1 ]; then
