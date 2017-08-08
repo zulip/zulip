@@ -156,6 +156,20 @@ exports.add_history = function (stream_id, server_history) {
     history.add_history(server_history);
 };
 
+exports.get_server_history = function (stream_id, on_success) {
+    var url = '/json/users/me/' + stream_id + '/topics';
+
+    channel.get({
+        url: url,
+        data: {},
+        success:  function (data) {
+            var server_history = data.topics;
+            exports.add_history(stream_id, server_history);
+            on_success();
+        },
+    });
+};
+
 exports.get_recent_names = function (stream_id) {
     var history = stream_dict.get(stream_id);
 
