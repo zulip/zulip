@@ -117,8 +117,7 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
-$(document).ready(function () {
-
+function _setup_info_overlay() {
     var info_overlay_toggle = components.toggle({
         name: "info-overlay-toggle",
         selected: 0,
@@ -136,7 +135,7 @@ $(document).ready(function () {
 
     $(".informational-overlays .overlay-tabs")
         .append($(info_overlay_toggle).addClass("large"));
-});
+};
 
 exports.show_info_overlay = function (target) {
     var overlay = $(".informational-overlays");
@@ -270,6 +269,10 @@ $(function () {
         $("#desktop-zephyr-mirror-error-text").removeClass("notdisplayed");
     }
 });
+
+exports.initialize = function () {
+    i18n.ensure_i18n(_setup_info_overlay);
+};
 
 return exports;
 }());
