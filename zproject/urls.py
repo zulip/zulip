@@ -253,6 +253,10 @@ v1_api_and_json_patterns = [
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,
         {'POST': 'zerver.views.messages.mark_all_as_read'}),
+    url(r'^mark_stream_as_read$', rest_dispatch,
+        {'POST': 'zerver.views.messages.mark_stream_as_read'}),
+    url(r'^mark_topic_as_read$', rest_dispatch,
+        {'POST': 'zerver.views.messages.mark_topic_as_read'}),
 
     # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message

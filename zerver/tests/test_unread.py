@@ -221,10 +221,9 @@ class UnreadCountTests(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                               "op": "add",
-                                                               "flag": "read",
-                                                               "stream_name": "test_stream"})
+            result = self.client_post("/json/mark_stream_as_read", {
+                "stream_name": "test_stream"
+            })
 
         self.assert_json_success(result)
         self.assertTrue(len(events) == 1)
@@ -255,11 +254,20 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         invalid_stream_name = ""
-        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                           "op": "add",
-                                                           "flag": "read",
-                                                           "stream_name": invalid_stream_name})
+        result = self.client_post("/json/mark_stream_as_read", {
+            "stream_name": invalid_stream_name
+        })
         self.assert_json_error(result, 'No such stream \'\'')
+
+    def test_mark_all_topics_unread_with_invalid_stream_name(self):
+        # type: () -> None
+        self.login(self.example_email("hamlet"))
+        invalid_stream_name = "bogus"
+        result = self.client_post("/json/mark_topic_as_read", {
+            "stream_name": invalid_stream_name,
+            'topic_name': 'whatever',
+        })
+        self.assert_json_error(result, "No such stream 'bogus'")
 
     def test_mark_all_in_stream_topic_read(self):
         # type: () -> None
@@ -271,11 +279,10 @@ class UnreadCountTests(ZulipTestCase):
         unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello", "Denmark2")
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                               "op": "add",
-                                                               "flag": "read",
-                                                               "topic_name": "test_topic",
-                                                               "stream_name": "test_stream"})
+            result = self.client_post("/json/mark_topic_as_read", {
+                "stream_name": "test_stream",
+                "topic_name": "test_topic",
+            })
 
         self.assert_json_success(result)
         self.assertTrue(len(events) == 1)
@@ -304,9 +311,8 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         invalid_topic_name = "abc"
-        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                           "op": "add",
-                                                           "flag": "read",
-                                                           "topic_name": invalid_topic_name,
-                                                           "stream_name": "Denmark"})
+        result = self.client_post("/json/mark_topic_as_read", {
+            "stream_name": "Denmark",
+            "topic_name": invalid_topic_name,
+        })
         self.assert_json_error(result, 'No such topic \'abc\'')

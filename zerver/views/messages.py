@@ -774,21 +774,8 @@ def get_messages_backend(request, user_profile,
 @has_request_variables
 def update_message_flags(request, user_profile,
                          messages=REQ(validator=check_list(check_int)),
-                         operation=REQ('op'), flag=REQ(),
-                         stream_name=REQ(default=None),
-                         topic_name=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, List[int], Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
-
-    if stream_name is not None:
-        # TODO: We should just have different endpoints for
-        #       the stream/topic options.
-        return update_stream_topic_message_flags(
-            request=request,
-            user_profile=user_profile,
-            operation=operation,
-            flag=flag,
-            stream_name=stream_name,
-            topic_name=topic_name)
+                         operation=REQ('op'), flag=REQ()):
+    # type: (HttpRequest, UserProfile, List[int], Text, Text) -> HttpResponse
 
     count = do_update_message_flags(user_profile, operation, flag, messages)
 
@@ -811,16 +798,30 @@ def mark_all_as_read(request, user_profile):
     return json_success({'result': 'success',
                          'msg': ''})
 
-def update_stream_topic_message_flags(request,
-                                      user_profile,
-                                      operation,
-                                      flag,
-                                      stream_name,
-                                      topic_name):
-    # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text]) -> HttpResponse
-    assert(operation == 'add')
-    assert(flag == 'read')
+@has_request_variables
+def mark_stream_as_read(request,
+                        user_profile,
+                        stream_name=REQ()):
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+    try:
+        stream = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
 
+    count = do_mark_stream_messages_as_read(user_profile, stream)
+
+    log_data_str = "[%s updated]" % (count,)
+    request._log_data["extra"] = log_data_str
+
+    return json_success({'result': 'success',
+                         'msg': ''})
+
+@has_request_variables
+def mark_topic_as_read(request,
+                       user_profile,
+                       stream_name=REQ(),
+                       topic_name=REQ()):
+    # type: (HttpRequest, UserProfile, Text, Text) -> HttpResponse
     try:
         stream = get_stream(stream_name, user_profile.realm)
     except Stream.DoesNotExist:
@@ -836,7 +837,7 @@ def update_stream_topic_message_flags(request,
 
     count = do_mark_stream_messages_as_read(user_profile, stream, topic_name)
 
-    log_data_str = "[%s %s/%s updated]" % (operation, flag, count)
+    log_data_str = "[%s updated]" % (count,)
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
