@@ -8,12 +8,6 @@ if [ ! -d /srv/zulip-py3-venv ]; then
     ./tools/setup/setup_venvs.py
 fi
 
-source /srv/zulip-venv/bin/activate # Activate python2 virtualenv
-pip-compile --output-file requirements/py2_common_lock.txt requirements/py2_common.txt
-# Remove the editable flag in the lock file for safer build
-sed -i 's/-e //' requirements/py2_common_lock.txt
-deactivate
-
 source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
 pip-compile --output-file requirements/py3_common_lock.txt requirements/py3_common.txt
 # Remove the editable flag in the lock file for safer build

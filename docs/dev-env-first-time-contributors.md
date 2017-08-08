@@ -379,17 +379,17 @@ Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
 Congrats, you're now inside the Zulip development environment!
 
 You can confirm this by looking at the command prompt, which starts
-with `(zulip-venv)vagrant@`.  If it just starts with `vagrant@`, your
+with `(zulip-py3-venv)vagrant@`.  If it just starts with `vagrant@`, your
 provisioning failed and you should look at the
 [troubleshooting section](#troubleshooting-common-errors).
 
 Next, start the Zulip server:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~
 $ cd zulip
 
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -535,7 +535,7 @@ From the window where run-dev.py is running:
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth via ?)
 ^C
 KeyboardInterrupt
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip$ exit
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
@@ -571,10 +571,10 @@ christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
 
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~
 $ cd zulip
 
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -617,7 +617,7 @@ When reporting your issue, please include the following information:
 The output of `tools/diagnose` run inside the Vagrant guest is also
 usually helpful.
 
-#### Vagrant guest doesn't show (zulip-venv) at start of prompt
+#### Vagrant guest doesn't show (zulip-py3-venv) at start of prompt
 
 This is caused by provisioning failing to complete successfully.  You
 can see the errors in `var/log/provision.log`; it should end with
@@ -863,13 +863,13 @@ environment to use it](#specifying-a-proxy).
 Once you've provisioned successfully, you'll get output like this:
 ```
 Zulip development environment setup succeeded!
-(zulip-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
+(zulip-py3-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
 ```
 
-If the `(zulip-venv)` part is missing, this is because your
+If the `(zulip-py3-venv)` part is missing, this is because your
 installation failed the first time before the Zulip virtualenv was
 created.  You can fix this by just closing the shell and running
-`vagrant ssh` again, or using `source /srv/zulip-venv/bin/activate`.
+`vagrant ssh` again, or using `source /srv/zulip-py3-venv/bin/activate`.
 
 Finally, if you encounter any issues that weren't caused by your
 Internet connection, please report them!  We try hard to keep Zulip

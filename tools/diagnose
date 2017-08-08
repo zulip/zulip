@@ -63,7 +63,7 @@ def check_django():
 
             Make sure your shell does this at init time:
 
-            source /srv/zulip-venv/bin/activate
+            source /srv/zulip-py3-venv/bin/activate
 
             Or maybe you forget to run inside your VM?
             ''')

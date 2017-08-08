@@ -406,10 +406,6 @@ bot_handler.update_message(dict(
       ```
       source /srv/zulip-py3-venv/bin/activate
       ```
-      Note that you can switch back to a Python 2 environment as follows:
-      ```
-      source /srv/zulip-venv/bin/activate
-      ```
 
 * My bot works only on some streams.
     * Subscribe your bot to other streams, as described [here](#how-to-run-a-bot).

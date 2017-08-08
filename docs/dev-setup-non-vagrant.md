@@ -18,7 +18,7 @@ can do that by just running:
 ```
 # From a clone of zulip.git
 ./tools/provision
-source /srv/zulip-venv/bin/activate
+source /srv/zulip-py3-venv/bin/activate
 ./tools/run-dev.py  # starts the development server
 ```
 
