@@ -1964,13 +1964,14 @@ nav a .no-style {
 #searchbox_legacy {
     width: 100%;
     height: 40px;
+    border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 88%);
 
     .navbar-search {
         margin-top: 0px;
         width: auto;
         float: none;
         overflow: hidden;
-        border-right: 1px solid hsl(0, 0%, 87.8%);
         height: 40px;
     }
 

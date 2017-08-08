@@ -106,6 +106,7 @@ body.night-mode .pill-container {
     border-width: 1px;
 }
 
+body.night-mode #search_arrows .pill,
 body.night-mode .pm_recipient .pill-container .pill {
     color: inherit;
     border: 1px solid hsla(0, 0%, 0%, 0.50);
@@ -113,6 +114,7 @@ body.night-mode .pm_recipient .pill-container .pill {
     font-weight: 600;
 }
 
+body.night-mode #search_arrows .pill:focus,
 body.night-mode .pm_recipient .pill-container .pill:focus {
     color: #fff;
     border: 1px solid hsla(176, 78%, 28%, 0.6);
@@ -168,8 +170,8 @@ body.night-mode #preview_message_area {
     border-color: hsla(0, 0%, 0%, 0.2);
 }
 
-body.night-mode .navbar-search {
-    border-right-color: hsla(0, 0%, 0%, 0.2);
+body.night-mode #searchbox_legacy {
+    border-color: hsla(0, 0%, 0%, 0.6);
 }
 
 body.night-mode .overlay,
@@ -218,6 +220,8 @@ body.night-mode .popover.right .arrow {
     border-right-color: hsl(235, 18%, 7%);
 }
 
+body.night-mode #searchbox_legacy a.search_icon,
+body.night-mode #searchbox_legacy .search_button,
 body.night-mode #searchbox a.search_icon,
 body.night-mode #searchbox .search_button,
 body.night-mode .close,
@@ -225,6 +229,8 @@ body.night-mode ul.filters li:hover .arrow {
     color: hsl(236, 33%, 80%);
 }
 
+body.night-mode #searchbox_legacy a.search_icon:hover,
+body.night-mode #searchbox_legacy .search_button:hover,
 body.night-mode #searchbox a.search_icon:hover,
 body.night-mode #searchbox .search_button:hover,
 body.night-mode .close:hover,
