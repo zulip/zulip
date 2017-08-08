@@ -721,7 +721,7 @@ $(function () {
         $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
     });
 
-    (function () {
+    (i18n.ensure_i18n(function () {
         var settings_toggle = components.toggle({
             name: "settings-toggle",
             values: [
@@ -747,7 +747,7 @@ $(function () {
 
         $("#settings_overlay_container .tab-container")
             .append(settings_toggle);
-    }());
+    }));
 });
 
 return exports;
