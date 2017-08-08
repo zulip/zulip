@@ -70,7 +70,7 @@ $(function () {
     var current_generation_key = 'i18next:' + page_params.server_generation;
     // remove cached translations of older versions.
     translations.forEach(function (translation_key) {
-        if (!translation_key.startsWith(current_generation_key)) {
+        if (!translation_key.indexOf(current_generation_key) === 0) {
             localStorage.removeItem(translation_key);
         }
     });
