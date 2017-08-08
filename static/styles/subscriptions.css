@@ -579,8 +579,8 @@ form#add_new_subscription {
     box-shadow: none;
 }
 
-.create-stream-title {
-    font-size: 1.5em;
+.stream-title {
+    font-size: 1.3em;
     font-weight: 600;
 }
 

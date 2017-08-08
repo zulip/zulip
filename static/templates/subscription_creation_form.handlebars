@@ -3,7 +3,7 @@
     <form id="stream_creation_form" class="form-inline">
         <div class="stream-creation-body">
             <section class="block">
-                <div class="create-stream-title">
+                <div class="stream-title">
                     {{t "Stream name" }}
                 </div>
                 <input type="text" name="stream_name" id="create_stream_name"
@@ -11,12 +11,14 @@
                 <div id="stream_name_error"></div>
             </section>
             <section class="block">
-                <b>{{t "Stream description (optional)"}}</b><br />
+                <div class="stream-title">
+                    {{t "Stream description (optional)"}}
+                </div>
                 <textarea name="stream_description" id="create_stream_description"
                    placeholder="{{t 'Stream description' }}" value="" autocomplete="off"></textarea>
             </section>
             <section class="block" id="make-invite-only">
-                <div class="create-stream-title">
+                <div class="stream-title">
                     {{t "Stream accessibility" }}
                 </div>
                 <div class="stream-creation-info">
@@ -49,7 +51,7 @@
                 </div>
             </section>
             <section class="block">
-                <label class="control-label" for="people_to_add">
+                <label class="stream-title" for="people_to_add">
                     {{t "People to add" }}
                 </label>
                 <div class="controls" id="people_to_add"></div>
