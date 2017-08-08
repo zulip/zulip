@@ -395,7 +395,7 @@ def get_inactive_recipient_ids(user_profile):
     return inactive_recipient_ids
 
 def get_unread_message_ids_per_recipient(user_profile):
-    # type: (UserProfile) -> Dict[str, List[Dict[str, Any]]]
+    # type: (UserProfile) -> Dict[str, Any]
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
@@ -419,6 +419,7 @@ def get_unread_message_ids_per_recipient(user_profile):
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
 
     rows = list(reversed(user_msgs))
+    count = len(rows)
 
     pm_msgs = [
         dict(
@@ -484,12 +485,15 @@ def get_unread_message_ids_per_recipient(user_profile):
         streams=stream_objects,
         huddles=huddle_objects,
         mentions=mentioned_message_ids,
+        count=count,
     )
 
     return result
 
 def apply_unread_message_event(state, message):
-    # type: (Dict[str, List[Dict[str, Any]]], Dict[str, Any]) -> None
+    # type: (Dict[str, Any], Dict[str, Any]) -> None
+    state['count'] += 1
+
     message_id = message['id']
     if message['type'] == 'stream':
         message_type = 'stream'
