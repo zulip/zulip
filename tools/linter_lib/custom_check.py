@@ -9,13 +9,13 @@ import traceback
 
 from .printer import print_err, colors
 
-from typing import cast, Any, Callable, Dict, List, Optional, Tuple
+from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
 RuleList = List[Dict[str, Any]]  # mypy currently requires Aliases at global scope
 # https://github.com/python/mypy/issues/3145
 
 def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
-    # type: (str, str, RuleList, str, Optional[Any], Optional[int]) -> bool
+    # type: (str, str, RuleList, str, Optional[Iterable[str]], Optional[int]) -> bool
     failed = False
 
     line_tups = []
@@ -23,8 +23,8 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         line_newline_stripped = line.strip('\n')
         line_fully_stripped = line_newline_stripped.strip()
         skip = False
-        for rule in skip_rules or []:
-            if re.match(rule, line):
+        for skip_rule in skip_rules or []:
+            if re.match(skip_rule, line):
                 skip = True
         if line_fully_stripped.endswith('  # nolint'):
             continue
