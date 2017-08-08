@@ -3,6 +3,7 @@
 *.jpg binary
 *.eot binary
 *.woff binary
+*.woff2 binary
 *.svg binary
 *.ttf binary
 *.png binary
