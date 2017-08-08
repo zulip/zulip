@@ -594,7 +594,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result.assert_not_called()
             self.assertIs(user, None)
 
-    def test_github_backend_new_user(self):
+    def test_github_backend_new_user_wrong_domain(self):
         # type: () -> None
         rf = RequestFactory()
         request = rf.get('/complete')
@@ -619,6 +619,49 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('Your email address, {}, does not '
                                     'correspond to any existing '
                                     'organization.'.format(email), result)
+
+    def test_github_backend_new_user(self):
+        # type: () -> None
+        rf = RequestFactory()
+        request = rf.get('/complete')
+        request.session = {}
+        request.user = self.user_profile
+        self.backend.strategy.request = request
+        session_data = {'subdomain': False, 'is_signup': '1'}
+        self.backend.strategy.session_get = lambda k: session_data.get(k)
+
+        def do_auth(*args, **kwargs):
+            # type: (*Any, **Any) -> None
+            return_data = kwargs['return_data']
+            return_data['valid_attestation'] = True
+            return None
+
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth):
+            email = self.nonreg_email('newuser')
+            name = "Ghost"
+            response = dict(email=email, name=name)
+            result = self.backend.do_auth(response=response)
+            confirmation = Confirmation.objects.all().first()
+            confirmation_key = confirmation.confirmation_key
+            self.assertIn('do_confirm/' + confirmation_key, result.url)
+            result = self.client_get(result.url)
+            self.assert_in_response('action="/accounts/register/"', result)
+            data = {"from_confirmation": "1",
+                    "full_name": name,
+                    "key": confirmation_key}
+            result = self.client_post('/accounts/register/', data)
+            self.assert_in_response("You're almost there", result)
+
+            result = self.client_post(
+                '/accounts/register/',
+                {'full_name': name,
+                 'key': confirmation_key,
+                 'terms': True})
+
+        self.assertEqual(result.status_code, 302)
+        user_profile = self.nonreg_user('newuser')
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_github_backend_existing_user(self):
         # type: () -> None
