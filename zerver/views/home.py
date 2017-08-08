@@ -59,9 +59,8 @@ def accounts_accept_terms(request):
     )
 
 def sent_time_in_epoch_seconds(user_message):
-    # type: (UserMessage) -> Optional[float]
-    # user_message is a UserMessage object.
-    if not user_message:
+    # type: (Optional[UserMessage]) -> Optional[float]
+    if user_message is None:
         return None
     # We have USE_TZ = True, so our datetime objects are timezone-aware.
     # Return the epoch seconds in UTC.
