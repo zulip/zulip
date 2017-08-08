@@ -363,7 +363,7 @@ $(function () {
 
     // HOME
 
-    // Capture both the left-sidebar Home click and the tab breadcrumb Home
+    // Capture both the left-sidebar All Messages click and the tab breadcrumb All Messages
     $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui_util.change_tab_to('#home');
         narrow.deactivate();

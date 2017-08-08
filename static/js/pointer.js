@@ -8,7 +8,7 @@ var exports = {};
 exports.recenter_pointer_on_display = false;
 
 // Toggles re-centering the pointer in the window
-// when Home is next clicked by the user
+// when All Messages is next clicked by the user
 exports.suppress_scroll_pointer_update = false;
 exports.furthest_read = -1;
 exports.server_furthest_read = -1;

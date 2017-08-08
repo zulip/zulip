@@ -59,10 +59,10 @@ members of particular groups (using email domain names or corporate
 single-sign-on login for verification). For more on security
 considerations, see [the security model section](../production/security-model.html).
 
-The default Zulip home screen is like a chronologically ordered inbox;
+The Zulip "All messages" screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
 hasn't viewed yet (for more on that logic, see [the guide to the
-pointer and unread counts](../subsystems/pointer.html)). The home screen displays
+pointer and unread counts](../subsystems/pointer.html)). The "All messages" screen displays
 the most recent messages in all the streams a user has joined (except
 for the streams they've muted), as well as private messages from other
 users, in strict chronological order. A user can *narrow* to view only
@@ -295,8 +295,8 @@ are welcome!
 
 * **star**: Zulip allows a user to mark any message they can see,
     public or private, as "starred". A user can easily access messages
-    they've starred through the "Starred messages" link in the menu
-    near "Home", or use "is:starred" as a narrow or a search
+    they've starred through the "Starred messages" link in the
+    left sidebar, or use "is:starred" as a narrow or a search
     constraint. Whether a user has or has not starred a particular
     message is private; other users and realm admins don't know
     whether a message has been starred, or by whom.

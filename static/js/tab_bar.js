@@ -110,7 +110,7 @@ function make_tab_data() {
     }
 
     if (tabs.length === 0) {
-        tabs.push(make_tab('Home', "#", "home", "root", true));
+        tabs.push(make_tab('All messages', "#", "home", "root", true));
     }
 
     // Last tab is not a link

@@ -79,7 +79,7 @@ below, and add more to your repertoire as needed.
 
 * **Cycle between stream narrows**: `A` (previous) and `D` (next)
 
-* **Narrow to home view**: `Esc` or `Ctrl` + `[`
+* **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
 
 ## Composing messages
 
@@ -129,7 +129,7 @@ title="thumbs up"/>**: `+`
 * **Collapse/show message**: `-`
 
 * **Toggle topic mute**: `M` — Muted topics don't show up in any views
-  (include Home), and don't contribute to unread counts. Read more about
+  (including All messages), and don't contribute to unread counts. Read more about
   [muting topics](/help/mute-a-topic).
 
 ## Drafts
