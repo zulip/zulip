@@ -5,23 +5,17 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.exceptions import ValidationError
-from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from zerver.models import get_realm, can_add_realm_domain, \
-    Realm, RealmDomain, get_realm_domains
+from zerver.models import can_add_realm_domain, RealmDomain, get_realm_domains
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.domains import validate_domain
 import sys
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Manage domains for the specified realm"""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('-r', '--realm',
-                            dest='string_id',
-                            type=str,
-                            required=True,
-                            help='The subdomain or string_id of the realm.')
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -34,10 +28,11 @@ class Command(BaseCommand):
                             help='Whether subdomains are allowed or not.')
         parser.add_argument('domain', metavar='<domain>', type=str, nargs='?',
                             help="domain to add or remove")
+        self.add_realm_args(parser, True)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["string_id"])
+        realm = self.get_realm(options)
         if options["op"] == "show":
             print("Domains for %s:" % (realm.string_id,))
             for realm_domain in get_realm_domains(realm):

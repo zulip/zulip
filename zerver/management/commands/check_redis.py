@@ -9,7 +9,6 @@ from zerver.lib.rate_limiter import client, max_api_calls, max_api_window, \
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
-from optparse import make_option
 
 import logging
 import time

@@ -4,21 +4,16 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import do_rename_stream
-from zerver.lib.str_utils import force_text
-from zerver.models import Realm, Service, UserProfile, get_realm
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import Service, UserProfile
 
-import sys
-
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Given an existing bot, converts it into an outgoing webhook bot."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('string_id', metavar='<string_id>', type=str,
-                            help='subdomain or string_id of bot')
+        self.add_realm_args(parser)
         parser.add_argument('bot_email', metavar='<bot_email>', type=str,
                             help='email of bot')
         parser.add_argument('service_name', metavar='<service_name>', type=str,
@@ -31,16 +26,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
 
-        string_id = options['string_id']
         bot_email = options['bot_email']
         service_name = options['service_name']
         base_url = options['base_url']
-
-        encoding = sys.getfilesystemencoding()
-        realm = get_realm(force_text(string_id, encoding))
-        if realm is None:
-            print('Unknown subdomain or string_id %s' % (string_id,))
-            exit(1)
+        realm = self.get_realm(options)
 
         if not bot_email:
             print('Email of existing bot must be provided')
@@ -55,10 +44,7 @@ class Command(BaseCommand):
             exit(1)
 
         # TODO: Normalize email?
-        bot_profile = UserProfile.objects.get(email=bot_email)
-        if not bot_profile:
-            print('User %s does not exist' % (bot_email,))
-            exit(1)
+        bot_profile = self.get_user(email=bot_email, realm=realm)
         if not bot_profile.is_bot:
             print('User %s is not a bot' % (bot_email,))
             exit(1)

@@ -5,16 +5,13 @@ from typing import Any, List
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
-from django.core.management import CommandError
 from django.conf import settings
 from django.utils import autoreload
 from zerver.worker.queue_processors import get_worker, get_active_worker_queues
-import os
 import sys
 import signal
 import logging
 import threading
-import subprocess
 
 class Command(BaseCommand):
     def add_arguments(self, parser):

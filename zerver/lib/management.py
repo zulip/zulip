@@ -18,15 +18,18 @@ def is_integer_string(val):
         return False
 
 class ZulipBaseCommand(BaseCommand):
-    def add_realm_args(self, parser, required=False):
-        # type: (ArgumentParser, bool) -> None
+    def add_realm_args(self, parser, required=False, help=None):
+        # type: (ArgumentParser, bool, Optional[str]) -> None
+        if help is None:
+            help = """The numeric or string ID (subdomain) of the Zulip organization to modify.
+You can use the command list_realms to find ID of the realms in this server."""
+
         parser.add_argument(
             '-r', '--realm',
             dest='realm_id',
             required=required,
             type=str,
-            help='The numeric or string ID (subdomain) of the Zulip organization to modify. '
-                 'You can use the command list_realms to find ID of the realms in this server.')
+            help=help)
 
     def get_realm(self, options):
         # type: (Dict[str, Any]) -> Optional[Realm]
@@ -42,7 +45,7 @@ class ZulipBaseCommand(BaseCommand):
                 return Realm.objects.get(id=val)
             return Realm.objects.get(string_id=val)
         except Realm.DoesNotExist:
-            raise CommandError("The is no realm with id '%s'. Aborting." %
+            raise CommandError("There is no realm with id '%s'. Aborting." %
                                (options["realm_id"],))
 
     def get_user(self, email, realm):

@@ -23,9 +23,9 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(command.get_realm(dict(realm_id='zulip')), get_realm("zulip"))
         self.assertEqual(command.get_realm(dict(realm_id=None)), None)
         self.assertEqual(command.get_realm(dict(realm_id='1')), get_realm("zulip"))
-        with self.assertRaisesRegex(CommandError, "The is no realm with id"):
+        with self.assertRaisesRegex(CommandError, "There is no realm with id"):
             command.get_realm(dict(realm_id='17'))
-        with self.assertRaisesRegex(CommandError, "The is no realm with id"):
+        with self.assertRaisesRegex(CommandError, "There is no realm with id"):
             command.get_realm(dict(realm_id='mit'))
 
     def test_get_user(self):

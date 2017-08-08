@@ -15,7 +15,6 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
-from django.utils.html import format_html
 
 from zerver.models import ScheduledEmail
 from zerver.lib.context_managers import lockfile
@@ -25,7 +24,7 @@ import time
 import logging
 from datetime import datetime
 from ujson import loads
-from typing import Any, Dict
+from typing import Any
 
 ## Setup ##
 log_format = "%(asctime)s: %(message)s"

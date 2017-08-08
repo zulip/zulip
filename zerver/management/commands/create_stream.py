@@ -3,16 +3,14 @@ from __future__ import print_function
 
 from typing import Any
 
-from django.core.management.base import BaseCommand
-
 from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.str_utils import force_text
-from zerver.models import Realm, get_realm
+from zerver.lib.management import ZulipBaseCommand
 
 from argparse import ArgumentParser
 import sys
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Create a stream, and subscribe all active users (excluding bots).
 
 This should be used for TESTING only, unless you understand the limitations of
@@ -20,20 +18,13 @@ the command."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('realm', metavar='<realm>', type=str,
-                            help='realm in which to create the stream')
+        self.add_realm_args(parser, True, "realm in which to create the stream")
         parser.add_argument('stream_name', metavar='<stream name>', type=str,
                             help='name of stream to create')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        string_id = options['realm']
+        realm = self.get_realm(options)
         encoding = sys.getfilesystemencoding()
         stream_name = options['stream_name']
-
-        realm = get_realm(force_text(string_id, encoding))
-        if realm is None:
-            print("Unknown string_id %s" % (string_id,))
-            exit(1)
-
         create_stream_if_needed(realm, force_text(stream_name, encoding))

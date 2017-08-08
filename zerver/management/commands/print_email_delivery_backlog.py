@@ -8,13 +8,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from typing import Any
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import ScheduledEmail
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 class Command(BaseCommand):
     help = """Shows backlog count of ScheduledEmail
