@@ -2,9 +2,7 @@ FROM ubuntu:trusty
 
 EXPOSE 9991
 
-RUN apt-get update && apt-get install -y \
-  python-pbs \
-  wget
+RUN apt-get update && apt-get install -y wget
 
 RUN locale-gen en_US.UTF-8
 
