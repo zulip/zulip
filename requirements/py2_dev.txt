@@ -1,2 +1,0 @@
--r py2_common_lock.txt
--r dev.txt
