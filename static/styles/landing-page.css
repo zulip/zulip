@@ -458,7 +458,7 @@ nav ul li.active::after {
     display: block;
 
     position: absolute;
-    top: -170px;
+    top: -169px;
     right: 0;
 
     width: 685px;
