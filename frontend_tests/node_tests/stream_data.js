@@ -6,22 +6,15 @@ set_global('page_params', {
 set_global('$', function () {
 });
 
-add_dependencies({
-    marked: 'third/marked/lib/marked.js',
-    people: 'js/people.js',
-    stream_color: 'js/stream_color.js',
-    narrow: 'js/narrow.js',
-    hash_util: 'js/hash_util.js',
-    hashchange: 'js/hashchange.js',
-    topic_data: 'js/topic_data.js',
-    util: 'js/util.js',
-});
-
 set_global('blueslip', {});
 
-var stream_data = require('js/stream_data.js');
-
-var people = global.people;
+zrequire('util');
+zrequire('hash_util');
+zrequire('narrow');
+zrequire('topic_data');
+zrequire('people');
+zrequire('stream_color');
+zrequire('stream_data');
 
 (function test_basics() {
     var denmark = {
