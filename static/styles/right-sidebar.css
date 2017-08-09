@@ -81,7 +81,8 @@
 }
 
 .user_unknown .user-status-indicator {
-    display: none;
+    background-color: none;
+    border-color: gray;
 }
 
 #user_presences a,

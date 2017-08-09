@@ -221,47 +221,14 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
-function filter_user_ids(user_ids) {
-    var user_list = $(".user-list-filter");
-    if (user_list.length === 0) {
-        // We may have received an activity ping response after
-        // initiating a reload, in which case the user list may no
-        // longer be available.
-        // Return user list: useful for testing user list performance fix
-        return user_ids;
-    }
-
-    var search_term = user_list.expectOne().val().trim();
-    if (search_term === '') {
-        return user_ids;
-    }
-
-    var search_terms = search_term.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
-
-    var persons = _.map(user_ids, function (user_id) {
-        return people.get_person_from_user_id(user_id);
-    });
-
-    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-    return user_id_dict.keys();
-}
-
 function matches_filter(user_id) {
-    // This is a roundabout way of checking a user if you look
-    // too hard at it, but it should be fine for now.
-    return (filter_user_ids([user_id]).length === 1);
-}
 
-function filter_and_sort(user_ids) {
-    user_ids = filter_user_ids(user_ids);
-    user_ids = sort_users(user_ids);
-    return user_ids;
-}
+    var terms = exports.process_search_terms();
+    var filter_function = exports.create_filter_function(terms);
+    var matched = _.filter([user_id], filter_function);
 
-exports._filter_and_sort = filter_and_sort;
+    return matched.length === 1;
+}
 
 function get_num_unread(user_id) {
     if (unread.suppress_unread_counts) {
@@ -319,31 +286,76 @@ exports.insert_user_into_list = function (user_id) {
     var elt = get_pm_list_item(user_id);
     compose_fade.update_one_user_row(elt);
 };
- 
+
 function row_modifier(user_id) {
     var person_data = info_for(user_id);
     var row = templates.render('user_presence_row', person_data);
     return row;
-};
-exports._row_modifier = row_modifier;
+}
 
-exports.create_filter_function = function () {
-    return function () {
-        return true;
+exports._row_modifier = row_modifier;
+exports._info_for = info_for;
+exports.create_filter_function = function (search_terms) {
+    return function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+
+        // Get person object (and ignore errors)
+        if (!person || !person.full_name) {
+            blueslip.warn("Cannot find person associated with id " + user_id);
+            return false;
+        }
+
+        if (people.is_current_user(person.email)) {
+            return false;
+        }
+
+        var match = _.any(search_terms, function (search_term) {
+            return people.person_matches_query(person, search_term);
+        });
+
+        if (match) {
+            return true;
+        }
+        return false;
     };
 };
 
+
+function get_users(search_terms) {
+    var all_persons = [];
+    if (_.contains(search_terms, "")) {
+        all_persons = presence.get_user_ids();
+    } else {
+        all_persons = people.get_all_persons_ids();
+    }
+    return all_persons;
+}
+exports.retrieve_sidebar_users_ids = function (search_terms) {
+    var users = get_users(search_terms);
+    users = sort_users(users);
+
+    return users;
+};
+
+exports.process_search_terms = function () {
+    var user_list = $(".user-list-filter");
+    var search_term = user_list.expectOne().val().trim();
+    var search_terms = search_term.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+    return search_terms;
+};
 
 exports.build_user_sidebar = function () {
     if (page_params.realm_presence_disabled) {
         return;
     }
-
-    var user_ids = filter_and_sort(presence.get_user_ids());
-
-    var filter_function = exports.create_filter_function();
-    var table = $('#user_presences');
-    list_render(table, user_ids, {
+    var search_terms = exports.process_search_terms();
+    var table = $("#user_presences");
+    var users = exports.retrieve_sidebar_users_ids(search_terms);
+    var filter_function = exports.create_filter_function(search_terms);
+    list_render(table, users, {
         name: "users_list",
         modifier: row_modifier,
         filter: {
@@ -356,7 +368,6 @@ exports.build_user_sidebar = function () {
     compose_fade.update_faded_users();
 
     resize.resize_page_components();
-
 };
 
 function actually_update_users_for_search() {

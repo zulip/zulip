@@ -43,7 +43,11 @@ exports.get_status = function (user_id) {
 };
 
 exports.get_mobile = function (user_id) {
-    return exports.presence_info[user_id].mobile;
+
+    if (user_id in exports.presence_info) {
+        return exports.presence_info[user_id].mobile;
+    }
+    return false;
 };
 
 exports.get_user_ids = function () {
