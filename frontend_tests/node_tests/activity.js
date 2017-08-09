@@ -670,3 +670,23 @@ $('.user-list-filter').is = function (sel) {
   assert(!activity.new_user_input);
   assert(!activity.has_focus);
 }());
+
+(function test_row_modifier() {
+    var fred_info = {
+            name: 'Fred Flintstone',
+            href: '#narrow/pm-with/2-fred',
+            user_id: fred.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined,
+        };
+    var template_data;
+
+    global.templates.render = function (template_name, data) {
+        assert.equal(template_name, "user_presence_row");
+        template_data = data;
+    };
+    activity.row_modifier(fred_info.user_id);
+    assert(template_data, fred_info);
+}());

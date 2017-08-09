@@ -319,6 +319,20 @@ exports.insert_user_into_list = function (user_id) {
     var elt = get_pm_list_item(user_id);
     compose_fade.update_one_user_row(elt);
 };
+ 
+function row_modifier(user_id) {
+    var person_data = info_for(user_id);
+    var row = templates.render('user_presence_row', person_data);
+    return row;
+};
+exports._row_modifier = row_modifier;
+
+exports.create_filter_function = function () {
+    return function () {
+        return true;
+    };
+};
+
 
 exports.build_user_sidebar = function () {
     if (page_params.realm_presence_disabled) {
@@ -327,16 +341,22 @@ exports.build_user_sidebar = function () {
 
     var user_ids = filter_and_sort(presence.get_user_ids());
 
-    var user_info = _.map(user_ids, info_for);
-    var html = templates.render('user_presence_rows', {users: user_info});
-    $('#user_presences').html(html);
+    var filter_function = exports.create_filter_function();
+    var table = $('#user_presences');
+    list_render(table, user_ids, {
+        name: "users_list",
+        modifier: row_modifier,
+        filter: {
+            element: $(".user-list-filter"),
+            callback: filter_function,
+        },
+    }).init();
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
 
     resize.resize_page_components();
 
-    return user_info; // for testing
 };
 
 function actually_update_users_for_search() {
