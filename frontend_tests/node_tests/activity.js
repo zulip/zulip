@@ -18,22 +18,17 @@ set_global('blueslip', function () {});
 set_global('channel', {});
 set_global('compose_actions', {});
 
-add_dependencies({
-    Handlebars: 'handlebars',
-    templates: 'js/templates',
-    util: 'js/util.js',
-    compose_fade: 'js/compose_fade.js',
-    people: 'js/people.js',
-    unread: 'js/unread.js',
-    hash_util: 'js/hash_util.js',
-    hashchange: 'js/hashchange.js',
-    narrow: 'js/narrow.js',
-    presence: 'js/presence.js',
-    activity: 'js/activity.js',
-    timerender: 'js/timerender.js',
-});
-
-var presence = global.presence;
+zrequire('compose_fade');
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+zrequire('unread');
+zrequire('hash_util');
+zrequire('hashchange');
+zrequire('narrow');
+zrequire('util');
+zrequire('presence');
+zrequire('people');
+zrequire('activity');
 
 set_global('resize', {
     resize_page_components: function () {},
