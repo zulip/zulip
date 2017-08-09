@@ -4,8 +4,7 @@ set -e
 set -x
 
 retcode=0
-./tools/run-mypy --py2 --linecoverage-report || retcode=1
-./tools/run-mypy --py3 || retcode=1
+./tools/run-mypy --linecoverage-report || retcode=1
 set +x
 if [ "$retcode" == "0" ]; then
     echo "The mypy static type checker for python detected no errors!"
