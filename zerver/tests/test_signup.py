@@ -1067,6 +1067,9 @@ class UserSignUpTest(ZulipTestCase):
         result = self.submit_reg_form_for_user(email, password, full_name="<invalid>")
         self.assert_in_success_response(["Invalid characters in name!"], result)
 
+        # Verify that the user is asked for name and password
+        self.assert_in_success_response(['id_password', 'id_full_name'], result)
+
     def test_signup_without_password(self):
         # type: () -> None
         """
@@ -1132,6 +1135,9 @@ class UserSignUpTest(ZulipTestCase):
              'terms': True,
              'from_confirmation': '1'})
         self.assert_in_success_response(["You're almost there."], result)
+
+        # Verify that the user is asked for name and password
+        self.assert_in_success_response(['id_password', 'id_full_name'], result)
 
     def test_signup_with_full_name(self):
         # type: () -> None
@@ -1416,6 +1422,12 @@ class UserSignUpTest(ZulipTestCase):
                                              "Non LDAP Full Name",
                                              "newuser@zulip.com"],
                                             result)
+
+            # Verify that the user is asked for name
+            self.assert_in_success_response(['id_full_name'], result)
+            # TODO: Ideally, we wouldn't ask for a password if LDAP is
+            # enabled, in which case this assert should be invertedq.
+            self.assert_in_success_response(['id_password'], result)
 
             # Submitting the registration form with from_confirmation='1' sets
             # the value of request.session['authenticated_full_name'] from LDAP.

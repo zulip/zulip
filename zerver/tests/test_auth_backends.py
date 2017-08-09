@@ -652,6 +652,9 @@ class GitHubAuthBackendTest(ZulipTestCase):
                     "key": confirmation_key}
             result = self.client_post('/accounts/register/', data)
             self.assert_in_response("You're almost there", result)
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
 
             result = self.client_post(
                 '/accounts/register/',
@@ -959,6 +962,10 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             result = self.client_post('/accounts/register/', data)
             self.assert_in_response("You're almost there", result)
 
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
+
     def test_log_into_subdomain_when_email_is_none(self):
         # type: () -> None
         data = {'name': None,
@@ -1049,6 +1056,10 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                     "key": confirmation_key}
             result = self.client_post('/accounts/register/', data)
             self.assert_in_response("You're almost there", result)
+
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
 
             # Click confirm registration button.
             result = self.client_post(

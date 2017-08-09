@@ -260,6 +260,7 @@ def accounts_register(request):
                  # we have to set it here.
                  'creating_new_team': realm_creation,
                  'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
+                 'password_required': password_auth_enabled(realm) and password_required,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),

@@ -50,7 +50,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endif %}
                 </div>
 
-                {% if password_auth_enabled %}
+                {% if password_required %}
                 <div class="input-box">
                     <input id="id_password" class="required" type="password" name="password"
                            value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
