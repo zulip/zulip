@@ -1,13 +1,11 @@
-add_dependencies({
-    hash_util: 'js/hash_util.js',
-    hashchange: 'js/hashchange.js',
-    narrow_state: 'js/narrow_state.js',
-    people: 'js/people.js',
-    stream_data: 'js/stream_data.js',
-    Filter: 'js/filter.js',
-});
+zrequire('hash_util');
+zrequire('hashchange');
+zrequire('narrow_state');
+zrequire('people');
+zrequire('stream_data');
+zrequire('Filter', 'js/filter');
 
-var narrow = require('js/narrow.js');
+zrequire('narrow');
 
 var narrow_state = global.narrow_state;
 
