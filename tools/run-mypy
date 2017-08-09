@@ -18,14 +18,9 @@ os.chdir(os.path.dirname(TOOLS_DIR))
 sys.path.append(os.path.dirname(TOOLS_DIR))
 from lib.test_script import get_provisioning_status
 
-exclude_common = """
+exclude = """
 zproject/settings.py
 zproject/test_settings.py
-""".split()
-
-exclude_py2 = []  # type: List[str]
-
-exclude_py3 = """
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
@@ -53,10 +48,6 @@ parser.add_argument('--quick', action='store_true', default=False,
 parser.add_argument('--force', default=False,
                     action="store_true",
                     help='Run tests despite possible provisioning problems.')
-
-group = parser.add_mutually_exclusive_group()
-group.add_argument('--py2', default=False, action='store_true', help="Use Python 2 mode")
-group.add_argument('--py3', default=False, action='store_true', help="Use Python 3 mode")
 args = parser.parse_args()
 
 if not args.force:
@@ -66,19 +57,8 @@ if not args.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
-if args.py2:
-    py_version = 2
-elif args.py3:
-    py_version = 3
-else:
-    py_version = 2
-
 if args.all:
-    exclude = []  # type: List[str]
-if py_version == 2:
-    exclude = exclude_common + exclude_py2
-else:
-    exclude = exclude_common + exclude_py3
+    exclude = []
 
 # find all non-excluded files in current directory
 files_dict = cast(Dict[str, List[str]],
@@ -90,10 +70,10 @@ pyi_files = set(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
 
-# Use zulip-py3-venv's mypy if it's available and we're on python 2
-PY3_VENV_DIR = "/srv/zulip-py3-venv"
-MYPY_VENV_PATH = os.path.join(PY3_VENV_DIR, "bin", "mypy")
-if six.PY2 and os.path.exists(MYPY_VENV_PATH):
+# Use zulip-py3-venv's mypy if it's available.
+VENV_DIR = "/srv/zulip-py3-venv"
+MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
+if os.path.exists(MYPY_VENV_PATH):
     mypy_command = MYPY_VENV_PATH
     print("Using mypy from", mypy_command)
 else:
@@ -103,8 +83,6 @@ extra_args = ["--check-untyped-defs",
               "--follow-imports=silent",
               "--scripts-are-modules",
               "-i", "--cache-dir=var/mypy-cache"]
-if py_version == 2:
-    extra_args.append("--py2")
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
     extra_args.append("var/linecoverage-report")
