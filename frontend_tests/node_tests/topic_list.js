@@ -1,23 +1,14 @@
-add_dependencies({
-    Handlebars: 'handlebars',
-    hash_util: 'js/hash_util',
-    hashchange: 'js/hashchange',
-    muting: 'js/muting',
-    narrow: 'js/narrow',
-    stream_data: 'js/stream_data',
-    topic_data: 'js/topic_data',
-    templates: 'js/templates',
-});
+set_global('$', global.make_zjquery());
 
+set_global('stream_data', {});
 set_global('unread', {});
+set_global('muting', {});
+set_global('templates', {});
 
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
-
-var topic_list = require('js/topic_list.js');
-
-global.compile_template('topic_list_item');
+zrequire('hash_util');
+zrequire('narrow');
+zrequire('topic_data');
+zrequire('topic_list');
 
 (function test_topic_list_build_widget() {
     var stream_id = 555;
@@ -31,24 +22,65 @@ global.compile_template('topic_list_item');
         message_id: 400,
     });
 
-    global.unread.num_unread_for_topic = function () {
-        return 1;
+    unread.num_unread_for_topic = function () {
+        return 3;
     };
 
-    global.stream_data.get_sub_by_id = function (stream_id) {
+    stream_data.get_sub_by_id = function (stream_id) {
         assert.equal(stream_id, 555);
-        return 'devel';
+        return {
+            name: 'devel',
+        };
     };
 
-    var parent_elem = $('<div>');
+    var checked_mutes;
+    var rendered;
+
+    templates.render = function (name, info) {
+        assert.equal(name, 'topic_list_item');
+        var expected = {
+            topic_name: 'coding',
+            unread: 3,
+            is_zero: false,
+            is_muted: false,
+            url: '#narrow/stream/devel/subject/coding',
+        };
+        assert.deepEqual(info, expected);
+        rendered = true;
+        return '<topic list item>';
+    };
+
+    muting.is_topic_muted = function (stream_name, topic_name) {
+        assert.equal(stream_name, 'devel');
+        assert.equal(topic_name, 'coding');
+        checked_mutes = true;
+        return false;
+    };
+
+    var ul = $('<ul class="topic-list">');
+
+    var item_appended;
+
+    ul.append = function (item) {
+        assert.equal(item.html(), '<topic list item>');
+        item_appended = true;
+    };
+
+    var parent_elem = $.create('parent_elem');
+    var attached_to_parent;
+
+    parent_elem.append = function (child) {
+        assert.equal(child, ul);
+        attached_to_parent = true;
+    };
+
     var widget = topic_list.build_widget(parent_elem, stream_id, active_topic, max_topics);
-    var topic_html = widget.get_dom();
 
+    assert(widget.is_for_stream(stream_id));
     assert.equal(widget.get_parent(), parent_elem);
-    assert.equal(widget.get_stream_id(), stream_id);
 
-    var topic = $(topic_html).find('a').text().trim();
-    assert.equal(topic, 'coding');
-
-    global.write_test_output("test_topic_list_build_widget", parent_elem.html());
+    assert(checked_mutes);
+    assert(rendered);
+    assert(item_appended);
+    assert(attached_to_parent);
 }());
