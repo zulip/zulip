@@ -6,7 +6,9 @@ class zulip::postgres_common {
                         # Python modules used in our monitoring/worker threads
                         "python-gevent",
                         "python-tz", # TODO: use a virtualenv instead
+                        "python3-tz",
                         "python-dateutil", # TODO: use a virtualenv instead
+                        "python3-dateutil",
                         # Needed just to support adding postgres user to 'zulip' group
                         "ssl-cert",
                         # our dictionary

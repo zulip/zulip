@@ -5,6 +5,7 @@ class zulip_ops::postgres_common {
                                  "lzop",
                                  "pv",
                                  "python-pip",
+                                 "python3-pip",
                                  # Postgres Nagios check plugin
                                  "check-postgres",
                                  ]
@@ -25,7 +26,7 @@ class zulip_ops::postgres_common {
     minute => 0,
     target => "postgres",
     user => "postgres",
-    require => [ File["/usr/local/bin/pg_backup_and_purge.py"], Package["postgresql-${zulip::base::postgres_version}", "python-dateutil"] ]
+    require => [ File["/usr/local/bin/pg_backup_and_purge.py"], Package["postgresql-${zulip::base::postgres_version}", "python3-dateutil", "python-dateutil"] ]
   }
 
   exec { "sysctl_p":
