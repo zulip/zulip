@@ -19,12 +19,19 @@ exports.patch_builtin = function (name, val) {
     return val;
 };
 
+exports.zrequire = function (name, fn) {
+    if (fn === undefined) {
+        fn = 'js/' + name;
+    }
+    delete require.cache[require.resolve(fn)];
+    var obj = require(fn);
+    requires.push(fn);
+    set_global(name, obj);
+};
+
 exports.add_dependencies = function (dct) {
     _.each(dct, function (fn, name) {
-        delete require.cache[require.resolve(fn)];
-        var obj = require(fn);
-        requires.push(fn);
-        set_global(name, obj);
+        exports.zrequire(name, fn);
     });
 };
 
