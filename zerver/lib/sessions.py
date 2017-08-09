@@ -22,7 +22,7 @@ def get_session_dict_user(session_dict):
         return None
 
 def get_session_user(session):
-    # type: (Session) -> int
+    # type: (Session) -> Optional[int]
     return get_session_dict_user(session.get_decoded())
 
 def user_sessions(user_profile):
