@@ -96,6 +96,8 @@ function update_categories() {
         { opacity: 1 },
         { duration: 400 }
     );
+
+    adjust_font_sizing();
 }
 
 var update_integrations = _.debounce(function () {
@@ -129,6 +131,8 @@ var update_integrations = _.debounce(function () {
 
         document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
     });
+
+    adjust_font_sizing();
 }, 50);
 
 function hide_catalog_show_integration() {
@@ -181,6 +185,8 @@ function hide_catalog_show_integration() {
             { opacity: 1 },
             { duration: 300 }
         );
+
+        adjust_font_sizing();
     }
 
     function hide_catalog(doc) {
@@ -211,6 +217,7 @@ function hide_integration_show_catalog() {
         $(".integration-categories-dropdown").css('display', '');
         $(".integrations .catalog").removeClass('hide');
         $(".extra, #integration-main-text, #integration-search").css("display", "block");
+        adjust_font_sizing();
     }
 
     function hide_integration() {
@@ -391,7 +398,6 @@ function integration_events() {
 // init
 $(function () {
     integration_events();
-    adjust_font_sizing();
     load_data();
     dispatch('LOAD_PATH');
 });
