@@ -22,7 +22,7 @@ echo "PROVISIONING STARTING." >> $LOG_PATH
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-python3 ./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
+./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
 if [ $failed = 1 ]; then
