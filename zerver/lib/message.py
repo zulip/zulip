@@ -21,6 +21,7 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    Subscription,
     UserProfile,
     UserMessage,
     Reaction
@@ -379,10 +380,29 @@ def aggregate_dict(input_rows, lookup_fields, input_field, output_field):
 
     return [lookup_dict[k] for k in sorted_keys]
 
+def get_inactive_recipient_ids(user_profile):
+    # type: (UserProfile) -> List[int]
+    rows = Subscription.objects.filter(
+        user_profile=user_profile,
+        recipient__type=Recipient.STREAM,
+        active=False,
+    ).values(
+        'recipient_id'
+    )
+    inactive_recipient_ids = [
+        row['recipient_id']
+        for row in rows]
+    return inactive_recipient_ids
+
 def get_unread_message_ids_per_recipient(user_profile):
     # type: (UserProfile) -> Dict[str, List[Dict[str, Any]]]
+
+    excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
+
     user_msgs = UserMessage.objects.filter(
         user_profile=user_profile
+    ).exclude(
+        message__recipient_id__in=excluded_recipient_ids
     ).extra(
         where=[UserMessage.where_unread()]
     ).values(
