@@ -1,14 +1,5 @@
 set_global('$', global.make_zjquery());
 
-add_dependencies({
-    Handlebars: 'handlebars',
-    templates: 'js/templates',
-    hash_util: 'js/hash_util',
-    hashchange: 'js/hashchange',
-    narrow: 'js/narrow',
-    people: 'js/people',
-});
-
 set_global('message_store', {
     recent_private_messages: new global.Array(),
 });
@@ -27,9 +18,13 @@ set_global('popovers', {
     hide_all: function () {},
 });
 
-var pm_list = require('js/pm_list.js');
-
-global.compile_template('sidebar_private_message_list');
+zrequire('hash_util');
+zrequire('hashchange');
+zrequire('narrow');
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+zrequire('people');
+zrequire('pm_list');
 
 var alice = {
     email: 'alice@zulip.com',
