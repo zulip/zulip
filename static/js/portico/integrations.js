@@ -38,6 +38,28 @@ var INITIAL_STATE = {
 var state = Object.assign({}, INITIAL_STATE);
 
 
+function adjust_font_sizing() {
+    $('.integration-lozenge').toArray().forEach(function (integration) {
+        var $integration_name = $(integration).find('.integration-name');
+        var $integration_category = $(integration).find('.integration-category');
+
+        // if the text has wrapped to two lines, decrease font-size
+        if ($integration_name.height() > 30) {
+            $integration_name.css('font-size', '1em');
+            if ($integration_name.height() > 30) {
+                 $integration_name.css('font-size', '.95em');
+            }
+        }
+
+        if ($integration_category.height() > 30) {
+            $integration_category.css('font-size', '.8em');
+            if ($integration_category.height() > 30) {
+                $integration_category.css('font-size', '.75em');
+            }
+        }
+    });
+}
+
 function update_path() {
     var next_path;
     if (state.integration) {
@@ -286,29 +308,6 @@ function dispatch(action, payload) {
 }
 
 function integration_events() {
-    function adjust_font_sizing() {
-        $('.integration-lozenge').toArray().forEach(function (integration) {
-            var $integration_name = $(integration).find('.integration-name');
-            var $integration_category = $(integration).find('.integration-category');
-
-            // if the text has wrapped to two lines, decrease font-size
-            if ($integration_name.height() > 30) {
-                $integration_name.css('font-size', '1em');
-                if ($integration_name.height() > 30) {
-                     $integration_name.css('font-size', '.95em');
-                }
-            }
-
-            if ($integration_category.height() > 30) {
-                $integration_category.css('font-size', '.8em');
-                if ($integration_category.height() > 30) {
-                    $integration_category.css('font-size', '.75em');
-                }
-            }
-        });
-    }
-    adjust_font_sizing();
-
     $('#integration-search input[type="text"]').keypress(function (e) {
         var integrations = $('.integration-lozenges').children().toArray();
         if (e.which === 13 && e.target.value !== '') {
@@ -392,6 +391,7 @@ function integration_events() {
 // init
 $(function () {
     integration_events();
+    adjust_font_sizing();
     load_data();
     dispatch('LOAD_PATH');
 });
