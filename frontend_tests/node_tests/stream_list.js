@@ -2,21 +2,18 @@ set_global('$', global.make_zjquery());
 
 set_global('templates', {});
 
-add_dependencies({
-    colorspace: 'js/colorspace',
-    Filter: 'js/filter',
-    hash_util: 'js/hash_util',
-    narrow: 'js/narrow',
-    stream_color: 'js/stream_color',
-    stream_data: 'js/stream_data',
-    stream_sort: 'js/stream_sort',
-    topic_data: 'js/topic_data',
-    unread: 'js/unread',
-    unread_ui: 'js/unread_ui',
-    util: 'js/util',
-});
-
-var stream_list = require('js/stream_list.js');
+zrequire('unread_ui');
+zrequire('Filter', 'js/filter');
+zrequire('util');
+zrequire('topic_data');
+zrequire('stream_sort');
+zrequire('colorspace');
+zrequire('stream_color');
+zrequire('hash_util');
+zrequire('narrow');
+zrequire('unread');
+zrequire('stream_data');
+zrequire('stream_list');
 
 var noop = function () {};
 var return_false = function () { return false; };
