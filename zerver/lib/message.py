@@ -29,8 +29,17 @@ from zerver.models import (
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Text, Union
+from mypy_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[Text]]
+
+UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
+    'pms': List[Dict[str, Any]],
+    'streams': List[Dict[str, Any]],
+    'huddles': List[Dict[str, Any]],
+    'mentions': List[int],
+    'count': int,
+})
 
 MAX_UNREAD_MESSAGES = 5000
 
@@ -413,7 +422,7 @@ def get_muted_recipient_ids(user_profile):
     return muted_recipient_ids
 
 def get_unread_message_ids_per_recipient(user_profile):
-    # type: (UserProfile) -> Dict[str, Any]
+    # type: (UserProfile) -> UnreadMessagesResult
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
@@ -510,8 +519,7 @@ def get_unread_message_ids_per_recipient(user_profile):
         streams=stream_objects,
         huddles=huddle_objects,
         mentions=mentioned_message_ids,
-        count=count,
-    )
+        count=count)  # type: UnreadMessagesResult
 
     return result
 
