@@ -87,19 +87,15 @@ For deeper dependencies, you want to categorize each module as follows:
     isolation?
 -   Do some combination of the above?
 
-For all the modules where you want to run actual code, add a statement
-like the following to the top of your test file:
+For all the modules where you want to run actual code, add statements
+like the following toward the top of your test file:
 
->     add_dependencies({
->         _: 'node_modules/underscore/underscore.js',
->         util: 'js/util.js',
->         Dict: 'js/dict.js',
->         Handlebars: 'handlebars',
->         Filter: 'js/filter.js',
->         typeahead_helper: 'js/typeahead_helper.js',
->         stream_data: 'js/stream_data.js',
->         narrow: 'js/narrow.js'
->     });
+>     zrequire('util');
+>     zrequire('stream_data');
+>     zrequire('Filter', 'js/filter');
+
+(Deprecation note: you may see code where we use `add_dependencies` or
+direct `require` statements.  We should use `zrequire` instead.)
 
 For modules that you want to completely stub out, please use a pattern
 like this:
