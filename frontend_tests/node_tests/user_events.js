@@ -1,3 +1,5 @@
+set_global('$', global.make_zjquery());
+
 add_dependencies({
     people: 'js/people.js',
 });
