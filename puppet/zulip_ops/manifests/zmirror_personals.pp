@@ -13,6 +13,7 @@ class zulip_ops::zmirror_personals {
                        "libzephyr-dev",
                        "comerr-dev",
                        "python-dev",
+                       "python3-dev",
                        "cython",
                        ]
   package { $zmirror_packages: ensure => "installed" }

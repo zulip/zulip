@@ -18,9 +18,11 @@ class zulip_ops::base {
                         "debian-goodies",
                         # Needed for zulip-ec2-configure-network-interfaces
                         "python-six",
+                        "python3-six",
                           # This one is needed for postgres as well
                         "python-boto",
                         "python-netifaces",
+                        "python3-netifaces",
                         # Popular editors
                         "vim",
                         "emacs-nox",
