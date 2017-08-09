@@ -73,6 +73,7 @@ def accounts_register(request):
     prereg_user = confirmation.content_object
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
+    password_required = prereg_user.password_required
     try:
         existing_user_profile = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -180,7 +181,7 @@ def accounts_register(request):
             except KeyError:
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation)
-        if not password_auth_enabled(realm):
+        if not (password_auth_enabled(realm) and password_required):
             form['password'].field.required = False
 
     if form.is_valid():
@@ -267,8 +268,9 @@ def accounts_register(request):
                  }
     )
 
-def create_preregistration_user(email, request, realm_creation=False):
-    # type: (Text, HttpRequest, bool) -> HttpResponse
+def create_preregistration_user(email, request, realm_creation=False,
+                                password_required=True):
+    # type: (Text, HttpRequest, bool, bool) -> HttpResponse
     realm_str = request.session.pop('realm_str', None)
     if realm_str is not None:
         # realm_str was set in accounts_home_with_realm_str.
@@ -276,9 +278,12 @@ def create_preregistration_user(email, request, realm_creation=False):
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
                                                   realm=get_realm(realm_str),
-                                                  realm_creation=realm_creation)
+                                                  realm_creation=realm_creation,
+                                                  password_required=password_required)
 
-    return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
+    return PreregistrationUser.objects.create(email=email,
+                                              realm_creation=realm_creation,
+                                              password_required=password_required)
 
 def accounts_home_with_realm_str(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
