@@ -414,7 +414,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
         # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
-            if settings.REALMS_HAVE_SUBDOMAINS and realm_subdomain is not None:
+            if settings.REALMS_HAVE_SUBDOMAINS:
                 self._realm = get_realm(realm_subdomain)
             else:
                 self._realm = get_realm_by_email_domain(username)
