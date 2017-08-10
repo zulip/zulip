@@ -343,24 +343,14 @@ nav ul li.active::after {
 
     padding-top: 120px;
 
-    transition: all 0.5s ease;
-    -webkit-transform: translateY(120px);
-    transform: translateY(120px);
+    transition: opacity 0.3s ease;
+
     opacity: 0;
 
     z-index: 1;
 }
 
-.portico-landing.no-slide {
-    -webkit-transform: translateY(0px);
-    transform: translateY(0px);
-
-    opacity: 1;
-}
-
 .portico-landing.show {
-    -webkit-transform: translateY(0px);
-    transform: translateY(0px);
     opacity: 1;
 }
 
