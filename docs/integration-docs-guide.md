@@ -254,7 +254,7 @@ Here are a few common macros used to document Zulip's integrations:
   https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
   ```
   A good example is
-  [Zulip's Beanstalk integration](https://zulipchat.com/integrations/#beanstalk)
+  [Zulip's Beanstalk integration](https://zulipchat.com/integrations/doc/beanstalk)
 
 [1]: https://github.com/zulip/zulip/blob/master/templates/zerver/help/include/create-stream.md
 [2]: https://github.com/zulip/zulip/blob/708f3a4bb19c8e823c9ea1e577d360ac4229b199/zerver/lib/integrations.py#L51

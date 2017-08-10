@@ -2,6 +2,9 @@ Zulip supports both Git and Mercurial notifications from
 Bitbucket. This integration is for the new-style Bitbucket
 webhooks used by the Bitbucket SAAS service.
 
+For the old-style Bitbucket webhooks used by Bitbucket Enterprise,
+click [here](./bitbucket).
+
 {!create-stream.md!}
 
 The integration will use the default stream `bitbucket` if

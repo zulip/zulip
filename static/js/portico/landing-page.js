@@ -1,6 +1,3 @@
-import fuzzysearch from 'fuzzysearch';
-import blueslip from './../blueslip';
-
 const ELECTRON_APP_VERSION = "1.2.0-beta";
 const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
 const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
@@ -24,245 +21,11 @@ var ScrollTo = function () {
     });
 };
 
-var detectPath = function (pathname) {
-    var match = (pathname || window.location.pathname).match(/(\/\w+)?\/(.+)\//);
-    if (match !== null) {
-        return match[2];
-    }
-};
-
-// these are events that are only to run on the integrations page.
-// check if the page location is integrations.
-var integration_events = function () {
-    var integrations = $('.integration-lozenges').children().toArray();
-    var scroll_top = 0;
-
-    $("a.title")
-        .addClass("show-integral")
-        .prepend($("<span class='integral'>∫</span>"))
-        .hover(function () {
-            $(".integral").css("display", "inline");
-            var width = $(".integral").width();
-            $("a.title").css("left", -1 * width);
-        },
-        function () {
-            $(".integral").css("display", "none");
-                $("a.title").css("left", 0);
-            }
-        );
-
-    function adjust_font_sizing() {
-        $('.integration-lozenge').toArray().forEach(function (integration) {
-            var $integration_name = $(integration).find('.integration-name');
-            var $integration_category = $(integration).find('.integration-category');
-
-            // if the text has wrapped to two lines, decrease font-size
-            if ($integration_name.height() > 30) {
-                $integration_name.css('font-size', '1em');
-                if ($integration_name.height() > 30) {
-                     $integration_name.css('font-size', '.95em');
-                }
-            }
-
-            if ($integration_category.height() > 30) {
-                $integration_category.css('font-size', '.8em');
-                if ($integration_category.height() > 30) {
-                    $integration_category.css('font-size', '.75em');
-                }
-            }
-        });
-    }
-
-    adjust_font_sizing();
-    $(window).resize(adjust_font_sizing);
-
-    var $lozenge_icon;
-    var currentblock;
-    var instructionbox = $("#integration-instruction-block");
-    var hashes = $('.integration-instructions').map(function () {
-        return this.id || null;
-    }).get();
-
-    var show_integration = function (hash) {
-        // the version of the hash without the leading "#".
-        var _hash = hash.replace(/^#/, "");
-        var integration_name = _hash;
-
-        $.get({
-            url: '/integrations/doc/' + integration_name,
-            dataType: 'html',
-            success: function (doc) {
-                $('#' + integration_name + '.integration-instructions .help-content').html(doc);
-            },
-            error: function (err) {
-                blueslip.error("Integration documentation for '" + integration_name + "' not found.", err);
-            },
-        });
-
-        // clear out the integrations instructions that may exist in the instruction
-        // block from a previous hash.
-        $("#integration-instruction-block .integration-instructions")
-            .appendTo("#integration-instructions-group");
-
-        if (hashes.indexOf(_hash) > -1) {
-            $lozenge_icon = $(".integration-lozenges .integration-lozenge.integration-" + _hash).clone(true);
-            currentblock = $(hash);
-            instructionbox.hide().children(".integration-lozenge").replaceWith($lozenge_icon);
-            instructionbox.append($lozenge_icon);
-
-            $(".inner-content").removeClass("show");
-            setTimeout(function () {
-                instructionbox.hide();
-                $(".integration-categories-dropdown").css('display', 'none');
-                $(".integrations .catalog").addClass('hide');
-                $(".extra, #integration-main-text, #integration-search").css("display", "none");
-
-                instructionbox.append(currentblock);
-                instructionbox.show();
-                $("#integration-list-link").css("display", "block");
-
-                $(".inner-content").addClass("show");
-            }, 300);
-
-            $("html, body").animate({ scrollTop: 0 }, 200);
-        }
-    };
-
-    function update_hash() {
-        var hash = window.location.hash;
-
-        if (hash && hash !== '#' && hash !== '#hubot-integrations') {
-            scroll_top = $("body").scrollTop();
-            show_integration(window.location.hash);
-        } else if (currentblock && $lozenge_icon) {
-            $(".inner-content").removeClass("show");
-            setTimeout(function () {
-                $("#integration-list-link").css("display", "none");
-                $(".extra, #integration-main-text, #integration-search").show();
-                instructionbox.hide();
-                $lozenge_icon.remove();
-                currentblock.appendTo("#integration-instructions-group");
-
-                $(".inner-content").addClass("show");
-                $(".integration-categories-dropdown").css('display', '');
-                $(".integrations .catalog").removeClass('hide');
-
-                $('html, body').animate({ scrollTop: scroll_top }, 0);
-            }, 300);
-        } else {
-            $(".inner-content").addClass("show");
-            $(".integration-categories-dropdown").removeClass('hide');
-            $(".integrations .catalog").removeClass('hide');
-        }
-
-        adjust_font_sizing();
-    }
-
-    window.onhashchange = update_hash;
-    update_hash();
-
-    // this needs to happen because when you link to "#" it will scroll to the
-    // top of the page.
-    $("#integration-list-link").click(function (e) {
-        var scroll_height = $("body").scrollTop();
-        window.location.hash = "#";
-        $("body").scrollTop(scroll_height);
-
-        e.preventDefault();
-    });
-
-    $('#integration-search input[type="text"]').keypress(function (e) {
-        if (e.which === 13 && e.target.value !== '') {
-            for (var i = 0; i < integrations.length; i += 1) {
-                var integration = $(integrations[i]).find('.integration-lozenge');
-
-                if ($(integration).css('display') !== 'none') {
-                    $(integration).closest('a')[0].click();
-                    break;
-                }
-            }
-        }
-    });
-
-    $(window).scroll(function () {
-         if (document.body.scrollTop > 330) {
-             $('.integration-categories-sidebar').addClass('sticky');
-         } else {
-             $('.integration-categories-sidebar').removeClass('sticky');
-        }
-    });
-};
-
-
-function integration_search() {
-    var integrations = $('.integration-lozenges').children().toArray();
-    var current_category = 'All';
-    var current_query = '';
-
-    function update_categories() {
-        $('.integration-category').removeClass('selected');
-        $('[data-category="' + current_category + '"]').addClass('selected');
-    }
-
-    var update_integrations = _.debounce(function () {
-        integrations.forEach(function (integration) {
-            var $integration = $(integration).find('.integration-lozenge');
-            var $integration_category = $integration.find('.integration-category');
-
-            if (current_category !== 'All') {
-                $integration_category.css('display', 'none');
-                $integration.addClass('without-category');
-            } else {
-                $integration_category.css('display', '');
-                $integration.removeClass('without-category');
-            }
-
-            if (!$integration.hasClass('integration-create-your-own')) {
-                var display =
-                    fuzzysearch(current_query, $integration.data('name').toLowerCase()) &&
-                    ($integration.data('categories').indexOf(current_category) !== -1 ||
-                     current_category === 'All');
-
-                if (display) {
-                    $integration.css('display', 'inline-block');
-                } else {
-                    $integration.css('display', 'none');
-                }
-            }
-        });
-    }, 50);
-
-    function change_category(category) {
-        $('.integration-lozenges').css('opacity', 0);
-
-        current_category = category;
-        update_categories();
-        update_integrations();
-
-        $('.integration-lozenges').animate(
-            { opacity: 1 },
-            { duration: 400 }
-        );
-    }
-
-    function run_search(query) {
-        current_query = query.toLowerCase();
-        update_integrations();
-    }
-
-    $('.integrations .integration-category').on('click', function (e) {
-        var category = $(e.target).data('category');
-
-        if (category !== current_category) {
-            change_category(category);
-        }
-    });
-
-    $(".integrations .searchbar input[type='text']").on('input', function (e) {
-        run_search(e.target.value);
+export function path_parts() {
+    return window.location.pathname.split('/').filter(function (chunk) {
+        return chunk !== '';
     });
 }
-
 
 var hello_events = function () {
     var counter = 0;
@@ -277,7 +40,6 @@ var hello_events = function () {
 };
 
 var apps_events = function () {
-    var version;
     var info = {
         windows: {
             image: "/static/images/landing-page/microsoft.png",
@@ -311,35 +73,33 @@ var apps_events = function () {
         },
     };
 
-    var nav_version = {
-        Win: "windows",
-        MacIntel: "mac",
-        Linux: "linux",
-        iP: "ios",
-    };
+    var version;
 
-    // if the hash is not a valid section, then identify it.
-    version = window.location.hash.replace(/^#/, "");
+    function get_version_from_path() {
+        var result;
+        var parts = path_parts();
 
-    if (info[version]) {
-        window.location.hash = version;
-    } else {
-        for (var x in nav_version) {
-            if (navigator.platform.indexOf(x) !== -1) {
-                window.location.hash = nav_version[x];
-                version = nav_version[x];
-                break;
+        Object.keys(info).forEach(function (version) {
+            if (parts.includes(version)) {
+                result = version;
             }
-        }
+        });
 
-        if (!version || !info[version]) {
-            version = "mac";
-        }
-
-        window.location.hash = version;
+        // display Mac app by default
+        result = result || 'mac';
+        return result;
     }
 
-    var update_version = function (version) {
+    function get_path_from_version() {
+        return '/apps/' + version;
+    }
+
+    function update_path() {
+        var next_path = get_path_from_version();
+        history.pushState(version, '', next_path);
+    }
+
+    var update_page = function () {
         var version_info = info[version];
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
@@ -347,16 +107,29 @@ var apps_events = function () {
         $(".image img").attr("src", version_info.image);
     };
 
-
-    window.onhashchange = function () {
-        update_version(window.location.hash.substr(1));
-    };
-
-    update_version(version);
-
-    $(".apps > .icon").click(function () {
+    $(window).on('popstate', function () {
+        version = get_version_from_path();
+        update_page();
         $("body").animate({ scrollTop: 0 }, 200);
     });
+
+    $(".apps a .icon").click(function (e) {
+        var next_version = $(e.target).closest('a')
+            .attr('href')
+            .replace('/apps/', '');
+        version = next_version;
+
+        update_path();
+        update_page();
+        $("body").animate({ scrollTop: 0 }, 200);
+
+        return false;
+    });
+
+    // init
+    version = get_version_from_path();
+    history.replaceState(version, '', get_path_from_version());
+    update_page();
 };
 
 var events = function () {
@@ -395,34 +168,13 @@ var events = function () {
         $("nav ul").addClass("show");
     });
 
-    if (detectPath() === "apps") {
+    if (path_parts().includes("apps")) {
         apps_events();
     }
 
-    if (detectPath() === "integrations") {
-        integration_events();
-        integration_search();
-    }
-
-    if (detectPath() === "hello") {
+    if (path_parts().includes('hello')) {
         hello_events();
     }
-
-    $('.integration-categories-dropdown .dropdown-toggle').click(function () {
-        var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
-        $dropdown_list.toggle();
-
-        var $dropdown_icon = $('.integration-categories-dropdown i');
-        if ($dropdown_list.css('display') === 'none') {
-            $dropdown_icon
-                .removeClass('icon-vector-angle-down')
-                .addClass('icon-vector-angle-right');
-        } else {
-            $dropdown_icon
-                .removeClass('icon-vector-angle-right')
-                .addClass('icon-vector-angle-down');
-        }
-    });
 };
 
 

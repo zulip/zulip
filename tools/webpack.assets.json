@@ -16,6 +16,7 @@
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
     "landing-page": "./static/js/portico/landing-page.js",
+    "integrations": "./static/js/portico/integrations.js",
     "signup": [
                "./static/js/portico/signup.js",
                "./node_modules/jquery-validation/dist/jquery.validate.min.js"

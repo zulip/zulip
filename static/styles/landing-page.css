@@ -1816,10 +1816,8 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .padded-content .inner-content {
-    opacity: 0;
-    pointer-events: none;
-
     transition: all 0.3s ease;
+    min-height: 800px;
 }
 
 .portico-landing.integrations .padded-content .inner-content.show {
@@ -1948,6 +1946,7 @@ nav ul li.active::after {
     margin: 3px 0;
     border-radius: 5px;
     transition: all 0.3s ease;
+    color: #414e67;
 }
 
 .portico-landing.integrations .integration-categories-sidebar h4.selected,
@@ -1980,6 +1979,10 @@ nav ul li.active::after {
     color: #414e67;
     text-align: center;
     transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .integration-lozenge.legacy {
+    display: none !important;
 }
 
 .portico-landing.integrations .integration-lozenge.without-category {
@@ -2032,14 +2035,49 @@ nav ul li.active::after {
 
 /* -- integration instructions -- */
 
+.portico-landing.integrations #integration-instructions-group {
+    padding: 0 50px;
+    display: none;
+}
+
 .portico-landing.integrations .integration-instruction-block .integration-lozenge {
     width: 125px;
     height: 170px;
-    margin: 0 0 20px 0;
+    margin: 0 21px;
 }
 
 .portico-landing.integrations .integration-instruction-block .integration-lozenge .integration-category {
     display: none;
+}
+
+.portico-landing.integrations .integration-instruction-block .name {
+    display: none;
+    font-size: 1.4em;
+    font-weight: 400;
+    margin: 0;
+    padding-bottom: 35px;
+}
+
+.portico-landing.integrations .integration-instruction-block .categories {
+    position: absolute;
+    top: 230px;
+}
+
+.portico-landing.integrations .integration-instruction-block .categories .integration-category {
+    font-size: 0.90em;
+    font-weight: 500;
+    padding: 6px 10px 6px 3px;
+    margin: 3px 0;
+    width: 165px;
+    text-align: center;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    color: #414e67;
+}
+
+.portico-landing.integrations .integration-instruction-block .categories .integration-category:hover {
+    background-color: hsl(170, 65%, 85%);
+    color: hsl(170, 72%, 32%);
 }
 
 /* -- gradients -- */
@@ -2364,6 +2402,10 @@ nav ul li.active::after {
         font-size: 1em;
     }
 
+    .portico-landing.integrations .integration-lozenge .integration-name.create-your-own {
+        font-size: 0.95em !important;
+    }
+
     .portico-landing.integrations .integration-lozenge .integration-category {
         font-size: .8em;
     }
@@ -2423,8 +2465,8 @@ nav ul li.active::after {
     }
 
     #integration-list-link {
-        top: -40px;
-        left: 35px;
+        top: 33px;
+        left: -7px;
     }
 
     .integration-instructions {
@@ -2442,6 +2484,14 @@ nav ul li.active::after {
     .portico-landing.integrations .searchbar input {
         width: 375px;
         margin: 0 auto;
+    }
+
+    .portico-landing.integrations .integration-instruction-block .name {
+        display: block;
+    }
+
+    .portico-landing.integrations .integration-instruction-block .categories {
+        display: none;
     }
 
     .platform.image {
@@ -2714,6 +2764,10 @@ nav ul li.active::after {
 
     .portico-landing.integrations .main .padded-content {
         padding: 40px 0;
+    }
+
+    .portico-landing.integrations #integration-instructions-group {
+        padding: 0 25px;
     }
 
     .main .padded-content {

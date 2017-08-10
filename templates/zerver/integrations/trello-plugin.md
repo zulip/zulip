@@ -1,6 +1,6 @@
 This legacy integration for Trello works by running a script that
 communicates with the Trello API in a cron job. We recommend
-[the new Trello webhook integration](#trello) (which will
+[the new Trello webhook integration](./trello) (which will
 eventually replace this entirely). Please
 [report any issues](https://github.com/zulip/zulip/issues/new)
 which cause you to prefer this integration over the webhook

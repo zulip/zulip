@@ -1,7 +1,7 @@
 *If you are running JIRA version 5.2 or greater, or if you are
 using the hosted JIRA provided by Atlassian, you can use the built-in
 web-hook support to connect to Zulip — read on. For older,
-self-hosted JIRA installs, you can use our [JIRA Plugin](#jira-plugin).*
+self-hosted JIRA installs, you can use our [JIRA Plugin](./jira-plugin).*
 
 {!create-stream.md!}
 

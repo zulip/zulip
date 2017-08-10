@@ -266,8 +266,8 @@ def desktop_home(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponseRedirect(reverse('zerver.views.home.home'))
 
-def apps_view(request):
-    # type: (HttpRequest) -> HttpResponse
+def apps_view(request, _):
+    # type: (HttpRequest, Text) -> HttpResponse
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)

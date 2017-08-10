@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {% stylesheet 'portico' %}
 {% stylesheet 'landing-page' %}
-{{ render_bundle('landing-page') }}
+{{ render_bundle('integrations') }}
 
 {% endblock %}
 
@@ -31,10 +31,10 @@
                     <h2 class="portico-page-subheading">
                         {% trans %}
                         And hundreds more through
-                        <a href="#hubot">Hubot</a>,
-                        <a href="#zapier">Zapier</a>,
+                        <a href="/integrations/doc/hubot">Hubot</a>,
+                        <a href="/integrations/doc/zapier">Zapier</a>,
                         and
-                        <a href="#ifttt">IFTTT</a>.
+                        <a href="/integrations/doc/iftt">IFTTT</a>.
                         {% endtrans %}
                     </h2>
                 </div>
@@ -48,20 +48,21 @@
                     </div>
                 </div>
 
-                <div id="integration-instruction-block" class="integration-instruction-block">
-                    <a href="#!" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
-                </div>
-                <div class="clear-float"></div>
-
                 <div class="integration-categories-dropdown">
                     <div class="dropdown-toggle">
-                        <h3>{% trans %}View all categories{% endtrans %}</h3>
+                        <h3 class="dropdown-category-label">{% trans %}Filter by category{% endtrans %}</h3>
                         <i class="icon-vector-angle-right" aria-hidden="true"></i>
                     </div>
                     <div class="dropdown-list">
-                        <h4 class="integration-category selected" data-category="All">All</h4>
-                        {% for category in categories_dict.values() %}
-                        <h4 class="integration-category" data-category="{{ category }}">{{ category }}</h4>
+                        <a href="/integrations">
+                            <h4 class="integration-category selected" data-category="all">All</h4>
+                        </a>
+                        {% for category in categories_dict.keys() %}
+                        <a href="/integrations/{{ category }}">
+                            <h4 class="integration-category" data-category="{{ category }}">
+                                {{ categories_dict[category] }}
+                            </h4>
+                        </a>
                         {% endfor %}
                     </div>
                 </div>
@@ -69,19 +70,29 @@
                 <div class="catalog">
                     <div class="integration-categories-sidebar">
                         <h3>{% trans %}Categories{% endtrans %}</h3>
-                        <h4 data-category="All" class="integration-category selected">{% trans %}All{% endtrans %}</h4>
-                        {% for category in categories_dict.values() %}
-                        <h4 data-category="{{ category }}" class="integration-category">{{ category }}</h4>
+                        <a href="/integrations">
+                            <h4 data-category="all" class="integration-category selected">{% trans %}All{% endtrans %}</h4>
+                        </a>
+                        {% for category in categories_dict.keys() %}
+                        <a href="/integrations/{{ category }}">
+                            <h4 data-category="{{ category }}" class="integration-category">
+                                {{ categories_dict[category] }}
+                            </h4>
+                        </a>
                         {% endfor %}
                     </div>
 
                     <div class="integration-lozenges">
                         {% for integration in integrations_dict.values() %}
                             {% if integration.is_enabled() %}
-                            <a href="#{{ integration.name }}" class="no-style">
-                                <div class="integration-lozenge integration-{{ integration.name }}"
+                            <a href="/integrations/doc/{{ integration.name }}" class="no-style">
+                                <div
+                                    {% if integration.legacy %}
+                                    class="integration-lozenge integration-{{ integration.name }} legacy"{% else %}
+                                    class="integration-lozenge integration-{{ integration.name }}"
+                                    {% endif %}
                                     data-categories="{{ integration.categories }}"
-                                    data-name="{{ integration.display_name }}">
+                                    data-name="{{ integration.name }}">
                                     <img class="integration-logo" src="/{{ integration.logo }}"
                                          alt="{{ integration.display_name }} logo"/>
                                     {% if integration.secondary_line_text %}
@@ -109,6 +120,12 @@
                 </div>
 
                 <div id="integration-instructions-group">
+                    <div id="integration-instruction-block" class="integration-instruction-block">
+                        <a href="/integrations" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
+                        <h3 class="name"></h3>
+                        <div class="categories"></div>
+                    </div>
+
                     {% for integration in integrations_dict.values() %}
                         {% if integration.is_enabled() %}
                         <div id={{ integration.name }} class="integration-instructions">

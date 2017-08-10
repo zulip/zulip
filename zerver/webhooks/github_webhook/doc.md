@@ -1,3 +1,7 @@
+For the integration based on the deprecated
+[GitHub Services](https://github.com/github/github-services),
+see [here](./github).
+
 {!create-stream.md!}
 
 {!create-bot-construct-url.md!}

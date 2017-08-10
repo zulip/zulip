@@ -641,11 +641,7 @@ a.bottom-signup-button {
 }
 
 .integration-instructions {
-    margin-left: 180px;
-}
-
-#integration-instructions-group {
-    display: none;
+    margin-left: 220px;
 }
 
 .api-page-header,
@@ -715,13 +711,12 @@ a.bottom-signup-button {
 
 .integration-instruction-block {
     position: relative;
-    margin-top: 15px;
-    padding: 0 40px;
 }
 
 #integration-list-link {
     position: absolute;
     top: 200px;
+    left: 30px;
     text-align: center;
     display: none;
     margin-left: 5px;

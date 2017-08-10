@@ -1,5 +1,3 @@
-## Freshdesk
-
 See customer support interactions right in Zulip, with our Freshdesk
 integration! Note that this integration must be set up by an
 administrator for your Freshdesk instance.
