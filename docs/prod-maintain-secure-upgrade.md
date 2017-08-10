@@ -77,14 +77,16 @@ upgrade.
 
 The Zulip upgrade process works by creating a new deployment under
 `/home/zulip/deployments/` containing a complete copy of the Zulip server code,
-and then moving the symlinks at `/home/zulip/deployments/current` and
-`/root/zulip` as part of the upgrade process.
+and then moving the symlinks at `/home/zulip/deployments/{current,last,next}`
+as part of the upgrade process.
 
 This means that if the new version isn't working,
-you can quickly downgrade to the old version by using
-`/home/zulip/deployments/<date>/scripts/restart-server` to return to
-a previous version that you've deployed (the version is specified
-via the path to the copy of `restart-server` you call).
+you can quickly downgrade to the old version by running
+`/home/zulip/deployments/last/scripts/restart-server`, or to an
+earlier previous version by running
+`/home/zulip/deployments/DATE/scripts/restart-server`.  The
+`restart-server` script stops any running Zulip server, and starts
+the version corresponding to the `restart-server` path you call.
 
 ### Updating settings
 
