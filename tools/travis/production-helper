@@ -9,9 +9,8 @@ apt-get install -y openssl ssl-cert
 ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
 ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
 
-rm -rf /root/zulip
-tar -xf zulip-server-travis.tar.gz
-mv zulip-server-travis /root/zulip
+ZULIP_PATH=$(mktemp -d)
+tar -xf zulip-server-travis.tar.gz -C "$ZULIP_PATH" --strip-components=1
 
 # Do an apt upgrade to start with an up-to-date machine
 export APT_OPTIONS="-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
@@ -36,7 +35,7 @@ service rabbitmq-server stop
 rm -rf /var/lib/rabbitmq/mnesia/
 
 # Install Zulip
-env TRAVIS=1 /root/zulip/scripts/setup/install
+env TRAVIS=1 "$ZULIP_PATH"/scripts/setup/install
 
 cat >>/etc/zulip/settings.py <<EOF
 # Travis CI override settings above
