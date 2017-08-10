@@ -74,6 +74,8 @@ zrequire('topic_list');
         attached_to_parent = true;
     };
 
+    assert.equal(topic_list.active_stream_id(), undefined);
+
     var widget = topic_list.build_widget(parent_elem, stream_id, active_topic, max_topics);
 
     assert(widget.is_for_stream(stream_id));
@@ -83,4 +85,6 @@ zrequire('topic_list');
     assert(rendered);
     assert(item_appended);
     assert(attached_to_parent);
+
+    assert.equal(topic_list.active_stream_id(), stream_id);
 }());
