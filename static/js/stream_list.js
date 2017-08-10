@@ -608,8 +608,26 @@ exports.scroll_to_active_stream = function (stream_li) {
     exports.scroll_element_into_container(stream_li, container);
 };
 
-exports.scroll_element_into_container = function (active_elem, container) {
-    // This is a generic function to make active_elem visible in
+exports.scroll_delta = function (opts) {
+    var elem_top = opts.elem_top;
+    var container_height = opts.container_height;
+    var elem_bottom = opts.elem_bottom;
+
+    var delta = 0;
+
+    if (elem_top < 0) {
+        delta = elem_top;
+    } else {
+        if (elem_bottom > container_height) {
+            delta = elem_bottom - container_height;
+        }
+    }
+
+    return delta;
+};
+
+exports.scroll_element_into_container = function (elem, container) {
+    // This is a generic function to make elem visible in
     // container by scrolling container appropriately.  We may want to
     // eventually move this into another module, but I couldn't find
     // an ideal landing space for this.  I considered a few modules, but
@@ -621,19 +639,16 @@ exports.scroll_element_into_container = function (active_elem, container) {
     // this will be non-intrusive to users when they already have
     // the element visible.
 
-    var active_top = active_elem.position().top;
-    var delta = 0;
+    var elem_top = elem.position().top;
+    var elem_bottom = elem_top + elem.height();
 
-    if (active_top < 0) {
-        delta = active_top;
-    } else {
-        var active_bottom = active_top + active_elem.height();
-        var container_height = container.height();
+    var opts = {
+        elem_top: elem_top,
+        elem_bottom: elem_bottom,
+        container_height: container.height(),
+    };
 
-        if (active_bottom > container_height) {
-            delta = active_bottom - container_height;
-        }
-    }
+    var delta = exports.scroll_delta(opts);
 
     if (delta === 0) {
         return;
