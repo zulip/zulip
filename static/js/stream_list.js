@@ -418,6 +418,40 @@ function deselect_top_left_corner_items() {
     $("ul.filters li").removeClass('active-filter active-sub-filter');
 }
 
+exports.update_top_left_corner_for_narrow = function (filter) {
+    deselect_top_left_corner_items();
+
+    var ops;
+    var filter_name;
+    var filter_li;
+
+    // TODO: handle confused filters like "in:all stream:foo"
+    ops = filter.operands('in');
+    if (ops.length >= 1) {
+        filter_name = ops[0];
+        if (filter_name === 'home') {
+            filter_li = exports.get_global_filter_li(filter_name);
+            filter_li.addClass('active-filter');
+        }
+    }
+    ops = filter.operands('is');
+    if (ops.length >= 1) {
+        filter_name = ops[0];
+        if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
+            filter_li = exports.get_global_filter_li(filter_name);
+            filter_li.addClass('active-filter');
+        }
+    }
+
+    var op_is = filter.operands('is');
+    var op_pm = filter.operands('pm-with');
+    if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
+        pm_list.expand(op_pm);
+    } else {
+        pm_list.close();
+    }
+};
+
 exports.initialize = function () {
     // TODO, Eventually topic_list won't be a big singleton,
     // and we can create more component-based click handlers for
@@ -428,38 +462,9 @@ exports.initialize = function () {
     });
 
     $(document).on('narrow_activated.zulip', function (event) {
-        deselect_top_left_corner_items();
+        exports.update_top_left_corner_for_narrow(event.filter);
+
         reset_to_unnarrowed(narrow_state.stream() === zoomed_stream);
-
-        var ops;
-        var filter_name;
-        var filter_li;
-
-        // TODO: handle confused filters like "in:all stream:foo"
-        ops = event.filter.operands('in');
-        if (ops.length >= 1) {
-            filter_name = ops[0];
-            if (filter_name === 'home') {
-                filter_li = exports.get_global_filter_li(filter_name);
-                filter_li.addClass('active-filter');
-            }
-        }
-        ops = event.filter.operands('is');
-        if (ops.length >= 1) {
-            filter_name = ops[0];
-            if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
-                filter_li = exports.get_global_filter_li(filter_name);
-                filter_li.addClass('active-filter');
-            }
-        }
-
-        var op_is = event.filter.operands('is');
-        var op_pm = event.filter.operands('pm-with');
-        if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
-            pm_list.expand(op_pm);
-        } else {
-            pm_list.close();
-        }
 
         var stream_li = exports.maybe_activate_stream_item(event.filter);
         if (stream_li) {
