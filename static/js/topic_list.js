@@ -169,6 +169,8 @@ exports.rebuild = function (stream_li, stream_id) {
     var active_topic = narrow_state.topic();
     exports.remove_expanded_topics();
     active_widget = exports.build_widget(stream_li, stream_id, active_topic, max_topics);
+
+    return active_widget; // used for testing
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
