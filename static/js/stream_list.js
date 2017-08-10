@@ -616,10 +616,18 @@ exports.scroll_delta = function (opts) {
     var delta = 0;
 
     if (elem_top < 0) {
-        delta = elem_top;
+        delta = Math.max(
+            elem_top,
+            elem_bottom - container_height
+        );
+        delta = Math.min(0, delta);
     } else {
         if (elem_bottom > container_height) {
-            delta = elem_bottom - container_height;
+            delta = Math.min(
+                elem_top,
+                elem_bottom - container_height
+            );
+            delta = Math.max(0, delta);
         }
     }
 
