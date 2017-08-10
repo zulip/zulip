@@ -1080,6 +1080,17 @@ function test_with_mock_socket(test_params) {
         assert(compose_file_input_clicked);
     }());
 
+    (function test_video_link_compose_clicked() {
+        var handler = $("#compose").get_on_handler("click", "#video_link");
+        assert.equal($('#new_message_content').val(), '');
+
+        handler(event);
+
+        // video link ids consist of 20 random digits
+        var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{20}\)/;
+        assert(video_link_regex.test($('#new_message_content').val()));
+    }());
+
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
         function setup_visibilities() {
