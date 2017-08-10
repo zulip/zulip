@@ -570,7 +570,8 @@ input[type=checkbox].inline-block {
     overflow: auto;
 }
 
-#admin-user-list .progressive-table-wrapper {
+#admin-user-list .progressive-table-wrapper,
+#admin-streams-list .progressive-table-wrapper {
     position: relative;
     height: 100%;
 }

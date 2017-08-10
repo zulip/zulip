@@ -126,6 +126,7 @@ function make_stream_default(stream_name) {
 
 exports.set_up = function () {
     loading.make_indicator($('#admin_page_streams_loading_indicator'));
+    ui.set_up_scrollbar($("#admin-streams-list .progressive-table-wrapper"));
 
     // Populate streams table
     channel.get({
