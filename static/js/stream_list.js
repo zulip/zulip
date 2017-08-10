@@ -2,8 +2,6 @@ var stream_list = (function () {
 
 var exports = {};
 
-var zoomed_stream = '';
-
 exports.get_global_filter_li = function (filter_name) {
     var selector = "#global_filters li[data-name='" + filter_name + "']";
     return $(selector);
@@ -153,11 +151,10 @@ exports.get_stream_li = function (stream_id) {
     return li;
 };
 
-function zoom_in() {
+function zoom_in(options) {
     popovers.hide_all();
     topic_list.zoom_in();
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
-    zoomed_stream = narrow_state.stream();
 
     // Hide stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
@@ -169,8 +166,9 @@ function zoom_in() {
 
     $("#stream_filters li.narrow-filter").each(function () {
         var elt = $(this);
+        var stream_id = options.stream_id.toString();
 
-        if (elt.attr('data-name') === zoomed_stream) {
+        if (elt.attr('data-stream-id') === stream_id) {
             elt.show();
         } else {
             elt.hide();
