@@ -144,7 +144,9 @@ def code_point_to_file_name_map(ttx):
     """
     result = {}  # type: Dict[int, Union[Text, bytes]]
     xml = ET.parse(ttx)
-    for elem in xml.find("*cmap_format_12"):
+    cmap = xml.find("*cmap_format_12")
+    assert cmap is not None
+    for elem in cmap:
         code_point = int(elem.attrib["code"], 16)
         fname = elem.attrib["name"]
         result[code_point] = fname
