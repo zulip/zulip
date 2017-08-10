@@ -183,7 +183,7 @@ function zoom_out(options) {
     topic_list.zoom_out(options);
 
     if (options.stream_li) {
-        exports.scroll_to_active_stream(options.stream_li);
+        exports.scroll_stream_into_view(options.stream_li);
     }
 
     // Show stream list titles and pinned stream splitter
@@ -380,7 +380,7 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
             blueslip.error('passed in bad stream id ' + sub.stream_id);
             return;
         }
-        exports.scroll_to_active_stream(stream_li);
+        exports.scroll_stream_into_view(stream_li);
     }
 };
 
@@ -463,7 +463,7 @@ exports.initialize = function () {
 
         var stream_li = exports.maybe_activate_stream_item(event.filter);
         if (stream_li) {
-            exports.scroll_to_active_stream(stream_li);
+            exports.scroll_stream_into_view(stream_li);
         }
         // Update scrollbar size.
         $("#stream-filters-container").perfectScrollbar("update");
@@ -601,7 +601,7 @@ $(function () {
         .on('click', toggle_filter_displayed);
 });
 
-exports.scroll_to_active_stream = function (stream_li) {
+exports.scroll_stream_into_view = function (stream_li) {
     var container = $('#stream-filters-container');
 
     if (stream_li.length !== 1) {
