@@ -12,7 +12,7 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
-from zerver.models import UserProfile, Realm, PreregistrationUser, \
+from zerver.models import UserProfile, Realm, Stream, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_realm, get_realm_by_email_domain, get_user_profile_by_email
@@ -269,13 +269,18 @@ def create_preregistration_user(email, request, realm_creation=False,
                                               realm_creation=realm_creation,
                                               password_required=password_required)
 
-def send_registration_completion_email(email, request, realm_creation=False):
-    # type: (str, HttpRequest, bool) -> None
+def send_registration_completion_email(email, request, realm_creation=False, streams=None):
+    # type: (str, HttpRequest, bool, Optional[List[Stream]]) -> None
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
     prereg_user = create_preregistration_user(email, request, realm_creation)
+
+    if streams is not None:
+        prereg_user.streams = streams
+        prereg_user.save()
+
     activation_url = create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION)
     send_email('zerver/emails/confirm_registration', to_email=email, from_address=FromAddress.NOREPLY,
                context={'activate_url': activation_url})
