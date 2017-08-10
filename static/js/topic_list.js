@@ -155,6 +155,14 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
     return self;
 };
 
+exports.active_stream_id = function () {
+    if (!active_widget) {
+        return;
+    }
+
+    return active_widget.get_stream_id();
+};
+
 exports.rebuild = function (stream_li, stream_id) {
     var max_topics = 5;
 
