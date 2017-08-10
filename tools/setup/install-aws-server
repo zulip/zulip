@@ -92,7 +92,7 @@ sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 apt-get update
 apt-get -y upgrade
 
-cd /root
+cd "$(mktemp -d)"
 if ! [ -e "zulip" ]; then
     # need to install git to clone the repo
     apt-get install -y git crudini
@@ -102,7 +102,8 @@ cd zulip
 git fetch
 git checkout origin/$branch
 # The main Zulip production install script can take things from here!
-env VIRTUALENV_NEEDED=$VIRTUALENV_NEEDED PUPPET_CLASSES="$type" /root/zulip/scripts/setup/install
+env VIRTUALENV_NEEDED=$VIRTUALENV_NEEDED PUPPET_CLASSES="$type" \
+  ./scripts/setup/install
 EOF
 
 set +x
