@@ -48,6 +48,7 @@ function prepare_form_to_be_shown() {
 }
 
 exports.initialize = function () {
+    ui.set_up_scrollbar($("#invite_user_form .modal-body"));
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');

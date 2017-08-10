@@ -2273,6 +2273,7 @@ button.topic_edit_cancel {
 
 #invite-user .modal-body {
     margin-bottom: 58px;
+    position: relative;
 }
 
 #invite-user .modal-footer {
