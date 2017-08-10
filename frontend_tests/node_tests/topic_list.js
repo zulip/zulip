@@ -1,8 +1,10 @@
 set_global('$', global.make_zjquery());
 
+set_global('narrow_state', {});
 set_global('stream_data', {});
 set_global('unread', {});
 set_global('muting', {});
+set_global('stream_popover', {});
 set_global('templates', {});
 
 zrequire('hash_util');
@@ -12,8 +14,6 @@ zrequire('topic_list');
 
 (function test_topic_list_build_widget() {
     var stream_id = 555;
-    var active_topic = "testing";
-    var max_topics = 5;
 
     topic_data.reset();
     topic_data.add_message({
@@ -21,6 +21,12 @@ zrequire('topic_list');
         topic_name: 'coding',
         message_id: 400,
     });
+
+    stream_popover.hide_topic_popover = function () {};
+
+    narrow_state.topic = function () {
+        return 'testing';
+    };
 
     unread.num_unread_for_topic = function () {
         return 3;
@@ -76,7 +82,7 @@ zrequire('topic_list');
 
     assert.equal(topic_list.active_stream_id(), undefined);
 
-    var widget = topic_list.build_widget(parent_elem, stream_id, active_topic, max_topics);
+    var widget = topic_list.rebuild(parent_elem, stream_id);
 
     assert(widget.is_for_stream(stream_id));
     assert.equal(widget.get_parent(), parent_elem);
