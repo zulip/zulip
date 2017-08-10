@@ -30,7 +30,8 @@ if [ -e "/var/run/supervisor.sock" ]; then
 fi
 
 # Drop any open connections to any old database.  Hackishly call using
-# source because postgres user can't read /root/zulip/scripts/setup.
+# `source`, because postgres user may not be able to read this directory
+# if unpacked by root.
 source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
 
 (
