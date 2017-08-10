@@ -6,6 +6,8 @@ class zulip_ops::postgres_common {
                                  "pv",
                                  "python3-pip",
                                  "python-pip",
+                                 # "python3-gevent", # missing on trusty
+                                 "python-gevent",
                                  # Postgres Nagios check plugin
                                  "check-postgres",
                                  ]
