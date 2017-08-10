@@ -180,7 +180,7 @@ function zoom_in() {
 
 function zoom_out(options) {
     popovers.hide_all();
-    topic_list.zoom_out(options);
+    topic_list.zoom_out();
 
     if (options.stream_li) {
         exports.scroll_stream_into_view(options.stream_li);
@@ -200,14 +200,6 @@ exports.show_all_streams = function () {
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
 };
-
-function reset_to_unnarrowed(narrowed_within_same_stream) {
-    if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
-        zoom_out({clear_topics: true});
-    } else {
-        topic_list.remove_expanded_topics();
-    }
-}
 
 exports.set_in_home_view = function (stream_id, in_home) {
     var li = exports.get_stream_li(stream_id);
@@ -317,7 +309,7 @@ exports.update_streams_sidebar = function () {
 
     var filter = narrow_state.filter();
 
-    exports.maybe_activate_stream_item(filter);
+    exports.update_stream_sidebar_for_narrow(filter);
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -379,6 +371,11 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     }
 };
 
+function clear_topics() {
+    topic_list.close();
+    exports.show_all_streams();
+}
+
 exports.get_sidebar_stream_topic_info  = function (filter) {
     var result = {
         stream_id: undefined,
@@ -409,12 +406,13 @@ exports.get_sidebar_stream_topic_info  = function (filter) {
     return result;
 };
 
-exports.maybe_activate_stream_item = function (filter) {
+exports.update_stream_sidebar_for_narrow = function (filter) {
     var info = exports.get_sidebar_stream_topic_info(filter);
 
     var stream_id = info.stream_id;
 
     if (!stream_id) {
+        clear_topics();
         return;
     }
 
@@ -427,11 +425,16 @@ exports.maybe_activate_stream_item = function (filter) {
         // evidence that this assumption breaks down for some users,
         // but we are not clear why it happens.
         blueslip.error('No stream_li for subscribed stream ' + stream_id);
+        clear_topics();
         return;
     }
 
     if (!info.topic_selected) {
         stream_li.addClass('active-filter');
+    }
+
+    if (stream_id !== topic_list.active_stream_id()) {
+        clear_topics();
     }
 
     topic_list.rebuild(stream_li, stream_id);
@@ -489,9 +492,7 @@ exports.initialize = function () {
     $(document).on('narrow_activated.zulip', function (event) {
         exports.update_top_left_corner_for_narrow(event.filter);
 
-        reset_to_unnarrowed(narrow_state.stream() === zoomed_stream);
-
-        var stream_li = exports.maybe_activate_stream_item(event.filter);
+        var stream_li = exports.update_stream_sidebar_for_narrow(event.filter);
         if (stream_li) {
             exports.scroll_stream_into_view(stream_li);
         }
@@ -501,7 +502,7 @@ exports.initialize = function () {
 
     $(document).on('narrow_deactivated.zulip', function () {
         deselect_top_left_corner_items();
-        reset_to_unnarrowed();
+        clear_topics();
         pm_list.close();
 
         var filter_li = exports.get_global_filter_li('home');

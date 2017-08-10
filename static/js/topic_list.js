@@ -13,7 +13,18 @@ exports.remove_expanded_topics = function () {
 
     if (active_widget) {
         active_widget.remove();
+        active_widget = undefined;
     }
+};
+
+exports.close = function () {
+    zoomed = false;
+    exports.remove_expanded_topics();
+};
+
+exports.zoom_out = function () {
+    zoomed = false;
+    exports.rebuild(active_widget.get_parent(), active_widget.get_stream_id());
 };
 
 function update_unread_count(unread_count_elem, count) {
@@ -198,19 +209,6 @@ exports.zoom_in = function () {
     }
 };
 
-exports.zoom_out = function (options) {
-    zoomed = false;
-    if (options && options.clear_topics) {
-        exports.remove_expanded_topics();
-    } else {
-        exports.rebuild(active_widget.get_parent(), active_widget.get_stream_id());
-    }
-};
-
-exports.is_zoomed = function () {
-    return zoomed;
-};
-
 exports.set_click_handlers = function (callbacks) {
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
         callbacks.zoom_in();
@@ -221,7 +219,6 @@ exports.set_click_handlers = function (callbacks) {
 
     $('.show-all-streams').on('click', function (e) {
         callbacks.zoom_out({
-            clear_topics: false,
             stream_li: active_widget.get_parent(),
         });
 

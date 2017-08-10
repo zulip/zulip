@@ -239,9 +239,11 @@ function initialize_stream_data() {
     });
 
     topic_list.set_click_handlers = noop;
-    topic_list.is_zoomed = return_false;
+    topic_list.close = noop;
     topic_list.remove_expanded_topics = noop;
     topic_list.rebuild = noop;
+    topic_list.active_stream_id = noop;
+    stream_list.show_all_streams = noop;
     stream_list.scroll_element_into_container = noop;
 
     var scrollbar_updated = false;
