@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global('i18n', global.stub_i18n);
 
 set_global('narrow_state', {});
 set_global('stream_data', {});
@@ -6,6 +7,9 @@ set_global('unread', {});
 set_global('muting', {});
 set_global('stream_popover', {});
 set_global('templates', {});
+set_global('feature_flags', {
+    use_server_topic_history: true,
+});
 
 zrequire('hash_util');
 zrequire('narrow');
@@ -65,11 +69,10 @@ zrequire('topic_list');
 
     var ul = $('<ul class="topic-list">');
 
-    var item_appended;
+    var list_items = [];
 
     ul.append = function (item) {
-        assert.equal(item.html(), '<topic list item>');
-        item_appended = true;
+        list_items.push(item);
     };
 
     var parent_elem = $.create('parent_elem');
@@ -89,7 +92,8 @@ zrequire('topic_list');
 
     assert(checked_mutes);
     assert(rendered);
-    assert(item_appended);
+    assert.equal(list_items[0].html(), '<topic list item>');
+    assert.equal(list_items[1], $('<li class="show-more-topics">'));
     assert(attached_to_parent);
 
     assert.equal(topic_list.active_stream_id(), stream_id);

@@ -103,7 +103,11 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
             ul.append(li);
         });
 
-        if (hiding_topics) {
+        // When we inline use_server_topic_history to true (i.e. we are confident
+        // with the new feature), we can remove logic around hiding_topics.
+        var show_more_topics_link = hiding_topics || feature_flags.use_server_topic_history;
+
+        if (show_more_topics_link) {
             var show_more = $('<li class="show-more-topics">');
             show_more.attr('data-stream', my_stream_name);
             var link = $('<a href="#">');
