@@ -481,6 +481,12 @@ function initialize_stream_data() {
         container_height: 10,
     }));
 
+    assert.equal(0, stream_list.scroll_delta({
+        elem_top: -5,
+        elem_bottom: 15,
+        container_height: 10,
+    }));
+
     // The top is offscreen.
     assert.equal(-3, stream_list.scroll_delta({
         elem_top: -3,
@@ -490,6 +496,12 @@ function initialize_stream_data() {
 
     assert.equal(-3, stream_list.scroll_delta({
         elem_top: -3,
+        elem_bottom: -1,
+        container_height: 10,
+    }));
+
+    assert.equal(-11, stream_list.scroll_delta({
+        elem_top: -150,
         elem_bottom: -1,
         container_height: 10,
     }));
@@ -504,6 +516,12 @@ function initialize_stream_data() {
     assert.equal(3, stream_list.scroll_delta({
         elem_top: 11,
         elem_bottom: 13,
+        container_height: 10,
+    }));
+
+    assert.equal(11, stream_list.scroll_delta({
+        elem_top: 11,
+        elem_bottom: 99,
         container_height: 10,
     }));
 
