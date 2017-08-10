@@ -174,7 +174,9 @@ exports.new_stream_clicked = function (stream_name) {
 
     $(".stream-row.active").removeClass("active");
 
+
     $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
+    ui.set_up_scrollbar($("#stream-creation"));
     $("#stream-creation, #add_new_stream_title").show();
 
     if (stream_name !== '') {
