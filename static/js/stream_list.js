@@ -305,14 +305,6 @@ function set_stream_unread_count(stream_id, count) {
     exports.update_count_in_dom(unread_count_elem, count);
 }
 
-function rebuild_recent_topics(stream_name) {
-    // TODO: Call rebuild_recent_topics less, not on every new
-    // message.
-    var stream_id = stream_data.get_stream_id(stream_name);
-    var stream_li = exports.get_stream_li(stream_id);
-    topic_list.rebuild(stream_li, stream_id);
-}
-
 exports.update_streams_sidebar = function () {
     exports.build_stream_list();
 
@@ -384,34 +376,64 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     }
 };
 
-exports.maybe_activate_stream_item = function (filter) {
+exports.get_sidebar_stream_topic_info  = function (filter) {
+    var result = {
+        stream_id: undefined,
+        topic_selected: false,
+    };
+
     var op_stream = filter.operands('stream');
-    if (op_stream.length !== 0) {
-        var stream_name = op_stream[0];
-        var stream_id = stream_data.get_stream_id(stream_name);
-
-        if (stream_id && stream_data.id_is_subscribed(stream_id)) {
-            var stream_li = exports.get_stream_li(stream_id);
-
-            if (!stream_li) {
-                // It should be the case then when we have a subscribed
-                // stream, there will always be a stream list item
-                // corresponding to that stream in our sidebar.  We have
-                // evidence that this assumption breaks down for some users,
-                // but we are not clear why it happens.
-                blueslip.error('No stream_li for subscribed stream ' + stream_name);
-                return;
-            }
-
-            var op_subject = filter.operands('topic');
-            if (op_subject.length === 0) {
-                stream_li.addClass('active-filter');
-            }
-            rebuild_recent_topics(stream_name);
-
-            return stream_li;
-        }
+    if (op_stream.length === 0) {
+        return result;
     }
+
+    var stream_name = op_stream[0];
+    var stream_id = stream_data.get_stream_id(stream_name);
+
+    if (!stream_id) {
+        return result;
+    }
+
+    if (!stream_data.id_is_subscribed(stream_id)) {
+        return result;
+    }
+
+    result.stream_id = stream_id;
+
+    var op_subject = filter.operands('topic');
+    result.topic_selected = (op_subject.length === 1);
+
+    return result;
+};
+
+exports.maybe_activate_stream_item = function (filter) {
+    var info = exports.get_sidebar_stream_topic_info(filter);
+
+    var stream_id = info.stream_id;
+
+    if (!stream_id) {
+        return;
+    }
+
+    var stream_li = exports.get_stream_li(stream_id);
+
+    if (!stream_li) {
+        // It should be the case then when we have a subscribed
+        // stream, there will always be a stream list item
+        // corresponding to that stream in our sidebar.  We have
+        // evidence that this assumption breaks down for some users,
+        // but we are not clear why it happens.
+        blueslip.error('No stream_li for subscribed stream ' + stream_id);
+        return;
+    }
+
+    if (!info.topic_selected) {
+        stream_li.addClass('active-filter');
+    }
+
+    topic_list.rebuild(stream_li, stream_id);
+
+    return stream_li;
 };
 
 function deselect_top_left_corner_items() {
