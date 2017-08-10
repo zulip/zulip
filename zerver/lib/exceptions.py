@@ -134,5 +134,5 @@ class JsonableError(Exception):
     def __str__(self) -> str:
         return self.msg
 
-class RateLimited(PermissionDenied):
+class RateLimited(Exception):
     pass
