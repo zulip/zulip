@@ -315,11 +315,11 @@ class CsrfFailureError(JsonableError):
 
     @staticmethod
     def msg_format():
-        # type: () -> None
+        # type: () -> Text
         return _("CSRF Error: {reason}")
 
 def csrf_failure(request, reason=""):
-    # type: (HttpRequest, Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, Text) -> HttpResponse
     if request.error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
