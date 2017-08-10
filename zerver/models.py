@@ -857,6 +857,11 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
+class MultiuseInvite(models.Model):
+    referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
+    streams = models.ManyToManyField('Stream')  # type: Manager
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField()  # type: Text
     old_email = models.EmailField()  # type: Text
