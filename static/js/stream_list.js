@@ -185,7 +185,10 @@ function zoom_out(options) {
     if (options.stream_li) {
         exports.scroll_stream_into_view(options.stream_li);
     }
+    exports.show_all_streams();
+}
 
+exports.show_all_streams = function () {
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
@@ -196,7 +199,7 @@ function zoom_out(options) {
 
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
-}
+};
 
 function reset_to_unnarrowed(narrowed_within_same_stream) {
     if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
