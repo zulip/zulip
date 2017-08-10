@@ -1,7 +1,8 @@
 # The chat.zulip.org community
 
 [chat.zulip.org](https://chat.zulip.org/) is the primary communication
-forum for the Zulip community.
+forum for the Zulip community.  It is a Zulip server that you can
+connect to from any modern web browser.
 
 You can go through the simple signup process at that link, and then
 you will soon be talking to core Zulip developers and other users.  To
