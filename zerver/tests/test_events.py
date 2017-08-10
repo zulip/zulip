@@ -452,14 +452,16 @@ class EventsRegisterTest(ZulipTestCase):
     def test_mentioned_send_message_events(self):
         # type: () -> None
         user = self.example_user('hamlet')
-        content = 'mentioning... @**' + user.full_name + '**'
-        self.do_test(
-            lambda: self.send_message(self.example_email('cordelia'),
-                                      "Verona",
-                                      Recipient.STREAM,
-                                      content)
 
-        )
+        for i in range(3):
+            content = 'mentioning... @**' + user.full_name + '** hello ' + str(i)
+            self.do_test(
+                lambda: self.send_message(self.example_email('cordelia'),
+                                          "Verona",
+                                          Recipient.STREAM,
+                                          content)
+
+            )
 
     def test_pm_send_message_events(self):
         # type: () -> None

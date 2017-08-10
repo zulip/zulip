@@ -518,6 +518,10 @@ def apply_unread_message_event(state, message):
             unread_message_ids=[message_id],
         )
 
+    if message.get('is_mentioned'):
+        if message_id not in state['mentions']:
+            state['mentions'].append(message_id)
+
     for obj in state[unread_key]:
         if key_func(obj) == my_key:
             obj['unread_message_ids'].append(message_id)
@@ -526,6 +530,3 @@ def apply_unread_message_event(state, message):
 
     state[unread_key].append(new_obj)
     state[unread_key].sort(key=key_func)
-
-    if message.get('is_mentioned'):
-        state['mentions'].append(message_id)
