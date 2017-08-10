@@ -118,6 +118,7 @@ class HomepageForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         self.realm = kwargs.pop('realm', None)
+        self.from_multiuse_invite = kwargs.pop('from_multiuse_invite', False)
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -131,6 +132,7 @@ class HomepageForm(forms.Form):
 
         # Otherwise, the user is trying to join a specific realm.
         realm = self.realm
+        from_multiuse_invite = self.from_multiuse_invite
         if realm is None and not settings.REALMS_HAVE_SUBDOMAINS:
             realm = get_realm_by_email_domain(email)
 
@@ -144,7 +146,7 @@ class HomepageForm(forms.Form):
                                         "correspond to any existing "
                                         "organization.").format(email=email))
 
-        if realm.invite_required:
+        if not from_multiuse_invite and realm.invite_required:
             raise ValidationError(_("Please request an invite for {email} "
                                     "from the organization "
                                     "administrator.").format(email=email))

@@ -15,7 +15,7 @@ $(function () {
         <div class="lead">
             <h1 class="get-started">{{ _("Sign up for Zulip") }}</h1>
         </div>
-        <div class="app-main register-page-container white-box {% if realm_invite_required %}closed-realm{% endif %}">
+        <div class="app-main register-page-container white-box {% if realm_invite_required and not from_multiuse_invite %}closed-realm{% endif %}">
             <div class="register-form new-style">
                 {% if realm_name %}
                 <div class="left-side">

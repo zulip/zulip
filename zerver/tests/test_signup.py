@@ -11,12 +11,12 @@ from django.utils.timezone import now as timezone_now
 from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
 
-from confirmation.models import Confirmation, create_confirmation_link
-
+from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
+    generate_key, confirmation_url
 from zilencer.models import Deployment
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
-from zerver.lib.actions import do_change_password
+from zerver.lib.actions import do_change_password, gather_subscriptions
 from zerver.views.auth import login_or_register_remote_user
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import confirmation_key, \
@@ -64,8 +64,7 @@ import ujson
 
 from typing import Any, Dict, List, Optional, Set, Text
 
-from six.moves import urllib
-from six.moves import range
+from six.moves import urllib, range, zip
 import os
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
@@ -798,6 +797,124 @@ class InviteeEmailsParserTests(TestCase):
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
+class MultiuseInviteTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.realm = get_realm('zulip')
+        self.realm.invite_required = True
+        self.realm.save()
+
+    def generate_multiuse_invite_link(self, streams=None, date_sent=None):
+        # type: (List[Stream], Optional[datetime.datetime]) -> Text
+        invite = MultiuseInvite(realm=self.realm, referred_by=self.example_user("iago"))
+        invite.save()
+
+        if streams is not None:
+            invite.streams = streams
+            invite.save()
+
+        if date_sent is None:
+            date_sent = timezone_now()
+        key = generate_key()
+        Confirmation.objects.create(content_object=invite, date_sent=date_sent,
+                                    confirmation_key=key, type=Confirmation.MULTIUSE_INVITE)
+
+        return confirmation_url(key, self.realm.host, Confirmation.MULTIUSE_INVITE)
+
+    def check_user_able_to_register(self, email, invite_link):
+        # type: (Text, Text) -> None
+        password = "password"
+
+        result = self.client_post(invite_link, {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password)
+        self.assertEqual(result.status_code, 302)
+
+        from django.core.mail import outbox
+        outbox.pop()
+
+    def check_user_subscribed_only_to_streams(self, user_name, streams):
+        # type: (str, List[Stream]) -> None
+        sorted(streams, key=lambda x: x.name)
+        subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
+
+        self.assertEqual(len(subscribed_streams), len(streams))
+
+        for x, y in zip(subscribed_streams, streams):
+            self.assertEqual(x["name"], y.name)
+
+    def test_valid_multiuse_link(self):
+        # type: () -> None
+        email1 = self.nonreg_email("test")
+        email2 = self.nonreg_email("test1")
+        email3 = self.nonreg_email("alice")
+
+        date_sent = timezone_now() - datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 1)
+        invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
+
+        self.check_user_able_to_register(email1, invite_link)
+        self.check_user_able_to_register(email2, invite_link)
+        self.check_user_able_to_register(email3, invite_link)
+
+    def test_expired_multiuse_link(self):
+        # type: () -> None
+        email = self.nonreg_email('newuser')
+        date_sent = timezone_now() - datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS)
+        invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
+        result = self.client_post(invite_link, {'email': email})
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Whoops. The confirmation link has expired.", result)
+
+    def test_invalid_multiuse_link(self):
+        # type: () -> None
+        email = self.nonreg_email('newuser')
+        invite_link = "/join/invalid_key/"
+        result = self.client_post(invite_link, {'email': email})
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Whoops. The confirmation link is malformed.", result)
+
+    def test_invalid_multiuse_link_in_open_realm(self):
+        # type: () -> None
+        self.realm.invite_required = False
+        self.realm.save()
+
+        email = self.nonreg_email('newuser')
+        invite_link = "/join/invalid_key/"
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with patch('zerver.views.registration.get_realm_from_request', return_value=self.realm):
+                with patch('zerver.views.registration.get_realm', return_value=self.realm):
+                    self.check_user_able_to_register(email, invite_link)
+
+    def test_multiuse_link_with_specified_streams(self):
+        # type: () -> None
+        name1 = "newuser"
+        name2 = "bob"
+        email1 = self.nonreg_email(name1)
+        email2 = self.nonreg_email(name2)
+
+        stream_names = ["Rome", "Scotland", "Venice"]
+        streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
+        invite_link = self.generate_multiuse_invite_link(streams=streams)
+        self.check_user_able_to_register(email1, invite_link)
+        self.check_user_subscribed_only_to_streams(name1, streams)
+
+        stream_names = ["Rome", "Verona"]
+        streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
+        invite_link = self.generate_multiuse_invite_link(streams=streams)
+        self.check_user_able_to_register(email2, invite_link)
+        self.check_user_subscribed_only_to_streams(name2, streams)
 
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self):
