@@ -14,18 +14,21 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         ret = dict()  # type: Dict[str, Any]
         return ret
 
-    if command == 'night':
+    night_commands = ['night', 'dark']
+    day_commands = ['day', 'light']
+
+    if command in night_commands:
         if user_profile.night_mode:
             msg = 'You are still in night mode.'
         else:
-            msg = 'Changed to night mode! To revert night mode, type `/day`.'
+            msg = 'Changed to night mode! To revert night mode, type `%s`.' % (content,)
             do_set_user_display_setting(user_profile, 'night_mode', True)
         ret = dict(msg=msg)
         return ret
 
-    if command == 'day':
+    if command in day_commands:
         if user_profile.night_mode:
-            msg = 'Changed to day mode! To revert day mode, type `/night`.'
+            msg = 'Changed to day mode! To revert day mode, type `%s`.' % (content,)
             do_set_user_display_setting(user_profile, 'night_mode', False)
         else:
             msg = 'You are still in day mode.'
