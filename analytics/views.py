@@ -1066,14 +1066,11 @@ def get_realm_activity(request, realm_str):
     content = sent_messages_report(realm_str)
     data += [(page_title, content)]
 
-    realm_link = 'https://stats1.zulip.net:444/render/?from=-7days'
-    realm_link += '&target=stats.gauges.staging.users.active.%s.0_16hr' % (realm_str,)
-
     title = realm_str
     return render(
         request,
         'analytics/activity.html',
-        context=dict(data=data, realm_link=realm_link, title=title),
+        context=dict(data=data, realm_link=None, title=title),
     )
 
 @require_server_admin
