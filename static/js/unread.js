@@ -164,11 +164,6 @@ exports.unread_topic_counter = (function () {
         bucketer.clear();
     };
 
-    self.update = function (msg_id, stream_id, new_topic) {
-        self.del(msg_id);
-        self.add(stream_id, new_topic, msg_id);
-    };
-
     self.add = function (stream_id, topic, msg_id) {
         bucketer.add({
             bucket_key: stream_id,
@@ -297,13 +292,23 @@ exports.id_flagged_as_unread = function (message_id) {
 };
 
 exports.update_unread_topics = function (msg, event) {
-    if (event.subject !== undefined) {
-        exports.unread_topic_counter.update(
-            msg.id,
-            msg.stream_id,
-            event.subject
-        );
+    if (event.subject === undefined) {
+        return;
     }
+
+    if (!unread_messages.has(msg.id)) {
+        return;
+    }
+
+    exports.unread_topic_counter.del(
+        msg.id
+    );
+
+    exports.unread_topic_counter.add(
+        msg.stream_id,
+        event.subject,
+        msg.id
+    );
 };
 
 exports.process_loaded_messages = function (messages) {

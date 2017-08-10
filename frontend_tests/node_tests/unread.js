@@ -145,6 +145,26 @@ var zero_counts = {
     };
     unread.update_unread_topics(other_message, event);
 
+    // Update a message that was never marked as unread.
+    var sticky_message = {
+        id: 17,
+        type: 'stream',
+        stream_id: stream_id,
+        subject: 'sticky',
+    };
+
+    unread.process_loaded_messages([sticky_message]);
+    count = unread.num_unread_for_topic(stream_id, 'sticky');
+    assert.equal(count, 1);
+
+    unread.mark_as_read(sticky_message.id);
+    count = unread.num_unread_for_topic(stream_id, 'sticky');
+    assert.equal(count, 0);
+
+    unread.update_unread_topics(sticky_message, {subject: 'sticky'});
+    count = unread.num_unread_for_topic(stream_id, 'sticky');
+    assert.equal(count, 0);
+
     // cleanup
     unread.mark_as_read(message.id);
     count = unread.num_unread_for_topic(stream_id, 'dinner');
@@ -153,6 +173,9 @@ var zero_counts = {
     unread.mark_as_read(other_message.id);
     count = unread.num_unread_for_topic(stream_id, 'snack');
     assert.equal(count, 0);
+
+    // test coverage
+    unread.update_unread_topics(sticky_message, {});
 }());
 
 stream_data.get_stream_id = function () {
