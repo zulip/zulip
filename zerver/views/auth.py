@@ -192,7 +192,7 @@ def remote_user_sso(request: HttpRequest) -> HttpResponse:
     realm = get_realm(subdomain)
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
-    user_profile = authenticate(remote_user=remote_user, realm=realm)
+    user_profile = authenticate(request=request, remote_user=remote_user, realm=realm)
     return login_or_register_remote_user(request, remote_user, user_profile)
 
 @csrf_exempt
@@ -232,6 +232,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
         # that the request.backend attribute gets set.
         return_data = {}  # type: Dict[str, bool]
         user_profile = authenticate(username=email,
+                                    request=request,
                                     realm=realm,
                                     return_data=return_data,
                                     use_dummy_backend=True)
@@ -571,7 +572,7 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
-    user_profile = authenticate(dev_auth_username=email, realm=realm)
+    user_profile = authenticate(request=request, dev_auth_username=email, realm=realm)
     if user_profile is None:
         raise Exception("User cannot login")
     do_login(request, user_profile)
@@ -599,6 +600,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
 
     return_data = {}  # type: Dict[str, bool]
     user_profile = authenticate(dev_auth_username=username,
+                                request=request,
                                 realm=realm,
                                 return_data=return_data)
     if return_data.get("inactive_realm"):
@@ -631,6 +633,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     if username == "google-oauth2-token":
         # This code path is auth for the legacy Android app
         user_profile = authenticate(google_oauth2_token=password,
+                                    request=request,
                                     realm=realm,
                                     return_data=return_data)
     else:
@@ -641,6 +644,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
 
         user_profile = authenticate(username=username,
                                     password=password,
+                                    request=request,
                                     realm=realm,
                                     return_data=return_data)
     if return_data.get("inactive_user"):
@@ -738,6 +742,7 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
     realm = get_realm(subdomain)
     if password_auth_enabled(user_profile.realm):
         if not authenticate(username=user_profile.email, password=password,
+                            request=request,
                             realm=realm):
             return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})

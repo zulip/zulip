@@ -6,7 +6,7 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from oauth2client.crypt import AppIdentityError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
@@ -290,8 +290,8 @@ class EmailAuthBackend(ZulipAuthMixin):
     a username/password pair.
     """
 
-    def authenticate(self, username: Optional[str]=None, password: Optional[str]=None,
-                     realm: Optional[Realm]=None,
+    def authenticate(self, request: HttpRequest, username: Optional[str]=None,
+                     password: Optional[str]=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:

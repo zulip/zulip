@@ -78,7 +78,8 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Please fill out all fields."))
 
     if new_password != "":
-        if not authenticate(username=user_profile.email, password=old_password,
+        if not authenticate(request=request,
+                            username=user_profile.email, password=old_password,
                             realm=user_profile.realm):
             return json_error(_("Wrong password!"))
         do_change_password(user_profile, new_password)

@@ -156,13 +156,15 @@ class AuthBackendTest(ZulipTestCase):
         password = "testpassword"
         user_profile.set_password(password)
         user_profile.save()
+        request = mock.MagicMock()  # Only used in rate limiting.
 
         with mock.patch('zproject.backends.email_auth_enabled',
                         return_value=False), \
                 mock.patch('zproject.backends.password_auth_enabled',
                            return_value=True):
             return_data = {}  # type: Dict[str, bool]
-            user = EmailAuthBackend().authenticate(self.example_email('hamlet'),
+            user = EmailAuthBackend().authenticate(request,
+                                                   self.example_email('hamlet'),
                                                    realm=get_realm("zulip"),
                                                    password=password,
                                                    return_data=return_data)
@@ -170,20 +172,24 @@ class AuthBackendTest(ZulipTestCase):
             self.assertTrue(return_data['email_auth_disabled'])
 
         self.verify_backend(EmailAuthBackend(),
-                            good_kwargs=dict(password=password,
+                            good_kwargs=dict(request=request,
+                                             password=password,
                                              username=username,
                                              realm=get_realm('zulip'),
                                              return_data=dict()),
-                            bad_kwargs=dict(password=password,
+                            bad_kwargs=dict(request=request,
+                                            password=password,
                                             username=username,
                                             realm=get_realm('zephyr'),
                                             return_data=dict()))
         self.verify_backend(EmailAuthBackend(),
-                            good_kwargs=dict(password=password,
+                            good_kwargs=dict(request=request,
+                                             password=password,
                                              username=username,
                                              realm=get_realm('zulip'),
                                              return_data=dict()),
-                            bad_kwargs=dict(password=password,
+                            bad_kwargs=dict(request=request,
+                                            password=password,
                                             username=username,
                                             realm=None,
                                             return_data=dict()))
@@ -193,9 +199,11 @@ class AuthBackendTest(ZulipTestCase):
         password = "testpassword"
         user_profile.set_password(password)
         user_profile.save()
+        request = mock.MagicMock()  # Only used in rate limiting.
         # Verify if a realm has password auth disabled, correct password is rejected
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
-            self.assertIsNone(EmailAuthBackend().authenticate(self.example_email('hamlet'),
+            self.assertIsNone(EmailAuthBackend().authenticate(request,
+                                                              self.example_email('hamlet'),
                                                               password,
                                                               realm=get_realm("zulip")))
 
