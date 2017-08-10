@@ -4,8 +4,6 @@ class zulip::postgres_common {
                         # tools for database monitoring
                         "ptop",
                         # Python modules used in our monitoring/worker threads
-                        # "python3-gevent", # missing on trusty
-                        "python-gevent",
                         "python3-tz", # TODO: use a virtualenv instead
                         "python-tz", # TODO: use a virtualenv instead
                         "python3-dateutil", # TODO: use a virtualenv instead
