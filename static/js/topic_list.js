@@ -211,7 +211,9 @@ exports.zoom_in = function () {
 
 exports.set_click_handlers = function (callbacks) {
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
-        callbacks.zoom_in();
+        callbacks.zoom_in({
+            stream_id: active_widget.get_stream_id(),
+        });
 
         e.preventDefault();
         e.stopPropagation();
