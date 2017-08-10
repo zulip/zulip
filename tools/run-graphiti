@@ -1,9 +1,0 @@
-#!/bin/bash
-
-export HOME=/home/zulip
-export PATH="/home/zulip/.rbenv/bin:$PATH"
-
-eval "$(rbenv init -)"
-
-cd /home/zulip/graphiti
-exec bundle exec unicorn -p 8088
