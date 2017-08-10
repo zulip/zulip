@@ -210,7 +210,10 @@ exports.set_click_handlers = function (callbacks) {
     });
 
     $('.show-all-streams').on('click', function (e) {
-        callbacks.zoom_out({clear_topics: false});
+        callbacks.zoom_out({
+            clear_topics: false,
+            stream_li: active_widget.get_parent(),
+        });
 
         e.preventDefault();
         e.stopPropagation();

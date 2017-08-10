@@ -182,6 +182,10 @@ function zoom_out(options) {
     popovers.hide_all();
     topic_list.zoom_out(options);
 
+    if (options.stream_li) {
+        exports.scroll_to_active_stream(options.stream_li);
+    }
+
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
