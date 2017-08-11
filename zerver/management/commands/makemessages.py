@@ -56,6 +56,8 @@ regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            'i18n\.t\("([^\"]*?)"\)',
            'i18n\.t\("(.*?)",\s*.*?[^,]\)',
            ]
+tags = [('err_', "error"),
+        ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
@@ -68,8 +70,12 @@ def strip_whitespaces(src: Text) -> Text:
 
 class Command(makemessages.Command):
 
+    xgettext_options = makemessages.Command.xgettext_options
+    for func, tag in tags:
+        xgettext_options += ['--keyword={}:1,"{}"'.format(func, tag)]
+
     def add_arguments(self, parser: ArgumentParser) -> None:
-        super().add_arguments(parser)
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--frontend-source', type=str,
                             default='static/templates',
                             help='Name of the Handlebars template directory')
