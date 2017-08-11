@@ -215,6 +215,8 @@ class="fa fa-bars"></i>) icon`
 `star (<i class="fa fa-star-o"></i>) icon`
 * trash (<i class="fa fa-trash-o"></i>) icon —
 `trash (<i class="fa fa-trash-o"></i>) icon`
+* video-camera (<i class="fa fa-video-camera"></i>) icon —
+`video-camera (<i class="fa fa-video-camera"></i>) icon`
 * x (<i class="fa fa-times"></i>) icon —
 `x (<i class="fa fa-times"></i>) icon`
 
