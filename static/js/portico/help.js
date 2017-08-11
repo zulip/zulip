@@ -56,4 +56,9 @@
             $(".sidebar.show").toggleClass("show");
         }
     });
+
+    $('#top_navbar a .logout').on('click', function () {
+        $('#logout_form').submit();
+        return false;
+    });
 }());

@@ -29,6 +29,14 @@
             <li on-page="help">
                 <a href="/help/">Help Center</a>
             </li>
+            {% if user_is_authenticated %}
+            <li>
+                {% include 'zerver/logout.html' %}
+                <a class="no-style" href="#logout">
+                    <span class="logout">Log out</span>
+                </a>
+            </li>
+            {% else %}
             {% if register_link_disabled %}
             {% else %}
             <li>
@@ -40,6 +48,7 @@
             <li>
                 <a href="/register/">Register</a>
             </li>
+            {% endif %}
             {% endif %}
             {% if find_team_link_disabled %}
             {% else %}

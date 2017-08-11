@@ -22,6 +22,12 @@
         </div>
 
         <div class="column-right top-links">
+            {% if user_is_authenticated %}
+            {% include 'zerver/logout.html' %}
+            <a class="no-style" href="#logout">
+                <span class="logout">Log out</span>
+            </a>
+            {% else %}
             {% if login_link_disabled %}
             {% elif not only_sso %}
             <a href="{{login_url}}">{{ _('Log in') }}</a>
@@ -32,6 +38,7 @@
             <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
             {% else %}
             <a href="{{ url('register') }}">{{ _('Register') }}</a>
+            {% endif %}
             {% endif %}
         </div>
     </div>
