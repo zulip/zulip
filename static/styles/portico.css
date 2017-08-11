@@ -538,6 +538,12 @@ input.text-error {
     padding: 6px 0px 6px 0px;
 }
 
+.header-realm-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+}
+
 .app {
     width: 100%;
     z-index: 99;

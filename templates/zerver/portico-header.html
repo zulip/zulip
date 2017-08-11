@@ -27,6 +27,9 @@
             <a class="no-style" href="#logout">
                 <span class="logout">Log out</span>
             </a>
+            <a class="no-style" href="/">
+                <img class="header-realm-icon" src="{{ realm_icon }}" alt="{{ _('Go to Zulip') }}"/>
+            </a>
             {% else %}
             {% if login_link_disabled %}
             {% elif not only_sso %}
