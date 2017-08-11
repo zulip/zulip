@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, Text
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -97,7 +97,7 @@ def update_stream_backend(request, user_profile, stream_id,
     if new_name is not None:
         new_name = new_name.strip()
         if stream.name == new_name:
-            return json_error(_("Stream already has that name!"))
+            return json_error(err_("Stream already has that name!"))
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
@@ -119,7 +119,7 @@ def update_subscriptions_backend(request, user_profile,
                                  add=REQ(validator=check_list(check_dict([('name', check_string)])), default=[])):
     # type: (HttpRequest, UserProfile, Iterable[Text], Iterable[Mapping[str, Any]]) -> HttpResponse
     if not add and not delete:
-        return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
+        return json_error(err_('Nothing to do. Specify at least one of "add" or "delete".'))
 
     method_kwarg_pairs = [
         (add_subscriptions_backend, dict(streams_raw=add)),
@@ -159,7 +159,7 @@ def remove_subscriptions_backend(request, user_profile,
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
-        return json_error(_("This action requires administrative rights"))
+        return json_error(err_("This action requires administrative rights"))
 
     streams_as_dict = []
     for stream_name in streams_raw:
@@ -172,7 +172,7 @@ def remove_subscriptions_backend(request, user_profile,
                 not subscribed_to_stream(user_profile, stream):
             # Even as an admin, you can't remove other people from an
             # invite-only stream you're not on.
-            return json_error(_("Cannot administer invite-only streams this way"))
+            return json_error(err_("Cannot administer invite-only streams this way"))
 
     if principals:
         people_to_unsub = set(principal_to_user_profile(
@@ -249,13 +249,13 @@ def add_subscriptions_backend(request, user_profile,
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error(_("Unable to access stream (%s).") % unauthorized_streams[0].name)
+        return json_error(err_("Unable to access stream (%s).") % unauthorized_streams[0].name)
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
     if len(principals) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
-            return json_error(_("You can only invite other Zephyr mirroring users to invite-only streams."))
+            return json_error(err_("You can only invite other Zephyr mirroring users to invite-only streams."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = set([user_profile])
@@ -449,11 +449,11 @@ def update_subscription_properties_backend(request, user_profile, subscription_d
         value = change["value"]
 
         if property not in property_converters:
-            return json_error(_("Unknown subscription property: %s") % (property,))
+            return json_error(err_("Unknown subscription property: %s") % (property,))
 
         (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
-            return json_error(_("Not subscribed to stream id %d") % (stream_id,))
+            return json_error(err_("Not subscribed to stream id %d") % (stream_id,))
 
         property_conversion = property_converters[property](property, value)
         if property_conversion:

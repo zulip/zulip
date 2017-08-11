@@ -4,7 +4,7 @@ from typing import Any, Dict, Mapping, Optional, Text, Union
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.contrib.sessions.models import Session as djSession
 try:
     from django.middleware.csrf import _compare_salted_tokens
@@ -127,14 +127,14 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         user_profile = get_user_profile(self.browser_session_id)
         if user_profile is None:
-            raise JsonableError(_('Unknown or missing session'))
+            raise JsonableError(err_('Unknown or missing session'))
         self.session.user_profile = user_profile
 
         if not _compare_salted_tokens(msg['request']['csrf_token'], self.csrf_token):
-            raise JsonableError(_('CSRF token does not match that in cookie'))
+            raise JsonableError(err_('CSRF token does not match that in cookie'))
 
         if 'queue_id' not in msg['request']:
-            raise JsonableError(_("Missing 'queue_id' argument"))
+            raise JsonableError(err_("Missing 'queue_id' argument"))
 
         queue_id = msg['request']['queue_id']
         client = get_client_descriptor(queue_id)
@@ -142,7 +142,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             raise BadEventQueueIdError(queue_id)
 
         if user_profile.id != client.user_profile_id:
-            raise JsonableError(_("You are not the owner of the queue with id '%s'") % (queue_id,))
+            raise JsonableError(err_("You are not the owner of the queue with id '%s'") % (queue_id,))
 
         self.authenticated = True
         register_connection(queue_id, self)

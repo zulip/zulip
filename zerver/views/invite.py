@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from typing import List, Optional, Set, Text
 
 from zerver.decorator import authenticated_json_post_view
@@ -23,9 +23,9 @@ def invite_users_backend(request, user_profile,
                          body=REQ("custom_body", default=None)):
     # type: (HttpRequest, UserProfile, str, Optional[str]) -> HttpResponse
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
-        return json_error(_("Must be a realm administrator"))
+        return json_error(err_("Must be a realm administrator"))
     if not invitee_emails_raw:
-        return json_error(_("You must specify at least one email address."))
+        return json_error(err_("You must specify at least one email address."))
     if body == '':
         body = None
 
@@ -33,7 +33,7 @@ def invite_users_backend(request, user_profile,
 
     stream_names = request.POST.getlist('stream')
     if not stream_names:
-        return json_error(_("You must specify at least one stream for invitees to join."))
+        return json_error(err_("You must specify at least one stream for invitees to join."))
 
     # We unconditionally sub you to the notifications stream if it
     # exists and is public.
@@ -46,7 +46,7 @@ def invite_users_backend(request, user_profile,
         try:
             (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
         except JsonableError:
-            return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
+            return json_error(err_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
     do_invite_users(user_profile, invitee_emails, streams, body)

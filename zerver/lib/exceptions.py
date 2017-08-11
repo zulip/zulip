@@ -46,7 +46,7 @@ class JsonableError(Exception):
 
      * Easiest, but completely machine-unreadable:
 
-         raise JsonableError(_("No such widget: {}").format(widget_name))
+         raise JsonableError(err_("No such widget: {}").format(widget_name))
 
        The message may be passed through to clients and shown to a user,
        so translation is required.  Because the text will vary depending
@@ -55,7 +55,7 @@ class JsonableError(Exception):
 
      * Partially machine-readable, with an error code:
 
-         raise JsonableError(_("No such widget: {}").format(widget_name),
+         raise JsonableError(err_("No such widget: {}").format(widget_name),
                              ErrorCode.NO_SUCH_WIDGET)
 
        Now the error's `code` attribute can be used, both in server

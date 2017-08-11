@@ -8,7 +8,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from django.template import RequestContext, loader
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.shortcuts import render
 from jinja2 import Markup as mark_safe
 
@@ -80,12 +80,12 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         labels_sort_function = sort_client_labels
         include_empty_subgroups = False
     else:
-        raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
+        raise JsonableError(err_("Unknown chart name: %s") % (chart_name,))
 
     # Most likely someone using our API endpoint. The /stats page does not
     # pass a start or end in its requests.
     if start is not None and end is not None and start > end:
-        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
+        raise JsonableError(err_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})
 
     realm = user_profile.realm
@@ -98,7 +98,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
                         "start time: %s (creation time of realm) is later than the computed "
                         "end time: %s (last successful analytics update). Is the "
                         "analytics cron job running?" % (realm.string_id, start, end))
-        raise JsonableError(_("No analytics data available. Please contact your server administrator."))
+        raise JsonableError(err_("No analytics data available. Please contact your server administrator."))
 
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency}

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Callable, Tuple, Text
 from six.moves import zip
 
 from django.utils.timezone import utc as timezone_utc
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
@@ -169,7 +169,7 @@ def api_librato_webhook(request, user_profile, payload=REQ(converter=ujson.loads
         attachments = []
 
     if not attachments and not payload:
-        return json_error(_("Malformed JSON input"))
+        return json_error(err_("Malformed JSON input"))
 
     message_handler = LibratoWebhookHandler(payload, attachments)
 
@@ -179,7 +179,7 @@ def api_librato_webhook(request, user_profile, payload=REQ(converter=ujson.loads
     try:
         content = message_handler.handle()
     except Exception as e:
-        return json_error(_(str(e)))
+        return json_error(err_(str(e)))
 
     check_send_message(user_profile, request.client, "stream", [stream], topic, content)
     return json_success()

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from typing import Any, Dict
 
 from django.utils.module_loading import import_string
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \

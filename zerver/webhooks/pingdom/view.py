@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from typing import Any, Dict, Text
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import check_send_message
@@ -43,7 +43,7 @@ def api_pingdom_webhook(request, user_profile, payload=REQ(argument_type='body')
         subject = get_subject_for_http_request(payload)
         body = get_body_for_http_request(payload)
     else:
-        return json_error(_('Unsupported check_type: {check_type}').format(check_type=check_type))
+        return json_error(err_('Unsupported check_type: {check_type}').format(check_type=check_type))
 
     check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()

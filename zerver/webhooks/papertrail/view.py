@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -37,7 +37,7 @@ def api_papertrail_webhook(request, user_profile,
             message.append('```')
         post = '\n'.join(message)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+        return json_error(err_("Missing key {} in JSON").format(str(e)))
 
     # send the message
     check_send_message(user_profile, request.client, 'stream', [stream], topic, post)

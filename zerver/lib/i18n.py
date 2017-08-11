@@ -4,7 +4,7 @@ import operator
 
 from django.conf import settings
 from django.utils import translation
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from six.moves import urllib, zip_longest, zip, range
 from typing import Any, List, Dict, Optional, Text

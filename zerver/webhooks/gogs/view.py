@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -97,9 +97,9 @@ def api_gogs_webhook(request, user_profile,
                 title=payload['pull_request']['title']
             )
         else:
-            return json_error(_('Invalid event "{}" in request headers').format(event))
+            return json_error(err_('Invalid event "{}" in request headers').format(event))
     except KeyError as e:
-        return json_error(_('Missing key {} in JSON').format(str(e)))
+        return json_error(err_('Missing key {} in JSON').format(str(e)))
 
     check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
     return json_success()

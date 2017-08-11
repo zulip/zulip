@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.utils import timezone
 from django.http import HttpResponse, HttpRequest
 
@@ -21,12 +21,12 @@ from typing import Any, Dict, Optional, Union, Text, cast
 def validate_entity(entity):
     # type: (Union[UserProfile, RemoteZulipServer]) -> None
     if not isinstance(entity, RemoteZulipServer):
-        raise JsonableError(_("Must validate with valid Zulip server API key"))
+        raise JsonableError(err_("Must validate with valid Zulip server API key"))
 
 def validate_bouncer_token_request(entity, token, kind):
     # type: (Union[UserProfile, RemoteZulipServer], bytes, int) -> None
     if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
-        raise JsonableError(_("Invalid token type"))
+        raise JsonableError(err_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
 
@@ -70,7 +70,7 @@ def remote_server_unregister_push(request, entity, token=REQ(),
                                                    kind=token_kind,
                                                    server=server).delete()
     if deleted[0] == 0:
-        return json_error(_("Token does not exist"))
+        return json_error(err_("Token does not exist"))
 
     return json_success()
 

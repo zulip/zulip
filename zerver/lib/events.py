@@ -7,7 +7,7 @@ import copy
 import six
 import ujson
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.conf import settings
 from importlib import import_module
 from six.moves import filter, map
@@ -500,7 +500,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                                    narrow=narrow)
 
     if queue_id is None:
-        raise JsonableError(_("Could not allocate event queue"))
+        raise JsonableError(err_("Could not allocate event queue"))
 
     if fetch_event_types is not None:
         event_types_set = set(fetch_event_types)  # type: Optional[Set[str]]

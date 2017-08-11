@@ -181,7 +181,7 @@ def build_custom_checkers(by_lang):
                          ]),
          'exclude_line': set([
              ('zerver/views/users.py',
-              "return json_error(_(\"Email '%(email)s' not allowed for realm '%(realm)s'\") %"),
+              "return json_error(err_(\"Email '%(email)s' not allowed for realm '%(realm)s'\") %"),
              ('zproject/settings.py',
               "'format': '%(asctime)s %(levelname)-8s %(message)s'"),
              ('static/templates/settings/bot-settings.handlebars',
@@ -234,10 +234,10 @@ def build_custom_checkers(by_lang):
          'description': 'Test strings should not be tagged for translationx'},
         {'pattern': 'json_success\({}\)',
          'description': 'Use json_success() to return nothing'},
-        # To avoid json_error(_variable) and json_error(_(variable))
-        {'pattern': '\Wjson_error\(_\(?\w+\)',
+        # To avoid json_error(_(variable)), json_error(err_variable), and json_error(err_(variable))
+        {'pattern': '\Wjson_error\((err)?_\(?\w+\)',
          'exclude': set(['zerver/tests']),
-         'description': 'Argument to json_error should be a literal string enclosed by _()'},
+         'description': 'Argument to json_error should be a literal string enclosed by err_()'},
         {'pattern': '\Wjson_error\([\'"].+[),]$',
          'exclude': set(['zerver/tests']),
          'exclude_line': set([
@@ -245,13 +245,13 @@ def build_custom_checkers(by_lang):
              ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
          ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
-        # To avoid JsonableError(_variable) and JsonableError(_(variable))
-        {'pattern': '\WJsonableError\(_\(?\w.+\)',
+        # To avoid JsonableError(_(variable), JsonableError(err_variable), and JsonableError(err_(variable))
+        {'pattern': '\WJsonableError\((err)?_\(?\w.+\)',
          'exclude': set(['zerver/tests']),
-         'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
+         'description': 'Argument to JsonableError should be a literal string enclosed by err_()'},
         {'pattern': '\WJsonableError\(["\'].+\)',
          'exclude': set(['zerver/tests']),
-         'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
+         'description': 'Argument to JsonableError should be a literal string enclosed by err_()'},
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
         {'pattern': 'self\.client\.(get|post|patch|put|delete)',

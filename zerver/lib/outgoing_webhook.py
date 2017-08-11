@@ -11,7 +11,7 @@ from six.moves import urllib
 from functools import reduce
 from requests import Response
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.models import Realm, UserProfile, get_realm_by_email_domain, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile

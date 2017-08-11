@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, FileResponse, \
     HttpResponseNotFound
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.decorator import authenticated_json_post_view
 from zerver.lib.request import has_request_variables, REQ
@@ -51,17 +51,17 @@ def serve_file_backend(request, user_profile, realm_id_str, filename):
 def upload_file_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) == 0:
-        return json_error(_("You must specify a file to upload"))
+        return json_error(err_("You must specify a file to upload"))
     if len(request.FILES) != 1:
-        return json_error(_("You may only upload one file at a time"))
+        return json_error(err_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
     file_size = user_file._get_size()
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+        return json_error(err_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_FILE_UPLOAD_SIZE))
     if not within_upload_quota(user_profile, file_size):
-        return json_error(_("Upload would exceed your maximum quota."))
+        return json_error(err_("Upload would exceed your maximum quota."))
 
     if not isinstance(user_file.name, str):
         # It seems that in Python 2 unicode strings containing bytes are

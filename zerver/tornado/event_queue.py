@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from collections import deque
@@ -508,15 +508,15 @@ def fetch_events(query):
                 client = allocate_client_descriptor(new_queue_data)
                 queue_id = client.event_queue.id
             else:
-                raise JsonableError(_("Missing 'queue_id' argument"))
+                raise JsonableError(err_("Missing 'queue_id' argument"))
         else:
             if last_event_id is None:
-                raise JsonableError(_("Missing 'last_event_id' argument"))
+                raise JsonableError(err_("Missing 'last_event_id' argument"))
             client = get_client_descriptor(queue_id)
             if client is None:
                 raise BadEventQueueIdError(queue_id)
             if user_profile_id != client.user_profile_id:
-                raise JsonableError(_("You are not authorized to get events from this queue"))
+                raise JsonableError(err_("You are not authorized to get events from this queue"))
             client.event_queue.prune(last_event_id)
             was_connected = client.finish_current_handler()
 

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.views.decorators.csrf import csrf_exempt
@@ -124,7 +124,7 @@ def require_realm_admin(func):
     def wrapper(request, user_profile, *args, **kwargs):
         # type: (HttpRequest, UserProfile, *Any, **Any) -> HttpResponse
         if not user_profile.is_realm_admin:
-            raise JsonableError(_("Must be a realm administrator"))
+            raise JsonableError(err_("Must be a realm administrator"))
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
@@ -187,12 +187,12 @@ def validate_api_key(request, role, api_key, is_webhook=False):
         try:
             profile = get_user_profile_by_email(role)  # type: Union[UserProfile, RemoteZulipServer]
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user: %s") % (role,))
+            raise JsonableError(err_("Invalid user: %s") % (role,))
     else:
         try:
             profile = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
-            raise JsonableError(_("Invalid Zulip server: %s") % (role,))
+            raise JsonableError(err_("Invalid Zulip server: %s") % (role,))
 
     if api_key != profile.api_key:
         if len(api_key) != 32:
@@ -205,17 +205,17 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     # early exit for RemoteZulipServer instances
     if settings.ZILENCER_ENABLED and isinstance(profile, RemoteZulipServer):
         if not check_subdomain(get_subdomain(request), ""):
-            raise JsonableError(_("This API key only works on the root subdomain"))
+            raise JsonableError(err_("This API key only works on the root subdomain"))
         return profile
 
     profile = cast(UserProfile, profile)  # is UserProfile
     if not profile.is_active:
-        raise JsonableError(_("Account not active"))
+        raise JsonableError(err_("Account not active"))
     if profile.is_incoming_webhook and not is_webhook:
-        raise JsonableError(_("Account is not valid to post webhook messages"))
+        raise JsonableError(err_("Account is not valid to post webhook messages"))
 
     if profile.realm.deactivated:
-        raise JsonableError(_("Realm for account has been deactivated"))
+        raise JsonableError(err_("Realm for account has been deactivated"))
 
     if (not check_subdomain(get_subdomain(request), profile.realm.subdomain) and
         # Allow access to localhost for Tornado
@@ -224,7 +224,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
              request.META["REMOTE_ADDR"] == "127.0.0.1")):
         logging.warning("User %s attempted to access API on wrong subdomain %s" % (
             profile.email, get_subdomain(request)))
-        raise JsonableError(_("Account is not associated with this subdomain"))
+        raise JsonableError(err_("Account is not associated with this subdomain"))
 
     return profile
 
@@ -244,15 +244,15 @@ def api_key_only_webhook_view(client_name):
             try:
                 user_profile = UserProfile.objects.get(api_key=api_key)
             except UserProfile.DoesNotExist:
-                raise JsonableError(_("Invalid API key"))
+                raise JsonableError(err_("Invalid API key"))
             if not user_profile.is_active:
-                raise JsonableError(_("Account not active"))
+                raise JsonableError(err_("Account not active"))
             if user_profile.realm.deactivated:
-                raise JsonableError(_("Realm for account has been deactivated"))
+                raise JsonableError(err_("Realm for account has been deactivated"))
             if not check_subdomain(get_subdomain(request), user_profile.realm.subdomain):
                 logging.warning("User %s attempted to access webhook API on wrong subdomain %s" % (
                     user_profile.email, get_subdomain(request)))
-                raise JsonableError(_("Account is not associated with this subdomain"))
+                raise JsonableError(err_("Account is not associated with this subdomain"))
 
             request.user = user_profile
             request._email = user_profile.email
@@ -367,7 +367,7 @@ def human_users_only(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         if request.user.is_bot:
-            return json_error(_("This endpoint does not accept bot requests."))
+            return json_error(err_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
@@ -446,7 +446,7 @@ def authenticated_rest_api_view(is_webhook=False):
                 auth_type, credentials = request.META['HTTP_AUTHORIZATION'].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
-                    return json_error(_("This endpoint requires HTTP basic authentication."))
+                    return json_error(err_("This endpoint requires HTTP basic authentication."))
                 role, api_key = base64.b64decode(force_bytes(credentials)).decode('utf-8').split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))
@@ -509,14 +509,14 @@ def process_as_post(view_func):
 def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     # type: (HttpRequest, Callable[..., HttpResponse], *Any, **Any) -> HttpResponse
     if not request.user.is_authenticated:
-        return json_error(_("Not logged in"), status=401)
+        return json_error(err_("Not logged in"), status=401)
     user_profile = request.user
     if not user_profile.is_active:
-        raise JsonableError(_("Account not active"))
+        raise JsonableError(err_("Account not active"))
     if user_profile.realm.deactivated:
-        raise JsonableError(_("Realm for account has been deactivated"))
+        raise JsonableError(err_("Realm for account has been deactivated"))
     if user_profile.is_incoming_webhook:
-        raise JsonableError(_("Webhook bots can only access webhooks"))
+        raise JsonableError(err_("Webhook bots can only access webhooks"))
     if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
         # Exclude the SOCKET requests from this filter; they were
         # checked when the original websocket request reached Tornado
@@ -524,7 +524,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
              request.META['SERVER_NAME'] == "127.0.0.1")):
         logging.warning("User %s attempted to access JSON API on wrong subdomain %s" % (
             user_profile.email, get_subdomain(request)))
-        raise JsonableError(_("Account is not associated with this subdomain"))
+        raise JsonableError(err_("Account is not associated with this subdomain"))
 
     process_client(request, user_profile, True)
     request._email = user_profile.email
@@ -589,7 +589,7 @@ def internal_notify_view(is_tornado_view):
         def _wrapped_func_arguments(request, *args, **kwargs):
             # type: (HttpRequest, *Any, **Any) -> HttpResponse
             if not authenticate_notify(request):
-                return json_error(_('Access denied'), status=403)
+                return json_error(err_('Access denied'), status=403)
             is_tornado_request = hasattr(request, '_tornado_handler')
             # These next 2 are not security checks; they are internal
             # assertions to help us find bugs.

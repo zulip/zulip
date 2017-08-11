@@ -21,7 +21,7 @@ subject of US/task should be in bold.
 from __future__ import absolute_import
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import check_send_message
@@ -255,7 +255,7 @@ def generate_content(data):
     try:
         return templates[data['type']][data['event']] % data['values']
     except KeyError:
-        return json_error(_("Unknown message"))
+        return json_error(err_("Unknown message"))
 
 def get_owner_name(message):
     # type: (Mapping[str, Any]) -> str

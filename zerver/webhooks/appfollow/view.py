@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import re
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
@@ -20,7 +20,7 @@ def api_appfollow_webhook(request, user_profile, stream=REQ(default="appfollow")
     try:
         message = payload["text"]
     except KeyError:
-        return json_error(_("Missing 'text' argument in JSON"))
+        return json_error(err_("Missing 'text' argument in JSON"))
     app_name = re.search('\A(.+)', message).group(0)
 
     check_send_message(user_profile, request.client, "stream", [stream], app_name, convert_markdown(message))

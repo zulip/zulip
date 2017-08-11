@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict
 
@@ -34,7 +34,7 @@ def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'
         subject = get_subject_for_http_request(payload)
         body = get_body_for_http_request(payload)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+        return json_error(err_("Missing key {} in JSON").format(str(e)))
 
     check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()

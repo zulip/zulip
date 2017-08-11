@@ -7,7 +7,7 @@ from typing import Optional, Text
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.decorator import human_users_only
 from zerver.lib.push_notifications import add_push_device_token, \
@@ -20,13 +20,13 @@ from zerver.models import PushDeviceToken, UserProfile
 def validate_token(token_str, kind):
     # type: (bytes, int) -> None
     if token_str == '' or len(token_str) > 4096:
-        raise JsonableError(_('Empty or invalid length token'))
+        raise JsonableError(err_('Empty or invalid length token'))
     if kind == PushDeviceToken.APNS:
         # Validate that we can actually decode the token.
         try:
             b64_to_hex(token_str)
         except Exception:
-            raise JsonableError(_('Invalid APNS token'))
+            raise JsonableError(err_('Invalid APNS token'))
 
 @human_users_only
 @has_request_variables

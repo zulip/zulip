@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from typing import Text
 
 from zerver.decorator import authenticated_json_post_view,\
@@ -28,7 +28,7 @@ def add_reaction_backend(request, user_profile, message_id, emoji_name):
     if Reaction.objects.filter(user_profile=user_profile,
                                message=message,
                                emoji_name=emoji_name).exists():
-        raise JsonableError(_("Reaction already exists"))
+        raise JsonableError(err_("Reaction already exists"))
 
     if user_message is None:
         # Users can see and react to messages sent to streams they
@@ -59,7 +59,7 @@ def remove_reaction_backend(request, user_profile, message_id, emoji_name):
     if not Reaction.objects.filter(user_profile=user_profile,
                                    message=message,
                                    emoji_name=emoji_name).exists():
-        raise JsonableError(_("Reaction does not exist"))
+        raise JsonableError(err_("Reaction does not exist"))
 
     do_remove_reaction(user_profile, message, emoji_name)
 

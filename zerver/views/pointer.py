@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from typing import Text
 
 from zerver.decorator import to_non_negative_int
@@ -27,7 +27,7 @@ def update_pointer_backend(request, user_profile,
             message__id=pointer
         )
     except UserMessage.DoesNotExist:
-        raise JsonableError(_("Invalid message ID"))
+        raise JsonableError(err_("Invalid message ID"))
 
     request._log_data["extra"] = "[%s]" % (pointer,)
     update_flags = (request.client.name.lower() in ['android', "zulipandroid"])

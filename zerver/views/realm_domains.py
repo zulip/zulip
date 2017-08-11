@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.decorator import has_request_variables, require_realm_admin, REQ
 from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, \
@@ -28,11 +28,11 @@ def create_realm_domain(request, user_profile, domain=REQ(validator=check_string
     try:
         validate_domain(domain)
     except ValidationError as e:
-        return json_error(_('Invalid domain: {}').format(e.messages[0]))
+        return json_error(err_('Invalid domain: {}').format(e.messages[0]))
     if RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists():
-        return json_error(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
+        return json_error(err_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
     if not can_add_realm_domain(domain):
-        return json_error(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
+        return json_error(err_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
     realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
     return json_success({'new_domain': [realm_domain.id, realm_domain.domain]})
 
@@ -44,7 +44,7 @@ def patch_realm_domain(request, user_profile, domain, allow_subdomains=REQ(valid
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_change_realm_domain(realm_domain, allow_subdomains)
     except RealmDomain.DoesNotExist:
-        return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
+        return json_error(err_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()
 
 @require_realm_admin
@@ -55,5 +55,5 @@ def delete_realm_domain(request, user_profile, domain):
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_remove_realm_domain(realm_domain)
     except RealmDomain.DoesNotExist:
-        return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
+        return json_error(err_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()

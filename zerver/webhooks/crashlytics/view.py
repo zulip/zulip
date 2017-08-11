@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -38,7 +38,7 @@ def api_crashlytics_webhook(request, user_profile, payload=REQ(argument_type='bo
                 url=issue_body['url']
             )
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON".format(str(e))))
+        return json_error(err_("Missing key {} in JSON".format(str(e))))
 
     check_send_message(user_profile, request.client, 'stream', [stream],
                        subject, body)

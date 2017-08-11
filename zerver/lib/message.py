@@ -4,7 +4,7 @@ import datetime
 import ujson
 import zlib
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from six import binary_type
 
 from zerver.lib.avatar import avatar_url_from_dict
@@ -267,7 +267,7 @@ def access_message(user_profile, message_id):
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
-        raise JsonableError(_("Invalid message(s)"))
+        raise JsonableError(err_("Invalid message(s)"))
 
     try:
         user_message = UserMessage.objects.select_related().get(user_profile=user_profile,
@@ -278,16 +278,16 @@ def access_message(user_profile, message_id):
     if user_message is None:
         if message.recipient.type != Recipient.STREAM:
             # You can't access private messages you didn't receive
-            raise JsonableError(_("Invalid message(s)"))
+            raise JsonableError(err_("Invalid message(s)"))
         stream = Stream.objects.get(id=message.recipient.type_id)
         if not stream.is_public():
             # You can't access messages sent to invite-only streams
             # that you didn't receive
-            raise JsonableError(_("Invalid message(s)"))
+            raise JsonableError(err_("Invalid message(s)"))
         # So the message is to a public stream
         if stream.realm != user_profile.realm:
             # You can't access public stream messages in other realms
-            raise JsonableError(_("Invalid message(s)"))
+            raise JsonableError(err_("Invalid message(s)"))
 
     # Otherwise, the message must have been sent to a public
     # stream in your realm, so return the message, user_message pair

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpResponse, HttpRequest
 
 from zerver.decorator import require_realm_admin
@@ -16,11 +16,11 @@ def upload_icon(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
 
     if len(request.FILES) != 1:
-        return json_error(_("You must upload exactly one icon."))
+        return json_error(err_("You must upload exactly one icon."))
 
     icon_file = list(request.FILES.values())[0]
     if ((settings.MAX_ICON_FILE_SIZE * 1024 * 1024) < icon_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+        return json_error(err_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_ICON_FILE_SIZE))
     upload_icon_image(icon_file, user_profile)
     do_change_icon_source(user_profile.realm, user_profile.realm.ICON_UPLOADED)

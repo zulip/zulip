@@ -7,7 +7,7 @@ from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.template import loader
 
 from zerver.templatetags.app_filters import render_markdown_path

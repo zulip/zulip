@@ -5,7 +5,7 @@ from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, 
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.utils.deprecation import MiddlewareMixin
 
 from zerver.lib.response import json_error, json_response_from_error
@@ -289,7 +289,7 @@ class JsonErrorHandler(MiddlewareMixin):
             return json_response_from_error(exception)
         if request.error_format == "JSON":
             logging.error(traceback.format_exc())
-            return json_error(_("Internal server error"), status=500)
+            return json_error(err_("Internal server error"), status=500)
         return None
 
 class TagRequests(MiddlewareMixin):

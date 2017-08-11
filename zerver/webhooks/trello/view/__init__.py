@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import ujson
 from typing import Mapping, Any, Tuple, Text, Optional
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 from zerver.lib.actions import check_send_message
 from zerver.decorator import return_success_on_head_request
@@ -28,7 +28,7 @@ def api_trello_webhook(request, user_profile, payload=REQ(argument_type='body'),
         else:
             subject, body = message
     except UnsupportedAction:
-        return json_error(_('Unsupported action_type: {action_type}'.format(action_type=action_type)))
+        return json_error(err_('Unsupported action_type: {action_type}'.format(action_type=action_type)))
 
     check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()
