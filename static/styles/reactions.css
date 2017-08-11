@@ -203,10 +203,17 @@
     padding: 6px;
     cursor: pointer;
     border-radius: 0.5em;
+    height: 25px;
+    width: 25px;
 }
 
 .emoji-popover-emoji.hide {
     display: none;
+}
+
+.emoji-popover-emoji .emoji {
+    vertical-align: initial;
+    top: 6px;
 }
 
 .emoji-popover .reacted {
