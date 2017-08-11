@@ -12,12 +12,11 @@ class zulip_ops::postgres_common {
   package { $internal_postgres_packages: ensure => "installed" }
 
   exec {"pip_wal-e":
-    command  => "/usr/bin/pip install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
+    command  => "/usr/bin/pip install 'boto==2.0.0' 'gevent==1.2.2' git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
     creates  => "/usr/local/bin/wal-e",
-    require  => Package['python3-pip',
-                        # 'python3-boto', 'python3-gevent', # missing on trusty
-                        'python-pip', 'python-boto', 'python-gevent',
-                        'lzop', 'pv'],
+    require  => [ Package['python3-pip',
+                          'python-pip',
+                          'lzop', 'pv'] ],
   }
 
   cron { "pg_backup_and_purge":
@@ -29,10 +28,10 @@ class zulip_ops::postgres_common {
     target => "postgres",
     user => "postgres",
     require => [ File["/usr/local/bin/pg_backup_and_purge.py"],
-                 Package["postgresql-${zulip::base::postgres_version}",
-                         "python3-dateutil",
-                         "python-dateutil"
-                 ] ]
+                 Package["postgresql-${zulip::base::postgres_version}"],
+                 Exec['pip3_python_deps'],
+                 Exec['pip2_python_deps'],
+               ]
   }
 
   exec { "sysctl_p":

@@ -16,14 +16,6 @@ class zulip_ops::base {
                         "iptables-persistent",
                         # For managing our current Debian packages
                         "debian-goodies",
-                        # Needed for zulip-ec2-configure-network-interfaces
-                        "python3-six",
-                        "python-six",
-                          # This one is needed for postgres as well
-                        # "python3-boto", # missing on trusty
-                        "python-boto",
-                        "python3-netifaces",
-                        "python-netifaces",
                         # Popular editors
                         "vim",
                         "emacs-nox",
@@ -44,6 +36,22 @@ class zulip_ops::base {
 
   # Add hosts to monitor here
   $hosts = []
+
+  exec {"pip3_ops_python_deps":
+    # six is eeded for zulip-ec2-configure-network-interfaces
+    # netiface is needed for zulip-ec2-configure-network-interfaces and postgres
+    command => "/usr/bin/pip3 install 'six==1.10.0' 'netifaces==0.10.5'",
+    creates => "/usr/local/lib/python3.4/dist-packages/six",
+    require => Package['python3-pip'],
+  }
+
+  exec {"pip2_ops_python_deps":
+    # six is eeded for zulip-ec2-configure-network-interfaces
+    # netiface is needed for zulip-ec2-configure-network-interfaces and postgres
+    command => "/usr/bin/pip2 install 'six==1.10.0' 'netifaces==0.10.5'",
+    creates => "/usr/local/lib/python2.7/dist-packages/six",
+    require => Package['python-pip'],
+  }
 
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,

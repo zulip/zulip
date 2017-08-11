@@ -3,10 +3,7 @@ class zulip::postgres_appdb_base {
   include zulip::postgres_common
   include zulip::supervisor
 
-  $appdb_packages = [# Needed to run process_fts_updates
-                     "python3-psycopg2", # TODO: use a virtualenv instead
-                     "python-psycopg2", # TODO: use a virtualenv instead
-                     # Needed for our full text search system
+  $appdb_packages = [# Needed for our full text search system
                      "postgresql-${zulip::base::postgres_version}-tsearch-extras",
                      ]
   define safepackage ( $ensure = present ) {
@@ -16,17 +13,29 @@ class zulip::postgres_appdb_base {
   }
   safepackage { $appdb_packages: ensure => "installed" }
 
+  exec {"pip3_process_fts_updates_deps":
+    command => "/usr/bin/pip3 install 'psycopg2==2.7.1'",
+    creates => "/usr/local/lib/python3.4/dist-packages/psycopg2",
+    require => Package['python3-pip'],
+  }
+
+  exec {"pip2_process_fts_updates_deps":
+    command => "/usr/bin/pip2 install 'psycopg2==2.7.1'",
+    creates => "/usr/local/lib/python2.7/dist-packages/psycopg2",
+    require => Package['python-pip']
+  }
+
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
     ensure => absent,
   }
 
   file { "/usr/local/bin/process_fts_updates":
-    ensure => file,
-    owner => "root",
-    group => "root",
-    mode => 755,
-    source => "puppet:///modules/zulip/postgresql/process_fts_updates",
+    ensure  => file,
+    owner   => "root",
+    group   => "root",
+    mode    => 755,
+    source  => "puppet:///modules/zulip/postgresql/process_fts_updates",
   }
 
   file { "/etc/supervisor/conf.d/zulip_db.conf":
