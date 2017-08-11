@@ -12,13 +12,13 @@ you need:
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
 
-## Step 0: Subscribe
+## Step 1: Subscribe
 
 Please subscribe to the low-traffic [Zulip announcements Google
 Group](https://groups.google.com/forum/#!forum/zulip-announce) to get
 announcements about new releases, security issues, etc.
 
-## Step 1: Install SSL Certificates
+## Step 2: Install SSL Certificates
 
 Zulip runs over `https` only, and requires SSL certificates in order to
 work. It looks for the certificates in `/etc/ssl/private/zulip.key`
@@ -31,7 +31,7 @@ documentation](ssl-certificates.html).  If you already have an SSL
 certificate, just install (or symlink) it into place at the above
 paths, and move on to the next step.
 
-## Step 2: Download and install latest release
+## Step 3: Download and install latest release
 
 If you haven't already, download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
@@ -60,7 +60,17 @@ fail.  Also note that it automatically logs a transcript to
 `/var/log/zulip/install.log`; please include a copy of that file in
 any bug reports.
 
-## Step 3: Configure Zulip
+## Step 4: Set up email on your host
+
+Zulip wants to send outgoing emails for notifications and registration.
+
+We highly recommend reading our
+[production email docs](prod-email.html) and following the test
+procedure discussed there to make sure you've set up outgoing email
+correctly, since outgoing email is the most common configuration
+problem.
+
+## Step 5: Configure Zulip
 
 Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
 providing values for the mandatory settings, which are all found under the
@@ -82,19 +92,19 @@ These settings include:
 - `EMAIL_*`:
   credentials for an outgoing SMTP server so Zulip can send emails
   when needed (don't forget to set `email_password` in the
-  `zulip-secrets.conf` file!).  We highly recommend reading our
-  [production email docs](prod-email.html) and following the test
-  procedure discussed there to make sure you've set up outgoing email
-  correctly, since outgoing email is the most common configuration
-  problem. You may also want to update `NOREPLY_EMAIL_ADDRESS`.
+  `zulip-secrets.conf` file!).
+
+- `NOREPLY_EMAIL_ADDRESS`:
+  You can use the default here, but you want the address to be something
+  that automatically gets filtered.
 
 - If desired, you can also configure additional
   [authentication backends](prod-authentication-methods.html) while
   you're editing /etc/zulip/settings.py.  Note, however, that the
-  default (email) backend must be enabled when you complete Step 5
+  default (email) backend must be enabled when you complete Step 7
   (creating an organization) below.
 
-## Step 4: Initialize Zulip database
+## Step 6: Initialize Zulip database
 
 At this point, you are done doing things as root. The remaining
 commands are run as the `zulip` user using `su zulip`. To initialize
@@ -112,7 +122,7 @@ This completes the process of installing Zulip on your server.
 However, in order to use Zulip, you'll need to create an organization
 in your Zulip installation.
 
-## Step 5: Create a Zulip organization and login
+## Step 7: Create a Zulip organization and login
 
 * If you haven't already, verify that your
   [outgoing email configuration works](prod-email.html#testing-and-troubleshooting).
