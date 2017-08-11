@@ -173,6 +173,7 @@ class PasswordResetTest(ZulipTestCase):
         from_email = outbox[0].from_email
         self.assertIn("Zulip Account Security", from_email)
         self.assertIn(FromAddress.NOREPLY, from_email)
+        self.assertIn("Psst. Word on the street is that you", outbox[0].body)
 
         # Visit the password reset link.
         password_reset_url = self.get_confirmation_url_from_outbox(
@@ -197,7 +198,34 @@ class PasswordResetTest(ZulipTestCase):
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
 
-    def test_invalid_subdomain(self):
+    def test_password_reset_for_non_existent_user(self):
+        # type: () -> None
+        email = 'nonexisting@mars.com'
+
+        with patch('logging.info'):
+            # start the password reset process by supplying an email address
+            result = self.client_post('/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        # Check that the password reset email is from a noreply address.
+        from django.core.mail import outbox
+        from_email = outbox[0].from_email
+        self.assertIn("Zulip Account Security", from_email)
+        self.assertIn(FromAddress.NOREPLY, from_email)
+
+        self.assertIn('Someone (possibly you) requested a password',
+                      outbox[0].body)
+        self.assertNotIn('does have an active account in the zulip.testserver',
+                         outbox[0].body)
+
+    def test_wrong_subdomain(self):
         # type: () -> None
         email = self.example_email("hamlet")
         string_id = 'hamlet'
@@ -226,6 +254,8 @@ class PasswordResetTest(ZulipTestCase):
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
         self.assertIn(FromAddress.NOREPLY, message.from_email)
+        self.assertIn('Someone (possibly you) requested a password',
+                      message.body)
         self.assertIn("hamlet@zulip.com does not\nhave an active account in http://",
                       message.body)
 
