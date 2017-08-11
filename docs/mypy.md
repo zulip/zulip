@@ -79,9 +79,7 @@ coverage is shown in
 
 If you installed Zulip's development environment correctly, mypy
 should already be installed inside the Python 3 virtualenv at
-`zulip-py3-venv` (mypy only supports Python 3).  If it isn't installed
-(e.g. because you haven't reprovisioned recently), you can run
-`tools/install-mypy` to install it.
+`zulip-py3-venv` (mypy only supports Python 3).
 
 ## Running mypy on Zulip's code locally
 
