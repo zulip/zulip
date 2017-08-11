@@ -10,7 +10,6 @@ from scripts.lib.node_cache import generate_sha1sum_node_modules
 
 NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"
 if "--travis" in sys.argv:
-    NODE_MODULES_CACHE_PATH = os.path.join(os.environ["HOME"], "zulip-npm-cache")
     try:
         subprocess.check_output([os.path.join(NODE_MODULES_CACHE_PATH, "yarn/bin/yarn"), '--version'])
     except OSError:

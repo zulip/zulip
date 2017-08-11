@@ -3,9 +3,6 @@ set -e
 
 ZULIP_PATH="$(dirname "$0")/../.."
 ZULIP_SRV="/srv"
-if [ "$TRAVIS" ] ; then
-    ZULIP_SRV="/home/travis"
-fi
 YARN_BIN="$ZULIP_SRV/zulip-yarn/bin/yarn"
 node_version=6.6.0
 yarn_version=0.27.5

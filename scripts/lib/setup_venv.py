@@ -10,10 +10,6 @@ from scripts.lib.hash_reqs import expand_reqs
 ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 
-if 'TRAVIS' in os.environ:
-    # In Travis CI, we don't have root access
-    VENV_CACHE_PATH = "/home/travis/zulip-venv-cache"
-
 if False:
     # Don't add a runtime dependency on typing
     from typing import List, Optional, Tuple, Set
