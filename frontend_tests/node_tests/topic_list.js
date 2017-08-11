@@ -1,9 +1,15 @@
 set_global('$', global.make_zjquery());
+set_global('i18n', global.stub_i18n);
 
+set_global('narrow_state', {});
 set_global('stream_data', {});
 set_global('unread', {});
 set_global('muting', {});
+set_global('stream_popover', {});
 set_global('templates', {});
+set_global('feature_flags', {
+    use_server_topic_history: true,
+});
 
 zrequire('hash_util');
 zrequire('narrow');
@@ -12,8 +18,6 @@ zrequire('topic_list');
 
 (function test_topic_list_build_widget() {
     var stream_id = 555;
-    var active_topic = "testing";
-    var max_topics = 5;
 
     topic_data.reset();
     topic_data.add_message({
@@ -21,6 +25,12 @@ zrequire('topic_list');
         topic_name: 'coding',
         message_id: 400,
     });
+
+    stream_popover.hide_topic_popover = function () {};
+
+    narrow_state.topic = function () {
+        return 'testing';
+    };
 
     unread.num_unread_for_topic = function () {
         return 3;
@@ -59,11 +69,10 @@ zrequire('topic_list');
 
     var ul = $('<ul class="topic-list">');
 
-    var item_appended;
+    var list_items = [];
 
     ul.append = function (item) {
-        assert.equal(item.html(), '<topic list item>');
-        item_appended = true;
+        list_items.push(item);
     };
 
     var parent_elem = $.create('parent_elem');
@@ -74,13 +83,18 @@ zrequire('topic_list');
         attached_to_parent = true;
     };
 
-    var widget = topic_list.build_widget(parent_elem, stream_id, active_topic, max_topics);
+    assert.equal(topic_list.active_stream_id(), undefined);
+
+    var widget = topic_list.rebuild(parent_elem, stream_id);
 
     assert(widget.is_for_stream(stream_id));
     assert.equal(widget.get_parent(), parent_elem);
 
     assert(checked_mutes);
     assert(rendered);
-    assert(item_appended);
+    assert.equal(list_items[0].html(), '<topic list item>');
+    assert.equal(list_items[1], $('<li class="show-more-topics">'));
     assert(attached_to_parent);
+
+    assert.equal(topic_list.active_stream_id(), stream_id);
 }());

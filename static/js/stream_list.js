@@ -2,8 +2,6 @@ var stream_list = (function () {
 
 var exports = {};
 
-var zoomed_stream = '';
-
 exports.get_global_filter_li = function (filter_name) {
     var selector = "#global_filters li[data-name='" + filter_name + "']";
     return $(selector);
@@ -153,11 +151,10 @@ exports.get_stream_li = function (stream_id) {
     return li;
 };
 
-function zoom_in() {
+function zoom_in(options) {
     popovers.hide_all();
     topic_list.zoom_in();
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
-    zoomed_stream = narrow_state.stream();
 
     // Hide stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
@@ -169,8 +166,9 @@ function zoom_in() {
 
     $("#stream_filters li.narrow-filter").each(function () {
         var elt = $(this);
+        var stream_id = options.stream_id.toString();
 
-        if (elt.attr('data-name') === zoomed_stream) {
+        if (elt.attr('data-stream-id') === stream_id) {
             elt.show();
         } else {
             elt.hide();
@@ -180,8 +178,15 @@ function zoom_in() {
 
 function zoom_out(options) {
     popovers.hide_all();
-    topic_list.zoom_out(options);
+    topic_list.zoom_out();
 
+    if (options.stream_li) {
+        exports.scroll_stream_into_view(options.stream_li);
+    }
+    exports.show_all_streams();
+}
+
+exports.show_all_streams = function () {
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
@@ -192,15 +197,7 @@ function zoom_out(options) {
 
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
-}
-
-function reset_to_unnarrowed(narrowed_within_same_stream) {
-    if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
-        zoom_out({clear_topics: true});
-    } else {
-        topic_list.remove_expanded_topics();
-    }
-}
+};
 
 exports.set_in_home_view = function (stream_id, in_home) {
     var li = exports.get_stream_li(stream_id);
@@ -301,14 +298,6 @@ function set_stream_unread_count(stream_id, count) {
     exports.update_count_in_dom(unread_count_elem, count);
 }
 
-function rebuild_recent_topics(stream_name) {
-    // TODO: Call rebuild_recent_topics less, not on every new
-    // message.
-    var stream_id = stream_data.get_stream_id(stream_name);
-    var stream_li = exports.get_stream_li(stream_id);
-    topic_list.rebuild(stream_li, stream_id);
-}
-
 exports.update_streams_sidebar = function () {
     exports.build_stream_list();
 
@@ -318,7 +307,7 @@ exports.update_streams_sidebar = function () {
 
     var filter = narrow_state.filter();
 
-    exports.maybe_activate_stream_item(filter);
+    exports.update_stream_sidebar_for_narrow(filter);
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -376,43 +365,118 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
             blueslip.error('passed in bad stream id ' + sub.stream_id);
             return;
         }
-        exports.scroll_to_active_stream(stream_li);
+        exports.scroll_stream_into_view(stream_li);
     }
 };
 
-exports.maybe_activate_stream_item = function (filter) {
+function clear_topics() {
+    topic_list.close();
+    exports.show_all_streams();
+}
+
+exports.get_sidebar_stream_topic_info  = function (filter) {
+    var result = {
+        stream_id: undefined,
+        topic_selected: false,
+    };
+
     var op_stream = filter.operands('stream');
-    if (op_stream.length !== 0) {
-        var stream_name = op_stream[0];
-        var stream_id = stream_data.get_stream_id(stream_name);
-
-        if (stream_id && stream_data.id_is_subscribed(stream_id)) {
-            var stream_li = exports.get_stream_li(stream_id);
-
-            if (!stream_li) {
-                // It should be the case then when we have a subscribed
-                // stream, there will always be a stream list item
-                // corresponding to that stream in our sidebar.  We have
-                // evidence that this assumption breaks down for some users,
-                // but we are not clear why it happens.
-                blueslip.error('No stream_li for subscribed stream ' + stream_name);
-                return;
-            }
-
-            var op_subject = filter.operands('topic');
-            if (op_subject.length === 0) {
-                stream_li.addClass('active-filter');
-            }
-            rebuild_recent_topics(stream_name);
-
-            return stream_li;
-        }
+    if (op_stream.length === 0) {
+        return result;
     }
+
+    var stream_name = op_stream[0];
+    var stream_id = stream_data.get_stream_id(stream_name);
+
+    if (!stream_id) {
+        return result;
+    }
+
+    if (!stream_data.id_is_subscribed(stream_id)) {
+        return result;
+    }
+
+    result.stream_id = stream_id;
+
+    var op_subject = filter.operands('topic');
+    result.topic_selected = (op_subject.length === 1);
+
+    return result;
+};
+
+exports.update_stream_sidebar_for_narrow = function (filter) {
+    var info = exports.get_sidebar_stream_topic_info(filter);
+
+    var stream_id = info.stream_id;
+
+    if (!stream_id) {
+        clear_topics();
+        return;
+    }
+
+    var stream_li = exports.get_stream_li(stream_id);
+
+    if (!stream_li) {
+        // It should be the case then when we have a subscribed
+        // stream, there will always be a stream list item
+        // corresponding to that stream in our sidebar.  We have
+        // evidence that this assumption breaks down for some users,
+        // but we are not clear why it happens.
+        blueslip.error('No stream_li for subscribed stream ' + stream_id);
+        clear_topics();
+        return;
+    }
+
+    if (!info.topic_selected) {
+        stream_li.addClass('active-filter');
+    }
+
+    if (stream_id !== topic_list.active_stream_id()) {
+        clear_topics();
+    }
+
+    topic_list.rebuild(stream_li, stream_id);
+
+    return stream_li;
 };
 
 function deselect_top_left_corner_items() {
     $("ul.filters li").removeClass('active-filter active-sub-filter');
 }
+
+exports.update_top_left_corner_for_narrow = function (filter) {
+    deselect_top_left_corner_items();
+
+    var ops;
+    var filter_name;
+    var filter_li;
+
+    // TODO: handle confused filters like "in:all stream:foo"
+    ops = filter.operands('in');
+    if (ops.length >= 1) {
+        filter_name = ops[0];
+        if (filter_name === 'home') {
+            filter_li = exports.get_global_filter_li(filter_name);
+            filter_li.addClass('active-filter');
+        }
+    }
+    ops = filter.operands('is');
+    if (ops.length >= 1) {
+        filter_name = ops[0];
+        if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
+            filter_li = exports.get_global_filter_li(filter_name);
+            filter_li.addClass('active-filter');
+        }
+    }
+
+    var op_is = filter.operands('is');
+    var op_pm = filter.operands('pm-with');
+    if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
+        pm_list.expand(op_pm);
+    } else {
+        pm_list.close();
+    }
+};
 
 exports.initialize = function () {
     // TODO, Eventually topic_list won't be a big singleton,
@@ -424,42 +488,11 @@ exports.initialize = function () {
     });
 
     $(document).on('narrow_activated.zulip', function (event) {
-        deselect_top_left_corner_items();
-        reset_to_unnarrowed(narrow_state.stream() === zoomed_stream);
+        exports.update_top_left_corner_for_narrow(event.filter);
 
-        var ops;
-        var filter_name;
-        var filter_li;
-
-        // TODO: handle confused filters like "in:all stream:foo"
-        ops = event.filter.operands('in');
-        if (ops.length >= 1) {
-            filter_name = ops[0];
-            if (filter_name === 'home') {
-                filter_li = exports.get_global_filter_li(filter_name);
-                filter_li.addClass('active-filter');
-            }
-        }
-        ops = event.filter.operands('is');
-        if (ops.length >= 1) {
-            filter_name = ops[0];
-            if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
-                filter_li = exports.get_global_filter_li(filter_name);
-                filter_li.addClass('active-filter');
-            }
-        }
-
-        var op_is = event.filter.operands('is');
-        var op_pm = event.filter.operands('pm-with');
-        if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
-            pm_list.expand(op_pm);
-        } else {
-            pm_list.close();
-        }
-
-        var stream_li = exports.maybe_activate_stream_item(event.filter);
+        var stream_li = exports.update_stream_sidebar_for_narrow(event.filter);
         if (stream_li) {
-            exports.scroll_to_active_stream(stream_li);
+            exports.scroll_stream_into_view(stream_li);
         }
         // Update scrollbar size.
         $("#stream-filters-container").perfectScrollbar("update");
@@ -467,7 +500,7 @@ exports.initialize = function () {
 
     $(document).on('narrow_deactivated.zulip', function () {
         deselect_top_left_corner_items();
-        reset_to_unnarrowed();
+        clear_topics();
         pm_list.close();
 
         var filter_li = exports.get_global_filter_li('home');
@@ -597,7 +630,7 @@ $(function () {
         .on('click', toggle_filter_displayed);
 });
 
-exports.scroll_to_active_stream = function (stream_li) {
+exports.scroll_stream_into_view = function (stream_li) {
     var container = $('#stream-filters-container');
 
     if (stream_li.length !== 1) {
@@ -608,8 +641,34 @@ exports.scroll_to_active_stream = function (stream_li) {
     exports.scroll_element_into_container(stream_li, container);
 };
 
-exports.scroll_element_into_container = function (active_elem, container) {
-    // This is a generic function to make active_elem visible in
+exports.scroll_delta = function (opts) {
+    var elem_top = opts.elem_top;
+    var container_height = opts.container_height;
+    var elem_bottom = opts.elem_bottom;
+
+    var delta = 0;
+
+    if (elem_top < 0) {
+        delta = Math.max(
+            elem_top,
+            elem_bottom - container_height
+        );
+        delta = Math.min(0, delta);
+    } else {
+        if (elem_bottom > container_height) {
+            delta = Math.min(
+                elem_top,
+                elem_bottom - container_height
+            );
+            delta = Math.max(0, delta);
+        }
+    }
+
+    return delta;
+};
+
+exports.scroll_element_into_container = function (elem, container) {
+    // This is a generic function to make elem visible in
     // container by scrolling container appropriately.  We may want to
     // eventually move this into another module, but I couldn't find
     // an ideal landing space for this.  I considered a few modules, but
@@ -621,19 +680,16 @@ exports.scroll_element_into_container = function (active_elem, container) {
     // this will be non-intrusive to users when they already have
     // the element visible.
 
-    var active_top = active_elem.position().top;
-    var delta = 0;
+    var elem_top = elem.position().top;
+    var elem_bottom = elem_top + elem.height();
 
-    if (active_top < 0) {
-        delta = active_top;
-    } else {
-        var active_bottom = active_top + active_elem.height();
-        var container_height = container.height();
+    var opts = {
+        elem_top: elem_top,
+        elem_bottom: elem_bottom,
+        container_height: container.height(),
+    };
 
-        if (active_bottom > container_height) {
-            delta = active_bottom - container_height;
-        }
-    }
+    var delta = exports.scroll_delta(opts);
 
     if (delta === 0) {
         return;

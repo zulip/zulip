@@ -1,7 +1,7 @@
 {{! Stream sidebar rows }}
 
 <li data-name="{{name}}" class="narrow-filter{{#if not_in_home_view}} out_of_home_view{{/if}}"
-    id="stream_sidebar_{{id}}">
+    data-stream-id="{{id}}">
     <div class="subscription_block selectable_sidebar_block" data-name="{{name}}">
 
         <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">

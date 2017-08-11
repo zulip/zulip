@@ -13,7 +13,18 @@ exports.remove_expanded_topics = function () {
 
     if (active_widget) {
         active_widget.remove();
+        active_widget = undefined;
     }
+};
+
+exports.close = function () {
+    zoomed = false;
+    exports.remove_expanded_topics();
+};
+
+exports.zoom_out = function () {
+    zoomed = false;
+    exports.rebuild(active_widget.get_parent(), active_widget.get_stream_id());
 };
 
 function update_unread_count(unread_count_elem, count) {
@@ -92,7 +103,11 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
             ul.append(li);
         });
 
-        if (hiding_topics) {
+        // When we inline use_server_topic_history to true (i.e. we are confident
+        // with the new feature), we can remove logic around hiding_topics.
+        var show_more_topics_link = hiding_topics || feature_flags.use_server_topic_history;
+
+        if (show_more_topics_link) {
             var show_more = $('<li class="show-more-topics">');
             show_more.attr('data-stream', my_stream_name);
             var link = $('<a href="#">');
@@ -155,12 +170,22 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
     return self;
 };
 
+exports.active_stream_id = function () {
+    if (!active_widget) {
+        return;
+    }
+
+    return active_widget.get_stream_id();
+};
+
 exports.rebuild = function (stream_li, stream_id) {
     var max_topics = 5;
 
     var active_topic = narrow_state.topic();
     exports.remove_expanded_topics();
     active_widget = exports.build_widget(stream_li, stream_id, active_topic, max_topics);
+
+    return active_widget; // used for testing
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
@@ -188,29 +213,20 @@ exports.zoom_in = function () {
     }
 };
 
-exports.zoom_out = function (options) {
-    zoomed = false;
-    if (options && options.clear_topics) {
-        exports.remove_expanded_topics();
-    } else {
-        exports.rebuild(active_widget.get_parent(), active_widget.get_stream_id());
-    }
-};
-
-exports.is_zoomed = function () {
-    return zoomed;
-};
-
 exports.set_click_handlers = function (callbacks) {
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
-        callbacks.zoom_in();
+        callbacks.zoom_in({
+            stream_id: active_widget.get_stream_id(),
+        });
 
         e.preventDefault();
         e.stopPropagation();
     });
 
     $('.show-all-streams').on('click', function (e) {
-        callbacks.zoom_out({clear_topics: false});
+        callbacks.zoom_out({
+            stream_li: active_widget.get_parent(),
+        });
 
         e.preventDefault();
         e.stopPropagation();
