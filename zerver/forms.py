@@ -183,49 +183,8 @@ class LoggingSetPasswordForm(SetPasswordForm):
         return self.user
 
 class ZulipPasswordResetForm(PasswordResetForm):
-    def get_users(self, email):
-        # type: (str) -> QuerySet
-        """Given an email, return matching user(s) who should receive a reset.
-
-        This is modified from the original in that it allows non-bot
-        users who don't have a usable password to reset their
-        passwords.
-        """
-        if not email_auth_enabled():
-            logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
-            return []
-        result = UserProfile.objects.filter(email__iexact=email, is_active=True,
-                                            is_bot=False)
-        if len(result) == 0:
-            logging.info("Password reset attempted for %s; no active account." % (email,))
-        return result
-
-    def send_mail(self, context, from_email, to_email):
-        # type: (Dict[str, Any], str, str) -> None
-        """
-        Currently we don't support accounts in multiple subdomains using
-        a single email address. We override this function so that we do
-        not send a reset link to an email address if the reset attempt is
-        done on the subdomain which does not match user.realm.subdomain.
-
-        Once we start supporting accounts with the same email in
-        multiple subdomains, we may be able to refactor this function.
-
-        A second reason we override this function is so that we can send
-        the mail through the functions in zerver.lib.send_email, to match
-        how we send all other mail in the codebase.
-        """
-        user = get_user_profile_by_email(to_email)
-        attempted_subdomain = get_subdomain(self.request)
-        context['attempted_realm'] = False
-        if not user_matches_subdomain(attempted_subdomain, user):
-            context['attempted_realm'] = get_realm(attempted_subdomain)
-
-        send_email('zerver/emails/password_reset', to_user_id=user.id,
-                   from_name="Zulip Account Security",
-                   from_address=FromAddress.NOREPLY, context=context)
-
     def save(self,
+             domain_override=None,  # type: Optional[bool]
              subject_template_name='registration/password_reset_subject.txt',  # type: Text
              email_template_name='registration/password_reset_email.html',  # type: Text
              use_https=False,  # type: bool
@@ -237,33 +196,56 @@ class ZulipPasswordResetForm(PasswordResetForm):
              ):
         # type: (...) -> None
         """
-        Currently we don't support accounts in multiple subdomains using a
-        single email addresss. Once we start supporting accounts with the same
-        email in multiple subdomains, we may be able to delete or refactor this
-        function.
+        If the email address has an account in the target realm,
+        generates a one-use only link for resetting password and sends
+        to the user.
 
-        Generates a one-use only link for resetting password and sends to the
-        user.
+        We send a different email if an associated account does not exist in the
+        database, or an account does exist, but not in the realm.
 
         Note: We ignore the various email template arguments (those
         are an artifact of using Django's password reset framework)
-
         """
-        setattr(self, 'request', request)
         email = self.cleaned_data["email"]
-        users = list(self.get_users(email))
 
-        for user in users:
-            context = {
-                'email': email,
-                'uid': urlsafe_base64_encode(force_bytes(user.id)),
-                'user': user,
-                'token': token_generator.make_token(user),
-                'protocol': 'https' if use_https else 'http',
-            }
-            if extra_email_context is not None:
-                context.update(extra_email_context)
-            self.send_mail(context, from_email, email)
+        subdomain = get_subdomain(request)
+        realm = get_realm(subdomain)
+        if realm is None:
+            raise ValidationError("Invalid realm")
+
+        if not email_auth_enabled(realm):
+            logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
+            return
+
+        try:
+            user = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            user = None
+
+        context = {
+            'email': email,
+            'realm_uri': realm.uri,
+            'user': user,
+            'protocol': 'https' if use_https else 'http',
+        }
+
+        if user is not None and user_matches_subdomain(subdomain, user):
+            context['no_account_in_realm'] = False
+            context['token'] = token_generator.make_token(user)
+            context['uid'] = urlsafe_base64_encode(force_bytes(user.id))
+
+            send_email('zerver/emails/password_reset', to_user_id=user.id,
+                       from_name="Zulip Account Security",
+                       from_address=FromAddress.NOREPLY, context=context)
+        else:
+            context['no_account_in_realm'] = True
+            if user is not None:
+                context['account_exists_another_realm'] = True
+            else:
+                context['account_exists_another_realm'] = False
+            send_email('zerver/emails/password_reset', to_email=email,
+                       from_name="Zulip Account Security",
+                       from_address=FromAddress.NOREPLY, context=context)
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
