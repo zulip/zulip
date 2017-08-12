@@ -28,10 +28,14 @@ function make_tab_data() {
         return !stream_data.in_home_view(stream_id);
     }
 
+    function in_all() {
+        return (filter !== undefined &&
+               (filtered_to_non_home_view_stream() ||
+                filter.has_operand("in", "all")));
+    }
+
     // Root breadcrumb item: Either Home or All Messages
-    if (filter !== undefined &&
-        (filtered_to_non_home_view_stream() ||
-         filter.has_operand("in", "all"))) {
+    if (in_all()) {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
         tabs.push(make_tab("Stream " + page_params.narrow_stream,
