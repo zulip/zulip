@@ -856,6 +856,7 @@ JS_SPECS = {
             'js/recent_senders.js',
             'js/stream_sort.js',
             'js/topic_generator.js',
+            'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
             'js/message_list_view.js',

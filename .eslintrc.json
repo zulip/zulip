@@ -100,6 +100,7 @@
         "notifications": false,
         "message_flags": false,
         "bot_data": false,
+        "top_left_corner": false,
         "stream_sort": false,
         "stream_list": false,
         "stream_popover": false,

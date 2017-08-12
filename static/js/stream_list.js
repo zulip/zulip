@@ -2,11 +2,6 @@ var stream_list = (function () {
 
 var exports = {};
 
-exports.get_global_filter_li = function (filter_name) {
-    var selector = "#global_filters li[data-name='" + filter_name + "']";
-    return $(selector);
-};
-
 exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
@@ -311,13 +306,6 @@ exports.update_streams_sidebar = function () {
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
-    // We currently handle these message categories:
-    //    home, starred, mentioned, streams, and topics
-    //
-    // Note that similar methods elsewhere in the code update
-    // the "Private Message" section in the upper left corner
-    // and the buddy lists in the right sidebar.
-
     // counts.stream_count maps streams to counts
     counts.stream_count.each(function (count, stream_id) {
         set_stream_unread_count(stream_id, count);
@@ -329,19 +317,6 @@ exports.update_dom_with_unread_counts = function (counts) {
             topic_list.set_count(stream_id, subject, count);
         });
     });
-
-    // mentioned/home have simple integer counts
-    var mentioned_li = exports.get_global_filter_li('mentioned');
-    var home_li = exports.get_global_filter_li('home');
-
-    exports.update_count_in_dom(mentioned_li, counts.mentioned_message_count);
-    exports.update_count_in_dom(home_li, counts.home_unread_messages);
-
-    unread_ui.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
-                                      counts.home_unread_messages);
-
-    unread_ui.animate_mention_changes(mentioned_li,
-                                      counts.mentioned_message_count);
 };
 
 exports.rename_stream = function (sub) {
@@ -446,55 +421,7 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
     return stream_li;
 };
 
-function deselect_top_left_corner_items() {
-    function remove(name) {
-        var li = exports.get_global_filter_li(name);
-        li.removeClass('active-filter active-sub-filter');
-    }
-
-    remove('home');
-    remove('private');
-    remove('starred');
-    remove('mentioned');
-}
-
-exports.update_top_left_corner_for_narrow = function (filter) {
-    deselect_top_left_corner_items();
-
-    var ops;
-    var filter_name;
-    var filter_li;
-
-    // TODO: handle confused filters like "in:all stream:foo"
-    ops = filter.operands('in');
-    if (ops.length >= 1) {
-        filter_name = ops[0];
-        if (filter_name === 'home') {
-            filter_li = exports.get_global_filter_li(filter_name);
-            filter_li.addClass('active-filter');
-        }
-    }
-    ops = filter.operands('is');
-    if (ops.length >= 1) {
-        filter_name = ops[0];
-        if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
-            filter_li = exports.get_global_filter_li(filter_name);
-            filter_li.addClass('active-filter');
-        }
-    }
-
-    var op_is = filter.operands('is');
-    var op_pm = filter.operands('pm-with');
-    if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
-        pm_list.expand(op_pm);
-    } else {
-        pm_list.close();
-    }
-};
-
 exports.handle_narrow_activated = function (filter) {
-    exports.update_top_left_corner_for_narrow(filter);
-
     var stream_li = exports.update_stream_sidebar_for_narrow(filter);
     if (stream_li) {
         exports.scroll_stream_into_view(stream_li);
@@ -505,12 +432,7 @@ exports.handle_narrow_activated = function (filter) {
 
 exports.handle_narrow_deactivated = function () {
     deselect_stream_items();
-    deselect_top_left_corner_items();
     clear_topics();
-    pm_list.close();
-
-    var filter_li = exports.get_global_filter_li('home');
-    filter_li.addClass('active-filter');
 };
 
 exports.initialize = function () {

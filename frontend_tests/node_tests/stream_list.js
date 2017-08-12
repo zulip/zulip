@@ -231,13 +231,6 @@ function initialize_stream_data() {
         topic: noop,
     });
 
-    var pm_expanded;
-
-    set_global('pm_list', {
-        close: noop,
-        expand: function () { pm_expanded = true; },
-    });
-
     topic_list.set_click_handlers = noop;
     topic_list.close = noop;
     topic_list.remove_expanded_topics = noop;
@@ -273,25 +266,6 @@ function initialize_stream_data() {
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert(!$('<cars sidebar row html>').hasClass('active-filter')); // false because of topic
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
-
-    assert(!pm_expanded);
-    filter = new Filter([
-        {operator: 'is', operand: 'private'},
-    ]);
-    stream_list.handle_narrow_activated(filter);
-    assert(pm_expanded);
-
-    filter = new Filter([
-        {operator: 'is', operand: 'mentioned'},
-    ]);
-    stream_list.handle_narrow_activated(filter);
-    assert(stream_list.get_global_filter_li('mentioned').hasClass('active-filter'));
-
-    filter = new Filter([
-        {operator: 'in', operand: 'home'},
-    ]);
-    stream_list.handle_narrow_activated(filter);
-    assert(stream_list.get_global_filter_li('home').hasClass('active-filter'));
 
     filter = new Filter([
         {operator: 'stream', operand: 'cars'},
@@ -377,20 +351,6 @@ function initialize_stream_data() {
     stream_li.addClass('stream-with-count');
     assert(stream_li.hasClass('stream-with-count'));
 
-    make_elem(
-        $("#global_filters li[data-name='mentioned']"),
-        '<mentioned-count>',
-        '<mentioned-value>'
-    );
-
-    make_elem(
-        $("#global_filters li[data-name='home']"),
-        '<home-count>',
-        '<home-value>'
-    );
-
-    unread_ui.set_count_toggle_button = noop;
-
     var stream_count = new Dict();
     var stream_id = 11;
 
@@ -404,16 +364,11 @@ function initialize_stream_data() {
     var counts = {
         stream_count: stream_count,
         topic_count: new Dict(),
-        mentioned_message_count: 222,
-        home_unread_messages: 333,
     };
 
     stream_list.update_dom_with_unread_counts(counts);
     assert.equal($('<stream li>').text(), 'never-been-set');
     assert(!stream_li.hasClass('stream-with-count'));
-
-    assert.equal($('<mentioned-value>').text(), '222');
-    assert.equal($('<home-value>').text(), '333');
 
     stream_count.set(stream_id, 99);
 
