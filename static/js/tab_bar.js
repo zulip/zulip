@@ -34,7 +34,6 @@ function make_tab_data() {
                 filter.has_operand("in", "all")));
     }
 
-    // Root breadcrumb item: Either Home or All Messages
     if (in_all()) {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
