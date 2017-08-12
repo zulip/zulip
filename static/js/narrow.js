@@ -243,6 +243,9 @@ exports.activate = function (raw_operators, opts) {
     compose_actions.on_narrow();
 
     var current_filter = narrow_state.get_current_filter();
+
+    stream_list.handle_narrow_activated(current_filter);
+
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
                                                             filter: current_filter,
                                                             trigger: opts.trigger}));
@@ -418,6 +421,8 @@ exports.deactivate = function () {
     }
 
     compose_fade.update_message_list();
+
+    stream_list.handle_narrow_deactivated();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 

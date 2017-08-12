@@ -255,17 +255,12 @@ function initialize_stream_data() {
 
     stream_list.initialize();
 
-    function activate_filter(filter) {
-        var handler = $(document).get_on_handler('narrow_activated.zulip');
-        handler({filter: filter});
-    }
-
     var filter;
 
     filter = new Filter([
         {operator: 'stream', operand: 'devel'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert($('<devel sidebar row html>').hasClass('active-filter'));
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
@@ -274,7 +269,7 @@ function initialize_stream_data() {
         {operator: 'stream', operand: 'cars'},
         {operator: 'topic', operand: 'sedans'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert(!$('<cars sidebar row html>').hasClass('active-filter')); // false because of topic
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
@@ -283,25 +278,25 @@ function initialize_stream_data() {
     filter = new Filter([
         {operator: 'is', operand: 'private'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(pm_expanded);
 
     filter = new Filter([
         {operator: 'is', operand: 'mentioned'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(stream_list.get_global_filter_li('mentioned').hasClass('active-filter'));
 
     filter = new Filter([
         {operator: 'in', operand: 'home'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(stream_list.get_global_filter_li('home').hasClass('active-filter'));
 
     filter = new Filter([
         {operator: 'stream', operand: 'cars'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert($('<cars sidebar row html>').hasClass('active-filter'));
 }());

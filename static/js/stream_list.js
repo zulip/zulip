@@ -492,6 +492,27 @@ exports.update_top_left_corner_for_narrow = function (filter) {
     }
 };
 
+exports.handle_narrow_activated = function (filter) {
+    exports.update_top_left_corner_for_narrow(filter);
+
+    var stream_li = exports.update_stream_sidebar_for_narrow(filter);
+    if (stream_li) {
+        exports.scroll_stream_into_view(stream_li);
+    }
+    // Update scrollbar size.
+    $("#stream-filters-container").perfectScrollbar("update");
+};
+
+exports.handle_narrow_deactivated = function () {
+    deselect_stream_items();
+    deselect_top_left_corner_items();
+    clear_topics();
+    pm_list.close();
+
+    var filter_li = exports.get_global_filter_li('home');
+    filter_li.addClass('active-filter');
+};
+
 exports.initialize = function () {
     // TODO, Eventually topic_list won't be a big singleton,
     // and we can create more component-based click handlers for
@@ -499,27 +520,6 @@ exports.initialize = function () {
     topic_list.set_click_handlers({
         zoom_in: zoom_in,
         zoom_out: zoom_out,
-    });
-
-    $(document).on('narrow_activated.zulip', function (event) {
-        exports.update_top_left_corner_for_narrow(event.filter);
-
-        var stream_li = exports.update_stream_sidebar_for_narrow(event.filter);
-        if (stream_li) {
-            exports.scroll_stream_into_view(stream_li);
-        }
-        // Update scrollbar size.
-        $("#stream-filters-container").perfectScrollbar("update");
-    });
-
-    $(document).on('narrow_deactivated.zulip', function () {
-        deselect_stream_items();
-        deselect_top_left_corner_items();
-        clear_topics();
-        pm_list.close();
-
-        var filter_li = exports.get_global_filter_li('home');
-        filter_li.addClass('active-filter');
     });
 
     $(document).on('subscription_add_done.zulip', function (event) {
