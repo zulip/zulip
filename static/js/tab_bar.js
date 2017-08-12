@@ -46,8 +46,6 @@ function make_tab_data() {
                                hashchange.operators_to_hash(page_params.narrow),
                                null));
         }
-    } else {
-        tabs.push(make_tab('Home', "#", "home", "root", true));
     }
 
     if (narrow_state.active() && narrow_state.operators().length > 0) {
@@ -107,8 +105,13 @@ function make_tab_data() {
         }
     }
 
+    if (tabs.length === 0) {
+        tabs.push(make_tab('Home', "#", "home", "root", true));
+    }
+
     // Last tab is not a link
     tabs[tabs.length - 1].hash = null;
+
     return tabs;
 }
 
