@@ -23,25 +23,25 @@
 
         <div class="column-right top-links">
             {% if user_is_authenticated %}
-            {% include 'zerver/logout.html' %}
-            <a class="no-style" href="#logout">
-                <span class="logout">Log out</span>
-            </a>
-            <a class="no-style" href="/">
-                <img class="header-realm-icon" src="{{ realm_icon }}" alt="{{ _('Go to Zulip') }}"/>
-            </a>
+                {% include 'zerver/logout.html' %}
+                <a class="no-style" href="#logout">
+                    <span class="logout">Log out</span>
+                </a>
+                <a class="no-style" href="/">
+                    <img class="header-realm-icon" src="{{ realm_icon }}" alt="{{ _('Go to Zulip') }}"/>
+                </a>
             {% else %}
-            {% if login_link_disabled %}
-            {% elif not only_sso %}
-            <a href="{{login_url}}">{{ _('Log in') }}</a>
-            {% endif %}
+                {% if login_link_disabled %}
+                {% elif not only_sso %}
+                <a href="{{login_url}}">{{ _('Log in') }}</a>
+                {% endif %}
 
-            {% if register_link_disabled %}
-            {% elif only_sso %}
-            <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
-            {% else %}
-            <a href="{{ url('register') }}">{{ _('Register') }}</a>
-            {% endif %}
+                {% if register_link_disabled %}
+                {% elif only_sso %}
+                <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
+                {% else %}
+                <a href="{{ url('register') }}">{{ _('Register') }}</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
