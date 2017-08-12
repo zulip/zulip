@@ -404,8 +404,14 @@ exports.get_sidebar_stream_topic_info  = function (filter) {
     return result;
 };
 
+function deselect_stream_items() {
+    $("ul#stream_filters li").removeClass('active-filter active-sub-filter');
+}
+
 exports.update_stream_sidebar_for_narrow = function (filter) {
     var info = exports.get_sidebar_stream_topic_info(filter);
+
+    deselect_stream_items();
 
     var stream_id = info.stream_id;
 
@@ -441,7 +447,15 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
 };
 
 function deselect_top_left_corner_items() {
-    $("ul.filters li").removeClass('active-filter active-sub-filter');
+    function remove(name) {
+        var li = exports.get_global_filter_li(name);
+        li.removeClass('active-filter active-sub-filter');
+    }
+
+    remove('home');
+    remove('private');
+    remove('starred');
+    remove('mentioned');
 }
 
 exports.update_top_left_corner_for_narrow = function (filter) {
@@ -499,6 +513,7 @@ exports.initialize = function () {
     });
 
     $(document).on('narrow_deactivated.zulip', function () {
+        deselect_stream_items();
         deselect_top_left_corner_items();
         clear_topics();
         pm_list.close();
