@@ -1569,35 +1569,18 @@ blockquote p {
     padding: 0px;
     text-overflow: ellipsis;
     height: 40px;
+    padding: 0 5px;
 }
 
 #tab_list li.inactive {
-    border-top-color: hsla(0, 0%, 0%, 0.0);
-    border-right-color: hsla(0, 0%, 0%, 0.0);
-    border-bottom-color: hsla(0, 0%, 0%, 0.0);
     background-color: hsl(0, 0%, 88%);
-    border-left-color: hsl(0, 0%, 88%);
     border-width: 0px;
+    margin-right: -4px;
+    font-size: 14px;
 }
 
 #tab_list li.private_message a {
     color: #ffffff;
-}
-
-#tab_list li.inactive:after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -25px;
-    border-style: solid;
-    border-width: 25px 0 25px 12px;
-    border-color: inherit;
-    z-index: 2;
-    -moz-transform: scale(.9999);
 }
 
 #tab_list li.inactive:before {
@@ -1608,10 +1591,6 @@ blockquote p {
     width: 0px;
     position: absolute;
     pointer-events: none;
-    margin-top: -28px;
-    border-style: solid;
-    border-width: 28px 0 28px 14px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
     z-index: 1;
     -moz-transform: scale(.9999);
 }
@@ -1622,18 +1601,16 @@ blockquote p {
     border-color: inherit;
     width: 100%;
     display: inline-block;
-    padding: 0px 8px;
-    max-width: 120px;
+    padding: 0px 5px;
+    max-width: 150px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 #tab_list li.active {
-    padding-left: 17px;
-    padding-right: 10px;
     background-color: hsl(0, 0%, 88%);
-    max-width: 120px;
+    max-width: 150px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1657,12 +1634,6 @@ blockquote p {
     border-color: hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
     margin: 0px;
-}
-
-#tab_list li.stream a,
-#tab_list li.private_message a {
-    padding-left: 17px;
-    padding-right: 4px;
 }
 
 #tab_list li.root a {
@@ -1926,6 +1897,7 @@ nav a .no-style {
 }
 
 #search_arrows {
+    margin-left: -4px;
     margin-bottom: 5px;
 
     /* Bootstrap wants font-size: 0 to eliminate space between
