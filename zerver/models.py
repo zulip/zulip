@@ -1855,6 +1855,9 @@ class Service(models.Model):
         SLACK: SLACK_INTERFACE,
     }  # type: Dict[int, Text]
 
+    # Contains JSON-format text
+    service_config = models.TextField(default=u'{}')  # type: Text
+
     def interface_name(self):
         # type: () -> Text
         # Raises KeyError if invalid

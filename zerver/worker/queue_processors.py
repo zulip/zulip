@@ -6,7 +6,7 @@ import signal
 import sys
 import os
 
-from zulip_bots.lib import ExternalBotHandler, StateHandler
+from zulip_bots.lib import ExternalBotHandler, StateHandler, initialize_config_bot, get_message_content_if_bot_is_called
 from django.conf import settings
 from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
@@ -485,8 +485,14 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         user_profile_id = event['user_profile_id']
         user_profile = get_user_profile_by_id(user_profile_id)
+        bot_api_client = self.get_bot_api_client(user_profile)
 
         message = cast(Dict[str, Any], event['message'])
+
+        if (event['trigger'] == 'mention'):
+            message['is_mentioned'] = True
+        else:
+            message['is_mentioned'] = False
 
         # TODO: Do we actually want to allow multiple Services per bot user?
         services = get_bot_services(user_profile_id)
@@ -495,7 +501,14 @@ class EmbeddedBotWorker(QueueProcessingWorker):
             if bot_handler is None:
                 logging.error("Error: User %s has bot with invalid embedded bot service %s" % (user_profile_id, service.name))
                 continue
-            bot_handler.handle_message(
-                message=message,
-                bot_handler=self.get_bot_api_client(user_profile),
-                state_handler=self.get_state_handler())
+            initialize_config_bot(message_handler=bot_handler, bot_handler=bot_api_client)
+
+            message_content_if_bot_is_called = get_message_content_if_bot_is_called(message=message,
+                                                                                    at_mention_bot_name=user_profile.full_name)
+
+            if message_content_if_bot_is_called:
+                message['content'] = message_content_if_bot_is_called
+                bot_handler.handle_message(
+                    message=message,
+                    bot_handler=bot_api_client,
+                    state_handler=self.get_state_handler())
