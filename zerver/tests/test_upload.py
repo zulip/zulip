@@ -35,7 +35,7 @@ from PIL import Image
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from six.moves import StringIO as _StringIO
+from six.moves import StringIO
 import mock
 import os
 import io
@@ -55,9 +55,6 @@ def destroy_uploads():
     # type: () -> None
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
-
-class StringIO(_StringIO):
-    name = ''  # https://github.com/python/typeshed/issues/598
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
