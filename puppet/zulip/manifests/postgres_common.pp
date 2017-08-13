@@ -17,16 +17,30 @@ class zulip::postgres_common {
   }
   safepackage { $postgres_packages: ensure => "installed" }
 
+  exec {"pip3_ensure_latest":
+    command => "/usr/bin/pip3 install -U pip==9.0.1",
+    creates => "/usr/local/bin/pip3",
+    require => Package['python3-pip'],
+  }
+
   exec {"pip3_python_deps":
-    command => "/usr/bin/pip3 install 'pytz==2017.2' 'python-dateutil==2.6.1'",
-    creates => "/usr/local/lib/python3.4/dist-packages/dateutil",
-    require => Package['python3-pip']
+    command     => "/usr/local/bin/pip3 install 'pytz==2017.2' 'python-dateutil==2.6.1'",
+    creates     => "/usr/local/lib/python3.4/dist-packages/dateutil",
+    require     => Exec['pip3_ensure_latest'],
+    refreshonly => true,
+  }
+
+  exec {"pip2_ensure_latest":
+    command => "/usr/bin/pip2 install -U pip==9.0.1",
+    creates => "/usr/local/bin/pip2",
+    require => Package['python-pip'],
   }
 
   exec {"pip2_python_deps":
-    command => "/usr/bin/pip2 install 'pytz==2017.2' 'python-dateutil==2.6.1'",
-    creates => "/usr/local/lib/python2.7/dist-packages/dateutil",
-    require => Package['python-pip']
+    command     => "/usr/local/bin/pip2 install 'pytz==2017.2' 'python-dateutil==2.6.1'",
+    creates     => "/usr/local/lib/python2.7/dist-packages/dateutil",
+    require     => Exec['pip2_ensure_latest'],
+    refreshonly => true,
   }
 
   exec { "disable_logrotate":

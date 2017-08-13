@@ -40,17 +40,19 @@ class zulip_ops::base {
   exec {"pip3_ops_python_deps":
     # six is eeded for zulip-ec2-configure-network-interfaces
     # netiface is needed for zulip-ec2-configure-network-interfaces and postgres
-    command => "/usr/bin/pip3 install 'six==1.10.0' 'netifaces==0.10.5'",
+    command => "/usr/local/bin/pip3 install 'six==1.10.0' 'netifaces==0.10.5'",
     creates => "/usr/local/lib/python3.4/dist-packages/six",
-    require => Package['python3-pip'],
+    require => Exec['pip3_ensure_latest'],
+    refreshonly => true,
   }
 
   exec {"pip2_ops_python_deps":
     # six is eeded for zulip-ec2-configure-network-interfaces
     # netiface is needed for zulip-ec2-configure-network-interfaces and postgres
-    command => "/usr/bin/pip2 install 'six==1.10.0' 'netifaces==0.10.5'",
+    command => "/usr/local/bin/pip2 install 'six==1.10.0' 'netifaces==0.10.5'",
     creates => "/usr/local/lib/python2.7/dist-packages/six",
-    require => Package['python-pip'],
+    require => Exec['pip2_ensure_latest'],
+    refreshonly => true,
   }
 
   file { '/etc/apt/apt.conf.d/02periodic':

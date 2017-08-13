@@ -14,15 +14,17 @@ class zulip::postgres_appdb_base {
   safepackage { $appdb_packages: ensure => "installed" }
 
   exec {"pip3_process_fts_updates_deps":
-    command => "/usr/bin/pip3 install 'psycopg2==2.7.1'",
+    command => "/usr/local/bin/pip3 install 'psycopg2==2.7.1'",
     creates => "/usr/local/lib/python3.4/dist-packages/psycopg2",
-    require => Package['python3-pip'],
+    require => Exec['pip3_ensure_latest'],
+    refreshonly => true,
   }
 
   exec {"pip2_process_fts_updates_deps":
-    command => "/usr/bin/pip2 install 'psycopg2==2.7.1'",
+    command => "/usr/local/bin/pip2 install 'psycopg2==2.7.1'",
     creates => "/usr/local/lib/python2.7/dist-packages/psycopg2",
-    require => Package['python-pip']
+    require => Exec['pip2_ensure_latest'],
+    refreshonly => true,
   }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf

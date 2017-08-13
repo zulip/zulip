@@ -8,15 +8,17 @@ class zulip_ops::stats {
   package { $stats_packages: ensure => "installed" }
 
   exec {"pip3_stats_python_deps":
-    command => "/usr/bin/pip3 install 'twisted==17.5.0' 'django==1.11.2' 'django-tagging==0.4.5' 'pycairo==1.10.0' 'whisper==0.9.12' 'carbon==1.0.2' 'graphite-web==1.0.2'",
+    command => "/usr/local/bin/pip3 install 'twisted==17.5.0' 'django==1.11.2' 'django-tagging==0.4.5' 'pycairo==1.10.0' 'whisper==0.9.12' 'carbon==1.0.2' 'graphite-web==1.0.2'",
     creates => "/usr/local/lib/python3.4/dist-packages/django",
-    require => Package['python3-pip'],
+    require => Exec['pip3_ensure_latest'],
+    refreshonly => true,
   }
 
   exec {"pip2_stats_python_deps":
-    command => "/usr/bin/pip2 install 'twisted==17.5.0' 'django==1.11.2' 'django-tagging==0.4.5' 'pycairo==1.10.0' 'whisper==0.9.12' 'carbon==1.0.2' 'graphite-web==1.0.2'",
+    command => "/usr/local/bin/pip2 install 'twisted==17.5.0' 'django==1.11.2' 'django-tagging==0.4.5' 'pycairo==1.10.0' 'whisper==0.9.12' 'carbon==1.0.2' 'graphite-web==1.0.2'",
     creates => "/usr/local/lib/python2.7/dist-packages/django",
-    require => Package['python-pip'],
+    require => Exec['pip2_ensure_latest'],
+    refreshonly => true,
   }
 
   file { "/root/setup_disks.sh":
