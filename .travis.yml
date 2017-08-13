@@ -35,9 +35,9 @@ cache:
   yarn: true
   apt: false
   directories:
-    - $HOME/zulip-venv-cache
-    - $HOME/zulip-npm-cache
-    - $HOME/zulip-emoji-cache
+    - /srv/zulip-venv-cache
+    - /srv/zulip-npm-cache
+    - /srv/zulip-emoji-cache
     - $HOME/node
 env:
   global:
