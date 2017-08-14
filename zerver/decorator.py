@@ -183,11 +183,17 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
-    if is_remote_server(role):
+    if settings.ZILENCER_ENABLED and is_remote_server(role):
         try:
             profile = get_remote_server_by_uuid(role)  # type: Union[UserProfile, RemoteZulipServer]
         except RemoteZulipServer.DoesNotExist:
             raise JsonableError(_("Invalid Zulip server: %s") % (role,))
+        if api_key != profile.api_key:
+            raise JsonableError(_("Invalid API key"))
+
+        if not check_subdomain(get_subdomain(request), ""):
+            raise JsonableError(_("This API key only works on the root subdomain"))
+        return profile
     else:
         try:
             profile = get_user_profile_by_email(role)
@@ -196,12 +202,6 @@ def validate_api_key(request, role, api_key, is_webhook=False):
 
     if api_key != profile.api_key:
         raise JsonableError(_("Invalid API key"))
-
-    # early exit for RemoteZulipServer instances
-    if settings.ZILENCER_ENABLED and isinstance(profile, RemoteZulipServer):
-        if not check_subdomain(get_subdomain(request), ""):
-            raise JsonableError(_("This API key only works on the root subdomain"))
-        return profile
 
     profile = cast(UserProfile, profile)  # is UserProfile
     if not profile.is_active:
