@@ -228,6 +228,26 @@ def validate_api_key(request, role, api_key, is_webhook=False):
 
     return profile
 
+def access_user_by_api_key(request, api_key):
+    # type: (HttpRequest, Text) -> UserProfile
+    try:
+        user_profile = UserProfile.objects.get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("Invalid API key"))
+
+    if not user_profile.is_active:
+        raise JsonableError(_("Account not active"))
+
+    if user_profile.realm.deactivated:
+        raise JsonableError(_("Realm for account has been deactivated"))
+
+    if not check_subdomain(get_subdomain(request), user_profile.realm.subdomain):
+        logging.warning("User %s attempted to access webhook API on wrong subdomain %s" % (
+            user_profile.email, get_subdomain(request)))
+        raise JsonableError(_("Account is not associated with this subdomain"))
+
+    return user_profile
+
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(client_name):
     # type: (Text) ->  Callable[..., HttpResponse]
@@ -241,18 +261,7 @@ def api_key_only_webhook_view(client_name):
         def _wrapped_func_arguments(request, api_key=REQ(),
                                     *args, **kwargs):
             # type: (HttpRequest, Text, *Any, **Any) -> HttpResponse
-            try:
-                user_profile = UserProfile.objects.get(api_key=api_key)
-            except UserProfile.DoesNotExist:
-                raise JsonableError(_("Invalid API key"))
-            if not user_profile.is_active:
-                raise JsonableError(_("Account not active"))
-            if user_profile.realm.deactivated:
-                raise JsonableError(_("Realm for account has been deactivated"))
-            if not check_subdomain(get_subdomain(request), user_profile.realm.subdomain):
-                logging.warning("User %s attempted to access webhook API on wrong subdomain %s" % (
-                    user_profile.email, get_subdomain(request)))
-                raise JsonableError(_("Account is not associated with this subdomain"))
+            user_profile = access_user_by_api_key(request, api_key)
 
             request.user = user_profile
             request._email = user_profile.email
