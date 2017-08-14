@@ -203,7 +203,6 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     if api_key != profile.api_key:
         raise JsonableError(_("Invalid API key"))
 
-    profile = cast(UserProfile, profile)  # is UserProfile
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
     if profile.realm.deactivated:
