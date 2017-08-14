@@ -169,11 +169,6 @@ def process_client(request, user_profile, is_json_view=False, client_name=None,
     if client_name is None:
         client_name = get_client_name(request, is_json_view)
 
-    # Transitional hack for early 2014.  Eventually the ios clients
-    # will all report ZulipiOS, and we can remove the next couple lines.
-    if client_name == 'ios':
-        client_name = 'ZulipiOS'
-
     request.client = get_client(client_name)
     if not remote_server_request:
         update_user_activity(request, user_profile)
