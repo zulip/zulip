@@ -276,6 +276,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('librato', ['monitoring']),
     WebhookIntegration('mention', ['marketing'], display_name='Mention'),
     WebhookIntegration('newrelic', ['monitoring'], display_name='New Relic'),
+    WebhookIntegration('opsgenie', ['meta-integration', 'monitoring'], display_name='OpsGenie'),
     WebhookIntegration('pagerduty', ['monitoring']),
     WebhookIntegration('papertrail', ['monitoring']),
     WebhookIntegration('pingdom', ['monitoring']),
