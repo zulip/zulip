@@ -194,11 +194,11 @@ def validate_api_key(request, role, api_key, is_webhook=False):
         if not check_subdomain(get_subdomain(request), ""):
             raise JsonableError(_("This API key only works on the root subdomain"))
         return profile
-    else:
-        try:
-            profile = get_user_profile_by_email(role)
-        except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user: %s") % (role,))
+
+    try:
+        profile = get_user_profile_by_email(role)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("Invalid user: %s") % (role,))
 
     if api_key != profile.api_key:
         raise JsonableError(_("Invalid API key"))
