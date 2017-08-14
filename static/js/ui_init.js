@@ -156,6 +156,8 @@ $(function () {
         $(document.body).removeClass('window_blurred');
     });
 
+    ui.set_up_scrollbar($(".app"));
+
     $(document).on('message_selected.zulip', function (event) {
         if (current_msg_list !== event.msg_list) {
             return;
