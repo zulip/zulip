@@ -193,11 +193,18 @@ def validate_api_key(request, role, api_key, is_webhook=False):
 
         if not check_subdomain(get_subdomain(request), ""):
             raise JsonableError(_("This API key only works on the root subdomain"))
+        remote_server._email = "zulip-server:" + role
+        remote_server.rate_limits = ""
+        process_client(request, remote_server, remote_server_request=True)
         return remote_server
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
     if user_profile.is_incoming_webhook and not is_webhook:
         raise JsonableError(_("This API is not available to incoming webhook bots."))
+
+    request.user = user_profile
+    request._email = user_profile.email
+    process_client(request, user_profile)
 
     return user_profile
 
@@ -411,9 +418,6 @@ def authenticated_api_view(is_webhook=False):
             if api_key is None:
                 raise RequestVariableMissingError("api_key")
             user_profile = validate_api_key(request, email, api_key, is_webhook)
-            request.user = user_profile
-            request._email = user_profile.email
-            process_client(request, user_profile)
             # Apply rate limiting
             limited_func = rate_limit()(view_func)
             return limited_func(request, user_profile, *args, **kwargs)
@@ -450,16 +454,6 @@ def authenticated_rest_api_view(is_webhook=False):
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
                 return json_unauthorized(e.msg)
-            request.user = profile
-            if is_remote_server(role):
-                assert isinstance(profile, RemoteZulipServer)
-                request._email = "zulip-server:" + role
-                profile.rate_limits = ""
-                process_client(request, profile, remote_server_request=True)
-            else:
-                assert isinstance(profile, UserProfile)
-                request._email = profile.email
-                process_client(request, profile)
             # Apply rate limiting
             return rate_limit()(view_func)(request, profile, *args, **kwargs)
         return _wrapped_func_arguments
