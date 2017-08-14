@@ -505,7 +505,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
             user_profile.email, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
 
-    process_client(request, user_profile, True)
+    process_client(request, user_profile, is_json_view=True)
     request._email = user_profile.email
     return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 
