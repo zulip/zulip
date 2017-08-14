@@ -145,7 +145,7 @@ if 'zproject.backends.GitHubAuthBackend' in settings.AUTHENTICATION_BACKENDS:
             "You are using the GitHub auth backend. Please make sure of the following:",
             "- You have updated SOCIAL_AUTH_GITHUB_KEY and "
             "  SOCIAL_AUTH_GITHUB_SECRET settings.",
-            "- You have added http://localhost:9991/complete/github/' ",
+            "- You have added http://localhost:9991/complete/github/ ",
             "  as the callback URL in the OAuth application in GitHub.",
             "  You can create OAuth apps from ",
             "  https://github.com/settings/developers.",
