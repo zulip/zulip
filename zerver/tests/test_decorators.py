@@ -1062,7 +1062,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access JSON API on wrong "
+                    "User {} attempted to access API on wrong "
                     "subdomain {}".format(user_email, ''))
 
             with mock.patch('logging.warning') as mock_warning, \
@@ -1071,7 +1071,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access JSON API on wrong "
+                    "User {} attempted to access API on wrong "
                     "subdomain {}".format(user_email, 'acme'))
 
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self):
@@ -1131,7 +1131,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access JSON API on wrong "
+                    "User {} attempted to access API on wrong "
                     "subdomain {}".format(user_email, ''))
 
             with mock.patch('logging.warning') as mock_warning, \
@@ -1140,7 +1140,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access JSON API on wrong "
+                    "User {} attempted to access API on wrong "
                     "subdomain {}".format(user_email, 'acme'))
 
     def _do_test(self, user_email):

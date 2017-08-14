@@ -205,18 +205,8 @@ def validate_api_key(request, role, api_key, is_webhook=False,
 
     return user_profile
 
-def access_user_by_api_key(request, api_key, email=None):
-    # type: (HttpRequest, Text, Optional[Text]) -> UserProfile
-    try:
-        user_profile = UserProfile.objects.get(api_key=api_key)
-    except UserProfile.DoesNotExist:
-        raise JsonableError(_("Invalid API key"))
-    if email is not None and email != user_profile.email:
-        # This covers the case that the API key is correct, but for a
-        # different user.  We may end up wanting to relaxing this
-        # constraint or give a different error message in the future.
-        raise JsonableError(_("Invalid API key"))
-
+def validate_account_and_subdomain(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> None
     if not user_profile.is_active:
         raise JsonableError(_("Account not active"))
 
@@ -231,6 +221,20 @@ def access_user_by_api_key(request, api_key, email=None):
         logging.warning("User %s attempted to access API on wrong subdomain %s" % (
             user_profile.email, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
+
+def access_user_by_api_key(request, api_key, email=None):
+    # type: (HttpRequest, Text, Optional[Text]) -> UserProfile
+    try:
+        user_profile = UserProfile.objects.get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("Invalid API key"))
+    if email is not None and email != user_profile.email:
+        # This covers the case that the API key is correct, but for a
+        # different user.  We may end up wanting to relaxing this
+        # constraint or give a different error message in the future.
+        raise JsonableError(_("Invalid API key"))
+
+    validate_account_and_subdomain(request, user_profile)
 
     return user_profile
 
@@ -490,20 +494,10 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if not request.user.is_authenticated:
         return json_error(_("Not logged in"), status=401)
     user_profile = request.user
-    if not user_profile.is_active:
-        raise JsonableError(_("Account not active"))
-    if user_profile.realm.deactivated:
-        raise JsonableError(_("Realm for account has been deactivated"))
+    validate_account_and_subdomain(request, user_profile)
+
     if user_profile.is_incoming_webhook:
         raise JsonableError(_("Webhook bots can only access webhooks"))
-    if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
-        # Exclude the SOCKET requests from this filter; they were
-        # checked when the original websocket request reached Tornado
-        not (request.method == "SOCKET" and
-             request.META['SERVER_NAME'] == "127.0.0.1")):
-        logging.warning("User %s attempted to access JSON API on wrong subdomain %s" % (
-            user_profile.email, get_subdomain(request)))
-        raise JsonableError(_("Account is not associated with this subdomain"))
 
     process_client(request, user_profile, is_json_view=True)
     request._email = user_profile.email
