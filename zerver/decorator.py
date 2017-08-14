@@ -183,16 +183,16 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
-    if not is_remote_server(role):
+    if is_remote_server(role):
         try:
-            profile = get_user_profile_by_email(role)  # type: Union[UserProfile, RemoteZulipServer]
-        except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user: %s") % (role,))
-    else:
-        try:
-            profile = get_remote_server_by_uuid(role)
+            profile = get_remote_server_by_uuid(role)  # type: Union[UserProfile, RemoteZulipServer]
         except RemoteZulipServer.DoesNotExist:
             raise JsonableError(_("Invalid Zulip server: %s") % (role,))
+    else:
+        try:
+            profile = get_user_profile_by_email(role)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("Invalid user: %s") % (role,))
 
     if api_key != profile.api_key:
         if len(api_key) != 32:
