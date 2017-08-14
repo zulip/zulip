@@ -195,38 +195,22 @@ def validate_api_key(request, role, api_key, is_webhook=False):
             raise JsonableError(_("This API key only works on the root subdomain"))
         return remote_server
 
-    try:
-        profile = get_user_profile_by_email(role)
-    except UserProfile.DoesNotExist:
-        raise JsonableError(_("Invalid user: %s") % (role,))
-
-    if api_key != profile.api_key:
-        raise JsonableError(_("Invalid API key"))
-
-    if not profile.is_active:
-        raise JsonableError(_("Account not active"))
-    if profile.realm.deactivated:
-        raise JsonableError(_("Realm for account has been deactivated"))
-
-    if (not check_subdomain(get_subdomain(request), profile.realm.subdomain) and
-        # Allow access to localhost for Tornado
-        not (settings.RUNNING_INSIDE_TORNADO and
-             request.META["SERVER_NAME"] == "127.0.0.1" and
-             request.META["REMOTE_ADDR"] == "127.0.0.1")):
-        logging.warning("User %s attempted to access API on wrong subdomain %s" % (
-            profile.email, get_subdomain(request)))
-        raise JsonableError(_("Account is not associated with this subdomain"))
-
+    profile = access_user_by_api_key(request, api_key, email=role)
     if profile.is_incoming_webhook and not is_webhook:
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     return profile
 
-def access_user_by_api_key(request, api_key):
-    # type: (HttpRequest, Text) -> UserProfile
+def access_user_by_api_key(request, api_key, email=None):
+    # type: (HttpRequest, Text, Optional[Text]) -> UserProfile
     try:
         user_profile = UserProfile.objects.get(api_key=api_key)
     except UserProfile.DoesNotExist:
+        raise JsonableError(_("Invalid API key"))
+    if email is not None and email != user_profile.email:
+        # This covers the case that the API key is correct, but for a
+        # different user.  We may end up wanting to relaxing this
+        # constraint or give a different error message in the future.
         raise JsonableError(_("Invalid API key"))
 
     if not user_profile.is_active:
