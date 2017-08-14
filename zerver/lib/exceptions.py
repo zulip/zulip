@@ -70,10 +70,12 @@ class JsonableError(Exception):
              data_fields = ['widget_name']
 
              def __init__(self, widget_name):
+                 # type: (str) -> None
                  self.widget_name = widget_name  # type: str
 
              @staticmethod
              def msg_format():
+                 # type: () -> str
                  return _("No such widget: {widget_name}")
 
          raise NoSuchWidgetError(widget_name)
