@@ -5,6 +5,9 @@ server at <https://chat.zulip.org>, or check out our short screencast
 (coming soon) on topics and threading.
 
 ## Zulip vs. Slack
+<div class="illustration large">
+<img src="/static/images/why-zulip-stress-heart.png" alt="" class="ilu-right"/>
+</div>
 
 Zulip’s threading model allows for long-running conversations to co-exist
 with real time chat. This allows senior staff, remote team members,
