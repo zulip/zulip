@@ -195,12 +195,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
             raise JsonableError(_("Invalid user: %s") % (role,))
 
     if api_key != profile.api_key:
-        if len(api_key) != 32:
-            reason = _("Incorrect API key length (keys should be 32 "
-                       "characters long) for role '%s'")
-        else:
-            reason = _("Invalid API key for role '%s'")
-        raise JsonableError(reason % (role,))
+        raise JsonableError(_("Invalid API key"))
 
     # early exit for RemoteZulipServer instances
     if settings.ZILENCER_ENABLED and isinstance(profile, RemoteZulipServer):
