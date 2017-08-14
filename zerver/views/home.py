@@ -58,22 +58,6 @@ def accounts_accept_terms(request):
                  'special_message_template': special_message_template},
     )
 
-def approximate_unread_count(user_profile):
-    # type: (UserProfile) -> int
-    not_in_home_view_recipients = [sub.recipient.id for sub in
-                                   Subscription.objects.filter(
-                                       user_profile=user_profile, in_home_view=False)]
-
-    # TODO: We may want to exclude muted messages from this count.
-    #       It was attempted in the past, but the original attempt
-    #       was broken.  When we re-architect muting, we may
-    #       want to to revisit this (see git issue #1019).
-    return UserMessage.objects.filter(
-        user_profile=user_profile, message_id__gt=user_profile.pointer).exclude(
-        message__recipient__type=Recipient.STREAM,
-        message__recipient__id__in=not_in_home_view_recipients).exclude(
-        flags=UserMessage.flags.read).count()
-
 def sent_time_in_epoch_seconds(user_message):
     # type: (UserMessage) -> Optional[float]
     # user_message is a UserMessage object.
@@ -209,7 +193,6 @@ def home_real(request):
         needs_tutorial        = needs_tutorial,
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
-        unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
     )

@@ -14,6 +14,7 @@ in the register call.
 
 ```
 {
+    "count": 4,
     "huddles": [
         {
             "user_ids_string": "3,4,6",

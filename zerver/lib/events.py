@@ -187,12 +187,13 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
 
 def remove_message_id_from_unread_mgs(state, remove_id):
-    # type: (Dict[str, Dict[str, List[Any]]], int) -> None
+    # type: (Dict[str, Dict[str, Any]], int) -> None
     for message_type in ['pms', 'streams', 'huddles']:
         threads = state['unread_msgs'][message_type]
         for obj in threads:
             msg_ids = obj['unread_message_ids']
             if remove_id in msg_ids:
+                state['unread_msgs']['count'] -= 1
                 msg_ids.remove(remove_id)
         state['unread_msgs'][message_type] = [
             obj for obj in threads
