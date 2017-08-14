@@ -1,6 +1,10 @@
 # When adding new functions/classes to this file, you need to also add
-# their types to request.pyi in this directory (the mypy stubs file to
-# make REQ be treated properly by mypy) so that mypy understands them.
+# their types to request.pyi in this directory (a mypy stubs file that
+# we use to ensure mypy does correct type inference with REQ, which it
+# can't do by default due to the dynamic nature of REQ).
+#
+# Because request.pyi exists, the type annotations in this file are
+# mostly not processed by mypy.
 from __future__ import absolute_import
 from functools import wraps
 import ujson
