@@ -247,7 +247,7 @@ class DecoratorTestCase(TestCase):
                     api_result = my_webhook(request)
 
                 mock_warning.assert_called_with(
-                    "User {} attempted to access webhook API on wrong "
+                    "User {} attempted to access API on wrong "
                     "subdomain {}".format(webhook_bot_email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
@@ -257,7 +257,7 @@ class DecoratorTestCase(TestCase):
                     api_result = my_webhook(request)
 
                 mock_warning.assert_called_with(
-                    "User {} attempted to access webhook API on wrong "
+                    "User {} attempted to access API on wrong "
                     "subdomain {}".format(webhook_bot_email, 'acme'))
 
         # Test when content_type is application/json and request.body
