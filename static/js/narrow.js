@@ -212,7 +212,7 @@ exports.activate = function (raw_operators, opts) {
         msg_list: message_list.narrowed,
         use_first_unread_anchor: opts.use_initial_narrow_pointer,
         cont: function () {
-            ui.hide_loading_more_messages_indicator();
+            message_fetch.reset_load_more_status();
             if (defer_selecting_closest) {
                 maybe_select_closest();
             }
