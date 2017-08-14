@@ -571,7 +571,8 @@ input[type=checkbox].inline-block {
 }
 
 #admin-user-list .progressive-table-wrapper,
-#admin-streams-list .progressive-table-wrapper {
+#admin-streams-list .progressive-table-wrapper,
+#admin-bot-list .progressive-table-wrapper {
     position: relative;
     height: 100%;
 }
