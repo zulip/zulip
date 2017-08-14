@@ -172,12 +172,15 @@ def process_client(request, user_profile, is_json_view=False, client_name=None,
     if not remote_server_request:
         update_user_activity(request, user_profile)
 
-def validate_api_key(request, role, api_key, is_webhook=False):
-    # type: (HttpRequest, Text, Text, bool) -> Union[UserProfile, RemoteZulipServer]
+def validate_api_key(request, role, api_key, is_webhook=False,
+                     client_name=None):
+    # type: (HttpRequest, Optional[Text], Text, bool, Optional[Text]) -> Union[UserProfile, RemoteZulipServer]
     # Remove whitespace to protect users from trivial errors.
-    role, api_key = role.strip(), api_key.strip()
+    api_key = api_key.strip()
+    if role is not None:
+        role = role.strip()
 
-    if settings.ZILENCER_ENABLED and is_remote_server(role):
+    if settings.ZILENCER_ENABLED and role is not None and is_remote_server(role):
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
@@ -198,7 +201,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
 
     request.user = user_profile
     request._email = user_profile.email
-    process_client(request, user_profile)
+    process_client(request, user_profile, client_name=client_name)
 
     return user_profile
 
@@ -244,12 +247,9 @@ def api_key_only_webhook_view(client_name):
         def _wrapped_func_arguments(request, api_key=REQ(),
                                     *args, **kwargs):
             # type: (HttpRequest, Text, *Any, **Any) -> HttpResponse
-            user_profile = access_user_by_api_key(request, api_key)
+            user_profile = validate_api_key(request, None, api_key, is_webhook=True,
+                                            client_name="Zulip{}Webhook".format(client_name))
 
-            request.user = user_profile
-            request._email = user_profile.email
-            webhook_client_name = "Zulip{}Webhook".format(client_name)
-            process_client(request, user_profile, client_name=webhook_client_name)
             if settings.RATE_LIMITING:
                 rate_limit_user(request, user_profile, domain='all')
             try:
@@ -273,7 +273,7 @@ body:
                 """.format(
                     email=user_profile.email,
                     realm=user_profile.realm.string_id,
-                    client_name=webhook_client_name,
+                    client_name=request.client.name,
                     body=request_body,
                     path_info=request.META.get('PATH_INFO', None),
                     content_type=request.content_type,
