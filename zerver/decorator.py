@@ -236,8 +236,12 @@ def access_user_by_api_key(request, api_key):
     if user_profile.realm.deactivated:
         raise JsonableError(_("Realm for account has been deactivated"))
 
-    if not check_subdomain(get_subdomain(request), user_profile.realm.subdomain):
-        logging.warning("User %s attempted to access webhook API on wrong subdomain %s" % (
+    if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
+        # Allow access to localhost for Tornado
+        not (settings.RUNNING_INSIDE_TORNADO and
+             request.META["SERVER_NAME"] == "127.0.0.1" and
+             request.META["REMOTE_ADDR"] == "127.0.0.1")):
+        logging.warning("User %s attempted to access API on wrong subdomain %s" % (
             user_profile.email, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
 
