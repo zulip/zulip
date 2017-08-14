@@ -206,9 +206,6 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     profile = cast(UserProfile, profile)  # is UserProfile
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
-    if profile.is_incoming_webhook and not is_webhook:
-        raise JsonableError(_("Account is not valid to post webhook messages"))
-
     if profile.realm.deactivated:
         raise JsonableError(_("Realm for account has been deactivated"))
 
@@ -220,6 +217,9 @@ def validate_api_key(request, role, api_key, is_webhook=False):
         logging.warning("User %s attempted to access API on wrong subdomain %s" % (
             profile.email, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
+
+    if profile.is_incoming_webhook and not is_webhook:
+        raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     return profile
 
