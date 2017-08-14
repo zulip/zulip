@@ -1271,6 +1271,7 @@ class Reaction(ModelReprMixin, models.Model):
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
 class AbstractUserMessage(ModelReprMixin, models.Model):
+    id = models.BigAutoField(primary_key=True)
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
