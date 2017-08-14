@@ -195,11 +195,11 @@ def validate_api_key(request, role, api_key, is_webhook=False):
             raise JsonableError(_("This API key only works on the root subdomain"))
         return remote_server
 
-    profile = access_user_by_api_key(request, api_key, email=role)
-    if profile.is_incoming_webhook and not is_webhook:
+    user_profile = access_user_by_api_key(request, api_key, email=role)
+    if user_profile.is_incoming_webhook and not is_webhook:
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
-    return profile
+    return user_profile
 
 def access_user_by_api_key(request, api_key, email=None):
     # type: (HttpRequest, Text, Optional[Text]) -> UserProfile
