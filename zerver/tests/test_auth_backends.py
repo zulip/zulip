@@ -1568,6 +1568,39 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_choose_realm(self):
+        # type: () -> None
+        result = self.client_post('/devlogin/')
+        self.assert_in_success_response(["Click on a user to log in!"], result)
+        self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+        self.assert_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
+
+        data = {'new_realm': 'zephyr'}
+        result = self.client_post('/devlogin/', data)
+        self.assert_not_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+        self.assert_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
+        self.assert_in_success_response(["Click on a user to log in to MIT!"], result)
+
+    def test_choose_realm_with_subdomains_enabled(self):
+        # type: () -> None
+        with mock.patch('zerver.views.auth.is_subdomain_root_or_alias', return_value=False):
+            with mock.patch('zerver.views.auth.get_realm_from_request', return_value=get_realm('zulip')):
+                with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                    result = self.client_get("http://zulip.testserver/devlogin/")
+                    self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+                    self.assert_not_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
+                    self.assert_in_success_response(["Click on a user to log in to Zulip Dev!"], result)
+
+            with mock.patch('zerver.views.auth.get_realm_from_request', return_value=get_realm('zephyr')):
+                with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                    result = self.client_post("http://zulip.testserver/devlogin/", {'new_realm': 'zephyr'})
+                    self.assertEqual(result["Location"], "http://zephyr.testserver")
+
+                    result = self.client_get("http://zephyr.testserver/devlogin/")
+                    self.assert_not_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+                    self.assert_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
+                    self.assert_in_success_response(["Click on a user to log in to MIT!"], result)
+
     def test_login_failure(self):
         # type: () -> None
         email = self.example_email("hamlet")

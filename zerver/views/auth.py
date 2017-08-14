@@ -28,7 +28,8 @@ from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.validator import validate_login_email
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
+from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
+    get_realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zerver.signals import email_on_new_login
@@ -432,12 +433,16 @@ def log_into_subdomain(request):
                                          full_name, invalid_subdomain=invalid_subdomain,
                                          is_signup=is_signup)
 
-def get_dev_users(extra_users_count=10):
-    # type: (int) -> List[UserProfile]
+def get_dev_users(realm=None, extra_users_count=10):
+    # type: (Optional[Realm], int) -> List[UserProfile]
     # Development environments usually have only a few users, but
     # it still makes sense to limit how many extra users we render to
     # support performance testing with DevAuthBackend.
-    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+    if realm is not None:
+        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True, realm=realm)
+    else:
+        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+
     shakespearian_users = users_query.exclude(email__startswith='extrauser').order_by('email')
     extra_users = users_query.filter(email__startswith='extrauser').order_by('email')
     # Limit the number of extra users we offer by default
@@ -455,14 +460,22 @@ def login_page(request, **kwargs):
 
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
-        users = get_dev_users()
+        if 'new_realm' in request.POST:
+            realm = get_realm(request.POST['new_realm'])
+        else:
+            realm = get_realm_from_request(request)
+
+        users = get_dev_users(realm)
+        extra_context['current_realm'] = realm
+        extra_context['all_realms'] = Realm.objects.all()
+
         extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [
-            u.email for u in users
-            if not u.is_realm_admin and u.realm.string_id == 'zulip']
-        extra_context['community_users'] = [
-            u.email for u in users
-            if u.realm.string_id != 'zulip']
+        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+
+        if settings.REALMS_HAVE_SUBDOMAINS and 'new_realm' in request.POST:
+            # If we're switching realms, redirect to that realm
+            return HttpResponseRedirect(realm.uri)
+
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
