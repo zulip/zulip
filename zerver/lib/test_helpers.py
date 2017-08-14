@@ -279,6 +279,9 @@ class HostRequestMock(object):
     def __init__(self, host=settings.EXTERNAL_HOST):
         # type: (Text) -> None
         self.host = host
+        self.GET = {}  # type: Dict[str, Any]
+        self.POST = {}  # type: Dict[str, Any]
+        self.META = {'PATH_INFO': 'test'}
 
     def get_host(self):
         # type: () -> Text
