@@ -328,8 +328,18 @@ exports.build_user_sidebar = function () {
     var user_ids = filter_and_sort(presence.get_user_ids());
 
     var user_info = _.map(user_ids, info_for);
-    var html = templates.render('user_presence_rows', {users: user_info});
-    $('#user_presences').html(html);
+
+    list_render($("#user_presences"), user_info, {
+        name: "user-presences",
+        modifier: function (item) {
+            return templates.render("user_presence_row", item);
+        },
+        filter: {
+            element: $(".user-list-filter"),
+            callback: function (a, b) { return !!a.name.toLowerCase().match(b); },
+        },
+    }).init();
+
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
@@ -560,7 +570,6 @@ function focus_user_filter(e) {
 $(function () {
     $(".user-list-filter").expectOne()
         .on('click', focus_user_filter)
-        .on('input', update_users_for_search)
         .on('keydown', maybe_select_person)
         .on('blur', update_clear_search_button);
     $('#clear_search_people_button').on('click', exports.clear_search);

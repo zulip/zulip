@@ -217,6 +217,8 @@ exports.resize_stream_filters_container = function (h) {
     $('#stream-filters-container').perfectScrollbar('update');
 };
 
+var user_presences_events_set = false;
+
 exports.resize_page_components = function () {
     var h;
     var sidebar;
@@ -255,7 +257,14 @@ exports.resize_page_components = function () {
 
     exports.resize_bottom_whitespace(h);
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
-    $("#user_presences").css('max-height', h.user_presences_max_height);
+    // make sure the list_render events haven't been triggered yet.
+    // ensure that the max height is not NaN -- we don't want to trigger on an
+    // incorrect max-height.
+    // ensure that the user-presences list has been deployed yet.
+    if (!user_presences_events_set && h.user_presences_max_height && list_render.get("user-presences")) {
+        $("#user_presences").css('max-height', h.user_presences_max_height);
+        list_render.get("user-presences").__set_events();
+    }
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
     $('#stream-filters-container').perfectScrollbar('update');
