@@ -260,20 +260,20 @@
     position: relative;
     top: -2px;
 
-    padding: 1px;
+    padding: 2px;
     margin: 0px 5px 0px 0px;
-    height: 12px;
-    width: 12px;
+    height: 10px;
+    width: 10px;
 
     font-weight: 300;
     line-height: 0.8;
     font-size: 1.3rem;
     text-align: center;
-    border: 2px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0, 0%, 75%);
     color: hsl(0, 0%, 80%);
 
     border-radius: 4px;
-    -webkit-filter: grayscale(1) brightness(0.7);
+    -webkit-filter: grayscale(1);
 
     cursor: pointer;
 }
