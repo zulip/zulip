@@ -58,6 +58,40 @@ def filter_by_subscription_history(
 
 def add_missing_messages(user_profile):
     # type: (UserProfile) -> None
+    """This function takes a soft-deactivated user, and computes and adds
+    to the database any UserMessage rows that were not created while
+    the user was soft-deactivated.  The end result is that from the
+    perspective of the message database, it should be impossible to
+    tell that the user was soft-deactivated at all.
+
+    At a high level, the algorithm is as follows:
+
+    * Find all the streams that the user was at any time a subscriber
+      of when or after they were soft-deactivated (`recipient_ids`
+      below).
+
+    * Find all the messages sent to those streams since the user was
+      soft-deactivated.  This will be a superset of the target
+      UserMessages we need to create in two ways: (1) some UserMessage
+      rows will have already been created in do_send_messages because
+      the user had a nonzero set of flags (the fact that we do so in
+      do_send_messages simplifies things considerably, since it means
+      we don't need to inspect message content to look for things like
+      mentions here), and (2) the user might not have been subscribed
+      to all of the streams in recipient_ids for the entire time
+      window.
+
+    * Correct the list from the previous state by excluding those with
+      existing UserMessage rows.
+
+    * Correct the list from the previous state by excluding those
+      where the user wasn't subscribed at the time, using the
+      RealmAuditLog data to determine exactly when the user was
+      subscribed/unsubscribed.
+
+    * Create the UserMessage rows.
+
+    """
     all_stream_subs = list(Subscription.objects.select_related('recipient').filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM).values('recipient', 'recipient__type_id'))
