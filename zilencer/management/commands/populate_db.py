@@ -10,7 +10,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence,
     Subscription, RealmAuditLog, get_huddle, Realm, RealmEmoji, UserMessage, \
     RealmDomain, clear_database, get_client, get_user_profile_by_id, \
     email_to_username, Service, get_user, DefaultStream, get_stream, \
-    get_realm
+    get_realm, get_system_bot
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
@@ -152,7 +152,8 @@ class Command(BaseCommand):
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(zulip_realm, names)
-            iago = UserProfile.objects.get(email="iago@zulip.com")
+
+            iago = get_user("iago@zulip.com", zulip_realm)
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
@@ -307,7 +308,7 @@ class Command(BaseCommand):
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
-                email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
+                email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
                 email_gateway_bot.is_api_super_user = True
                 email_gateway_bot.save()
 
