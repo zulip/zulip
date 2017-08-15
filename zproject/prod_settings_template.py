@@ -44,42 +44,36 @@ ALLOWED_HOSTS = [EXTERNAL_HOST.split(":")[0]]
 # 'Zulip Support <support@example.com>'.
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
-# Configure the outgoing SMTP server below. You will need working
-# SMTP to complete the installation process, in addition to sending
-# email address confirmations, missed message notifications, onboarding
-# follow-ups, and other user needs. If you do not have an SMTP server
-# already, we recommend services intended for developers such as Mailgun.
+# Configure the outgoing Email (aka SMTP) server below. You will need
+# working SMTP to complete the installation process, in addition to
+# sending email address confirmations, missed message notifications,
+# onboarding follow-ups, and other user needs. If you do not have an
+# SMTP server already, we recommend services intended for developers
+# such as Mailgun.  Detailed documentation is available at:
+#
+#   https://zulip.readthedocs.io/en/latest/prod-email.html
 #
 # To configure SMTP, you will need to complete the following steps:
 #
 # (1) Fill out the outgoing email sending configuration below.
 #
 # (2) Put the SMTP password for EMAIL_HOST_USER in
-# /etc/zulip/zulip-secrets.conf as email_password.
+# /etc/zulip/zulip-secrets.conf as e.g.:
 #
-# If you are using a gmail account to send outgoing email, you
-# will likely need to read this Google support answer and configure
-# that account as "less secure":
-# https://support.google.com/accounts/answer/6010255
+#    email_password = abcd1234
 #
 # You can quickly test your sending email configuration using:
 #   su zulip
 #   /home/zulip/deployments/current/manage.py send_test_email username@example.com
 #
-# A common problem is hosting providers that block outgoing SMTP traffic.
-#
-# With the exception of reading EMAIL_HOST_PASSWORD from
-# email_password in the Zulip secrets file, Zulip uses Django's
-# standard EmailBackend, so if you're having issues, you may want to
-# search for documentation on using your email provider with Django.
+# A common problem is hosting provider firewalls that block outgoing SMTP traffic.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 # The noreply address to be used as the sender for certain generated emails.
 # Messages sent to this address could contain sensitive user data and should
-# not be delivered anywhere. Do not put a display name;
-# e.g. 'noreply@example.com', not 'Zulip <noreply@example.com>'.
+# not be delivered anywhere.
 NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST.split(":")[0]
 
 
