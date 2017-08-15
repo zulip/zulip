@@ -213,7 +213,7 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
-        self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
+        stream = self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
         self.subscribe_to_stream(self.example_email("cordelia"), "test_stream", user_profile.realm)
 
         message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello")
@@ -222,7 +222,7 @@ class UnreadCountTests(ZulipTestCase):
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_stream_as_read", {
-                "stream_name": "test_stream"
+                "stream_id": stream.id
             })
 
         self.assert_json_success(result)
@@ -253,11 +253,11 @@ class UnreadCountTests(ZulipTestCase):
     def test_mark_all_in_invalid_stream_read(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        invalid_stream_name = ""
+        invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_stream_as_read", {
-            "stream_name": invalid_stream_name
+            "stream_id": invalid_stream_id
         })
-        self.assert_json_error(result, 'No such stream \'\'')
+        self.assert_json_error(result, 'Invalid stream id')
 
     def test_mark_all_topics_unread_with_invalid_stream_name(self):
         # type: () -> None

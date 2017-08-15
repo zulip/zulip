@@ -118,11 +118,11 @@ exports.mark_current_list_as_read = function mark_current_list_as_read(options) 
     exports.mark_messages_as_read(current_msg_list.all_messages(), options);
 };
 
-exports.mark_stream_as_read = function mark_stream_as_read(stream, cont) {
+exports.mark_stream_as_read = function mark_stream_as_read(stream_id, cont) {
     channel.post({
         url:      '/json/mark_stream_as_read',
         idempotent: true,
-        data:     {stream_name: stream},
+        data:     {stream_id: stream_id},
         success:  cont});
 };
 

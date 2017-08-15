@@ -801,13 +801,9 @@ def mark_all_as_read(request, user_profile):
 @has_request_variables
 def mark_stream_as_read(request,
                         user_profile,
-                        stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    try:
-        stream = get_stream(stream_name, user_profile.realm)
-    except Stream.DoesNotExist:
-        raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
-
+                        stream_id=REQ(validator=check_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
     count = do_mark_stream_messages_as_read(user_profile, stream)
 
     log_data_str = "[%s updated]" % (count,)
