@@ -18,7 +18,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, update_user_activity_interval
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    Huddle, Client, UserActivityInterval, RealmAuditLog, get_client
+    Huddle, Client, UserActivityInterval, RealmAuditLog, get_client, get_user
 
 from datetime import datetime, timedelta
 import ujson
@@ -315,8 +315,8 @@ class TestCountStats(AnalyticsTestCase):
                 name='stream %s' % (minutes_ago,), realm=self.second_realm,
                 date_created=creation_time)[1]
             self.create_message(user, recipient, pub_date=creation_time)
-        self.hourly_user = UserProfile.objects.get(email='user-1@second.analytics')
-        self.daily_user = UserProfile.objects.get(email='user-61@second.analytics')
+        self.hourly_user = get_user('user-1@second.analytics', self.second_realm)
+        self.daily_user = get_user('user-61@second.analytics', self.second_realm)
 
         # This realm should not show up in the *Count tables for any of the
         # messages_* CountStats
