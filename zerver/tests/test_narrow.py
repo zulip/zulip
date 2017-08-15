@@ -764,6 +764,8 @@ class GetOldMessagesTest(ZulipTestCase):
             ('urltest', 'https://google.com'),
         ]
 
+        next_message_id = self.get_last_message().id + 1
+
         for topic, content in messages_to_search:
             self.send_message(
                 sender_name=self.example_email("cordelia"),
@@ -781,7 +783,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(result['messages']), 2)
@@ -790,7 +792,7 @@ class GetOldMessagesTest(ZulipTestCase):
         narrow = [dict(operator='search', operand='https://google.com')]
         link_search_result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(link_search_result['messages']), 1)
@@ -821,7 +823,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         multi_search_result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(multi_search_narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(multi_search_result['messages']), 1)
@@ -862,6 +864,8 @@ class GetOldMessagesTest(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("cordelia"))
 
+        next_message_id = self.get_last_message().id + 1
+
         messages_to_search = [
             (u'日本語', u'こんにちは。今日はいい天気ですね。'),
             (u'日本語', u'今朝はごはんを食べました。'),
@@ -895,7 +899,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(result['messages']), 4)
@@ -930,7 +934,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         multi_search_result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(multi_search_narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(multi_search_result['messages']), 1)
@@ -940,7 +944,7 @@ class GetOldMessagesTest(ZulipTestCase):
         narrow = [dict(operator='search', operand='https://google.com')]
         link_search_result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(link_search_result['messages']), 1)
@@ -1390,6 +1394,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ('say hello', 'How are you doing, @**Othello, the Moor of Venice**?'),
             ('lunch plans', 'I am hungry!'),
         ]
+        next_message_id = self.get_last_message().id + 1
 
         for topic, content in messages_to_search:
             self.send_message(
@@ -1408,7 +1413,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(result['messages']), 0)
@@ -1419,7 +1424,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
-            anchor=0,
+            anchor=next_message_id,
             num_after=10,
         ))
         self.assertEqual(len(result['messages']), 1)
