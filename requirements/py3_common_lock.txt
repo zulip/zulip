@@ -89,7 +89,7 @@ smmap==0.9.0
 social-auth-app-django==1.2.0
 social-auth-core==1.4.0
 sockjs-tornado==1.0.3
-sourcemap==0.2.0
+sourcemap==0.2.1
 sqlalchemy==1.1.10
 statsd==2.1.2             # via django-statsd-mozilla
 tornado==4.5.1
