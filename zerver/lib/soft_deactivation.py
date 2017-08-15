@@ -10,14 +10,15 @@ from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
 
 def find_and_store_to_insert_stream_msgs(user_profile,
                                          all_stream_messages,
-                                         all_stream_subscription_logs,
-                                         all_messages_to_insert):
-    # type: (UserProfile, DefaultDict[int, List[Message]], DefaultDict[int, List[RealmAuditLog]], List[UserMessage]) -> None
+                                         all_stream_subscription_logs):
+    # type: (UserProfile, DefaultDict[int, List[Message]], DefaultDict[int, List[RealmAuditLog]]) -> List[UserMessage]
+    user_messages_to_insert = []  # type: List[UserMessage]
+
     def store_user_message_to_insert(message):
         # type: (Message) -> None
         message = UserMessage(user_profile=user_profile,
                               message_id=message['id'], flags=0)
-        all_messages_to_insert.append(message)
+        user_messages_to_insert.append(message)
 
     for (stream_id, stream_messages) in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
@@ -54,13 +55,10 @@ def find_and_store_to_insert_stream_msgs(user_profile,
                     'subscription_created'):
                 for stream_message in stream_messages:
                     store_user_message_to_insert(stream_message)
+    return user_messages_to_insert
 
 def add_missing_messages(user_profile):
     # type: (UserProfile) -> None
-    # This list will store all the messages for which we eventually will create
-    # UserMessage table rows by doing a bulk insert.
-    all_messages_to_insert = []  # type: List[UserMessage]
-
     all_stream_subs = list(Subscription.objects.select_related('recipient').filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM).values('recipient', 'recipient__type_id'))
@@ -114,14 +112,12 @@ def add_missing_messages(user_profile):
     # subscription logs and then store all UserMessage objects for bulk insert
     # This function does not perform any SQL related task and gets all the data
     # required for its operation in its params.
-    find_and_store_to_insert_stream_msgs(user_profile,
-                                         stream_messages,
-                                         all_stream_subscription_logs,
-                                         all_messages_to_insert)
+    user_messages_to_insert = find_and_store_to_insert_stream_msgs(
+        user_profile, stream_messages, all_stream_subscription_logs)
 
     # Doing a bulk create for all the UserMessage objects stored for creation.
-    if all_messages_to_insert:
-        UserMessage.objects.bulk_create(all_messages_to_insert)
+    if len(user_messages_to_insert) > 0:
+        UserMessage.objects.bulk_create(user_messages_to_insert)
 
 def do_soft_deactivate_user(user_profile):
     # type: (UserProfile) -> None
