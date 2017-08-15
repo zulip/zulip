@@ -480,7 +480,6 @@ function render(template_name, args) {
     assert.equal(option.text(), "Hamlet");
 }());
 
-
 (function compose_invite_users() {
     var args = {
         email: 'hamlet@zulip.com',

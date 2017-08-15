@@ -1,0 +1,17 @@
+<div id="change_email_modal" class="modal hide" tabindex="-1" role="dialog"
+    aria-labelledby="change_email_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="change_email_modal_label">{{t "Change email" }}</h3>
+    </div>
+    <div class="modal-body">
+        <div class="input-group email_change_container">
+            <label for="email">{{t "Email" }}</label>
+            <input type="text" name="email" value="{{ page_params.email }}" autocomplete="off" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+        <button class="button white rounded" data-dismiss="modal">{{t "Close" }}</button>
+    </div>
+</div>
