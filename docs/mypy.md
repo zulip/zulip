@@ -81,6 +81,11 @@ If you installed Zulip's development environment correctly, mypy
 should already be installed inside the Python 3 virtualenv at
 `zulip-py3-venv` (mypy only supports Python 3).
 
+If you'd like to install just the version of `mypy` that we're using
+(useful if e.g. you want `mypy` installed on your laptop outside the
+Vagrant guest), you can do that with `pip install -r
+requirements/mypy.txt`.
+
 ## Running mypy on Zulip's code locally
 
 To run mypy on Zulip's python code, run the command:
