@@ -8,9 +8,8 @@ from typing import DefaultDict, List
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
     Subscription, Message, Recipient
 
-def find_and_store_to_insert_stream_msgs(user_profile,
-                                         all_stream_messages,
-                                         all_stream_subscription_logs):
+def filter_by_subscription_history(
+        user_profile, all_stream_messages, all_stream_subscription_logs):
     # type: (UserProfile, DefaultDict[int, List[Message]], DefaultDict[int, List[RealmAuditLog]]) -> List[UserMessage]
     user_messages_to_insert = []  # type: List[UserMessage]
 
@@ -112,7 +111,7 @@ def add_missing_messages(user_profile):
     # subscription logs and then store all UserMessage objects for bulk insert
     # This function does not perform any SQL related task and gets all the data
     # required for its operation in its params.
-    user_messages_to_insert = find_and_store_to_insert_stream_msgs(
+    user_messages_to_insert = filter_by_subscription_history(
         user_profile, stream_messages, all_stream_subscription_logs)
 
     # Doing a bulk create for all the UserMessage objects stored for creation.
