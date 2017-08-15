@@ -13,6 +13,18 @@ body {
     margin: 0 auto -56px;
 }
 
+.normal {
+    font-weight: normal;
+}
+
+.why-page h3.normal {
+    font-size: 1.3em;
+    margin-top: 20px;
+    margin-bottom: 5px;
+
+    color: #888;
+}
+
 .navbar {
     margin-bottom: 0px;
 }
@@ -578,33 +590,52 @@ a.bottom-signup-button {
     table-layout: fixed;
 }
 
-.authors_row a {
+.contributors .person a {
     color: inherit;
 }
 
-.authors_row td {
-    width: 100%;
-    height: 100%;
-    height: 120px;
+.contributors .person {
+    width: calc(33% - 20px - 2px);
+    display: inline-block;
+    vertical-align: top;
+
     padding: 10px;
-    transition: box-shadow 0.3s ease-in-out;
+    margin: 5px 0px;
+
+    border: 1px solid #eee;
+
+    border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
-.authors_row td:hover {
+.contributors .person:hover {
+    border: 1px solid #bbb;
+}
+
+.contributors .person td:hover {
     color: hsl(173, 100%, 24%);
     box-shadow: 0px 0px 30px hsl(175, 41%, 78%);
 }
 
-.authors_row .avatar {
-    width: 50%;
+.contributors .person .avatar {
+    width: 55px;
     text-align: center;
+    display: inline-block;
     vertical-align: top;
 }
 
-.authors_row .info {
+.contributors .person .info {
     width: 50%;
     text-align: left;
+    display: inline-block;
     vertical-align: top;
+    margin-left: 10px;
+}
+
+.contributors .last-updated {
+    color: #aaa;
+    font-size: 0.8em;
+    text-align: center;
 }
 
 .avatar_img {
@@ -1314,6 +1345,10 @@ input.new-organization-button {
 
     .app.help .sidebar.show {
         transform: translateX(340px);
+    }
+
+    .contributors .person {
+        width: calc(50% - 20px - 4px);
     }
 }
 

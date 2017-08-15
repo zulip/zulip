@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Fetch contributors data from Github using their API, convert it to structured
-JSON data for the /authors page.
+JSON data for the /about page authors section.
 """
 
 from __future__ import absolute_import, print_function
@@ -88,7 +88,7 @@ def run_production():
 
         out_contrib_data = split_by(
             sorted(contribs, key=lambda k: k.get('commits'), reverse=True),
-            4, None
+            6, None
         )  # type: List[List[Optional[Dict[str, Union[Text, int]]]]]
 
         out_data = dict(

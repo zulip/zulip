@@ -142,7 +142,7 @@ i18n_urls = [
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$', zerver.views.integrations.integration_doc,
         name="zerver.views.integrations.integration_doc"),
     url(r'^integrations/(.*)', IntegrationView.as_view()),
-    url(r'^about/$', TemplateView.as_view(template_name='zerver/about.html')),
+    url(r'^about/$', zerver.views.users.about_view),
     url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt', permanent=True)),
@@ -156,7 +156,6 @@ i18n_urls = [
     url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
     url(r'^for/working-groups-and-communities/$', TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
     url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
-    url(r'^authors/$', zerver.views.users.authors_view, name='zerver.views.users.authors_view'),
 
     # Terms of service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
