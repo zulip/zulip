@@ -33,8 +33,9 @@ can enable this for your Zulip server as follows:
 
 That should be all you need to do!
 
-To test whether you've configured it properly, you should do the
-following:
+If you'd like to verify the full pipeline, you can do the following.
+Please follow the instructions carefully:
+
 * [Configure mobile push notifications to always be sent][notification-settings]
   (normally they're only sent if you're idle, which isn't ideal for
   this sort of testing).
@@ -44,8 +45,10 @@ If you were already logged in before configuring the server, you'll
 need to logout first, since the app only registers for push
 notifications on login.
 * Hit the home button, so Zulip is running in the background, and then
-have another user send you a private message.  A push notification
-should appear in the Android notification area.
+have **another user** send you a **private message** (By default,
+Zulip only sends push notifications for private messages sent by other
+users and messages mentioning you).  A push notification should appear
+in the Android notification area.
 
 Zulip's [new iOS app](https://itunes.apple.com/us/app/zulip/id1203036395)
 doesn't yet support push notifications, but it will by July 2017.
