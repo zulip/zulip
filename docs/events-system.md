@@ -178,9 +178,9 @@ server:
   changed by a client (aka an event queue).
 
 Ideally, one would get those two things atomically, i.e. if some other
-user changes their name, either the name change happens before the
+user changes their name, either the name change happens after the
 fetch (and thus the old name is in the initial state and there will be
-an event in the queue for the name change) or after (the new name is
+an event in the queue for the name change) or before (the new name is
 in the initial state, and there is no event for that name change in
 the queue).
 
