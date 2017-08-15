@@ -29,6 +29,10 @@ html {
     border-radius: 4px;
 }
 
+.grey {
+    color: #aaa;
+}
+
 .find-team-page-container #find_my_team i {
     font-size: 0.8em;
 }
