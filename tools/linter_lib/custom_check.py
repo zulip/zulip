@@ -276,9 +276,6 @@ def build_custom_checkers(by_lang):
          },
         {'pattern': 'get_stream[(]',
          'include_only': set(["zerver/views/", "zerver/lib/actions.py"]),
-         # messages.py needs to support accessing invite-only streams
-         # that you are no longer subscribed to, so need get_stream.
-         'exclude': set(['zerver/views/messages.py']),
          'exclude_line': set([
              # This is a check for whether a stream rename is invalid because it already exists
              ('zerver/lib/actions.py', 'get_stream(new_name, stream.realm)'),
@@ -286,6 +283,8 @@ def build_custom_checkers(by_lang):
              # how most instances are written, but better to exclude something than nothing
              ('zerver/lib/actions.py', 'stream = get_stream(stream_name, realm)'),
              ('zerver/lib/actions.py', 'get_stream(signups_stream, admin_realm)'),
+             # Here we need get_stream to access streams you've since unsubscribed from.
+             ('zerver/views/messages.py', 'stream = get_stream(operand, self.user_profile.realm)'),
          ]),
          'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },

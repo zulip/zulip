@@ -202,6 +202,9 @@ class NarrowBuilder(object):
     def by_stream(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         try:
+            # Because you can see your own message history for
+            # private streams you are no longer subscribed to, we
+            # need get_stream, not access_stream, here.
             stream = get_stream(operand, self.user_profile.realm)
         except Stream.DoesNotExist:
             raise BadNarrowOperator('unknown stream ' + operand)
