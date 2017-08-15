@@ -309,8 +309,17 @@ def get_alert_from_message(message):
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
+    content = message.content
+    content_truncated = (len(content) > 200)
+    if content_truncated:
+        content = content[:200] + "..."
     return {
-        'alert': get_alert_from_message(message),
+        'aps': {
+            'alert': {
+                'title': get_alert_from_message(message),
+                'body': content,
+            }
+        },
         'message_ids': [message.id],
     }
 
