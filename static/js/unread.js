@@ -5,8 +5,6 @@ var unread = (function () {
 
 var exports = {};
 
-var unread_messages = new Dict();
-
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
@@ -26,6 +24,10 @@ function make_id_set() {
         ids.set(id, true);
     };
 
+    self.has = function (id) {
+        return ids.has(id);
+    };
+
     self.del = function (id) {
         ids.del(id);
     };
@@ -40,6 +42,8 @@ function make_id_set() {
 
     return self;
 }
+
+var unread_messages = make_id_set();
 
 function make_bucketer(options) {
     var self = {};
@@ -318,7 +322,7 @@ exports.process_loaded_messages = function (messages) {
             return;
         }
 
-        unread_messages.set(message.id, true);
+        unread_messages.add(message.id);
 
         if (message.type === 'private') {
             exports.unread_pm_counter.add(message);
