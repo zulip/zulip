@@ -271,6 +271,14 @@ class ZulipTestCase(TestCase):
         else:
             self.assertFalse(self.client.login(username=email, password=password))
 
+    def force_login(self, user, backend=None):
+        # type: (UserProfile, str) -> None
+        """
+        backend should be a dotted path string, similar to what we write
+        in settings.AUTHENTICATION_BACKENDS.
+        """
+        self.client.force_login(user, backend=backend)
+
     def logout(self):
         # type: () -> None
         self.client.logout()
