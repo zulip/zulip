@@ -58,9 +58,7 @@ any bug reports.
 
 Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
 providing values for the mandatory settings, which are all found under the
-heading `### MANDATORY SETTINGS`.
-
-These settings include:
+heading `### MANDATORY SETTINGS`.  These settings include:
 
 - `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
   Zulip installation (i.e., what users will type in their web
@@ -73,22 +71,26 @@ These settings include:
   maintaining this installation and who will get support and error
   emails.
 
-- `EMAIL_*`:
-  credentials for an outgoing SMTP server so Zulip can send emails
-  when needed (don't forget to set `email_password` in the
-  `zulip-secrets.conf` file!).  We highly recommend reading our
-  [production email docs](prod-email.html) and following the test
-  procedure discussed there to make sure you've set up outgoing email
-  correctly, since outgoing email is the most common configuration
-  problem.
+- `EMAIL_HOST`, `EMAIL_HOST_USER`: credentials for an outgoing email
+  (aka "SMTP") server that Zulip can use to send emails.  See
+  [our guide for outgoing email](prod-email.html) for help configuring
+  this.
 
 - If desired, you can also configure additional
   [authentication backends](prod-authentication-methods.html) while
   you're editing /etc/zulip/settings.py.  Note, however, that the
-  default (email) backend must be enabled when you complete Step 5
+  default (email) backend must be enabled when you complete Step 6
   (creating an organization) below.
 
-## Step 4: Initialize Zulip database
+## Step 4: Test email configuration
+
+If you haven't already,
+[test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
+This is important to test now, because email configuration errors are
+common, and your outgoing email configuration needs to be working in
+order for you to complete the installation.
+
+## Step 5: Initialize Zulip database
 
 At this point, you are done doing things as root. The remaining
 commands are run as the `zulip` user using `su zulip`. To initialize
@@ -106,12 +108,7 @@ This completes the process of installing Zulip on your server.
 However, in order to use Zulip, you'll need to create an organization
 in your Zulip installation.
 
-## Step 5: Create a Zulip organization and login
-
-* If you haven't already, verify that your
-  [outgoing email configuration works](prod-email.html#testing-and-troubleshooting).
-  The organization creation process will fail if outgoing email is not
-  configured properly.
+## Step 6: Create a Zulip organization and login
 
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
@@ -153,7 +150,7 @@ Corporate Organization:
 * `restricted_to_domain=True`: New users must have an email address in the same domain (e.g. @acme.com) as yours.
 * `invite_required=False`: No invitation is required to join.
 
-## Step 6: Next steps
+## Step 7: Next steps
 
 * Subscribe to the extremely low-traffic
 [Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
