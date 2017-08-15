@@ -103,11 +103,14 @@ def build_custom_checkers(by_lang):
 
         return failed
 
+    trailing_whitespace_rule = {
+        'pattern': '\s+$',
+        'strip': '\n',
+        'description': 'Fix trailing whitespace'
+    }
     whitespace_rules = [
         # This linter should be first since bash_rules depends on it.
-        {'pattern': '\s+$',
-         'strip': '\n',
-         'description': 'Fix trailing whitespace'},
+        trailing_whitespace_rule,
         {'pattern': '\t',
          'strip': '\n',
          'exclude': set(['zerver/lib/bugdown/codehilite.py',
@@ -406,9 +409,11 @@ def build_custom_checkers(by_lang):
         {'pattern': "{{ _(.+) }}[\.\?!]",
          'description': "Period should be part of the translatable string."},
     ]
-    json_rules = []  # type: RuleList # fix newlines at ends of files
-    # It is okay that json_rules is empty, because the empty list
-    # ensures we'll still check JSON files for whitespace.
+    json_rules = [
+        # Since most json files are fixtures containing 3rd party json code,
+        # we allow tab-based whitespaces.
+        trailing_whitespace_rule,
+    ]
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'}
