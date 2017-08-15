@@ -20,7 +20,7 @@ Zulip server.  Key requirements include:
 
 See [the requirements page](prod-requirements.html) for more details,
 including free options [for SSL](ssl-certificates.html) and [for
-outgoing email](prod-email.html#free-outgoing-smtp) if you don't have
+outgoing email](prod-email.html#free-outgoing-email-services) if you don't have
 those already.
 
 ## Install

@@ -84,7 +84,7 @@ need to update the domain's A record to point to your production server.
   during the signup process, missed message notifications, password
   reset, etc.).  If you don't have an existing outgoing SMTP solution,
   read about
-  [free outgoing SMTP options and options for prototyping](prod-email.html#free-outgoing-smtp).
+  [free outgoing SMTP options and options for prototyping](prod-email.html#free-outgoing-email-services).
 
 Once you have met these requirements, see [full instructions for installing
 Zulip in production](prod-install.html).
