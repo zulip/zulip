@@ -80,7 +80,7 @@ These settings include:
   [production email docs](prod-email.html) and following the test
   procedure discussed there to make sure you've set up outgoing email
   correctly, since outgoing email is the most common configuration
-  problem. You may also want to update `NOREPLY_EMAIL_ADDRESS`.
+  problem.
 
 - If desired, you can also configure additional
   [authentication backends](prod-authentication-methods.html) while

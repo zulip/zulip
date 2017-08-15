@@ -71,14 +71,15 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# The noreply address to be used as the sender for certain generated emails.
-# Messages sent to this address could contain sensitive user data and should
-# not be delivered anywhere.
-NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST.split(":")[0]
-
 
 ## OPTIONAL SETTINGS
 
+# The noreply address to be used as the sender for certain generated
+# emails.  Messages sent to this address could contain sensitive user
+# data and should not be delivered anywhere.  The default is
+# e.g. noreply@zulip.example.com (if EXTERNAL_HOST is
+# zulip.example.com).
+#NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
 ### AUTHENTICATION SETTINGS
 #
