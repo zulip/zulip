@@ -24,6 +24,8 @@ sys.path.append(ZULIP_PATH)
 
 from scripts.lib.zulip_tools import run
 
+user_id = os.getuid()
+
 AA_SCALE = 8
 SIZE = (136, 136)
 BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
@@ -153,6 +155,9 @@ def code_point_to_file_name_map(ttx):
 
 def main():
     # type: () -> None
+    run(["sudo", "mkdir", "-p", EMOJI_CACHE_PATH])
+    run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
+
     # ttx is in the fonttools pacakge, the -z option is only on master
     # https://github.com/behdad/fonttools/
 

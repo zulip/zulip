@@ -319,8 +319,6 @@ Now run these commands:
 ```
 sudo ./scripts/lib/install-node
 yarn install
-sudo mkdir /srv/zulip-emoji-cache
-sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
 ./tools/setup/build_pygments_data.py
 ./scripts/setup/generate_secrets.py --development

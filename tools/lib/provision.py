@@ -273,9 +273,6 @@ def main(options):
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
     # packages.
-    if not os.path.isdir(EMOJI_CACHE_PATH):
-        run(["sudo", "mkdir", EMOJI_CACHE_PATH])
-    run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
     run(["tools/setup/build_pygments_data.py"])
