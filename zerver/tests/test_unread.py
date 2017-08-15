@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from typing import Any, Dict, List, Mapping
 
 from zerver.models import (
-    get_user, Recipient, UserMessage
+    get_user, Recipient, UserMessage, get_stream, get_realm
 )
 
 from zerver.lib.test_helpers import tornado_redirected_to_list
@@ -262,12 +262,12 @@ class UnreadCountTests(ZulipTestCase):
     def test_mark_all_topics_unread_with_invalid_stream_name(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        invalid_stream_name = "bogus"
+        invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_topic_as_read", {
-            "stream_name": invalid_stream_name,
+            "stream_id": invalid_stream_id,
             'topic_name': 'whatever',
         })
-        self.assert_json_error(result, "No such stream 'bogus'")
+        self.assert_json_error(result, "Invalid stream id")
 
     def test_mark_all_in_stream_topic_read(self):
         # type: () -> None
@@ -280,7 +280,7 @@ class UnreadCountTests(ZulipTestCase):
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_topic_as_read", {
-                "stream_name": "test_stream",
+                "stream_id": get_stream("test_stream", user_profile.realm).id,
                 "topic_name": "test_topic",
             })
 
@@ -312,7 +312,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         invalid_topic_name = "abc"
         result = self.client_post("/json/mark_topic_as_read", {
-            "stream_name": "Denmark",
+            "stream_id": get_stream("Denmark", get_realm("zulip")).id,
             "topic_name": invalid_topic_name,
         })
         self.assert_json_error(result, 'No such topic \'abc\'')

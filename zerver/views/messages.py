@@ -35,7 +35,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import is_public_stream_by_name
+from zerver.lib.streams import access_stream_by_id, is_public_stream_by_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
@@ -815,18 +815,14 @@ def mark_stream_as_read(request,
 @has_request_variables
 def mark_topic_as_read(request,
                        user_profile,
-                       stream_name=REQ(),
+                       stream_id=REQ(validator=check_int),
                        topic_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text, Text) -> HttpResponse
-    try:
-        stream = get_stream(stream_name, user_profile.realm)
-    except Stream.DoesNotExist:
-        raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
+    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
+    stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
 
     if topic_name:
         topic_exists = UserMessage.objects.filter(user_profile=user_profile,
-                                                  message__recipient__type_id=stream.id,
-                                                  message__recipient__type=Recipient.STREAM,
+                                                  message__recipient=recipient,
                                                   message__subject__iexact=topic_name).exists()
         if not topic_exists:
             raise JsonableError(_('No such topic \'%s\'') % (topic_name,))

@@ -126,11 +126,11 @@ exports.mark_stream_as_read = function mark_stream_as_read(stream_id, cont) {
         success:  cont});
 };
 
-exports.mark_topic_as_read = function mark_topic_as_read(stream, topic, cont) {
+exports.mark_topic_as_read = function mark_topic_as_read(stream_id, topic, cont) {
     channel.post({
     url:      '/json/mark_topic_as_read',
     idempotent: true,
-    data:     {stream_name: stream, topic_name: topic},
+    data:     {stream_id: stream_id, topic_name: topic},
     success:  cont});
 };
 
