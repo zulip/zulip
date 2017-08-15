@@ -1,10 +1,21 @@
 {% extends "zerver/portico_signup.html" %}
+
 {% block portico_content %}
-<div class="flex full-page new-style">
-    <div class="inline-block">
-        <h1 style="margin-top: 20px">{{ _('We just sent you a password reset link!') }}</h1>
-        <h1>{{ _('Check your email to finish the process.') }}</h1>
-        <p>{{ _("(Or don't, but then why did you fill out this form?)") }}</p>
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Password reset sent!") }}</h1>
+            </div>
+
+            <div class="white-box">
+                {% if development_environment %}
+                <div class="alert alert-info" style="display:inline-block;">{{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}</div>
+                {% endif %}
+                <p>{{ _('Check your email to finish the process.') }} <i class="grey">{{ _("(Or don't, but then why did you fill out this form?)") }}</i></p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
