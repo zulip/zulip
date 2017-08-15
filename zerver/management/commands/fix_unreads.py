@@ -4,7 +4,9 @@ from __future__ import print_function
 import time
 import ujson
 
-from typing import Any, Callable, Dict, List, Set, Text
+from typing import Any, Callable, Dict, List, Set, Text, TypeVar
+from psycopg2.extensions import cursor
+CursorObj = TypeVar('CursorObj', bound=cursor)
 
 from argparse import ArgumentParser
 from django.core.management.base import CommandError
@@ -25,10 +27,8 @@ def get_timing(message, f):
     print('elapsed time: %.03f\n' % (elapsed,))
 
 
-def fix_unsubscribed(user_profile):
-    # type: (UserProfile) -> None
-
-    cursor = connection.cursor()
+def fix_unsubscribed(cursor, user_profile):
+    # type: (CursorObj, UserProfile) -> None
 
     recipient_ids = []
 
@@ -116,8 +116,6 @@ def fix_unsubscribed(user_profile):
         fix
     )
 
-    cursor.close()
-
 def build_topic_mute_checker(user_profile):
     # type: (UserProfile) -> Callable[[int, Text], bool]
     rows = ujson.loads(user_profile.muted_topics)
@@ -142,10 +140,8 @@ def build_topic_mute_checker(user_profile):
 
     return is_muted
 
-def fix_pre_pointer(user_profile):
-    # type: (UserProfile) -> None
-
-    cursor = connection.cursor()
+def fix_pre_pointer(cursor, user_profile):
+    # type: (CursorObj, UserProfile) -> None
 
     pointer = user_profile.pointer
 
@@ -225,12 +221,14 @@ def fix_pre_pointer(user_profile):
         'finding pre-pointer messages that are not muted',
         find_old_ids
     )
-    cursor.close()
 
 def fix(user_profile):
     # type: (UserProfile) -> None
-    fix_unsubscribed(user_profile)
-    fix_pre_pointer(user_profile)
+    print('\n---\nFixing %s:' % (user_profile.email,))
+    with connection.cursor() as cursor:
+        fix_unsubscribed(cursor, user_profile)
+        fix_pre_pointer(cursor, user_profile)
+        connection.commit()
 
 class Command(ZulipBaseCommand):
     help = """Fix problems related to unread counts."""
