@@ -113,6 +113,11 @@ var list_render = (function () {
                 meta.filtered_list = meta.list(map_function);
             },
 
+            // find an element to possibly modify data.
+            find: function (callback) {
+                return meta.list.find(callback);
+            },
+
             // reset the data associated with a list. This is so that instead of
             // initializing a new progressive list render instance, you can just
             // update the data of an existing one.
