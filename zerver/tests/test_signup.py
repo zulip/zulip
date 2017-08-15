@@ -780,8 +780,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
-        # Circumvent user_profile caching.
-        user_profile = UserProfile.objects.get(email=self.example_email("hamlet"))
+
+        user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_offline_email_notifications)
 
     def test_welcome_unsubscribe(self):
@@ -829,7 +829,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
         # Circumvent user_profile caching.
-        user_profile = UserProfile.objects.get(email=self.example_email("hamlet"))
+
+        user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
 
