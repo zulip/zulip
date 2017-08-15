@@ -408,7 +408,6 @@ def get_recipient_by_id(rid):
 def send_messages(data):
     # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]) -> int
     (tot_messages, personals_pairs, options, output, random_seed) = data
-    print(random_seed)
     random.seed(random_seed)
 
     with open("var/test_messages.json", "r") as infile:
