@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from typing import Dict, Any, Text
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -21,7 +21,7 @@ def api_airbrake_webhook(request, user_profile,
         subject = get_subject(payload)
         body = get_body(payload)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+        return json_error(err_("Missing key {} in JSON").format(str(e)))
 
     check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()

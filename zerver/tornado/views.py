@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 
 from zerver.models import get_client, UserProfile, Client
@@ -33,7 +33,7 @@ def cleanup_event_queue(request, user_profile, queue_id=REQ()):
     if client is None:
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
-        return json_error(_("You are not authorized to access this queue"))
+        return json_error(err_("You are not authorized to access this queue"))
     request._log_data['extra'] = "[%s]" % (queue_id,)
     client.cleanup()
     return json_success()

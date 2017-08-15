@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from typing import Any, Iterable, List, Mapping, Set, Text, Tuple
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
@@ -60,7 +60,7 @@ def check_stream_name_available(realm, name):
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Stream name '%s' is already taken") % (name,))
+        raise JsonableError(err_("Stream name '%s' is already taken") % (name,))
     except Stream.DoesNotExist:
         pass
 
@@ -144,9 +144,9 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
     else:
         # autocreate=True path starts here
         if not user_profile.can_create_streams():
-            raise JsonableError(_('User cannot create streams.'))
+            raise JsonableError(err_('User cannot create streams.'))
         elif not autocreate:
-            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(
+            raise JsonableError(err_("Stream(s) (%s) do not exist") % ", ".join(
                 stream_dict["name"] for stream_dict in missing_stream_dicts))
 
         # We already filtered out existing streams, so dup_streams

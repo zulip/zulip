@@ -99,7 +99,7 @@ class JsonTranslationTestCase(ZulipTestCase):
                                         expected_error,
                                         status_code=400)
 
-    @mock.patch('zerver.views.auth._')
+    @mock.patch('zerver.views.auth.err_')
     def test_jsonable_error(self, mock_gettext):
         # type: (Any) -> None
         dummy_value = "Some other language"

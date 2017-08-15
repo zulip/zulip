@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from typing import Any, List, Dict, Mapping, Optional, Text
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
 from django.core.urlresolvers import reverse

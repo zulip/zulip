@@ -59,6 +59,8 @@ regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            'i18n\.t\("([^\"]*?)"\)',
            'i18n\.t\("(.*?)",.*?[^,]\)',
            ]
+tags = [('err_', "error"),
+        ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
@@ -71,6 +73,10 @@ def strip_whitespaces(src):
     return src
 
 class Command(makemessages.Command):
+
+    xgettext_options = makemessages.Command.xgettext_options
+    for func, tag in tags:
+        xgettext_options += ['--keyword={}:1,"{}"'.format(func, tag)]
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None

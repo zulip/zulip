@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 from zerver.models import get_client, UserProfile
 from zerver.lib.actions import check_send_message
@@ -40,7 +40,7 @@ def api_wordpress_webhook(request, user_profile,
         data = WP_LOGIN_TEMPLATE.format(name=user_login)
 
     else:
-        return json_error(_("Unknown WordPress webhook action: " + hook))
+        return json_error(err_("Unknown WordPress webhook action: " + hook))
 
     check_send_message(user_profile, get_client("ZulipWordPressWebhook"), "stream",
                        [stream], topic, data)

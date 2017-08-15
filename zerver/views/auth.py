@@ -14,7 +14,7 @@ from django.middleware.csrf import get_token
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.core import signing
 from six.moves import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
@@ -144,7 +144,7 @@ def remote_user_sso(request):
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
-        raise JsonableError(_("No REMOTE_USER set."))
+        raise JsonableError(err_("No REMOTE_USER set."))
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
@@ -162,23 +162,23 @@ def remote_user_jwt(request):
     try:
         auth_key = settings.JWT_AUTH_KEYS[subdomain]
     except KeyError:
-        raise JsonableError(_("Auth key for this subdomain not found."))
+        raise JsonableError(err_("Auth key for this subdomain not found."))
 
     try:
         json_web_token = request.POST["json_web_token"]
         options = {'verify_signature': True}
         payload = jwt.decode(json_web_token, auth_key, options=options)
     except KeyError:
-        raise JsonableError(_("No JSON web token passed in request"))
+        raise JsonableError(err_("No JSON web token passed in request"))
     except jwt.InvalidTokenError:
-        raise JsonableError(_("Bad JSON web token"))
+        raise JsonableError(err_("Bad JSON web token"))
 
     remote_user = payload.get("user", None)
     if remote_user is None:
-        raise JsonableError(_("No user specified in JSON web token claims"))
+        raise JsonableError(err_("No user specified in JSON web token claims"))
     realm = payload.get('realm', None)
     if realm is None:
-        raise JsonableError(_("No realm specified in JSON web token claims"))
+        raise JsonableError(err_("No realm specified in JSON web token claims"))
 
     email = "%s@%s" % (remote_user, realm)
 
@@ -193,7 +193,7 @@ def remote_user_jwt(request):
                                     use_dummy_backend=True)
         if return_data.get('invalid_subdomain'):
             logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (subdomain, email,))
-            raise JsonableError(_("Wrong subdomain"))
+            raise JsonableError(err_("Wrong subdomain"))
     except UserProfile.DoesNotExist:
         user_profile = None
 
@@ -230,7 +230,7 @@ def redirect_to_main_site(request, url, is_signup=False):
     mobile_flow_otp = request.GET.get('mobile_flow_otp')
     if mobile_flow_otp is not None:
         if not is_valid_otp(mobile_flow_otp):
-            raise JsonableError(_("Invalid OTP"))
+            raise JsonableError(err_("Invalid OTP"))
         params['mobile_flow_otp'] = mobile_flow_otp
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
@@ -495,7 +495,7 @@ def api_dev_fetch_api_key(request, username=REQ()):
     requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
     """
     if not dev_auth_enabled() or settings.PRODUCTION:
-        return json_error(_("Dev environment not enabled."))
+        return json_error(err_("Dev environment not enabled."))
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
@@ -508,13 +508,13 @@ def api_dev_fetch_api_key(request, username=REQ()):
                                 realm_subdomain=get_subdomain(request),
                                 return_data=return_data)
     if return_data.get("inactive_realm"):
-        return json_error(_("Your realm has been deactivated."),
+        return json_error(err_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
     if return_data.get("inactive_user"):
-        return json_error(_("Your account has been disabled."),
+        return json_error(err_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
     if user_profile is None:
-        return json_error(_("This user is not registered."),
+        return json_error(err_("This user is not registered."),
                           data={"reason": "unregistered"}, status=403)
     login(request, user_profile)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
@@ -523,7 +523,7 @@ def api_dev_fetch_api_key(request, username=REQ()):
 def api_dev_get_emails(request):
     # type: (HttpRequest) -> HttpResponse
     if not dev_auth_enabled() or settings.PRODUCTION:
-        return json_error(_("Dev environment not enabled."))
+        return json_error(err_("Dev environment not enabled."))
     users = get_dev_users()
     return json_success(dict(direct_admins=[u.email for u in users if u.is_realm_admin],
                              direct_users=[u.email for u in users if not u.is_realm_admin]))
@@ -549,20 +549,20 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                                     realm_subdomain=get_subdomain(request),
                                     return_data=return_data)
     if return_data.get("inactive_user"):
-        return json_error(_("Your account has been disabled."),
+        return json_error(err_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
     if return_data.get("inactive_realm"):
-        return json_error(_("Your realm has been deactivated."),
+        return json_error(err_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
     if return_data.get("password_auth_disabled"):
-        return json_error(_("Password auth is disabled in your team."),
+        return json_error(err_("Password auth is disabled in your team."),
                           data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
         if return_data.get("valid_attestation"):
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
-            return json_error(_("This user is not registered; do so from a browser."),
+            return json_error(err_("This user is not registered; do so from a browser."),
                               data={"reason": "unregistered"}, status=403)
-        return json_error(_("Your username or password is incorrect."),
+        return json_error(err_("Your username or password is incorrect."),
                           data={"reason": "incorrect_creds"}, status=403)
 
     # Maybe sending 'user_logged_in' signal is the better approach:
@@ -583,13 +583,13 @@ def get_auth_backends_data(request):
         except Realm.DoesNotExist:
             # If not the root subdomain, this is an error
             if subdomain != "":
-                raise JsonableError(_("Invalid subdomain"))
+                raise JsonableError(err_("Invalid subdomain"))
             # With the root subdomain, it's an error or not depending
             # whether SUBDOMAINS_HOMEPAGE (which indicates whether
             # there are some realms without subdomains on this server)
             # is set.
             if settings.SUBDOMAINS_HOMEPAGE:
-                raise JsonableError(_("Subdomain required"))
+                raise JsonableError(err_("Subdomain required"))
             else:
                 realm = None
     else:
@@ -635,14 +635,14 @@ def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     if password_auth_enabled(user_profile.realm):
         if not authenticate(username=user_profile.email, password=password,
                             realm_subdomain=get_subdomain(request)):
-            return json_error(_("Your username or password is incorrect."))
+            return json_error(err_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 
 @csrf_exempt
 def api_fetch_google_client_id(request):
     # type: (HttpRequest) -> HttpResponse
     if not settings.GOOGLE_CLIENT_ID:
-        return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
+        return json_error(err_("GOOGLE_CLIENT_ID is not configured"), status=400)
     return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
 
 @require_post

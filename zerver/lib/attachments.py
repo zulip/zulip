@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from typing import Any, Dict, List
 
 from zerver.lib.request import JsonableError
@@ -20,7 +20,7 @@ def access_attachment_by_id(user_profile, attachment_id, needs_owner=False):
 
     attachment = query.first()
     if attachment is None:
-        raise JsonableError(_("Invalid attachment"))
+        raise JsonableError(err_("Invalid attachment"))
     return attachment
 
 def remove_attachment(user_profile, attachment):

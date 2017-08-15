@@ -8,7 +8,7 @@ from typing import Any, Dict, Text
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.decorator import authenticated_json_post_view, human_users_only
 from zerver.lib.actions import get_status_dict, update_user_presence
@@ -28,15 +28,15 @@ def get_presence_backend(request, user_profile, email):
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
+        return json_error(err_('No such user'))
     if not target.is_active:
-        return json_error(_('No such user'))
+        return json_error(err_('No such user'))
     if target.is_bot:
-        return json_error(_('Presence is not supported for bot users.'))
+        return json_error(err_('Presence is not supported for bot users.'))
 
     presence_dict = UserPresence.get_status_dict_by_user(target)
     if len(presence_dict) == 0:
-        return json_error(_('No presence data for %s' % (target.email,)))
+        return json_error(err_('No presence data for %s' % (target.email,)))
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
@@ -57,7 +57,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
     # type: (HttpRequest, UserProfile, str, bool, bool) -> HttpResponse
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
-        raise JsonableError(_("Invalid status: %s") % (status,))
+        raise JsonableError(err_("Invalid status: %s") % (status,))
     else:
         update_user_presence(user_profile, request.client, timezone_now(),
                              status_val, new_user_input)

@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from typing import Any, Dict, List, Optional, Text, Tuple
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.db.models import Q
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -261,7 +261,7 @@ def api_jira_webhook(request, user_profile,
             if not settings.TEST_SUITE:
                 message = u"Got JIRA event with None event type: {}".format(payload)
                 logging.warning(message)
-            return json_error(_("Event is not given by JIRA"))
+            return json_error(err_("Event is not given by JIRA"))
         else:
             if not settings.TEST_SUITE:
                 logging.warning("Got JIRA event type we don't support: {}".format(event))

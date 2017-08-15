@@ -3,7 +3,7 @@ from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequenc
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.decorator import authenticated_json_view
 from zerver.lib.ccache import make_ccache
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -30,9 +30,9 @@ def webathena_kerberos_login(request, user_profile,
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     global kerberos_alter_egos
     if cred is None:
-        return json_error(_("Could not find Kerberos credential"))
+        return json_error(err_("Could not find Kerberos credential"))
     if not user_profile.realm.webathena_enabled:
-        return json_error(_("Webathena login not enabled"))
+        return json_error(err_("Webathena login not enabled"))
 
     try:
         parsed_cred = ujson.loads(cred)
@@ -42,7 +42,7 @@ def webathena_kerberos_login(request, user_profile,
         assert(user == user_profile.email.split("@")[0])
         ccache = make_ccache(parsed_cred)
     except Exception:
-        return json_error(_("Invalid Kerberos cache"))
+        return json_error(err_("Invalid Kerberos cache"))
 
     # TODO: Send these data via (say) rabbitmq
     try:
@@ -53,6 +53,6 @@ def webathena_kerberos_login(request, user_profile,
                                force_str(base64.b64encode(ccache))])
     except Exception:
         logging.exception("Error updating the user's ccache")
-        return json_error(_("We were unable to setup mirroring for you"))
+        return json_error(err_("We were unable to setup mirroring for you"))
 
     return json_success()

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
@@ -27,7 +27,7 @@ def json_tutorial_send_message(request, user_profile, type=REQ(validator=check_s
                               "stream", recipient, topic, content)
         return json_success()
     # For now, there are no PM cases.
-    return json_error(_('Bad data passed in to tutorial_send_message'))
+    return json_error(err_('Bad data passed in to tutorial_send_message'))
 
 @authenticated_json_post_view
 @has_request_variables

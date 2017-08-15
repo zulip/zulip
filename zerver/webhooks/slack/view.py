@@ -1,7 +1,7 @@
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message, create_stream_if_needed
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_int
@@ -22,7 +22,7 @@ def api_slack_webhook(request, user_profile,
     # type: (HttpRequest, UserProfile, str, str, str, str, str) -> HttpResponse
 
     if channels_map_to_topics not in list(VALID_OPTIONS.values()):
-        return json_error(_('Error: channels_map_to_topics parameter other than 0 or 1'))
+        return json_error(err_('Error: channels_map_to_topics parameter other than 0 or 1'))
 
     if channels_map_to_topics == VALID_OPTIONS['SHOULD_BE_MAPPED']:
         subject = "channel: {}".format(channel_name)

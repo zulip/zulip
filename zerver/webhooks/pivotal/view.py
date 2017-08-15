@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
@@ -168,16 +168,16 @@ def api_pivotal_webhook(request, user_profile, stream=REQ()):
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
     except AttributeError:
-        return json_error(_("Failed to extract data from Pivotal XML response"))
+        return json_error(err_("Failed to extract data from Pivotal XML response"))
     except Exception:
         # Attempt to parse v5 JSON payload
         try:
             subject, content = api_pivotal_webhook_v5(request, user_profile, stream)
         except AttributeError:
-            return json_error(_("Failed to extract data from Pivotal V5 JSON response"))
+            return json_error(err_("Failed to extract data from Pivotal V5 JSON response"))
 
     if subject is None or content is None:
-        return json_error(_("Unable to handle Pivotal payload"))
+        return json_error(err_("Unable to handle Pivotal payload"))
 
     check_send_message(user_profile, request.client, "stream",
                        [stream], subject, content)

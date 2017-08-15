@@ -10,7 +10,7 @@ from functools import wraps
 import ujson
 from six.moves import zip
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.lib.exceptions import JsonableError, ErrorCode
 
@@ -133,7 +133,7 @@ def has_request_variables(view_func):
                 try:
                     val = ujson.loads(request.body)
                 except ValueError:
-                    raise JsonableError(_('Malformed JSON'))
+                    raise JsonableError(err_('Malformed JSON'))
                 kwargs[param.func_var_name] = val
                 continue
             elif param.argument_type is not None:
@@ -164,7 +164,7 @@ def has_request_variables(view_func):
                 try:
                     val = ujson.loads(val)
                 except Exception:
-                    raise JsonableError(_('Argument "%s" is not valid JSON.') % (param.post_var_name,))
+                    raise JsonableError(err_('Argument "%s" is not valid JSON.') % (param.post_var_name,))
 
                 error = param.validator(param.post_var_name, val)
                 if error:

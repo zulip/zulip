@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from django.core import validators
@@ -804,14 +804,14 @@ def update_message_flags(request, user_profile,
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
-            raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
+            raise JsonableError(err_('No such stream \'%s\'') % (stream_name,))
         if topic_name:
             topic_exists = UserMessage.objects.filter(user_profile=user_profile,
                                                       message__recipient__type_id=stream.id,
                                                       message__recipient__type=Recipient.STREAM,
                                                       message__subject__iexact=topic_name).exists()
             if not topic_exists:
-                raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
+                raise JsonableError(err_('No such topic \'%s\'') % (topic_name,))
     count = do_update_message_flags(user_profile, operation, flag, messages,
                                     stream, topic_name)
 
@@ -941,17 +941,17 @@ def send_message_backend(request, user_profile,
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
-        return json_error(_("User not authorized for this query"))
+        return json_error(err_("User not authorized for this query"))
 
     realm = None
     if realm_str and realm_str != user_profile.realm.string_id:
         if not is_super_user:
             # The email gateway bot needs to be able to send messages in
             # any realm.
-            return json_error(_("User not authorized for this query"))
+            return json_error(err_("User not authorized for this query"))
         realm = get_realm(realm_str)
         if not realm:
-            return json_error(_("Unknown realm %s") % (realm_str,))
+            return json_error(err_("Unknown realm %s") % (realm_str,))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -971,18 +971,18 @@ def send_message_backend(request, user_profile,
         # same-realm constraint) and recipient_for_emails (which
         # checks that PMs are received by the forwarding user)
         if "sender" not in request.POST:
-            return json_error(_("Missing sender"))
+            return json_error(err_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
-            return json_error(_("User not authorized for this query"))
+            return json_error(err_("User not authorized for this query"))
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
-            return json_error(_("Invalid mirrored message"))
+            return json_error(err_("Invalid mirrored message"))
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
-            return json_error(_("Invalid mirrored realm"))
+            return json_error(err_("Invalid mirrored realm"))
         if (client.name == "irc_mirror" and message_type_name != "private" and
                 not message_to[0].startswith("#")):
-            return json_error(_("IRC stream names must start with #"))
+            return json_error(err_("IRC stream names must start with #"))
         sender = mirror_sender
     else:
         sender = user_profile
@@ -1040,7 +1040,7 @@ def get_message_edit_history(request, user_profile,
                              message_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
     if not user_profile.realm.allow_edit_history:
-        return json_error(_("Message edit history is disabled in this organization"))
+        return json_error(err_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
 
     # Extract the message edit history from the message
@@ -1058,7 +1058,7 @@ def update_message_backend(request, user_profile,
                            content=REQ(default=None)):
     # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[str], Optional[Text]) -> HttpResponse
     if not user_profile.realm.allow_message_editing:
-        return json_error(_("Your organization has turned off message editing"))
+        return json_error(err_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
 
@@ -1073,7 +1073,7 @@ def update_message_backend(request, user_profile,
                                 user_profile.is_realm_admin):
         pass
     else:
-        raise JsonableError(_("You don't have permission to edit this message"))
+        raise JsonableError(err_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
@@ -1084,14 +1084,14 @@ def update_message_backend(request, user_profile,
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message has past"))
+            raise JsonableError(err_("The time limit for editing this message has past"))
 
     if subject is None and content is None:
-        return json_error(_("Nothing to change"))
+        return json_error(err_("Nothing to change"))
     if subject is not None:
         subject = subject.strip()
         if subject == "":
-            raise JsonableError(_("Topic can't be empty"))
+            raise JsonableError(err_("Topic can't be empty"))
     rendered_content = None
     links_for_embed = set()  # type: Set[Text]
     if content is not None:
@@ -1144,7 +1144,7 @@ def delete_message_backend(request, user_profile, message_id=REQ(converter=to_no
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
     message, ignored_user_message = access_message(user_profile, message_id)
     if not user_profile.is_realm_admin:
-        raise JsonableError(_("You don't have permission to edit this message"))
+        raise JsonableError(err_("You don't have permission to edit this message"))
     do_delete_message(user_profile, message)
     return json_success()
 

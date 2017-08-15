@@ -7,7 +7,7 @@ from collections import defaultdict
 from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from typing import Any, Dict, Text
 
 from zerver.models import get_system_bot
@@ -130,5 +130,5 @@ def do_report_error(deployment_name, type, report):
     elif type == 'server':
         notify_server_error(report)
     else:
-        return json_error(_("Invalid type parameter"))
+        return json_error(err_("Invalid type parameter"))
     return json_success()

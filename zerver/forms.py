@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import validate_email
 from django.db.models.query import QuerySet
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from typing import Any, Dict, Optional, List, Text
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
@@ -47,11 +47,11 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+        raise JsonableError(err_("Invalid language '%s'" % (default_language,)))
     if description is not None and len(description) > 1000:
-        return json_error(_("Realm description is too long."))
+        return json_error(err_("Realm description is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
-        return json_error(_("At least one authentication method must be enabled."))
+        return json_error(err_("At least one authentication method must be enabled."))
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.

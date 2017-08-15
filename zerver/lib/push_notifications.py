@@ -21,7 +21,7 @@ from gcm import GCM
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from six.moves import urllib
 
 import base64
@@ -445,7 +445,7 @@ def remove_push_device_token(user_profile, token_str, kind):
         token = PushDeviceToken.objects.get(token=token_str, kind=kind)
         token.delete()
     except PushDeviceToken.DoesNotExist:
-        raise JsonableError(_("Token does not exist"))
+        raise JsonableError(err_("Token does not exist"))
 
 def send_json_to_push_bouncer(method, endpoint, post_data):
     # type: (str, str, Dict[str, Any]) -> None
@@ -477,14 +477,14 @@ def send_to_push_bouncer(method, endpoint, post_data, extra_headers=None):
 
     # TODO: Think more carefully about how this error hanlding should work.
     if res.status_code >= 500:
-        raise JsonableError(_("Error received from push notification bouncer"))
+        raise JsonableError(err_("Error received from push notification bouncer"))
     elif res.status_code >= 400:
         try:
             msg = ujson.loads(res.content)['msg']
         except Exception:
-            raise JsonableError(_("Error received from push notification bouncer"))
+            raise JsonableError(err_("Error received from push notification bouncer"))
         raise JsonableError(msg)
     elif res.status_code != 200:
-        raise JsonableError(_("Error received from push notification bouncer"))
+        raise JsonableError(err_("Error received from push notification bouncer"))
 
     # If we don't throw an exception, it's a successful bounce!

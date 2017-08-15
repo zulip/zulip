@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from typing import Text
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.lib.exceptions import JsonableError, ErrorCode
 

@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -30,7 +30,7 @@ def api_delighted_webhook(request, user_profile,
         selected_payload['score'] = payload['event_data']['score']
         selected_payload['comment'] = payload['event_data']['comment']
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+        return json_error(err_("Missing key {} in JSON").format(str(e)))
 
     BODY_TEMPLATE = body_template(selected_payload['score'])
     body = BODY_TEMPLATE.format(**selected_payload)

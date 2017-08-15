@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from typing import Optional, Any, Dict, Text
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.http import HttpRequest, HttpResponse
@@ -34,7 +34,7 @@ def confirm_email_change(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     user_profile = request.user
     if user_profile.realm.email_changes_disabled:
-        raise JsonableError(_("Email address changes are disabled in this organization."))
+        raise JsonableError(err_("Email address changes are disabled in this organization."))
 
     confirmation_key = confirmation_key.lower()
     try:
@@ -92,13 +92,13 @@ def json_change_settings(request, user_profile,
                          confirm_password=REQ(default="")):
     # type: (HttpRequest, UserProfile, Text, Text, Text, Text, Text) -> HttpResponse
     if not (full_name or new_password or email):
-        return json_error(_("No new data supplied"))
+        return json_error(err_("No new data supplied"))
 
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
-            return json_error(_("New password must match confirmation password!"))
+            return json_error(err_("New password must match confirmation password!"))
         if not authenticate(username=user_profile.email, password=old_password):
-            return json_error(_("Wrong password!"))
+            return json_error(err_("Wrong password!"))
         do_change_password(user_profile, new_password)
         # In Django 1.10, password changes invalidates sessions, see
         # https://docs.djangoproject.com/en/1.10/topics/auth/default/#session-invalidation-on-password-change
@@ -119,7 +119,7 @@ def json_change_settings(request, user_profile,
     new_email = email.strip()
     if user_profile.email != email and new_email != '':
         if user_profile.realm.email_changes_disabled:
-            return json_error(_("Email address changes are disabled in this organization."))
+            return json_error(err_("Email address changes are disabled in this organization."))
         error, skipped = validate_email(user_profile, new_email)
         if error or skipped:
             return json_error(error or skipped)
@@ -151,15 +151,15 @@ def update_display_settings_backend(request, user_profile,
     # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[str], Optional[bool], Optional[bool], Optional[Text], Optional[Text]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
-        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+        raise JsonableError(err_("Invalid language '%s'" % (default_language,)))
 
     if (timezone is not None and
             timezone not in get_all_timezones()):
-        raise JsonableError(_("Invalid timezone '%s'" % (timezone,)))
+        raise JsonableError(err_("Invalid timezone '%s'" % (timezone,)))
 
     if (emojiset is not None and
             emojiset not in UserProfile.emojiset_choices()):
-        raise JsonableError(_("Invalid emojiset '%s'" % (emojiset,)))
+        raise JsonableError(err_("Invalid emojiset '%s'" % (emojiset,)))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result = {}  # type: Dict[str, Any]
@@ -208,11 +208,11 @@ def json_change_notify_settings(request, user_profile,
 def set_avatar_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) != 1:
-        return json_error(_("You must upload exactly one avatar."))
+        return json_error(err_("You must upload exactly one avatar."))
 
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+        return json_error(err_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_AVATAR_FILE_SIZE))
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)

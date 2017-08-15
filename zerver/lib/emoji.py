@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import os
 import re
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from typing import Optional, Text
 from zerver.lib.bugdown import name_to_codepoint
 from zerver.lib.request import JsonableError
@@ -19,7 +19,7 @@ def check_valid_emoji(realm, emoji_name):
         return
     if emoji_name == 'zulip':
         return
-    raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
+    raise JsonableError(err_("Emoji '%s' does not exist" % (emoji_name,)))
 
 def check_emoji_admin(user_profile, emoji_name=None):
     # type: (UserProfile, Optional[Text]) -> None
@@ -30,7 +30,7 @@ def check_emoji_admin(user_profile, emoji_name=None):
     if user_profile.is_realm_admin:
         return
     if user_profile.realm.add_emoji_by_admins_only:
-        raise JsonableError(_("Must be a realm administrator"))
+        raise JsonableError(err_("Must be a realm administrator"))
 
     # Otherwise, normal users can add emoji
     if emoji_name is None:
@@ -42,13 +42,13 @@ def check_emoji_admin(user_profile, emoji_name=None):
                               emoji.author is not None and
                               emoji.author.id == user_profile.id)
     if not user_profile.is_realm_admin and not current_user_is_author:
-        raise JsonableError(_("Must be a realm administrator or emoji author"))
+        raise JsonableError(err_("Must be a realm administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name):
     # type: (Text) -> None
     if re.match('^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
         return
-    raise JsonableError(_("Invalid characters in emoji name"))
+    raise JsonableError(err_("Invalid characters in emoji name"))
 
 def get_emoji_url(emoji_file_name, realm_id):
     # type: (Text, int) -> Text

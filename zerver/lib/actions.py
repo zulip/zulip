@@ -6,7 +6,7 @@ from typing import (
 )
 
 from django.utils.html import escape
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from django.conf import settings
 from django.core import validators
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
@@ -701,7 +701,7 @@ def render_incoming_message(message, content, message_users, realm):
             message_users=message_users,
         )
     except BugdownRenderingException:
-        raise JsonableError(_('Unable to render message'))
+        raise JsonableError(err_('Unable to render message'))
     return rendered_content
 
 def get_recipient_user_profiles(recipient, sender_id):
@@ -1015,9 +1015,9 @@ def check_send_typing_notification(sender, notification_to, operator):
 def check_typing_notification(sender, notification_to, operator):
     # type: (UserProfile, Sequence[Text], Text) -> Dict[str, Any]
     if len(notification_to) == 0:
-        raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
+        raise JsonableError(err_('Missing parameter: \'to\' (recipient)'))
     elif operator not in ('start', 'stop'):
-        raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
+        raise JsonableError(err_('Invalid \'op\' value (should be start or stop)'))
     else:
         try:
             recipient = recipient_for_emails(notification_to, False,
@@ -1213,12 +1213,12 @@ def check_send_message(sender, client, message_type_name, message_to,
 def check_stream_name(stream_name):
     # type: (Text) -> None
     if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
+        raise JsonableError(err_("Invalid stream name '%s'" % (stream_name)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
+        raise JsonableError(err_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
     for i in stream_name:
         if ord(i) == 0:
-            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
+            raise JsonableError(err_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
 
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
     # type: (UserProfile, Optional[Stream], Text, Realm) -> None
@@ -1280,10 +1280,10 @@ def check_message(sender, client, message_type_name, message_to,
         # Use the users default stream
         message_to = [sender.default_sending_stream.name]
     if len(message_to) == 0:
-        raise JsonableError(_("Message must have recipients"))
+        raise JsonableError(err_("Message must have recipients"))
     message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
-        raise JsonableError(_("Message must not be empty"))
+        raise JsonableError(err_("Message must not be empty"))
     message_content = truncate_body(message_content)
 
     if realm is None:
@@ -1291,16 +1291,16 @@ def check_message(sender, client, message_type_name, message_to,
 
     if message_type_name == 'stream':
         if len(message_to) > 1:
-            raise JsonableError(_("Cannot send to multiple streams"))
+            raise JsonableError(err_("Cannot send to multiple streams"))
 
         stream_name = message_to[0].strip()
         check_stream_name(stream_name)
 
         if subject_name is None:
-            raise JsonableError(_("Missing topic"))
+            raise JsonableError(err_("Missing topic"))
         subject = subject_name.strip()
         if subject == "":
-            raise JsonableError(_("Topic can't be empty"))
+            raise JsonableError(err_("Topic can't be empty"))
         subject = truncate_topic(subject)
 
         try:
@@ -1310,7 +1310,7 @@ def check_message(sender, client, message_type_name, message_to,
 
         except Stream.DoesNotExist:
             send_pm_if_empty_stream(sender, None, stream_name, realm)
-            raise JsonableError(_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
+            raise JsonableError(err_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
         if not stream.invite_only:
@@ -1332,7 +1332,7 @@ def check_message(sender, client, message_type_name, message_to,
             pass
         else:
             # All other cases are an error.
-            raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
+            raise JsonableError(err_("Not authorized to send to stream '%s'") % (stream.name,))
 
     elif message_type_name == 'private':
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
@@ -1344,7 +1344,7 @@ def check_message(sender, client, message_type_name, message_to,
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
     else:
-        raise JsonableError(_("Invalid message type"))
+        raise JsonableError(err_("Invalid message type"))
 
     message = Message()
     message.sender = sender
@@ -1512,10 +1512,10 @@ def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_
         raise ValidationError("Requesting user not in given realm")
 
     if user_profile.realm.is_zephyr_mirror_realm and not stream_dict["invite_only"]:
-        raise JsonableError(_("You cannot get subscribers for public streams in this realm"))
+        raise JsonableError(err_("You cannot get subscribers for public streams in this realm"))
 
     if (stream_dict["invite_only"] and not check_user_subscribed()):
-        raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
+        raise JsonableError(err_("Unable to retrieve subscribers for invite-only stream"))
 
 # sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
 def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
@@ -2107,7 +2107,7 @@ def _default_stream_permision_check(user_profile, stream):
         else:
             user = user_profile
         if stream.invite_only and (user is None or not subscribed_to_stream(user, stream)):
-            raise JsonableError(_('Insufficient permission'))
+            raise JsonableError(err_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
     # type: (UserProfile, Optional[Stream], bool) -> None
@@ -2622,9 +2622,9 @@ def do_update_message_flags(user_profile, operation, flag, messages, stream_obj,
         # Hack to let you star any message
         if msgs.count() == 0:
             if not len(messages) == 1:
-                raise JsonableError(_("Invalid message(s)"))
+                raise JsonableError(err_("Invalid message(s)"))
             if flag != "starred":
-                raise JsonableError(_("Invalid message(s)"))
+                raise JsonableError(err_("Invalid message(s)"))
             # Validate that the user could have read the relevant message
             message = access_message(user_profile, messages[0])[0]
 
@@ -3361,7 +3361,7 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
                    include_all_active=False, include_default=False):
     # type: (UserProfile, bool, bool, bool, bool) -> List[Dict[str, Any]]
     if include_all_active and not user_profile.is_api_super_user:
-        raise JsonableError(_("User not authorized for this query"))
+        raise JsonableError(err_("User not authorized for this query"))
 
     # Listing public streams are disabled for Zephyr mirroring realms.
     include_public = include_public and not user_profile.realm.is_zephyr_mirror_realm

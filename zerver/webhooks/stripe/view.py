@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -158,10 +158,10 @@ def api_stripe_webhook(request, user_profile,
             if topic is None:
                 topic = "Transfer {}".format(object_id)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON".format(str(e))))
+        return json_error(err_("Missing key {} in JSON".format(str(e))))
 
     if body is None:
-        return json_error(_("We don't support {} event".format(event_type)))
+        return json_error(err_("We don't support {} event".format(event_type)))
 
     check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
 

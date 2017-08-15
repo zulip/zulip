@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.models import get_client
 from zerver.lib.actions import check_send_message
@@ -33,14 +33,14 @@ def api_semaphore_webhook(request, user_profile,
         author_email = payload["commit"]["author_email"]
         message = payload["commit"]["message"]
     except KeyError as e:
-        return json_error(_("Missing key %s in JSON") % (str(e),))
+        return json_error(err_("Missing key %s in JSON") % (str(e),))
 
     if event == "build":
         try:
             build_url = payload["build_url"]
             build_number = payload["build_number"]
         except KeyError as e:
-            return json_error(_("Missing key %s in JSON") % (str(e),))
+            return json_error(err_("Missing key %s in JSON") % (str(e),))
         content = u"[build %s](%s): %s\n" % (build_number, build_url, result)
 
     elif event == "deploy":
@@ -51,7 +51,7 @@ def api_semaphore_webhook(request, user_profile,
             deploy_number = payload["number"]
             server_name = payload["server_name"]
         except KeyError as e:
-            return json_error(_("Missing key %s in JSON") % (str(e),))
+            return json_error(err_("Missing key %s in JSON") % (str(e),))
         content = u"[deploy %s](%s) of [build %s](%s) on server %s: %s\n" % \
                   (deploy_number, deploy_url, build_number, build_url, server_name, result)
 

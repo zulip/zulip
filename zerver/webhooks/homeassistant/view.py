@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -21,7 +21,7 @@ def api_homeassistant_webhook(request, user_profile,
     try:
         body = payload["message"]
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+        return json_error(err_("Missing key {} in JSON").format(str(e)))
 
     # set the topic to the topic parameter, if given
     if "topic" in payload:

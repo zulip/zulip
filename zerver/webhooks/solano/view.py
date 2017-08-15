@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.actions import check_send_message
@@ -32,7 +32,7 @@ def api_solano_webhook(request, user_profile,
         repository = payload['repository']['url']
         commit_id = payload['commit_id']
     except KeyError as e:
-        return json_error(_('Missing key {} in JSON').format(str(e)))
+        return json_error(err_('Missing key {} in JSON').format(str(e)))
 
     good_status = ['passed']
     bad_status  = ['failed', 'error']

@@ -5,7 +5,7 @@ from typing import List, Text
 
 import ujson
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import do_set_muted_topics, do_update_muted_topic
 from zerver.lib.request import has_request_variables, REQ
@@ -28,11 +28,11 @@ def update_muted_topic(request, user_profile, stream=REQ(),
     muted_topics = ujson.loads(user_profile.muted_topics)
     if op == 'add':
         if [stream, topic] in muted_topics:
-            return json_error(_("Topic already muted"))
+            return json_error(err_("Topic already muted"))
         muted_topics.append([stream, topic])
     elif op == 'remove':
         if [stream, topic] not in muted_topics:
-            return json_error(_("Topic is not there in the muted_topics list"))
+            return json_error(err_("Topic is not there in the muted_topics list"))
         muted_topics.remove([stream, topic])
 
     do_update_muted_topic(user_profile, stream, topic, op)

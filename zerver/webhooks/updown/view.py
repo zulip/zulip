@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext as err_
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.exceptions import JsonableError
@@ -21,7 +21,7 @@ def send_message_for_event(event, user_profile, client, stream):
         subject = SUBJECT_TEMPLATE.format(service_url=event['check']['url'])
         body = EVENT_TYPE_BODY_MAPPER[event_type](event)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+        return json_error(err_("Missing key {} in JSON").format(str(e)))
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
 
 def get_body_for_up_event(event):
@@ -84,4 +84,4 @@ def get_event_type(event):
         event_type = event_type_match.group(1)
         if event_type in EVENT_TYPE_BODY_MAPPER:
             return event_type
-    raise JsonableError(_('Unsupported Updown event type: %s') % (event['event'],))
+    raise JsonableError(err_('Unsupported Updown event type: %s') % (event['event'],))
