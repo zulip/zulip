@@ -104,7 +104,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {{ _('Organization handle') }}
                         {% endif %}
                     </label>
-                    <div class="breakpoint">
+                    <div class="inline-block">
                         <div class="inline-block relative">
                             <input id="id_team_subdomain" class="required {% if realms_have_subdomains %}subdomain{% endif %}" type="text"
                                 placeholder="acme"
@@ -175,12 +175,6 @@ if ($('#id_email').length === 1) {
 } else {
     common.autofocus('#id_full_name');
 }
-
-// if realms have subdomains, set the subdomain input width
-$('#id_team_subdomain').css({
-    width: 300 - $('.realm_subdomain_label').width(),
-    'margin-right': $('.realm_subdomain_label').width() + 4,
-});
 
 // reset error message displays
 $('#id_team_subdomain_error_client').css('display', 'none');
