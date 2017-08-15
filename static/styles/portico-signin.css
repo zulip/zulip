@@ -91,6 +91,14 @@ html {
     text-align: left;
 }
 
+.login-page-container .header-image,
+.register-page-container .header-image,
+.find-team-page-container .header-image {
+    width: 300px;
+    margin: auto;
+    padding-bottom: 10px;
+}
+
 .app-main .login-page-header {
     font-size: 1.5em;
     font-weight: 300;
