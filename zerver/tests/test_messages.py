@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
@@ -9,11 +9,14 @@ from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zerver.lib.cache import get_stream_cache_key, cache_delete
+from zerver.lib.str_utils import force_text
 from zilencer.models import Deployment
 
 from zerver.lib.message import (
     MessageDict,
     message_to_dict,
+    add_missing_messages,
+    maybe_catch_up_soft_deactivated_user
 )
 
 from zerver.lib.test_helpers import (
@@ -29,11 +32,14 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+from zerver.lib.soft_deactivation import do_soft_deactivate_users
+
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmDomain,
-    get_realm, get_realm_by_email_domain, get_stream, get_system_bot, get_user,
-    Reaction, sew_messages_and_reactions, flush_per_request_caches
+    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
+    RealmAuditLog, RealmDomain, get_realm, get_realm_by_email_domain,
+    get_stream, get_recipient, get_system_bot, get_user, Reaction,
+    sew_messages_and_reactions, flush_per_request_caches
 )
 
 from zerver.lib.actions import (
@@ -44,7 +50,7 @@ from zerver.lib.actions import (
     extract_recipients,
     do_create_user,
     get_client,
-    get_recipient,
+    do_add_alert_words,
 )
 
 from zerver.lib.upload import create_attachment
@@ -2137,3 +2143,314 @@ class DeleteMessageTest(ZulipTestCase):
         self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_error(result, "Invalid message(s)")
+
+class SoftDeactivationMessageTest(ZulipTestCase):
+
+    def test_maybe_catch_up_soft_deactivated_user(self):
+        # type: () -> None
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago")]
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        sender = self.example_email('iago')
+        stream_name = 'Denmark'
+        subject = 'foo'
+
+        def last_realm_audit_log_entry(event_type):
+            # type: (str) -> RealmAuditLog
+            return RealmAuditLog.objects.filter(
+                event_type=event_type
+            ).order_by('-event_time')[0]
+
+        long_term_idle_user = self.example_user('hamlet')
+        do_soft_deactivate_users([long_term_idle_user])
+
+        message = 'Test Message 1'
+        self.send_message(sender, stream_name, Recipient.STREAM,
+                          message, subject)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertNotEqual(idle_user_msg_list[-1].content, message)
+        with queries_captured() as queries:
+            maybe_catch_up_soft_deactivated_user(long_term_idle_user)
+        self.assert_length(queries, 8)
+        self.assertFalse(long_term_idle_user.long_term_idle)
+        self.assertEqual(last_realm_audit_log_entry(
+            'user_soft_activated').modified_user, long_term_idle_user)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
+
+    def test_add_missing_messages(self):
+        # type: () -> None
+        recipient_list  = [self.example_email("hamlet"), self.example_email("iago")]
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        sender = self.example_user('iago')
+        realm = sender.realm
+        sending_client = make_client(name="test suite")
+        stream_name = 'Denmark'
+        stream = get_stream(stream_name, realm)
+        subject = 'foo'
+
+        def send_fake_message(message_content, stream):
+            # type: (str, Stream) -> Message
+            recipient = get_recipient(Recipient.STREAM, stream.id)
+            return Message.objects.create(sender = sender,
+                                          recipient = recipient,
+                                          subject = subject,
+                                          content = message_content,
+                                          pub_date = timezone_now(),
+                                          sending_client = sending_client)
+
+        long_term_idle_user = self.example_user('hamlet')
+        do_soft_deactivate_users([long_term_idle_user])
+
+        # Test that add_missing_messages() in simplest case of adding a
+        # message for which UserMessage row doesn't exist for this user.
+        sent_message = send_fake_message('Test Message 1', stream)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertNotEqual(idle_user_msg_list[-1], sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assertEqual(idle_user_msg_list[-1], sent_message)
+
+        # Test that add_missing_messages() only adds messages that aren't
+        # already present in the UserMessage table. This test works on the
+        # fact that previous test just above this added a message but didn't
+        # updated the last_active_message_id field for the user.
+        sent_message = send_fake_message('Test Message 2', stream)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertNotEqual(idle_user_msg_list[-1], sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assertEqual(idle_user_msg_list[-1], sent_message)
+
+        # Test UserMessage rows are created correctly in case of stream
+        # Subscription was altered by admin while user was away.
+
+        # Test for a public stream.
+        sent_message_list = []
+        sent_message_list.append(send_fake_message('Test Message 3', stream))
+        # Alter subscription to stream.
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        send_fake_message('Test Message 4', stream)
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        sent_message_list.append(send_fake_message('Test Message 5', stream))
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        for sent_message in sent_message_list:
+            self.assertEqual(idle_user_msg_list.pop(), sent_message)
+
+        # Test consecutive subscribe/unsubscribe in a public stream
+        sent_message_list = []
+
+        sent_message_list.append(send_fake_message('Test Message 6', stream))
+        # Unsubscribe from stream and then immediately subscribe back again.
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        sent_message_list.append(send_fake_message('Test Message 7', stream))
+        # Again unsubscribe from stream and send a message.
+        # This will make sure that if initially in a unsubscribed state
+        # a consecutive subscribe/unsubscribe doesn't misbehave.
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        send_fake_message('Test Message 8', stream)
+        # Do a subscribe and unsubscribe immediately.
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        for sent_message in sent_message_list:
+            self.assertEqual(idle_user_msg_list.pop(), sent_message)
+        # Note: At this point in this test we have long_term_idle_user
+        # unsubscribed from the 'Denmark' stream.
+
+        # Test for a Private Stream.
+        stream_name = "Core"
+        private_stream = self.make_stream('Core', invite_only=True)
+        self.subscribe_to_stream(self.example_email("iago"), stream_name)
+        sent_message_list = []
+        send_fake_message('Test Message 9', private_stream)
+        self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
+        sent_message_list.append(send_fake_message('Test Message 10', private_stream))
+        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        send_fake_message('Test Message 11', private_stream)
+        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        sent_message_list.append(send_fake_message('Test Message 12', private_stream))
+        sent_message_list.reverse()
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        for sent_message in sent_message_list:
+            self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        for sent_message in sent_message_list:
+            self.assertEqual(idle_user_msg_list.pop(), sent_message)
+
+    def test_user_message_filter(self):
+        # type: () -> None
+        # In this test we are basically testing out the logic used out in
+        # do_send_messages() in action.py for filtering the messages for which
+        # UserMessage rows should be created for a soft-deactivated user.
+        recipient_list  = [
+            self.example_email("hamlet"),
+            self.example_email("iago"),
+            self.example_email('cordelia')
+        ]
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        cordelia = self.example_user('cordelia')
+        sender = self.example_email('iago')
+        stream_name = 'Denmark'
+        subject = 'foo'
+
+        def send_stream_message(content):
+            # type: (str) -> None
+            self.send_message(sender, stream_name, Recipient.STREAM,
+                              content, subject)
+
+        def send_personal_message(content):
+            # type: (str) -> None
+            self.send_message(sender, self.example_email("hamlet"),
+                              Recipient.PERSONAL, content)
+
+        long_term_idle_user = self.example_user('hamlet')
+        do_soft_deactivate_users([long_term_idle_user])
+
+        def assert_um_count(user, count):
+            # type: (UserProfile, int) -> None
+            user_messages = get_user_messages(user)
+            self.assertEqual(len(user_messages), count)
+
+        def assert_last_um_content(user, content, negate=False):
+            # type: (UserProfile, Text, bool) -> None
+            user_messages = get_user_messages(user)
+            if negate:
+                self.assertNotEqual(user_messages[-1].content, content)
+            else:
+                self.assertEqual(user_messages[-1].content, content)
+
+        # Test that sending a message to a stream with soft deactivated user
+        # doesn't end up creating UserMessage row for deactivated user.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test Message 1'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message), negate=True)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test sending a private message to soft deactivated user creates
+        # UserMessage row.
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test PM'
+        send_personal_message(message)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # user itself is mentioned.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**King Hamlet** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is not created while user is deactivated if
+        # anyone is mentioned but the user.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**Cordelia Lear**  mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message), negate=True)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # there is a wildcard mention such as @all or @everyone
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**all** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**everyone** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if there
+        # is a alert word in message.
+        do_add_alert_words(long_term_idle_user, ['test_alert_word'])
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Testing test_alert_word'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # message is a me message.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = '/me says test'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
+
+        # Test UserMessage row is created while user is deactivated if
+        # user itself is mentioned and message is a me message.
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = '/me says @**King Hamlet** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, force_text(message))
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, force_text(message))
