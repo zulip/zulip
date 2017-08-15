@@ -75,6 +75,27 @@ def access_stream_by_name(user_profile, stream_name):
     (recipient, sub) = access_stream_common(user_profile, stream, error)
     return (stream, recipient, sub)
 
+def is_public_stream_by_name(stream_name, realm):
+    # type: (Text, Realm) -> bool
+    """Determine whether a stream is public, so that
+    our caller can decide whether we can get
+    historical messages for a narrowing search.
+
+    Because of the way our search is currently structured,
+    we may be passed an invalid stream here.  We return
+    False in that situation, and subsequent code will do
+    validation and raise the appropriate JsonableError.
+
+    Note that this function should only be used in contexts where
+    access_stream is being called elsewhere to confirm that the user
+    can actually see this stream.
+    """
+    try:
+        stream = get_stream(stream_name, realm)
+    except Stream.DoesNotExist:
+        return False
+    return stream.is_public()
+
 def filter_stream_authorization(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
     streams_subscribed = set()  # type: Set[int]

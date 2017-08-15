@@ -35,6 +35,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
+from zerver.lib.streams import is_public_stream_by_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
@@ -479,25 +480,6 @@ def narrow_parameter(json):
 
     return list(map(convert_term, data))
 
-def is_public_stream(stream_name, realm):
-    # type: (Text, Realm) -> bool
-    """
-    Determine whether a stream is public, so that
-    our caller can decide whether we can get
-    historical messages for a narrowing search.
-
-    Because of the way our search is currently structured,
-    we may be passed an invalid stream here.  We return
-    False in that situation, and subsequent code will do
-    validation and raise the appropriate JsonableError.
-    """
-    try:
-        stream = get_stream(stream_name, realm)
-    except Stream.DoesNotExist:
-        return False
-    return stream.is_public()
-
-
 def ok_to_include_history(narrow, realm):
     # type: (Optional[Iterable[Dict[str, Any]]], Realm) -> bool
 
@@ -515,7 +497,7 @@ def ok_to_include_history(narrow, realm):
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                if is_public_stream(term['operand'], realm):
+                if is_public_stream_by_name(term['operand'], realm):
                     include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
