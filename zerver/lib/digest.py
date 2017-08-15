@@ -14,7 +14,7 @@ from zerver.lib.notifications import build_message_list, hash_util_encode, \
     one_click_unsubscribe_link
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
-    Subscription, get_active_streams
+    Subscription, get_active_streams, get_user_profile_by_id
 from zerver.context_processors import common_context
 
 import logging
@@ -149,7 +149,7 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
 
 def handle_digest_email(user_profile_id, cutoff):
     # type: (int, float) -> None
-    user_profile = UserProfile.objects.get(id=user_profile_id)
+    user_profile = get_user_profile_by_id(user_profile_id)
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=pytz.utc)
 
