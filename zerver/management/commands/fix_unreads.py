@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import sys
 import time
 import ujson
 
@@ -14,6 +15,7 @@ from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import (
+    Realm,
     Stream,
     UserProfile
 )
@@ -235,18 +237,49 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('email', metavar='<email>', type=str,
+        parser.add_argument('emails',
+                            metavar='<emails>',
+                            type=str,
+                            nargs='*',
                             help='email address to spelunk')
+        parser.add_argument('--all',
+                            action='store_true',
+                            dest='all',
+                            default=False,
+                            help='fix all users in specified realm')
         self.add_realm_args(parser)
+
+    def fix_all_users(self, realm):
+        # type: (Realm) -> None
+        user_profiles = list(UserProfile.objects.filter(
+            realm=realm,
+            is_bot=False
+        ))
+        for user_profile in user_profiles:
+            fix(user_profile)
+
+    def fix_emails(self, realm, emails):
+        # type: (Realm, List[Text]) -> None
+
+        for email in emails:
+            try:
+                user_profile = self.get_user(email, realm)
+            except CommandError:
+                print("e-mail %s doesn't exist in the realm %s, skipping" % (email, realm))
+                return
+
+            fix(user_profile)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
-        email = options['email']
-        try:
-            user_profile = self.get_user(email, realm)
-        except CommandError:
-            print("e-mail %s doesn't exist in the realm %s, skipping" % (email, realm))
+
+        if options['all']:
+            if realm is None:
+                print('You must specify a realm if you choose the --all option.')
+                sys.exit(1)
+
+            self.fix_all_users(realm)
             return
 
-        fix(user_profile)
+        self.fix_emails(realm, options['emails'])
