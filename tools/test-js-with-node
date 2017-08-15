@@ -99,6 +99,8 @@ else:
     # Run the index.js test runner, which runs all the other tests.
     command = ['node', '--stack-trace-limit=100', INDEX_JS] + args
 
+print('Starting node tests...')
+
 # If we got this far, we can run the tests!
 try:
     ret = subprocess.check_call(command)
