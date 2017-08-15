@@ -47,7 +47,6 @@ $(function () {
     $("#send_confirm").validate({
         errorElement: "div",
         errorPlacement: function (error) {
-            console.log("error", error);
             $('.alert-error').empty();
             error.appendTo(".alert-error")
                  .addClass("text-error");
