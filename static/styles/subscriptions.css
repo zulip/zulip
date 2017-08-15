@@ -133,7 +133,7 @@
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
     padding: 5px;
     font-size: 0.9em;
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 97%);
     border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 }
@@ -902,7 +902,7 @@ form#add_new_subscription {
 #subscription_overlay .grey-box {
     margin: 0px;
     padding: 5px 10px;
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 97%);
     border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 
