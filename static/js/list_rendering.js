@@ -54,6 +54,37 @@ var list_render = (function () {
         }
 
         var prototype = {
+            // these are the steps to take an item <Object> and turn it into a
+            // jQuery object that comes from parsed HTML.
+            __process_item: function (item) {
+                var _item = opts.modifier(item);
+
+                // if valid jQuery selection, attempt to grab all elements within
+                // and string them together into a giant outerHTML fragment.
+                if (_item.constructor === jQuery) {
+                    _item = (function ($nodes) {
+                        var html = "";
+                        $nodes.each(function () {
+                            if (this.nodeType === 1) {
+                                html += this.outerHTML;
+                            }
+                        });
+
+                        return html;
+                    }(_item));
+                }
+
+                // if is a valid element, get the outerHTML.
+                if (_item instanceof Element) {
+                    _item = _item.outerHTML;
+                }
+
+                // return the modified HTML or nothing if corrupt (null, undef, etc.).
+                var $item = $(_item || "");
+
+                return $item;
+            },
+
             // Reads the provided list (in the scope directly above)
             // and renders the next block of messages automatically
             // into the specified contianer.
@@ -65,36 +96,36 @@ var list_render = (function () {
                     return;
                 }
 
+                var defProp = function (item, x, val) {
+                    Object.defineProperty(item, x, {
+                        get: function () { return val; },
+                        set: function (value) {
+                            val = value;
+
+                            var $replacement = prototype.__process_item(item);
+                            item.__$elem.eq(0).before($replacement);
+                            item.__$elem.remove();
+                            item.__$elem = $replacement;
+                        },
+                    });
+                };
+
                 var slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
-                var html = _.reduce(slice, function (acc, item) {
-                    var _item = opts.modifier(item);
+                var html = _.map(slice, function (item) {
+                    var $item = prototype.__process_item(item);
+                    item.__$elem = $item;
 
-                    // if valid jQuery selection, attempt to grab all elements within
-                    // and string them together into a giant outerHTML fragment.
-                    if (_item.constructor === jQuery) {
-                        _item = (function ($nodes) {
-                            var html = "";
-                            $nodes.each(function () {
-                                if (this.nodeType === 1) {
-                                    html += this.outerHTML;
-                                }
-                            });
-
-                            return html;
-                        }(_item));
+                    for (var x in item) {
+                        if (x !== "__$elem") {
+                            defProp(item, x, item[x]);
+                        }
                     }
 
-                    // if is a valid element, get the outerHTML.
-                    if (_item instanceof Element) {
-                        _item = _item.outerHTML;
-                    }
+                    return $item;
+                });
 
-                    // return the modified HTML or nothing if corrupt (null, undef, etc.).
-                    return acc + (_item || "");
-                }, "");
-
-                $container.append($(html));
+                $container.append(html);
                 meta.offset += load_count;
 
                 return this;
@@ -175,7 +206,7 @@ var list_render = (function () {
                 while ($nearestScrollingContainer.length) {
                     if ($nearestScrollingContainer.is("body, html")) {
                         blueslip.warn("Please wrap progressive scrolling lists in an element with 'max-height' attribute. Error found in:\n" + blueslip.preview_node($container));
-                        break;
+                        return;
                     }
 
                     if ($nearestScrollingContainer.css("max-height") !== "none") {
