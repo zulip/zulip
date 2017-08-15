@@ -1173,7 +1173,7 @@ LOGIN_REDIRECT_URL = '/'
 POLL_TIMEOUT = 90 * 1000
 
 # iOS App IDs
-ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
+ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
 
 ########################################################################
 # SSO AND LDAP SETTINGS
