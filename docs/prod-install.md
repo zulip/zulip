@@ -12,12 +12,6 @@ you need:
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
 
-## Step 0: Subscribe
-
-Please subscribe to the low-traffic [Zulip announcements Google
-Group](https://groups.google.com/forum/#!forum/zulip-announce) to get
-announcements about new releases, security issues, etc.
-
 ## Step 1: Install SSL Certificates
 
 Zulip runs over `https` only, and requires SSL certificates in order to
@@ -159,11 +153,16 @@ Corporate Organization:
 * `restricted_to_domain=True`: New users must have an email address in the same domain (e.g. @acme.com) as yours.
 * `invite_required=False`: No invitation is required to join.
 
-Next, you'll likely want to do one of the following:
+## Step 6: Next steps
 
-* [Read our advice for new organization administrators][realm-admin-docs]
-* [Customize your Zulip organization](prod-customize.html)
-* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html)
+* Subscribe to the extremely low-traffic
+[Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
+to get important announcements for Zulip server administrators about
+new releases, security issues, etc.
+* [Follow Zulip on Twitter](https://twitter.com/zulip) to get Zulip news.
+* [Read our advice for new organization administrators][realm-admin-docs].
+* [Customize your Zulip organization](prod-customize.html).
+* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
 
 ## Troubleshooting
 
