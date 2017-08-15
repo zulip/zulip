@@ -278,8 +278,8 @@ html {
     padding: 0;
     margin-bottom: 0;
 
-    font-weight: 500;
-    font-size: 0.8em;
+    font-weight: 600;
+    font-size: 0.7em;
     line-height: 1.2;
     background-color: transparent;
 
@@ -290,6 +290,10 @@ html {
 
 .new-style .right-side .alert {
     max-width: 328px;
+}
+
+.new-style .alert.alert-error {
+    text-align: left;
 }
 
 .new-style .input-box input[type=text],
@@ -373,6 +377,7 @@ html {
 
     position: relative;
     top: -4px;
+    left: 1px;
 }
 
 .new-style .input-box label.text-error {
