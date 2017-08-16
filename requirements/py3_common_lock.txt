@@ -42,7 +42,8 @@ httplib2==0.10.3
 idna==2.5
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==5.4.1
+ipython==6.1.0
+jedi==0.10.2              # via ipython
 jinja2==2.9.6
 lxml==3.8.0
 markdown-include==0.5.1
