@@ -201,7 +201,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (sub) {
                     stream_events.mark_subscribed(sub, rec.subscribers);
                 } else {
-                    blueslip.error('Subscribing to unknown stream' + rec.stream_id);
+                    blueslip.error('Subscribing to unknown stream with ID ' + rec.stream_id);
                 }
             });
         } else if (event.op === 'peer_add') {
