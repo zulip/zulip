@@ -35,43 +35,13 @@ Highlights:
 Release notes:
 
 * There are some significant database migrations that will be in the
-next release that can take a long time to run.  Fortunately, these can
-be run without downtime before the rest of the upgrade, by using the
-following postgres queries (run these inside `manage.py dbshell`):
-
-```
-    CREATE INDEX CONCURRENTLY
-    zerver_usermessage_mentioned_message_id
-    ON zerver_usermessage (user_profile_id, message_id)
-    WHERE (flags & 8) != 0;
-
-    CREATE INDEX CONCURRENTLY
-    zerver_usermessage_starred_message_id
-    ON zerver_usermessage (user_profile_id, message_id)
-    WHERE (flags & 2) != 0;
-
-    CREATE INDEX CONCURRENTLY
-    zerver_usermessage_has_alert_word_message_id
-    ON zerver_usermessage (user_profile_id, message_id)
-    WHERE (flags & 512) != 0;
-
-    CREATE INDEX CONCURRENTLY
-    zerver_usermessage_wildcard_mentioned_message_id
-    ON zerver_usermessage (user_profile_id, message_id)
-    WHERE (flags & 8) != 0 OR (FLAGS & 16) != 0;
-
-    CREATE INDEX CONCURRENTLY
-    zerver_usermessage_unread_message_id
-    ON zerver_usermessage (user_profile_id, message_id)
-    WHERE (flags & 1) = 0;
-
-```
-
-For context on the impact of running these migrations, creating the
-first few indexes took about 1 minute each with chat.zulip.org's 75M
-UserMessage rows (from `select COUNT(*) from zerver_usermessage;`),
-with no user-facing service disruption.  The unread index took more
-like 10 minutes.
+next release that can take several minutes to run.  These migrations
+will be automatically run during the upgrade process, but before
+user-facing downtime begins to avoid disruption.  However, if you'd
+like to watch the downtime part of the upgrade process carefully, we
+recommend
+[running these migrations manually](expensive-migrations.html) before
+starting the upgrade.
 
 Full feature Changelog:
 
