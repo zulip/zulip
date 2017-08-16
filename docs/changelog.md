@@ -51,15 +51,20 @@ following postgres queries (run these inside `manage.py dbshell`):
     WHERE (flags & 2) != 0;
 
     CREATE INDEX CONCURRENTLY
+    zerver_usermessage_has_alert_word_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 512) != 0;
+
+    CREATE INDEX CONCURRENTLY
     zerver_usermessage_unread_message_id
     ON zerver_usermessage (user_profile_id, message_id)
     WHERE (flags & 1) = 0;
 ```
 
 For context on the impact of running these migrations, creating the
-first two indexes took about 1 minute each with chat.zulip.org's 75M
+first few indexes took about 1 minute each with chat.zulip.org's 75M
 UserMessage rows (from `select COUNT(*) from zerver_usermessage;`),
-with no user-facing service disruption.  The third index took more
+with no user-facing service disruption.  The unread index took more
 like 10 minutes.
 
 Full feature Changelog:
