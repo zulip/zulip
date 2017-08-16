@@ -56,9 +56,15 @@ following postgres queries (run these inside `manage.py dbshell`):
     WHERE (flags & 512) != 0;
 
     CREATE INDEX CONCURRENTLY
+    zerver_usermessage_wildcard_mentioned_message_id
+    ON zerver_usermessage (user_profile_id, message_id)
+    WHERE (flags & 8) != 0 OR (FLAGS & 16) != 0;
+
+    CREATE INDEX CONCURRENTLY
     zerver_usermessage_unread_message_id
     ON zerver_usermessage (user_profile_id, message_id)
     WHERE (flags & 1) = 0;
+
 ```
 
 For context on the impact of running these migrations, creating the
