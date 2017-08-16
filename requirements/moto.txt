@@ -9,4 +9,4 @@ xmltodict==0.11.0
 python-dateutil==2.6.0
 cookies==2.2.1
 PyYAML==3.12
-botocore==1.5.72
+botocore==1.6.2
