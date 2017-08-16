@@ -20,20 +20,6 @@ Files: *
 Copyright: 2011-2017 Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Apache-2
 
-Files: api/*
-Copyright: 2012-2017 Dropbox, Inc., Kandra Labs, Inc., and contributors
-License: Expat
-
-Files: api/integrations/perforce/git_p4.py
-Copyright: 2007 Simon Hausmann <simon@lst.de>,
- 2007 Trolltech ASA
-License: Expat
-Comment: https://raw.github.com/git/git/34022ba/git-p4.py
-
-Files: bots/jabber_mirror_backend.py
-Copyright: 2013 Permabit, Inc., 2013-2014 Dropbox, Inc.
-License: Expat
-
 Files: confirmation/*
 Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
