@@ -70,8 +70,8 @@ pycparser==2.17           # via cffi
 pycrypto==2.6.1
 pydictionary==1.5.2
 pygments==2.2.0           # via ipython
-pyjwt==1.5.2              # via social-auth-core
-pyldap==2.4.25.1
+pyjwt==1.5.2
+pyldap==2.4.37
 pylibmc==1.5.2
 pyopenssl==17.0.0         # via ndg-httpsclient
 python-gcm==0.4
