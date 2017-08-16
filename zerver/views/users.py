@@ -48,7 +48,7 @@ def deactivate_user_own_backend(request, user_profile):
 
     if user_profile.is_realm_admin and check_last_admin(user_profile):
         return json_error(_('Cannot deactivate the only organization administrator'))
-    do_deactivate_user(user_profile)
+    do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
 
 def check_last_admin(user_profile):
@@ -71,7 +71,7 @@ def _deactivate_user_profile_backend(request, user_profile, target):
     if not user_profile.can_admin_user(target):
         return json_error(_('Insufficient permission'))
 
-    do_deactivate_user(target)
+    do_deactivate_user(target, acting_user=user_profile)
     return json_success()
 
 def reactivate_user_backend(request, user_profile, email):

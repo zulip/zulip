@@ -531,8 +531,8 @@ def do_reactivate_realm(realm):
     realm.deactivated = False
     realm.save(update_fields=["deactivated"])
 
-def do_deactivate_user(user_profile, _cascade=True):
-    # type: (UserProfile, bool) -> None
+def do_deactivate_user(user_profile, acting_user=None, _cascade=True):
+    # type: (UserProfile, Optional[UserProfile], bool) -> None
     if not user_profile.is_active:
         return
 
@@ -544,6 +544,7 @@ def do_deactivate_user(user_profile, _cascade=True):
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 acting_user=acting_user,
                                  event_type='user_deactivated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
@@ -565,7 +566,7 @@ def do_deactivate_user(user_profile, _cascade=True):
         bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                                   bot_owner=user_profile)
         for profile in bot_profiles:
-            do_deactivate_user(profile, _cascade=False)
+            do_deactivate_user(profile, acting_user=acting_user, _cascade=False)
 
 def do_deactivate_stream(stream, log=True):
     # type: (Stream, bool) -> None
