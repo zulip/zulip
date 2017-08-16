@@ -42,8 +42,8 @@ run ./tools/run-mypy
 # travis/backend
 run ./tools/lint --pep8 $FORCEARG
 run ./manage.py makemessages --locale en
-run PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
-run PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 run ./tools/test-tools
 run ./tools/test-backend $FORCEARG
 run ./tools/test-migrations
