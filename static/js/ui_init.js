@@ -251,7 +251,8 @@ $(function () {
     people.initialize();
     bot_data.initialize(); // Must happen after people.initialize()
     message_fetch.initialize();
-    markdown.initialize();
+    emoji.initialize();
+    markdown.initialize(); // Must happen after emoji.initialize()
     composebox_typeahead.initialize();
     search.initialize();
     tutorial.initialize();
@@ -262,7 +263,6 @@ $(function () {
     pointer.initialize();
     unread_ui.initialize();
     activity.initialize();
-    emoji.initialize();
     emoji_picker.initialize();
     compose_fade.initialize();
     pm_list.initialize();
