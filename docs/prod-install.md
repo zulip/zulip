@@ -32,27 +32,33 @@ tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
 ```
-sudo -i  # If not already root
-cd /root
+cd $(mktemp -d)
 wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
-rm -rf /root/zulip && mkdir /root/zulip
-tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
+tar -xf zulip-server-latest.tar.gz
 ```
 
 Then, run the Zulip install script:
 ```
-/root/zulip/scripts/setup/install
+sudo -s  # If not already root
+./zulip-server-*/scripts/setup/install
 ```
 
 This may take a while to run, since it will install a large number of
-dependencies. It also creates a `zulip` user, which will be used to run
-the various Zulip servers.
+dependencies.
 
 The Zulip install script is designed to be idempotent, so if it fails,
 you can just rerun it after correcting the issue that caused it to
 fail.  Also note that it automatically logs a transcript to
 `/var/log/zulip/install.log`; please include a copy of that file in
 any bug reports.
+
+The install script creates a `zulip` user, which the various Zulip
+servers will run as, and the Zulip deployment (and future deployments
+when you upgrade) go into `/home/zulip/deployments/`.  At the very end
+of the install process, the script moves the Zulip code tree it's
+running from (which you unpacked from a tarball above) to a directory
+there, and makes `/home/zulip/deployments/current` as a symbolic link
+to it.
 
 ## Step 3: Configure Zulip
 
