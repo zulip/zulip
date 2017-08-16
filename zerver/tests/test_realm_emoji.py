@@ -18,8 +18,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
-        content = ujson.loads(result.content)
-        self.assertEqual(len(content["emoji"]), 2)
+        self.assertEqual(len(result.json()["emoji"]), 2)
 
     def test_list_no_author(self):
         # type: () -> None
@@ -125,8 +124,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
 
         result = self.client_get("/json/realm/emoji")
-        content = ujson.loads(result.content)
-        emojis = content["emoji"]
+        emojis = result.json()["emoji"]
         self.assert_json_success(result)
         # We only mark an emoji as deactivated instead of
         # removing it from the database.
