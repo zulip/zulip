@@ -1072,6 +1072,12 @@ def prep_stream_welcome_message(stream):
 
     return message
 
+def send_stream_creation_event(stream, user_ids):
+    # type: (Stream, List[int]) -> None
+    event = dict(type="stream", op="create",
+                 streams=[stream.to_dict()])
+    send_event(event, user_ids)
+
 def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
     # type: (Realm, Text, bool, Text) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
@@ -1082,9 +1088,7 @@ def create_stream_if_needed(realm, stream_name, invite_only=False, stream_descri
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if not invite_only:
-            event = dict(type="stream", op="create",
-                         streams=[stream.to_dict()])
-            send_event(event, active_user_ids(realm))
+            send_stream_creation_event(stream, active_user_ids(stream.realm))
     return stream, created
 
 def create_streams_if_needed(realm, stream_dicts):
@@ -1776,9 +1780,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         # notification, since they didn't have the invite-only stream
         # in their browser yet.
         if stream.invite_only:
-            event = dict(type="stream", op="create",
-                         streams=[stream.to_dict()])
-            send_event(event, [user.id for user in new_users])
+            send_stream_creation_event(stream, [user.id for user in new_users])
 
     # The second batch is events for the users themselves that they
     # were subscribed to the new streams.
