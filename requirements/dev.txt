@@ -31,7 +31,7 @@ sh==1.12.14
 transifex-client==0.12.4
 
 # Dependency of transifex-client
-urllib3==1.21.1
+urllib3==1.22
 
 # Needed for documentation_crawler
 pathlib2==2.3.0
