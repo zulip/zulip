@@ -68,7 +68,7 @@ pika==0.10.0
 pillow==4.1.1
 polib==1.0.8
 prompt-toolkit==1.0.14    # via ipython
-psycopg2==2.7.1
+psycopg2==2.7.3
 ptyprocess==0.5.1         # via pexpect
 pyasn1-modules==0.0.9
 pyasn1==0.2.3
