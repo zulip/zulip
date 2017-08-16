@@ -43,11 +43,10 @@ exports.restore_stream_list_size = function () {
 
 
 function stream_popover_sub(e) {
-    // TODO: use data-stream-id in stream list
-    var stream_name = $(e.currentTarget).parents('ul').attr('data-name');
-    var sub = stream_data.get_sub(stream_name);
+    var stream_id = $(e.currentTarget).parents('ul').attr('data-stream-id');
+    var sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        blueslip.error('Unknown stream: ' + stream_name);
+        blueslip.error('Unknown stream: ' + stream_id);
         return;
     }
     return sub;
