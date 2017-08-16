@@ -34,7 +34,7 @@ through your new server's web interface.
 
 You now have a running Zulip install!
 
-* Read [our advice on helping your community](realm-admin-docs) make
+* Read [our advice on helping your community][realm-admin-docs] make
   the most of Zulip.
 
 * [Customize Zulip](prod-customize.html) to your needs.
