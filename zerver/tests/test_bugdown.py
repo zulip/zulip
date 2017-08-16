@@ -714,7 +714,7 @@ class BugdownTest(ZulipTestCase):
                          '<p><span class="user-mention" data-user-email="*" data-user-id="*">@everyone</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
-    def test_mention_everyone(self):
+    def test_mention_everyone_style_normal_user(self):
         # type: () -> None
         user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
