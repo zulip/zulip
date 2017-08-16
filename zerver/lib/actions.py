@@ -2007,12 +2007,13 @@ def do_change_password(user_profile, password, commit=True,
 
 def do_change_full_name(user_profile, full_name, acting_user):
     # type: (UserProfile, Text, UserProfile) -> None
+    old_name = user_profile.full_name
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
                                  modified_user=user_profile, event_type='user_full_name_changed',
-                                 event_time=event_time)
+                                 event_time=event_time, extra_data=old_name)
     payload = dict(email=user_profile.email,
                    user_id=user_profile.id,
                    full_name=user_profile.full_name)
