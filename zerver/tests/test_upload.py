@@ -70,9 +70,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Upload file via API
         auth_headers = self.api_auth(self.example_email("hamlet"))
         result = self.client_post('/api/v1/user_uploads', {'file': fp}, **auth_headers)
-        json = ujson.loads(result.content)
-        self.assertIn("uri", json)
-        uri = json["uri"]
+        self.assertIn("uri", result.json())
+        uri = result.json()['uri']
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
 
@@ -185,9 +184,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("uri", json)
-        uri = json["uri"]
+        self.assertIn("uri", result.json())
+        uri = result.json()["uri"]
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
 
@@ -210,8 +208,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
+        uri = result.json()["uri"]
 
         self.logout()
         response = self.client_get(uri)
@@ -227,12 +224,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
 
         destroy_uploads()
 
-        response = self.client_get(uri)
+        response = self.client_get(result.json()["uri"])
         self.assertEqual(response.status_code, 404)
 
     def test_non_existing_file_download(self):
@@ -252,16 +247,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {'file': d1})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        d1_path_id = re.sub('/user_uploads/', '', uri)
+        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         d2 = StringIO("zulip!")
         d2.name = "dummy_2.txt"
         result = self.client_post("/json/user_uploads", {'file': d2})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        d2_path_id = re.sub('/user_uploads/', '', uri)
+        d2_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
@@ -299,9 +290,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {'file': d1})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        d1_path_id = re.sub('/user_uploads/', '', uri)
+        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
@@ -319,9 +308,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {'file': d1})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        d1_path_id = re.sub('/user_uploads/', '', uri)
+        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         self.make_stream("private_stream", invite_only=True)
         self.subscribe_to_stream(self.example_email("hamlet"), "private_stream")
@@ -361,14 +348,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.login(self.example_email("hamlet"))
         result = self.client_post("/json/user_uploads", {'file': f1})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        f1_path_id = re.sub('/user_uploads/', '', uri)
+        f1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         result = self.client_post("/json/user_uploads", {'file': f2})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        f2_path_id = re.sub('/user_uploads/', '', uri)
+        f2_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         self.subscribe_to_stream(self.example_email("hamlet"), "test")
         body = ("[f1.txt](http://localhost:9991/user_uploads/" + f1_path_id + ")"
@@ -376,9 +359,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         msg_id = self.send_message(self.example_email("hamlet"), "test", Recipient.STREAM, body, "test")
 
         result = self.client_post("/json/user_uploads", {'file': f3})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        f3_path_id = re.sub('/user_uploads/', '', uri)
+        f3_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
                     "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
@@ -424,8 +405,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             fp.name = urllib.parse.quote(expected)
 
             result = self.client_post("/json/user_uploads", {'f1': fp})
-            content = ujson.loads(result.content)
-            assert sanitize_name(expected) in content['uri']
+            assert sanitize_name(expected) in result.json()['uri']
 
     def test_upload_size_quote(self):
         # type: () -> None
@@ -437,9 +417,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {'file': d1})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        d1_path_id = re.sub('/user_uploads/', '', uri)
+        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
         self.assert_json_success(result)
 
@@ -494,8 +472,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
+        uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
         with self.settings(CROSS_REALM_BOT_EMAILS = set((user2_email, user3_email))):
@@ -530,8 +507,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
+        uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
         self.send_message(self.example_email("hamlet"), "test-subscribe", Recipient.STREAM, body, "test")
@@ -565,8 +541,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
-        json = ujson.loads(result.content)
-        uri = json["uri"]
+        uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
         self.send_message(self.example_email("hamlet"), "test-subscribe", Recipient.STREAM, body, "test")
@@ -708,10 +683,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_post("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_success(result)
-            json = ujson.loads(result.content)
-            self.assertIn("avatar_url", json)
-            url = json["avatar_url"]
+            self.assertIn("avatar_url", result.json())
             base = '/user_avatars/'
+            url = result.json()['avatar_url']
             self.assertEqual(base, url[:len(base)])
 
             if rfname is not None:
@@ -764,9 +738,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("avatar_url", json)
-        self.assertEqual(json["avatar_url"], avatar_url(user_profile))
+        self.assertIn("avatar_url", result.json())
+        self.assertEqual(result.json()["avatar_url"], avatar_url(user_profile))
 
         self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertEqual(user_profile.avatar_version, 2)
@@ -863,10 +836,9 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_post("/json/realm/icon", {'file': fp})
             realm = get_realm('zulip')
             self.assert_json_success(result)
-            json = ujson.loads(result.content)
-            self.assertIn("icon_url", json)
-            url = json["icon_url"]
+            self.assertIn("icon_url", result.json())
             base = '/user_avatars/%s/realm/icon.png' % (realm.id,)
+            url = result.json()['icon_url']
             self.assertEqual(base, url[:len(base)])
 
             if rfname is not None:
@@ -900,10 +872,9 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_delete("/json/realm/icon")
 
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("icon_url", json)
+        self.assertIn("icon_url", result.json())
         realm = get_realm('zulip')
-        self.assertEqual(json["icon_url"], realm_icon_url(realm))
+        self.assertEqual(result.json()["icon_url"], realm_icon_url(realm))
         self.assertEqual(realm.icon_source, Realm.ICON_FROM_GRAVATAR)
 
     def test_realm_icon_version(self):
@@ -952,9 +923,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
 
-        json = ujson.loads(result.content)
-        uri = json["uri"]
-        path_id = re.sub('/user_uploads/', '', uri)
+        path_id = re.sub('/user_uploads/', '', result.json()['uri'])
         self.assertTrue(delete_message_image(path_id))
 
     def tearDown(self):
@@ -1028,10 +997,9 @@ class S3Test(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("uri", json)
-        uri = json["uri"]
+        self.assertIn("uri", result.json())
         base = '/user_uploads/'
+        uri = result.json()['uri']
         self.assertEqual(base, uri[:len(base)])
 
         response = self.client_get(uri)
