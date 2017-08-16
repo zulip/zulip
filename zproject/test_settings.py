@@ -136,3 +136,9 @@ LOGIN_URL = '/accounts/login'
 # By default will not send emails when login occurs.
 # Explicity set this to True within tests that must have this on.
 SEND_LOGIN_EMAILS = False
+
+GOOGLE_OAUTH2_CLIENT_ID = "id"
+GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
+
+SOCIAL_AUTH_GITHUB_KEY = "key"
+SOCIAL_AUTH_GITHUB_SECRET = "secret"
