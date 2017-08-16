@@ -969,8 +969,7 @@ class BugdownApiTests(ZulipTestCase):
             **self.api_auth(self.example_email("othello"))
         )
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['rendered'],
+        self.assertEqual(result.json()['rendered'],
                          u'<p>That is a <strong>bold</strong> statement</p>')
 
     def test_render_mention_stream_api(self):
@@ -983,9 +982,8 @@ class BugdownApiTests(ZulipTestCase):
             **self.api_auth(self.example_email("othello"))
         )
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
         user_id = self.example_user('hamlet').id
-        self.assertEqual(data['rendered'],
+        self.assertEqual(result.json()['rendered'],
                          u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="%s" data-user-id="%s">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id, self.example_email("hamlet"), user_id))
 
 class BugdownErrorTests(ZulipTestCase):
