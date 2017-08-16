@@ -57,14 +57,14 @@ class Command(ZulipBaseCommand):
         elif deactivate:
             if user_emails:
                 print('Soft deactivating forcefully...')
-                user_ids_to_deactivate = list(UserProfile.objects.filter(
+                users_to_deactivate = list(UserProfile.objects.filter(
                     realm=realm,
                     email__in=user_emails))
             else:
-                user_ids_to_deactivate = get_users_for_soft_deactivation(realm, int(options['inactive_for']))
+                users_to_deactivate = get_users_for_soft_deactivation(realm, int(options['inactive_for']))
 
-            if user_ids_to_deactivate:
-                do_soft_deactivate_users(user_ids_to_deactivate)
+            if users_to_deactivate:
+                do_soft_deactivate_users(users_to_deactivate)
         else:
             self.print_help("./manage.py", "soft_activate_deactivate_users")
             sys.exit(1)
