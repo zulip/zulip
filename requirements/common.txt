@@ -80,7 +80,7 @@ markdown-include==0.5.1
 # Needed for mock objects in decorators
 mock==2.0.0
 
-oauth2client==4.1.1
+oauth2client==4.1.2
 oauthlib==2.0.2
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL

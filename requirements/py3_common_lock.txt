@@ -51,7 +51,7 @@ markdown==2.6.8           # via markdown-include
 markupsafe==1.0
 mock==2.0.0
 ndg-httpsclient==0.4.2
-oauth2client==4.1.1
+oauth2client==4.1.2
 oauthlib==2.0.2
 olefile==0.44             # via pillow
 pbr==3.0.0                # via mock
