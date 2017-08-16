@@ -118,24 +118,24 @@ function build_topic_popover(e) {
         return;
     }
 
-    var stream_name = $(elt).closest('.topic-list').expectOne().attr('data-stream');
+    var stream_id = $(elt).closest('.narrow-filter').expectOne().attr('data-stream-id');
     var topic_name = $(elt).closest('li').expectOne().attr('data-name');
 
-    var sub = stream_data.get_sub(stream_name);
+    var sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        blueslip.error('cannot build topic popover for stream: ' + stream_name);
+        blueslip.error('cannot build topic popover for stream: ' + stream_id);
         return;
     }
 
     popovers.hide_all();
     exports.show_streamlist_sidebar();
 
-    var is_muted = muting.is_topic_muted(stream_name, topic_name);
+    var is_muted = muting.is_topic_muted(sub.name, topic_name);
     var can_mute_topic = !is_muted;
     var can_unmute_topic = is_muted;
 
     var content = templates.render('topic_sidebar_actions', {
-        stream_name: stream_name,
+        stream_name: sub.name,
         stream_id: sub.stream_id,
         topic_name: topic_name,
         can_mute_topic: can_mute_topic,
