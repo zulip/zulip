@@ -307,13 +307,6 @@ def build_custom_checkers(by_lang):
         {'pattern': 'render_to_response\(',
          'description': "Use render() instead of render_to_response().",
          },
-        # This rule might give false positives in virtualenv setup files which should be excluded,
-        # and comments which should be rewritten to avoid use of "python2", "python3", etc.
-        {'pattern': 'python[23]',
-         'exclude': set(['tools/lib/provision.py',
-                         'tools/setup/setup_venvs.py',
-                         'scripts/lib/setup_venv.py']),
-         'description': 'Explicit python invocations should not include a version'},
         {'pattern': '(^|\s)open\s*\(',
          'description': 'open() should not be used in Zulip\'s bots. Use functions'
                         ' provided by the bots framework to access the filesystem.',

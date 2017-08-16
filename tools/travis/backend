@@ -6,9 +6,9 @@ set -e
 set -x
 
 ./tools/lint --pep8 # Include the slow and thus non-default pep8 linter check
-python manage.py makemessages --locale en
-python -W ignore tools/check-capitalization --no-generate
-python -W ignore tools/check-frontend-i18n --no-generate
+./manage.py makemessages --locale en
+PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 
 ./tools/test-tools
 ./tools/test-backend --coverage

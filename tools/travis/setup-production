@@ -36,14 +36,7 @@ source tools/travis/activate-venv
 # broken their java install, but also nicely provides consistency.
 sudo ln -nsf /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java /usr/bin/java
 
-py_version="$(python -c 'import sys; print(sys.version_info[0])')"
-if [ "$py_version" = 2 ]; then
-    build_options=()
-else
-    build_options=(--py3)
-fi
-
-if ! env TRAVIS=1 ./tools/build-release-tarball "${build_options[@]}" travis; then
+if ! env TRAVIS=1 ./tools/build-release-tarball travis; then
     echo "Attempting to output failure logging data"
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import os
 import sys
@@ -10,8 +10,6 @@ import glob
 import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
-
-PY2 = sys.version_info[0] == 2
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -32,8 +30,7 @@ SUPPORTED_PLATFORMS = {
     ],
 }
 
-PY2_VENV_PATH = "/srv/zulip-venv"
-PY3_VENV_PATH = "/srv/zulip-py3-venv"
+VENV_PATH = "/srv/zulip-py3-venv"
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
 UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
@@ -47,11 +44,6 @@ EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 if 'TRAVIS' in os.environ:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
-
-if PY2:
-    VENV_PATH = PY2_VENV_PATH
-else:
-    VENV_PATH = PY3_VENV_PATH
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
@@ -249,10 +241,7 @@ def main(options):
     from tools.setup import setup_venvs
     setup_venvs.main(options.is_travis)
 
-    # Put Python2 virtualenv activation in .bash_profile.
     setup_shell_profile('~/.bash_profile')
-
-    # Put Python2 virtualenv activation in .zprofile (for Zsh users).
     setup_shell_profile('~/.zprofile')
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])

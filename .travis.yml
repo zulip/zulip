@@ -43,9 +43,8 @@ env:
   global:
     - BOTO_CONFIG=/tmp/nowhere
 language: python
-# We run all of our test suites for both Python 2.7 and 3.4, with the
-# exception of static analysis, which is just run once (and checks
-# against both Python versions).
+# Our test suites generally run on Python 3.4, the version in
+# Ubuntu 14.04 trusty, which is the oldest OS release we support.
 matrix:
   include:
     # Travis will actually run the jobs in the order they're listed here;
@@ -59,12 +58,6 @@ matrix:
     - python: "3.4"
       env: TEST_SUITE=backend
     - python: "3.4"
-      env: TEST_SUITE=production
-    - python: "2.7"
-      env: TEST_SUITE=frontend
-    - python: "2.7"
-      env: TEST_SUITE=backend
-    - python: "2.7"
       env: TEST_SUITE=production
 sudo: required
 services:
