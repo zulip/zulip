@@ -72,7 +72,7 @@ html2text==2016.9.19
 httplib2==0.10.3
 
 # Needed for JWT-based auth
-PyJWT==1.5.0
+PyJWT==1.5.2
 
 # Needed for including other markdown files for user docs
 markdown-include==0.5.1
