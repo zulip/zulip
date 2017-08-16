@@ -79,6 +79,13 @@ if there's something you'd like to do but can't figure out how to.
 
 [settings-py-template]: https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py
 
+Some popular settings in `/etc/zulip/settings.py` include:
+* The Twitter integration, which provides pretty inline previews of
+  tweets.
+* The email gateway, which lets users send emails into Zulip.
+* `INLINE_URL_EMBED_PREVIEW`, which controls our experimental feature
+  providing inline previews of links pasted into Zulip.
+
 ## Zulip announcement list
 
 If you haven't already, subscribe to the
