@@ -134,8 +134,7 @@ class UserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
 
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
+        self.assertEqual(result.json()['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
         email = self.example_email("othello")
         self.login(self.example_email("othello"))
@@ -157,8 +156,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login(self.mit_email("espuser"))
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences'], {})
+        self.assertEqual(result.json()['presences'], {})
 
     def test_mirror_presence(self):
         # type: () -> None
