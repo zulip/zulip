@@ -301,26 +301,6 @@ function maybe_select_emoji(e) {
     }
 }
 
-$(document).on('click', '.emoji-popover-emoji.reaction', function () {
-    // When an emoji is clicked in the popover,
-    // if the user has reacted to this message with this emoji
-    // the reaction is removed
-    // otherwise, the reaction is added
-    var emoji_name = this.title;
-    var message_id = $(this).parent().parent().attr('data-message-id');
-
-    var message = message_store.get(message_id);
-    if (!message) {
-        blueslip.error('reactions: Bad message id: ' + message_id);
-        return;
-    }
-
-    if (reactions.current_user_has_reacted_to_emoji(message, emoji_name)) {
-        $(this).removeClass('reacted');
-    }
-    reactions.toggle_emoji_reaction(message_id, emoji_name);
-});
-
 exports.toggle_selected_emoji = function () {
     // Toggle the currently selected emoji.
     var message_id = current_msg_list.selected_id();
@@ -500,6 +480,26 @@ exports.emoji_select_tab = function (elt) {
 };
 
 exports.register_click_handlers = function () {
+
+    $(document).on('click', '.emoji-popover-emoji.reaction', function () {
+        // When an emoji is clicked in the popover,
+        // if the user has reacted to this message with this emoji
+        // the reaction is removed
+        // otherwise, the reaction is added
+        var emoji_name = this.title;
+        var message_id = $(this).parent().parent().attr('data-message-id');
+
+        var message = message_store.get(message_id);
+        if (!message) {
+            blueslip.error('reactions: Bad message id: ' + message_id);
+            return;
+        }
+
+        if (reactions.current_user_has_reacted_to_emoji(message, emoji_name)) {
+            $(this).removeClass('reacted');
+        }
+        reactions.toggle_emoji_reaction(message_id, emoji_name);
+    });
 
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
         var emoji_text = ':' + this.title + ':';
