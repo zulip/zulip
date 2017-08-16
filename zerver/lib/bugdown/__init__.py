@@ -1113,7 +1113,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 name = match[2:-2]
             else:
                 if not mention.user_mention_matches_wildcard(match):
-                    return
+                    return None
                 name = match
 
             wildcard = mention.user_mention_matches_wildcard(name)
