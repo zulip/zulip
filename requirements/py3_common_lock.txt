@@ -65,7 +65,7 @@ psycopg2==2.7.3
 ptyprocess==0.5.1         # via pexpect
 py3dns==3.1.0
 pyasn1-modules==0.0.9
-pyasn1==0.2.3
+pyasn1==0.3.2
 pycparser==2.17           # via cffi
 pycrypto==2.6.1
 pydictionary==1.5.2
