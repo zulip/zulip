@@ -11,7 +11,6 @@
 .gitignore export-ignore
 .gitattributes export-ignore
 /static/assets export-ignore
-/bots export-ignore
 /corporate export-ignore
 /static export-ignore
 /tools export-ignore
@@ -23,6 +22,3 @@
 /zerver/fixtures export-ignore
 /zerver/tests export-ignore
 /frontend_tests export-ignore
-/node_modules export-ignore
-/humbug export-ignore
-/locale export-ignore
