@@ -784,6 +784,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
+            num_before=0,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(result['messages']), 2)
@@ -793,6 +794,7 @@ class GetOldMessagesTest(ZulipTestCase):
         link_search_result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
+            num_before=0,
             num_after=10,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(link_search_result['messages']), 1)
@@ -825,6 +827,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(multi_search_narrow),
             anchor=next_message_id,
             num_after=10,
+            num_before=0,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
@@ -901,6 +904,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
+            num_before=0,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
@@ -936,6 +940,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(multi_search_narrow),
             anchor=next_message_id,
             num_after=10,
+            num_before=0,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
@@ -946,6 +951,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
+            num_before=0,
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
