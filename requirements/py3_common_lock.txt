@@ -95,7 +95,7 @@ sqlalchemy==1.1.13
 statsd==2.1.2             # via django-statsd-mozilla
 tornado==4.5.1
 traitlets==4.3.2          # via ipython
-typing==3.6.1
+typing==3.6.2
 ujson==1.35
 uritemplate==3.0.0
 urllib3==1.21.1
