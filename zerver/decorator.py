@@ -189,7 +189,8 @@ def validate_api_key(request, role, api_key, is_webhook=False,
 
         if not check_subdomain(get_subdomain(request), ""):
             raise JsonableError(_("This API key only works on the root subdomain"))
-        remote_server._email = "zulip-server:" + role
+        request.user = remote_server
+        request._email = "zulip-server:" + role
         remote_server.rate_limits = ""
         process_client(request, remote_server, remote_server_request=True)
         return remote_server
