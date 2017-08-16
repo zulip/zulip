@@ -150,13 +150,17 @@ new releases, security issues, etc.
 
 ## Troubleshooting
 
-If you get an error after `scripts/setup/install` completes, check
-`/var/log/zulip/errors.log` for a traceback, and consult the
+If you get an error after `scripts/setup/install` completes, check the
+bottom of `/var/log/zulip/errors.log` for a traceback, and consult the
 [troubleshooting section](prod-troubleshooting.html) for advice on how
-to debug.  If that doesn't help, please visit
+to debug.
+
+If that doesn't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
 in the [Zulip development community server](chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
-traceback, and we'll try to help you out!
+traceback, and we'll try to help you out!  Please provide details like
+the full traceback from the bottom of `/var/log/zulip/errors.log` in
+your report.
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
