@@ -186,6 +186,32 @@ function is_odd(i) { return i % 2 === 1; }
     gen.next();
 }());
 
+(function test_streams() {
+    function assert_next_stream(curr_stream, expected) {
+        var actual = tg.get_next_stream(curr_stream);
+        assert.equal(actual, expected);
+    }
+
+    global.stream_sort.get_streams = function () {
+        return ['announce', 'muted', 'devel', 'test here'];
+    };
+
+    assert_next_stream(undefined, 'announce');
+    assert_next_stream('NOT THERE', 'announce');
+
+    assert_next_stream('announce', 'muted');
+    assert_next_stream('test here', 'announce');
+
+    function assert_prev_stream(curr_stream, expected) {
+        var actual = tg.get_prev_stream(curr_stream);
+        assert.equal(actual, expected);
+    }
+
+    assert_prev_stream(undefined, 'test here');
+    assert_prev_stream('test here', 'devel');
+    assert_prev_stream('announce', 'test here');
+
+}());
 
 (function test_topics() {
     var streams = [1, 2, 3, 4];

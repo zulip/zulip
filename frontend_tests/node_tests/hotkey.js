@@ -207,8 +207,8 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('q', 'activity.initiate_search');
     assert_mapping('w', 'stream_list.initiate_search');
 
-    assert_mapping('A', 'navigate.cycle_stream');
-    assert_mapping('D', 'navigate.cycle_stream');
+    assert_mapping('A', 'narrow.stream_cycle_backward');
+    assert_mapping('D', 'narrow.stream_cycle_forward');
 
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('C', 'compose_actions.start');

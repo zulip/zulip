@@ -224,6 +224,18 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     );
 };
 
+exports.get_next_stream = function (curr_stream) {
+    var my_streams = stream_sort.get_streams();
+    var stream_gen = exports.wrap_exclude(my_streams, curr_stream);
+    return stream_gen.next();
+};
+
+exports.get_prev_stream = function (curr_stream) {
+    var my_streams = stream_sort.get_streams();
+    var stream_gen = exports.reverse_wrap_exclude(my_streams, curr_stream);
+    return stream_gen.next();
+};
+
 return exports;
 }());
 
