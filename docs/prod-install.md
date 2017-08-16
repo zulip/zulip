@@ -135,20 +135,7 @@ here](_static/zulip-create-user-and-org.png)).  Complete this form and
 log in!
 
 **Congratulations!** You are logged in as an organization
-administrator for your new Zulip organization.  After getting
-oriented, we recommend visiting the "Organization settings" UI (linked
-from the upper-right gear menu in the Zulip webapp) to configure
-important policy settings like how users can join your new
-organization. By default, your organization will be configured as
-follows depending on what type of organization you selected:
-
-Community Organization:
-* `restricted_to_domain=False`: No restriction on user email addresses.
-* `invite_required=True`: A user must be invited to join.
-
-Corporate Organization:
-* `restricted_to_domain=True`: New users must have an email address in the same domain (e.g. @acme.com) as yours.
-* `invite_required=False`: No invitation is required to join.
+administrator for your new Zulip organization.
 
 ## Step 7: Next steps
 
@@ -158,7 +145,7 @@ to get important announcements for Zulip server administrators about
 new releases, security issues, etc.
 * [Follow Zulip on Twitter](https://twitter.com/zulip) to get Zulip news.
 * [Read our advice for new organization administrators][realm-admin-docs].
-* [Customize your Zulip organization](prod-customize.html).
+* [Customize your Zulip server](prod-customize.html).
 * [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
 
 ## Troubleshooting
