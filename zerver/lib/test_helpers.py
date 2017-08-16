@@ -285,6 +285,7 @@ class HostRequestMock(object):
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
         self.user = user_profile
+        self.method = ''
 
     def get_host(self):
         # type: () -> Text
