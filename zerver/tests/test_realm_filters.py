@@ -21,8 +21,7 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_get("/json/realm/filters")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
-        content = ujson.loads(result.content)
-        self.assertEqual(len(content["filters"]), 1)
+        self.assertEqual(len(result.json()["filters"]), 1)
 
     def test_create(self):
         # type: () -> None
