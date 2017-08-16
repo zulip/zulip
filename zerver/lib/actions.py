@@ -1087,7 +1087,7 @@ def create_stream_if_needed(realm, stream_name, invite_only=False, stream_descri
                   'invite_only': invite_only})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-        if not invite_only:
+        if stream.is_public():
             send_stream_creation_event(stream, active_user_ids(stream.realm))
     return stream, created
 
@@ -1779,7 +1779,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         # Users newly added to invite-only streams need a `create`
         # notification, since they didn't have the invite-only stream
         # in their browser yet.
-        if stream.invite_only:
+        if not stream.is_public():
             send_stream_creation_event(stream, [user.id for user in new_users])
 
     # The second batch is events for the users themselves that they
