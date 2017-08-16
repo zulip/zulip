@@ -203,7 +203,7 @@ exports.render_emoji_popover = function (elt, id) {
         trigger:   "manual",
     });
     elt.popover("show");
-    elt.prop('title', 'Add reaction...');
+    elt.prop('title', 'Add reaction (:)');
     $('.emoji-popover-filter').focus();
     add_scrollbar($(".emoji-popover-emoji-map"));
     add_scrollbar($(".emoji-search-results-container"));

@@ -720,7 +720,7 @@ function render(template_name, args) {
     assert.equal(first_message_text, "This is message one.");
 
     var starred_title = first_message.find(".star").attr("title");
-    assert.equal(starred_title, "Unstar this message");
+    assert.equal(starred_title, "Unstar this message (*)");
 }());
 
 (function message_edit_form() {
