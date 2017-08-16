@@ -144,9 +144,9 @@ administrator for your new Zulip organization.
 to get important announcements for Zulip server administrators about
 new releases, security issues, etc.
 * [Follow Zulip on Twitter](https://twitter.com/zulip) to get Zulip news.
-* [Read our advice for new organization administrators][realm-admin-docs].
-* [Customize your Zulip server](prod-customize.html).
-* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
+* [Learn how to setup your new Zulip organization][realm-admin-docs].
+* [Learn how further configure your Zulip server](prod-customize.html).
+* [Learn about maintaining a production Zulip server](prod-maintain-secure-upgrade.html).
 
 ## Troubleshooting
 
