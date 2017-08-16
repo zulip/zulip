@@ -58,7 +58,7 @@ pbr==3.0.0                # via mock
 pexpect==4.2.1            # via ipython
 pickleshare==0.7.4        # via ipython
 pika==0.10.0
-pillow==4.1.1
+pillow==4.2.1
 polib==1.0.8
 prompt-toolkit==1.0.14    # via ipython
 psycopg2==2.7.3
