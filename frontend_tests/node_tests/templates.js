@@ -1159,7 +1159,7 @@ function render(template_name, args) {
 
     global.write_handlebars_output("topic_list_item", html);
 
-    assert.equal($(html).attr('data-name'), 'lunch');
+    assert.equal($(html).attr('data-topic-name'), 'lunch');
 }());
 
 
