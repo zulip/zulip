@@ -13,7 +13,7 @@ from sqlalchemy.sql import compiler  # type: ignore
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user,
-    Reaction
+    Reaction, UserMessage
 )
 from zerver.lib.message import (
     MessageDict,
@@ -39,7 +39,7 @@ from zerver.views.messages import (
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
-from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Text
+from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional, Text
 from six.moves import range
 import os
 import re
@@ -124,9 +124,31 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_is_operator_non_private_operand_and_negated(self):  # NEGATED
         # type: () -> None
-        for operand in ['starred', 'mentioned', 'alerted']:
-            term = dict(operator='is', operand=operand, negated=True)
-            self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
+        term = dict(operator='is', operand='starred', negated=True)
+        where_clause = 'WHERE (flags & :flags_1) = :param_1'
+        params = dict(
+            flags_1=UserMessage.flags.starred.mask,
+            param_1=0
+        )
+        self._do_add_term_test(term, where_clause, params)
+
+        term = dict(operator='is', operand='alerted', negated=True)
+        where_clause = 'WHERE (flags & :flags_1) = :param_1'
+        params = dict(
+            flags_1=UserMessage.flags.has_alert_word.mask,
+            param_1=0
+        )
+        self._do_add_term_test(term, where_clause, params)
+
+        term = dict(operator='is', operand='mentioned', negated=True)
+        where_clause = 'WHERE NOT ((flags & :flags_1) != :param_1 OR (flags & :flags_2) != :param_2)'
+        params = dict(
+            flags_1=UserMessage.flags.mentioned.mask,
+            param_1=0,
+            flags_2=UserMessage.flags.wildcard_mentioned.mask,
+            param_2=0
+        )
+        self._do_add_term_test(term, where_clause, params)
 
     def test_add_term_using_non_supported_operator_should_raise_error(self):
         # type: () -> None
@@ -331,9 +353,13 @@ class NarrowBuilderTest(ZulipTestCase):
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
-    def _do_add_term_test(self, term, where_clause):
-        # type: (Dict[str, Any], Text) -> None
-        self.assertTrue(where_clause in str(self._build_query(term)))
+    def _do_add_term_test(self, term, where_clause, params=None):
+        # type: (Dict[str, Any], Text, Optional[Dict[str, Any]]) -> None
+        query = self._build_query(term)
+        if params is not None:
+            actual_params = query.compile().params
+            self.assertEqual(actual_params, params)
+        self.assertTrue(where_clause in str(query))
 
     def _build_query(self, term):
         # type: (Dict[str, Any]) -> Query

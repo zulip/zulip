@@ -171,8 +171,13 @@ class NarrowBuilder(object):
         elif operand == 'unread':
             cond = column("flags").op("&")(UserMessage.flags.read.mask) == 0
             return query.where(maybe_negate(cond))
-        elif operand == 'mentioned' or operand == 'alerted':
-            cond = column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0
+        elif operand == 'mentioned':
+            cond1 = column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0
+            cond2 = column("flags").op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
+            cond = or_(cond1, cond2)
+            return query.where(maybe_negate(cond))
+        elif operand == 'alerted':
+            cond = column("flags").op("&")(UserMessage.flags.has_alert_word.mask) != 0
             return query.where(maybe_negate(cond))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
