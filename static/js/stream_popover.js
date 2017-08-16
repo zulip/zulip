@@ -83,11 +83,11 @@ function build_stream_popover(e) {
     popovers.hide_all();
     exports.show_streamlist_sidebar();
 
-    var stream = $(elt).parents('li').attr('data-name');
+    var stream_id = $(elt).parents('li').attr('data-stream-id');
 
     var content = templates.render(
         'stream_sidebar_actions',
-        {stream: stream_data.get_sub(stream)}
+        {stream: stream_data.get_sub_by_id(stream_id)}
     );
 
     $(elt).popover({
@@ -97,8 +97,7 @@ function build_stream_popover(e) {
     });
 
     $(elt).popover("show");
-    var data_id = stream_data.get_sub(stream).stream_id;
-    var popover = $('.streams_popover[data-stream-id=' + data_id + ']');
+    var popover = $('.streams_popover[data-stream-id=' + stream_id + ']');
 
     update_spectrum(popover, function (colorpicker) {
         colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
