@@ -384,8 +384,7 @@ class GetProfileTest(ZulipTestCase):
         self.login(email)
         result = self.client_get("/json/users/me/pointer")
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("pointer", json)
+        self.assertIn("pointer", result.json())
 
     def test_cache_behavior(self):
         # type: () -> None
@@ -455,9 +454,8 @@ class GetProfileTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         result = self.client_get("/api/v1/users", **self.api_auth(self.example_email("hamlet")))
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
 
-        for user in json['members']:
+        for user in result.json()['members']:
             if user['email'] == self.example_email("hamlet"):
                 self.assertEqual(
                     user['avatar_url'],
