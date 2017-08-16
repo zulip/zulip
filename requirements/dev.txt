@@ -34,8 +34,8 @@ transifex-client==0.12.4
 urllib3==1.21.1
 
 # Needed for documentation_crawler
-pathlib2==2.2.1
-#Needed for pathlib2==2.2.1
+pathlib2==2.3.0
+#Needed for pathlib2==2.3.0
 scandir==1.5
 
 # Needed for updating the locked pip dependencies
