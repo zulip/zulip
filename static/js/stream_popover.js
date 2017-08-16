@@ -119,7 +119,7 @@ function build_topic_popover(e) {
     }
 
     var stream_id = $(elt).closest('.narrow-filter').expectOne().attr('data-stream-id');
-    var topic_name = $(elt).closest('li').expectOne().attr('data-name');
+    var topic_name = $(elt).closest('li').expectOne().attr('data-topic-name');
 
     var sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
