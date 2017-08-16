@@ -213,9 +213,13 @@ def validate_account_and_subdomain(request, user_profile):
     if user_profile.realm.deactivated:
         raise JsonableError(_("Realm for account has been deactivated"))
 
-    # Either the subdomain matches, or we're accessing Tornado from
-    # and to localhost (aka spoofing a request as the user).
+    # Either the subdomain matches, or processing a websockets message
+    # in the message_sender worker (which will have already had the
+    # subdomain validated), or we're accessing Tornado from and to
+    # localhost (aka spoofing a request as the user).
     if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
+        not (request.method == "SOCKET" and
+             request.META['SERVER_NAME'] == "127.0.0.1") and
         not (settings.RUNNING_INSIDE_TORNADO and
              request.META["SERVER_NAME"] == "127.0.0.1" and
              request.META["REMOTE_ADDR"] == "127.0.0.1")):
