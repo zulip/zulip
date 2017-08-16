@@ -1,5 +1,9 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
+{% block illustration %}
+<img src="{{ server_uri }}/static/images/emails/invitation_reminder.png"/>
+{% endblock %}
+
 {% block content %}
 <p>Hi again,
 </p>

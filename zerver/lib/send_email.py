@@ -31,6 +31,7 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+        'server_uri': settings.SERVER_URI,
     })
     subject = loader.render_to_string(template_prefix + '.subject',
                                       context=context,
