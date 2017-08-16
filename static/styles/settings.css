@@ -852,7 +852,6 @@ input[type=checkbox].inline-block {
 
 #settings_page .sidebar .settings-list {
     position: relative;
-    z-index: 3;
 }
 
 #settings_page .content-wrapper {
