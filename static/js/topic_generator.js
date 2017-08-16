@@ -19,8 +19,29 @@ exports.sub_list_generator = function (lst, lower, upper) {
     };
 };
 
+exports.reverse_sub_list_generator = function (lst, lower, upper) {
+    // lower/upper has Python range semantics so if you pass
+    // in lower=5 and upper=8, you get elements 7/6/5
+    var i = upper - 1;
+
+    return {
+        next: function () {
+            if (i < lower) {
+                return;
+            }
+            var res = lst[i];
+            i -= 1;
+            return res;
+        },
+    };
+};
+
 exports.list_generator = function (lst) {
     return exports.sub_list_generator(lst, 0, lst.length);
+};
+
+exports.reverse_list_generator = function (lst) {
+    return exports.reverse_sub_list_generator(lst, 0, lst.length);
 };
 
 exports.fchain = function (outer_gen, get_inner_gen) {
@@ -89,6 +110,24 @@ exports.wrap_exclude = function (lst, val) {
     var inners = [
          exports.sub_list_generator(lst, i+1, lst.length),
          exports.sub_list_generator(lst, 0, i),
+    ];
+
+    return exports.chain(inners);
+};
+
+exports.reverse_wrap_exclude = function (lst, val) {
+    if (val === undefined) {
+        return exports.reverse_list_generator(lst);
+    }
+
+    var i = _.indexOf(lst, val);
+    if (i < 0) {
+        return exports.reverse_list_generator(lst);
+    }
+
+    var inners = [
+         exports.reverse_sub_list_generator(lst, 0, i),
+         exports.reverse_sub_list_generator(lst, i+1, lst.length),
     ];
 
     return exports.chain(inners);

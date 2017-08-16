@@ -80,6 +80,67 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(gen.next(), 200);
 }());
 
+(function test_reverse() {
+    var gen = tg.reverse_list_generator([10, 20, 30]);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    // If second parameter is not in the list, we just traverse the list
+    // in reverse.
+    gen = tg.reverse_wrap_exclude([10, 20, 30]);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([10, 20, 30], 'whatever');
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    // Witness the mostly typical cycling behavior.
+    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), 5);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 5);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    // Test small lists.
+    gen = tg.reverse_wrap_exclude([], 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5], 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5], 10);
+    assert.equal(gen.next(), 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+}());
+
 (function test_fchain() {
     var mults = function (n) {
         var ret = 0;
