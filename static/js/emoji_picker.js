@@ -555,9 +555,9 @@ exports.is_composition = function (emoji) {
     return $(emoji).hasClass('composition');
 };
 
-(function initialize() {
+exports.initialize = function () {
     exports.generate_emoji_picker_data(emoji.active_realm_emojis);
-}());
+};
 
 return exports;
 
