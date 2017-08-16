@@ -91,7 +91,7 @@ social-auth-app-django==1.2.0
 social-auth-core==1.4.0
 sockjs-tornado==1.0.3
 sourcemap==0.2.1
-sqlalchemy==1.1.10
+sqlalchemy==1.1.13
 statsd==2.1.2             # via django-statsd-mozilla
 tornado==4.5.1
 traitlets==4.3.2          # via ipython
