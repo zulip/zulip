@@ -209,8 +209,7 @@ class ReactionMessageIDTest(ZulipTestCase):
                                                        "to": pm_recipient},
                                   **self.api_auth(pm_sender))
         self.assert_json_success(result)
-        content = ujson.loads(result.content)
-        pm_id = content['id']
+        pm_id = result.json()['id']
         result = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                                  **self.api_auth(reaction_sender))
         self.assert_json_error(result, "Invalid message(s)")
@@ -285,8 +284,7 @@ class ReactionEventTest(ZulipTestCase):
                                                        "to": pm_recipient.email},
                                   **self.api_auth(pm_sender.email))
         self.assert_json_success(result)
-        content = ujson.loads(result.content)
-        pm_id = content['id']
+        pm_id = result.json()['id']
 
         expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
 
