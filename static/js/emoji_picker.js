@@ -18,7 +18,23 @@ var search_is_active = false;
 var search_results = [];
 var section_head_offsets = [];
 
-function get_emoji_categories() {
+function get_rendered_emoji_categories() {
+    if (complete_emoji_catalog.length === 0) {
+        blueslip.error('emoji_picker: Emoji catalog empty');
+        return;
+    }
+
+    var current_emoji_categories = [];
+    _.each(complete_emoji_catalog, function (category) {
+        current_emoji_categories.push({
+            name: category.name,
+            icon: category.icon,
+        });
+    });
+    return current_emoji_categories;
+}
+
+function get_all_emoji_categories() {
     return [
         { name: "Popular", icon: "fa-thumbs-o-up" },
         { name: "People", icon: "fa-smile-o" },
@@ -123,7 +139,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
         }
     });
 
-    var categories = get_emoji_categories().filter(function (category) {
+    var categories = get_all_emoji_categories().filter(function (category) {
         return !!complete_emoji_catalog[category.name];
     });
     complete_emoji_catalog = categories.map(function (category) {
@@ -180,7 +196,7 @@ exports.toggle_emoji_popover = function (element, id) {
         elt.prop('title', '');
         var template_args = {
             class: "emoji-info-popover",
-            categories: get_emoji_categories(),
+            categories: get_rendered_emoji_categories(),
         };
         elt.popover({
             // temporary patch for handling popover placement of `viewport_center`
