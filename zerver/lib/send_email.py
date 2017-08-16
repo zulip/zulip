@@ -68,7 +68,7 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
-        'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails/',
+        'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails',
     })
     subject = loader.render_to_string(template_prefix + '.subject',
                                       context=context,
