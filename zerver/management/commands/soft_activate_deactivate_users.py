@@ -53,13 +53,23 @@ class Command(ZulipBaseCommand):
             users_to_activate = list(UserProfile.objects.filter(
                 realm=realm,
                 email__in=user_emails))
+            if len(users_to_activate) != len(user_emails):
+                user_emails_found = [user.email for user in users_to_activate]
+                for user in user_emails:
+                    if user not in user_emails_found:
+                        raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
             do_soft_activate_users(users_to_activate)
         elif deactivate:
             if user_emails:
-                print('Soft deactivating forcefully...')
                 users_to_deactivate = list(UserProfile.objects.filter(
                     realm=realm,
                     email__in=user_emails))
+                if len(users_to_deactivate) != len(user_emails):
+                    user_emails_found = [user.email for user in users_to_deactivate]
+                    for user in user_emails:
+                        if user not in user_emails_found:
+                            raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
+                print('Soft deactivating forcefully...')
             else:
                 users_to_deactivate = get_users_for_soft_deactivation(realm, int(options['inactive_for']))
 
