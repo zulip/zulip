@@ -150,6 +150,12 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
 def handle_digest_email(user_profile_id, cutoff):
     # type: (int, float) -> None
     user_profile = get_user_profile_by_id(user_profile_id)
+
+    # We are disabling digest emails for soft deactivated users for the time.
+    # TODO: Find an elegant way to generate digest emails for these users.
+    if user_profile.long_term_idle:
+        return None
+
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=pytz.utc)
 
