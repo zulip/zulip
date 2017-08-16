@@ -117,7 +117,7 @@ exports.start_and_log_in = function (credentials, viewport) {
 
 exports.then_log_out = function () {
     var menu_selector = '#settings-dropdown';
-    var logout_selector = 'li[title="Log out"] a';
+    var logout_selector = 'a[href="#logout"]';
 
     casper.waitUntilVisible(menu_selector, function () {
         casper.click(menu_selector);
