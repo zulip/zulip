@@ -199,7 +199,7 @@ def upload_image_to_s3(
     else:
         headers = None
 
-    key.set_contents_from_string(force_str(contents), headers=headers)
+    key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
 
 def get_total_uploads_size_for_user(user):
     # type: (UserProfile) -> int
