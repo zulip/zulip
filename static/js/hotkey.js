@@ -582,10 +582,10 @@ exports.process_hotkey = function (e, hotkey) {
             ui.maybe_show_keyboard_shortcuts();
             return true;
         case 'stream_cycle_backward':
-            navigate.cycle_stream('backward');
+            narrow.stream_cycle_backward();
             return true;
         case 'stream_cycle_forward':
-            navigate.cycle_stream('forward');
+            narrow.stream_cycle_forward();
             return true;
         case 'view_selected_stream':
             if (overlays.streams_open()) {

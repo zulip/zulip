@@ -115,45 +115,6 @@ exports.page_down = function () {
     }
 };
 
-exports.cycle_stream = function (direction) {
-    var currentStream;
-    var nextStream;
-    var stream_name = narrow_state.stream();
-    if (stream_name !== undefined) {
-        var stream_id = stream_data.get_stream_id(stream_name);
-        currentStream = stream_list.get_stream_li(stream_id);
-    }
-    if (!currentStream) {
-        return;
-    }
-
-    switch (direction) {
-        case 'forward':
-            if (narrow_state.stream() === undefined) {
-                nextStream = $("#stream_filters").children('.narrow-filter').first();
-            } else {
-                nextStream = currentStream.next('.narrow-filter');
-                if (nextStream.length === 0) {
-                    nextStream = $("#stream_filters").children('.narrow-filter').first();
-                }
-            }
-            break;
-        case 'backward':
-            if (narrow_state.stream() === undefined) {
-                nextStream = $("#stream_filters").children('.narrow-filter').last();
-            } else {
-                nextStream = currentStream.prev('.narrow-filter');
-                if (nextStream.length === 0) {
-                    nextStream = $("#stream_filters").children('.narrow-filter').last();
-                }
-            }
-            break;
-        default:
-            blueslip.error("Invalid parameter to cycle_stream", {value: direction});
-    }
-    narrow.by('stream', nextStream.data('name'));
-};
-
 exports.scroll_to_selected = function () {
     var selected_row = current_msg_list.selected_row();
     if (selected_row && (selected_row.length !== 0)) {
