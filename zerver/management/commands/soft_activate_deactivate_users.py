@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from django.db import connection
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from typing import Any, List
@@ -12,7 +13,7 @@ import sys
 from zerver.models import UserProfile, UserMessage, Realm, RealmAuditLog
 from zerver.lib.soft_deactivation import (
     do_soft_deactivate_users, do_soft_activate_users,
-    get_users_for_soft_deactivation
+    get_users_for_soft_deactivation, logger
 )
 from zerver.lib.management import ZulipBaseCommand
 
@@ -58,7 +59,8 @@ class Command(ZulipBaseCommand):
                 for user in user_emails:
                     if user not in user_emails_found:
                         raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
-            do_soft_activate_users(users_to_activate)
+            users_activated = do_soft_activate_users(users_to_activate)
+            logger.info('Soft Reactivated %d user(s)' % (len(users_activated)))
         elif deactivate:
             if user_emails:
                 users_to_deactivate = list(UserProfile.objects.filter(
@@ -74,7 +76,8 @@ class Command(ZulipBaseCommand):
                 users_to_deactivate = get_users_for_soft_deactivation(realm, int(options['inactive_for']))
 
             if users_to_deactivate:
-                do_soft_deactivate_users(users_to_deactivate)
+                users_deactivated = do_soft_deactivate_users(users_to_deactivate)
+                logger.info('Soft Deactivated %d user(s)' % (len(users_deactivated)))
         else:
             self.print_help("./manage.py", "soft_activate_deactivate_users")
             sys.exit(1)
