@@ -113,9 +113,7 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], [])
+        self.assertEqual(result.json()['alert_words'], [])
 
     def test_json_list_add(self):
         # type: () -> None
@@ -126,8 +124,7 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
+        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
 
     def test_json_list_remove(self):
         # type: () -> None
@@ -141,8 +138,7 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['two', 'three'])
+        self.assertEqual(result.json()['alert_words'], ['two', 'three'])
 
     def test_json_list_set(self):
         # type: () -> None
@@ -156,8 +152,7 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
+        self.assertEqual(result.json()['alert_words'], ['a', 'b', 'c'])
 
     def message_does_alert(self, user_profile, message):
         # type: (UserProfile, Text) -> bool
@@ -176,8 +171,7 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
+        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
 
         # Alerts in the middle of messages work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one time"))
