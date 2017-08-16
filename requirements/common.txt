@@ -13,7 +13,7 @@ Pygments==2.2.0
 ipython==6.1.0
 
 # Needed for Image Processing
-Pillow==4.1.1
+Pillow==4.2.1
 
 # Needed for building complex DB queries
 SQLAlchemy==1.1.10
