@@ -16,6 +16,6 @@ babel==2.4.0
 # compatibility with recommonmark.  See
 # https://github.com/rtfd/recommonmark/issues/24
 CommonMark==0.5.4
-docutils==0.13.1
+docutils==0.14
 imagesize==0.7.1
 snowballstemmer==1.2.1
