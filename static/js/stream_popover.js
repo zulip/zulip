@@ -177,7 +177,7 @@ exports.register_stream_handlers = function () {
         // the template for subs needs to render.
 
         subs.onlaunch("narrow_to_row", function () {
-            $(".stream-row[data-stream-name='" + sub.name + "']").click();
+            $(".stream-row[data-stream-id='" + sub.stream_id + "']").click();
         }, true);
     });
 
