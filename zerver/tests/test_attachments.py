@@ -26,8 +26,7 @@ class AttachmentsTests(ZulipTestCase):
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
         attachments = user_attachments(user_profile)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['attachments'], attachments)
+        self.assertEqual(result.json()['attachments'], attachments)
 
     @mock.patch('zerver.lib.attachments.delete_message_image')
     def test_remove_attachment(self, ignored):
@@ -45,8 +44,7 @@ class AttachmentsTests(ZulipTestCase):
         self.login(user_profile.email)
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['attachments'], [])
+        self.assertEqual(result.json()['attachments'], [])
 
     def test_remove_another_user(self):
         # type: () -> None
