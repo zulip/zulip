@@ -160,6 +160,8 @@ i18n_urls = [
     # Terms of service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy'),
+
+    url(r'^config-error/$', TemplateView.as_view(template_name='zerver/config_error.html'), name='configuration-error'),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
