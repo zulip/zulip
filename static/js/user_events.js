@@ -11,8 +11,7 @@ exports.update_person = function update(person) {
     var person_obj = people.get_person_from_user_id(person.user_id);
 
     if (!person_obj) {
-        blueslip.error("Got update_person event for unexpected user",
-                       {email: person.user_id});
+        blueslip.error("Got update_person event for unexpected user " + person.user_id);
         return;
     }
 
