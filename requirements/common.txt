@@ -107,7 +107,7 @@ pytz==2017.2
 redis==2.10.5
 
 # Dependencies of our API
-requests==2.18.1
+requests==2.18.4
 idna==2.5
 urllib3==1.21.1
 
