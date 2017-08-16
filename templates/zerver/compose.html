@@ -5,7 +5,7 @@
     <div id="compose_controls" class="compose-content new-style">
           <div id="compose_buttons">
             <span class="new_message_button">
-              <a class="drafts-link no-style" href="#drafts">
+              <a class="drafts-link no-style" href="#drafts" title="{{ _('Drafts') }} (d)">
                 <button type="button" class="button small rounded compose_drafts_button">
                   <span>{{ _('Drafts') }}</span>
                 </button>
@@ -38,7 +38,7 @@
       <div  id="compose-all-everyone" class="alert home-error-bar"></div>
       <div  id="out-of-view-notification" class="notification-alert"></div>
      <div class="composition-area">
-      <button type="button" class="close" id='compose_close'>&times;</button>
+      <button type="button" class="close" id='compose_close' title="{{ _('Cancel compose') }} (Esc)">&times;</button>
       <form id="send_message_form" action="/json/messages" method="post">
         {{ csrf_input }}
         <table class="compose_table">
@@ -95,12 +95,12 @@
                   <a class="message-control-button icon-vector-font" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
                   <a id="undo_markdown_preview" class="message-control-button icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
                   <a id="markdown_preview" class="message-control-button icon-vector-eye-open" title="{{ _('Preview') }}"></a>
-                  <a class="drafts-link" href="#drafts">{{ _('Drafts') }}</a>
+                  <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                   <span id="sending-indicator">{{ _('Sending...') }}</span>
                   <div id="send_controls" class="new-style">
                     <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>
                     <input type="checkbox" id="enter_sends" name="enter_sends" value="enter_sends" />
-                    <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150">{{ _('Send') }}</button>
+                    <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
                   </div>
                 </div>
               </td>

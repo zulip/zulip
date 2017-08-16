@@ -720,7 +720,7 @@ function render(template_name, args) {
     assert.equal(first_message_text, "This is message one.");
 
     var starred_title = first_message.find(".star").attr("title");
-    assert.equal(starred_title, "Unstar this message");
+    assert.equal(starred_title, "Unstar this message (*)");
 }());
 
 (function message_edit_form() {
@@ -1238,7 +1238,7 @@ function render(template_name, args) {
     global.write_handlebars_output("user_info_popover_content", html);
 
     var a = $(html).find("a.compose_private_message");
-    assert.equal(a.text().trim(), 'Send private message');
+    assert.equal(a.text().trim(), 'Send private message (R)');
 }());
 
 (function user_info_popover_title() {

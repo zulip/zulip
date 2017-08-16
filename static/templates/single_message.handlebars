@@ -45,17 +45,17 @@
                         <div class="edit_content"></div>
                         {{else}}
                         <div class="reactions_hover">
-                            <i class="icon-vector-smile reaction_button" title="{{#tr this}}Add emoji reaction{{/tr}}"></i>
+                            <i class="icon-vector-smile reaction_button" title="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
                         </div>
                         {{/if}}
                         <div class="info actions_hover">
-                            <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}}"></i>
+                            <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}} (i)"></i>
                         </div>
                         <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
                             <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
                             <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
                         </div>
-                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}}">
+                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
                         </div>
                     </div>
                 </div>

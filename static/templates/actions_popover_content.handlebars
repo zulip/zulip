@@ -16,7 +16,7 @@
     <li>
         <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
             <i class="{{#if message.collapsed}}fa fa-plus{{else}}fa fa-minus{{/if}}" aria-hidden="true"></i>
-            {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
+            {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}} (-)
         </a>
     </li>
 
@@ -40,7 +40,7 @@
     <li>
         <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
             <i class="fa fa-eye-slash" aria-hidden="true"></i>
-            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}}
+            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}} (M)
         </a>
     </li>
     {{/if}}
