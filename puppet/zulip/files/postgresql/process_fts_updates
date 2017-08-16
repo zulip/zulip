@@ -27,7 +27,7 @@ import psycopg2.extensions
 import select
 import time
 import logging
-import six
+import six.moves.configparser
 import sys
 import os
 
