@@ -27,6 +27,7 @@ import psycopg2.extensions
 import select
 import time
 import logging
+import six
 import sys
 import os
 
@@ -35,7 +36,7 @@ def update_fts_columns(cursor):
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
     ids = []
     for (id, message_id) in cursor.fetchall():
-        if settings.USING_PGROONGA:
+        if USING_PGROONGA:
             cursor.execute("UPDATE zerver_message SET "
                            "search_pgroonga = "
                            "subject || ' ' || rendered_content "
@@ -71,6 +72,14 @@ except ImportError as e:
     # process_fts_updates also supports running locally on a remote
     # postgres server; in that case, one can just connect to localhost
     remote_postgres_host = ''
+
+# Since we don't want a hard dependency on being able to access the
+# Zulip settings (as we may not be running on a server that has that
+# data), we determine whether we're using pgroonga using
+# /etc/zulip/zulip.conf.
+config_file = six.moves.configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+USING_PGROONGA = config_file.has_option('machine', 'pgroonga')
 
 if remote_postgres_host != '':
     postgres_password = ''
