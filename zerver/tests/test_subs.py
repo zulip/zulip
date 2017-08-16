@@ -2060,16 +2060,14 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream_name, "autosubscribe": "false"})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("subscribed", json)
-        self.assertFalse(json["subscribed"])
+        self.assertIn("subscribed", result.json())
+        self.assertFalse(result.json()["subscribed"])
 
         result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream_name, "autosubscribe": "true"})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("subscribed", json)
-        self.assertTrue(json["subscribed"])
+        self.assertIn("subscribed", result.json())
+        self.assertTrue(result.json()["subscribed"])
 
     def test_existing_subscriptions_autosubscription_private_stream(self):
         # type: () -> None
@@ -2095,9 +2093,8 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream_name, "autosubscribe": "false"})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("subscribed", json)
-        self.assertTrue(json["subscribed"])
+        self.assertIn("subscribed", result.json())
+        self.assertTrue(result.json()["subscribed"])
 
     def get_subscription(self, user_profile, stream_name):
         # type: (UserProfile, Text) -> Subscription
@@ -2251,9 +2248,8 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assert_json_success(result2)
         result = self.client_get("/api/v1/users/me/subscriptions", **self.api_auth(email))
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("subscriptions", json)
-        for sub in json["subscriptions"]:
+        self.assertIn("subscriptions", result.json())
+        for sub in result.json()["subscriptions"]:
             if sub['name'] == "Normandy":
                 self.assertEqual(sub['invite_only'], False, "Normandy was mistakenly marked invite-only")
             if sub['name'] == "Saxony":
