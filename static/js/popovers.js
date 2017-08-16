@@ -51,6 +51,10 @@ function user_last_seen_time_status(user_id) {
         // is hidden for this case
         return i18n.t("Unknown");
     }
+    if (page_params.realm_is_zephyr_mirror_realm) {
+        // We don't send presence data to clients in Zephyr mirroring realms
+        return i18n.t("Unknown");
+    }
     return timerender.last_seen_status_from_date(presence.last_active_date(user_id).clone());
 }
 
