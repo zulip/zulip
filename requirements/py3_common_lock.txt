@@ -15,12 +15,12 @@ asn1crypto==0.22.0        # via cryptography
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
-boto==2.47.0
+boto==2.48.0
 cchardet==2.1.0
 certifi==2017.4.17
 cffi==1.10.0
 chardet==3.0.4
-click==6.7                # via flask
+click==6.7                # via pydictionary
 cryptography==1.9
 cssselect==1.0.1
 decorator==4.0.11         # via ipython, traitlets
@@ -33,17 +33,16 @@ django-statsd-mozilla==0.3.16
 django-webpack-loader==0.5.0
 django==1.11.2
 docopt==0.6.2
-flask==0.12.2
 fonttools==3.13.1
 gitdb==0.6.4
 google-api-python-client==1.6.2
+goslate==1.5.1            # via pydictionary
 html2text==2016.9.19
 httplib2==0.10.3
 idna==2.5
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==5.4.1
-itsdangerous==0.24        # via flask
 jinja2==2.9.6
 lxml==3.8.0
 markdown-include==0.5.1
@@ -68,6 +67,7 @@ pyasn1-modules==0.0.9
 pyasn1==0.2.3
 pycparser==2.17           # via cffi
 pycrypto==2.6.1
+pydictionary==1.5.2
 pygments==2.2.0           # via ipython
 pyjwt==1.5.0
 pyldap==2.4.25.1
@@ -99,4 +99,3 @@ ujson==1.35
 uritemplate==3.0.0
 urllib3==1.21.1
 wcwidth==0.1.7            # via prompt-toolkit
-werkzeug==0.12.2          # via flask
