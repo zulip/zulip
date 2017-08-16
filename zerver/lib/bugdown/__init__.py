@@ -1104,24 +1104,20 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
                         m.group("name"))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
-    def find_user_for_mention(self, name):
-        # type: (Text) -> Tuple[bool, Optional[Dict[str, Any]]]
-        if db_data is None:
-            return (False, None)
-
-        if mention.user_mention_matches_wildcard(name):
-            return (True, None)
-
-        user = db_data['full_names'].get(name.lower(), None)
-
-        return (False, user)
-
     def handleMatch(self, m):
         # type: (Match[Text]) -> Optional[Element]
-        name = m.group(2) or m.group(3)
+        match = m.group(2)
 
-        if current_message:
-            wildcard, user = self.find_user_for_mention(name)
+        if current_message and db_data is not None:
+            if match.startswith("**") and match.endswith("**"):
+                name = match[2:-2]
+            else:
+                if not mention.user_mention_matches_wildcard(match):
+                    return
+                name = match
+
+            wildcard = mention.user_mention_matches_wildcard(name)
+            user = db_data['full_names'].get(name.lower(), None)
 
             if wildcard:
                 current_message.mentions_wildcard = True

@@ -714,6 +714,17 @@ class BugdownTest(ZulipTestCase):
                          '<p><span class="user-mention" data-user-email="*" data-user-id="*">@everyone</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
+    def test_mention_everyone(self):
+        # type: () -> None
+        user_profile = self.example_user('othello')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@aaron test"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>@aaron test</p>')
+        self.assertFalse(msg.mentions_wildcard)
+        self.assertEqual(msg.mentions_user_ids, set([]))
+
     def test_mention_single(self):
         # type: () -> None
         sender_user_profile = self.example_user('othello')
