@@ -44,6 +44,11 @@ add_dependencies({
     util: 'js/util.js',
 });
 
+set_global('Image', function () {
+  return {};
+});
+emoji.initialize();
+
 var doc = "";
 set_global('document', doc);
 
