@@ -6,7 +6,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import DefaultDict, List
+from typing import DefaultDict, List, Union
 
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
     Subscription, Message, Recipient, UserActivity, Realm
@@ -179,7 +179,8 @@ def do_soft_deactivate_user(user_profile):
                 (user_profile.id, user_profile.email))
 
 def do_soft_deactivate_users(users):
-    # type: (List[UserProfile]) -> None
+    # type: (List[UserProfile]) -> List[UserProfile]
+    users_soft_deactivated = []
     with transaction.atomic():
         realm_logs = []
         for user in users:
@@ -192,10 +193,12 @@ def do_soft_deactivate_users(users):
                 event_time=event_time
             )
             realm_logs.append(log)
+            users_soft_deactivated.append(user)
         RealmAuditLog.objects.bulk_create(realm_logs)
+    return users_soft_deactivated
 
 def maybe_catch_up_soft_deactivated_user(user_profile):
-    # type: (UserProfile) -> None
+    # type: (UserProfile) -> Union[UserProfile, None]
     if user_profile.long_term_idle:
         add_missing_messages(user_profile)
         user_profile.long_term_idle = False
@@ -208,6 +211,8 @@ def maybe_catch_up_soft_deactivated_user(user_profile):
         )
         logger.info('Soft Reactivated user %s (%s)' %
                     (user_profile.id, user_profile.email))
+        return user_profile
+    return None
 
 def get_users_for_soft_deactivation(realm, inactive_for_days):
     # type: (Realm, int) -> List[UserProfile]
@@ -227,6 +232,10 @@ def get_users_for_soft_deactivation(realm, inactive_for_days):
     return users_to_deactivate
 
 def do_soft_activate_users(users):
-    # type: (List[UserProfile]) -> None
+    # type: (List[UserProfile]) -> List[UserProfile]
+    users_soft_activated = []
     for user_profile in users:
-        maybe_catch_up_soft_deactivated_user(user_profile)
+        user_activated = maybe_catch_up_soft_deactivated_user(user_profile)
+        if user_activated:
+            users_soft_activated.append(user_activated)
+    return users_soft_activated
