@@ -81,7 +81,7 @@ pytz==2017.2
 redis==2.10.5
 regex==2017.7.28
 requests-oauthlib==0.8.0
-requests==2.18.1
+requests==2.18.4
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 simplejson==3.10.0
