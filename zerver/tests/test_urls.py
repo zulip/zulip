@@ -97,8 +97,7 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual(400, resp.status_code,
                              msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % (
                                  resp.status_code,))
-            data = ujson.loads(resp.content)
-            self.assertEqual('error', data['result'])
+            self.assertEqual('error', resp.json()['result'])
 
     def test_get_gcid_when_configured(self):
         # type: () -> None
