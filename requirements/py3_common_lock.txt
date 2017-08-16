@@ -98,5 +98,5 @@ traitlets==4.3.2          # via ipython
 typing==3.6.2
 ujson==1.35
 uritemplate==3.0.0
-urllib3==1.21.1
+urllib3==1.22
 wcwidth==0.1.7            # via prompt-toolkit
