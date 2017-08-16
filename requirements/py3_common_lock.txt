@@ -16,7 +16,7 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
 boto==2.48.0
-cchardet==2.1.0
+cchardet==2.1.1
 certifi==2017.4.17
 cffi==1.10.0
 chardet==3.0.4
