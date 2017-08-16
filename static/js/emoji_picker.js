@@ -255,9 +255,6 @@ function filter_emojis() {
     if (query !== "") {
         var categories = complete_emoji_catalog;
         var search_terms = query.split(" ");
-        var regexes = _.map(search_terms, function (search_term) {
-            return new RegExp(".*" + search_term + ".*");
-        });
         search_results = [];
         _.each(categories, function (category) {
             if (category.name === "Popular") {
@@ -265,8 +262,8 @@ function filter_emojis() {
             }
             var emojis = category.emojis;
             _.each(emojis, function (emoji_dict) {
-                var match = _.every(regexes, function (regex) {
-                    return regex.test(emoji_dict.name);
+                var match = _.every(search_terms, function (search_term) {
+                    return emoji_dict.name.indexOf(search_term) >= 0;
                 });
                 if (match) {
                     search_results.push(emoji_dict);
