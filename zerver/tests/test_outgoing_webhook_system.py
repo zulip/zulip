@@ -24,7 +24,7 @@ def request_exception_error(http_method, final_url, data, **request_kwargs):
 
 def timeout_error(http_method, final_url, data, **request_kwargs):
     # type: (Any, Any, Any, **Any) -> Any
-    raise requests.exceptions.Timeout()
+    raise requests.exceptions.Timeout("Time is up!")
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
     def process_success(self, response, event):
@@ -75,7 +75,8 @@ class DoRestCallTests(ZulipTestCase):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(bot_owner_notification.content,
-                             "[A message](http://testserver/#narrow/stream/Verona/subject/Foo/near/) triggered an outgoing webhook.")
+                             '''[A message](http://testserver/#narrow/stream/Verona/subject/Foo/near/) triggered an outgoing webhook.
+The webhook got a response with status code *500*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
         self.mock_event['failed_tries'] = 0
 
@@ -99,7 +100,11 @@ The webhook got a response with status code *400*.''')
         do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
         bot_owner_notification = self.get_last_message()
         self.assertEqual(bot_owner_notification.content,
-                         '''[A message](http://testserver/#narrow/stream/Verona/subject/Foo/near/) triggered an outgoing webhook.''')
+                         '''[A message](http://testserver/#narrow/stream/Verona/subject/Foo/near/) triggered an outgoing webhook.
+When trying to send a request to the webhook service, an exception of type Timeout occured:
+```
+Time is up!
+```''')
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
     @mock.patch('logging.exception')
