@@ -1214,8 +1214,7 @@ class EditMessageTest(ZulipTestCase):
                                    subject="editing", content="**before** edit")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['raw_content'], '**before** edit')
+        self.assertEqual(result.json()['raw_content'], '**before** edit')
 
         # Test error cases
         result = self.client_get('/json/messages/999999')
