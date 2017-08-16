@@ -31,7 +31,7 @@ django-bitfield==1.9.3
 django-pipeline==1.6.13
 django-statsd-mozilla==0.3.16
 django-webpack-loader==0.5.0
-django==1.11.2
+django==1.11.4
 docopt==0.6.2
 fonttools==3.13.1
 gitdb==0.6.4
