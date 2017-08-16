@@ -45,7 +45,7 @@ class TestMissedMessages(ZulipTestCase):
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
         else:
-            reply_to_emails = ["noreply@zulip.example.com"]
+            reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
         from_email = formataddr(("Zulip missed messages", FromAddress.NOREPLY))
         self.assertEqual(len(mail.outbox), 1)
