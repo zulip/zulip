@@ -320,7 +320,7 @@ class ReactionEventTest(ZulipTestCase):
                                                        "to": pm_recipient.email},
                                   **self.api_auth(pm_sender.email))
         self.assert_json_success(result)
-        content = ujson.loads(result.content)
+        content = result.json()
         pm_id = content['id']
 
         expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
