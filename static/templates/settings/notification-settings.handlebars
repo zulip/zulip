@@ -36,6 +36,20 @@
                 <div class="propagate_stream_notifications_change"></div>
             </div>
 
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" class="inline-block" name="enable_stream_push_notifications" id="enable_stream_push_notifications"
+                           {{#if page_params.enable_stream_push_notifications}}
+                           checked="checked"
+                           {{/if}} />
+                    <span></span>
+                </label>
+                <label for="enable_stream_push_notifications" class="inline-block no-border">
+                    {{t "Mobile push notifications" }}
+                </label>
+                <div class="propagate_stream_notifications_change"></div>
+            </div>
+
         </div>
 
         <p class="notification-settings-note">

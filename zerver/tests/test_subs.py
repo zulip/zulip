@@ -994,6 +994,17 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_error(result,
                                '%s is not a boolean' % (property_name,))
 
+        property_name = "push_notifications"
+        result = self.client_post(
+            "/api/v1/users/me/subscriptions/properties",
+            {"subscription_data": ujson.dumps([{"property": property_name,
+                                                "value": "bad",
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
+
+        self.assert_json_error(result,
+                               '%s is not a boolean' % (property_name,))
+
         property_name = "color"
         result = self.client_post(
             "/api/v1/users/me/subscriptions/properties",
@@ -2119,7 +2130,7 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_subscriptions_add_notification_default_true(self):
         # type: () -> None
         """
-        When creating a subscription, the desktop and audible notification
+        When creating a subscription, the desktop, push, and audible notification
         settings for that stream are derived from the global notification
         settings.
         """
@@ -2127,6 +2138,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_email = user_profile.email
         invitee_realm = user_profile.realm
         user_profile.enable_stream_desktop_notifications = True
+        user_profile.enable_stream_push_notifications = True
         user_profile.enable_stream_sounds = True
         user_profile.save()
         current_stream = self.get_streams(invitee_email, invitee_realm)[0]
@@ -2140,12 +2152,13 @@ class SubscriptionAPITest(ZulipTestCase):
                              '<UserProfile: %s <Realm: zulip 1>> -> recip>' % (self.example_email('iago'),))
 
         self.assertTrue(subscription.desktop_notifications)
+        self.assertTrue(subscription.push_notifications)
         self.assertTrue(subscription.audible_notifications)
 
     def test_subscriptions_add_notification_default_false(self):
         # type: () -> None
         """
-        When creating a subscription, the desktop and audible notification
+        When creating a subscription, the desktop, push, and audible notification
         settings for that stream are derived from the global notification
         settings.
         """
@@ -2153,6 +2166,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_email = user_profile.email
         invitee_realm = user_profile.realm
         user_profile.enable_stream_desktop_notifications = False
+        user_profile.enable_stream_push_notifications = False
         user_profile.enable_stream_sounds = False
         user_profile.save()
         current_stream = self.get_streams(invitee_email, invitee_realm)[0]
@@ -2160,6 +2174,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_adding_subscriptions_for_principal(invitee_email, invitee_realm, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
         self.assertFalse(subscription.desktop_notifications)
+        self.assertFalse(subscription.push_notifications)
         self.assertFalse(subscription.audible_notifications)
 
 

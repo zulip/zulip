@@ -10,6 +10,7 @@ var notification_settings = [
     "enable_online_push_notifications",
     "enable_sounds",
     "enable_stream_desktop_notifications",
+    "enable_stream_push_notifications",
     "enable_stream_sounds",
     "pm_content_in_desktop_notifications",
 ];
@@ -66,6 +67,10 @@ exports.set_up = function () {
             if (setting === 'enable_stream_desktop_notifications') {
                 maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
                     stream_edit.set_notification_setting_for_all_streams('desktop_notifications', setting_data);
+                });
+            } else if (setting === 'enable_stream_push_notifications') {
+                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
+                    stream_edit.set_notification_setting_for_all_streams('push_notifications', setting_data);
                 });
             } else if (setting === 'enable_stream_sounds') {
                 maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
