@@ -82,7 +82,7 @@ class PermissionTest(ZulipTestCase):
         # Make sure we see is_admin flag in /json/users
         result = self.client_get('/json/users')
         self.assert_json_success(result)
-        members = ujson.loads(result.content)['members']
+        members = result.json()['members']
         hamlet = find_dict(members, 'email', self.example_email("hamlet"))
         self.assertTrue(hamlet['is_admin'])
         othello = find_dict(members, 'email', self.example_email("othello"))
@@ -369,7 +369,7 @@ class GetProfileTest(ZulipTestCase):
         max_id = most_recent_message(user_profile).id
 
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = result.json()
 
         self.assertIn("client_id", json)
         self.assertIn("max_message_id", json)
