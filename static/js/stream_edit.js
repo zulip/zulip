@@ -357,6 +357,12 @@ function stream_audible_notifications_clicked(e) {
     exports.set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
 }
 
+function stream_push_notifications_clicked(e) {
+    var sub = get_sub_for_target(e.target);
+    sub.push_notifications = ! sub.push_notifications;
+    exports.set_stream_property(sub, 'push_notifications', sub.push_notifications);
+}
+
 function stream_pin_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -463,6 +469,8 @@ $(function () {
                                  stream_desktop_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
                                  stream_audible_notifications_clicked);
+    $("#subscriptions_table").on("click", "#sub_push_notifications_setting",
+                                 stream_push_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_pin_setting",
                                  stream_pin_clicked);
 

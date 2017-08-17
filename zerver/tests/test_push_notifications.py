@@ -22,6 +22,7 @@ from zerver.models import (
     UserMessage,
     receives_offline_notifications,
     receives_online_notifications,
+    receives_stream_notifications,
     get_client,
     get_realm,
     Recipient,
@@ -418,6 +419,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         user_profile.enable_online_push_notifications = False
         user_profile.enable_offline_email_notifications = False
         user_profile.enable_offline_push_notifications = False
+        user_profile.enable_stream_push_notifications = False
         user_profile.save()
         apn.handle_push_notification(user_profile.id, {})
 
@@ -971,3 +973,23 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
         self.user.enable_offline_email_notifications = False
         self.user.enable_offline_push_notifications = True
         self.assertTrue(receives_offline_notifications(self.user))
+
+    def test_receivers_stream_notifications_when_user_is_a_bot(self):
+        # type: () -> None
+        self.user.is_bot = True
+
+        self.user.enable_stream_push_notifications = True
+        self.assertFalse(receives_stream_notifications(self.user))
+
+        self.user.enable_stream_push_notifications = False
+        self.assertFalse(receives_stream_notifications(self.user))
+
+    def test_receivers_stream_notifications_when_user_is_not_a_bot(self):
+        # type: () -> None
+        self.user.is_bot = False
+
+        self.user.enable_stream_push_notifications = True
+        self.assertTrue(receives_stream_notifications(self.user))
+
+        self.user.enable_stream_push_notifications = False
+        self.assertFalse(receives_stream_notifications(self.user))
