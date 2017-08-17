@@ -57,7 +57,7 @@ django-bitfield==1.9.3
 django-statsd-mozilla==0.3.16
 
 docopt==0.6.2
-fonttools==3.13.1
+fonttools==3.15.0
 
 # Needed for Android push notifications
 python-gcm==0.4
