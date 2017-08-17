@@ -28,7 +28,7 @@ class RealmEmojiTest(ZulipTestCase):
         RealmEmoji.objects.create(realm=realm, name='my_emoji', file_name='my_emoji')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
-        content = ujson.loads(result.content)
+        content = result.json()
         self.assertEqual(len(content["emoji"]), 2)
         self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
@@ -42,7 +42,7 @@ class RealmEmojiTest(ZulipTestCase):
         check_add_realm_emoji(realm, 'my_emoji', 'my_emoji')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
-        content = ujson.loads(result.content)
+        content = result.json()
         self.assertEqual(len(content["emoji"]), 2)
         self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
@@ -59,7 +59,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(emoji.author.email, email)
 
         result = self.client_get("/json/realm/emoji")
-        content = ujson.loads(result.content)
+        content = result.json()
         self.assert_json_success(result)
         self.assertEqual(len(content["emoji"]), 2)
         self.assertIn('author', content["emoji"]['my_emoji'])
