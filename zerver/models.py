@@ -1872,3 +1872,21 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+# BotUserData class is primarily for saving data that is particularly specific to
+# the bot and the user. This can be visualised as saving the state (data) of the interaction
+# between a user and a bot.
+# This is mainly useful for bots that need to save states like virtualfs bot and other bots that
+# can play games like tic-tac-toe, checkers, chess, rummy, etc; where the users can pause/stop
+# playing and resume the game after logging in again, or reset the game.
+# The functionality to start/pause/restart bot-user data is yet to be added.
+# This would have 1MB limit per user (to begin with, can be changed later).
+class BotUserData(models.Model):
+    bot_profile = models.ForeignKey(UserProfile, related_name='+', on_delete=CASCADE)  # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, related_name='+', on_delete=CASCADE)  # type: UserProfile
+    # JSON key-value pair mapping for a particular user in a specific bot.
+    # Some type of validator can be added to check if it is a json or similar.
+    user_data = models.TextField()  # type: Text
+
+    class Meta(object):
+        unique_together = ('bot_profile', 'user_profile')
