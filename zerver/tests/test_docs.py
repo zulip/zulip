@@ -196,3 +196,9 @@ class ConfigErrorTest(ZulipTestCase):
         self.assertEqual(result.url, '/config-error/github')
         result = self.client_get(result.url)
         self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+
+    def test_smtp_error(self):
+        # type: () -> None
+        result = self.client_get("/config-error/smtp")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["/var/log/zulip"], result)

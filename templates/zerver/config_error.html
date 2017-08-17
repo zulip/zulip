@@ -10,6 +10,23 @@
                 <div class="errorcontent">
                     <h1 class="lead">Configuration error</h1>
                     <br/>
+                    {% if smtp_error %}
+                    <p>
+                        It appears there are problems with the
+                        email configuration.
+                    </p>
+                    <p>
+                        See <code>/var/log/zulip/errors.log</code> for more
+                        details on the error.
+                    </p>
+                    <p>
+                        You may also want to test your email configuration,
+                        as described in the
+                        <a href="https://zulip.readthedocs.io/en/latest/prod-email.html">
+                        Production installation docs</a>.
+                    </p>
+                    {% endif %}
+
                     {% if google_error %}
                     {{ render_markdown_path('zerver/google-error.md', {"server_uri": server_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}
