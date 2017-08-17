@@ -782,7 +782,7 @@ $(function () {
                 if (key === "organization") {
                     $("li.admin").show();
                     if (!payload.dont_switch_tab) {
-                        $("li[data-section='organization-settings']").click();
+                        $("li[data-section='organization-profile']").click();
                     }
                 } else {
                     $("li:not(.admin)").show();

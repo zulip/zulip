@@ -19,6 +19,10 @@ casper.waitForSelector('#settings_overlay_container.show', function () {
     casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
 });
 
+casper.then(function () {
+    casper.click("li[data-section='organization-settings']");
+});
+
 // Test changing notifications stream
 casper.then(function () {
     casper.test.info('Changing notifications stream to Verona by filtering with "verona"');
@@ -241,13 +245,13 @@ casper.then(function () {
 
 // Test uploading realm icon image
 casper.then(function () {
-    casper.click("li[data-section='organization-settings']");
+    casper.click("li[data-section='organization-profile']");
     var selector = 'img#realm-settings-icon[src^="https://secure.gravatar.com/avatar/"]';
     casper.waitUntilVisible(selector, function () {
         casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), false);
         casper.fill('form.admin-realm-form', {
                 realm_icon_file_input: 'static/images/logo/zulip-icon-128x128.png',
-            }, true);
+        }, true);
         casper.waitWhileVisible("#upload_icon_spinner .loading_indicator_spinner", function () {
             casper.test.assertExists('img#realm-settings-icon[src^="/user_avatars/1/realm/icon.png?version=2"]');
             casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
@@ -257,7 +261,7 @@ casper.then(function () {
 
 // Test deleting realm icon image
 casper.then(function () {
-    casper.click("li[data-section='organization-settings']");
+    casper.click("li[data-section='organization-profile']");
     casper.click("#realm_icon_delete_button");
     casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
     casper.waitWhileVisible('#realm_icon_delete_button', function () {

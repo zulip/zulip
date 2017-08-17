@@ -60,6 +60,7 @@ function _setup_page() {
             "uploaded-files": i18n.t("Uploaded files"),
             "muted-topics": i18n.t("Muted topics"),
             "zulip-labs": i18n.t("Zulip labs"),
+            "organization-profile": i18n.t("Organization profile"),
             "organization-settings": i18n.t("Organization settings"),
             "organization-permissions": i18n.t("Organization permissions"),
             "emoji-settings": i18n.t("Emoji settings"),

@@ -69,6 +69,10 @@ label {
     margin: 6px 0px 0px 0px;
 }
 
+.new-style .button ul {
+    text-align: left;
+}
+
 /* this is because the input[type=text] is also 200px wide but has
    12px of padding and 2px worth of borders. These don't apply to
    buttons however. */

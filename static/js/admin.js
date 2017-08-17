@@ -8,6 +8,8 @@ exports.show_or_hide_menu_item = function () {
         item.find("span").text(i18n.t("Manage organization"));
     } else {
         item.find("span").text(i18n.t("Organization settings"));
+        $(".organization-box [data-name='organization-profile']")
+            .find("input, textarea, button, select").attr("disabled", true);
         $(".organization-box [data-name='organization-settings']")
             .find("input, textarea, button, select").attr("disabled", true);
         $(".organization-box [data-name='organization-permissions']")
@@ -67,7 +69,7 @@ function _setup_page() {
         var hash_sequence = window.location.hash.split(/\//);
         if (/#*(organization)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
-            return tab || "organization-settings";
+            return tab || "organization-profile";
         }
         return tab;
     }());

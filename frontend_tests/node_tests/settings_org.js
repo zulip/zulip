@@ -157,7 +157,7 @@ function test_realms_domain_modal(add_realm_domain) {
     assert.equal(info.text(), 'no can do');
 }
 
-function test_submit_settings_form(submit_form) {
+function test_submit_profile_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -165,12 +165,9 @@ function test_submit_settings_form(submit_form) {
 
     $('#id_realm_name').val('Acme');
     $('#id_realm_description').val('makes widgets');
-    $('#id_realm_default_language').val('fr');
-    $('#id_realm_waiting_period_threshold').val('55');
 
     var patched;
     var success_callback;
-    var error_callback;
 
     channel.patch = function (req) {
         patched = true;
@@ -180,74 +177,53 @@ function test_submit_settings_form(submit_form) {
 
         assert.equal(data.name, '"Acme"');
         assert.equal(data.description, '"makes widgets"');
-        assert.equal(data.default_language, '"fr"');
-        assert.equal(data.waiting_period_threshold, '55');
 
         success_callback = req.success;
-        error_callback = req.error;
     };
 
     submit_form(ev);
     assert(patched);
 
     var response_data = {
-        waiting_period_threshold: 55,
         name: 'Acme',
     };
     success_callback(response_data);
 
     assert.equal($('#admin-realm-name-status').val(),
                  'translated: Name changed!');
-
-    assert.equal($('#admin-realm-waiting-period-threshold-status').val(),
-                 'translated: Waiting period threshold changed!');
-
-    // TODO: change the code to have a better place to report status.
-    var status_elem = $('#admin-realm-name-status');
-
-    success_callback({});
-    assert.equal(status_elem.val(),
-                 'translated: No changes to save!');
-
-    error_callback({});
-    assert.equal(status_elem.val(),
-                 'translated: Failed');
 }
 
-function test_submit_permissions_form(submit_form) {
+function test_submit_settings_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
     };
 
-    $('#id_realm_add_emoji_by_admins_only').prop('checked', true);
+    $('#id_realm_default_language').val('fr');
 
     var patched;
     var success_callback;
-    var error_callback;
+
     channel.patch = function (req) {
         patched = true;
         assert.equal(req.url, '/json/realm');
 
         var data = req.data;
-        assert.equal(data.add_emoji_by_admins_only, 'true');
+
+        assert.equal(data.default_language, '"fr"');
 
         success_callback = req.success;
-        error_callback = req.error;
     };
 
     submit_form(ev);
     assert(patched);
 
     var response_data = {
-        add_emoji_by_admins_only: true,
         allow_message_editing: true,
         message_content_edit_limit_seconds: 210,
     };
-    success_callback(response_data);
 
-    assert.equal($('#admin-realm-add-emoji-by-admins-only-status').val(),
-                 'translated: Only administrators may now add new emoji!');
+    success_callback(response_data);
 
     var editing_status = $('#admin-realm-message-editing-status').val();
     assert(editing_status.indexOf('content of messages which are less than') > 0);
@@ -268,7 +244,48 @@ function test_submit_permissions_form(submit_form) {
     success_callback(response_data);
 
     assert.equal($('#admin-realm-message-editing-status').val(),
-                 'translated: Users can no longer edit their past messages!');
+          'translated: Users can no longer edit their past messages!');
+}
+
+function test_submit_permissions_form(submit_form) {
+    var ev = {
+        preventDefault: noop,
+        stopPropagation: noop,
+    };
+
+    $('#id_realm_add_emoji_by_admins_only').prop('checked', true);
+    $('#id_realm_waiting_period_threshold').val('55');
+
+    var patched;
+    var success_callback;
+    var error_callback;
+    channel.patch = function (req) {
+        patched = true;
+        assert.equal(req.url, '/json/realm');
+
+        var data = req.data;
+        assert.equal(data.add_emoji_by_admins_only, 'true');
+        assert.equal(data.waiting_period_threshold, '55');
+
+        success_callback = req.success;
+        error_callback = req.error;
+    };
+
+    submit_form(ev);
+    assert(patched);
+
+    var response_data = {
+        waiting_period_threshold: 55,
+        add_emoji_by_admins_only: true,
+    };
+    success_callback(response_data);
+
+    assert.equal($('#admin-realm-add-emoji-by-admins-only-status').val(),
+                 'translated: Only administrators may now add new emoji!');
+
+     assert.equal($('#admin-realm-waiting-period-threshold-status').val(),
+                  'translated: Waiting period threshold changed!');
+
 
     // TODO: change the code to have a better place to report status.
     var status_elem = $('#admin-realm-restricted-to-domain-status');
@@ -449,6 +466,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     var submit_settings_form;
     var submit_permissions_form;
+    var submit_profile_form;
     $('.organization').on = function (action, selector, f) {
         assert.equal(action, 'submit');
         if (selector === 'form.org-settings-form') {
@@ -456,6 +474,9 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         }
         if (selector === 'form.org-permissions-form') {
             submit_permissions_form = f;
+        }
+        if (selector === 'form.org-profile-form') {
+            submit_profile_form = f;
         }
     };
 
@@ -480,6 +501,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     test_realms_domain_modal(callbacks.add_realm_domain);
 
+    test_submit_profile_form(submit_profile_form);
     test_submit_settings_form(submit_settings_form);
     test_submit_permissions_form(submit_permissions_form);
     test_upload_realm_icon(upload_realm_icon);
