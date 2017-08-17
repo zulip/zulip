@@ -461,9 +461,10 @@ exports.initialize = function () {
         if (overlays.is_active()) {
             ui_util.change_tab_to('#home');
         }
-        var stream = $(e.target).parents('li').attr('data-name');
+        var stream_id = $(e.target).parents('li').attr('data-stream-id');
+        var stream = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
-        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
+        narrow.by('stream', stream.name, {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();
         e.stopPropagation();
@@ -528,14 +529,16 @@ function maybe_select_stream(e) {
     if (e.keyCode === 13) {
         // Enter key was pressed
 
-        var topStream = $('#stream_filters li.narrow-filter').first().data('name');
-        if (topStream !== undefined) {
-            // undefined if there are no results
+        var top_stream_id = $('#stream_filters li.narrow-filter').first().data('stream-id');
+        // undefined if there are no results
+        if (top_stream_id !== undefined) {
+            var top_stream = stream_data.get_sub_by_id(top_stream_id);
             if (overlays.is_active()) {
                 ui_util.change_tab_to('#home');
             }
             exports.clear_and_hide_search();
-            narrow.by('stream', topStream, {select_first_unread: true, trigger: 'sidebar enter key'});
+            narrow.by('stream', top_stream.name,
+                      {select_first_unread: true, trigger: 'sidebar enter key'});
             e.preventDefault();
             e.stopPropagation();
         }

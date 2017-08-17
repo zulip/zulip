@@ -243,10 +243,11 @@ exports.set_click_handlers = function (callbacks) {
             ui_util.change_tab_to('#home');
         }
 
-        var stream = $(e.target).parents('ul').attr('data-stream');
-        var topic = $(e.target).parents('li').attr('data-name');
+        var stream_id = $(e.target).parents('.narrow-filter').attr('data-stream-id');
+        var stream = stream_data.get_sub_by_id(stream_id);
+        var topic = $(e.target).parents('li').attr('data-topic-name');
 
-        narrow.activate([{operator: 'stream',  operand: stream},
+        narrow.activate([{operator: 'stream',  operand: stream.name},
                          {operator: 'topic', operand: topic}],
                         {select_first_unread: true, trigger: 'sidebar'});
 
