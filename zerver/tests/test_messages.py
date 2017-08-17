@@ -119,7 +119,7 @@ class TopicHistoryTest(ZulipTestCase):
         endpoint = '/json/users/me/%d/topics' % (stream.id,)
         result = self.client_get(endpoint, dict())
         self.assert_json_success(result)
-        history = ujson.loads(result.content)['topics']
+        history = result.json()['topics']
 
         # We only look at the most recent three topics, because
         # the prior fixture data may be unreliable.
