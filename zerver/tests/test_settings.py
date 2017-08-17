@@ -238,7 +238,7 @@ class UserChangesTest(ZulipTestCase):
         old_api_key = user.api_key
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
-        new_api_key = ujson.loads(result.content)['api_key']
+        new_api_key = result.json()['api_key']
         self.assertNotEqual(old_api_key, new_api_key)
         user = self.example_user('hamlet')
         self.assertEqual(new_api_key, user.api_key)
