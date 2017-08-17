@@ -38,7 +38,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
-        return ujson.loads(result.content)
+        return result.json()
 
     def test_bot_domain(self):
         # type: () -> None
@@ -468,7 +468,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def get_bot(self):
         # type: () -> Dict[str, Any]
         result = self.client_get("/json/bots")
-        bots = ujson.loads(result.content)['bots']
+        bots = result.json()['bots']
         return bots[0]
 
     def test_update_api_key(self):
