@@ -381,7 +381,7 @@ class ZulipTestCase(TestCase):
                        "num_after": num_after,
                        "use_first_unread_anchor": ujson.dumps(use_first_unread_anchor)}
         result = self.client_get("/json/messages", dict(post_params))
-        data = ujson.loads(result.content)
+        data = result.json()
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name, realm):
