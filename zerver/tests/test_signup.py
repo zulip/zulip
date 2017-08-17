@@ -1030,6 +1030,30 @@ class UserSignUpTest(ZulipTestCase):
             'Error in accounts_home: uh oh'
         )
 
+    def test_bad_email_configuration_for_create_realm(self):
+        # type: () -> None
+        """
+        Make sure we redirect for SMTP errors.
+        """
+        email = self.nonreg_email('newguy')
+
+        smtp_mock = patch(
+            'zerver.views.registration.send_registration_completion_email',
+            side_effect=smtplib.SMTPException('uh oh')
+        )
+
+        error_mock = patch('logging.error')
+
+        with smtp_mock, error_mock as err:
+            result = self.client_post('/create_realm/', {'email': email})
+
+        self._assert_redirected_to(result, '/config-error/smtp')
+
+        self.assertEqual(
+            err.call_args_list[0][0][0],
+            'Error in create_realm: uh oh'
+        )
+
     def test_user_default_language_and_timezone(self):
         # type: () -> None
         """

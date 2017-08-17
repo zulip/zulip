@@ -336,7 +336,12 @@ def create_realm(request, creation_key=None):
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            send_registration_completion_email(email, request, realm_creation=True)
+            try:
+                send_registration_completion_email(email, request, realm_creation=True)
+            except smtplib.SMTPException as e:
+                logging.error('Error in create_realm: %s' % (str(e),))
+                return HttpResponseRedirect("/config-error/smtp")
+
             if (creation_key is not None and check_key_is_valid(creation_key)):
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
