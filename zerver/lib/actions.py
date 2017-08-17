@@ -1163,6 +1163,17 @@ def recipient_for_emails(emails, not_forged_mirror_message,
                          forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
 
+    user_profiles = user_profiles_from_unvalidated_emails(emails)
+
+    return recipient_for_user_profiles(
+        user_profiles=user_profiles,
+        not_forged_mirror_message=not_forged_mirror_message,
+        forwarder_user_profile=forwarder_user_profile,
+        sender=sender
+    )
+
+def user_profiles_from_unvalidated_emails(emails):
+    # type: (Iterable[Text]) -> List[UserProfile]
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
@@ -1170,6 +1181,11 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
+    return user_profiles
+
+def recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
+                                forwarder_user_profile, sender):
+    # type: (List[UserProfile], bool, Optional[UserProfile], UserProfile) -> Recipient
 
     recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
 
