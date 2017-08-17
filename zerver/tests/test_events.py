@@ -148,7 +148,7 @@ class EventsEndpointTest(ZulipTestCase):
             result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
                                       **self.api_auth(email))
         self.assert_json_success(result)
-        result_dict = ujson.loads(result.content)
+        result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], -1)
         self.assertEqual(result_dict['queue_id'], '15:11')
 
@@ -165,7 +165,7 @@ class EventsEndpointTest(ZulipTestCase):
                                       **self.api_auth(email))
 
         self.assert_json_success(result)
-        result_dict = ujson.loads(result.content)
+        result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
         self.assertEqual(result_dict['pointer'], 15)
         self.assertEqual(result_dict['queue_id'], '15:12')
@@ -178,7 +178,7 @@ class EventsEndpointTest(ZulipTestCase):
                                            fetch_event_types=ujson.dumps(['message'])),
                                       **self.api_auth(email))
         self.assert_json_success(result)
-        result_dict = ujson.loads(result.content)
+        result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
         # Check that the message event types data is in there
         self.assertIn('max_message_id', result_dict)
@@ -193,7 +193,7 @@ class EventsEndpointTest(ZulipTestCase):
                                            event_types=ujson.dumps(['message'])),
                                       **self.api_auth(email))
         self.assert_json_success(result)
-        result_dict = ujson.loads(result.content)
+        result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
         # Check that we didn't fetch the messages data
         self.assertNotIn('max_message_id', result_dict)
