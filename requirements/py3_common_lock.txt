@@ -39,7 +39,7 @@ google-api-python-client==1.6.2
 goslate==1.5.1            # via pydictionary
 html2text==2016.9.19
 httplib2==0.10.3
-idna==2.5
+idna==2.6
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.1.0
