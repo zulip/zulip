@@ -11,56 +11,11 @@
                     <h1 class="lead">Configuration error</h1>
                     <br/>
                     {% if google_error %}
-                    <p>
-                        You are using the <b>Google auth backend</b>,
-                        but it is not properly configured. Please
-                        check the following:
-                    </p>
-                    <ul>
-                        <li>
-                            You have created a Google Oauth2 client
-                            and enabled the Google+ API. You can
-                            create OAuth2 apps
-                            at <a href="https://console.developers.google.com">https://console.developers.google.com</a>.
-                        </li>
-                        <li>
-                            You have configured your OAuth2 client to
-                            allow redirects to your server's Google
-                            auth URL:
-                            <code>{{ server_uri }}/accounts/login/google/done/</code>.
-                        </li>
-                        <li>
-                            You have
-                            set <code>GOOGLE_OAUTH2_CLIENT_ID</code>
-                            in <code>{{ settings_path }}</code>
-                            and <code>google_oauth2_client_secret</code>
-                            in <code>{{ secrets_path }}</code>.
-                        </li>
-                    </ul>
+                    {{ render_markdown_path('zerver/google-error.md', {"server_uri": server_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}
 
                     {% if github_error %}
-                    <p>
-                        You are using the <b>GitHub auth backend</b>,
-                        but it is not properly configured. Please
-                        check the following:
-                    </p>
-                    <ul>
-                        <li>
-                            You have added <code>{{ server_uri }}/complete/github/</code>
-                            as the callback URL in the OAuth application in
-                            GitHub. You can create OAuth apps
-                            from <a href="https://github.com/settings/developers">GitHub's
-                            developer site</a>.
-                        </li>
-                        <li>
-                            You have set <code>SOCIAL_AUTH_GITHUB_KEY</code>
-                            in <code>{{ settings_path }}</code>
-                            and <code>social_auth_github_secret</code>
-                            in <code>{{ secrets_path }}</code> with
-                            the values from your OAuth application.
-                        </li>
-                    </ul>
+                    {{ render_markdown_path('zerver/github-error.md', {"server_uri": server_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}
 
                     <p>After making your changes, remember to restart
