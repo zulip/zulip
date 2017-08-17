@@ -104,7 +104,7 @@ pylibmc==1.5.2
 pytz==2017.2
 
 # Needed for redis
-redis==2.10.5
+redis==2.10.6
 
 # Dependencies of our API
 requests==2.18.4
