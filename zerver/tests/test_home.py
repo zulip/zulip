@@ -68,6 +68,7 @@ class HomeTest(ZulipTestCase):
             "enable_online_push_notifications",
             "enable_sounds",
             "enable_stream_desktop_notifications",
+            "enable_stream_push_notifications",
             "enable_stream_sounds",
             "enter_sends",
             "first_in_realm",

@@ -28,7 +28,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_notifications, \
-    receives_online_notifications, get_user_profile_by_id
+    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id
 from version import ZULIP_VERSION
 
 if settings.ZILENCER_ENABLED:
@@ -389,7 +389,8 @@ def handle_push_notification(user_profile_id, missed_message):
     """
     try:
         user_profile = get_user_profile_by_id(user_profile_id)
-        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
+        if not (receives_offline_notifications(user_profile) or
+                receives_online_notifications(user_profile)):
             return
 
         umessage = UserMessage.objects.get(user_profile=user_profile,
@@ -397,7 +398,7 @@ def handle_push_notification(user_profile_id, missed_message):
         message = umessage.message
         if umessage.flags.read:
             return
-
+        logging.info("Sending push notification to user %s" % (user_profile_id))
         apns_payload = get_apns_payload(message)
         gcm_payload = get_gcm_payload(user_profile, message)
 

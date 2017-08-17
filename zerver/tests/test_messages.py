@@ -577,7 +577,7 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 14)
+        self.assert_length(queries, 15)
 
     def test_stream_message_dict(self):
         # type: () -> None
