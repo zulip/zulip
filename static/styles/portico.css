@@ -1652,6 +1652,10 @@ input.new-organization-button {
     font-size: 18px;
 }
 
+.error_page .errorbox.config-error {
+    max-width: 750px;
+}
+
 .error_page p {
     color: #333333;
 }
