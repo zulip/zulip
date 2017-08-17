@@ -1743,6 +1743,16 @@ nav ul li.active::after {
     color: #333;
 }
 
+.portico-landing.why-page .photo-description {
+    position: relative;
+    top: -40px;
+    height: 0;
+
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #aaa;
+}
+
 .portico-landing.why-page .bg-pycon {
     position: relative;
 
