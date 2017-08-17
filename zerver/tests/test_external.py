@@ -110,7 +110,7 @@ class RateLimitTests(ZulipTestCase):
                 result = self.send_api_message(email, "some stuff %s" % (i,))
 
         self.assertEqual(result.status_code, 429)
-        json = ujson.loads(result.content)
+        json = result.json()
         self.assertEqual(json.get("result"), "error")
         self.assertIn("API usage exceeded rate limit", json.get("msg"))
         self.assertEqual(json.get('retry-after'), 0.5)
