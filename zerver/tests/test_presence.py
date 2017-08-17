@@ -26,7 +26,6 @@ from zerver.models import (
 )
 
 import datetime
-import ujson
 
 class ActivityTest(ZulipTestCase):
     def test_activity(self):

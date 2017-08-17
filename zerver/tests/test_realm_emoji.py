@@ -5,7 +5,6 @@ from zerver.lib.actions import get_realm, check_add_realm_emoji
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, get_user
 from zerver.models import RealmEmoji
-import ujson
 
 class RealmEmojiTest(ZulipTestCase):
 

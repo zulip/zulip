@@ -21,7 +21,6 @@ from zerver.lib.test_classes import (
 import DNS
 import mock
 import time
-import ujson
 
 from six.moves import urllib
 from six.moves import range

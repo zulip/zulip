@@ -26,7 +26,6 @@ from zilencer.models import Deployment
 
 from zerver.views.upload import upload_file_backend
 
-import ujson
 from six.moves import urllib
 from PIL import Image
 

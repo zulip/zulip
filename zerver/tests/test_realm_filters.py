@@ -4,8 +4,6 @@ from __future__ import absolute_import
 from zerver.lib.actions import get_realm, do_add_realm_filter
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmFilter
-import ujson
-
 
 class RealmFilterTest(ZulipTestCase):
 
