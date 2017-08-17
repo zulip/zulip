@@ -198,7 +198,15 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     var my_streams = stream_sort.get_streams();
 
     my_streams = _.filter(my_streams, function (stream_name) {
-        return stream_data.name_in_home_view(stream_name);
+        if (stream_data.name_in_home_view(stream_name)) {
+            return true;
+        }
+        if  (stream_name === curr_stream) {
+            // We can use n within a muted stream if we are
+            // currently narrowed to it.
+            return true;
+        }
+        return false;
     });
 
     function get_unmuted_topics(stream_name) {
