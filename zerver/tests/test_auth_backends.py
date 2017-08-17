@@ -1360,7 +1360,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         result = self.client_post("/api/v1/dev_fetch_api_key",
                                   dict(username=self.email))
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
+        data = result.json()
         self.assertEqual(data["email"], self.email)
         self.assertEqual(data['api_key'], self.user_profile.api_key)
 
@@ -1423,7 +1423,7 @@ class FetchAuthBackends(ZulipTestCase):
         # type: () -> None
         result = self.client_get("/api/v1/server_settings")
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
+        data = result.json()
         schema_checker = check_dict_only([
             ('authentication_methods', check_dict_only([
                 ('google', check_bool),
@@ -1443,7 +1443,7 @@ class FetchAuthBackends(ZulipTestCase):
             result = self.client_get("/api/v1/server_settings",
                                      HTTP_HOST="zulip.testserver")
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
+        data = result.json()
         with_realm_schema_checker = check_dict_only([
             ('zulip_version', check_string),
             ('realm_uri', check_string),
@@ -1465,7 +1465,7 @@ class FetchAuthBackends(ZulipTestCase):
         # type: () -> None
         result = self.client_get("/api/v1/get_auth_backends")
         self.assert_json_success(result)
-        data = ujson.loads(result.content)
+        data = result.json()
         self.assertEqual(set(data.keys()),
                          {'msg', 'password', 'github', 'google', 'dev', 'result', 'zulip_version'})
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
@@ -1477,7 +1477,7 @@ class FetchAuthBackends(ZulipTestCase):
         with mock.patch('django.contrib.auth.get_backends', return_value=backends):
             result = self.client_get("/api/v1/get_auth_backends")
             self.assert_json_success(result)
-            data = ujson.loads(result.content)
+            data = result.json()
             self.assertEqual(data, {
                 'msg': '',
                 'password': False,
@@ -1493,7 +1493,7 @@ class FetchAuthBackends(ZulipTestCase):
                                SUBDOMAINS_HOMEPAGE=False):
                 result = self.client_get("/api/v1/get_auth_backends")
                 self.assert_json_success(result)
-                data = ujson.loads(result.content)
+                data = result.json()
                 self.assertEqual(data, {
                     'msg': '',
                     'password': False,
@@ -1516,7 +1516,7 @@ class FetchAuthBackends(ZulipTestCase):
                 result = self.client_get("/api/v1/get_auth_backends",
                                          HTTP_HOST="zulip.testserver")
                 self.assert_json_success(result)
-                data = ujson.loads(result.content)
+                data = result.json()
                 self.assertEqual(data, {
                     'msg': '',
                     'password': False,
@@ -1537,7 +1537,7 @@ class FetchAuthBackends(ZulipTestCase):
                 result = self.client_get("/api/v1/get_auth_backends",
                                          HTTP_HOST="zulip.testserver")
                 self.assert_json_success(result)
-                data = ujson.loads(result.content)
+                data = result.json()
                 self.assertEqual(data, {
                     'msg': '',
                     'password': False,
