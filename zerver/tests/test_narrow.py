@@ -770,7 +770,7 @@ class GetOldMessagesTest(ZulipTestCase):
         params = {k: ujson.dumps(v) for k, v in raw_params.items()}
         result = self.client_get('/json/messages/matches_narrow', params)
         self.assert_json_success(result)
-        messages = ujson.loads(result.content)['messages']
+        messages = result.json()['messages']
         self.assertEqual(len(list(messages.keys())), 1)
         message = messages[str(good_id)]
         self.assertEqual(message['match_content'],
