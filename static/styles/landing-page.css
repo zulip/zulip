@@ -1743,6 +1743,31 @@ nav ul li.active::after {
     color: #333;
 }
 
+.portico-landing.why-page .bg-pycon {
+    position: relative;
+
+    background-image: url(/static/images/landing-page/pycon.jpg);
+    background-size: cover;
+    background-position: center;
+}
+
+.portico-landing.why-page .bg-pycon .bg-dimmer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    background-color: rgba(15, 24, 48, 0.7);
+
+    z-index: 0;
+}
+
+.portico-landing.why-page .bg-pycon .content {
+    position: relative;
+    z-index: 1;
+}
+
 /* -- hello page styling -- */
 .portico-landing.hello .apps .screen {
     display: inline-block;
