@@ -28,8 +28,8 @@ happen in your organization. Streams are similar to chat rooms, email
 lists, or channels in IRC or Slack, in that they determine who
 receives a message. A few important notes:
 
-- Zulip streams are lightweight; in a large community, it’s normal and
-  reasonable to be subscribed to several dozen streams.
+- For small teams, it's often good to start with a small number of streams,
+  and let the number of streams grow organically.
 - You can use any character in stream names, including spaces and
   characters from non-Latin alphabets.
 - You can
