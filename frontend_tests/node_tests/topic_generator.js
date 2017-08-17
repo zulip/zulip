@@ -255,8 +255,6 @@ function is_odd(i) { return i % 2 === 1; }
 
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
-    var curr_stream = 'announce';
-    var curr_topic = 'whatever';
 
     global.stream_sort.get_streams = function () {
         return ['announce', 'muted', 'devel', 'test here'];
@@ -273,7 +271,7 @@ function is_odd(i) { return i % 2 === 1; }
     topic_data.get_recent_names = function (stream_id) {
         switch (stream_id) {
             case muted_stream_id:
-                return ['red herring'];
+                return ['ms-topic1', 'ms-topic2'];
             case devel_stream_id:
                 return ['muted', 'python'];
         }
@@ -290,16 +288,22 @@ function is_odd(i) { return i % 2 === 1; }
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
-        return (stream_id === devel_stream_id);
+        return _.contains([devel_stream_id, muted_stream_id], stream_id);
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {
         return (topic === 'muted');
     };
 
-    var next_item = tg.get_next_topic(curr_stream, curr_topic);
+    var next_item = tg.get_next_topic('announce', 'whatever');
     assert.deepEqual(next_item, {
         stream: 'devel',
         topic: 'python',
+    });
+
+    next_item = tg.get_next_topic('muted', undefined);
+    assert.deepEqual(next_item, {
+        stream: 'muted',
+        topic: 'ms-topic1',
     });
 }());
