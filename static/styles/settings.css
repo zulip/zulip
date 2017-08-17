@@ -329,6 +329,23 @@ input[type=checkbox] + .inline-block {
 
 #default_language {
     margin-left: 20px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    background-color: hsla(0, 0%, 100%, 1);
+    border: 1px solid hsl(0, 0%, 80%);
+    font-size: 0.8rem;
+    line-height: normal;
+    text-align: center;
+
+    transition: all 0.2s ease;
+}
+
+#default_language:hover {
+    border-color: hsl(0, 0%, 60%);
+}
+
+#default_language i.fa.fa-pencil {
+    margin-left: 3px;
 }
 
 #user-settings-avatar,

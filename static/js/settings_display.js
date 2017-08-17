@@ -25,7 +25,7 @@ exports.set_up = function () {
         data.default_language = JSON.stringify(setting_value);
 
         var new_language = $link.attr('data-name');
-        $('#default_language_name').text(new_language);
+        $('#default_language').text(new_language);
 
         var context = {};
         context.lang = new_language;
@@ -185,7 +185,7 @@ function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#emoji_alt_code").prop('checked', page_params.emoji_alt_code);
-    $("#default_language_name").text(page_params.default_language_name);
+    $("#default_language").text(page_params.default_language_name);
 }
 
 exports.update_page = function () {
