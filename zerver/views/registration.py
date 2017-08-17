@@ -39,6 +39,7 @@ from confirmation.models import Confirmation, RealmCreationKey, check_key_is_val
 
 import logging
 import requests
+import smtplib
 import ujson
 
 from six.moves import urllib
@@ -371,7 +372,12 @@ def accounts_home(request):
         form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
             email = form.cleaned_data['email']
-            send_registration_completion_email(email, request)
+            try:
+                send_registration_completion_email(email, request)
+            except smtplib.SMTPException as e:
+                logging.error('Error in accounts_home: %s' % (str(e),))
+                return HttpResponseRedirect("/config-error/smtp")
+
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
