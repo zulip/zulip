@@ -411,6 +411,9 @@ def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
 def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
     # type: (UserProfile, bytes, int, Optional[str]) -> None
 
+    logging.info("New push device: %d %r %d %r",
+                 user_profile.id, token_str, kind, ios_app_id)
+
     # If we're sending things to the push notification bouncer
     # register this user with them here
     if uses_notification_bouncer():
@@ -424,6 +427,7 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
         if kind == PushDeviceToken.APNS:
             post_data['ios_app_id'] = ios_app_id
 
+        logging.info("Sending new push device to bouncer: %r", post_data)
         send_to_push_bouncer('POST', 'register', post_data)
         return
 
@@ -438,8 +442,11 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
                                                                kind=kind,
                                                                ios_app_id=ios_app_id))
     if not created:
+        logging.info("Existing push device updated.")
         token.last_updated = timezone_now()
         token.save(update_fields=['last_updated'])
+    else:
+        logging.info("New push device created.")
 
 def remove_push_device_token(user_profile, token_str, kind):
     # type: (UserProfile, bytes, int) -> None
