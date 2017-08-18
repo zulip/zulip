@@ -983,6 +983,42 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
 
+    def test_messages_in_narrow_for_non_search(self):
+        # type: () -> None
+        email = self.example_email("cordelia")
+        self.login(email)
+
+        def send(content):
+            # type: (Text) -> int
+            msg_id = self.send_message(
+                sender_name=email,
+                raw_recipients="Verona",
+                message_type=Recipient.STREAM,
+                subject='test_topic',
+                content=content,
+            )
+            return msg_id
+
+        good_id = send('http://foo.com')
+        bad_id = send('no link here')
+        msg_ids = [good_id, bad_id]
+        send('http://bar.com but not in msg_ids')
+
+        narrow = [
+            dict(operator='has', operand='link'),
+        ]
+
+        raw_params = dict(msg_ids=msg_ids, narrow=narrow)
+        params = {k: ujson.dumps(v) for k, v in raw_params.items()}
+        result = self.client_get('/json/messages/matches_narrow', params)
+        self.assert_json_success(result)
+        messages = result.json()['messages']
+        self.assertEqual(len(list(messages.keys())), 1)
+        message = messages[str(good_id)]
+        self.assertIn('a href=', message['match_content'])
+        self.assertIn('http://foo.com', message['match_content'])
+        self.assertEqual(message['match_subject'], 'test_topic')
+
     def test_get_messages_with_only_searching_anchor(self):
         # type: () -> None
         """
