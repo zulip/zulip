@@ -9,25 +9,25 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import JsonableError
 from zerver.models import (
     UserProfile,
-    get_user_profile_by_email,
+    get_user_including_cross_realm,
 )
 import six
 
-def user_profiles_from_unvalidated_emails(emails):
-    # type: (Iterable[Text]) -> List[UserProfile]
+def user_profiles_from_unvalidated_emails(emails, sender):
+    # type: (Iterable[Text], UserProfile) -> List[UserProfile]
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
-            user_profile = get_user_profile_by_email(email)
+            user_profile = get_user_including_cross_realm(email, sender.realm)
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
     return user_profiles
 
-def get_user_profiles(emails):
-    # type: (Iterable[Text]) -> List[UserProfile]
+def get_user_profiles(emails, sender):
+    # type: (Iterable[Text], UserProfile) -> List[UserProfile]
     try:
-        return user_profiles_from_unvalidated_emails(emails)
+        return user_profiles_from_unvalidated_emails(emails, sender)
     except ValidationError as e:
         assert isinstance(e.messages[0], six.string_types)
         raise JsonableError(e.messages[0])
@@ -80,8 +80,8 @@ class Addressee(object):
         return self._topic
 
     @staticmethod
-    def legacy_build(message_type_name, message_to, topic_name):
-        # type: (Text, Sequence[Text], Text) -> Addressee
+    def legacy_build(sender, message_type_name, message_to, topic_name):
+        # type: (UserProfile, Text, Sequence[Text], Text) -> Addressee
 
         # For legacy reason message_to used to be either a list of
         # emails or a list of streams.  We haven't fixed all of our
@@ -101,7 +101,7 @@ class Addressee(object):
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
             emails = message_to
-            return Addressee.for_private(emails=emails)
+            return Addressee.for_private(emails=emails, sender=sender)
         else:
             raise JsonableError(_("Invalid message type"))
 
@@ -115,9 +115,9 @@ class Addressee(object):
         )
 
     @staticmethod
-    def for_private(emails):
-        # type: (Sequence[Text]) -> Addressee
-        user_profiles = get_user_profiles(emails)
+    def for_private(emails, sender):
+        # type: (Sequence[Text], UserProfile) -> Addressee
+        user_profiles = get_user_profiles(emails, sender)
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,
