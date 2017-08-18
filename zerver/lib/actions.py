@@ -1166,7 +1166,7 @@ def recipient_for_emails(emails, not_forged_mirror_message,
                          forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
 
-    user_profiles = user_profiles_from_unvalidated_emails(emails)
+    user_profiles = user_profiles_from_unvalidated_emails(emails, sender)
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,
@@ -1238,6 +1238,7 @@ def check_send_message(sender, client, message_type_name, message_to,
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
 
     addressee = Addressee.legacy_build(
+        sender,
         message_type_name,
         message_to,
         subject_name)
@@ -1449,6 +1450,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
     parsed_recipients = extract_recipients(recipients)
 
     addressee = Addressee.legacy_build(
+        sender,
         recipient_type_name,
         parsed_recipients,
         subject)
