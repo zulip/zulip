@@ -263,9 +263,14 @@ def add_subscriptions_backend(request, user_profile,
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
                                                               acting_user=user_profile)
 
+    # We can assume unique emails here for now, but we should eventually
+    # convert this function to be more id-centric.
+    email_to_user_profile = dict()  # type: Dict[Text, UserProfile]
+
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))  # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
         result["subscribed"][subscriber.email].append(stream.name)
+        email_to_user_profile[subscriber.email] = subscriber
     for (subscriber, stream) in already_subscribed:
         result["already_subscribed"][subscriber.email].append(stream.name)
 
@@ -304,7 +309,7 @@ def add_subscriptions_backend(request, user_profile,
                 internal_prep_private_message(
                     realm=user_profile.realm,
                     sender=sender,
-                    recipient_email=email,
+                    recipient_user=email_to_user_profile[email],
                     content=msg))
 
     if announce and len(created_streams) > 0:

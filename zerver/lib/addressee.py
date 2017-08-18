@@ -124,9 +124,9 @@ class Addressee(object):
         )
 
     @staticmethod
-    def for_email(email):
-        # type: (Text) -> Addressee
-        user_profiles = get_user_profiles([email])
+    def for_user_profile(user_profile):
+        # type: (UserProfile) -> Addressee
+        user_profiles = [user_profile]
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,
