@@ -147,3 +147,11 @@ def log_management_command(cmd, log_path):
     logger.setLevel(logging.INFO)
 
     logger.info("Ran '%s'" % (cmd,))
+
+def get_environment():
+    # type: () -> Text
+    if os.path.exists(DEPLOYMENTS_DIR):
+        return "prod"
+    if os.environ.get("TRAVIS"):
+        return "travis"
+    return "dev"
