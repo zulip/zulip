@@ -509,13 +509,16 @@ class HomeTest(ZulipTestCase):
     def test_multiple_user_soft_deactivations(self):
         # type: () -> None
         long_term_idle_user = self.example_user('hamlet')
+        # We are sending this message to ensure that long_term_idle_user has
+        # at least one UserMessage row.
+        self.send_stream_message('Testing', sender_name='hamlet')
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 1'
         self.send_stream_message(message)
         self.login(long_term_idle_user.email)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
         query_count = len(queries)
         long_term_idle_user.refresh_from_db()
         self.assertFalse(long_term_idle_user.long_term_idle)
@@ -525,7 +528,7 @@ class HomeTest(ZulipTestCase):
         message = 'Test Message 2'
         self.send_stream_message(message)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
         # Test here for query count to be at least 5 less than previous count.
         # This will assure add_missing_messages() isn't repeatedly called.
         self.assertGreaterEqual(query_count - len(queries), 5)
@@ -539,7 +542,7 @@ class HomeTest(ZulipTestCase):
         self.send_stream_message(message)
         self.login(long_term_idle_user.email)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
         query_count = len(queries)
         long_term_idle_user.refresh_from_db()
         self.assertFalse(long_term_idle_user.long_term_idle)
@@ -549,7 +552,7 @@ class HomeTest(ZulipTestCase):
         message = 'Test Message 4'
         self.send_stream_message(message)
         with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 5)
         self.assertGreaterEqual(query_count - len(queries), 5)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)

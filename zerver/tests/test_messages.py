@@ -2161,6 +2161,10 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             ).order_by('-event_time')[0]
 
         long_term_idle_user = self.example_user('hamlet')
+        # We are sending this message to ensure that long_term_idle_user has
+        # at least one UserMessage row.
+        self.send_message(long_term_idle_user.email, stream_name,
+                          Recipient.STREAM)
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 1'
@@ -2203,6 +2207,8 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                                           sending_client = sending_client)
 
         long_term_idle_user = self.example_user('hamlet')
+        self.send_message(long_term_idle_user.email, stream_name,
+                          Recipient.STREAM)
         do_soft_deactivate_users([long_term_idle_user])
 
         # Test that add_missing_messages() in simplest case of adding a
@@ -2343,6 +2349,8 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                               Recipient.PERSONAL, content)
 
         long_term_idle_user = self.example_user('hamlet')
+        self.send_message(long_term_idle_user.email, stream_name,
+                          Recipient.STREAM)
         do_soft_deactivate_users([long_term_idle_user])
 
         def assert_um_count(user, count):
