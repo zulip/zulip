@@ -149,7 +149,7 @@ django-pipeline==1.6.13
 django-webpack-loader==0.5.0
 
 # Needed for iOS push notifications
--e git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
+apns2==0.3.0
 
 python-twitter==3.3
 
