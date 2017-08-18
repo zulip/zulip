@@ -222,13 +222,16 @@ exports.toggle_emoji_popover = function (element, id) {
         };
         show_emoji_catalog();
 
-        $('.emoji-popover-subheading').each(function () {
+        var popover = elt.data('popover').$tip;
+
+        section_head_offsets = [];
+        popover.find('.emoji-popover-subheading').each(function () {
             section_head_offsets.push({
                 section: $(this).attr('data-section'),
                 position_y: $(this).position().top,
             });
         });
-        var $emoji_map = $('.emoji-popover-emoji-map');
+        var $emoji_map = popover.find('.emoji-popover-emoji-map');
         $emoji_map.on("scroll", function () {
             emoji_picker.emoji_select_tab($emoji_map);
         });
