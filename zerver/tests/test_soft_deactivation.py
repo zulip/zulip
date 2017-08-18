@@ -10,7 +10,9 @@ from zerver.lib.soft_deactivation import (
     do_soft_activate_users
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Client, UserProfile, UserActivity, get_realm
+from zerver.models import (
+    Client, UserProfile, UserActivity, get_realm, Recipient
+)
 
 class UserSoftDeactivationTests(ZulipTestCase):
 
@@ -34,6 +36,11 @@ class UserSoftDeactivationTests(ZulipTestCase):
         for user in users:
             self.assertFalse(user.long_term_idle)
 
+        # We are sending this message to ensure that users have at least
+        # one UserMessage row.
+        self.send_message(users[0].email,
+                          [user.email for user in users],
+                          Recipient.HUDDLE)
         do_soft_deactivate_users(users)
 
         for user in users:
@@ -77,6 +84,9 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user('iago'),
             self.example_user('cordelia'),
         ]
+        self.send_message(users[0].email,
+                          [user.email for user in users],
+                          Recipient.HUDDLE)
         do_soft_deactivate_users(users)
         for user in users:
             self.assertTrue(user.long_term_idle)
