@@ -84,6 +84,8 @@ def response_listener(error_response):
 
     errmsg = ERROR_CODES[code]
     data = redis_client.hgetall(key)
+    logging.warn("APNS: Error response: %r" % (error_response,))
+    logging.warn("APNS: Our data for %r: %r" % (identifier, data))
     token = data[b'token']
     user_id = int(data[b'user_id'])
     b64_token = hex_to_b64(token.decode('utf-8'))
@@ -170,6 +172,7 @@ def send_apple_push_notification(user_id, devices, **extra_data):
         key = get_apns_key(identifier)
         redis_client.hmset(key, {b'token': token, b'user_id': user_id})
         redis_client.expire(key, expiry)
+        logging.info("APNs: Sending to %s: %r", token, payload)
         connection.gateway_server.send_notification(
             token, payload, identifier=identifier, expiry=expiry)
 
