@@ -9,6 +9,8 @@ import time
 import random
 from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
 
+from apns2.client import APNsClient
+from apns2.payload import Payload as APNsPayload
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
@@ -49,16 +51,42 @@ def hex_to_b64(data):
 # Sending to APNs, for iOS
 #
 
-# `APNS_SANDBOX` should be a bool
-assert isinstance(settings.APNS_SANDBOX, bool)
+_apns_client = None  # type: APNsClient
+
+def get_apns_client():
+    global _apns_client
+    if _apns_client is None:
+        # NB if called concurrently, this will make excess connections.
+        # That's a little sloppy, but harmless unless a server gets
+        # hammered with a ton of these all at once after startup.
+        _apns_client = APNsClient(credentials=settings.APNS_CERT_FILE,
+                                  use_sandbox=settings.APNS_SANDBOX)
+    return _apns_client
 
 @statsd_increment("apple_push_notification")
-def send_apple_push_notification(user_id, devices, **extra_data):
-    # type: (int, List[DeviceToken], **Any) -> None
+def send_apple_push_notification(user_id, devices, payload_data):
+    # type: (int, List[DeviceToken], Dict[str, Any]) -> None
     if not devices:
         return
-    logging.warn("APNs unimplemented.  Dropping notification for user %d with %d devices.",
+    logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
+    payload = APNsPayload(**payload_data)
+    expiration = int(time.time() + 24 * 3600)
+    client = get_apns_client()
+    for device in devices:
+        # TODO obviously this should be made to actually use the async
+        stream_id = client.send_notification_async(
+            device.token, payload, topic='org.zulip.Zulip',
+            expiration=expiration)
+        result = client.get_notification_result(stream_id)
+        if result == 'Success':
+            logging.info("APNs: Success sending for user %d to device %s",
+                         user_id, device.token)
+        else:
+            logging.warn("APNs: Failed to send for user %d to device %s: %s",
+                         user_id, device.token, result)
+            # TODO delete token if status 410 (and timestamp isn't before
+            #      the token we have)
 
 #
 # Sending to GCM, for Android
@@ -293,7 +321,13 @@ def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
     return {
         'alert': get_alert_from_message(message),
-        'message_ids': [message.id],
+        # TODO: set badge count in a better way
+        'badge': 1,
+        'custom': {
+            'zulip': {
+                'message_ids': [message.id],
+            }
+        }
     }
 
 def get_gcm_payload(user_profile, message):
@@ -369,10 +403,9 @@ def handle_push_notification(user_profile_id, missed_message):
         apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                             kind=PushDeviceToken.APNS))
 
-        # TODO: set badge count in a better way
         if apple_devices:
             send_apple_push_notification(user_profile.id, apple_devices,
-                                         badge=1, zulip=apns_payload)
+                                         apns_payload)
 
         if android_devices:
             send_android_push_notification(android_devices, gcm_payload)
