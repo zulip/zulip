@@ -4,8 +4,6 @@ from __future__ import print_function
 
 import os
 import sys
-import logging
-import subprocess
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -20,10 +18,9 @@ if __name__ == "__main__":
 
     from django.conf import settings
     from django.core.management.base import CommandError
+    from scripts.lib.zulip_tools import log_management_command
 
-    logger = logging.getLogger("zulip.management")
-    subprocess.check_call([os.path.join(BASE_DIR, "scripts", "lib", "log-management-command"),
-                           " ".join(sys.argv)])
+    log_management_command(" ".join(sys.argv), settings.MANAGEMENT_LOG_PATH)
 
     if "--no-traceback" not in sys.argv and len(sys.argv) > 1:
         sys.argv.append("--traceback")
