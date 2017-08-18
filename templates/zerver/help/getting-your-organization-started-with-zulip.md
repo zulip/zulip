@@ -121,8 +121,8 @@ in stages is great advice.
 
 Zulip integrates directly with dozens of products, including all major
 version control and issue tracking tools, and indirectly with hundreds
-more through [Zapier](/integrations#zapier) and
-[IFTTT](/integrations#ifttt).  Set up notifications for the products
+more through [Hubot](/integrations/doc/hubot), [Zapier](/integrations/doc/zapier),
+and [IFTTT](/integrations/doc/ifttt).  Set up notifications for the products
 you use!  A few recommendations:
 
 - A product’s logo is a great choice of avatar for an integration with
