@@ -18,6 +18,11 @@
     If you're new to Zulip's threading, we recommend starting with the
     desktop or browser experience, and using mobile for notifications on the
     go.
+    {% if is_realm_admin %}
+    If this is your first Zulip organization, we also recommend giving
+    our <a href="{{ organization_setup_advice_link }}">guide for new
+    admins</a> a spin.
+    {% endif %}
 </p>
 
 <p>
