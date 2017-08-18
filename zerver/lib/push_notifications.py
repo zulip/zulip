@@ -152,9 +152,7 @@ def send_apple_push_notification(user_id, devices, **extra_data):
                         "This may be because we could not find the APNS Certificate file.")
         return
 
-    # Plain b64 token kept for debugging purposes
-    tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
-              for device in devices]
+    tokens = [(device.token, device.ios_app_id) for device in devices]
 
     valid_devices = [device for device in tokens if device[1] in [settings.ZULIP_IOS_APP_ID, None]]
     valid_tokens = [device[0] for device in valid_devices]
