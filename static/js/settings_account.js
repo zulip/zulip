@@ -77,6 +77,42 @@ exports.set_up = function () {
         ));
     });
 
+    var change_email_modal = new Modal(
+        templates.render('change_email_modal', { email: page_params.email })
+    );
+
+    change_email_modal.setUp(function (modal) {
+        $('body').on('click', '#change_email_button', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            modal.hide();
+
+            var data = {};
+            data.email = $('.email_change_container').find("input[name='email']").val();
+
+            channel.patch({
+                url: '/json/settings',
+                data: data,
+                success: function (data) {
+                    if ('account_email' in data) {
+                        settings_change_success(data.account_email);
+                    } else {
+                        settings_change_success(i18n.t("No changes made."));
+                    }
+                },
+                error: function (xhr) {
+                    settings_change_error("Error changing settings", xhr);
+                },
+            });
+        });
+
+        $('body').on('click', '.close_change_email_modal', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            modal.hide();
+        });
+    });
+
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
@@ -146,34 +182,10 @@ exports.set_up = function () {
         },
     });
 
-    $('#change_email_button').on('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $('#change_email_modal').modal('hide');
-
-        var data = {};
-        data.email = $('.email_change_container').find("input[name='email']").val();
-
-        channel.patch({
-            url: '/json/settings',
-            data: data,
-            success: function (data) {
-                if ('account_email' in data) {
-                    settings_change_success(data.account_email);
-                } else {
-                    settings_change_success(i18n.t("No changes made."));
-                }
-            },
-            error: function (xhr) {
-                settings_change_error("Error changing settings", xhr);
-            },
-        });
-    });
-
     $('#change_email').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#change_email_modal').modal('show');
+        change_email_modal.show();
         var email = $('#email_value').text().trim();
         $('.email_change_container').find("input[name='email']").val(email);
     });
