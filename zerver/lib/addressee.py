@@ -1,10 +1,26 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Optional, Sequence, Text
+from typing import Iterable, List, Optional, Sequence, Text
 
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 from zerver.lib.request import JsonableError
+from zerver.models import (
+    UserProfile,
+    get_user_profile_by_email,
+)
+
+def user_profiles_from_unvalidated_emails(emails):
+    # type: (Iterable[Text]) -> List[UserProfile]
+    user_profiles = []  # type: List[UserProfile]
+    for email in emails:
+        try:
+            user_profile = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            raise ValidationError(_("Invalid email '%s'") % (email,))
+        user_profiles.append(user_profile)
+    return user_profiles
 
 class Addressee(object):
     # This is really just a holder for vars that tended to be passed
