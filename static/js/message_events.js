@@ -40,16 +40,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
-        error: function () {
-            // We might want to be more clever here
-            setTimeout(function () {
-                if (msg_list === current_msg_list) {
-                    // Don't actually try again if we unnarrowed
-                    // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new);
-                }
-            }, 5000);
-        }});
+    });
 }
 
 
