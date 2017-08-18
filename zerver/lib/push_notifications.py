@@ -71,28 +71,6 @@ def get_apns_key(identifer):
     # type: (SupportsInt) -> str
     return 'apns:' + str(identifer)
 
-class APNsMessage(object):
-    def __init__(self, user_id, tokens, alert=None, badge=None, sound=None,
-                 category=None, **kwargs):
-        # type: (int, List[Text], Text, int, Text, Text, **Any) -> None
-        self.frame = Frame()
-        self.tokens = tokens
-        expiry = int(time.time() + 24 * 3600)
-        priority = 10
-        payload = Payload(alert=alert, badge=badge, sound=sound,
-                          category=category, custom=kwargs)
-        for token in tokens:
-            data = {'token': token, 'user_id': user_id}
-            identifier = random.getrandbits(32)
-            key = get_apns_key(identifier)
-            redis_client.hmset(key, data)
-            redis_client.expire(key, expiry)
-            self.frame.add_item(token, payload, identifier, expiry, priority)
-
-    def get_frame(self):
-        # type: () -> Frame
-        return self.frame
-
 def response_listener(error_response):
     # type: (Dict[str, SupportsInt]) -> None
     identifier = error_response['identifier']
@@ -160,24 +138,12 @@ def hex_to_b64(data):
     # type: (Text) -> bytes
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
-def _do_push_to_apns_service(user_id, message, apns_connection):
-    # type: (int, APNsMessage, APNs) -> None
-    if not apns_connection:  # nocoverage
-        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user_id))
-        return
-
-    frame = message.get_frame()
-    apns_connection.gateway_server.send_notification_multiple(frame)
-
 def send_apple_push_notification_to_user(user, alert, **extra_data):
     # type: (UserProfile, Text, **Any) -> None
     devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
     send_apple_push_notification(user.id, devices, zulip=dict(alert=alert),
                                  **extra_data)
 
-# Send a push notification to the desired clients
-# extra_data is a dict that will be passed to the
-# mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, **extra_data):
     # type: (int, List[DeviceToken], **Any) -> None
@@ -192,16 +158,22 @@ def send_apple_push_notification(user_id, devices, **extra_data):
 
     valid_devices = [device for device in tokens if device[1] in [settings.ZULIP_IOS_APP_ID, None]]
     valid_tokens = [device[0] for device in valid_devices]
-    if valid_tokens:
-        logging.info("APNS: Sending apple push notification "
-                     "to devices: %s" % (valid_devices,))
-        zulip_message = APNsMessage(user_id, valid_tokens,
-                                    alert=extra_data['zulip']['alert'],
-                                    **extra_data)
-        _do_push_to_apns_service(user_id, zulip_message, connection)
-    else:  # nocoverage
+    if not valid_tokens:
         logging.warn("APNS: Not sending notification because "
                      "tokens didn't match devices: %s/%s" % (tokens, settings.ZULIP_IOS_APP_ID,))
+        return
+
+    logging.info("APNS: Sending apple push notification to devices: %s"
+                 % (valid_devices,))
+    expiry = int(time.time() + 24 * 3600)
+    payload = Payload(alert=extra_data['zulip']['alert'], badge=1) # wip
+    for token in valid_tokens:
+        identifier = random.getrandbits(32)
+        key = get_apns_key(identifier)
+        redis_client.hmset(key, {'token': token, 'user_id': user_id})
+        redis_client.expire(key, expiry)
+        connection.gateway_server.send_notification(
+            token, payload, identifier=identifier, expiry=expiry)
 
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
