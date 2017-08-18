@@ -52,15 +52,16 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
-                active=True, bot_type=None, bot_owner=None, tos_version=None,
+                active=True, is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
                 timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):
-    # type: (Text, Optional[Text], Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
+    user_profile.is_realm_admin = is_realm_admin
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
