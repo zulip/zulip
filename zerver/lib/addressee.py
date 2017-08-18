@@ -5,11 +5,13 @@ from typing import Iterable, List, Optional, Sequence, Text
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import JsonableError
 from zerver.models import (
     UserProfile,
     get_user_profile_by_email,
 )
+import six
 
 def user_profiles_from_unvalidated_emails(emails):
     # type: (Iterable[Text]) -> List[UserProfile]
@@ -21,6 +23,14 @@ def user_profiles_from_unvalidated_emails(emails):
             raise ValidationError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
     return user_profiles
+
+def get_user_profiles(emails):
+    # type: (Iterable[Text]) -> List[UserProfile]
+    try:
+        return user_profiles_from_unvalidated_emails(emails)
+    except ValidationError as e:
+        assert isinstance(e.messages[0], six.string_types)
+        raise JsonableError(e.messages[0])
 
 class Addressee(object):
     # This is really just a holder for vars that tended to be passed
@@ -34,11 +44,11 @@ class Addressee(object):
     # in memory.
     #
     # This should be treated as an immutable class.
-    def __init__(self, msg_type, emails=None, stream_name=None, topic=None):
-        # type: (str, Optional[Sequence[Text]], Optional[Text], Text) -> None
+    def __init__(self, msg_type, user_profiles=None, stream_name=None, topic=None):
+        # type: (str, Optional[Sequence[UserProfile]], Optional[Text], Text) -> None
         assert(msg_type in ['stream', 'private'])
         self._msg_type = msg_type
-        self._emails = emails
+        self._user_profiles = user_profiles
         self._stream_name = stream_name
         self._topic = topic
 
@@ -54,10 +64,10 @@ class Addressee(object):
         # type: () -> bool
         return self._msg_type == 'private'
 
-    def emails(self):
-        # type: () -> Sequence[Text]
+    def user_profiles(self):
+        # type: () -> List[UserProfile]
         assert(self.is_private())
-        return self._emails
+        return self._user_profiles  # type: ignore # assertion protects us
 
     def stream_name(self):
         # type: () -> Text
@@ -107,15 +117,17 @@ class Addressee(object):
     @staticmethod
     def for_private(emails):
         # type: (Sequence[Text]) -> Addressee
+        user_profiles = get_user_profiles(emails)
         return Addressee(
             msg_type='private',
-            emails=emails,
+            user_profiles=user_profiles,
         )
 
     @staticmethod
     def for_email(email):
         # type: (Text) -> Addressee
+        user_profiles = get_user_profiles([email])
         return Addressee(
             msg_type='private',
-            emails=[email],
+            user_profiles=user_profiles,
         )

@@ -1374,16 +1374,16 @@ def check_message(sender, client, addressee,
             raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
 
     elif addressee.is_private():
-        emails = addressee.emails()
+        user_profiles = addressee.user_profiles()
 
-        if emails is None or len(emails) == 0:
+        if user_profiles is None or len(user_profiles) == 0:
             raise JsonableError(_("Message must have recipients"))
 
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
         not_forged_mirror_message = mirror_message and not forged
         try:
-            recipient = recipient_for_emails(emails, not_forged_mirror_message,
-                                             forwarder_user_profile, sender)
+            recipient = recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
+                                                    forwarder_user_profile, sender)
         except ValidationError as e:
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
