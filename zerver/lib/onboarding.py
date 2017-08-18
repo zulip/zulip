@@ -13,15 +13,23 @@ from typing import Any, Dict, List, Mapping, Text
 
 def send_initial_pms(user):
     # type: (UserProfile) -> None
+    organization_setup_text = ""
+    if user.is_realm_admin:
+        organization_setup_text = "* [Read the guide](%s) for getting your organization started with Zulip\n" \
+                                  % (user.realm.uri + "/help/getting-your-organization-started-with-zulip",)
+
     content = (
         "Hello, and welcome to Zulip!\n\nThis is a private message from me, Welcome Bot. "
         "Here are some tips to get you started:\n"
         "* Download our [Desktop and mobile apps](/apps)\n"
-        "* Customize your account and notifications on your [Settings page](#settings).\n"
-        "* Check out our !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n\n"
-        "The most important shortcut is `r` or `Enter` to reply.\n\n"
+        "* Customize your account and notifications on your [Settings page](#settings)\n"
+        "* Type `?` to check out Zulip's keyboard shortcuts\n"
+        "%s"
+        "\n"
+        "The most important shortcut is `r` to reply.\n\n"
         "Practice sending a few messages by replying to this conversation. If you're not into "
-        "keyboards, that's okay too; clicking anywhere on this message will also do the trick!")
+        "keyboards, that's okay too; clicking anywhere on this message will also do the trick!") \
+        % (organization_setup_text,)
 
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user.email, content)
