@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import requests
 import mock
 from mock import call
 import time
@@ -358,6 +359,52 @@ class HandlePushNotificationTest(PushNotificationTest):
             for _, _, token in gcm_devices:
                 mock_info.assert_any_call(
                     "GCM: Sent %s as %s" % (token, message.id))
+
+    def test_end_to_end_connection_error(self):
+        # type: () -> None
+        remote_gcm_tokens = [u'dddd']
+        for token in remote_gcm_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user_id=self.user_profile.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message
+        )
+
+        def retry(queue_name, event, processor):
+            # type: (Any, Any, Any) -> None
+            apn.handle_push_notification(event['user_profile_id'], event)
+
+        missed_message = {'user_profile_id': self.user_profile.id,
+                          'message_id': message.id}
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
+                mock.patch('zerver.lib.push_notifications.requests.request',
+                           side_effect=self.bounce_request), \
+                mock.patch('zerver.lib.push_notifications._do_push_to_apns_service'), \
+                mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
+                mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer',
+                           side_effect=requests.ConnectionError), \
+                mock.patch('zerver.lib.queue.queue_json_publish',
+                           side_effect=retry) as mock_retry, \
+                mock.patch('logging.warning') as mock_warn:
+            gcm_devices = [
+                (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
+                for device in RemotePushDeviceToken.objects.filter(
+                    kind=PushDeviceToken.GCM)
+            ]
+            mock_gcm.json_request.return_value = {
+                'success': {gcm_devices[0][2]: message.id}}
+            apn.handle_push_notification(self.user_profile.id, missed_message)
+            self.assertEqual(mock_retry.call_count, 3)
+            mock_warn.assert_called_with("Maximum retries exceeded for "
+                                         "trigger:%s event:"
+                                         "push_notification" % (self.user_profile.id,))
 
     def test_disabled_notifications(self):
         # type: () -> None
