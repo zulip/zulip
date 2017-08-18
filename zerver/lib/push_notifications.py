@@ -14,10 +14,8 @@ from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
-from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.queue import retry_event
 
-from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
 from gcm import GCM
 
 from django.conf import settings
@@ -41,107 +39,12 @@ else:  # nocoverage  -- Not convenient to add test for this.
 
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
-# APNS error codes
-ERROR_CODES = {
-    1: 'Processing error',
-    2: 'Missing device token',  # looks like token was empty?
-    3: 'Missing topic',  # topic is encoded in the certificate, looks like certificate is wrong. bail out.
-    4: 'Missing payload',  # bail out, our message looks like empty
-    5: 'Invalid token size',  # current token has wrong size, skip it and retry
-    6: 'Invalid topic size',  # can not happen, we do not send topic, it is part of certificate. bail out.
-    7: 'Invalid payload size',  # our payload is probably too big. bail out.
-    8: 'Invalid token',  # our device token is broken, skipt it and retry
-    10: 'Shutdown',  # server went into maintenance mode. reported token is the last success, skip it and retry.
-    None: 'Unknown',  # unknown error, for sure we try again, but user should limit number of retries
-}
-
-redis_client = get_redis_client()
-
-# Maintain a long-lived Session object to avoid having to re-SSL-handshake
-# for each request
-connection = None
-
 # `APNS_SANDBOX` should be a bool
 assert isinstance(settings.APNS_SANDBOX, bool)
 
 def uses_notification_bouncer():
     # type: () -> bool
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-
-def get_apns_key(identifer):
-    # type: (SupportsInt) -> str
-    return 'apns:' + str(identifer)
-
-class APNsMessage(object):
-    def __init__(self, user_id, tokens, alert=None, badge=None, sound=None,
-                 category=None, **kwargs):
-        # type: (int, List[Text], Text, int, Text, Text, **Any) -> None
-        self.frame = Frame()
-        self.tokens = tokens
-        expiry = int(time.time() + 24 * 3600)
-        priority = 10
-        payload = Payload(alert=alert, badge=badge, sound=sound,
-                          category=category, custom=kwargs)
-        for token in tokens:
-            data = {'token': token, 'user_id': user_id}
-            identifier = random.getrandbits(32)
-            key = get_apns_key(identifier)
-            redis_client.hmset(key, data)
-            redis_client.expire(key, expiry)
-            self.frame.add_item(token, payload, identifier, expiry, priority)
-
-    def get_frame(self):
-        # type: () -> Frame
-        return self.frame
-
-def response_listener(error_response):
-    # type: (Dict[str, SupportsInt]) -> None
-    identifier = error_response['identifier']
-    key = get_apns_key(identifier)
-    if not redis_client.exists(key):
-        logging.warn("APNs key, {}, doesn't not exist.".format(key))
-        return
-
-    code = error_response['status']
-    assert isinstance(code, int)
-
-    errmsg = ERROR_CODES[code]
-    data = redis_client.hgetall(key)
-    token = data['token']
-    user_id = int(data['user_id'])
-    b64_token = hex_to_b64(token)
-
-    logging.warn("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
-    if code == 8:
-        # Invalid Token, remove from our database
-        logging.warn("APNS: Removing token from database due to above failure")
-        try:
-            PushDeviceToken.objects.get(user_id=user_id, token=b64_token).delete()
-            return  # No need to check RemotePushDeviceToken
-        except PushDeviceToken.DoesNotExist:
-            pass
-
-        if settings.ZILENCER_ENABLED:
-            # Trying to delete from both models is a bit inefficient than
-            # deleting from only one model but this method is very simple.
-            try:
-                RemotePushDeviceToken.objects.get(user_id=user_id,
-                                                  token=b64_token).delete()
-            except RemotePushDeviceToken.DoesNotExist:
-                pass
-
-def get_connection(cert_file, key_file):
-    # type: (str, str) -> APNs
-    connection = APNs(use_sandbox=settings.APNS_SANDBOX,
-                      cert_file=cert_file,
-                      key_file=key_file,
-                      enhanced=True)
-    connection.gateway_server.register_response_listener(response_listener)
-    return connection
-
-if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):  # nocoverage
-    connection = get_connection(settings.APNS_CERT_FILE,
-                                settings.APNS_KEY_FILE)
 
 def num_push_devices_for_user(user_profile, kind = None):
     # type: (UserProfile, Optional[int]) -> PushDeviceToken
@@ -159,65 +62,13 @@ def hex_to_b64(data):
     # type: (Text) -> bytes
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
-def _do_push_to_apns_service(user_id, message, apns_connection):
-    # type: (int, APNsMessage, APNs) -> None
-    if not apns_connection:  # nocoverage
-        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user_id))
-        return
-
-    frame = message.get_frame()
-    apns_connection.gateway_server.send_notification_multiple(frame)
-
-def send_apple_push_notification_to_user(user, alert, **extra_data):
-    # type: (UserProfile, Text, **Any) -> None
-    devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
-    send_apple_push_notification(user.id, devices, zulip=dict(alert=alert),
-                                 **extra_data)
-
-# Send a push notification to the desired clients
-# extra_data is a dict that will be passed to the
-# mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, **extra_data):
     # type: (int, List[DeviceToken], **Any) -> None
-    if not connection:
-        logging.warning("Attempting to send push notification, but no connection was found. "
-                        "This may be because we could not find the APNS Certificate file.")
+    if not devices:
         return
-
-    # Plain b64 token kept for debugging purposes
-    tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
-              for device in devices]
-
-    valid_devices = [device for device in tokens if device[1] in [settings.ZULIP_IOS_APP_ID, None]]
-    valid_tokens = [device[0] for device in valid_devices]
-    if valid_tokens:
-        logging.info("APNS: Sending apple push notification "
-                     "to devices: %s" % (valid_devices,))
-        zulip_message = APNsMessage(user_id, valid_tokens,
-                                    alert=extra_data['zulip']['alert'],
-                                    **extra_data)
-        _do_push_to_apns_service(user_id, zulip_message, connection)
-    else:  # nocoverage
-        logging.warn("APNS: Not sending notification because "
-                     "tokens didn't match devices: %s/%s" % (tokens, settings.ZULIP_IOS_APP_ID,))
-
-# NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
-# feedback() call can take up to 15s
-def check_apns_feedback():
-    # type: () -> None
-    feedback_connection = APNs(use_sandbox=settings.APNS_SANDBOX,
-                               cert_file=settings.APNS_CERT_FILE,
-                               key_file=settings.APNS_KEY_FILE)
-
-    for token, since in feedback_connection.feedback_server.items():
-        since_date = timestamp_to_datetime(since)
-        logging.info("Found unavailable token %s, unavailable since %s" % (token, since_date))
-
-        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updated__lt=since_date,
-                                       kind=PushDeviceToken.APNS).delete()
-    logging.info("Finished checking feedback for stale tokens")
-
+    logging.warn("APNs unimplemented.  Dropping notification for user %d with %d devices.",
+                 user_id, len(devices))
 
 if settings.ANDROID_GCM_API_KEY:  # nocoverage
     gcm = GCM(settings.ANDROID_GCM_API_KEY)

@@ -34,30 +34,6 @@ from zerver.lib.test_classes import (
 from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
 from django.utils.timezone import now
 
-class MockRedis(object):
-    data = {}  # type: Dict[str, Any]
-
-    def hgetall(self, key):
-        # type: (str) -> Any
-        return self.data.get(key)
-
-    def exists(self, key):
-        # type: (str) -> bool
-        return key in self.data
-
-    def hmset(self, key, data):
-        # type: (str, Dict[Any, Any]) -> None
-        self.data[key] = data
-
-    def delete(self, key):
-        # type: (str) -> None
-        if self.exists(key):
-            del self.data[key]
-
-    def expire(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        pass
-
 class BouncerTestCase(ZulipTestCase):
     def setUp(self):
         # type: () -> None
@@ -255,8 +231,6 @@ class PushNotificationTest(BouncerTestCase):
         # type: () -> None
         super(PushNotificationTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
-        apn.connection = apn.get_connection('fake-cert', 'fake-key')
-        self.redis_client = apn.redis_client = MockRedis()
         self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
@@ -276,12 +250,6 @@ class PushNotificationTest(BouncerTestCase):
 
         self.sending_client = get_client('test')
         self.sender = self.example_user('hamlet')
-
-    def tearDown(self):
-        # type: () -> None
-        super(PushNotificationTest, self).tearDown()
-        for i in [100, 200]:
-            self.redis_client.delete(apn.get_apns_key(i))
 
     def get_message(self, type, type_id=100):
         # type: (int, int) -> Message
@@ -337,9 +305,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
-                mock.patch('zerver.lib.push_notifications._do_push_to_apns_service'), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
-                mock.patch('logging.info') as mock_info:
+                mock.patch('logging.info') as mock_info, \
+                mock.patch('logging.warn') as mock_warn:
             apns_devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
@@ -353,9 +321,9 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_gcm.json_request.return_value = {
                 'success': {gcm_devices[0][2]: message.id}}
             apn.handle_push_notification(self.user_profile.id, missed_message)
-            mock_info.assert_called_with(
-                "APNS: Sending apple push "
-                "notification to devices: %s" % (apns_devices,))
+            mock_warn.assert_called_with(
+                "APNs unimplemented.  Dropping notification for user %d with %d devices.",
+                self.user_profile.id, len(apns_devices))
             for _, _, token in gcm_devices:
                 mock_info.assert_any_call(
                     "GCM: Sent %s as %s" % (token, message.id))
@@ -499,96 +467,6 @@ class HandlePushNotificationTest(PushNotificationTest):
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_called_with("Could not find UserMessage with "
                                            "message_id 100")
-
-class APNsMessageTest(PushNotificationTest):
-    @mock.patch('random.getrandbits', side_effect=[100, 200])
-    def test_apns_message(self, mock_getrandbits):
-        # type: (mock.MagicMock) -> None
-        apn.APNsMessage(self.user_profile.id, self.tokens, alert="test")
-        data = self.redis_client.hgetall(apn.get_apns_key(100))
-        self.assertEqual(data['token'], 'aaaa')
-        self.assertEqual(int(data['user_id']), self.user_profile.id)
-        data = self.redis_client.hgetall(apn.get_apns_key(200))
-        self.assertEqual(data['token'], 'bbbb')
-        self.assertEqual(int(data['user_id']), self.user_profile.id)
-
-class ResponseListenerTest(PushNotificationTest):
-    def get_error_response(self, **kwargs):
-        # type: (**Any) -> Dict[str, SupportsInt]
-        er = {'identifier': 0, 'status': 0}  # type: Dict[str, SupportsInt]
-        er.update({k: v for k, v in kwargs.items() if k in er})
-        return er
-
-    def get_cache_value(self):
-        # type: () -> Dict[str, Union[str, int]]
-        return {'token': 'aaaa', 'user_id': self.user_profile.id}
-
-    @mock.patch('logging.warn')
-    def test_cache_does_not_exist(self, mock_warn):
-        # type: (mock.MagicMock) -> None
-        err_rsp = self.get_error_response(identifier=100, status=1)
-        apn.response_listener(err_rsp)
-        msg = "APNs key, apns:100, doesn't not exist."
-        mock_warn.assert_called_once_with(msg)
-
-    @mock.patch('logging.warn')
-    def test_cache_exists(self, mock_warn):
-        # type: (mock.MagicMock) -> None
-        self.redis_client.hmset(apn.get_apns_key(100), self.get_cache_value())
-        err_rsp = self.get_error_response(identifier=100, status=1)
-        apn.response_listener(err_rsp)
-        b64_token = apn.hex_to_b64('aaaa')
-        errmsg = apn.ERROR_CODES[int(err_rsp['status'])]
-        msg = ("APNS: Failed to deliver APNS notification to %s, "
-               "reason: %s" % (b64_token, errmsg))
-        mock_warn.assert_called_once_with(msg)
-
-    @mock.patch('logging.warn')
-    def test_error_code_eight(self, mock_warn):
-        # type: (mock.MagicMock) -> None
-        self.redis_client.hmset(apn.get_apns_key(100), self.get_cache_value())
-        err_rsp = self.get_error_response(identifier=100, status=8)
-        b64_token = apn.hex_to_b64('aaaa')
-        self.assertEqual(PushDeviceToken.objects.filter(
-            user=self.user_profile, token=b64_token).count(), 1)
-        apn.response_listener(err_rsp)
-        self.assertEqual(mock_warn.call_count, 2)
-        self.assertEqual(PushDeviceToken.objects.filter(
-            user=self.user_profile, token=b64_token).count(), 0)
-
-    @mock.patch('logging.warn')
-    def test_error_code_eight_when_token_doesnt_exist(self, mock_warn):
-        # type: (mock.MagicMock) -> None
-        cache_value = self.get_cache_value()
-        cache_value['token'] = 'cccc'
-        self.redis_client.hmset(apn.get_apns_key(100), cache_value)
-        err_rsp = self.get_error_response(identifier=100, status=8)
-        apn.response_listener(err_rsp)
-        self.assertEqual(PushDeviceToken.objects.all().count(), 2)
-
-    @mock.patch('logging.warn')
-    def test_error_code_eight_with_zilencer(self, mock_warn):
-        # type: (mock.MagicMock) -> None
-        cache_value = self.get_cache_value()
-        cache_value['token'] = 'cccc'
-        self.redis_client.hmset(apn.get_apns_key(100), cache_value)
-        err_rsp = self.get_error_response(identifier=100, status=8)
-        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
-        with self.settings(ZILENCER_ENABLED=True):
-            apn.response_listener(err_rsp)
-        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 0)
-
-    @mock.patch('logging.warn')
-    def test_error_code_eight_with_zilencer_when_token_doesnt_exist(self, mock_warn):
-        # type: (mock.MagicMock) -> None
-        cache_value = self.get_cache_value()
-        cache_value['token'] = 'dddd'
-        self.redis_client.hmset(apn.get_apns_key(100), cache_value)
-        err_rsp = self.get_error_response(identifier=100, status=8)
-        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
-        with self.settings(ZILENCER_ENABLED=True):
-            apn.response_listener(err_rsp)
-        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
 
 class TestGetAlertFromMessage(PushNotificationTest):
     def test_get_alert_from_message(self):
@@ -780,55 +658,6 @@ class TestPushApi(ZulipTestCase):
             self.assert_json_success(result)
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
             self.assertEqual(len(tokens), 0)
-
-class SendNotificationTest(PushNotificationTest):
-    @mock.patch('logging.warn')
-    @mock.patch('logging.info')
-    @mock.patch('zerver.lib.push_notifications._do_push_to_apns_service')
-    def test_send_apple_push_notifiction(self, mock_send, mock_info, mock_warn):
-        # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
-        def test_send(user_id, message, alert):
-            # type: (int, Message, str) -> None
-            self.assertEqual(user_id, self.user_profile.id)
-            self.assertEqual(set(message.tokens), set(self.tokens))
-
-        mock_send.side_effect = test_send
-        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
-        self.assertEqual(mock_send.call_count, 1)
-
-    @mock.patch('apns.GatewayConnection.send_notification_multiple')
-    def test_do_push_to_apns_service(self, mock_push):
-        # type: (mock.MagicMock) -> None
-        msg = apn.APNsMessage(self.user_profile.id, self.tokens, alert="test")
-
-        def test_push(message):
-            # type: (Message) -> None
-            self.assertIs(message, msg.get_frame())
-
-        mock_push.side_effect = test_push
-        apn._do_push_to_apns_service(self.user_profile.id, msg, apn.connection)
-
-    @mock.patch('logging.warn')
-    @mock.patch('logging.info')
-    @mock.patch('apns.GatewayConnection.send_notification_multiple')
-    def test_connection_none(self, mock_push, mock_info, mock_warn):
-        # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
-        apn.connection = None
-        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
-
-class APNsFeedbackTest(PushNotificationTest):
-    @mock.patch('logging.info')
-    @mock.patch('apns.FeedbackConnection.items')
-    def test_feedback(self, mock_items, mock_info):
-        # type: (mock.MagicMock, mock.MagicMock) -> None
-        update_time = apn.timestamp_to_datetime(int(time.time()) - 10000)
-        PushDeviceToken.objects.all().update(last_updated=update_time)
-        mock_items.return_value = [
-            ('aaaa', int(time.time())),
-        ]
-        self.assertEqual(PushDeviceToken.objects.all().count(), 2)
-        apn.check_apns_feedback()
-        self.assertEqual(PushDeviceToken.objects.all().count(), 1)
 
 class GCMTest(PushNotificationTest):
     def setUp(self):
