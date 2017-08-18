@@ -2,6 +2,7 @@
 from __future__ import print_function
 import datetime
 import errno
+import logging
 import os
 import pwd
 import re
@@ -11,7 +12,7 @@ import sys
 import time
 
 if False:
-    from typing import Sequence, Any
+    from typing import Sequence, Text, Any
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -131,3 +132,18 @@ def run(args, **kwargs):
               ENDC)
         print()
         raise
+
+def log_management_command(cmd, log_path):
+    # type: (Text, Text) -> None
+    log_dir = os.path.dirname(log_path)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    formatter = logging.Formatter("%(asctime)s: %(message)s")
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setFormatter(formatter)
+    logger = logging.getLogger("zulip.management")
+    logger.addHandler(file_handler)
+    logger.setLevel(logging.INFO)
+
+    logger.info("Ran '%s'" % (cmd,))
