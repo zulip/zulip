@@ -114,6 +114,8 @@ def response_listener(error_response):
     if code == 8:
         # Invalid Token, remove from our database
         logging.warn("APNS: Removing token from database due to above failure")
+        logging.warn("APNS: nm, debugging")
+        return
         try:
             PushDeviceToken.objects.get(user_id=user_id, token=b64_token).delete()
             return  # No need to check RemotePushDeviceToken
