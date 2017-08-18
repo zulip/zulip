@@ -102,9 +102,7 @@ def remote_server_notify_push(request,  # type: HttpRequest
     if android_devices:
         send_android_push_notification(android_devices, gcm_payload, remote=True)
 
-    # TODO: set badge count in a better way
     if apple_devices:
-        send_apple_push_notification(user_id, apple_devices,
-                                     badge=1, zulip=apns_payload)
+        send_apple_push_notification(user_id, apple_devices, apns_payload)
 
     return json_success()

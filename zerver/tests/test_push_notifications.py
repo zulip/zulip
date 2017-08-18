@@ -306,6 +306,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
+                mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
                 mock.patch('logging.info') as mock_info, \
                 mock.patch('logging.warn') as mock_warn:
             apns_devices = [
@@ -320,10 +321,12 @@ class HandlePushNotificationTest(PushNotificationTest):
             ]
             mock_gcm.json_request.return_value = {
                 'success': {gcm_devices[0][2]: message.id}}
+            mock_apns.get_notification_result.return_value = 'Success'
             apn.handle_push_notification(self.user_profile.id, missed_message)
-            mock_warn.assert_called_with(
-                "APNs unimplemented.  Dropping notification for user %d with %d devices.",
-                self.user_profile.id, len(apns_devices))
+            for _, _, token in apns_devices:
+                mock_info.assert_any_call(
+                    "APNs: Success sending for user %d to device %s",
+                    self.user_profile.id, token)
             for _, _, token in gcm_devices:
                 mock_info.assert_any_call(
                     "GCM: Sent %s as %s" % (token, message.id))
@@ -455,8 +458,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
-                                               badge=1,
-                                               zulip={'apns': True})
+                                               {'apns': True})
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True})
 
@@ -488,8 +490,13 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.HUDDLE)
         payload = apn.get_apns_payload(message)
         expected = {
-            "alert": "New private group message from King Hamlet",
-            "message_ids": [message.id],
+            'alert': "New private group message from King Hamlet",
+            'badge': 1,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                }
+            }
         }
         self.assertDictEqual(payload, expected)
 
