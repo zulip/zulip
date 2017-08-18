@@ -1300,7 +1300,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                (sender.full_name, stream_name, error_msg))
 
     internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
-                                  sender.bot_owner.email, content)
+                                  sender.bot_owner, content)
 
     sender.last_reminder = timezone_now()
     sender.save(update_fields=['last_reminder'])
@@ -1474,12 +1474,12 @@ def internal_prep_stream_message(realm, sender, stream_name, topic, content):
         content=content,
     )
 
-def internal_prep_private_message(realm, sender, recipient_email, content):
-    # type: (Realm, UserProfile, Text, Text) -> Optional[Dict[str, Any]]
+def internal_prep_private_message(realm, sender, recipient_user, content):
+    # type: (Realm, UserProfile, UserProfile, Text) -> Optional[Dict[str, Any]]
     """
     See _internal_prep_message for details of how this works.
     """
-    addressee = Addressee.for_email(recipient_email)
+    addressee = Addressee.for_user_profile(recipient_user)
 
     return _internal_prep_message(
         realm=realm,
@@ -1500,9 +1500,9 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
 
     do_send_messages([msg])
 
-def internal_send_private_message(realm, sender, recipient_email, content):
-    # type: (Realm, UserProfile, Text, Text) -> None
-    message = internal_prep_private_message(realm, sender, recipient_email, content)
+def internal_send_private_message(realm, sender, recipient_user, content):
+    # type: (Realm, UserProfile, UserProfile, Text) -> None
+    message = internal_prep_private_message(realm, sender, recipient_user, content)
     if message is None:
         return
     do_send_messages([message])
