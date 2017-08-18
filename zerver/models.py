@@ -6,7 +6,8 @@ from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager, CASCADE
+from django.db.models.functions import Length
+from django.db.models import Manager, CASCADE, Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -1890,3 +1891,13 @@ class BotUserData(models.Model):
 
     class Meta(object):
         unique_together = ('bot_profile', 'user_profile')
+
+def get_bot_data_for_user(user_profile_id):
+    # type: (UserProfile) -> int
+    # This function returns the data stored per user, this information can be used keep a check
+    # on the upper limit of data stored for each user.
+    bot_data_for_user = BotUserData.objects.filter(
+        user_profile__id=user_profile_id).annotate(
+            len_bot_user_data=Length('user_data')).aggregate(
+                sum_bot_data=Sum('len_bot_user_data'))
+    return bot_data_for_user['sum_bot_data']
