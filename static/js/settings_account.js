@@ -101,7 +101,7 @@ exports.set_up = function () {
                     }
                 },
                 error: function (xhr) {
-                    settings_change_error("Error changing settings", xhr);
+                    settings_change_error(i18n.t("Error changing settings"), xhr);
                 },
             });
         });
