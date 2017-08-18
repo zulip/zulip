@@ -1198,8 +1198,19 @@ def messages_in_narrow_backend(request, user_profile,
 
     search_fields = dict()
     for row in query_result:
-        (message_id, subject, rendered_content, content_matches, subject_matches) = row
-        search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                      content_matches, subject_matches)
+        message_id = row['message_id']
+        subject = row['subject']
+        rendered_content = row['rendered_content']
+
+        if 'content_matches' in row:
+            content_matches = row['content_matches']
+            subject_matches = row['subject_matches']
+            search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                          content_matches, subject_matches)
+        else:
+            search_fields[message_id] = dict(
+                match_content=rendered_content,
+                match_subject=subject
+            )
 
     return json_success({"messages": search_fields})
