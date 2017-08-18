@@ -214,7 +214,7 @@ def accounts_register(request):
             do_set_user_display_setting(user_profile, 'timezone', timezone)
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
-                                          prereg_user=prereg_user,
+                                          prereg_user=prereg_user, is_realm_admin=realm_creation,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
@@ -222,7 +222,6 @@ def accounts_register(request):
         send_initial_pms(user_profile)
 
         if realm_creation:
-            do_change_is_admin(user_profile, True)
             setup_initial_private_stream(user_profile)
             send_initial_realm_messages(realm)
 
