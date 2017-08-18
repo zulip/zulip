@@ -84,9 +84,9 @@ def response_listener(error_response):
 
     errmsg = ERROR_CODES[code]
     data = redis_client.hgetall(key)
-    token = data['token']
-    user_id = int(data['user_id'])
-    b64_token = hex_to_b64(token)
+    token = data[b'token']
+    user_id = int(data[b'user_id'])
+    b64_token = hex_to_b64(token.decode('utf-8'))
 
     logging.warn("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
     if code == 8:
@@ -168,7 +168,7 @@ def send_apple_push_notification(user_id, devices, **extra_data):
     for token in valid_tokens:
         identifier = random.getrandbits(32)
         key = get_apns_key(identifier)
-        redis_client.hmset(key, {'token': token, 'user_id': user_id})
+        redis_client.hmset(key, {b'token': token, b'user_id': user_id})
         redis_client.expire(key, expiry)
         connection.gateway_server.send_notification(
             token, payload, identifier=identifier, expiry=expiry)
