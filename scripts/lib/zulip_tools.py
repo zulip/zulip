@@ -12,7 +12,7 @@ import sys
 import time
 
 if False:
-    from typing import Sequence, Text, Any
+    from typing import Sequence, Set, Text, Any
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -155,3 +155,21 @@ def get_environment():
     if os.environ.get("TRAVIS"):
         return "travis"
     return "dev"
+
+def get_recent_deployments(threshold_days):
+    # type: (int) -> Set[Text]
+    # Returns a list of deployments not older than threshold days
+    # including `/root/zulip` directory if it exists.
+    recent = set()
+    threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
+    for dir_name in os.listdir(DEPLOYMENTS_DIR):
+        try:
+            date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)
+            if date >= threshold_date:
+                recent.add(os.path.join(DEPLOYMENTS_DIR, dir_name))
+        except ValueError:
+            # Always include deployments whose name is not in the format of a timestamp.
+            recent.add(os.path.join(DEPLOYMENTS_DIR, dir_name))
+    if os.path.exists("/root/zulip"):
+        recent.add("/root/zulip")
+    return recent
