@@ -5,7 +5,7 @@ Django==1.11.4
 Jinja2==2.9.6
 
 # Needed for markdown processing
-Markdown==2.6.8
+Markdown==2.6.9
 MarkupSafe==1.0
 Pygments==2.2.0
 

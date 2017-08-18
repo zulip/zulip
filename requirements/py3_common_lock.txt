@@ -47,7 +47,7 @@ jedi==0.10.2              # via ipython
 jinja2==2.9.6
 lxml==3.8.0
 markdown-include==0.5.1
-markdown==2.6.8           # via markdown-include
+markdown==2.6.9           # via markdown-include
 markupsafe==1.0
 mock==2.0.0
 ndg-httpsclient==0.4.2
