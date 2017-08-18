@@ -14,6 +14,7 @@ from collections import defaultdict
 from zerver.lib.utils import statsd
 from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
+MAX_REQUEST_RETRIES = 3
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
 
 # This simple queuing library doesn't expose much of the power of
@@ -305,3 +306,12 @@ def queue_json_publish(queue_name, event, processor):
             get_queue_client().json_publish(queue_name, event)
         else:
             processor(event)
+
+def retry_event(queue_name, event, failure_processor):
+    # type: (str, Dict[str, Any], Callable[[Dict[str, Any]], None]) -> None
+    assert 'failed_tries' in event
+    event['failed_tries'] += 1
+    if event['failed_tries'] > MAX_REQUEST_RETRIES:
+        failure_processor(event)
+    else:
+        queue_json_publish(queue_name, event, lambda x: None)

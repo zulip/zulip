@@ -16,11 +16,9 @@ from django.utils.translation import ugettext as _
 from zerver.models import Realm, UserProfile, get_realm_by_email_domain, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
-
-MAX_REQUEST_RETRIES = 3
 
 class OutgoingWebhookServiceInterface(object):
 
@@ -161,14 +159,18 @@ def fail_with_message(event, failure_message):
 
 def request_retry(event, failure_message):
     # type: (Dict[str, Any], Text) -> None
-    event['failed_tries'] += 1
-    if event['failed_tries'] > MAX_REQUEST_RETRIES:
+    def failure_processor(event):
+        # type: (Dict[str, Any]) -> None
+        """
+        The name of the argument is 'event' on purpose. This argument will hide
+        the 'event' argument of the request_retry function. Keeping the same name
+        results in a smaller diff.
+        """
         bot_user = get_user_profile_by_id(event['user_profile_id'])
-        failure_message = "Maximum retries exceeded! " + failure_message
-        fail_with_message(event, failure_message)
+        fail_with_message(event, "Maximum retries exceeded! " + failure_message)
         logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (bot_user.email, event['command']))
-    else:
-        queue_json_publish("outgoing_webhooks", event, lambda x: None)
+
+    retry_event('outgoing_webhooks', event, failure_processor)
 
 def do_rest_call(rest_operation, request_data, event, service_handler, timeout=None):
     # type: (Dict[str, Any], Optional[Dict[str, Any]], Dict[str, Any], Any, Any) -> None
