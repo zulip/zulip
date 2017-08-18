@@ -15,7 +15,10 @@ from zerver.lib.bugdown import (
     version as bugdown_version,
     url_embed_preview_enabled_for_realm
 )
-from zerver.lib.addressee import Addressee
+from zerver.lib.addressee import (
+    Addressee,
+    user_profiles_from_unvalidated_emails,
+)
 from zerver.lib.cache import (
     delete_user_profile_caches,
     to_dict_cache_key,
@@ -1171,17 +1174,6 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         forwarder_user_profile=forwarder_user_profile,
         sender=sender
     )
-
-def user_profiles_from_unvalidated_emails(emails):
-    # type: (Iterable[Text]) -> List[UserProfile]
-    user_profiles = []  # type: List[UserProfile]
-    for email in emails:
-        try:
-            user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid email '%s'") % (email,))
-        user_profiles.append(user_profile)
-    return user_profiles
 
 def recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
                                 forwarder_user_profile, sender):
