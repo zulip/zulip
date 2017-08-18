@@ -1,35 +1,32 @@
 from __future__ import absolute_import
 
+import base64
+import binascii
+from functools import partial
+import logging
+import os
+import time
 import random
-import requests
 from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
-
-from version import ZULIP_VERSION
-from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
-    UserMessage, get_display_recipient, receives_offline_notifications, \
-    receives_online_notifications
-from zerver.models import get_user_profile_by_id
-from zerver.lib.avatar import absolute_avatar_url
-from zerver.lib.request import JsonableError
-from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.decorator import statsd_increment
-from zerver.lib.utils import generate_random_token
-from zerver.lib.queue import retry_event
-
-from gcm import GCM
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
+from gcm import GCM
+import requests
 from six.moves import urllib
-
-import base64
-import binascii
-import logging
-import os
-import time
 import ujson
-from functools import partial
+
+from zerver.decorator import statsd_increment
+from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.queue import retry_event
+from zerver.lib.request import JsonableError
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.utils import generate_random_token
+from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
+    UserMessage, get_display_recipient, receives_offline_notifications, \
+    receives_online_notifications, get_user_profile_by_id
+from version import ZULIP_VERSION
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
