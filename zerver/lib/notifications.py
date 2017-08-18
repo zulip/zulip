@@ -416,7 +416,10 @@ def enqueue_welcome_emails(user_id):
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
     context = common_context(user_profile)
     context.update({
-        'unsubscribe_link': unsubscribe_link
+        'unsubscribe_link': unsubscribe_link,
+        'organization_setup_advice_link':
+        user_profile.realm.uri + '%s/help/getting-your-organization-started-with-zulip',
+        'is_realm_admin': user_profile.is_realm_admin,
     })
     send_future_email(
         "zerver/emails/followup_day1", to_user_id=user_id, from_name=from_name,

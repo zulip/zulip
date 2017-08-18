@@ -53,8 +53,10 @@ def email_page(request):
         'server_uri': settings.SERVER_URI,
         'old_email': 'old_address@acme.com',
         'new_email': 'new_address@acme.com',
+        'is_realm_admin': True,
         'activate_url': '%s/accounts/do_confirm/5348720e4af7d2e8f296cbbd04d439489917ddc0' % (settings.SERVER_URI,),
         'unsubscribe_link': '%s/accounts/unsubscribe/<type>/cf88931365ef1b0f12eae8d488bbc7af3563d7f0' % (settings.SERVER_URI,),
+        'organization_setup_advice_link': '%s/help/getting-your-organization-started-with-zulip' % (settings.SERVER_URI,),
     }
 
     templates = [
