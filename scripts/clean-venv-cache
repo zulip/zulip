@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+import argparse
+import datetime
+import os
+import subprocess
+import sys
+import time
+
+if False:
+    from typing import Set, Text
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ZULIP_PATH)
+from scripts.lib.zulip_tools import GENERIC_CACHE_SCRIPT_PARSER, \
+    get_caches_to_be_purged, get_environment, get_recent_deployments
+
+ENV = get_environment()
+VENV_CACHE_DIR = '/srv/zulip-venv-cache'
+if ENV == "travis":
+    VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
+
+def parse_args():
+    # type: () -> argparse.Namespace
+    parser = argparse.ArgumentParser(description="This script cleans unused zulip venv caches.",
+                                     parents=[GENERIC_CACHE_SCRIPT_PARSER, ])
+    args = parser.parse_args()
+    return args
+
+def get_caches_in_use(threshold_days):
+    # type: (int) -> Set[Text]
+    setups_to_check = set([ZULIP_PATH, ])
+    caches_in_use = set()
+    if ENV == "prod":
+        setups_to_check |= get_recent_deployments(threshold_days)
+    hash_reqs = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+    for path in setups_to_check:
+        for filename in os.listdir(os.path.join(path, "requirements")):
+            requirements_file = os.path.join(path, "requirements", filename)
+            hash_val = subprocess.check_output([hash_reqs, requirements_file]).strip()
+            caches_in_use.add(os.path.join(VENV_CACHE_DIR, hash_val.decode('utf-8')))
+    return caches_in_use
+
+def main():
+    # type: () -> None
+    args = parse_args()
+
+    all_caches = set([os.path.join(VENV_CACHE_DIR, cache) for cache in os.listdir(VENV_CACHE_DIR)])
+    caches_in_use = get_caches_in_use(args.threshold_days)
+    caches_to_purge = get_caches_to_be_purged(VENV_CACHE_DIR, caches_in_use, args.threshold_days)
+    caches_to_keep = all_caches - caches_to_purge
+
+    if args.dry_run:
+        print("Performing a dry run...")
+    else:
+        print("Cleaning unused venv caches...")
+
+    for cache_dir in caches_to_purge:
+        print("Cleaning unused venv %s" % (cache_dir,))
+        if not args.dry_run:
+            subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
+
+    for cache_dir in caches_to_keep:
+        print("Keeping used venv: %s" % (cache_dir,))
+
+    print("Done!\n")
+
+if __name__ == "__main__":
+    main()

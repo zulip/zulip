@@ -16,7 +16,7 @@ install:
 
   # Clean any virtualenvs that are not in use to avoid our cache
   # becoming huge.
-  - mispipe "tools/clean-venv-cache --travis" ts
+  - mispipe "scripts/clean-venv-cache --threshold 0" ts
 
   # Clean any npm cache which was generated but not required anymore to avoid
   # our cache becoming huge.
