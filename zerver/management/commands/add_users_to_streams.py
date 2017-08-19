@@ -14,19 +14,15 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        self.add_realm_args(parser)
+        self.add_realm_args(parser, True)
+        self.add_user_list_args(parser)
 
         parser.add_argument(
             '-s', '--streams',
             dest='streams',
             type=str,
+            required=True,
             help='A comma-separated list of stream names.')
-
-        parser.add_argument(
-            '-u', '--users',
-            dest='users',
-            type=str,
-            help='A comma-separated list of email addresses.')
 
         parser.add_argument(
             '-a', '--all-users',
@@ -37,25 +33,22 @@ class Command(ZulipBaseCommand):
 
     def handle(self, **options):
         # type: (**Any) -> None
-        if options["streams"] is None or \
-                (options["users"] is None and not options["all_users"]):
+        realm = self.get_realm(options)
+        user_profiles = self.get_users(options, realm)
+
+        if bool(user_profiles) == options["all_users"]:
             self.print_help("./manage.py", "add_users_to_streams")
             exit(1)
 
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])
-        realm = self.get_realm(options)
 
+        # If all_users flag is passed user list should not be passed and vice versa.
         if options["all_users"]:
             user_profiles = UserProfile.objects.filter(realm=realm)
-        else:
-            emails = set([email.strip() for email in options["users"].split(",")])
-            user_profiles = []
-            for email in emails:
-                user_profiles.append(self.get_user(email, realm))
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:
-                stream, _ = create_stream_if_needed(user_profile.realm, stream_name)
+                stream, _ = create_stream_if_needed(realm, stream_name)
                 _ignore, already_subscribed = bulk_add_subscriptions([stream], [user_profile])
                 was_there_already = user_profile.id in {tup[0].id for tup in already_subscribed}
                 print("%s %s to %s" % (
