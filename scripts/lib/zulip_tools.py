@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import datetime
 import errno
+import hashlib
 import logging
 import os
 import pwd
@@ -11,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import time
+import json
 
 if False:
     from typing import Sequence, Set, Text, Any
@@ -236,3 +238,26 @@ def purge_unused_caches(caches_dir, caches_in_use, threshold_days, dry_run, cach
         print("Keeping used %s cache: %s" % (cache_type, cache_dir))
 
     print("Done!\n")
+
+def generate_sha1sum_emoji(zulip_path):
+    # type: (Text) -> Text
+    ZULIP_EMOJI_DIR = os.path.join(zulip_path, 'tools', 'setup', 'emoji')
+    sha = hashlib.sha1()
+
+    filenames = ['NotoColorEmoji.ttf', 'emoji_map.json', 'AndroidEmoji.ttf',
+                 'build_emoji', 'emoji_setup_utils.py']
+
+    for filename in filenames:
+        file_path = os.path.join(ZULIP_EMOJI_DIR, filename)
+        with open(file_path, 'rb') as reader:
+            sha.update(reader.read())
+
+    # Take into account the version of `emoji-datasource` package while generating success stamp.
+    PACKAGE_FILE_PATH = os.path.join(zulip_path, 'package.json')
+    with open(PACKAGE_FILE_PATH, 'r') as fp:
+        parsed_package_file = json.load(fp)
+        dependency_data = parsed_package_file['dependencies']
+        emoji_datasource_version = dependency_data['emoji-datasource'].encode('utf-8')
+    sha.update(emoji_datasource_version)
+
+    return sha.hexdigest()

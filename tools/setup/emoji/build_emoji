@@ -9,7 +9,6 @@ import shutil
 import subprocess
 import ujson
 import sys
-import hashlib
 import xml.etree.ElementTree as ET
 from six import unichr
 from typing import Dict, Text, Union
@@ -22,7 +21,7 @@ from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
 
-from scripts.lib.zulip_tools import run
+from scripts.lib.zulip_tools import generate_sha1sum_emoji, run
 
 AA_SCALE = 8
 SIZE = (136, 136)
@@ -189,24 +188,8 @@ def main():
 
 def get_success_stamp():
     # type: () -> str
-    sha = hashlib.sha1()
-
-    filenames = ['NotoColorEmoji.ttf', 'emoji_map.json', 'AndroidEmoji.ttf',
-                 'build_emoji', 'emoji_setup_utils.py']
-
-    for filename in filenames:
-        with open(filename, 'rb') as reader:
-            sha.update(reader.read())
-
-    # Take into account the version of `emoji-datasource` package while generating success stamp.
-    PACKAGE_FILE_PATH = os.path.join(ZULIP_PATH, 'package.json')
-    with open(PACKAGE_FILE_PATH, 'r') as fp:
-        parsed_package_file = ujson.load(fp)
-        dependency_data = parsed_package_file['dependencies']
-        emoji_datasource_version = dependency_data['emoji-datasource'].encode('utf-8')
-    sha.update(emoji_datasource_version)
-
-    return os.path.join(EMOJI_CACHE_PATH, sha.hexdigest(), 'emoji', '.success-stamp')
+    sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
+    return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
 def dump_emojis(cache_path):
     # type: (str) -> None
