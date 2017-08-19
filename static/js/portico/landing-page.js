@@ -75,6 +75,25 @@ var apps_events = function () {
 
     var version;
 
+    function get_user_os() {
+        if (/Android/i.test(navigator.userAgent)) {
+            return "android";
+        }
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+             return "ios";
+        }
+        if (/Mac/i.test(navigator.userAgent)) {
+             return "mac";
+        }
+        if (/Win/i.test(navigator.userAgent)) {
+             return "windows";
+        }
+        if (/Linux/i.test(navigator.userAgent)) {
+             return "linux";
+        }
+        return "mac"; // if unable to determine OS return Mac by default
+    }
+
     function get_version_from_path() {
         var result;
         var parts = path_parts();
@@ -85,8 +104,7 @@ var apps_events = function () {
             }
         });
 
-        // display Mac app by default
-        result = result || 'mac';
+        result = result || get_user_os();
         return result;
     }
 
