@@ -36,9 +36,8 @@ class Command(BaseCommand):
             sys.exit(1)
 
         url = generate_realm_creation_url()
-        self.stdout.write(
-            "\033[1;92mPlease visit the following secure single-use link to register your ")
-        self.stdout.write("new Zulip organization:\033[0m")
+        self.stdout.write(self.style.SUCCESS("Please visit the following secure single-use link to register your "))
+        self.stdout.write(self.style.SUCCESS("new Zulip organization:\033[0m"))
         self.stdout.write("")
-        self.stdout.write("    \033[1;92m%s\033[0m" % (url,))
+        self.stdout.write(self.style.SUCCESS("    \033[1;92m%s\033[0m" % (url,)))
         self.stdout.write("")
