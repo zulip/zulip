@@ -173,3 +173,11 @@ def get_recent_deployments(threshold_days):
     if os.path.exists("/root/zulip"):
         recent.add("/root/zulip")
     return recent
+
+def get_threshold_timestamp(threshold_days):
+    # type: (int) -> int
+    # Given number of days, this function returns timestamp corresponding
+    # to the time prior to given number of days.
+    threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
+    threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
+    return threshold_timestamp
