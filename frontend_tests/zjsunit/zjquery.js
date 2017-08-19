@@ -219,6 +219,14 @@ exports.make_zjquery = function () {
                 }
                 return text;
             },
+            toggleClass: function (class_name) {
+                if (self.hasClass(class_name)) {
+                    self.removeClass(class_name);
+                } else {
+                    self.addClass(class_name);
+                }
+                return self;
+            },
             trigger: function (ev) {
                 var funcs = on_functions.get(ev.name) || [];
 
