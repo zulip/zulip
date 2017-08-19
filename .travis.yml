@@ -24,7 +24,7 @@ install:
 
   # Clean any emoji cache which was generated but not required anymore to avoid
   # our cache becoming huge.
-  - mispipe "tools/clean-emoji-cache --travis" ts
+  - mispipe "scripts/clean-emoji-cache --threshold 0" ts
 script:
   # We unset GEM_PATH here as a hack to work around Travis CI having
   # broken running their system puppet with Ruby.  See
