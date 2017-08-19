@@ -16,27 +16,25 @@ class Command(ZulipBaseCommand):
         # type: (CommandParser) -> None
         parser.add_argument('-s', '--stream',
                             dest='stream',
+                            required=True,
                             type=str,
                             help='A stream name.')
-
-        parser.add_argument('-u', '--users',
-                            dest='users',
-                            type=str,
-                            help='A comma-separated list of email addresses.')
 
         parser.add_argument('-a', '--all-users',
                             dest='all_users',
                             action="store_true",
                             default=False,
                             help='Remove all users in this realm from this stream.')
+
         self.add_realm_args(parser, True)
+        self.add_user_list_args(parser)
 
     def handle(self, **options):
         # type: (**Any) -> None
         realm = self.get_realm(options)
+        user_profiles = self.get_users(options, realm)
 
-        if realm is None or options["stream"] is None or \
-                (options["users"] is None and not options["all_users"]):
+        if bool(user_profiles) == options["all_users"]:
             self.print_help("./manage.py", "remove_users_from_stream")
             exit(1)
 
@@ -45,11 +43,6 @@ class Command(ZulipBaseCommand):
 
         if options["all_users"]:
             user_profiles = UserProfile.objects.filter(realm=realm)
-        else:
-            emails = set([email.strip() for email in options["users"].split(",")])
-            user_profiles = []
-            for email in emails:
-                user_profiles.append(self.get_user(email, realm))
 
         result = bulk_remove_subscriptions(user_profiles, [stream])
         not_subscribed = result[1]
