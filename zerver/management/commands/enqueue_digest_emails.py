@@ -24,11 +24,12 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
+VALID_DIGEST_DAY = 1  # Tuesdays
+DIGEST_CUTOFF = 5
 
-VALID_DIGEST_DAYS = (1, 2, 3, 4)
 def inactive_since(user_profile, cutoff):
     # type: (UserProfile, datetime.datetime) -> bool
-    # Hasn't used the app in the last 24 business-day hours.
+    # Hasn't used the app in the last DIGEST_CUTOFF (5) days.
     most_recent_visit = [row.last_visit for row in
                          UserActivity.objects.filter(
                              user_profile=user_profile)]
@@ -39,14 +40,6 @@ def inactive_since(user_profile, cutoff):
 
     last_visit = max(most_recent_visit)
     return last_visit < cutoff
-
-def last_business_day():
-    # type: () -> datetime.datetime
-    one_day = datetime.timedelta(hours=23)
-    previous_day = timezone_now() - one_day
-    while previous_day.weekday() not in VALID_DIGEST_DAYS:
-        previous_day -= one_day
-    return previous_day
 
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
@@ -73,8 +66,8 @@ in a while.
         # type: (*Any, **Any) -> None
         # To be really conservative while we don't have user timezones or
         # special-casing for companies with non-standard workweeks, only
-        # try to send mail on Tuesdays, Wednesdays, and Thursdays.
-        if timezone_now().weekday() not in VALID_DIGEST_DAYS:
+        # try to send mail on Tuesdays.
+        if timezone_now().weekday() != VALID_DIGEST_DAY:
             return
 
         for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
@@ -85,7 +78,7 @@ in a while.
                 realm=realm, is_active=True, is_bot=False, enable_digest_emails=True)
 
             for user_profile in user_profiles:
-                cutoff = last_business_day()
+                cutoff = timezone_now() - datetime.timedelta(days=DIGEST_CUTOFF)
                 if inactive_since(user_profile, cutoff):
                     queue_digest_recipient(user_profile, cutoff)
                     logger.info("%s is inactive, queuing for potential digest" % (
