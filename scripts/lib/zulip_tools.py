@@ -181,3 +181,23 @@ def get_threshold_timestamp(threshold_days):
     threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
+
+def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
+    # type: (Text, Set[Text], int) -> Set[Text]
+    # Given a directory containing caches, a list of caches in use
+    # and threshold days, this function return a list of caches
+    # which can be purged. Remove the cache only if it is:
+    # 1: Not in use by the current installation(in dev as well as in prod).
+    # 2: Not in use by a deployment not older than `threshold_days`(in prod).
+    # 3: Not in use by '/root/zulip'.
+    # 4: Not older than `threshold_days`.
+    caches_to_purge = set()
+    threshold_timestamp = get_threshold_timestamp(threshold_days)
+    for cache_dir_base in os.listdir(caches_dir):
+        cache_dir = os.path.join(caches_dir, cache_dir_base)
+        if cache_dir in caches_in_use:
+            # Never purge a cache which is in use.
+            continue
+        if os.path.getctime(cache_dir) < threshold_timestamp:
+            caches_to_purge.add(cache_dir)
+    return caches_to_purge
