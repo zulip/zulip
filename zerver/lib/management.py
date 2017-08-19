@@ -5,7 +5,7 @@ from __future__ import print_function
 from argparse import ArgumentParser
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, Optional, Text, List
 
 from zerver.models import Realm, UserProfile
 
@@ -31,6 +31,18 @@ You can use the command list_realms to find ID of the realms in this server."""
             type=str,
             help=help)
 
+    def add_user_list_args(self, parser, required=False, help=None):
+        # type: (ArgumentParser, bool, Optional[str]) -> None
+        if help is None:
+            help = 'A comma-separated list of email addresses.'
+
+        parser.add_argument(
+            '-u', '--users',
+            dest='users',
+            required=required,
+            type=str,
+            help=help)
+
     def get_realm(self, options):
         # type: (Dict[str, Any]) -> Optional[Realm]
         val = options["realm_id"]
@@ -47,6 +59,16 @@ You can use the command list_realms to find ID of the realms in this server."""
         except Realm.DoesNotExist:
             raise CommandError("There is no realm with id '%s'. Aborting." %
                                (options["realm_id"],))
+
+    def get_users(self, options, realm):
+        # type: (Dict[str, Any], Optional[Realm]) -> List[UserProfile]
+        if options["users"] is None:
+            return []
+        emails = set([email.strip() for email in options["users"].split(",")])
+        user_profiles = []
+        for email in emails:
+            user_profiles.append(self.get_user(email, realm))
+        return user_profiles
 
     def get_user(self, email, realm):
         # type: (Text, Optional[Realm]) -> UserProfile

@@ -17,12 +17,16 @@ from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
 class TestZulipBaseCommand(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.zulip_realm = get_realm("zulip")
+
     def test_get_realm(self):
         # type: () -> None
         command = ZulipBaseCommand()
-        self.assertEqual(command.get_realm(dict(realm_id='zulip')), get_realm("zulip"))
+        self.assertEqual(command.get_realm(dict(realm_id='zulip')), self.zulip_realm)
         self.assertEqual(command.get_realm(dict(realm_id=None)), None)
-        self.assertEqual(command.get_realm(dict(realm_id='1')), get_realm("zulip"))
+        self.assertEqual(command.get_realm(dict(realm_id='1')), self.zulip_realm)
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
             command.get_realm(dict(realm_id='17'))
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
@@ -31,18 +35,41 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_user(self):
         # type: () -> None
         command = ZulipBaseCommand()
-        zulip_realm = get_realm("zulip")
         mit_realm = get_realm("zephyr")
         user_profile = self.example_user("hamlet")
         email = user_profile.email
 
-        self.assertEqual(command.get_user(email, zulip_realm), user_profile)
+        self.assertEqual(command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(command.get_user(email, None), user_profile)
         with self.assertRaisesRegex(CommandError, "The realm '<Realm: zephyr 2>' does not contain a user with email"):
-            self.assertEqual(command.get_user(email, mit_realm), user_profile)
+            command.get_user(email, mit_realm)
         with self.assertRaisesRegex(CommandError, "server does not contain a user with email"):
-            self.assertEqual(command.get_user('invalid_email@example.com', None), user_profile)
+            command.get_user('invalid_email@example.com', None)
         # TODO: Add a test for the MultipleObjectsReturned case once we make that possible.
+
+    def test_get_users(self):
+        # type: () -> None
+        command = ZulipBaseCommand()
+        user_emails = self.example_email("iago") + "," + self.example_email("hamlet")
+        expected_user_profiles = sorted([self.example_user("iago"), self.example_user("hamlet")],
+                                        key = lambda x: x.email)
+
+        self.assertEqual(sorted(command.get_users(dict(users=user_emails), self.zulip_realm), key = lambda x: x.email),
+                         expected_user_profiles)
+        self.assertEqual(sorted(command.get_users(dict(users=user_emails), None), key = lambda x: x.email),
+                         expected_user_profiles)
+
+        user_emails2 = self.example_email("iago") + "," + self.mit_email("sipbtest")
+        expected_user_profiles2 = sorted([self.example_user("iago"), self.mit_user("sipbtest")],
+                                         key = lambda x: x.email)
+        self.assertEqual(sorted(command.get_users(dict(users=user_emails2), None), key = lambda x: x.email),
+                         expected_user_profiles2)
+        with self.assertRaisesRegex(CommandError, "The realm '<Realm: zulip 1>' does not contain a user with email"):
+            command.get_users(dict(users=user_emails2), self.zulip_realm)
+
+        self.assertEqual(command.get_users(dict(users=self.example_email("iago")), self.zulip_realm),
+                         [self.example_user("iago")])
+        self.assertEqual(command.get_users(dict(users=None), None), [])
 
 class TestCommandsCanStart(TestCase):
 
