@@ -20,7 +20,7 @@ install:
 
   # Clean any npm cache which was generated but not required anymore to avoid
   # our cache becoming huge.
-  - mispipe "tools/clean-npm-cache --travis" ts
+  - mispipe "scripts/clean-npm-cache --threshold 0" ts
 
   # Clean any emoji cache which was generated but not required anymore to avoid
   # our cache becoming huge.
