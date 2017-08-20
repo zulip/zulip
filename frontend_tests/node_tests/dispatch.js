@@ -37,6 +37,7 @@ set_global('settings_emoji', {
 
 set_global('settings_org', {
     reset_realm_default_language: noop,
+    toggle_allow_message_editing_pencil: noop,
     toggle_email_change_display: noop,
     toggle_name_change_display: noop,
     update_message_retention_days: noop,

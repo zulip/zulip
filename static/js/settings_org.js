@@ -65,6 +65,14 @@ exports.toggle_email_change_display = function () {
     $(".change_email_tooltip").toggle();
 };
 
+exports.toggle_allow_message_editing_pencil = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
+    $(".on_hover_topic_edit").toggle();
+};
+
 exports.update_realm_description = function () {
     if (!meta.loaded) {
         return;
