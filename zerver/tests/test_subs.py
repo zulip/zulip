@@ -36,7 +36,7 @@ from zerver.lib.test_runner import (
 
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
-    DefaultStream, UserProfile, get_user_profile_by_id
+    DefaultStream, UserProfile, get_user_profile_by_id, get_user_profile_by_email
 )
 
 from zerver.lib.actions import (
@@ -1830,6 +1830,12 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # don't send notifications to unsubscribed people for private streams
         self.assertNotIn((user4.id, user1.id, 'private_stream'), notifications)
+
+        msg = self.get_last_message()
+        expected_msg = user1.full_name + ", " + user2.full_name + " left."
+        self.assertEqual(msg.sender_id,
+                         get_user_profile_by_email('notification-bot@zulip.com').id)
+        self.assertEqual(msg.content, expected_msg)
 
     def test_bulk_subscribe_MIT(self):
         # type: () -> None

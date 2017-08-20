@@ -18,7 +18,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
     do_remove_default_stream, get_topic_history_for_stream, \
-    prep_stream_welcome_message
+    prep_stream_welcome_message, internal_send_message
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
@@ -263,7 +263,16 @@ def add_subscriptions_backend(request, user_profile,
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
                                                               acting_user=user_profile)
 
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))  # type: Dict[str, Any]
+    # Send a notification to private stream when new user is added
+    for stream in streams:
+        if stream.invite_only:
+            new_user_names = [sub_user.full_name for (sub_user, __) in subscribed]
+
+            if len(new_user_names) != 0:
+                msg_content = _("{0} added {1}.".format(user_profile.full_name, ", ".join(new_user_names)))
+                internal_send_message(user_profile.realm, settings.NOTIFICATION_BOT, "stream",
+                                      stream.name, "Users", msg_content, send_internal_notice=True)
+    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list)) # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
         result["subscribed"][subscriber.email].append(stream.name)
     for (subscriber, stream) in already_subscribed:
