@@ -38,6 +38,7 @@ set_global('templates', {
     settings_org.reset();
     settings_org.populate_realm_domains();
     settings_org.reset_realm_default_language();
+    settings_org.toggle_allow_message_editing_pencil();
     settings_org.toggle_name_change_display();
     settings_org.toggle_email_change_display();
     settings_org.update_realm_description();

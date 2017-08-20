@@ -54,6 +54,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         var realm_settings = {
             add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
             allow_edit_history: noop,
+            allow_message_editing: noop,
             create_stream_by_admins_only: noop,
             default_language: settings_org.reset_realm_default_language,
             description: settings_org.update_realm_description,
@@ -85,6 +86,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         } else if (event.op === 'update_dict' && event.property === 'default') {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
+                if (key === 'allow_message_editing') {
+                    settings_org.toggle_allow_message_editing_pencil();
+                }
             });
             if (event.data.authentication_methods !== undefined) {
                 settings_org.populate_auth_methods(event.data.authentication_methods);
