@@ -178,6 +178,51 @@ function add_scrollbar(element) {
     });
 }
 
+function refill_section_head_offsets(popover) {
+    section_head_offsets = [];
+    popover.find('.emoji-popover-subheading').each(function () {
+        section_head_offsets.push({
+            section: $(this).attr('data-section'),
+            position_y: $(this).position().top,
+        });
+    });
+}
+
+exports.render_emoji_popover = function (elt, id) {
+    var template_args = {
+        class: "emoji-info-popover",
+        categories: get_rendered_emoji_categories(),
+    };
+    elt.popover({
+        // temporary patch for handling popover placement of `viewport_center`
+        placement: popovers.compute_placement(elt) === 'viewport_center' ?
+            'right' : popovers.compute_placement(elt),
+        template:  templates.render('emoji_popover', template_args),
+        title:     "",
+        content:   generate_emoji_picker_content(id),
+        trigger:   "manual",
+    });
+    elt.popover("show");
+    elt.prop('title', 'Add reaction...');
+    $('.emoji-popover-filter').focus();
+    add_scrollbar($(".emoji-popover-emoji-map"));
+    add_scrollbar($(".emoji-search-results-container"));
+    current_message_emoji_popover_elem = elt;
+
+    emoji_catalog_last_coordinates = {
+        section: 0,
+        index: 0,
+    };
+    show_emoji_catalog();
+
+    var popover = elt.data('popover').$tip;
+    refill_section_head_offsets(popover);
+    var $emoji_map = popover.find('.emoji-popover-emoji-map');
+    $emoji_map.on("scroll", function () {
+        emoji_picker.emoji_select_tab($emoji_map);
+    });
+};
+
 exports.toggle_emoji_popover = function (element, id) {
     var last_popover_elem = current_message_emoji_popover_elem;
     popovers.hide_all();
@@ -195,46 +240,7 @@ exports.toggle_emoji_popover = function (element, id) {
     }
 
     if (elt.data('popover') === undefined) {
-        elt.prop('title', '');
-        var template_args = {
-            class: "emoji-info-popover",
-            categories: get_rendered_emoji_categories(),
-        };
-        elt.popover({
-            // temporary patch for handling popover placement of `viewport_center`
-            placement: popovers.compute_placement(elt) === 'viewport_center' ?
-                'right' : popovers.compute_placement(elt),
-            template:  templates.render('emoji_popover', template_args),
-            title:     "",
-            content:   generate_emoji_picker_content(id),
-            trigger:   "manual",
-        });
-        elt.popover("show");
-        elt.prop('title', 'Add reaction...');
-        $('.emoji-popover-filter').focus();
-        add_scrollbar($(".emoji-popover-emoji-map"));
-        add_scrollbar($(".emoji-search-results-container"));
-        current_message_emoji_popover_elem = elt;
-
-        emoji_catalog_last_coordinates = {
-            section: 0,
-            index: 0,
-        };
-        show_emoji_catalog();
-
-        var popover = elt.data('popover').$tip;
-
-        section_head_offsets = [];
-        popover.find('.emoji-popover-subheading').each(function () {
-            section_head_offsets.push({
-                section: $(this).attr('data-section'),
-                position_y: $(this).position().top,
-            });
-        });
-        var $emoji_map = popover.find('.emoji-popover-emoji-map');
-        $emoji_map.on("scroll", function () {
-            emoji_picker.emoji_select_tab($emoji_map);
-        });
+        emoji_picker.render_emoji_popover(elt, id);
     }
 };
 
