@@ -1,6 +1,13 @@
 set_global('$', global.make_zjquery());
 set_global('templates', {});
 set_global('reactions', {});
+set_global('current_msg_list', (function () {
+    var id;
+    return {
+        select_id: function (new_id) { id = new_id; },
+        selected_id: function () { return id; },
+    };
+}()));
 
 add_dependencies({
     emoji_codes: 'generated/emoji/emoji_codes.js',
@@ -124,4 +131,62 @@ set_global('popovers', {
     assert($(".emoji-popover-emoji-map").visible());
     assert($(".emoji-popover-category-tabs").visible());
     assert(!$(".emoji-search-results-container").visible());
+}());
+
+(function test_toggle_emoji_popover() {
+    var element = $('fake-add-emoji');
+    var emoji_map_destroyed = false;
+    var emoji_search_destroyed = false;
+    var popover_destroyed = false;
+    var closest_called = false;
+    var popover_rendered = false;
+
+    function setup() {
+        $('.has_popover').addClass('has_popover has_emoji_popover');
+        $(".emoji-popover-emoji-map").perfectScrollbar = function (param) {
+            assert.equal(param, 'destroy');
+            emoji_map_destroyed = true;
+        };
+        $(".emoji-search-results-container").perfectScrollbar = function (param) {
+            assert.equal(param, 'destroy');
+            emoji_search_destroyed = true;
+        };
+        element.popover = function (param) {
+            assert.equal(param, 'destroy');
+            popover_destroyed = true;
+        };
+        element.get = function () { return [element]; };
+        element.closest = function (sel) {
+            assert.equal(sel, '.message_row');
+            closest_called = true;
+            return this;
+        };
+        element.data = function (param) {
+            assert.equal(param, 'popover');
+        };
+        emoji_picker.render_emoji_popover = function (elt) {
+            assert.equal(elt, element);
+            popover_rendered = true;
+        };
+    }
+
+    setup();
+    emoji_picker.toggle_emoji_popover(element);
+    assert(!$('.has_popover').hasClass('has_popover has_emoji_popover'));
+    assert(emoji_map_destroyed);
+    assert(emoji_search_destroyed);
+    assert(popover_destroyed);
+    assert(!closest_called);
+    assert.equal(current_msg_list.selected_id(), undefined);
+    assert(!popover_rendered);
+
+    setup();
+    emoji_picker.toggle_emoji_popover(element, 131);
+    assert(!$('.has_popover').hasClass('has_popover has_emoji_popover'));
+    assert(emoji_map_destroyed);
+    assert(emoji_search_destroyed);
+    assert(popover_destroyed);
+    assert(closest_called);
+    assert.equal(current_msg_list.selected_id(), 131);
+    assert(popover_rendered);
 }());
