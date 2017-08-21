@@ -1,10 +1,16 @@
 -r py3_common.txt
 -r docs.txt
--r moto.txt
+
+# moto s3 mock
+moto==1.0.1
+
 -r py3k.txt
 
 # Needed for running tools/run-dev.py
--r twisted.txt
+Twisted==17.5.0
+
+# Needed for documentation links test
+Scrapy==1.4.0
 
 # Needed to compute test coverage
 coverage==4.4.1

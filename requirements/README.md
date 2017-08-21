@@ -11,7 +11,7 @@ py3_dev          py3_prod
 |  |    |
 |  |    |
 |  v    +---------->emailmirror
-|  docs,moto,py3k,twisted
+|  docs,py3k
 |
 v
 mypy
