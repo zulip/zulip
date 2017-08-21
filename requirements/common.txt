@@ -1,22 +1,22 @@
 # Django itself; we use a slightly patched version
-Django==1.11.2
+Django==1.11.4
 
 # Needed for rendering backend templates
 Jinja2==2.9.6
 
 # Needed for markdown processing
-Markdown==2.6.8
+Markdown==2.6.9
 MarkupSafe==1.0
 Pygments==2.2.0
 
 # Needed for manage.py
-ipython==5.4.1
+ipython==6.1.0
 
 # Needed for Image Processing
-Pillow==4.1.1
+Pillow==4.2.1
 
 # Needed for building complex DB queries
-SQLAlchemy==1.1.10
+SQLAlchemy==1.1.13
 
 # Needed for password hashing
 argon2-cffi==16.3.0
@@ -28,9 +28,9 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 
 # Needed for S3 file uploads
-boto==2.47.0
+boto==2.48.0
 
-certifi==2017.4.17
+certifi==2017.7.27.1
 
 # Used for scrapy as well as argon2
 cffi==1.10.0
@@ -39,7 +39,7 @@ chardet==3.0.4
 
 # Pinned version because older versions don't compile on newer Linux.
 # Not actually a direct dependency.
-cryptography==1.9
+cryptography==2.0.3
 
 # Needed for integrations
 defusedxml==0.5.0
@@ -57,7 +57,7 @@ django-bitfield==1.9.3
 django-statsd-mozilla==0.3.16
 
 docopt==0.6.2
-fonttools==3.13.1
+fonttools==3.15.0
 
 # Needed for Android push notifications
 python-gcm==0.4
@@ -72,7 +72,7 @@ html2text==2016.9.19
 httplib2==0.10.3
 
 # Needed for JWT-based auth
-PyJWT==1.5.0
+PyJWT==1.5.2
 
 # Needed for including other markdown files for user docs
 markdown-include==0.5.1
@@ -80,7 +80,7 @@ markdown-include==0.5.1
 # Needed for mock objects in decorators
 mock==2.0.0
 
-oauth2client==4.1.1
+oauth2client==4.1.2
 oauthlib==2.0.2
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
@@ -93,8 +93,8 @@ pika==0.10.0
 # Needed to access our database
 psycopg2==2.7.3
 
-pyasn1==0.2.3
-pyasn1-modules==0.0.9
+pyasn1==0.3.2
+pyasn1-modules==0.0.11
 pycrypto==2.6.1
 
 # Needed for memcached usage
@@ -104,18 +104,18 @@ pylibmc==1.5.2
 pytz==2017.2
 
 # Needed for redis
-redis==2.10.5
+redis==2.10.6
 
 # Dependencies of our API
-requests==2.18.1
-idna==2.5
-urllib3==1.21.1
+requests==2.18.4
+idna==2.6
+urllib3==1.22
 
 requests_oauthlib==0.8.0
 rsa==3.4.2
 
 # Dependencies of our API
-simplejson==3.10.0
+simplejson==3.11.1
 
 # Needed for Python 2+3 compatibility
 six==1.10.0
@@ -131,7 +131,7 @@ sourcemap==0.2.1
 tornado==4.5.1
 
 # Needed for Python static typing
-typing==3.6.1
+typing==3.6.2
 
 # Fast JSON parser
 ujson==1.35

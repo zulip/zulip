@@ -3,7 +3,7 @@
 # documentation.
 
 # Needed to build RTD docs
-sphinx==1.6.2
+sphinx==1.6.3
 sphinx-rtd-theme==0.2.4
 
 # Needed to build markdown docs
@@ -11,11 +11,11 @@ recommonmark==0.4.0
 
 # Dependencies of Sphinx
 alabaster==0.7.10
-babel==2.4.0
+babel==2.5.0
 # Upgrading to the latest version of CommonMark breaks the
 # compatibility with recommonmark.  See
 # https://github.com/rtfd/recommonmark/issues/24
 CommonMark==0.5.4
-docutils==0.13.1
+docutils==0.14
 imagesize==0.7.1
 snowballstemmer==1.2.1
