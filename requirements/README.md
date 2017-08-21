@@ -7,10 +7,10 @@ py3_dev          py3_prod
 |  |    |   +
 |  |    |   v
 |  |    |py3_socialauth
-|  v    |
-|  dev  |
-|   +   |
-|   v   +---------->emailmirror
+|  |    |
+|  |    |
+|  |    |
+|  v    +---------->emailmirror
 |  docs,moto,py3k,twisted
 |
 v
