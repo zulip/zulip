@@ -162,7 +162,7 @@ WEBHOOK_INTEGRATIONS = [
 And you'll find the entry for Hello World:
 
 ```
-  WebhookIntegration('helloworld', display_name='Hello World'),
+  WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
 ```
 
 This tells the Zulip api to call the `api_helloworld_webhook` function in
@@ -171,7 +171,8 @@ This tells the Zulip api to call the `api_helloworld_webhook` function in
 
 This line also tells Zulip to generate an entry for Hello World on the Zulip
 integrations page using `static/images/integrations/logos/helloworld.png` as its
-icon.
+icon. The second positional argument defines a list of categories for the
+integration.
 
 At this point, if you're following along and/or writing your own Hello World
 webhook, you have written enough code to test your integration.
