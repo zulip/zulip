@@ -2,9 +2,9 @@ The dependency graph of the requirements is as follows:
 
 ```
 py3_dev          py3_prod
-+  + +              +  +
-|  | +->py3_common<-+  v
-|  |    |   +          prod
++  + +              +
+|  | +->py3_common<-+
+|  |    |   +
 |  |    |   v
 |  |    |py3_socialauth
 |  v    |
