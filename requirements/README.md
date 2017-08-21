@@ -8,9 +8,9 @@ py3_dev          py3_prod
 |  |    |   v
 |  |    |py3_socialauth
 |  v    |
-|  dev  +--->common
-|   +           +
-|   v           +-->emailmirror
+|  dev  |
+|   +   |
+|   v   +---------->emailmirror
 |  docs,moto,py3k,twisted
 |
 v
