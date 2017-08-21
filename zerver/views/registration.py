@@ -39,6 +39,7 @@ from confirmation.models import Confirmation, RealmCreationKey, check_key_is_val
 
 import logging
 import requests
+import smtplib
 import ujson
 
 from six.moves import urllib
@@ -335,7 +336,12 @@ def create_realm(request, creation_key=None):
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            send_registration_completion_email(email, request, realm_creation=True)
+            try:
+                send_registration_completion_email(email, request, realm_creation=True)
+            except smtplib.SMTPException as e:
+                logging.error('Error in create_realm: %s' % (str(e),))
+                return HttpResponseRedirect("/config-error/smtp")
+
             if (creation_key is not None and check_key_is_valid(creation_key)):
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
@@ -371,7 +377,12 @@ def accounts_home(request):
         form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
             email = form.cleaned_data['email']
-            send_registration_completion_email(email, request)
+            try:
+                send_registration_completion_email(email, request)
+            except smtplib.SMTPException as e:
+                logging.error('Error in accounts_home: %s' % (str(e),))
+                return HttpResponseRedirect("/config-error/smtp")
+
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
