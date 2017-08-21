@@ -146,9 +146,17 @@ body {
 .help .sidebar h2 {
     font-size: 1.2em;
     font-weight: 400;
-    margin-bottom: 0px;
-    line-height: 100%;
+    margin-bottom: 5px;
+    line-height: 105%;
     cursor: pointer;
+}
+
+.help .sidebar h1 {
+    font-size: 1.25em;
+}
+
+.help .sidebar h1:not(:first-of-type) {
+    margin-top: 20px;
 }
 
 .help .sidebar.slide h2::before {
@@ -165,34 +173,8 @@ body {
     opacity: 0.5;
 }
 
-.help .sidebar h2.no-arrow::before {
-    content: "";
-}
-
-.help .sidebar.slide h2.no-arrow {
-    margin-left: 12px;
-}
-
-.help .sidebar:not(.slide) h2 {
-    margin-left: 0px;
-}
-
-.help .sidebar h2.no-arrow a {
-    color: inherit;
-}
-
-.help .sidebar h3 {
-    font-size: 1em;
-    font-weight: 400;
-    text-transform: uppercase;
-    color: #badcd6;
-
-    line-height: 1;
-    margin: 10px 0 5px 10px;
-}
-
 .help .sidebar ul {
-    margin: 10px 0px 10px 12px;
+    margin: 5px 0px 10px 12px;
 }
 
 .help .sidebar.slide ul {
@@ -1558,6 +1540,14 @@ input.new-organization-button {
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 15px;
+}
+
+.markdown h1#using-zulip,
+.markdown h1#zulip-administration {
+    font-size: 1.75em;
+    padding: 10px 0;
+    margin-bottom: 0px;
+    line-height: 100%;
 }
 
 .markdown h2,
