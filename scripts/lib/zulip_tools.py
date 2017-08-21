@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import print_function
+import argparse
 import datetime
 import errno
 import logging
@@ -33,6 +34,19 @@ YELLOW = '\x1b[33m'
 BLUE = '\x1b[34m'
 MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
+
+# Parent parser for cache cleaning scripts.
+GENERIC_CACHE_SCRIPT_PARSER = argparse.ArgumentParser(add_help=False)
+GENERIC_CACHE_SCRIPT_PARSER.add_argument(
+    "--threshold", dest="threshold_days", type=int, default=14,
+    nargs="?", metavar="<days>", help="Any cache which is not in "
+    "use by a deployment not older than threshold days(current "
+    "installation in dev) and older than threshold days will be "
+    "deleted. (defaults to 14)")
+GENERIC_CACHE_SCRIPT_PARSER.add_argument(
+    "--dry-run", dest="dry_run", action="store_true",
+    help="If specified then script will only print the caches "
+    "that it will delete/keep back. It will not delete any cache.")
 
 def get_deployment_version(extract_path):
     # type: (str) -> str
