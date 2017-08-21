@@ -1,6 +1,9 @@
 # Django itself; we use a slightly patched version
 Django==1.11.4
 
+# needed for mypy TypedDict
+mypy_extensions==0.3.0
+
 # Needed for rendering backend templates
 Jinja2==2.9.6
 
