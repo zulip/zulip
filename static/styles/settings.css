@@ -327,7 +327,8 @@ input[type=checkbox] + .inline-block {
     margin-top: 0px;
 }
 
-#default_language {
+#default_language,
+#change_email {
     margin-left: 20px;
     padding: 6px 10px;
     border-radius: 4px;
@@ -336,15 +337,18 @@ input[type=checkbox] + .inline-block {
     font-size: 0.8rem;
     line-height: normal;
     text-align: center;
+    text-decoration: none;
 
     transition: all 0.2s ease;
 }
 
-#default_language:hover {
+#default_language:hover,
+#change_email:hover {
     border-color: hsl(0, 0%, 60%);
 }
 
-#default_language i.fa.fa-pencil {
+#default_language i.fa.fa-pencil,
+#change_email i.fa.fa-pencil {
     margin-left: 3px;
 }
 

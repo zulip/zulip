@@ -3,7 +3,7 @@ var settings_account = (function () {
 var exports = {};
 
 exports.update_email = function (new_email) {
-    var email_input = $('#email_value');
+    var email_input = $('#change_email');
 
     if (email_input) {
         email_input.text(new_email);
@@ -174,7 +174,7 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         $('#change_email_modal').modal('show');
-        var email = $('#email_value').text().trim();
+        var email = $('#change_email').text().trim();
         $('.email_change_container').find("input[name='email']").val(email);
     });
 
