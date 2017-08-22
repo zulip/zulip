@@ -70,8 +70,8 @@ class UserSoftDeactivationTests(ZulipTestCase):
                 count=count,
                 last_visit=last_visit
             )
-        realm = get_realm('zulip')
-        users_to_deactivate = get_users_for_soft_deactivation(realm, -1)
+        filter_kwargs = dict(user_profile__realm=get_realm('zulip'))
+        users_to_deactivate = get_users_for_soft_deactivation(-1, filter_kwargs)
 
         self.assert_length(users_to_deactivate, 7)
         for user in users_to_deactivate:
