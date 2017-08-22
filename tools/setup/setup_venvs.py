@@ -14,7 +14,7 @@ from scripts.lib.zulip_tools import run
 OLD_VENV_PATH = "/srv/zulip-venv"
 VENV_PATH = "/srv/zulip-py3-venv"
 
-DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
+DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "dev_lock.txt")
 
 def main(is_travis=False):
     # type: (bool) -> None

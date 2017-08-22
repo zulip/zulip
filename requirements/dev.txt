@@ -44,3 +44,5 @@ scandir==1.5
 # Needed for updating the locked pip dependencies
 first==2.0.1
 pip-tools==1.9.0
+
+-r mypy.txt
