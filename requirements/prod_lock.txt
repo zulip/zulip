@@ -31,7 +31,7 @@ django-bitfield==1.9.3
 django-pipeline==1.6.13
 django-statsd-mozilla==0.3.16
 django-webpack-loader==0.5.0
-django==1.11.4            # via django-auth-ldap, django-bitfield
+django==1.11.4
 docopt==0.6.2
 flup==1.0.3.dev20161029
 fonttools==3.15.0
@@ -49,7 +49,7 @@ jinja2==2.9.6
 lxml==3.8.0
 markdown-include==0.5.1
 markdown==2.6.9           # via markdown-include
-markupsafe==1.0           # via jinja2
+markupsafe==1.0
 mock==2.0.0
 ndg-httpsclient==0.4.2
 netifaces==0.10.5
@@ -72,7 +72,7 @@ pycparser==2.18           # via cffi
 pycrypto==2.6.1
 pydictionary==1.5.2
 pygments==2.2.0           # via ipython
-pyjwt==1.5.2              # via social-auth-core
+pyjwt==1.5.2
 pyldap==2.4.37
 pylibmc==1.5.2
 pyopenssl==17.2.0         # via ndg-httpsclient

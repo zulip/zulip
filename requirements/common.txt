@@ -70,6 +70,7 @@ google-api-python-client==1.6.2
 # Needed for the email mirror
 html2text==2016.9.19
 httplib2==0.10.3
+-e git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
 
 # Needed for JWT-based auth
 PyJWT==1.5.2
@@ -148,9 +149,6 @@ django-webpack-loader==0.5.0
 -e git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
 
 python-twitter==3.3
-
-# Needed for the email mirror
--r emailmirror.txt
 
 # To parse po files
 polib==1.0.8
