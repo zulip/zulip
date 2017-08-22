@@ -12,6 +12,12 @@ from zerver.lib.cache import get_stream_cache_key, cache_delete
 from zerver.lib.str_utils import force_text
 from zilencer.models import Deployment
 
+from zerver.lib.addressee import Addressee
+
+from zerver.lib.actions import (
+    internal_send_private_message,
+)
+
 from zerver.lib.message import (
     MessageDict,
     message_to_dict,
@@ -206,11 +212,11 @@ class TestCrossRealmPMs(ZulipTestCase):
             messages = get_user_messages(to_user)
             self.assertEqual(messages[-1].sender.pk, from_user.pk)
 
-        def assert_disallowed():
+        def assert_invalid_email():
             # type: () -> Any
             return self.assertRaisesRegex(
                 JsonableError,
-                'You can\'t send private messages outside of your organization.')
+                'Invalid email ')
 
         random_zulip_email = 'random@zulip.com'
         user1_email = 'user1@1.example.com'
@@ -237,7 +243,13 @@ class TestCrossRealmPMs(ZulipTestCase):
         assert_message_received(user1a, user1)
 
         # Cross-realm bots in the zulip.com realm can PM any realm
-        self.send_message(feedback_email, user2_email, Recipient.PERSONAL)
+        # (They need lower level APIs to do this.)
+        internal_send_private_message(
+            realm=r2,
+            sender=get_system_bot(feedback_email),
+            recipient_user=get_user(user2_email, r2),
+            content='bla',
+        )
         assert_message_received(user2, feedback_bot)
 
         # All users can PM cross-realm bots in the zulip.com realm
@@ -262,29 +274,29 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         # Prevent old loophole where I could send PMs to other users as long
         # as I copied a cross-realm bot from the same realm.
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, [user3_email, support_email], Recipient.PERSONAL)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, [user2_email, feedback_email],
                               Recipient.PERSONAL)
 
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(feedback_email, [user1_email, user2_email],
                               Recipient.PERSONAL)
 
         # Users on the different realms can not PM each other
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, user2_email, Recipient.PERSONAL)
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, random_zulip_email, Recipient.PERSONAL)
 
         # Users on three different realms can not PM each other
-        with assert_disallowed():
+        with assert_invalid_email():
             self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
 
 class ExtractedRecipientsTest(TestCase):
@@ -2050,13 +2062,10 @@ class CheckMessageTest(ZulipTestCase):
         client = make_client(name="test suite")
         stream_name = u'España y Francia'
         self.make_stream(stream_name)
-        message_type_name = 'stream'
-        message_to = None
-        message_to = [stream_name]
         subject_name = 'issue'
         message_content = 'whatever'
-        ret = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content)
+        addressee = Addressee.for_stream(stream_name, subject_name)
+        ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret['message'].sender.email, self.example_email("othello"))
 
     def test_bot_pm_feature(self):
@@ -2079,18 +2088,16 @@ class CheckMessageTest(ZulipTestCase):
         sender = bot
         client = make_client(name="test suite")
         stream_name = u'Россия'
-        message_type_name = 'stream'
-        message_to = None
-        message_to = [stream_name]
         subject_name = 'issue'
+        addressee = Addressee.for_stream(stream_name, subject_name)
         message_content = 'whatever'
         old_count = message_stream_count(parent)
 
         # Try sending to stream that doesn't exist sends a reminder to
         # the sender
         with self.assertRaises(JsonableError):
-            check_message(sender, client, message_type_name, message_to,
-                          subject_name, message_content)
+            check_message(sender, client, addressee, message_content)
+
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
         self.assertIn("that stream does not yet exist.", most_recent_message(parent).content)
@@ -2098,8 +2105,7 @@ class CheckMessageTest(ZulipTestCase):
         # Try sending to stream that exists with no subscribers soon
         # after; due to rate-limiting, this should send nothing.
         self.make_stream(stream_name)
-        ret = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content)
+        ret = check_message(sender, client, addressee, message_content)
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
 
@@ -2109,8 +2115,8 @@ class CheckMessageTest(ZulipTestCase):
         assert(sender.last_reminder is not None)
         sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
-        ret = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content)
+        ret = check_message(sender, client, addressee, message_content)
+
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')

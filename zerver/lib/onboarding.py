@@ -24,7 +24,7 @@ def send_initial_pms(user):
         "keyboards, that's okay too; clicking anywhere on this message will also do the trick!")
 
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
-                                  user.email, content)
+                                  user, content)
 
 def setup_initial_streams(realm):
     # type: (Realm) -> None

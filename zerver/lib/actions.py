@@ -15,6 +15,10 @@ from zerver.lib.bugdown import (
     version as bugdown_version,
     url_embed_preview_enabled_for_realm
 )
+from zerver.lib.addressee import (
+    Addressee,
+    user_profiles_from_unvalidated_emails,
+)
 from zerver.lib.cache import (
     delete_user_profile_caches,
     to_dict_cache_key,
@@ -1162,13 +1166,18 @@ def recipient_for_emails(emails, not_forged_mirror_message,
                          forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
 
-    user_profiles = []  # type: List[UserProfile]
-    for email in emails:
-        try:
-            user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid email '%s'") % (email,))
-        user_profiles.append(user_profile)
+    user_profiles = user_profiles_from_unvalidated_emails(emails, sender)
+
+    return recipient_for_user_profiles(
+        user_profiles=user_profiles,
+        not_forged_mirror_message=not_forged_mirror_message,
+        forwarder_user_profile=forwarder_user_profile,
+        sender=sender
+    )
+
+def recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
+                                forwarder_user_profile, sender):
+    # type: (List[UserProfile], bool, Optional[UserProfile], UserProfile) -> Recipient
 
     recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
 
@@ -1227,8 +1236,15 @@ def check_send_message(sender, client, message_type_name, message_to,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
-    message = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content, realm, forged, forged_timestamp,
+
+    addressee = Addressee.legacy_build(
+        sender,
+        message_type_name,
+        message_to,
+        subject_name)
+
+    message = check_message(sender, client, addressee,
+                            message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
     return do_send_messages([message])[0]
 
@@ -1285,24 +1301,20 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                (sender.full_name, stream_name, error_msg))
 
     internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
-                                  sender.bot_owner.email, content)
+                                  sender.bot_owner, content)
 
     sender.last_reminder = timezone_now()
     sender.save(update_fields=['last_reminder'])
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
-def check_message(sender, client, message_type_name, message_to,
-                  subject_name, message_content_raw, realm=None, forged=False,
+def check_message(sender, client, addressee,
+                  message_content_raw, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
+    # type: (UserProfile, Client, Addressee, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
     stream = None
-    if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
-        # Use the users default stream
-        message_to = [sender.default_sending_stream.name]
-    if len(message_to) == 0:
-        raise JsonableError(_("Message must have recipients"))
+
     message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
@@ -1311,13 +1323,19 @@ def check_message(sender, client, message_type_name, message_to,
     if realm is None:
         realm = sender.realm
 
-    if message_type_name == 'stream':
-        if len(message_to) > 1:
-            raise JsonableError(_("Cannot send to multiple streams"))
+    if addressee.is_stream():
+        stream_name = addressee.stream_name()
+        if stream_name is None:
+            if sender.default_sending_stream:
+                # Use the users default stream
+                stream_name = sender.default_sending_stream.name
+            else:
+                raise JsonableError(_('Missing stream'))
 
-        stream_name = message_to[0].strip()
+        stream_name = stream_name.strip()
         check_stream_name(stream_name)
 
+        subject_name = addressee.topic()
         if subject_name is None:
             raise JsonableError(_("Missing topic"))
         subject = subject_name.strip()
@@ -1356,12 +1374,17 @@ def check_message(sender, client, message_type_name, message_to,
             # All other cases are an error.
             raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
 
-    elif message_type_name == 'private':
+    elif addressee.is_private():
+        user_profiles = addressee.user_profiles()
+
+        if user_profiles is None or len(user_profiles) == 0:
+            raise JsonableError(_("Message must have recipients"))
+
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
         not_forged_mirror_message = mirror_message and not forged
         try:
-            recipient = recipient_for_emails(message_to, not_forged_mirror_message,
-                                             forwarder_user_profile, sender)
+            recipient = recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
+                                                    forwarder_user_profile, sender)
         except ValidationError as e:
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
@@ -1372,7 +1395,7 @@ def check_message(sender, client, message_type_name, message_to,
     message.sender = sender
     message.content = message_content
     message.recipient = recipient
-    if message_type_name == 'stream':
+    if addressee.is_stream():
         message.subject = subject
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
@@ -1392,9 +1415,8 @@ def check_message(sender, client, message_type_name, message_to,
     return {'message': message, 'stream': stream, 'local_id': local_id,
             'sender_queue_id': sender_queue_id, 'realm': realm}
 
-def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients,
-                           subject, content):
-    # type: (Realm, UserProfile, str, List[Text], Text, Text) -> Optional[Dict[str, Any]]
+def _internal_prep_message(realm, sender, addressee, content):
+    # type: (Realm, UserProfile, Addressee, Text) -> Optional[Dict[str, Any]]
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -1407,12 +1429,12 @@ def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients
     if realm is None:
         raise RuntimeError("None is not a valid realm for internal_prep_message!")
 
-    if recipient_type_name == "stream":
-        stream, _ = create_stream_if_needed(realm, parsed_recipients[0])
+    if addressee.is_stream():
+        stream, _ = create_stream_if_needed(realm, addressee.stream_name())
 
     try:
-        return check_message(sender, get_client("Internal"), recipient_type_name,
-                             parsed_recipients, subject, content, realm=realm)
+        return check_message(sender, get_client("Internal"), addressee,
+                             content, realm=realm)
     except JsonableError as e:
         logging.error(u"Error queueing internal message by %s: %s" % (sender.email, e))
 
@@ -1427,12 +1449,16 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
     sender = get_system_bot(sender_email)
     parsed_recipients = extract_recipients(recipients)
 
+    addressee = Addressee.legacy_build(
+        sender,
+        recipient_type_name,
+        parsed_recipients,
+        subject)
+
     return _internal_prep_message(
         realm=realm,
         sender=sender,
-        recipient_type_name=recipient_type_name,
-        parsed_recipients=parsed_recipients,
-        subject=subject,
+        addressee=addressee,
         content=content,
     )
 
@@ -1441,30 +1467,26 @@ def internal_prep_stream_message(realm, sender, stream_name, topic, content):
     """
     See _internal_prep_message for details of how this works.
     """
-    parsed_recipients = [stream_name]
+    addressee = Addressee.for_stream(stream_name, topic)
 
     return _internal_prep_message(
         realm=realm,
         sender=sender,
-        recipient_type_name='stream',
-        parsed_recipients=parsed_recipients,
-        subject=topic,
+        addressee=addressee,
         content=content,
     )
 
-def internal_prep_private_message(realm, sender, recipient_email, content):
-    # type: (Realm, UserProfile, Text, Text) -> Optional[Dict[str, Any]]
+def internal_prep_private_message(realm, sender, recipient_user, content):
+    # type: (Realm, UserProfile, UserProfile, Text) -> Optional[Dict[str, Any]]
     """
     See _internal_prep_message for details of how this works.
     """
-    parsed_recipients = [recipient_email]
+    addressee = Addressee.for_user_profile(recipient_user)
 
     return _internal_prep_message(
         realm=realm,
         sender=sender,
-        recipient_type_name='private',
-        parsed_recipients=parsed_recipients,
-        subject='',
+        addressee=addressee,
         content=content,
     )
 
@@ -1480,9 +1502,9 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
 
     do_send_messages([msg])
 
-def internal_send_private_message(realm, sender, recipient_email, content):
-    # type: (Realm, UserProfile, Text, Text) -> None
-    message = internal_prep_private_message(realm, sender, recipient_email, content)
+def internal_send_private_message(realm, sender, recipient_user, content):
+    # type: (Realm, UserProfile, UserProfile, Text) -> None
+    message = internal_prep_private_message(realm, sender, recipient_user, content)
     if message is None:
         return
     do_send_messages([message])
