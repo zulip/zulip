@@ -412,7 +412,21 @@ function get_next_emoji_coordinates(move_by) {
     };
 }
 
+function change_focus_to_filter() {
+    $('.emoji-popover-filter').focus();
+    // If search is active reset current selected emoji to first emoji.
+    if (search_is_active) {
+        current_section = 0;
+        current_index = 0;
+    }
+}
+
 exports.navigate = function (event_name) {
+    // If search is active and results are empty then return immediately.
+    if (search_is_active === true && search_results.length === 0) {
+        return;
+    }
+
     var selected_emoji = get_rendered_emoji(current_section, current_index);
     var is_filter_focused = $('.emoji-popover-filter').is(':focus');
     var next_section = 0;
@@ -444,12 +458,12 @@ exports.navigate = function (event_name) {
         if (is_filter_focused) {
             selected_emoji.focus();
         } else {
-            $('.emoji-popover-filter').focus();
+            change_focus_to_filter();
         }
         return true;
     } else if (event_name === 'shift_tab') {
         if (!is_filter_focused) {
-            $('.emoji-popover-filter').focus();
+            change_focus_to_filter();
         }
         return true;
     } else if (event_name === 'page_up') {
