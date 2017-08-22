@@ -122,7 +122,7 @@ body {
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
     overflow: auto;
 
-    color: hsl(222, 33%, 33%);
+    color: hsl(0, 0%, 27%);
 }
 
 .help .sidebar {
@@ -137,7 +137,8 @@ body {
     border-right: 1px solid hsl(219, 10%, 97%);
     overflow: auto;
 
-    background: hsl(219, 10%, 97%);
+    background-color: hsl(153, 32%, 55%);
+    color: hsl(0, 0%, 100%);
 
     -webkit-overflow-scrolling: touch;
 }
