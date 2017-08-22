@@ -10,10 +10,13 @@ fi
 
 source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
 pip-compile --output-file requirements/py3_common_lock.txt requirements/py3_common.txt
+pip-compile --output-file requirements/dev_lock.txt requirements/dev.txt
 # Remove the editable flag in the lock file for safer build
 sed -i 's/-e //' requirements/py3_common_lock.txt
+sed -i 's/-e //' requirements/dev_lock.txt
 # pip-tools bug; future, futures are obsolete in python3
 sed -i '/futures==/d' requirements/py3_common_lock.txt
 sed -i '/future==/d' requirements/py3_common_lock.txt
+sed -i '/futures==/d' requirements/dev_lock.txt
 
 deactivate
