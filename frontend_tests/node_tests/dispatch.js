@@ -565,7 +565,7 @@ with_overrides(function (override) {
             var args = bot_stub.get_args('bot');
             assert_same(args.bot, event.bot);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            admin_stub.get_args('update_user_id', 'update_bot_data');
         });
     });
 
@@ -578,7 +578,7 @@ with_overrides(function (override) {
             var args = bot_stub.get_args('email');
             assert_same(args.email, event.bot.email);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            admin_stub.get_args('update_user_id', 'update_bot_data');
         });
     });
 
