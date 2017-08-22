@@ -887,7 +887,7 @@ JS_SPECS = {
             'js/message_edit.js',
             'js/condense.js',
             'js/resize.js',
-            'js/list_rendering.js',
+            'js/list_render.js',
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
             'js/ui_report.js',
