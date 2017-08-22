@@ -444,6 +444,19 @@ exports.get_streams_for_settings_page = function () {
     return all_subs;
 };
 
+exports.get_streams_for_admin = function () {
+    // Sort and combine all our streams.
+    function by_name(a,b) {
+        return util.strcmp(a.name, b.name);
+    }
+
+    var subs = stream_info.values();
+
+    subs.sort(by_name);
+
+    return subs;
+};
+
 exports.initialize_from_page_params = function () {
     function populate_subscriptions(subs, subscribed) {
         subs.forEach(function (sub) {
