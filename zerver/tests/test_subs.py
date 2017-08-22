@@ -524,6 +524,26 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(
             result, "Unable to access stream (%s)." % (deactivated_stream_name,))
 
+    def test_you_must_be_realm_admin(self):
+        # type: () -> None
+        """
+        You must be on the realm to create a stream.
+        """
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        other_realm = Realm.objects.create(string_id='other')
+        stream = self.make_stream('other_realm_stream', realm=other_realm)
+
+        result = self.client_delete('/json/streams/' + str(stream.id))
+        self.assert_json_error(result, 'Must be a realm administrator')
+
+        # Even becoming a realm admin doesn't help us for an out-of-realm
+        # stream.
+        do_change_is_admin(user_profile, True)
+        result = self.client_delete('/json/streams/' + str(stream.id))
+        self.assert_json_error(result, 'Invalid stream id')
+
     def test_delete_public_stream(self):
         # type: () -> None
         """
@@ -544,8 +564,8 @@ class StreamAdminTest(ZulipTestCase):
     def test_delete_streams_youre_not_on(self):
         # type: () -> None
         """
-        Administrators can delete public streams they aren't on, but cannot
-        delete private streams they aren't on.
+        Administrators can delete public streams they aren't on, including
+        private streams in their realm.
         """
         pub_stream = self.set_up_stream_for_deletion(
             "pubstream", subscribed=False)
@@ -553,9 +573,7 @@ class StreamAdminTest(ZulipTestCase):
 
         priv_stream = self.set_up_stream_for_deletion(
             "privstream", subscribed=False, invite_only=True)
-
-        result = self.client_delete('/json/streams/' + str(priv_stream.id))
-        self.assert_json_error(result, "Invalid stream id")
+        self.delete_stream(priv_stream)
 
     def attempt_unsubscribe_of_principal(self, is_admin=False, is_subbed=True,
                                          invite_only=False, other_user_subbed=True):
