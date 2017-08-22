@@ -14,10 +14,12 @@ function failed_listing_streams(xhr) {
     ui_report.error(i18n.t("Error listing streams"), xhr, $("#organization-status"));
 }
 
-function populate_streams(streams_data) {
+function populate_streams() {
     var streams_table = $("#admin_streams_table").expectOne();
 
-    list_render(streams_table, streams_data.streams, {
+    var items = stream_data.get_streams_for_admin();
+
+    list_render(streams_table, items, {
         name: "admin_streams_list",
         modifier: function (item) {
             return templates.render("admin_streams_list", { stream: item });
@@ -118,10 +120,10 @@ exports.set_up = function () {
     });
 };
 
-exports.on_load_success = function (streams_data) {
+exports.on_load_success = function () {
     meta.loaded = true;
 
-    populate_streams(streams_data);
+    populate_streams();
 
     exports.update_default_streams_table();
 
