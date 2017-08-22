@@ -20,24 +20,42 @@ var notifications_api;
 if (window.webkitNotifications) {
     notifications_api = window.webkitNotifications;
 } else if (window.Notification) {
-    // Build a shim to the new notification API
-    notifications_api = {
-        checkPermission: function checkPermission() {
-            if (window.Notification.permission === 'granted') {
-                return 0;
-            }
-            return 2;
-        },
-        requestPermission: window.Notification.requestPermission,
-        createNotification: function createNotification(icon, title, content, tag) {
-            var notification_object = new window.Notification(title, {icon: icon,
-                                                                      body: content,
-                                                                      tag: tag});
-            notification_object.show = function () {};
-            notification_object.cancel = function () { notification_object.close(); };
-            return notification_object;
-        },
-    };
+    try {
+        // Build a shim to the new notification API
+        notifications_api = {
+            checkPermission: function checkPermission() {
+                return (window.Notification.permission === 'granted') ? 0 : 2;
+            },
+            requestPermission: window.Notification.requestPermission,
+            createNotification: function createNotification(icon, title, content, tag) {
+                var notification_object = new window.Notification(title, {icon: icon,
+                                                                          body: content,
+                                                                          tag: tag});
+                notification_object.show = function () {};
+                notification_object.cancel = function () { notification_object.close(); };
+                return notification_object;
+            },
+        };
+    } catch (e) {
+        if (typeof ServiceWorkerRegistration !== "undefined" && ServiceWorkerRegistration.showNotification) {
+            notifications_api = {
+                checkPermission: function checkPermission() {
+                    return (window.Notification.permission === "granted") ? 0 : 2;
+                },
+                requestPermission: window.Notification.requestPermission,
+                createNotification: function createNotification(icon, title, content, tag) {
+                    var notification_object = ServiceWorkerRegistration.showNotification("title", {
+                        body: content,
+                        icon: icon,
+                        tag: tag,
+                    });
+
+                    notification_object.show = function () {};
+                    notification_object.cancel = function () { notification_object.close(); };
+                },
+            };
+        }
+    }
 }
 
 
