@@ -2530,6 +2530,24 @@ class GetSubscribersTest(ZulipTestCase):
             self.assertFalse('invite_only' in name)
             self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
 
+        def test_admin_case():
+            # type: () -> None
+            self.user_profile.is_realm_admin = True
+            never_subscribed = get_never_subscribed()
+
+            self.assertEqual(
+                len(never_subscribed),
+                len(public_streams) + len(private_streams)
+            )
+            for stream_dict in never_subscribed:
+                name = stream_dict['name']
+                if 'invite_only' in name:
+                    self.assertFalse('subscribers' in stream_dict)
+                else:
+                    self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
+
+        test_admin_case()
+
     @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
         # type: () -> None
