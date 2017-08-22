@@ -38,8 +38,6 @@ urllib3==1.22
 
 # Needed for documentation_crawler
 pathlib2==2.3.0
-#Needed for pathlib2==2.3.0
-scandir==1.5
 
 # Needed for updating the locked pip dependencies
 first==2.0.1

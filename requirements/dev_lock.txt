@@ -120,7 +120,7 @@ requests-oauthlib==0.8.0
 requests==2.18.4
 rsa==3.4.2
 s3transfer==0.1.10        # via boto3
-scandir==1.5
+scandir==1.5              # via pathlib2
 scrapy==1.4.0
 service-identity==17.0.0  # via scrapy
 sh==1.11                  # via gitlint
