@@ -22,8 +22,11 @@ $(function () {
 
    var sbWidth = scrollbarWidth();
 
+   console.log({ sbWidth });
+
    if (sbWidth > 0) {
 
+    /*
     $(".header").css("left", "-" + sbWidth + "px");
     $(".header-main").css("left", sbWidth + "px");
     $(".header-main").css("max-width", (1400 + sbWidth) + "px");
@@ -46,5 +49,6 @@ $(function () {
                      "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
                      "</style>");
    }
+   */
 
 });

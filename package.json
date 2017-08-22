@@ -17,7 +17,7 @@
     "i18next-localstorage-cache": "0.3.0",
     "i18next-parser": "0.11.1",
     "i18next-xhr-backend": "0.5.4",
-    "jquery": "2.2.3",
+    "jquery": "3.2.1",
     "jquery-validation": "1.16.0",
     "katex": "0.7.1",
     "moment": "2.18.1",
