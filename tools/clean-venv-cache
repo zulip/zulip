@@ -1,28 +1,68 @@
 #!/usr/bin/env python3
 from __future__ import absolute_import
 from __future__ import print_function
-import glob
+import argparse
+import datetime
 import os
 import subprocess
-import sys
+import time
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VENV_CACHE_DIR = "/srv/zulip-venv-cache"
-if "--travis" in sys.argv:
-    VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
+DEPLOYMENTS_DIR = "/home/zulip/deployments"
 
-used_caches = set()
-hash_reqs = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+def parse_args():
+    parser = argparse.ArgumentParser(description="This script cleans unused zulip venv caches.")
+    parser.add_argument("--env", dest="env", type=str, default="prod", nargs="?",
+                        choices=["travis", "dev", "prod"], metavar="<env>",
+                        help="The environment(travis, dev or prod) in which this script is being executed.(defaults to prod)")
+    parser.add_argument("--threshold", dest="threshold_days", type=int, default=14, nargs="?", metavar="<days>",
+                        help="Caches older than the specified number of days will be deleted.(defaults to 14)")
+    args = parser.parse_args()
+    return args
 
-for filename in os.listdir(os.path.join(ZULIP_PATH, "requirements")):
-    requirements_file = os.path.join(ZULIP_PATH, "requirements", filename)
-    hash_val = subprocess.check_output([hash_reqs, requirements_file]).strip()
-    used_caches.add(os.path.join(VENV_CACHE_DIR, hash_val.decode('utf-8')))
+def get_caches_to_purge(venv_dir, env, threshold_days):
+    to_purge = []
+    used_caches = set()
 
-for cache_dir_base in os.listdir(VENV_CACHE_DIR):
-    cache_dir = os.path.join(VENV_CACHE_DIR, cache_dir_base)
-    if cache_dir not in used_caches:
-        print("Cleaning unused venv %s" % (cache_dir,))
-        subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
-    else:
-        print("Keeping used venv %s" % (cache_dir,))
+    if env in ["dev", "travis"]:
+        ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        hash_reqs = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+        for filename in os.listdir(os.path.join(ZULIP_PATH, "requirements")):
+            requirements_file = os.path.join(ZULIP_PATH, "requirements", filename)
+            hash_val = subprocess.check_output([hash_reqs, requirements_file]).strip()
+            used_caches.add(os.path.join(venv_dir, hash_val.decode('utf-8')))
+
+    if env == "prod":
+        for deployment in ["current", "next", "last"]:
+            curr_venv_cache = os.path.join(DEPLOYMENTS_DIR, deployment, "zulip-current-venv")
+            used_caches.add(curr_venv_cache)
+
+    threshold = datetime.datetime.now() - datetime.timedelta(threshold_days)
+    threshold_timestamp = time.mktime(threshold.utctimetuple())
+
+    for cache_dir_base in os.listdir(venv_dir):
+        cache_dir = os.path.join(venv_dir, cache_dir_base)
+        if cache_dir not in used_caches and os.path.getctime(cache_dir) < threshold_timestamp:
+            to_purge.append(cache_dir)
+
+    return to_purge
+
+def main():
+    args = parse_args()
+    VENV_CACHE_DIR = "/srv/zulip-venv-cache"
+    if args.env == "travis":
+        VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
+    to_purge = get_caches_to_purge(VENV_CACHE_DIR, args.env, args.threshold_days)
+    kept_back = []
+    for cache_dir_base in os.listdir(VENV_CACHE_DIR):
+        cache_dir = os.path.join(VENV_CACHE_DIR, cache_dir_base)
+        if cache_dir in to_purge:
+            print("Cleaning unused venv %s" % (cache_dir,))
+            subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
+        else:
+            kept_back.append(cache_dir)
+
+    for cache_dir_base in kept_back:
+        print("Keeping used venv %s" % (cache_dir_base,))
+
+if __name__ == "__main__":
+    main()
