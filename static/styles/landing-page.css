@@ -698,6 +698,12 @@ nav ul li.active::after {
     margin: 0 auto 30px auto;
 }
 
+.other-apps .header-illustration img {
+    width: 100%;
+    max-width: 500px;
+    margin: -10px auto 20px auto;
+}
+
 .portico-landing.hello .hero .waves {
     position: absolute;
 
