@@ -95,7 +95,7 @@
 
 .alert-box .alert .exit::after {
     padding: 10px;
-    content: "×";
+    content: "\d7";
 }
 
 /* animation section */
