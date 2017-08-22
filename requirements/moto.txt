@@ -1,7 +1,6 @@
 # Dependencies of moto s3 mock
 Flask==0.12.2
 Werkzeug==0.12.2
-click==6.7
 httpretty==0.8.14
 itsdangerous==0.24
 moto==1.0.1

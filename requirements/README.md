@@ -5,7 +5,7 @@ py3_dev          py3_prod
 +  + +              +
 |  | +->py3_common<-+
 |  |    |   +
-|  |    |   v
+| dev   |   v
 |  |    |py3_socialauth
 |  |    |
 |  |    |
@@ -20,7 +20,7 @@ mypy
 Of the files, only py3_dev, py3_prod, and mypy have been used in the install
 scripts directly. The rest are implicit dependencies.
 
-py3_common is locked.
+py3_common and dev locked.
 
 Steps to update a lock file, e.g. to update ipython from 5.3.0 to 6.0.0 in
 common.txt and propagate it to py3_common_lock:
