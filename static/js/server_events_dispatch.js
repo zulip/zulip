@@ -11,7 +11,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'default_streams':
-        page_params.realm_default_streams = event.default_streams;
+        stream_data.set_realm_default_streams(event.default_streams);
         settings_streams.update_default_streams_table();
         break;
 
