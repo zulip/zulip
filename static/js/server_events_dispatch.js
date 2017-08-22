@@ -179,11 +179,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             stream_data.create_streams(event.streams);
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
-                if (stream_data.is_subscribed(stream.name)) {
+                var was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
+                stream_data.delete_sub(stream.stream_id);
+                subs.remove_stream(stream.stream_id);
+                if (was_subscribed) {
                     stream_list.remove_sidebar_row(stream.stream_id);
                 }
-                subs.remove_stream(stream.stream_id);
-                stream_data.delete_sub(stream.stream_id);
                 settings_streams.remove_default_stream(stream.stream_id);
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
