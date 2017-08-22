@@ -934,7 +934,7 @@ nav ul li.active::after {
 }
 
 .compare tbody tr td.no::before {
-    content: "×";
+    content: "\d7";
 
     position: relative;
     display: inline-block;
