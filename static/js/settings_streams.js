@@ -78,22 +78,6 @@ exports.remove_default_stream = function (stream_id) {
     }
 };
 
-function get_non_default_streams_names(streams_data) {
-    var non_default_streams_names = [];
-    var default_streams_names = [];
-
-    _.each(page_params.realm_default_streams, function (default_stream) {
-        default_streams_names.push(default_stream.name);
-    });
-
-    _.each(streams_data.streams, function (stream) {
-        if (default_streams_names.indexOf(stream.name) < 0) {
-            non_default_streams_names.push(stream.name);
-        }
-    });
-    return non_default_streams_names;
-}
-
 exports.update_default_streams_table = function () {
     if (/#*organization/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
@@ -172,7 +156,7 @@ exports.on_load_success = function (streams_data) {
         items: 5,
         fixed: true,
         source: function () {
-            return get_non_default_streams_names(all_streams);
+            return stream_data.get_non_default_stream_names();
         },
         highlighter: function (item) {
             return typeahead_helper.render_typeahead_item({ primary: item });

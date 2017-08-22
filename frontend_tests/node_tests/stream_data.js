@@ -355,6 +355,36 @@ zrequire('stream_data');
 
 }());
 
+(function test_get_non_default_stream_names() {
+    var announce = {
+        stream_id: 101,
+        name: 'announce',
+        subscribed: true,
+    };
+
+    var public_stream = {
+        stream_id: 102,
+        name: 'public',
+        subscribed: true,
+    };
+
+    var private_stream = {
+        stream_id: 103,
+        name: 'private',
+        subscribed: true,
+        invite_only: true,
+    };
+
+    stream_data.clear_subscriptions();
+    stream_data.set_realm_default_streams([announce]);
+    stream_data.add_sub('announce', announce);
+    stream_data.add_sub('public_stream', public_stream);
+    stream_data.add_sub('private_stream', private_stream);
+
+    var names = stream_data.get_non_default_stream_names();
+    assert.deepEqual(names, ['public']);
+}());
+
 (function test_delete_sub() {
     var canada = {
         stream_id: 101,
