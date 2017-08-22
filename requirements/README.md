@@ -1,7 +1,7 @@
 The dependency graph of the requirements is as follows:
 
 ```
-dev           py3_prod
+dev             prod
 + +              +
 | +->py3_common<-+
 |     |
@@ -11,7 +11,7 @@ v
 mypy,docs,py3k
 ```
 
-Of the files, only dev, py3_prod, and mypy have been used in the install
+Of the files, only dev, prod, and mypy have been used in the install
 scripts directly. The rest are implicit dependencies.
 
 py3_common and dev locked.
