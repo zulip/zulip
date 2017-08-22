@@ -24,8 +24,9 @@ from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
-    check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions
+    check_send_message, check_send_message_to_user_profiles,
+    create_stream_if_needed, bulk_add_subscriptions,
+    get_display_recipient, bulk_remove_subscriptions,
 )
 
 from zerver.lib.test_helpers import (
@@ -36,6 +37,7 @@ from zerver.models import (
     get_stream,
     get_user,
     get_user_profile_by_email,
+    get_system_bot,
     get_realm,
     get_realm_by_email_domain,
     Client,
@@ -373,6 +375,18 @@ class ZulipTestCase(TestCase):
             sender, sending_client, message_type_name, recipient_list, subject,
             content, forged=False, forged_timestamp=None,
             forwarder_user_profile=sender, realm=sender.realm, **kwargs)
+
+    def direct_send_message_to_user_profiles(self, sender_name, user_profiles,
+                                             content=u"test content", **kwargs):
+        # type: (Text, Union[UserProfile, List[UserProfile]], Text, **Any) -> int
+        sender = get_system_bot(sender_name)
+
+        if isinstance(user_profiles, UserProfile):
+            user_profiles = [user_profiles]
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+
+        return check_send_message_to_user_profiles(sender, sending_client, user_profiles, content,
+                                                   forwarder_user_profile=sender, **kwargs)
 
     def get_messages(self, anchor=1, num_before=100, num_after=100,
                      use_first_unread_anchor=False):

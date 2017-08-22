@@ -20,7 +20,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
 import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
-    RealmDomain, get_realm
+    RealmDomain, get_realm, get_system_bot
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 from zilencer.models import Deployment
 
@@ -475,7 +475,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
         with self.settings(CROSS_REALM_BOT_EMAILS = set((user2_email, user3_email))):
-            self.send_message(user2_email, user1_email, Recipient.PERSONAL, body)
+            self.direct_send_message_to_user_profiles(user2_email, get_system_bot(user1_email), body)
 
         self.login(user1_email, 'test')
         response = self.client_get(uri)

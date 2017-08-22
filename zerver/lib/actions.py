@@ -40,7 +40,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    get_realm, bulk_get_recipients, \
+    get_realm, bulk_get_recipients, get_user_including_cross_realm, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
@@ -1158,6 +1158,15 @@ def validate_recipient_user_profiles(user_profiles, sender):
 
     return recipient_profile_ids
 
+def recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
+                                forwarder_user_profile, sender):
+    # type: (List[UserProfile], bool, Optional[UserProfile], UserProfile) -> Recipient
+
+    recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
+
+    return get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message,
+                                       forwarder_user_profile, sender)
+
 def recipient_for_emails(emails, not_forged_mirror_message,
                          forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
@@ -1165,7 +1174,7 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
-            user_profile = get_user_profile_by_email(email)
+            user_profile = get_user_including_cross_realm(email, sender.realm)
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
@@ -1227,9 +1236,21 @@ def check_send_message(sender, client, message_type_name, message_to,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
-    message = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content, realm, forged, forged_timestamp,
+    message = check_message(sender, client, message_type_name, subject_name,
+                            message_content, message_to, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
+    return do_send_messages([message])[0]
+
+def check_send_message_to_user_profiles(sender, client, user_profiles, message_content,
+                                        realm=None, forged=False, forged_timestamp=None,
+                                        forwarder_user_profile=None, local_id=None,
+                                        sender_queue_id=None):
+    # type: (UserProfile, Client, List[UserProfile], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
+
+    message = check_message(sender, client, 'private', "", message_content, realm=realm,
+                            forged=forged, forged_timestamp=forged_timestamp,
+                            forwarder_user_profile=forwarder_user_profile, local_id=local_id,
+                            sender_queue_id=sender_queue_id, recipient_user_profiles=user_profiles)
     return do_send_messages([message])[0]
 
 def check_stream_name(stream_name):
@@ -1285,24 +1306,29 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                (sender.full_name, stream_name, error_msg))
 
     internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
-                                  sender.bot_owner.email, content)
+                                  sender.bot_owner, content)
 
     sender.last_reminder = timezone_now()
     sender.save(update_fields=['last_reminder'])
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
-def check_message(sender, client, message_type_name, message_to,
-                  subject_name, message_content_raw, realm=None, forged=False,
+def check_message(sender, client, message_type_name, subject_name,
+                  message_content_raw, message_to=None, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
-                  sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
+                  sender_queue_id=None, recipient_user_profiles=None):
+    # type: (UserProfile, Client, Text, Optional[Text], Text, Optional[Sequence[Text]], Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text], Optional[List[UserProfile]]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
         message_to = [sender.default_sending_stream.name]
-    if len(message_to) == 0:
+
+    if message_to is not None and len(message_to) == 0:
         raise JsonableError(_("Message must have recipients"))
+
+    if recipient_user_profiles is not None and len(recipient_user_profiles) == 0:
+        raise JsonableError(_("Message must have recipient user profiles."))
+
     message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
@@ -1359,12 +1385,20 @@ def check_message(sender, client, message_type_name, message_to,
     elif message_type_name == 'private':
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
         not_forged_mirror_message = mirror_message and not forged
-        try:
-            recipient = recipient_for_emails(message_to, not_forged_mirror_message,
-                                             forwarder_user_profile, sender)
-        except ValidationError as e:
-            assert isinstance(e.messages[0], six.string_types)
-            raise JsonableError(e.messages[0])
+        if recipient_user_profiles is None:
+            try:
+                recipient = recipient_for_emails(message_to, not_forged_mirror_message,
+                                                 forwarder_user_profile, sender)
+            except ValidationError as e:
+                assert isinstance(e.messages[0], six.string_types)
+                raise JsonableError(e.messages[0])
+        else:
+            try:
+                recipient = recipient_for_user_profiles(recipient_user_profiles, not_forged_mirror_message,
+                                                        forwarder_user_profile, sender)
+            except ValidationError as e:
+                assert isinstance(e.messages[0], six.string_types)
+                raise JsonableError(e.messages[0])
     else:
         raise JsonableError(_("Invalid message type"))
 
@@ -1412,7 +1446,24 @@ def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients
 
     try:
         return check_message(sender, get_client("Internal"), recipient_type_name,
-                             parsed_recipients, subject, content, realm=realm)
+                             subject, content, message_to=parsed_recipients, realm=realm)
+    except JsonableError as e:
+        logging.error(u"Error queueing internal message by %s: %s" % (sender.email, e))
+
+    return None
+
+def internal_prep_message_to_user_profiles(realm, sender, recipient_user_profiles, content):
+    # type: (Realm, UserProfile,  List[UserProfile], Text) -> Optional[Dict[str, Any]]
+
+    if len(content) > MAX_MESSAGE_LENGTH:
+        content = content[0:3900] + "\n\n[message was too long and has been truncated]"
+
+    if realm is None:
+        raise RuntimeError("None is not a valid realm for internal_prep_message_to_user_profiles!")
+
+    try:
+        return check_message(sender, get_client("Internal"), 'private', '',
+                             content, realm=realm, recipient_user_profiles=recipient_user_profiles)
     except JsonableError as e:
         logging.error(u"Error queueing internal message by %s: %s" % (sender.email, e))
 
@@ -1480,9 +1531,9 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
 
     do_send_messages([msg])
 
-def internal_send_private_message(realm, sender, recipient_email, content):
-    # type: (Realm, UserProfile, Text, Text) -> None
-    message = internal_prep_private_message(realm, sender, recipient_email, content)
+def internal_send_private_message(realm, sender, recipient_user_profile, content):
+    # type: (Realm, UserProfile, UserProfile, Text) -> None
+    message = internal_prep_message_to_user_profiles(realm, sender, [recipient_user_profile], content)
     if message is None:
         return
     do_send_messages([message])
