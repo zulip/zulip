@@ -152,7 +152,7 @@ var upload_widget = (function () {
                     input_error.show();
                     clear();
                 } else {
-                    accept(file);
+                    accept();
                 }
             } else {
                 input_error.text(i18n.t('Please just upload one file.'));
