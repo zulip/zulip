@@ -328,6 +328,7 @@ zrequire('stream_data');
         name: 'c',
         color: 'cinnamon',
         subscribed: true,
+        invite_only: false,
     };
 
     var blue = {
@@ -335,6 +336,7 @@ zrequire('stream_data');
         name: 'b',
         color: 'blue',
         subscribed: false,
+        invite_only: false,
     };
 
     var amber = {
@@ -342,6 +344,7 @@ zrequire('stream_data');
         name: 'a',
         color: 'amber',
         subscribed: true,
+        invite_only: true,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon.name, cinnamon);
@@ -352,6 +355,14 @@ zrequire('stream_data');
     assert.equal(sub_rows[0].color, 'blue');
     assert.equal(sub_rows[1].color, 'amber');
     assert.equal(sub_rows[2].color, 'cinnamon');
+
+    sub_rows = stream_data.get_streams_for_admin();
+    assert.equal(sub_rows[0].name, 'a');
+    assert.equal(sub_rows[1].name, 'b');
+    assert.equal(sub_rows[2].name, 'c');
+    assert.equal(sub_rows[0].invite_only, true);
+    assert.equal(sub_rows[1].invite_only, false);
+    assert.equal(sub_rows[2].invite_only, false);
 
 }());
 
