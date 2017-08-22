@@ -54,7 +54,7 @@ exports.post_hotspot_as_read = function (hotspot_name) {
 };
 
 function place_icon(hotspot) {
-    if (!$(hotspot.location.element).length === 0) {
+    if ($(hotspot.location.element).length !== 0) {
         $('#hotspot_' + hotspot.name + '_icon').css('display', 'none');
         return;
     }
