@@ -176,4 +176,4 @@ py3dns==3.1.0
 pyldap==2.4.37
 
 # Install Python Social Auth
--r socialauth.txt
+social-auth-app-django==1.2.0

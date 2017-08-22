@@ -4,9 +4,6 @@ The dependency graph of the requirements is as follows:
 dev         prod
 + +          +
 | +->common<-+
-|     |
-|     v
-|   socialauth
 v
 mypy,docs,py3k
 ```
