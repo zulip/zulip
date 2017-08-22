@@ -1,2 +1,0 @@
--r dev_lock.txt
--r mypy.txt

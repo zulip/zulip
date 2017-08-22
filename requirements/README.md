@@ -1,23 +1,17 @@
 The dependency graph of the requirements is as follows:
 
 ```
-py3_dev          py3_prod
-+  + +              +
-|  | +->py3_common<-+
-|  |    |   +
-| dev   |   v
-|  |    |py3_socialauth
-|  |    |
-|  |    |
-|  |    |
-|  v    +---------->emailmirror
-|  docs,py3k
-|
+dev           py3_prod
++ +              +
+| +->py3_common<-+
+|     |
+|     v
+|   emailmirror,py3_socialauth
 v
-mypy
+mypy,docs,py3k
 ```
 
-Of the files, only py3_dev, py3_prod, and mypy have been used in the install
+Of the files, only dev, py3_prod, and mypy have been used in the install
 scripts directly. The rest are implicit dependencies.
 
 py3_common and dev locked.
