@@ -10,10 +10,6 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-function failed_listing_streams(xhr) {
-    ui_report.error(i18n.t("Error listing streams"), xhr, $("#organization-status"));
-}
-
 function populate_streams() {
     var streams_table = $("#admin_streams_table").expectOne();
 
@@ -108,19 +104,6 @@ function make_stream_default(stream_name) {
 }
 
 exports.set_up = function () {
-    loading.make_indicator($('#admin_page_streams_loading_indicator'));
-
-    // Populate streams table
-    channel.get({
-        url:      '/json/streams?include_public=true&include_subscribed=true&include_default=true',
-        timeout:  10*1000,
-        idempotent: true,
-        success: exports.on_load_success,
-        error: failed_listing_streams,
-    });
-};
-
-exports.on_load_success = function () {
     meta.loaded = true;
 
     populate_streams();
