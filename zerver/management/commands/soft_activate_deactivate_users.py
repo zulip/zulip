@@ -42,6 +42,10 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
+        if settings.STAGING:
+            print('This is a Staging server. Suppressing management command.')
+            sys.exit(0)
+
         if options['realm_id']:
             realm = self.get_realm(options)
         filter_kwargs = {}  # type: Dict[str, Realm]
