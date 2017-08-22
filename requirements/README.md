@@ -3,7 +3,7 @@ The dependency graph of the requirements is as follows:
 ```
 dev             prod
 + +              +
-| +->py3_common<-+
+| +->common<-----+
 |     |
 |     v
 |   emailmirror,socialauth
@@ -11,13 +11,13 @@ v
 mypy,docs,py3k
 ```
 
-Of the files, only dev, prod, and mypy have been used in the install
+Of the files, only dev, prod, py3k, and mypy have been used in the install
 scripts directly. The rest are implicit dependencies.
 
-py3_common and dev locked.
+common and dev are locked.
 
 Steps to update a lock file, e.g. to update ipython from 5.3.0 to 6.0.0 in
-common.txt and propagate it to py3_common_lock:
+common.txt and propagate it to dev_lock.txt and prod_lock.txt:
 0. Replace `ipython==5.4.1` with `ipython==6.0.0` in common.txt
 1. Run './tools/update-locked-requirements'
 

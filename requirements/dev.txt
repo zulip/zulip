@@ -1,4 +1,4 @@
--r py3_common.txt
+-r common.txt
 -r docs.txt
 
 # moto s3 mock
