@@ -21,37 +21,37 @@ On this page you'll find:
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
 that help with writing bots, please visit
-[#bots](https://chat.zulip.org/#narrow/stream/bots) on the
+[#integrations](https://chat.zulip.org/#narrow/stream/integrations) on the
 [Zulip development community server](https://chat.zulip.org), open an
 issue, or submit a pull request to share your ideas!
 
 ## The bots system
 
-Zulip's bot system resides in the `api` directory.
+Zulip's bot system resides in the [python-zulip-api](
+https://github.com/zulip/python-zulip-api) repository.
 
-The structure of the bots ecosystem in the `api` directory looks like the following:
+The structure of the bots ecosystem looks like the following:
 
 ```
-api
-└───bots
-    └───bot1
-    └───bot2
-        │
-        └───readme.md
-        └───bot2.py
-        └───bot2.config
-        └───libraries
-        |   |
-        |   └───lib1.py
-        └───assets
-           |
-           └───pic.png
-├── bots_api
-│   ├── bot_lib.py
-│   ├── bots_test_lib.py
-│   ├── run.py
-│   ├── test_bots
-├── integrations
+zulip_bots
+└───zulip_bots
+    ├───bots
+    │   ├───bot1
+    │   └───bot2
+    │       │
+    │       ├───readme.md
+    │       ├───bot2.py
+    │       ├───bot2.config
+    │       ├───libraries
+    │       │   │
+    │       │   └───lib1.py
+    │       └───assets
+    │           │
+    │           └───pic.png
+    ├─── lib.py
+    ├─── test_lib.py
+    ├─── run.py
+    └─── provision.py
 ```
 
 Each subdirectory in `bots` contains a bot. When developing bots, try to use the structure outlined
@@ -60,9 +60,9 @@ above as an orientation.
 ## How to run a bot
 
 This guide will show you how to run a bot on a running Zulip
-server.  It assumes you want to use one of the existing `api/bots`
+server.  It assumes you want to use one of the existing `zulip_bots/bots`
 bots in your Zulip organization.  If you want to write a new one, you
-just need to write the `<my-bot>.py` script and put it into `/api/bots/<my-bot>` directory.
+just need to write the `<my-bot>.py` script and put it into `zulip_bots/bots/<my-bot>` directory.
 
 You need:
 
@@ -71,47 +71,48 @@ You need:
   yourSubdomain.zulipchat.com, or your own development server).
   Within that Zulip organization, users will be able to interact with
   your bot.
-* A computer where you're running the bot from, with a clone of the
-  [Zulip repository](https://github.com/zulip/zulip), which contains
-  the bot library code in its `api/bots_api/<my-bot>` subdirectory. This is
-  required to run your bot. The following instructions assume this
-  repository to be located in `~/zulip/`.
+* A computer where you're running the bot from.
 
 **Note: Please be considerate when testing experimental bots on
   public servers such as chat.zulip.org.**
 
-1. Register a new bot user on the Zulip server's web interface.
+1. Install all requirements. You can either
+
+    * run `pip install zulip_bots` for a stable version, or
+    * clone the [`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
+      repository for the latest code. Install it with
+      `pip -e <path/to/zulip_bots>`; you will be able to make changes to the code.
+
+2. Register a new bot user on the Zulip server's web interface.
 
     * Log in to the Zulip server.
-    * Navigate to *Settings* -> *Your bots* -> *Add a new bot*, fill
-      out the form and click on *Create bot*.
-    * A new bot user should appear in the *Your bots* panel.
+    * Navigate to *Settings* -> *Active bots* -> *Add a new bot*.
+      Select *Generic bot* for bot type, fill out the form and click on *Create bot*.
+    * A new bot user should appear in the *Active bots* panel.
 
-2. Download the bot's `zuliprc` configuration file to your computer.
+3. Download the bot's `zuliprc` configuration file to your computer.
 
-    * In the *Your bots* panel, click on the green icon to download
+    * In the *Active bots* panel, click on the green icon to download
       its configuration file *zuliprc* (the structure of this file is
       explained [here](#configuration-file)).
-    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`
-      or `~/zuliprc-test`. Note that the destination should be accessible
-      from your Zulip dev environment (e.g. Vagrant or Digital Ocean).
+    * Copy the file to a destination of your choice, e.g. to `~/zuliprc`
+      or `~/zuliprc-test`.
 
-3. Subscribe the bot to the streams that the bot needs to interact with.
+4. Subscribe the bot to the streams that the bot needs to interact with.
 
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
-      (the address you assigned in step 1).
+      (the address you assigned in step 2).
     * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
-4. Run the bot.
+5. Run the bot.
 
-    * In your Zulip repository, navigate to `~/zulip/api/bots_api/`
     * Run
       ```
-      python run.py ../bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
+      zulip-run-bot <bot-name> --config-file ~/zuliprc`
       ```
-      (using the path to the `.zuliprc` file from step 2).
+      (using the path to the `zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
       to this:
@@ -134,77 +135,63 @@ You need:
   "beep boop".
 
 ## Zulip Bot Server
-It is a simple python flask server which can be used to interact with bots through making use of
-outgoing webhook services. It makes it really convenient for users to run multiple bots. Traditionally,
-a person would be required to download zuliprc of each bot and run each of them separately. With Zulip Bot
-server, they would be able to download a single configuration file for all bots i.e. `flaskbotrc` and
-start the server which would enable interacting with all the bots.
 
-It's location is `api/zulip/bot_server.py`.
+The Zulip Bot Server is for people who want to
 
-### How to run bots using the Flask server
+* run bots in production.
+* run multiple bots at once.
 
-1.  Make sure that bot with whom you want to interact has been setup and is active (lets call it bot1).
+It is implemented as a Flask server and hence python-based. It's code can be found [here](
+https://github.com/zulip/python-zulip-api/tree/master/zulip_botserver).
+
+### How to run bots using the Zulip Bot server
+
+Fundamentally, the Zulip Bot server works through an `outgoing webhook` - this is a bot type
+that posts a POST request to a specified URL every time it records a message. Therefore,
+you need to set bot users for all bots you want to deploy, and one outgoing webhook
+for interacting with the Zulip Bot server.
+
+1. Register new bot users on the Zulip server's web interface.
+
+    * Log in to the Zulip server.
+    * Navigate to *Settings* -> *Active bots* -> *Add a new bot*.
+      Select *Outgoing webhook* for bot type, fill out the form and click on *Create bot*.
+    * A new bot user should appear in the *Active bots* panel.
 
 2.  Download the `flaskbotrc` from the `your-bots` settings page. It contains the configuration details
     for all the active outgoing webhook bots. It's structure is very similar to that of zuliprc.
 
-3.  Install the `zulip` PyPI package using `pip`, the command for the above:
-    ```
-    pip install zulip
-    ```
+3.  Install the `zulip_botserver` PyPI package using `pip`:
+
+    * `pip install zulip_botserver`
 
 4.  Run the Zulip Bot server by passing the `flaskbotrc` to it. The command format is:
     ```
     zulip-bot-server  --config-file <path_to_flaskbotrc> --hostname <address> --port <port>
     ```
-    The user can provide the hostname and port to run the server on, or omit it and run it on
-    the default address `127.0.0.1` and port `5002`.
+    If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
 
-5.  Now setup the outgoing webhook service which will interact with the server. For this create an
-    `outgoing webhook` type bot (lets call this bot2) and create a service with base url of the form:
+5.  Now set up the outgoing webhook service which will interact with the server: Create an
+    `Outgoing webhook` type bot and a service with base url of the form:
     ```
-    http://hostname:port/bots/<bot_name>
+    http://<hostname>:<port>/bots/<bot_name>
     ```
-    The `bot name` here refers to the name of the bot with whom you want to interact. It can be obtained by
-    removing `-bot@*.*` from the bot email. Example: the bot name of bot with email `followup-bot@zulip.com`
-    is `followup`. `hostname` and `port` can be either provided by user or can be the default ones.
+    `bot_name` refers to the name in the email address you specified for the bot. It can be obtained by
+    removing `-bot@*.*` from the bot email: For example, the bot name of a bot with an email `followup-bot@zulip.com`
+    is `followup`.
 
-    On the development environment, an outgoing webhook bot and corresponding service already exists,
+    In the development environment, an outgoing webhook bot and corresponding service already exist,
     with the email `outgoing-webhook@zulip.com`. This can be used for interacting with flask server bots.
 
-6.  Now with everything setup, you can start interacting with the bot (bot1 here) by triggering the outgoing
-    webhook service, through @-mentioning or sending a private message to bot2. The content of the above message
-    should be text you want to send to bot1.
+6.  Congrats, everything is set up! Test your botserver like you would test a normal bot.
 
-    Please note that in order to @-mention trigger a bot on a stream, the bot needs to be subscribed to it.
-
-### Followup bot example
-
-1.  First setup the followup bot by creating a new bot with username `followup`.
-    Create a new `followup` stream and subscribe the bot to the stream where it will be triggered.
-
-2.  Download the `flaskbotrc` file.
-
-3.  If you haven't installed already, install the `zulip` package using `pip` through the command:
-    `pip install zulip`
-
-4.  Run the Zulip Bot server with the following command:
-    `zulip-bot-server  --config-file <path_to_flaskbotrc>`
-
-    If you want to run the server on a specific hostname and port, use the following command:
-    `zulip-bot-server  --config-file <path_to_flaskbotrc> --hostname <address> --port <port>`
-
-5.  Create a new outgoing webhook bot and a corresponding service with base url of the form
-    `http://hostname:port/bots/followup`.
-
-6.  Trigger the outgoing webhook bot using @-mentions or private message. You will see a message in the `followup`
-    stream by the followup bot.
+    *Please note that in order to @-mention trigger a bot on a stream, the bot **and** the outgoing webhook bot
+    need to be subscribed to it.*
 
 ## How to develop a bot
 
 The tutorial below explains the structure of a bot `<my-bot>.py`,
-which is the only file you need to create to develop a new bot. You
+which is the only file you need to create for a new bot. You
 can use this as boilerplate code for developing your own bot.
 
 Every bot is built upon this structure:
@@ -364,7 +351,7 @@ will edit the content of a previously sent message.
 
 ### Example
 
-From `/zulip/api/bots/incrementor/incrementor.py`:
+From `zulip_bots/bots/incrementor/incrementor.py`:
 
 ```
 bot_handler.update_message(dict(
@@ -398,14 +385,11 @@ bot_handler.update_message(dict(
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that you bot script is located in zulip/api/bots/<my-bot>/
+    * Ensure that you bot script is located in zulip_bots/bots/<my-bot>/
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
     * Some bots require Python 3. Try switching to a Python 3 environment before running
-      your bot:
-      ```
-      source /srv/zulip-py3-venv/bin/activate
-      ```
+      your bot.
 
 * My bot works only on some streams.
     * Subscribe your bot to other streams, as described [here](#how-to-run-a-bot).
@@ -413,7 +397,7 @@ bot_handler.update_message(dict(
 ## Future direction
 
 The long-term plan for this bot system is to allow the same
-`BotHandler` code to eventually be usable in several contexts:
+`ExternalBotHandler` code to eventually be usable in several contexts:
 
 * Run directly using the Zulip `call_on_each_message` API, which is
   how the implementation above works.  This is great for quick
