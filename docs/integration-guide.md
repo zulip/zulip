@@ -95,7 +95,11 @@ handles that incoming data.
 
 New Zulip webhook integrations can take just a few hours to write,
 including tests and documentation, if you use the right process.
-Here's how we recommend doing it:
+
+**For detailed instructions, check out the ["Hello World" webhook walkthrough](
+webhook-walkthrough.html)**.
+
+For a quick guide, read on.
 
 * First, use <http://requestb.in/> or a similar site to capture an
   example webhook payload from the service you're integrating.  You
@@ -137,9 +141,6 @@ Here's how we recommend doing it:
 
 * Finally, write documentation for the integration; there's a
   [detailed guide](#documenting-your-integration) below.
-
-See the "Hello World" example in the [webhook walkthrough](webhook-walkthrough.html) for
-a detailed look at how to write a simple webhook.
 
 ### Files that need to be created
 
