@@ -47,9 +47,9 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.register("test@zulip.com", "test")
 
-            for email in mail.outbox:
-                subject = 'New login from an unknown browser on an unknown operating system'
-                self.assertNotEqual(email.subject, subject)
+            # Verify that there's just 1 email for new user registration.
+            self.assertEqual(mail.outbox[0].subject, "Activate your Zulip account")
+            self.assertEqual(len(mail.outbox), 1)
 
     def test_without_path_info_dont_send_login_emails_for_new_user_registration_logins(self):
         # type: () -> None

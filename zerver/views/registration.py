@@ -244,6 +244,9 @@ def accounts_register(request):
             logging.error("Subdomain mismatch in registration %s: %s" % (
                 realm.subdomain, user_profile.email,))
             return redirect('/')
+
+        # Mark the user as having been just created, so no login email is sent
+        auth_result.just_registered = True
         login(request, auth_result)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home.home'))
 

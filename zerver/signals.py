@@ -64,13 +64,9 @@ def email_on_new_login(sender, user, request, **kwargs):
         return
 
     if request:
-        # Login emails are for returning users, not new registrations.
-        # Determine if login request was from new registration.
-        path = request.META.get('PATH_INFO', None)
-
-        if path:
-            if path == "/accounts/register/":
-                return
+        # If the user's account was just created, avoid sending an email.
+        if getattr(user, "just_registered", False):
+            return
 
         login_time = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
             timezone_get_current_timezone_name()
