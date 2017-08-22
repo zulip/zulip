@@ -683,6 +683,20 @@ nav ul li.active::after {
     background: linear-gradient(0deg, #fff 0%, transparent 40%);
 }
 
+.header-illustration img {
+    display: block;
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+#integration-main-text .header-illustration img {
+    max-width: 300px;
+    margin: 0 auto 30px auto;
+}
 
 .portico-landing.hello .hero .waves {
     position: absolute;
