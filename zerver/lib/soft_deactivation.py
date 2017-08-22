@@ -6,7 +6,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import DefaultDict, List, Union
+from typing import DefaultDict, List, Union, Any
 
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
     Subscription, Message, Recipient, UserActivity, Realm
@@ -214,14 +214,14 @@ def maybe_catch_up_soft_deactivated_user(user_profile):
         return user_profile
     return None
 
-def get_users_for_soft_deactivation(realm, inactive_for_days):
-    # type: (Realm, int) -> List[UserProfile]
+def get_users_for_soft_deactivation(inactive_for_days, filter_kwargs):
+    # type: (int, **Any) -> List[UserProfile]
     users_activity = list(UserActivity.objects.filter(
-        user_profile__realm=realm,
         user_profile__is_active=True,
         user_profile__is_bot=False,
-        user_profile__long_term_idle=False).values(
-        'user_profile_id').annotate(last_visit=Max('last_visit')))
+        user_profile__long_term_idle=False,
+        **filter_kwargs).values('user_profile_id').annotate(
+        last_visit=Max('last_visit')))
     user_ids_to_deactivate = []
     today = timezone_now()
     for user_activity in users_activity:

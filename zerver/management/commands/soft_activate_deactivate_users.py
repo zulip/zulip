@@ -5,7 +5,7 @@ from django.db import connection
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, List
+from typing import Any, List, Dict
 from argparse import ArgumentParser
 from six.moves import map
 import sys
@@ -22,7 +22,7 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser)
         parser.add_argument('-d', '--deactivate',
                             dest='deactivate',
                             action='store_true',
@@ -42,30 +42,44 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = self.get_realm(options)
+        if options['realm_id']:
+            realm = self.get_realm(options)
+        filter_kwargs = {}  # type: Dict[str, Realm]
+        if options['realm_id']:
+            filter_kwargs = dict(realm=realm)
+
         user_emails = options['users']
         activate = options['activate']
         deactivate = options['deactivate']
+
         if activate:
             if not user_emails:
                 print('You need to specify at least one user to use the activate option.')
                 self.print_help("./manage.py", "soft_activate_deactivate_users")
                 sys.exit(1)
-            users_to_activate = list(UserProfile.objects.filter(
-                realm=realm,
-                email__in=user_emails))
+
+            users_to_activate = UserProfile.objects.filter(
+                email__in=user_emails,
+                **filter_kwargs
+            )
+            users_to_activate = list(users_to_activate)
+
             if len(users_to_activate) != len(user_emails):
                 user_emails_found = [user.email for user in users_to_activate]
                 for user in user_emails:
                     if user not in user_emails_found:
                         raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
+
             users_activated = do_soft_activate_users(users_to_activate)
             logger.info('Soft Reactivated %d user(s)' % (len(users_activated)))
         elif deactivate:
             if user_emails:
-                users_to_deactivate = list(UserProfile.objects.filter(
-                    realm=realm,
-                    email__in=user_emails))
+                users_to_deactivate = UserProfile.objects.filter(
+                    email__in=user_emails,
+                    **filter_kwargs
+                )
+                users_to_deactivate = list(users_to_deactivate)
+
                 if len(users_to_deactivate) != len(user_emails):
                     user_emails_found = [user.email for user in users_to_deactivate]
                     for user in user_emails:
@@ -73,7 +87,9 @@ class Command(ZulipBaseCommand):
                             raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
                 print('Soft deactivating forcefully...')
             else:
-                users_to_deactivate = get_users_for_soft_deactivation(realm, int(options['inactive_for']))
+                if options['realm_id']:
+                    filter_kwargs = dict(user_profile__realm=realm)
+                users_to_deactivate = get_users_for_soft_deactivation(int(options['inactive_for']), filter_kwargs)
 
             if users_to_deactivate:
                 users_deactivated = do_soft_deactivate_users(users_to_deactivate)
