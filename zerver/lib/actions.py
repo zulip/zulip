@@ -3103,14 +3103,16 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
                                 if ns_stream_dict['id'] in never_subscribed_stream_ids]
 
     for stream in never_subscribed_streams:
-        if not stream['invite_only']:
+        is_public = (not stream['invite_only'])
+        if is_public or user_profile.is_realm_admin:
             stream_dict = {'name': stream['name'],
                            'invite_only': stream['invite_only'],
                            'stream_id': stream['id'],
                            'description': stream['description']}
-            subscribers = subscriber_map[stream["id"]]
-            if subscribers is not None:
-                stream_dict['subscribers'] = subscribers
+            if is_public:
+                subscribers = subscriber_map[stream["id"]]
+                if subscribers is not None:
+                    stream_dict['subscribers'] = subscribers
             never_subscribed.append(stream_dict)
 
     return (sorted(subscribed, key=lambda x: x['name']),
