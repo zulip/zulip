@@ -10,17 +10,14 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-var all_streams = [];
-
 function failed_listing_streams(xhr) {
     ui_report.error(i18n.t("Error listing streams"), xhr, $("#organization-status"));
 }
 
 function populate_streams(streams_data) {
     var streams_table = $("#admin_streams_table").expectOne();
-    all_streams = streams_data;
 
-    list_render(streams_table, all_streams.streams, {
+    list_render(streams_table, streams_data.streams, {
         name: "admin_streams_list",
         modifier: function (item) {
             return templates.render("admin_streams_list", { stream: item });
