@@ -102,6 +102,8 @@ body {
     color: #dae0df;
 
     overflow: auto;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 .help .sidebar h2 {
@@ -1317,9 +1319,9 @@ input.new-organization-button {
 
 @media (max-width: 1000px) {
     .app.help .markdown {
-        width: calc(100vw);
+        width: calc(100vw - 50px);
         height: calc(100vh - 64px);
-        left: 0;
+        left: 50px;
     }
 
     .app.help .markdown .content {
@@ -1328,23 +1330,38 @@ input.new-organization-button {
 
     .app.help .hamburger {
         display: block;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        fill: hsl(0, 0%, 40%);
-        z-index: 1;
+        position: fixed;
+        top: 70px;
+        left: 9px;
+        fill: #fff;
+        z-index: 2;
 
+
+        transition: all 0.3s ease;
         cursor: pointer;
     }
 
     .app.help .sidebar {
-        right: 100vw;
+        right: calc(100vw - 50px);
+        padding-right: 80px;
         transform: translateX(0);
         transition: all 0.3s ease;
+
+        overflow: hidden;
+        height: 100vh;
     }
 
     .app.help .sidebar.show {
-        transform: translateX(340px);
+        padding-right: 20px;
+        transform: translateX(280px);
+    }
+
+    .app.help .sidebar.show + .hamburger {
+        transform: translateX(280px);
+    }
+
+    .app.help .sidebar.show ~ .markdown {
+        -webkit-filter: brightness(0.7);
     }
 
     .contributors .person {
@@ -1404,6 +1421,10 @@ input.new-organization-button {
 }
 
 @media (max-width: 500px) {
+    .markdown .content {
+        padding: 30px 10px 80px 10px;
+    }
+
     .brand.logo .light {
         display: none;
     }
@@ -1419,11 +1440,19 @@ input.new-organization-button {
 
     .app.help .sidebar {
         width: calc(100% - 40px);
-        height: calc(100vh - 40px - 10px - 10px);
+        height: calc(100vh - 40px - 10px - 9px);
     }
 
     .app.help .sidebar.show {
-        transform: translateX(100%);
+        transform: translateX(calc(100% - 50px));
+    }
+
+    .app.help .sidebar.show + .hamburger {
+        transform: translateX(calc(100vw - 50px));
+    }
+
+    .app.help .hamburger {
+        top: 50px;
     }
 
     .app.help .markdown {
