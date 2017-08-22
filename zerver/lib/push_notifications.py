@@ -15,6 +15,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.queue import retry_event
 
 from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
 from gcm import GCM
@@ -346,6 +347,10 @@ def get_gcm_payload(user_profile, message):
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
     # type: (int, Dict[str, Any]) -> None
+    """
+    missed_message is the event received by the
+    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    """
     try:
         user_profile = get_user_profile_by_id(user_profile_id)
         if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
@@ -361,9 +366,20 @@ def handle_push_notification(user_profile_id, missed_message):
         gcm_payload = get_gcm_payload(user_profile, message)
 
         if uses_notification_bouncer():
-            send_notifications_to_bouncer(user_profile_id,
-                                          apns_payload,
-                                          gcm_payload)
+            try:
+                send_notifications_to_bouncer(user_profile_id,
+                                              apns_payload,
+                                              gcm_payload)
+            except requests.ConnectionError:
+                if 'failed_tries' not in missed_message:
+                    missed_message['failed_tries'] = 0
+
+                def failure_processor(event):
+                    # type: (Dict[str, Any]) -> None
+                    logging.warning("Maximum retries exceeded for trigger:%s event:push_notification" % (event['user_profile_id']))
+                retry_event('missedmessage_mobile_notifications', missed_message,
+                            failure_processor)
+
             return
 
         android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
