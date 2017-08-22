@@ -1,0 +1,83 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block customhead %}
+{{ super() }}
+{{ render_bundle('translations') }}
+{% endblock %}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style" style="padding: 20px 0px">
+
+        <div class="pitch">
+            {% trans %}
+            <h1>You're almost there.</h1>
+            <p>We just need you to do one last thing.</p>
+            {% endtrans %}
+        </div>
+
+        <form method="post" class="form-horizontal white-box" id="registration" action="{{ current_url() }}">
+            {{ csrf_input }}
+            <section class="user-registration">
+                <div class="input-box">
+                    <input type="text" id="hostname" name="hostname"
+                           value="{% if form.hostname.value() %}{{ form.hostname.value() }}{% endif %}"
+                           maxlength="{{ form.hostname.field.max_length }}"
+                           placeholder={{ "https://acme.zulip.com" }}
+                           />
+                    {% if form.hostname.errors %}
+                        {% for error in form.hostname.errors %}
+                        <div class="help-inline text-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <label for="hostname">{{ _('Hostname') }}</label>
+                </div>
+
+                <div class="input-box">
+                    <input type="text" id="zulip_org_id" name="zulip_org_id"
+                           value="{% if form.zulip_org_id.value() %}{{ form.zulip_org_id.value() }}{% endif %}"
+                           maxlength="{{ form.zulip_org_id.field.max_length }}"
+                           placeholder={{ "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" }}
+                           />
+                    {% if form.zulip_org_id.errors %}
+                        {% for error in form.zulip_org_id.errors %}
+                        <div class="help-inline text-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <label for="zulip_org_id">{{ _('Zulip organization id') }}</label>
+                </div>
+
+                <div class="input-box">
+                    <input type="password" id="zulip_org_key" name="zulip_org_key" value=""
+                           maxlength="{{ form.zulip_org_key.field.max_length }}"
+                           />
+                    <label for="zulip_org_key">{{ _('Zulip organization key') }}</label>
+                    {% if form.zulip_org_key.errors %}
+                        {% for error in form.zulip_org_key.errors %}
+                        <div class="help-inline text-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="input-group">
+                    <input id="id_terms" type="checkbox" name="terms"
+                        {% if form.terms.value() %}checked="checked"{% endif %} />
+                    <label for="id_terms" class="inline-block">
+                        {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
+                    </label>
+                    {% if form.terms.errors %}
+                        {% for error in form.terms.errors %}
+                        <div class="help-inline text-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </section>
+
+            <button class="full-width" type="submit" name="">{{ _('Register') }}</button>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

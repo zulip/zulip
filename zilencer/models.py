@@ -5,18 +5,19 @@ from typing import Dict, Optional, Text
 import zerver.models
 import datetime
 
+UUID_LENGTH = 36
 API_KEY_LENGTH = 64
-HOST_NAME_LENGTH = 128
+MAX_HOST_NAME_LENGTH = 128
 
 def get_remote_server_by_uuid(uuid):
     # type: (Text) -> RemoteZulipServer
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):
-    uuid = models.CharField(max_length=36, unique=True)  # type: Text
+    uuid = models.CharField(max_length=UUID_LENGTH, unique=True)  # type: Text
     api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: Text
 
-    hostname = models.CharField(max_length=HOST_NAME_LENGTH, unique=True)  # type: Text
+    hostname = models.CharField(max_length=MAX_HOST_NAME_LENGTH, unique=True)  # type: Text
     contact_email = models.EmailField(blank=True, null=False)  # type: Text
     last_updated = models.DateTimeField('last updated', auto_now=True)  # type: datetime.datetime
 
@@ -52,3 +53,11 @@ class Deployment(models.Model):
         # deployment for the zulip.com realm.
         # This also doesn't necessarily handle other multi-realm deployments correctly
         return self.realms.order_by('pk')[0].domain
+
+class RemoteServerRegistrationStatus(models.Model):
+    email = models.EmailField()  # type: Text
+    updated_at = models.DateTimeField(auto_now=True)  # type: datetime.datetime
+
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    status = models.IntegerField(default=0)  # type: int
