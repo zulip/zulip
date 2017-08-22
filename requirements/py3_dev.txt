@@ -1,3 +1,2 @@
--r py3_common_lock.txt
--r dev.txt
+-r dev_lock.txt
 -r mypy.txt
