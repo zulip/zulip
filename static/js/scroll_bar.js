@@ -22,6 +22,8 @@ $(function () {
 
    var sbWidth = scrollbarWidth();
 
+   console.log({ sbWidth });
+
    if (sbWidth > 0) {
 
     $(".header").css("left", "-" + sbWidth + "px");
