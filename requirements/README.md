@@ -5,10 +5,10 @@ dev         prod
 + +          +
 | +->common<-+
 v
-mypy,docs,py3k
+mypy,docs
 ```
 
-Of the files, only dev, prod, py3k, and mypy have been used in the install
+Of the files, only dev, prod, and mypy have been used in the install
 scripts directly. The rest are implicit dependencies.
 
 common and dev are locked.

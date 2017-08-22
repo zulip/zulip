@@ -36,8 +36,6 @@ run ./tools/clean-repo
 
 # travis/static-analysis
 run ./tools/run-mypy
-# Not running check-py3 because it demands a clean Git worktree.
-# run ./tools/check-py3
 
 # travis/backend
 run ./tools/lint --pep8 $FORCEARG

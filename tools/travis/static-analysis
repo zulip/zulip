@@ -18,8 +18,6 @@ else
 fi
 set -x
 
-tools/check-py3
-
 # NB: Everything here should be in `tools/test-all`.  If there's a
 # reason not to run it there, it should be there as a comment
 # explaining why.
