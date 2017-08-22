@@ -2463,31 +2463,72 @@ class GetSubscribersTest(ZulipTestCase):
         Check never_subscribed streams are fetched correctly and not include invite_only streams.
         """
         realm = get_realm("zulip")
-        streams = ["stream_%s" % i for i in range(10)]
-        for stream_name in streams:
-            self.make_stream(stream_name, realm=realm)
-        users_to_subscribe = [self.example_email("othello"), self.example_email("cordelia")]
-        ret = self.common_subscribe_to_streams(
-            self.email,
-            streams,
-            dict(principals=ujson.dumps(users_to_subscribe)))
-        self.assert_json_success(ret)
-        ret = self.common_subscribe_to_streams(
-            self.email,
-            ["stream_invite_only_1"],
-            dict(principals=ujson.dumps(users_to_subscribe)),
-            invite_only=True)
-        self.assert_json_success(ret)
-        with queries_captured() as queries:
-            subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(self.user_profile)
-        self.assertTrue(len(never_subscribed) >= 10)
+        users_to_subscribe = [
+            self.example_email("othello"),
+            self.example_email("cordelia"),
+        ]
+
+        public_streams = [
+            'test_stream_public_1',
+            'test_stream_public_2',
+            'test_stream_public_3',
+            'test_stream_public_4',
+            'test_stream_public_5',
+        ]
+
+        private_streams = [
+            'test_stream_invite_only_1',
+            'test_stream_invite_only_2',
+        ]
+
+        def create_public_streams():
+            # type: () -> None
+            for stream_name in public_streams:
+                self.make_stream(stream_name, realm=realm)
+
+            ret = self.common_subscribe_to_streams(
+                self.email,
+                public_streams,
+                dict(principals=ujson.dumps(users_to_subscribe))
+            )
+            self.assert_json_success(ret)
+
+        create_public_streams()
+
+        def create_private_streams():
+            # type: () -> None
+            ret = self.common_subscribe_to_streams(
+                self.email,
+                private_streams,
+                dict(principals=ujson.dumps(users_to_subscribe)),
+                invite_only=True
+            )
+            self.assert_json_success(ret)
+
+        create_private_streams()
+
+        def get_never_subscribed():
+            # type: () -> List[Dict[str, Any]]
+            with queries_captured() as queries:
+                sub_data = gather_subscriptions_helper(self.user_profile)
+            never_subscribed = sub_data[2]
+            self.assert_length(queries, 3)
+
+            # Ignore old streams.
+            never_subscribed = [
+                dct for dct in never_subscribed
+                if dct['name'].startswith('test_')
+            ]
+            return never_subscribed
+
+        never_subscribed = get_never_subscribed()
 
         # Invite only stream should not be there in never_subscribed streams
+        self.assertEqual(len(never_subscribed), len(public_streams))
         for stream_dict in never_subscribed:
-            if stream_dict["name"].startswith("stream_"):
-                self.assertFalse(stream_dict['name'] == "stream_invite_only_1")
-                self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 3)
+            name = stream_dict['name']
+            self.assertFalse('invite_only' in name)
+            self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
 
     @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
