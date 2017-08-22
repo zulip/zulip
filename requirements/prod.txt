@@ -2,4 +2,3 @@
 netifaces==0.10.5
 python-dateutil==2.6.1
 uWSGI==2.0.14
-flup==1.0.3.dev20161029
