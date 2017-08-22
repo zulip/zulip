@@ -1,12 +1,12 @@
 The dependency graph of the requirements is as follows:
 
 ```
-dev             prod
-+ +              +
-| +->common<-----+
+dev         prod
++ +          +
+| +->common<-+
 |     |
 |     v
-|   emailmirror,socialauth
+|   socialauth
 v
 mypy,docs,py3k
 ```
