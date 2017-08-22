@@ -3,7 +3,7 @@
 # documentation.
 
 # Needed to build RTD docs
-sphinx==1.6.3
+sphinx==1.6.2
 sphinx-rtd-theme==0.2.4
 
 # Needed to build markdown docs
