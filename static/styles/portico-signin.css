@@ -621,6 +621,11 @@ button.login-google-button {
     color: hsl(156, 62%, 61%);
 }
 
+/* the /beta/ page otherwise breaks into one column from two. */
+.beta-signup-container #registration {
+    margin: 30px 0px;
+}
+
 #registration {
     width: auto;
     padding: 0;
