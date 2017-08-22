@@ -6,24 +6,39 @@ $(function () {
     });
 });
 
-function scrollbarWidth() {
-    $('body').prepend('<div id="outertest" style="width:200px; height:150px; position: absolute; top: 0; left: 0; overflow-x:hidden; overflow-y:scroll; background: #ff0000; visibility: hidden;"><div id="innertest" style="width:100%; height: 200px; overflow-y: visible;">&nbsp;</div></div>');
 
-    var scrollwidth = $("#outertest").safeOuterWidth() - $("#innertest").safeOuterWidth();
+// From https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
+function getScrollbarWidth() {
+    var outer = document.createElement("div");
+    outer.style.visibility = "hidden";
+    outer.style.width = "100px";
+    outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
 
-    $("#outertest").remove();
+    document.body.appendChild(outer);
 
-    return scrollwidth;
+    var widthNoScroll = outer.offsetWidth;
+    // force scrollbars
+    outer.style.overflow = "scroll";
+
+    // add innerdiv
+    var inner = document.createElement("div");
+    inner.style.width = "100%";
+    outer.appendChild(inner);
+
+    var widthWithScroll = inner.offsetWidth;
+
+    // remove divs
+    outer.parentNode.removeChild(outer);
+
+    return widthNoScroll - widthWithScroll;
 }
+
 
 // Workaround for browsers with fixed scrollbars
 $(function () {
-
-
-   var sbWidth = scrollbarWidth();
+   var sbWidth = getScrollbarWidth();
 
    if (sbWidth > 0) {
-
     $(".header").css("left", "-" + sbWidth + "px");
     $(".header-main").css("left", sbWidth + "px");
     $(".header-main").css("max-width", (1400 + sbWidth) + "px");
