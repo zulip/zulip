@@ -98,7 +98,10 @@ def rest_dispatch(request, **kwargs):
         elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
-            target_function = authenticated_rest_api_view()(target_function)
+            view_kwargs = {}
+            if 'allow_incoming_webhooks' in view_flags:
+                view_kwargs['is_webhook'] = True
+            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)
         # Pick a way to tell user they're not authed based on how the request was made
         else:
             # If this looks like a request from a top-level page in a

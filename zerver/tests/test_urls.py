@@ -129,6 +129,8 @@ class URLResolutionTest(TestCase):
             callback_str = self.get_callback_string(pattern)
             if callback_str and hasattr(pattern, "default_args"):
                 for func_string in pattern.default_args.values():
+                    if isinstance(func_string, tuple):
+                        func_string = func_string[0]
                     module_name, view = func_string.rsplit('.', 1)
                     self.check_function_exists(module_name, view)
 

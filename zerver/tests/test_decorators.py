@@ -35,7 +35,7 @@ from zerver.lib.validator import (
     check_variable_type, equals, check_none_or, check_url,
 )
 from zerver.models import \
-    get_realm, get_user, UserProfile, Client, Realm
+    get_realm, get_user, UserProfile, Client, Realm, Recipient
 
 import ujson
 
@@ -870,6 +870,27 @@ class InactiveUserTest(ZulipTestCase):
                                   content_type="application/json")
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
+
+class TestIncomingWebhookBot(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        zulip_realm = get_realm('zulip')
+        self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
+
+    def test_webhook_bot_permissions(self):
+        # type: () -> None
+        result = self.client_post("/api/v1/messages", {
+            "type": "private",
+            "content": "Test message",
+            "client": "test suite",
+            "to": self.example_email("othello")
+        }, **self.api_auth("webhook-bot@zulip.com"))
+        self.assert_json_success(result)
+        post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
+        result = self.client_get("/api/v1/messages", dict(post_params),
+                                 **self.api_auth("webhook-bot@zulip.com"))
+        self.assert_json_error(result, 'This API is not available to incoming webhook bots.',
+                               status_code=401)
 
 class TestValidateApiKey(ZulipTestCase):
     def setUp(self):
