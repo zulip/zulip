@@ -178,4 +178,4 @@ py3dns==3.1.0
 pyldap==2.4.37
 
 # Install Python Social Auth
--r py3_socialauth.txt
+-r socialauth.txt

@@ -6,7 +6,7 @@ dev           py3_prod
 | +->py3_common<-+
 |     |
 |     v
-|   emailmirror,py3_socialauth
+|   emailmirror,socialauth
 v
 mypy,docs,py3k
 ```
