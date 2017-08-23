@@ -232,6 +232,12 @@ class Realm(ModelReprMixin, models.Model):
             return "%s.%s" % (self.string_id, external_host)
         return external_host
 
+    def get_notifications_stream(self):
+        # type: () -> Optional[Realm]
+        if self.notifications_stream is not None and not self.notifications_stream.deactivated:
+            return self.notifications_stream
+        return None
+
     @property
     def subdomain(self):
         # type: () -> Optional[Text]

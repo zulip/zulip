@@ -12,12 +12,13 @@ from zerver.lib.actions import (
     do_change_is_admin,
     do_set_realm_property,
     do_deactivate_realm,
+    do_deactivate_stream,
 )
 
 from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
-from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail
+from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile, new_realm_name):
@@ -201,6 +202,18 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
         self.assertNotEqual(realm.notifications_stream.id, invalid_notif_stream_id)
+
+    def test_get_default_notifications_stream(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.notifications_stream = verona
+        realm.save()
+
+        notifications_stream = realm.get_notifications_stream()
+        self.assertEqual(notifications_stream, verona)
+        do_deactivate_stream(notifications_stream)
+        self.assertIsNone(realm.get_notifications_stream())
 
     def test_change_realm_default_language(self):
         # type: () -> None
