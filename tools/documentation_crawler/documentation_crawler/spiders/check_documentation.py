@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 import os
-import pathlib2
+import pathlib
 
 from typing import List
 
@@ -16,7 +16,7 @@ def get_start_url():
     start_file = os.path.join(dir_path, os.path.join(*[os.pardir] * 4),
                               "docs/_build/html/index.html")
     return [
-        pathlib2.Path(os.path.abspath(start_file)).as_uri()
+        pathlib.Path(os.path.abspath(start_file)).as_uri()
     ]
 
 
