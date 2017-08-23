@@ -12,7 +12,8 @@ if False:
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import GENERIC_CACHE_SCRIPT_PARSER, \
-    get_caches_to_be_purged, get_environment, get_recent_deployments
+    get_caches_to_be_purged, get_environment, get_recent_deployments, \
+    purge_unused_caches
 
 ENV = get_environment()
 VENV_CACHE_DIR = '/srv/zulip-venv-cache'
@@ -43,26 +44,8 @@ def get_caches_in_use(threshold_days):
 def main():
     # type: () -> None
     args = parse_args()
-
-    all_caches = set([os.path.join(VENV_CACHE_DIR, cache) for cache in os.listdir(VENV_CACHE_DIR)])
     caches_in_use = get_caches_in_use(args.threshold_days)
-    caches_to_purge = get_caches_to_be_purged(VENV_CACHE_DIR, caches_in_use, args.threshold_days)
-    caches_to_keep = all_caches - caches_to_purge
-
-    if args.dry_run:
-        print("Performing a dry run...")
-    else:
-        print("Cleaning unused venv caches...")
-
-    for cache_dir in caches_to_purge:
-        print("Cleaning unused venv %s" % (cache_dir,))
-        if not args.dry_run:
-            subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
-
-    for cache_dir in caches_to_keep:
-        print("Keeping used venv: %s" % (cache_dir,))
-
-    print("Done!\n")
+    purge_unused_caches(VENV_CACHE_DIR, caches_in_use, args.threshold_days, args.dry_run, "venv")
 
 if __name__ == "__main__":
     main()
