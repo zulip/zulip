@@ -87,6 +87,9 @@ exports.activate = function (raw_operators, opts) {
         change_hash: true,
         trigger: 'unknown',
     });
+
+    // These two narrowing operators specify what message should be
+    // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
         opts.then_select_id = parseInt(filter.operands("near")[0], 10);
         opts.select_first_unread = false;
@@ -96,8 +99,11 @@ exports.activate = function (raw_operators, opts) {
         opts.select_first_unread = false;
     }
 
+    // This block is for a case of loading a browser window for the
+    // first time in a narrow.
+    // According to old comments, this shouldn't happen anymore;
+    // more investigation is needed.
     if (opts.then_select_id === -1 && !opts.use_initial_narrow_pointer) {
-        // According to old comments, this shouldn't happen anymore
         blueslip.warn("Setting then_select_id to page_params.pointer.");
         opts.then_select_id = page_params.pointer;
         opts.select_first_unread = false;
