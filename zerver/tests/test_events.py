@@ -15,7 +15,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm,
+    Realm, Subscription
 )
 
 from zerver.lib.actions import (
@@ -1645,6 +1645,16 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(result['max_message_id'], -1)
 
     def test_unread_msgs(self):
+        def mute_stream(user_profile, stream):
+            # type: (UserProfile, Stream) -> None
+            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+            subscription = Subscription.objects.get(
+                user_profile=user_profile,
+                recipient=recipient
+            )
+            subscription.in_home_view = False
+            subscription.save()
+
         # type: () -> None
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
@@ -1659,7 +1669,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
         pm1_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello1")
         pm2_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello2")
 
+        muted_stream = self.subscribe_to_stream(user_profile.email, 'Muted Stream')
+        mute_stream(user_profile, muted_stream)
         stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
+        muted_stream_message_id = self.send_message(sender_email, "Muted Stream", Recipient.STREAM, "hello")
 
         huddle_message_id = self.send_message(sender_email,
                                               [user_profile.email, othello.email],
@@ -1673,6 +1686,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         result = get_unread_data()
 
+        # The count here reflects the count of unread messages that we will
+        # report to users in the bankruptcy dialog, and for now it excludes unread messages
+        # from muted treams, but it doesn't exclude unread messages from muted topics yet.
+        self.assertEqual(result['count'], 4)
+
         unread_pm = result['pms'][0]
         self.assertEqual(unread_pm['sender_id'], sender_id)
         self.assertEqual(unread_pm['unread_message_ids'], [pm1_message_id, pm2_message_id])
@@ -1681,6 +1699,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(unread_stream['stream_id'], get_stream('Denmark', user_profile.realm).id)
         self.assertEqual(unread_stream['topic'], 'test')
         self.assertEqual(unread_stream['unread_message_ids'], [stream_message_id])
+
+        unread_stream = result['streams'][1]
+        self.assertEqual(unread_stream['stream_id'], get_stream('Muted Stream', user_profile.realm).id)
+        self.assertEqual(unread_stream['topic'], 'test')
+        self.assertEqual(unread_stream['unread_message_ids'], [muted_stream_message_id])
 
         huddle_string = ','.join(str(uid) for uid in sorted([sender_id, user_profile.id, othello.id]))
 
