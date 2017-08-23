@@ -22,9 +22,10 @@ Copy your existing nginx configuration to a backup and then merge the
 one created by Zulip into it:
 
 ```shell
-$ sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
-$ wget https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/files/nginx/nginx.conf -O /tmp/nginx.conf.zulip
-$ sudo meld /etc/nginx/nginx.conf /tmp/nginx.conf.zulip  # be sure to merge to the right
+sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
+wget -O /tmp/nginx.conf.zulip \
+    https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/files/nginx/nginx.conf
+sudo meld /etc/nginx/nginx.conf /tmp/nginx.conf.zulip  # be sure to merge to the right
 ```
 
 After the zulip installation completes, then you can overwrite (or
