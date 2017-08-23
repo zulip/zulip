@@ -136,41 +136,12 @@ var message_store = require('js/message_store.js');
             assert.equal(message.subject, typeahead_added.subject);
         });
 
-        assert.equal(message.always_visible_topic_edit, true);
-        assert.equal(message.on_hover_topic_edit, false);
         assert.deepEqual(message.stream, [me, cindy]);
         assert.equal(message.reply_to, 'me@example.com');
         assert.deepEqual(message.flags, []);
         assert.equal(message.alerted, false);
-
-        override('compose.empty_topic_placeholder', function () {
-            return 'not_the_subject';
-        });
-
-        message = {
-            sender_id: me.user_id,
-            type: 'stream',
-            id: 2069,
-            display_recipient: [me],
-            sender_email: 'me@example.org',
-        };
-        message_store.add_message_metadata(message);
-
-        assert.equal(message.always_visible_topic_edit, false);
-        assert.equal(message.on_hover_topic_edit, true);
     });
 
-    page_params.realm_allow_message_editing = false;
-    message = {
-        sender_id: me.user_id,
-        type: 'stream',
-        id: 2070,
-        display_recipient: [me],
-        sender_email: 'me@example.org',
-    };
-    message_store.add_message_metadata(message);
-    assert.equal(message.always_visible_topic_edit, false);
-    assert.equal(message.on_hover_topic_edit, false);
 }());
 
 (function test_errors() {

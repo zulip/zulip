@@ -197,7 +197,6 @@ exports.update_messages = function update_messages(events) {
 
                 msg.subject = event.subject;
                 msg.subject_links = event.subject_links;
-                message_store.set_topic_edit_properties(msg);
 
                 // Add the recent topics entry for the new topics; must
                 // be called after we update msg.subject
