@@ -85,6 +85,22 @@ function add_display_time(group, message_container, prev) {
     }
 }
 
+function set_topic_edit_properties(group, message) {
+    group.always_visible_topic_edit = false;
+    group.on_hover_topic_edit = false;
+    if (!page_params.realm_allow_message_editing) {
+        return;
+    }
+
+    // Messages with no topics should always have an edit icon visible
+    // to encourage updating them. Admins can also edit any topic.
+    if (message.subject === compose.empty_topic_placeholder()) {
+        group.always_visible_topic_edit = true;
+    } else if (page_params.is_admin) {
+        group.on_hover_topic_edit = true;
+    }
+}
+
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
@@ -112,9 +128,9 @@ function populate_group_from_message_container(group, message_container) {
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
     }
     group.display_recipient = message_container.msg.display_recipient;
-    group.always_visible_topic_edit = message_container.msg.always_visible_topic_edit;
-    group.on_hover_topic_edit = message_container.msg.on_hover_topic_edit;
     group.subject_links = message_container.msg.subject_links;
+
+    set_topic_edit_properties(group, message_container.msg);
 
     var time = new XDate(message_container.msg.timestamp * 1000);
     var today = new XDate();
