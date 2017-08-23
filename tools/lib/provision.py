@@ -44,9 +44,6 @@ NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
 # TODO: De-duplicate this with emoji_dump.py
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if 'TRAVIS' in os.environ:
-    # In Travis CI, we don't have root access
-    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
