@@ -33,11 +33,11 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 # setup-apt-repo does an `apt-get update`
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
 
-apt-get -y dist-upgrade $APT_OPTIONS
-apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
-
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
+
+apt-get -y dist-upgrade $APT_OPTIONS
+apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
