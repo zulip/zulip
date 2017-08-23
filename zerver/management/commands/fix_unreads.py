@@ -20,6 +20,18 @@ from zerver.models import (
     UserProfile
 )
 
+def update_unread_flags(cursor, user_message_ids):
+    # type: (CursorObj, List[int]) -> None
+    um_id_list = ', '.join(str(id) for id in user_message_ids)
+    query = '''
+        UPDATE zerver_usermessage
+        SET flags = flags | 1
+        WHERE id IN (%s)
+    ''' % (um_id_list,)
+
+    cursor.execute(query)
+
+
 def get_timing(message, f):
     # type: (str, Callable) -> None
     start = time.time()
@@ -104,14 +116,7 @@ def fix_unsubscribed(cursor, user_profile):
 
     def fix():
         # type: () -> None
-        um_id_list = ', '.join(str(id) for id in user_message_ids)
-        query = '''
-            UPDATE zerver_usermessage
-            SET flags = flags | 1
-            WHERE id IN (%s)
-        ''' % (um_id_list,)
-
-        cursor.execute(query)
+        update_unread_flags(cursor, user_message_ids)
 
     get_timing(
         'fixing unread messages for non-active streams',
@@ -222,6 +227,18 @@ def fix_pre_pointer(cursor, user_profile):
     get_timing(
         'finding pre-pointer messages that are not muted',
         find_old_ids
+    )
+
+    if not user_message_ids:
+        return
+
+    def fix():
+        # type: () -> None
+        update_unread_flags(cursor, user_message_ids)
+
+    get_timing(
+        'fixing unread messages for pre-pointer non-muted messages',
+        fix
     )
 
 def fix(user_profile):
