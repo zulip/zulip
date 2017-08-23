@@ -315,6 +315,8 @@ INTEGRATIONS = {
     ),
     'codebase': Integration('codebase', 'codebase', ['version-control'],
                             doc='zerver/integrations/codebase.md'),
+    'discourse': Integration('discourse', 'discourse', ['communication'],
+                             doc='zerver/integrations/discourse.md'),
     'email': EmailIntegration('email', 'email', ['communication'],
                               doc='zerver/integrations/email.md'),
     'git': Integration('git', 'git', ['version-control'], doc='zerver/integrations/git.md'),
