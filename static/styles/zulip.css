@@ -51,6 +51,14 @@ a {
     user-select: none;
 }
 
+.auto-select {
+    -webkit-touch-callout: auto;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+}
+
 p.n-margin {
     margin: 10px 0px 0px 0px;
 }
