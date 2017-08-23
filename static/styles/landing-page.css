@@ -1602,6 +1602,7 @@ nav ul li.active::after {
 
 .portico-landing.apps .hero .info .cta {
     text-shadow: 0px 0px 60px rgba(0,0,0,0.3);
+    max-width: 600px;
 }
 
 .portico-landing.apps .hero .image img[src="/static/images/landing-page/tar.gz.svg"] {
