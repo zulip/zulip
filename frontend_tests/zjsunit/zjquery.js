@@ -66,6 +66,9 @@ exports.make_zjquery = function () {
                 };
             },
             empty: noop,
+            eq: function () {
+                return self;
+            },
             expectOne: function () {
                 // silently do nothing
                 return self;
