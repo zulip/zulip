@@ -6,6 +6,10 @@
     margin: 10px auto;
 }
 
+.subscriber_list_loading_indicator:empty {
+    margin: 0;
+}
+
 .subscription-email-hint-image {
     float: right;
     width: 80px;
