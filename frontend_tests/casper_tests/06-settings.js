@@ -49,6 +49,7 @@ casper.then(function () {
                 new_password: "qwertyuiop",
                 confirm_password: "qwertyuiop",
             });
+            casper.test.assertNotVisible("#account-settings-status");
             casper.click('button[name="change_settings"]');
         });
     });
