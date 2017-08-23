@@ -75,15 +75,12 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
         ul.attr('data-stream', my_stream_name);
 
         _.each(topic_names, function (topic_name, idx) {
-            var show_topic;
             var num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
 
-            if (zoomed) {
-                show_topic = true;
-            } else {
+            if (!zoomed) {
                 // Show the most recent topics, as well as any with unread messages
-                show_topic = (idx < max_topics) || (num_unread > 0) ||
-                             (active_topic === topic_name.toLowerCase());
+                var show_topic = (idx < max_topics) || (num_unread > 0) ||
+                                 (active_topic === topic_name.toLowerCase());
 
                 if (!show_topic) {
                     hiding_topics = true;

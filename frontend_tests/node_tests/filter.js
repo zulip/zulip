@@ -401,7 +401,7 @@ function make_sub(name, stream_id) {
         {operator: 'topic', operand: 'bar'},
     ];
     var filter = new Filter(terms);
-    predicate = filter.predicate();
+    filter.predicate();
     predicate = filter.predicate(); // get cached version
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
