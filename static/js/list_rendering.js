@@ -104,6 +104,7 @@ var list_render = (function () {
             // Needs to be enough to exceed the max height, so that a
             // scrollable area is created.
             init: function () {
+                ui.update_scrollbar($("#subscription_overlay .subscriber_list_container"));
                 this.clear();
                 this.render(DEFAULTS.INITIAL_RENDER_COUNT);
                 return this;
