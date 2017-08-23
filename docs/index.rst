@@ -132,6 +132,8 @@ Contents:
    events-system
    queuing
    bots-guide
+   outgoing-webhooks
+   slash-commands
    custom-apps
    pointer
    markdown

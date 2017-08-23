@@ -140,18 +140,16 @@ a person would be required to download zuliprc of each bot and run each of them 
 server, they would be able to download a single configuration file for all bots i.e. `flaskbotrc` and
 start the server which would enable interacting with all the bots.
 
-It's location is `api/zulip/bot_server.py`.
-
-### How to run bots using the Flask server
+### How to run bots using Zulip bot server
 
 1.  Make sure that bot with whom you want to interact has been setup and is active (lets call it bot1).
 
 2.  Download the `flaskbotrc` from the `your-bots` settings page. It contains the configuration details
     for all the active outgoing webhook bots. It's structure is very similar to that of zuliprc.
 
-3.  Install the `zulip` PyPI package using `pip`, the command for the above:
+3.  Install the `zulip_bots` and `zulip_botserver` PyPI packages using `pip`, the command for the above:
     ```
-    pip install zulip
+    pip install zulip_bots zulip_botserver
     ```
 
 4.  Run the Zulip Bot server by passing the `flaskbotrc` to it. The command format is:
@@ -186,8 +184,8 @@ It's location is `api/zulip/bot_server.py`.
 
 2.  Download the `flaskbotrc` file.
 
-3.  If you haven't installed already, install the `zulip` package using `pip` through the command:
-    `pip install zulip`
+3.  If you haven't installed already, install the required packages using `pip` through the command:
+    `pip install zulip_bots zulip_botserver`
 
 4.  Run the Zulip Bot server with the following command:
     `zulip-bot-server  --config-file <path_to_flaskbotrc>`
