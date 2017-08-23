@@ -31,14 +31,14 @@
     </div>
     <div class="message_comp compose-content">
       <div class="alert" id="send-status">
-        <span class="send-status-close">&times;</span>
+        <span class="send-status-close"><span aria-hidden="true">&times;</span></span>
         <span id="error-msg"></span>
       </div>
       <div  id="compose_invite_users" class="alert home-error-bar"></div>
       <div  id="compose-all-everyone" class="alert home-error-bar"></div>
       <div  id="out-of-view-notification" class="notification-alert"></div>
      <div class="composition-area">
-      <button type="button" class="close" id='compose_close' title="{{ _('Cancel compose') }} (Esc)">&times;</button>
+      <button type="button" class="close" id='compose_close' title="{{ _('Cancel compose') }} (Esc)"><span aria-hidden="true">&times;</span></button>
       <form id="send_message_form" action="/json/messages" method="post">
         {{ csrf_input }}
         <table class="compose_table">
