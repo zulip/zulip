@@ -51,15 +51,15 @@ exports.set_up = function () {
                 data: data,
                 success: function () {
                     if (setting_data === true) {
-                        ui_report.success(i18n.t("Enabled: __setting_name__",
+                        ui_report.success(i18n.t("Enabled: __- setting_name__",
                             context), notify_settings_status);
                     } else {
-                        ui_report.success(i18n.t("Disabled: __setting_name__",
+                        ui_report.success(i18n.t("Disabled: __- setting_name__",
                             context), notify_settings_status);
                     }
                 },
                 error: function (xhr) {
-                    ui_report.error(i18n.t('Error updating: __setting_name__',
+                    ui_report.error(i18n.t('Error updating: __- setting_name__',
                         context), xhr, notify_settings_status);
                 },
             });
