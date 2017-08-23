@@ -271,7 +271,7 @@ class Command(ZulipBaseCommand):
             fix(user_profile)
 
     def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+        # type: (*Any, **Any) -> None
         realm = self.get_realm(options)
 
         if options['all']:
