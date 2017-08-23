@@ -41,7 +41,7 @@ paths will be familiar to Django developers.
 
 ### HTML Templates
 
-See [our translating docs](translating.html) for details on Zulip's
+See [our docs](html-templates.html) for details on Zulip's
 templating systems.
 
 * `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates

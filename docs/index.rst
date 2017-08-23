@@ -147,6 +147,7 @@ Contents:
    email
    analytics
    translating
+   html-templates
    client
    logging
    release-checklist

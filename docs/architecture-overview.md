@@ -128,7 +128,8 @@ live-rendering HTML from JavaScript for things like the main message
 feed.
 
 For more details on the frontend, see our documentation on
-[templates and translation](translating.html),
+[translation](translating.html),
+[templates](html-templates.html),
 [directory structure](directory-structure.html), and
 [the static asset pipeline](front-end-build-process.html).
 
