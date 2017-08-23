@@ -309,6 +309,15 @@ i18n.t('keyWithCount', {count: 100}); // output: '100 items'
 
 For further reading on plurals, read the [official] documentation.
 
+By default, all text is escaped by i18next. To unescape a text you can use
+double-underscores followed by a dash `__-` like this:
+
+```
+i18n.t('English text with a __- variable__', {'variable': 'Variable value'});
+```
+
+For more information, you can read the official [unescape] documentation.
+
 ### Handlebars templates
 
 For translations in Handlebars templates we also use `i18n.t`, through two
@@ -378,6 +387,7 @@ organizations from the command line.
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [i18next]: http://i18next.com
 [official]: http://i18next.com/translate/pluralSimple/
+[unescape]: https://www.i18next.com/interpolation.html#unescape
 [helpers]: http://handlebarsjs.com/block_helpers.html
 [resource]: http://i18next.com/translate/
 [Transifex]: https://transifex.com
