@@ -91,7 +91,9 @@
                 <form class="form-inline">
                     <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
                     <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
-                    <input type="submit" name="add_subscriber" value="{{t 'Add' }}" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
+                    <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1 ">
+                        {{t 'Add' }}
+                    </button>
                 </form>
             </div>
             <div class="clear-float"></div>
