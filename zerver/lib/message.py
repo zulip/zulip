@@ -397,6 +397,21 @@ def get_inactive_recipient_ids(user_profile):
         for row in rows]
     return inactive_recipient_ids
 
+def get_muted_recipient_ids(user_profile):
+    # type: (UserProfile) -> List[int]
+    rows = Subscription.objects.filter(
+        user_profile=user_profile,
+        recipient__type=Recipient.STREAM,
+        active=True,
+        in_home_view=False,
+    ).values(
+        'recipient_id'
+    )
+    muted_recipient_ids = [
+        row['recipient_id']
+        for row in rows]
+    return muted_recipient_ids
+
 def get_unread_message_ids_per_recipient(user_profile):
     # type: (UserProfile) -> Dict[str, Any]
 
@@ -422,7 +437,14 @@ def get_unread_message_ids_per_recipient(user_profile):
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
 
     rows = list(reversed(user_msgs))
-    count = len(rows)
+
+    muted_recipient_ids = get_muted_recipient_ids(user_profile)
+    active_stream_rows = [
+        row for row in rows
+        if row['message__recipient_id'] not in muted_recipient_ids
+    ]
+
+    count = len(active_stream_rows)
 
     pm_msgs = [
         dict(
