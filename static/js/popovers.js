@@ -237,7 +237,7 @@ exports.actions_menu_handle_keyboard = function (key) {
     var index = items.index(items.filter(':focus'));
 
     if (key === "enter" && index >= 0 && index < items.length) {
-        return items.eq(index).trigger('click');
+        return items[index].click();
     }
     if (index === -1) {
         index = 0;
@@ -556,8 +556,9 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
         var id = $(this).attr("data-message-id");
         var row = $("[zid='" + id + "']");
-        row.find(".alert-copied").css("display", "block");
-        row.find(".alert-copied").delay(1000).fadeOut(300);
+        row.find(".alert-copied")
+            .css("display", "block")
+            .delay(1000).fadeOut(300);
 
         setTimeout(function () {
             // The Cliboard library works by focusing to a hidden textarea.
