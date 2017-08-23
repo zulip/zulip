@@ -10,7 +10,7 @@ This bot should be set up on a trusted machine, because your API
 key is visible to local users through the command line or config
 file.
 
-Next, install **version 1.0 or later** of the `twitter-python`
+Next, install **version 1.0 or later** of the `python-twitter`
 library. If your operating system distribution doesn’t package a new
 enough version, you can install the library from source from
 [the GitHub repository](https://github.com/bear/python-twitter).
