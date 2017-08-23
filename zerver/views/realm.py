@@ -16,7 +16,7 @@ from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_dict, check_bool, check_int
 from zerver.lib.streams import access_stream_by_id
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 
 
 @require_realm_admin
@@ -50,6 +50,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
     if description is not None and len(description) > 1000:
         return json_error(_("Realm description is too long."))
+    if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:
+        return json_error(_("Realm name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
 

@@ -102,6 +102,20 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.description, new_description)
 
+    def test_realm_name_length(self):
+        # type: () -> None
+        new_name = u'A' * (Realm.MAX_REALM_NAME_LENGTH + 1)
+        data = dict(name=ujson.dumps(new_name))
+
+        # create an admin user
+        email = self.example_email("iago")
+        self.login(email)
+
+        result = self.client_patch('/json/realm', data)
+        self.assert_json_error(result, 'Realm name is too long.')
+        realm = get_realm('zulip')
+        self.assertNotEqual(realm.name, new_name)
+
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
