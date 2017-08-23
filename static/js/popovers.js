@@ -237,7 +237,7 @@ exports.actions_menu_handle_keyboard = function (key) {
     var index = items.index(items.filter(':focus'));
 
     if (key === "enter" && index >= 0 && index < items.length) {
-        return items.eq(index).trigger('click');
+        return items[index].click();
     }
     if (index === -1) {
         index = 0;
