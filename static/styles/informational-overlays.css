@@ -30,6 +30,7 @@
 
 .informational-overlays .overlay-modal {
     padding-bottom: 10px;
+    outline: none;
 }
 
 .informational-overlays .overlay-modal .modal-body {
