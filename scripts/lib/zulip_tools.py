@@ -215,3 +215,24 @@ def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
         if os.path.getctime(cache_dir) < threshold_timestamp:
             caches_to_purge.add(cache_dir)
     return caches_to_purge
+
+def purge_unused_caches(caches_dir, caches_in_use, threshold_days, dry_run, cache_type):
+    # type: (Text, Set[Text], int, bool, Text) -> None
+    all_caches = set([os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)])
+    caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days)
+    caches_to_keep = all_caches - caches_to_purge
+
+    if dry_run:
+        print("Performing a dry run...")
+    else:
+        print("Cleaning unused %s caches..." % (cache_type,))
+
+    for cache_dir in caches_to_purge:
+        print("Cleaning unused %s cache: %s" % (cache_type, cache_dir))
+        if not dry_run:
+            subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
+
+    for cache_dir in caches_to_keep:
+        print("Keeping used %s cache: %s" % (cache_type, cache_dir))
+
+    print("Done!\n")
