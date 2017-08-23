@@ -16,7 +16,7 @@ These instructions are only for experts.  If you're not an experiecned
 Linux sysadmin, you will have a much better experience if you get a
 dedicated VM to install Zulip on instead (or [use zulipchat.com](https://zulipchat.com).
 
-## Nginx
+### Nginx
 
 Copy your existing nginx configuration to a backup and then merge the
 one created by Zulip into it:
@@ -40,20 +40,7 @@ Zulip's puppet configuration will change the ownership of
 `/var/log/nginx` so that the `zulip` user can access it.  Depending on
 your configuration, this may or may not cause problems.
 
-## Upstart
-
-The latest releases of Ubuntu (later than 16.04 Xenial) have
-deprecated `upstart` in favor of `systemd`.  Unfortunately,
-Ubuntu 16.04 often still has `upstart` installed, which can cause
-various services like `nginx` to not start properly (because they
-auto-detect that `upstart` is present, and try to use that, rather
-than `systemd`).  you can remove it as follows:
-
-```shell
-$ sudo apt remove upstart
-```
-
-## Puppet
+### Puppet
 
 If you have a puppet server running on your server, you will get an
 error message about not being able to connect to the client during the
@@ -70,20 +57,20 @@ $ sudo service puppet-agent stop
 $ sudo service puppet stop
 ```
 
-## Postgres
+### Postgres
 
 If you have an existing postgres database, note that Zulip will use
 the default `main` as its database name; make sure you're not using
 that.
 
-## Memcached, redis, and rabbitmq
+### Memcached, redis, and rabbitmq
 
 Zulip will, by default, configure these services for its use.  The
 configuration we use is pretty basic, but if you're using them for
 something else, you'll want to make sure the configurations are
 compatible.
 
-## No uninstall process
+### No uninstall process
 
 We don't provide a convenient way to uninstall a Zulip server.
 
