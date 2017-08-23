@@ -1560,7 +1560,7 @@ nav ul li.active::after {
     position: relative;
 
     padding: 100px 50px 50px 50px;
-    background: linear-gradient(35deg, #003b52, #45b59b);
+    background: linear-gradient(35deg, #12516a, #69b7a5);
     height: 600px;
 
     color: #fff;
@@ -1587,6 +1587,7 @@ nav ul li.active::after {
     background-image: url(/static/images/waves.svg);
     background-size: cover;
     background-repeat: no-repeat;
+    opacity: 0.3;
 }
 
 .portico-landing.apps .hero .info,
