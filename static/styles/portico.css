@@ -131,7 +131,7 @@ body {
 .help .sidebar li {
     list-style-type: circle;
     font-size: 0.95;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.7;
 
     cursor: pointer;
@@ -240,7 +240,7 @@ body {
     margin: 10px 0px;
 
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.2;
 
     color: hsl(0, 0%, 27%);
@@ -259,7 +259,7 @@ body {
 }
 
 .help-inline {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 0.9rem;
 }
 
