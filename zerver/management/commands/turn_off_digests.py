@@ -14,27 +14,17 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('-u', '--users',
-                            dest='users',
-                            type=str,
-                            help='Turn off digests for this comma-separated '
-                                 'list of email addresses.')
         self.add_realm_args(parser)
+
+        self.add_user_list_args(parser,
+                                help='Turn off digests for this comma-separated '
+                                     'list of email addresses.',
+                                all_users_help="Turn off digests for everyone in realm.")
 
     def handle(self, **options):
         # type: (**str) -> None
         realm = self.get_realm(options)
-        if realm is None and options["users"] is None:
-            self.print_help("./manage.py", "turn_off_digests")
-            exit(1)
-
-        if realm and not options["users"]:
-            user_profiles = UserProfile.objects.filter(realm=realm)
-        else:
-            emails = set([email.strip() for email in options["users"].split(",")])
-            user_profiles = []
-            for email in emails:
-                user_profiles.append(self.get_user(email, realm))
+        user_profiles = self.get_users(options, realm)
 
         print("Turned off digest emails for:")
         for user_profile in user_profiles:

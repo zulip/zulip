@@ -18,23 +18,30 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('--to', metavar='<to>', type=str,
-                            help="email of users to send the email")
         parser.add_argument('--target', metavar='<target>', type=str,
                             help="If you pass 'server' will send to everyone on server. "
                                  "If you pass 'realm' will send to everyone on realm."
                                  "Don't forget to specify the realm using -r or --realm flag.")
+        self.add_user_list_args(parser,
+                                help="Email addresses of user(s) to send password reset emails to.",
+                                all_users_arg=False)
         self.add_realm_args(parser)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
-        if options["to"] and options["target"]:
+        users = self.get_users(options, realm)
+
+        if bool(users) == bool(options["target"]):
             self.print_help("./manage.py", "send_password_reset_email")
+            print(self.style.ERROR("Please pass either --target or --users."))
             exit(1)
-        if options["to"]:
-            users = [self.get_user(options["to"], realm)]
-        elif options["target"] == "realm":
+
+        if options["target"] == "realm":
+            if realm is None:
+                self.print_help("./manage.py", "send_password_reset_email")
+                print(self.style.ERROR("Please pass the realm."))
+                exit(1)
             users = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
         elif options["target"] == "server":
