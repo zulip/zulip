@@ -133,7 +133,7 @@
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
     padding: 5px;
     font-size: 0.9em;
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 97%);
     border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 }
@@ -579,37 +579,26 @@ form#add_new_subscription {
     box-shadow: none;
 }
 
-.create-stream-title {
-    font-size: 1.5em;
+.stream-title {
+    font-size: 1.3em;
     font-weight: 600;
 }
 
 .stream-creation-info {
     font-style: italic;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .stream-creation-body section.block {
     margin-bottom: 20px;
 }
 
-.stream-creation-body #make-invite-only label span.fa-globe {
-    margin-left: 14px;
-    margin-right: 10px;
-}
-
-
-.stream-creation-body #make-invite-only label span.fa-lock {
-    margin-left: 15px;
-    margin-right: 11px;
-}
-
 .stream-creation-body #make-invite-only .radio {
-    margin-bottom: 10px;
+    margin: 5px;
 }
 
 #announce-new-stream {
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 .stream-creation-body #announce-new-stream div[class^="fa"] {
@@ -910,29 +899,35 @@ form#add_new_subscription {
     display: block;
 }
 
-#subscription_overlay .subscription_settings ul {
+#subscription_overlay .grey-box {
     margin: 0px;
-    padding: 10px;
-    background-color: hsl(0, 0%, 93%);
+    padding: 5px 10px;
+    background-color: hsl(0, 0%, 97%);
     border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
+
+    list-style-type: none;
 }
 
-#subscription_overlay .subscription_settings ul li {
+#subscription_overlay ul.grey-box li {
     border-bottom: 1px solid hsl(0, 0%, 86%);
     padding: 5px 0px;
 }
 
-#subscription_overlay .subscription_settings ul li input[type=checkbox] {
+#subscription_overlay ul.grey-box li input[type=checkbox] {
     margin-top: 0px;
 }
 
-#subscription_overlay .subscription_settings ul li:last-of-type {
+#subscription_overlay ul.grey-box li:last-of-type {
     border-bottom: none;
 }
 
-#subscription_overlay .subscription_settings ul li .sp-replacer {
+#subscription_overlay ul.grey-box li .sp-replacer {
     box-shadow: none;
+}
+
+#subscription_overlay ul.grey-box li input[type=radio] {
+    margin-right: 5px;
 }
 
 @media (max-width: 1130px) {
@@ -955,13 +950,11 @@ form#add_new_subscription {
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1033px) {
     #search_stream_name {
         display: none;
     }
-}
 
-@media (max-width: 1000px) {
     .search-container {
         text-align: center;
     }
