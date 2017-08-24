@@ -229,14 +229,15 @@ def send_signup_message(sender, signups_stream, user_profile,
         internal_blurb = " "
 
     user_count = realm_user_count(user_profile.realm)
+    notifications_stream = user_profile.realm.get_notifications_stream()
     # Send notification to realm notifications stream if it exists
     # Don't send notification for the first user in a realm
-    if user_profile.realm.notifications_stream is not None and user_count > 1:
+    if notifications_stream is not None and user_count > 1:
         internal_send_message(
             user_profile.realm,
             sender,
             "stream",
-            user_profile.realm.notifications_stream.name,
+            notifications_stream.name,
             "New users", "%s just signed up for Zulip. Say hello!" % (
                 user_profile.full_name,)
         )
