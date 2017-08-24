@@ -15,7 +15,7 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
         self.add_realm_args(parser, True)
-        self.add_user_list_args(parser)
+        self.add_user_list_args(parser, all_users_help="Add all users in realm to these streams.")
 
         parser.add_argument(
             '-s', '--streams',
@@ -24,27 +24,11 @@ class Command(ZulipBaseCommand):
             required=True,
             help='A comma-separated list of stream names.')
 
-        parser.add_argument(
-            '-a', '--all-users',
-            dest='all_users',
-            action="store_true",
-            default=False,
-            help='Add all users in this realm to these streams.')
-
     def handle(self, **options):
         # type: (**Any) -> None
         realm = self.get_realm(options)
         user_profiles = self.get_users(options, realm)
-
-        if bool(user_profiles) == options["all_users"]:
-            self.print_help("./manage.py", "add_users_to_streams")
-            exit(1)
-
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])
-
-        # If all_users flag is passed user list should not be passed and vice versa.
-        if options["all_users"]:
-            user_profiles = UserProfile.objects.filter(realm=realm)
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:
