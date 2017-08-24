@@ -1170,11 +1170,11 @@ input.new-organization-button {
 }
 
 .markdown .content {
-    padding: 30px 30px 235px 30px;
+    padding: 30px;
     max-width: 768px;
     margin-left: 0px;
 
-    min-height: calc(100% - 215px - 50px);
+    min-height: calc(100% - 60px);
 
     background: #fff;
 }
