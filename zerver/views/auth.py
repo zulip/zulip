@@ -32,7 +32,7 @@ from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
     get_realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
-    redirect_and_log_into_subdomain
+    redirect_and_log_into_subdomain, redirect_to_deactivation_notice
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled
@@ -464,6 +464,10 @@ def login_page(request, **kwargs):
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.find_my_team')
         return HttpResponseRedirect(redirect_url)
+
+    realm = get_realm_from_request(request)
+    if realm and realm.deactivated:
+        return redirect_to_deactivation_notice()
 
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():

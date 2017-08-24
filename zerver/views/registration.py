@@ -340,9 +340,25 @@ def get_realm_from_request(request):
         realm_str = None
     return get_realm(realm_str)
 
+def show_deactivation_notice(request):
+    # type: (HttpRequest) -> HttpResponse
+    realm = get_realm_from_request(request)
+    if realm and realm.deactivated:
+        return render(request, "zerver/deactivated.html",
+                      context={"deactivated_domain_name": realm.name})
+
+    return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
+
+def redirect_to_deactivation_notice():
+    # type: () -> HttpResponse
+    return HttpResponseRedirect(reverse('zerver.views.registration.show_deactivation_notice'))
+
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
     realm = get_realm_from_request(request)
+    if realm and realm.deactivated:
+        return redirect_to_deactivation_notice()
+
     if request.method == 'POST':
         form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
