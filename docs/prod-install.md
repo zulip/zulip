@@ -129,10 +129,7 @@ command](prod-maintain-secure-upgrade.html#management-commands) :
   ```
 
   This will print out a secure one-time-use link that allows creation of a
-  new Zulip organization on your server.  For most servers, you will
-  only ever do this once, but you can run `manage.py
-  generate_realm_creation_link` again if you want to host another
-  organization on your Zulip server.
+  new Zulip organization on your server.
 
 * Open the generated link with your web browser. You'll see the "Create
 organization" page ([screenshot here](_static/zulip-create-realm.png)).
