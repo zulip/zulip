@@ -90,10 +90,6 @@ def accounts_register(request):
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
         realm = prereg_user.referred_by.realm
-    elif prereg_user.realm:
-        # You have a realm set, even though nobody referred you. This
-        # happens if you sign up through a special URL for an open realm.
-        realm = prereg_user.realm
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None
@@ -275,32 +271,9 @@ def accounts_register(request):
 def create_preregistration_user(email, request, realm_creation=False,
                                 password_required=True):
     # type: (Text, HttpRequest, bool, bool) -> HttpResponse
-    realm_str = request.session.pop('realm_str', None)
-    if realm_str is not None:
-        # realm_str was set in accounts_home_with_realm_str.
-        # The user is trying to sign up for a completely open realm,
-        # so create them a PreregistrationUser for that realm
-        return PreregistrationUser.objects.create(email=email,
-                                                  realm=get_realm(realm_str),
-                                                  realm_creation=realm_creation,
-                                                  password_required=password_required)
-
     return PreregistrationUser.objects.create(email=email,
                                               realm_creation=realm_creation,
                                               password_required=password_required)
-
-def accounts_home_with_realm_str(request, realm_str):
-    # type: (HttpRequest, str) -> HttpResponse
-    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm(realm_str)):
-        # You can sign up for a completely open realm through a
-        # special registration path that contains the domain in the
-        # URL. We store this information in the session rather than
-        # elsewhere because we don't have control over URL or form
-        # data for folks registering through OpenID.
-        request.session["realm_str"] = realm_str
-        return accounts_home(request)
-    else:
-        return HttpResponseRedirect(reverse('zerver.views.registration.accounts_home'))
 
 def send_registration_completion_email(email, request, realm_creation=False):
     # type: (str, HttpRequest, bool) -> None
@@ -369,7 +342,7 @@ def get_realm_from_request(request):
     if settings.REALMS_HAVE_SUBDOMAINS:
         realm_str = get_subdomain(request)
     else:
-        realm_str = request.session.get("realm_str")
+        realm_str = None
     return get_realm(realm_str)
 
 def accounts_home(request):
