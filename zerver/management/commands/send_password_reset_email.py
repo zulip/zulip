@@ -18,35 +18,21 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('--target', metavar='<target>', type=str,
-                            help="If you pass 'server' will send to everyone on server. "
-                                 "If you pass 'realm' will send to everyone on realm."
-                                 "Don't forget to specify the realm using -r or --realm flag.")
+        parser.add_argument('--entire-server', action="store_true", default=False,
+                            help="Send to every user on the server. ")
         self.add_user_list_args(parser,
-                                help="Email addresses of user(s) to send password reset emails to.",
-                                all_users_arg=False)
+                                help="Email addresses of user(s) to send password reset emails to.")
         self.add_realm_args(parser)
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = self.get_realm(options)
-        users = self.get_users(options, realm)
-
-        if bool(users) == bool(options["target"]):
-            self.print_help("./manage.py", "send_password_reset_email")
-            print(self.style.ERROR("Please pass either --target or --users."))
-            exit(1)
-
-        if options["target"] == "realm":
-            if realm is None:
-                self.print_help("./manage.py", "send_password_reset_email")
-                print(self.style.ERROR("Please pass the realm."))
-                exit(1)
-            users = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False,
-                                               is_mirror_dummy=False)
-        elif options["target"] == "server":
+        if options["entire_server"]:
             users = UserProfile.objects.filter(is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
+        else:
+            realm = self.get_realm(options)
+            users = self.get_users(options, realm)
+
         self.send(users)
 
     def send(self, users, subject_template_name='', email_template_name='',
