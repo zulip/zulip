@@ -77,4 +77,7 @@ def create_user(email, password, realm, full_name, short_name,
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+
+    from zerver.lib.onboarding import send_initial_pms
+    send_initial_pms(user_profile)
     return user_profile
