@@ -454,7 +454,7 @@ def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     if request.user.is_authenticated:
         return HttpResponseRedirect("/")
-    if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
+    if is_subdomain_root_or_alias(request) and settings.SUBDOMAINS_HOMEPAGE:
         redirect_url = reverse('zerver.views.registration.find_my_team')
         return HttpResponseRedirect(redirect_url)
 
