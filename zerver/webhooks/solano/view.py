@@ -23,16 +23,13 @@ def api_solano_webhook(request, user_profile,
     if event == 'test':
         return handle_test_event(user_profile, request.client, stream, topic)
     try:
-        try:
-            author = payload['committers'][0]
-        except KeyError:
-            author = 'Unknown'
-        status = payload['status']
-        build_log = payload['url']
-        repository = payload['repository']['url']
-        commit_id = payload['commit_id']
-    except KeyError as e:
-        return json_error(_('Missing key {} in JSON').format(str(e)))
+        author = payload['committers'][0]
+    except KeyError:
+        author = 'Unknown'
+    status = payload['status']
+    build_log = payload['url']
+    repository = payload['repository']['url']
+    commit_id = payload['commit_id']
 
     good_status = ['passed']
     bad_status  = ['failed', 'error']
