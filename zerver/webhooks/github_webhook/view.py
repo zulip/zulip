@@ -42,14 +42,16 @@ def get_opened_or_update_pull_request_body(payload):
 def get_assigned_or_unassigned_pull_request_body(payload):
     # type: (Dict[str, Any]) -> Text
     pull_request = payload['pull_request']
-    assignee = pull_request.get('assignee', {}).get('login')
+    assignee = pull_request.get('assignee')
+    if assignee is not None:
+        assignee = assignee.get('login')
 
     base_message = get_pull_request_event_message(
         get_sender_name(payload),
         payload['action'],
         pull_request['html_url'],
     )
-    if assignee:
+    if assignee is not None:
         return "{} to {}".format(base_message, assignee)
     return base_message
 
