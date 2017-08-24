@@ -100,6 +100,7 @@ def zulip_default_context(request):
 
     return {
         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
+        'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
         'register_link_disabled': register_link_disabled,
         'login_link_disabled': login_link_disabled,
