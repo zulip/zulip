@@ -740,7 +740,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_set_default_streams(self):
         # type: () -> None
-        (realm, _) = do_create_realm("testrealm", "Test Realm")
+        realm = do_create_realm("testrealm", "Test Realm")
         stream_dict = {
             "apple": {"description": "A red fruit", "invite_only": False},
             "banana": {"description": "A yellow fruit", "invite_only": False},
@@ -757,7 +757,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_set_default_streams_no_notifications_stream(self):
         # type: () -> None
-        (realm, _) = do_create_realm("testrealm", "Test Realm")
+        realm = do_create_realm("testrealm", "Test Realm")
         realm.notifications_stream = None
         realm.save(update_fields=["notifications_stream"])
         stream_dict = {
@@ -1439,7 +1439,7 @@ class SubscriptionAPITest(ZulipTestCase):
         Calling POST /json/users/me/subscriptions in a new realm
         should notify with a proper new stream link
         """
-        (realm, _) = do_create_realm("testrealm", "Test Realm")
+        realm = do_create_realm("testrealm", "Test Realm")
 
         notifications_stream = Stream.objects.get(name='announce', realm=realm)
         realm.notifications_stream = notifications_stream

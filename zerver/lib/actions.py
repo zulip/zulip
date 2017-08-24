@@ -2321,39 +2321,40 @@ def do_change_stream_description(stream, new_description):
 
 def do_create_realm(string_id, name, restricted_to_domain=None,
                     invite_required=None, org_type=None):
-    # type: (Text, Text, Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
-    realm = get_realm(string_id)
-    created = not realm
-    if created:
-        kwargs = {}  # type: Dict[str, Any]
-        if restricted_to_domain is not None:
-            kwargs['restricted_to_domain'] = restricted_to_domain
-        if invite_required is not None:
-            kwargs['invite_required'] = invite_required
-        if org_type is not None:
-            kwargs['org_type'] = org_type
-        realm = Realm(string_id=string_id, name=name, **kwargs)
-        realm.save()
+    # type: (Text, Text, Optional[bool], Optional[bool], Optional[int]) -> Realm
+    existing_realm = get_realm(string_id)
+    if existing_realm is not None:
+        raise AssertionError("Realm %s already exists!" % (string_id,))
 
-        # Create stream once Realm object has been saved
-        notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
-        realm.notifications_stream = notifications_stream
-        realm.save(update_fields=['notifications_stream'])
+    kwargs = {}  # type: Dict[str, Any]
+    if restricted_to_domain is not None:
+        kwargs['restricted_to_domain'] = restricted_to_domain
+    if invite_required is not None:
+        kwargs['invite_required'] = invite_required
+    if org_type is not None:
+        kwargs['org_type'] = org_type
+    realm = Realm(string_id=string_id, name=name, **kwargs)
+    realm.save()
 
-        # Log the event
-        log_event({"type": "realm_created",
-                   "string_id": string_id,
-                   "restricted_to_domain": restricted_to_domain,
-                   "invite_required": invite_required,
-                   "org_type": org_type})
+    # Create stream once Realm object has been saved
+    notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+    realm.notifications_stream = notifications_stream
+    realm.save(update_fields=['notifications_stream'])
 
-        # Send a notification to the admin realm (if configured)
-        if settings.NEW_USER_BOT is not None:
-            signup_message = "Signups enabled"
-            admin_realm = get_system_bot(settings.NEW_USER_BOT).realm
-            internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
-                                  "signups", string_id, signup_message)
-    return (realm, created)
+    # Log the event
+    log_event({"type": "realm_created",
+               "string_id": string_id,
+               "restricted_to_domain": restricted_to_domain,
+               "invite_required": invite_required,
+               "org_type": org_type})
+
+    # Send a notification to the admin realm (if configured)
+    if settings.NEW_USER_BOT is not None:
+        signup_message = "Signups enabled"
+        admin_realm = get_system_bot(settings.NEW_USER_BOT).realm
+        internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
+                              "signups", string_id, signup_message)
+    return realm
 
 def do_change_notification_settings(user_profile, name, value, log=True):
     # type: (UserProfile, str, bool, bool) -> None

@@ -195,7 +195,7 @@ def accounts_register(request):
         if realm_creation:
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
-            realm = do_create_realm(string_id, realm_name)[0]
+            realm = do_create_realm(string_id, realm_name)
             setup_initial_streams(realm)
         assert(realm is not None)
 

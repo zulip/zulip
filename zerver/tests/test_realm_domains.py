@@ -121,9 +121,9 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_get_realm_by_email_domain(self):
         # type: () -> None
-        realm1, created = do_create_realm('testrealm1', 'Test Realm 1')
-        realm2, created = do_create_realm('testrealm2', 'Test Realm 2')
-        realm3, created = do_create_realm('testrealm3', 'Test Realm 3')
+        realm1 = do_create_realm('testrealm1', 'Test Realm 1')
+        realm2 = do_create_realm('testrealm2', 'Test Realm 2')
+        realm3 = do_create_realm('testrealm3', 'Test Realm 3')
 
         realm_domain_1 = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=True)
         realm_domain_2 = RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
@@ -161,8 +161,8 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_email_allowed_for_realm(self):
         # type: () -> None
-        realm1, created = do_create_realm('testrealm1', 'Test Realm 1', restricted_to_domain=True)
-        realm2, created = do_create_realm('testrealm2', 'Test Realm 2', restricted_to_domain=True)
+        realm1 = do_create_realm('testrealm1', 'Test Realm 1', restricted_to_domain=True)
+        realm2 = do_create_realm('testrealm2', 'Test Realm 2', restricted_to_domain=True)
 
         realm_domain = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=False)
         RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=True)
