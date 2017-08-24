@@ -15,7 +15,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription
+    Realm, Subscription, Stream,
 )
 
 from zerver.lib.actions import (
