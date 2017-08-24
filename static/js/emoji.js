@@ -8,6 +8,7 @@ exports.active_realm_emojis = {};
 exports.emojis_by_name = {};
 exports.emojis_name_to_css_class = {};
 exports.emojis_by_unicode = {};
+exports.default_emoji_aliases = {};
 
 var default_emojis = [];
 var default_unicode_emojis = [];
@@ -72,8 +73,13 @@ exports.initialize = function initialize() {
         default_emojis.push({emoji_name: value,
                              codepoint: emoji_codes.name_to_codepoint[value],
                              emoji_url: "/static/generated/emoji/images/emoji/unicode/" + base_name + ".png"});
-    });
 
+        if (exports.default_emoji_aliases.hasOwnProperty(base_name)) {
+            exports.default_emoji_aliases[base_name].push(value);
+        } else {
+            exports.default_emoji_aliases[base_name] = [value];
+        }
+    });
     _.each(emoji_codes.codepoints, function (value) {
         default_unicode_emojis.push({emoji_name: value,
                                      codepoint: value,
