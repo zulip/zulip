@@ -7,7 +7,8 @@ from django.contrib.auth import authenticate, login, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.core.urlresolvers import reverse
-from zerver.decorator import authenticated_json_post_view, require_post
+from zerver.decorator import authenticated_json_post_view, require_post, \
+    process_client
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.middleware.csrf import get_token
@@ -136,6 +137,11 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         # in the session. If the signal receiver assumes that we do then that
         # would cause problems.
         email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
+
+        # Mark this request as having a logged-in user for our server logs.
+        process_client(request, user_profile)
+        request._email = user_profile.email
+
         return response
 
     login(request, user_profile)
@@ -595,6 +601,11 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # in the session. If the signal receiver assumes that we do then that
     # would cause problems.
     email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
+
+    # Mark this request as having a logged-in user for our server logs.
+    process_client(request, user_profile)
+    request._email = user_profile.email
+
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 def get_auth_backends_data(request):
