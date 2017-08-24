@@ -27,7 +27,7 @@ from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ
-from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+from zerver.lib.onboarding import setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
@@ -219,8 +219,6 @@ def accounts_register(request):
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
-
-        send_initial_pms(user_profile)
 
         if realm_creation:
             setup_initial_private_stream(user_profile)
