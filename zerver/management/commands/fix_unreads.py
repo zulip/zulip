@@ -187,6 +187,9 @@ def fix_pre_pointer(cursor, user_profile):
         find_non_muted_recipients
     )
 
+    if not recipient_ids:
+        return
+
     user_message_ids = []
 
     def find_old_ids():
