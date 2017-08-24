@@ -240,9 +240,13 @@ class GithubWebhookTest(WebhookTestCase):
 
     def test_pull_request_unassigned_msg(self):
         # type: () -> None
-        expected_message = u"baxterthehacker unassigned [PR](https://github.com/baxterthehacker/public-repo/pull/1)"
-        self.send_and_test_stream_message('unassigned_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message,
-                                          HTTP_X_GITHUB_EVENT='pull_request')
+        expected_message = u"eeshangarg unassigned [PR](https://github.com/zulip-test-org/helloworld/pull/1)"
+        self.send_and_test_stream_message(
+            'unassigned_pull_request',
+            'helloworld / PR #1 Mention that Zulip rocks!',
+            expected_message,
+            HTTP_X_GITHUB_EVENT='pull_request'
+        )
 
     @patch('zerver.webhooks.github_webhook.view.check_send_message')
     def test_pull_request_labeled_ignore(self, check_send_message_mock):
