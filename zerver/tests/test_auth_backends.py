@@ -795,7 +795,7 @@ class ResponseMock(object):
         return "Response text"
 
 class GoogleOAuthTest(ZulipTestCase):
-    def google_oauth2_test(self, token_response, account_response, subdomain=None,
+    def google_oauth2_test(self, token_response, account_response, *, subdomain=None,
                            mobile_flow_otp=None, is_signup=None):
         # type: (ResponseMock, ResponseMock, Optional[str], Optional[str], Optional[str]) -> HttpResponse
         url = "/accounts/login/google/"
@@ -857,7 +857,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            result = self.google_oauth2_test(token_response, account_response, 'zulip')
+            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip')
 
         data = unsign_subdomain_cookie(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
@@ -881,15 +881,15 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
-            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
                                              mobile_flow_otp="1234")
             self.assert_json_error(result, "Invalid OTP")
-            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
                                              mobile_flow_otp="invalido" * 8)
             self.assert_json_error(result, "Invalid OTP")
 
             # Now do it correctly
-            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
                                              mobile_flow_otp=mobile_flow_otp)
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']
@@ -988,7 +988,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, 'acme')
+        result = self.google_oauth2_test(token_response, account_response, subdomain='acme')
         self.assertEqual(result.status_code, 302)
         self.assertIn('subdomain=1', result.url)
 
@@ -1030,7 +1030,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                 emails=[dict(type="account",
                                              value=email)])
             account_response = ResponseMock(200, account_data)
-            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
                                              is_signup='1')
 
             data = unsign_subdomain_cookie(result)
