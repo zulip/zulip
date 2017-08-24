@@ -18,29 +18,13 @@ class Command(ZulipBaseCommand):
 
         self.add_user_list_args(parser,
                                 help='Turn off digests for this comma-separated '
-                                     'list of email addresses.')
-
-        parser.add_argument('-a', '--all-users',
-                            dest='all_users',
-                            action="store_true",
-                            default=False,
-                            help="Turn off digests for everyone in a realm. "
-                                 "Don't forget to specify the realm.")
+                                     'list of email addresses.',
+                                all_users_help="Turn off digests for everyone in realm.")
 
     def handle(self, **options):
         # type: (**str) -> None
         realm = self.get_realm(options)
         user_profiles = self.get_users(options, realm)
-        all_users = options["all_users"]
-
-        # If all_users flag is passed user list should not be passed and vice versa.
-        # If all_users flag is passed it is manadatory to pass the realm.
-        if (bool(user_profiles) == all_users) or (all_users and not realm):
-            self.print_help("./manage.py", "turn_off_digests")
-            exit(1)
-
-        if all_users:
-            user_profiles = UserProfile.objects.filter(realm=realm)
 
         print("Turned off digest emails for:")
         for user_profile in user_profiles:

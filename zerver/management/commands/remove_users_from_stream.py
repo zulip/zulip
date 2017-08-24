@@ -20,29 +20,15 @@ class Command(ZulipBaseCommand):
                             type=str,
                             help='A stream name.')
 
-        parser.add_argument('-a', '--all-users',
-                            dest='all_users',
-                            action="store_true",
-                            default=False,
-                            help='Remove all users in this realm from this stream.')
-
         self.add_realm_args(parser, True)
-        self.add_user_list_args(parser)
+        self.add_user_list_args(parser, all_users_help='Remove all users in realm from this stream.')
 
     def handle(self, **options):
         # type: (**Any) -> None
         realm = self.get_realm(options)
         user_profiles = self.get_users(options, realm)
-
-        if bool(user_profiles) == options["all_users"]:
-            self.print_help("./manage.py", "remove_users_from_stream")
-            exit(1)
-
         stream_name = options["stream"].strip()
         stream = get_stream(stream_name, realm)
-
-        if options["all_users"]:
-            user_profiles = UserProfile.objects.filter(realm=realm)
 
         result = bulk_remove_subscriptions(user_profiles, [stream])
         not_subscribed = result[1]

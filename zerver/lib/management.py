@@ -2,6 +2,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import sys
+
 from argparse import ArgumentParser
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
@@ -31,8 +33,8 @@ You can use the command list_realms to find ID of the realms in this server."""
             type=str,
             help=help)
 
-    def add_user_list_args(self, parser, required=False, help=None):
-        # type: (ArgumentParser, bool, Optional[str]) -> None
+    def add_user_list_args(self, parser, required=False, help=None, all_users_arg=True, all_users_help=None):
+        # type: (ArgumentParser, bool, Optional[str], bool, Optional[str]) -> None
         if help is None:
             help = 'A comma-separated list of email addresses.'
 
@@ -42,6 +44,17 @@ You can use the command list_realms to find ID of the realms in this server."""
             required=required,
             type=str,
             help=help)
+
+        if all_users_arg:
+            if all_users_help is None:
+                all_users_help = "All users in realm."
+
+            parser.add_argument(
+                '-a', '--all-users',
+                dest='all_users',
+                action="store_true",
+                default=False,
+                help=all_users_help)
 
     def get_realm(self, options):
         # type: (Dict[str, Any]) -> Optional[Realm]
@@ -62,6 +75,19 @@ You can use the command list_realms to find ID of the realms in this server."""
 
     def get_users(self, options, realm):
         # type: (Dict[str, Any], Optional[Realm]) -> List[UserProfile]
+        if "all_users" in options:
+            all_users = options["all_users"]
+
+            # User should pass either user list or all_users flag
+            if bool(options["users"]) == all_users:
+                raise CommandError("You can't use both -u/--users and -a/--all-users.")
+
+            if all_users and realm is None:
+                raise CommandError("The --all-users option requires a realm; please pass --realm.")
+
+            if all_users:
+                return UserProfile.objects.filter(realm=realm)
+
         if options["users"] is None:
             return []
         emails = set([email.strip() for email in options["users"].split(",")])
