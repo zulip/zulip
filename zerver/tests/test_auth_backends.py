@@ -1118,15 +1118,17 @@ class GoogleLoginTest(GoogleOAuthTest):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "http://testserver/")
 
-    def test_google_oauth2_wrong_subdomain(self):
+    def test_google_oauth2_subdomains_homepage(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
         account_data = dict(name=dict(formatted="Full Name"),
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           SUBDOMAINS_HOMEPAGE=True):
             result = self.google_oauth2_test(token_response, account_response)
+            self.assertEqual(result.status_code, 302)
             self.assertIn('subdomain=1', result.url)
 
     def test_google_oauth2_400_token_response(self):

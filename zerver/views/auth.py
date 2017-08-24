@@ -270,7 +270,8 @@ def send_oauth_request_to_google(request):
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
 
     if settings.REALMS_HAVE_SUBDOMAINS:
-        if not subdomain or not Realm.objects.filter(string_id=subdomain).exists():
+        if ((settings.SUBDOMAINS_HOMEPAGE and subdomain == '') or
+                not Realm.objects.filter(string_id=subdomain).exists()):
             return redirect_to_subdomain_login_url()
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
