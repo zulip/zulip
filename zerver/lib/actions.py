@@ -36,6 +36,12 @@ from zerver.lib.message import (
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_message_to_archive
 from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.topic_mutes import (
+    get_topic_mutes,
+    set_topic_mutes,
+    add_topic_mute,
+    remove_topic_mute,
+)
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -3315,22 +3321,19 @@ def do_set_alert_words(user_profile, alert_words):
     notify_alert_words(user_profile, alert_words)
 
 def do_set_muted_topics(user_profile, muted_topics):
-    # type: (UserProfile, Union[List[List[Text]], List[Tuple[Text, Text]]]) -> None
-    user_profile.muted_topics = ujson.dumps(muted_topics)
-    user_profile.save(update_fields=['muted_topics'])
-    event = dict(type="muted_topics", muted_topics=muted_topics)
+    # type: (UserProfile, List[List[Text]]) -> None
+    set_topic_mutes(user_profile, muted_topics)
+    event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(event, [user_profile.id])
 
 def do_update_muted_topic(user_profile, stream, topic, op):
     # type: (UserProfile, str, str, str) -> None
-    muted_topics = ujson.loads(user_profile.muted_topics)
     if op == 'add':
-        muted_topics.append([stream, topic])
+        add_topic_mute(user_profile, stream, topic)
     elif op == 'remove':
-        muted_topics.remove([stream, topic])
-    user_profile.muted_topics = ujson.dumps(muted_topics)
-    user_profile.save(update_fields=['muted_topics'])
-    event = dict(type="muted_topics", muted_topics=muted_topics)
+        remove_topic_mute(user_profile, stream, topic)
+
+    event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(event, [user_profile.id])
 
 def do_mark_hotspot_as_read(user, hotspot):

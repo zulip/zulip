@@ -32,6 +32,9 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.topic_mutes import (
+    set_topic_mutes,
+)
 from zerver.views.messages import (
     exclude_muting_conditions,
     get_messages_backend, ok_to_include_history,
@@ -1267,8 +1270,12 @@ class GetOldMessagesTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.make_stream('web stuff')
         user_profile = self.example_user('hamlet')
-        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
-        user_profile.save()
+        muted_topics = [
+            ['Scotland', 'golf'],
+            ['web stuff', 'css'],
+            ['bogus', 'bogus']
+        ]
+        set_topic_mutes(user_profile, muted_topics)
 
         query_params = dict(
             use_first_unread_anchor='true',
@@ -1306,8 +1313,10 @@ class GetOldMessagesTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         # Test the do-nothing case first.
-        user_profile.muted_topics = ujson.dumps([['irrelevant_stream', 'irrelevant_topic']])
-        user_profile.save()
+        muted_topics = [
+            ['irrelevant_stream', 'irrelevant_topic']
+        ]
+        set_topic_mutes(user_profile, muted_topics)
 
         # If nothing relevant is muted, then exclude_muting_conditions()
         # should return an empty list.
@@ -1318,8 +1327,12 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(muting_conditions, [])
 
         # Ok, now set up our muted topics to include a topic relevant to our narrow.
-        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
-        user_profile.save()
+        muted_topics = [
+            ['Scotland', 'golf'],
+            ['web stuff', 'css'],
+            ['bogus', 'bogus']
+        ]
+        set_topic_mutes(user_profile, muted_topics)
 
         # And verify that our query will exclude them.
         narrow = [

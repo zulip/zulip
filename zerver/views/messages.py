@@ -37,6 +37,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, is_public_stream_by_name
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
@@ -542,7 +543,7 @@ def exclude_muting_conditions(user_profile, narrow):
             condition = not_(column("recipient_id").in_(muted_recipient_ids))
             conditions.append(condition)
 
-    muted_topics = ujson.loads(user_profile.muted_topics)
+    muted_topics = get_topic_mutes(user_profile)
     if muted_topics:
         if stream_name is not None:
             muted_topics = [m for m in muted_topics if m[0].lower() == stream_name]
@@ -560,7 +561,7 @@ def exclude_muting_conditions(user_profile, narrow):
 
         if muted_topics:
             def mute_cond(muted):
-                # type: (Tuple[str, str]) -> Selectable
+                # type: (List[str]) -> Selectable
                 stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
                 topic_cond = func.upper(column("subject")) == func.upper(muted[1])
                 return and_(stream_cond, topic_cond)
