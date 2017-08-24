@@ -211,7 +211,7 @@ def fix_pre_pointer(cursor, user_profile):
             )
             WHERE (
                 zerver_usermessage.user_profile_id = %s AND
-                zerver_message.id <= %s AND
+                zerver_usermessage.message_id <= %s AND
                 (zerver_usermessage.flags & 1) = 0 AND
                 zerver_message.recipient_id in (%s)
             )
