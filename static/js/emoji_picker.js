@@ -108,6 +108,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
         exports.emoji_collection[realm_emoji_name] = {
             name: realm_emoji_name,
+            aliases: [realm_emoji_name],
             is_realm_emoji: true,
             url: realm_emoji.emoji_url,
             has_reacted: false,
@@ -123,6 +124,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
                 if (!exports.emoji_collection.hasOwnProperty(emoji_name)) {
                     exports.emoji_collection[emoji_name] = {
                         name: emoji_name,
+                        aliases: emoji.default_emoji_aliases[codepoint],
                         is_realm_emoji: false,
                         css_class: codepoint,
                         has_reacted: false,
@@ -165,7 +167,9 @@ var generate_emoji_picker_content = function (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
     _.each(exports.emoji_collection, function (emoji_dict) {
-        emoji_dict.has_reacted = _.contains(emojis_used, emoji_dict.name);
+        emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
+            return _.contains(emojis_used, alias);
+        });
     });
 
     return templates.render('emoji_popover_content', {
@@ -241,12 +245,15 @@ function filter_emojis() {
             }
             var emojis = category.emojis;
             _.each(emojis, function (emoji_dict) {
-                var match = _.every(search_terms, function (search_term) {
-                    return emoji_dict.name.indexOf(search_term) >= 0;
+                _.any(emoji_dict.aliases, function (alias) {
+                    var match = _.every(search_terms, function (search_term) {
+                        return alias.indexOf(search_term) >= 0;
+                    });
+                    if (match) {
+                        search_results.push(_.extend({}, emoji_dict, {name: alias}));
+                        return true;
+                    }
                 });
-                if (match) {
-                    search_results.push(emoji_dict);
-                }
             });
         });
         var search_results_rendered = templates.render('emoji_popover_search_results', {
