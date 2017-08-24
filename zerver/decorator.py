@@ -129,7 +129,7 @@ def require_realm_admin(func):
 
 from zerver.lib.user_agent import parse_user_agent
 
-def get_client_name(request, is_json_view):
+def get_client_name(request, is_browser_view):
     # type: (HttpRequest, bool) -> Text
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
@@ -146,7 +146,7 @@ def get_client_name(request, is_json_view):
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
         # more robust to just key off whether it was a json view
-        if is_json_view and user_agent["name"] not in {"ZulipDesktop", "ZulipElectron"}:
+        if is_browser_view and user_agent["name"] not in {"ZulipDesktop", "ZulipElectron"}:
             # Avoid changing the client string for browsers Once this
             # is out to prod, we can name the field to something like
             # Browser for consistency.
@@ -157,16 +157,16 @@ def get_client_name(request, is_json_view):
         # In the future, we will require setting USER_AGENT, but for
         # now we just want to tag these requests so we can review them
         # in logs and figure out the extent of the problem
-        if is_json_view:
+        if is_browser_view:
             return "website"
         else:
             return "Unspecified"
 
-def process_client(request, user_profile, is_json_view=False, client_name=None,
+def process_client(request, user_profile, is_browser_view=False, client_name=None,
                    remote_server_request=False):
     # type: (HttpRequest, UserProfile, bool, Optional[Text], bool) -> None
     if client_name is None:
-        client_name = get_client_name(request, is_json_view)
+        client_name = get_client_name(request, is_browser_view)
 
     request.client = get_client(client_name)
     if not remote_server_request:
@@ -358,7 +358,7 @@ def add_logging_data(view_func):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         request._email = request.user.email
         request._query = view_func.__name__
-        process_client(request, request.user, is_json_view=True)
+        process_client(request, request.user, is_browser_view=True)
         return rate_limit()(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
@@ -504,7 +504,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if user_profile.is_incoming_webhook:
         raise JsonableError(_("Webhook bots can only access webhooks"))
 
-    process_client(request, user_profile, is_json_view=True)
+    process_client(request, user_profile, is_browser_view=True)
     request._email = user_profile.email
     return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 

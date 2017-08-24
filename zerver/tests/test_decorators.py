@@ -63,8 +63,8 @@ class DecoratorTestCase(TestCase):
             META=dict(),
         )
 
-        self.assertEqual(get_client_name(req, is_json_view=True), 'website')
-        self.assertEqual(get_client_name(req, is_json_view=False), 'Unspecified')
+        self.assertEqual(get_client_name(req, is_browser_view=True), 'website')
+        self.assertEqual(get_client_name(req, is_browser_view=False), 'Unspecified')
 
         req = Request(
             GET=dict(),
@@ -72,8 +72,8 @@ class DecoratorTestCase(TestCase):
             META=dict(HTTP_USER_AGENT='Mozilla/bla bla bla'),
         )
 
-        self.assertEqual(get_client_name(req, is_json_view=True), 'website')
-        self.assertEqual(get_client_name(req, is_json_view=False), 'Mozilla')
+        self.assertEqual(get_client_name(req, is_browser_view=True), 'website')
+        self.assertEqual(get_client_name(req, is_browser_view=False), 'Mozilla')
 
         req = Request(
             GET=dict(),
@@ -81,8 +81,8 @@ class DecoratorTestCase(TestCase):
             META=dict(HTTP_USER_AGENT='ZulipDesktop/bla bla bla'),
         )
 
-        self.assertEqual(get_client_name(req, is_json_view=True), 'ZulipDesktop')
-        self.assertEqual(get_client_name(req, is_json_view=False), 'ZulipDesktop')
+        self.assertEqual(get_client_name(req, is_browser_view=True), 'ZulipDesktop')
+        self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipDesktop')
 
         req = Request(
             GET=dict(client='fancy phone'),
@@ -90,8 +90,8 @@ class DecoratorTestCase(TestCase):
             META=dict(),
         )
 
-        self.assertEqual(get_client_name(req, is_json_view=True), 'fancy phone')
-        self.assertEqual(get_client_name(req, is_json_view=False), 'fancy phone')
+        self.assertEqual(get_client_name(req, is_browser_view=True), 'fancy phone')
+        self.assertEqual(get_client_name(req, is_browser_view=False), 'fancy phone')
 
     def test_REQ_converter(self):
         # type: () -> None
