@@ -955,13 +955,11 @@ form#add_new_subscription {
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1033px) {
     #search_stream_name {
         display: none;
     }
-}
 
-@media (max-width: 1000px) {
     .search-container {
         text-align: center;
     }
