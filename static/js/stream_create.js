@@ -212,9 +212,10 @@ exports.show_new_stream_modal = function () {
     $('#make-invite-only input:radio[value=public]').prop('checked', true);
 
     if (page_params.notifications_stream) {
-        $('#announce-new-stream').show();
-        $('#announce-new-stream input').prop('disabled', false);
-        $('#announce-new-stream input').prop('checked', true);
+        $('#announce-new-stream').show()
+            .find("input")
+            .prop('disabled', false)
+            .prop('checked', true);
     } else {
         $('#announce-new-stream').hide();
     }
