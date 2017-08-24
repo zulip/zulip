@@ -2330,7 +2330,7 @@ button.topic_edit_cancel {
 }
 
 .empty_feed_notice {
-    padding: 3em 4em;
+    padding: 3em 1em;
     display: none;
     text-align: center;
 }
