@@ -29,6 +29,7 @@ from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
+from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
     do_get_streams, get_default_streams_for_realm,
@@ -93,7 +94,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
             state['max_message_id'] = -1
 
     if want('muted_topics'):
-        state['muted_topics'] = ujson.loads(user_profile.muted_topics)
+        state['muted_topics'] = get_topic_mutes(user_profile)
 
     if want('pointer'):
         state['pointer'] = user_profile.pointer
