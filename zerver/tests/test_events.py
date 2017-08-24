@@ -1645,6 +1645,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(result['max_message_id'], -1)
 
     def test_unread_msgs(self):
+        # type: () -> None
         def mute_stream(user_profile, stream):
             # type: (UserProfile, Stream) -> None
             recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
@@ -1655,7 +1656,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
             subscription.in_home_view = False
             subscription.save()
 
-        # type: () -> None
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
         sender_email = cordelia.email
