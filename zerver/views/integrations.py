@@ -20,14 +20,17 @@ def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
     if settings.REALMS_HAVE_SUBDOMAINS:
         subdomain = get_subdomain(request)
-        if subdomain:
+        if subdomain or not settings.SUBDOMAINS_HOMEPAGE:
             display_subdomain = subdomain
             html_settings_links = True
         else:
             display_subdomain = 'yourZulipDomain'
             html_settings_links = False
-        external_api_path_subdomain = '%s.%s' % (display_subdomain,
-                                                 settings.EXTERNAL_API_PATH)
+        if display_subdomain != "":
+            external_api_path_subdomain = '%s.%s' % (display_subdomain,
+                                                     settings.EXTERNAL_API_PATH)
+        else:
+            external_api_path_subdomain = settings.EXTERNAL_API_PATH
     else:
         external_api_path_subdomain = settings.EXTERNAL_API_PATH
         html_settings_links = True

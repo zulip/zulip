@@ -101,6 +101,16 @@ class IntegrationTest(TestCase):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
+        self.assertEqual(context["external_api_path_subdomain"], "testserver/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://testserver/api")
+        self.assertTrue(context["html_settings_links"])
+
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
+    @override_settings(SUBDOMAINS_HOMEPAGE=True)
+    def test_api_url_view_subdomains_homepage_base(self):
+        # type: () -> None
+        context = dict()  # type: Dict[str, Any]
+        add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["external_api_path_subdomain"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
