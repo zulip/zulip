@@ -145,11 +145,10 @@ def get_client_name(request, is_browser_view):
     if user_agent is not None:
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
-        # more robust to just key off whether it was a json view
-        if is_browser_view and user_agent["name"] not in {"ZulipDesktop", "ZulipElectron"}:
-            # Avoid changing the client string for browsers Once this
-            # is out to prod, we can name the field to something like
-            # Browser for consistency.
+        # more robust to just key off whether it was a browser view
+        if is_browser_view and not user_agent["name"].startswith("Zulip"):
+            # Avoid changing the client string for browsers, but let
+            # the Zulip desktop and mobile apps be themselves.
             return "website"
         else:
             return user_agent["name"]

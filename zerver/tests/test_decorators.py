@@ -85,6 +85,15 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipDesktop')
 
         req = Request(
+            GET=dict(),
+            POST=dict(),
+            META=dict(HTTP_USER_AGENT='ZulipMobile/bla bla bla'),
+        )
+
+        self.assertEqual(get_client_name(req, is_browser_view=True), 'ZulipMobile')
+        self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipMobile')
+
+        req = Request(
             GET=dict(client='fancy phone'),
             POST=dict(),
             META=dict(),
