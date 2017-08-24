@@ -17,10 +17,7 @@ from typing import Dict, Any, Text
 def api_appfollow_webhook(request, user_profile, stream=REQ(default="appfollow"),
                           payload=REQ(argument_type="body")):
     # type: (HttpRequest, UserProfile, Text, Dict[str, Any]) -> HttpResponse
-    try:
-        message = payload["text"]
-    except KeyError:
-        return json_error(_("Missing 'text' argument in JSON"))
+    message = payload["text"]
     app_name = re.search('\A(.+)', message).group(0)
 
     check_send_message(user_profile, request.client, "stream", [stream], app_name, convert_markdown(message))

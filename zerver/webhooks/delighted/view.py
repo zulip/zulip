@@ -24,13 +24,10 @@ def api_delighted_webhook(request, user_profile,
                           stream=REQ(default='delighted'),
                           topic=REQ(default='Survey Response')):
     # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
-    try:
-        person = payload['event_data']['person']
-        selected_payload = {'email': person['email']}
-        selected_payload['score'] = payload['event_data']['score']
-        selected_payload['comment'] = payload['event_data']['comment']
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    person = payload['event_data']['person']
+    selected_payload = {'email': person['email']}
+    selected_payload['score'] = payload['event_data']['score']
+    selected_payload['comment'] = payload['event_data']['comment']
 
     BODY_TEMPLATE = body_template(selected_payload['score'])
     body = BODY_TEMPLATE.format(**selected_payload)

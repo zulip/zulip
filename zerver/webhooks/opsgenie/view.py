@@ -41,14 +41,11 @@ def api_opsgenie_webhook(request, user_profile,
     if 'message' in payload['alert']:
         info['additional_info'] += "Message: *{}*\n".format(payload['alert']['message'])
     body = ''
-    try:
-        body_template = "**OpsGenie: [Alert for {integration_name}.](https://app.opsgenie.com/alert/V2#/show/{alert_id})**\n" \
-                        "Type: *{alert_type}*\n" \
-                        "{additional_info}" \
-                        "{tags}"
-        body += body_template.format(**info)
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    body_template = "**OpsGenie: [Alert for {integration_name}.](https://app.opsgenie.com/alert/V2#/show/{alert_id})**\n" \
+                    "Type: *{alert_type}*\n" \
+                    "{additional_info}" \
+                    "{tags}"
+    body += body_template.format(**info)
     # send the message
     check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
 

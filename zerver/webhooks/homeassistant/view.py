@@ -18,10 +18,7 @@ def api_homeassistant_webhook(request, user_profile,
     # type: (HttpRequest, UserProfile, Dict[str, str], Text) -> HttpResponse
 
     # construct the body of the message
-    try:
-        body = payload["message"]
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    body = payload["message"]
 
     # set the topic to the topic parameter, if given
     if "topic" in payload:

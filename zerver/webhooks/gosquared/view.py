@@ -18,14 +18,10 @@ def api_gosquared_webhook(request, user_profile,
                           stream=REQ(default='gosquared'),
                           topic=REQ(default=None)):
     # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], Text, Text) -> HttpResponse
-    try:
-        domain_name = payload['siteDetails']['domain']
-        user_num = payload['concurrents']
-        user_acc = payload['siteDetails']['acct']
-        acc_url = 'https://www.gosquared.com/now/' + user_acc
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
-
+    domain_name = payload['siteDetails']['domain']
+    user_num = payload['concurrents']
+    user_acc = payload['siteDetails']['acct']
+    acc_url = 'https://www.gosquared.com/now/' + user_acc
     body = BODY_TEMPLATE.format(website_name=domain_name, website_url=acc_url, user_num=user_num)
     # allows for customisable topics
     if topic is None:

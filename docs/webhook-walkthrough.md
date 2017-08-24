@@ -78,24 +78,19 @@ def api_helloworld_webhook(request, user_profile,
                            topic=REQ(default='Hello World')):
     # type: (HttpRequest, UserProfile, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
 
-  # construct the body of the message
-  body = 'Hello! I am happy to be here! :smile:'
+    # construct the body of the message
+    body = 'Hello! I am happy to be here! :smile:'
 
-  # try to add the Wikipedia article of the day
-  # return appropriate error if not successful
-  try:
-      body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
-      body += body_template.format(**payload)
-  except KeyError as e:
-      return json_error(_("Missing key {} in JSON").format(str(e)))
+    # try to add the Wikipedia article of the day
+    body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
+    body += body_template.format(**payload)
 
-  # send the message
-  check_send_message(user_profile, request.client, 'stream',
-                     [stream], topic, body)
+    # send the message
+    check_send_message(user_profile, request.client, 'stream',
+                       [stream], topic, body)
 
-  # return json result
-  return json_success()
-
+    # return json result
+    return json_success()
 ```
 
 The above code imports the required functions and defines the main webhook
@@ -137,10 +132,11 @@ functions.
 
 In the body of the function we define the body of the message as `Hello! I am
 happy to be here! :smile:`. The `:smile:` indicates an emoji. Then we append a
-link to the Wikipedia article of the day as provided by the json payload. If
-the json payload does not include data for `featured_title` and `featured_url`
-we catch a `KeyError` and use `json_error` to return the appropriate
-information: a 400 http status code with relevant details.
+link to the Wikipedia article of the day as provided by the json payload.
+
+* Sometimes, it might occur that a json payload does not contain all required keys your
+  integration checks for. In such a case, any `KeyError` thrown is handled by the server
+  backend and will create an appropriate response.
 
 Then we send a public (stream) message with `check_send_message` which will
 validate the message and then send it.

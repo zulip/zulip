@@ -48,12 +48,7 @@ def api_hellosign_webhook(request, user_profile,
                           stream=REQ(default='hellosign'),
                           topic=REQ(default=None)):
     # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
-    try:
-        model_payload = ready_payload(payload['signature_request']['signatures'],
-                                      payload)
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
-
+    model_payload = ready_payload(payload['signature_request']['signatures'], payload)
     body = format_body(payload['signature_request']['signatures'], model_payload)
     topic = topic or model_payload['contract_title']
     check_send_message(user_profile, request.client, 'stream', [stream],

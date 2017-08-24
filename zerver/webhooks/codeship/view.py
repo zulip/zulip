@@ -29,12 +29,9 @@ CODESHIP_STATUS_MAPPER = {
 def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'),
                          stream=REQ(default='codeship')):
     # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
-    try:
-        payload = payload['build']
-        subject = get_subject_for_http_request(payload)
-        body = get_body_for_http_request(payload)
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    payload = payload['build']
+    subject = get_subject_for_http_request(payload)
+    body = get_body_for_http_request(payload)
 
     check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()

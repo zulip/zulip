@@ -133,11 +133,7 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
     ticket = TicketDict(ticket_data)
 
     subject = "#%s: %s" % (ticket.id, ticket.subject)
-
-    try:
-        event_info = parse_freshdesk_event(ticket.triggered_event)
-    except ValueError:
-        return json_error(_("Malformed event %s") % (ticket.triggered_event,))
+    event_info = parse_freshdesk_event(ticket.triggered_event)
 
     if event_info[1] == "created":
         content = format_freshdesk_ticket_creation_message(ticket)

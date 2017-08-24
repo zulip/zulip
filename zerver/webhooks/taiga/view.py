@@ -252,10 +252,7 @@ def parse_message(message):
 def generate_content(data):
     # type: (Mapping[str, Any]) -> str
     """ Gets the template string and formats it with parsed data. """
-    try:
-        return templates[data['type']][data['event']] % data['values']
-    except KeyError:
-        return json_error(_("Unknown message"))
+    return templates[data['type']][data['event']] % data['values']
 
 def get_owner_name(message):
     # type: (Mapping[str, Any]) -> str

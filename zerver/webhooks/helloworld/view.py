@@ -21,12 +21,8 @@ def api_helloworld_webhook(request, user_profile,
     body = 'Hello! I am happy to be here! :smile:'
 
     # try to add the Wikipedia article of the day
-    # return appropriate error if not successful
-    try:
-        body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
-        body += body_template.format(**payload)
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
+    body += body_template.format(**payload)
 
     # send the message
     check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
