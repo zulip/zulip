@@ -17,14 +17,9 @@ def api_mention_webhook(request, user_profile,
                         stream=REQ(default='mention'),
                         topic=REQ(default='news')):
     # type: (HttpRequest, UserProfile, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
-
-    try:
-        title = payload["title"]
-        source_url = payload["url"]
-        description = payload["description"]
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
-
+    title = payload["title"]
+    source_url = payload["url"]
+    description = payload["description"]
     # construct the body of the message
     body = '**[%s](%s)**:\n%s' % (title, source_url, description)
 

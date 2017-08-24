@@ -40,25 +40,21 @@ def api_greenhouse_webhook(request, user_profile,
                            payload=REQ(argument_type='body'),
                            stream=REQ(default='greenhouse'), topic=REQ(default=None)):
     # type: (HttpRequest, UserProfile, Dict[str, Any], str, str) -> HttpResponse
-    try:
-        if payload['action'] == 'update_candidate':
-            candidate = payload['payload']['candidate']
-        else:
-            candidate = payload['payload']['application']['candidate']
-        action = payload['action'].replace('_', ' ').title()
-        body = "{}\n>{} {}\nID: {}\n{}".format(
-            action,
-            candidate['first_name'],
-            candidate['last_name'],
-            str(candidate['id']),
-            message_creator(payload['action'],
-                            payload['payload']['application']))
+    if payload['action'] == 'update_candidate':
+        candidate = payload['payload']['candidate']
+    else:
+        candidate = payload['payload']['application']['candidate']
+    action = payload['action'].replace('_', ' ').title()
+    body = "{}\n>{} {}\nID: {}\n{}".format(
+        action,
+        candidate['first_name'],
+        candidate['last_name'],
+        str(candidate['id']),
+        message_creator(payload['action'],
+                        payload['payload']['application']))
 
-        if topic is None:
-            topic = "{} - {}".format(action, str(candidate['id']))
-
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    if topic is None:
+        topic = "{} - {}".format(action, str(candidate['id']))
 
     check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
     return json_success()
