@@ -95,6 +95,9 @@ i18n_urls = [
         name='django.contrib.auth.views.password_reset_confirm'),
     url(r'^accounts/password/done/$', password_reset_complete,
         {'template_name': 'zerver/reset_done.html'}),
+    url(r'^accounts/deactivated/',
+        zerver.views.registration.show_deactivation_notice,
+        name='zerver.views.registration.show_deactivation_notice'),
 
     # Avatar
     url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
