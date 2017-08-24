@@ -4,7 +4,7 @@ from typing import Any, List, Dict, Mapping, Optional, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.contrib.auth import authenticate, login, get_backends
+from django.contrib.auth import authenticate, get_backends
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
@@ -26,7 +26,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
 from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, get_user_profile_by_email, REQ
+    JsonableError, get_user_profile_by_email, REQ, do_login
 from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
@@ -247,7 +247,7 @@ def accounts_register(request):
 
         # Mark the user as having been just created, so no login email is sent
         auth_result.just_registered = True
-        login(request, auth_result)
+        do_login(request, auth_result)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home.home'))
 
     return render(

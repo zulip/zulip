@@ -3,12 +3,12 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.contrib.auth import authenticate, login, get_backends
+from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.core.urlresolvers import reverse
 from zerver.decorator import authenticated_json_post_view, require_post, \
-    process_client
+    process_client, do_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.middleware.csrf import get_token
@@ -144,7 +144,7 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
 
         return response
 
-    login(request, user_profile)
+    do_login(request, user_profile)
     if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
         return HttpResponseRedirect(user_profile.realm.uri)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
@@ -509,7 +509,7 @@ def dev_direct_login(request, **kwargs):
     user_profile = authenticate(username=email, realm_subdomain=get_subdomain(request))
     if user_profile is None:
         raise Exception("User cannot login")
-    login(request, user_profile)
+    do_login(request, user_profile)
     if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
         return HttpResponseRedirect(user_profile.realm.uri)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
@@ -546,7 +546,7 @@ def api_dev_fetch_api_key(request, username=REQ()):
     if user_profile is None:
         return json_error(_("This user is not registered."),
                           data={"reason": "unregistered"}, status=403)
-    login(request, user_profile)
+    do_login(request, user_profile)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @csrf_exempt

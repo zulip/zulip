@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
 from django.http.multipartparser import MultiPartParser
@@ -349,6 +349,15 @@ def logged_in_and_active(request):
     if request.user.realm.deactivated:
         return False
     return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
+
+def do_login(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> None
+    """Creates a session, logging in the user, using the Django method,
+    and also adds helpful data needed by our server logs.
+    """
+    django_login(request, user_profile)
+    request._email = user_profile.email
+    process_client(request, user_profile, is_browser_view=True)
 
 def add_logging_data(view_func):
     # type: (ViewFuncT) -> ViewFuncT

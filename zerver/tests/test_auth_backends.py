@@ -449,7 +449,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
-                mock.patch('zerver.views.auth.login'):
+                mock.patch('zerver.views.auth.do_login'):
             response = dict(email=self.email, name=self.name)
             result = self.backend.do_auth(response=response)
             assert(result is not None)
