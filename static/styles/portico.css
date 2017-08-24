@@ -434,15 +434,8 @@ input.text-error {
     position: relative;
 }
 
-.portico-wrap {
-    overflow: hidden;
-    min-height: 100vh;
-}
-
 .footer {
     margin: 20px;
-    position: absolute;
-    bottom: 0;
     z-index: 100;
     width: calc(100% - 40px);
 
@@ -464,12 +457,12 @@ input.text-error {
 }
 
 .footer section {
-    width: 25%;
-    max-width: 220px;
+    width: calc(25% - 40px);
+    margin: 0px 20px;
+    max-width: 150px;
 
     display: inline-block;
     vertical-align: top;
-    margin-right: -4px;
 
     text-align: left;
 }
@@ -562,10 +555,6 @@ a.bottom-signup-button {
     margin-top: 30px;
     margin-bottom: 30px;
     font-weight: 300;
-}
-
-.portico-page {
-    margin-bottom: 210px;
 }
 
 .signup-signature {
@@ -847,8 +836,7 @@ a.bottom-signup-button {
 }
 
 .register-form {
-    margin: auto;
-    width: 100%;
+    display: inline-block;
     text-align: center;
 }
 
@@ -1322,30 +1310,6 @@ input.new-organization-button {
     max-width: calc(768px + 20px);
 }
 
-@media (max-height: 678px) {
-    .portico-page {
-        /* the footer becomes two lines */
-        min-height: calc(100% - 96px);
-    }
-}
-
-@media (max-height: 600px) {
-    .password-container {
-        margin-top: 10px;
-    }
-}
-
-@media (max-width: 950px) {
-    .footer-main {
-        text-align: center;
-    }
-
-    .footer-navigation {
-        margin-left: 0px;
-    }
-
-}
-
 @media (max-width: 1000px) {
     .app.help .markdown {
         width: calc(100vw - 50px);
@@ -1398,6 +1362,28 @@ input.new-organization-button {
     }
 }
 
+@media (max-width: 950px) {
+    .footer-main {
+        text-align: center;
+    }
+
+    .footer-navigation {
+        margin-left: 0px;
+    }
+
+}
+
+@media (max-width: 815px) {
+    .footer {
+        width: 450px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .footer section {
+        width: calc(50% - 40px);
+    }
+}
+
 @media (max-width: 767px) {
     body {
         padding: 0px !important;
@@ -1414,10 +1400,6 @@ input.new-organization-button {
         box-sizing: border-box !important;
         margin-top: 10px !important;
         margin-bottom: 10px !important;
-    }
-
-    .footer {
-        height: auto;
     }
 
     .postal-envelope {
@@ -1446,6 +1428,12 @@ input.new-organization-button {
     /* this is when the .markdown .footer collapses to two lines. */
     .markdown .footer {
         margin-top: -95px;
+    }
+}
+
+@media (max-height: 600px) {
+    .password-container {
+        margin-top: 10px;
     }
 }
 
@@ -1492,6 +1480,15 @@ input.new-organization-button {
         padding: 0;
     }
 
+    .footer {
+        width: 100%;
+    }
+
+    .footer section {
+        margin: 0px 3px;
+        width: calc(50% - 8px);
+    }
+
     .app-main,
     .header-main,
     .footer-main {
@@ -1536,6 +1533,12 @@ input.new-organization-button {
         padding-right: 6px;
     }
 
+}
+
+@media (max-width: 350px) {
+    .footer section {
+        width: calc(100% - 20px);
+    }
 }
 
 @font-face {

@@ -4,14 +4,11 @@ html {
 
 .flex {
     display: flex;
-    height: calc(100vh - 135px);
+    padding: 100px 0px;
     align-items: center;
     justify-content: center;
-}
 
-.flex.full-page {
-    min-height: calc(100vh - 275px);
-    height: auto;
+    min-height: calc(100vh - 495px);
 }
 
 .m-10 {
@@ -768,7 +765,6 @@ button.login-google-button {
 @media (max-width: 795px) {
     .register-account #registration {
         padding: 10px;
-        width: calc(350px);
     }
 
     .register-page-container,
@@ -825,12 +821,6 @@ button.login-google-button {
 }
 
 @media (max-width: 500px) {
-    .flex.full-page {
-        display: block;
-        margin: 0 auto;
-        text-align: center;
-    }
-
     .new-style .get-started {
         font-size: 1.6em;
     }
