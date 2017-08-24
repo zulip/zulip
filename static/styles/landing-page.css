@@ -285,7 +285,7 @@ nav .brand-logo {
 nav ul {
     float: right;
     list-style-type: none;
-    font-weight: 500;
+    font-weight: 400;
     margin: 0;
     padding: 0;
 
@@ -948,7 +948,7 @@ nav ul li.active::after {
 
 .compare tbody tr td a {
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 400;
     text-transform: uppercase;
 }
 
@@ -1995,7 +1995,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .integration-categories-sidebar h3 {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1.1em;
 }
 
@@ -2125,7 +2125,7 @@ nav ul li.active::after {
 
 .portico-landing.integrations .integration-instruction-block .categories .integration-category {
     font-size: 0.90em;
-    font-weight: 500;
+    font-weight: 400;
     padding: 6px 10px 6px 3px;
     margin: 3px 0;
     width: 165px;
