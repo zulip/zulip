@@ -176,6 +176,14 @@ class ZulipTestCase(TestCase):
         return django_client.options(url, encoded, **kwargs)
 
     @instrument_url
+    def client_head(self, url, info={}, **kwargs):
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
+        encoded = urllib.parse.urlencode(info)
+        django_client = self.client  # see WRAPPER_COMMENT
+        self.set_http_host(kwargs)
+        return django_client.head(url, encoded, **kwargs)
+
+    @instrument_url
     def client_post(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client  # see WRAPPER_COMMENT

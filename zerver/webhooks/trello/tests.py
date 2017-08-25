@@ -9,7 +9,7 @@ class TrelloHookTests(WebhookTestCase):
 
     def test_trello_confirmation_request(self):
         # type: () -> None
-        response = self.client.head(self.build_webhook_url())
+        response = self.client_head(self.build_webhook_url())
         self.assertEqual(response.status_code, 200, response)
 
     def test_trello_webhook_when_card_was_moved_to_another_list(self):
