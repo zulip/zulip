@@ -49,7 +49,7 @@ from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
 from zerver.lib.notifications import enqueue_welcome_emails, \
     one_click_unsubscribe_link
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
-    HostRequestMock, unsign_subdomain_cookie, POSTRequestMock
+    HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -1911,7 +1911,7 @@ class MobileAuthOTPTest(ZulipTestCase):
 class LoginOrAskForRegistrationTestCase(ZulipTestCase):
     def test_confirm(self):
         # type: () -> None
-        request = POSTRequestMock({}, None)
+        request = HostRequestMock()
         email = 'new@zulip.com'
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
@@ -1929,7 +1929,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
 
     def test_invalid_subdomain(self):
         # type: () -> None
-        request = POSTRequestMock({}, None)
+        request = HostRequestMock()
         email = 'new@zulip.com'
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
@@ -1945,7 +1945,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
 
     def test_invalid_email(self):
         # type: () -> None
-        request = POSTRequestMock({}, None)
+        request = HostRequestMock()
         email = None  # type: Optional[Text]
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
@@ -1961,7 +1961,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
 
     def test_login_under_subdomains(self):
         # type: () -> None
-        request = POSTRequestMock({}, None)
+        request = HostRequestMock()
         setattr(request, 'session', self.client.session)
         user_profile = self.example_user('hamlet')
         user_profile.backend = 'zproject.backends.GitHubAuthBackend'
@@ -1981,7 +1981,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
 
     def test_login_without_subdomains(self):
         # type: () -> None
-        request = POSTRequestMock({}, None)
+        request = HostRequestMock(host="localhost")
         setattr(request, 'session', self.client.session)
         setattr(request, 'get_host', lambda: 'localhost')
         user_profile = self.example_user('hamlet')
