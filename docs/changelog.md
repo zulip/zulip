@@ -44,6 +44,14 @@ recommend
 [running these migrations manually](expensive-migrations.html) before
 starting the upgrade.
 
+* We fixed Zulip's previously buggy support for multiple organizations
+on the same Zulip server.  A consequence of doing this correctly means
+is that we require each organization to have its own subdomain.  This
+change should have no effect for the vast major of Zulip servers that
+only have one organization.  If you manage a server that hosts
+multiple organizations, you'll want to read
+[our guide on multiple organizations](prod-multiple-organizations.html).
+
 Full feature Changelog:
 
 - Simplified the process for installing a new Zulip server.

@@ -453,3 +453,7 @@ server, and suggested procedure.
 There are a large number of useful management commands under
 `zerver/management/commands/`; you can also see them listed using
 `./manage.py` with no arguments.
+
+## Hosting multiple Zulip organizations
+
+This is explained in detail on [its own page](prod-multiple-organizations.html).
