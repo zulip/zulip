@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import logging
+from zerver.lib.logging_util import create_logger
 from collections import defaultdict
 from django.db import transaction
 from django.db.models import Max
@@ -11,16 +11,7 @@ from typing import DefaultDict, List, Union, Any
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
     Subscription, Message, Recipient, UserActivity, Realm
 
-log_format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=log_format)
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.SOFT_DEACTIVATION_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-logger = logging.getLogger('zulip.soft_deactivation')
-logger.setLevel(logging.INFO)
-logger.addHandler(file_handler)
+logger = create_logger("zulip.soft_deactivation", settings.SOFT_DEACTIVATION_LOG_PATH, 'INFO')
 
 def filter_by_subscription_history(
         user_profile, all_stream_messages, all_stream_subscription_logs):

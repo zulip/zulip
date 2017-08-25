@@ -25,13 +25,14 @@ from django.core.handlers import base
 from functools import wraps
 import base64
 import datetime
-import logging
 import ujson
+import logging
 from io import BytesIO
 from six.moves import zip, urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
 from zerver.lib.str_utils import force_bytes
+from zerver.lib.logging_util import create_logger
 
 # This is a hack to ensure that RemoteZulipServer always exists even
 # if Zilencer isn't enabled.
@@ -46,16 +47,8 @@ FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 ## logger setup
-log_format = "%(asctime)s: %(message)s"
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(
-    settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-webhook_logger = logging.getLogger("zulip.zerver.webhooks")
-webhook_logger.setLevel(logging.DEBUG)
-webhook_logger.addHandler(file_handler)
+webhook_logger = create_logger(
+    "zulip.zerver.webhooks", settings.API_KEY_ONLY_WEBHOOK_LOG_PATH, 'DEBUG')
 
 class _RespondAsynchronously(object):
     pass

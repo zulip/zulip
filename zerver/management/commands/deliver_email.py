@@ -21,22 +21,13 @@ from zerver.lib.context_managers import lockfile
 from zerver.lib.send_email import send_email, EmailNotDeliveredException
 
 import time
-import logging
+from zerver.lib.logging_util import create_logger
 from datetime import datetime
 from ujson import loads
 from typing import Any
 
 ## Setup ##
-log_format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=log_format)
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.EMAIL_DELIVERER_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
+logger = create_logger(__name__, settings.EMAIL_DELIVERER_LOG_PATH, 'DEBUG')
 
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import logging
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -9,19 +8,10 @@ from django.conf import settings
 
 from zproject.backends import ZulipLDAPUserPopulator
 from zerver.models import UserProfile
+from zerver.lib.logging_util import create_logger
 
 ## Setup ##
-
-log_format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=log_format)
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.LDAP_SYNC_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(file_handler)
+logger = create_logger(__name__, settings.LDAP_SYNC_LOG_PATH, 'INFO')
 
 # Run this on a cronjob to pick up on name changes.
 def sync_ldap_user_data():
