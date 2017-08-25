@@ -67,6 +67,8 @@ stdout_logfile=/var/log/zulip/events.log         ; stdout log path, NONE for non
 stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
+stopasgroup=true              ; Without this, we leak processes every restart
+killasgroup=true              ; Without this, we leak processes every restart
 <% end %>
 
 [program:zulip_deliver_enqueued_emails]
