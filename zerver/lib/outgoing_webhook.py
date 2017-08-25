@@ -13,7 +13,7 @@ from requests import Response
 
 from django.utils.translation import ugettext as _
 
-from zerver.models import Realm, UserProfile, get_realm_by_email_domain, get_user_profile_by_id, get_client, \
+from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
 from zerver.lib.queue import queue_json_publish, retry_event
@@ -134,7 +134,7 @@ def send_response_message(bot_id, message, response_message_content):
     # type: (str, Dict[str, Any], Text) -> None
     recipient_type_name = message['type']
     bot_user = get_user_profile_by_id(bot_id)
-    realm = get_realm_by_email_domain(message['sender_email'])
+    realm = bot_user.realm
 
     if recipient_type_name == 'stream':
         recipients = [message['display_recipient']]
