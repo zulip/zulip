@@ -116,7 +116,7 @@ class ZulipTestCase(TestCase):
                 kwargs["HTTP_HOST"] = "%s.%s" % (kwargs["subdomain"], settings.EXTERNAL_HOST)
             else:
                 kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
-            del kwargs["subdomain"]
+            del kwargs['subdomain']
         elif 'HTTP_HOST' not in kwargs:
             kwargs["HTTP_HOST"] = "zulip.%s" % (settings.EXTERNAL_HOST,)
 
