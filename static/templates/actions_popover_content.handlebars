@@ -25,7 +25,7 @@
     <li>
         <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
             <i class="fa fa-minus" aria-hidden="true"></i>
-            {{t "Collapse" }} (–)
+            {{t "Collapse" }} <span class="hotkey-hint">(–)</span>
         </a>
     </li>
     {{/if}}
@@ -34,7 +34,7 @@
     <li>
         <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
             <i class="fa fa-plus" aria-hidden="true"></i>
-            {{t "Un-collapse" }} (–)
+            {{t "Un-collapse" }} <span class="hotkey-hint">(–)</span>
         </a>
     </li>
     {{/if}}
@@ -59,7 +59,7 @@
     <li>
         <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
             <i class="fa fa-eye-slash" aria-hidden="true"></i>
-            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}} (M)
+            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}} <span class="hotkey-hint">(M)</span>
         </a>
     </li>
     {{/if}}
