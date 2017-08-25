@@ -31,11 +31,11 @@ class RateLimitedObject(object):
 
     def key_fragment(self):
         # type: () -> Text
-        raise NotImplemented
+        raise NotImplementedError()
 
     def rules(self):
         # type: () -> List[Tuple[int, int]]
-        raise NotImplemented
+        raise NotImplementedError()
 
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user, domain='all'):
