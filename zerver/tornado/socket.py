@@ -152,14 +152,17 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         status_inquiries = msg['request'].get('status_inquiries')
         if status_inquiries is not None:
-            results = {}
+            results = {}  # type: Dict[str, Dict[str, str]]
             for inquiry in status_inquiries:
-                status = redis_client.hgetall(req_redis_key(inquiry))
+                status = redis_client.hgetall(req_redis_key(inquiry))  # type: Dict[bytes, bytes]
                 if len(status) == 0:
-                    status['status'] = 'not_received'
-                if 'response' in status:
-                    status['response'] = ujson.loads(status['response'])
-                results[str(inquiry)] = status
+                    result = {'status': 'not_received'}
+                elif b'response' not in status:
+                    result = {'status': status[b'status'].decode('utf-8')}
+                else:
+                    result = {'status': status[b'status'].decode('utf-8'),
+                              'response': ujson.loads(status[b'response'])}
+                results[str(inquiry)] = result
             response['response']['status_inquiries'] = results
 
         self.session.send_message(response)
