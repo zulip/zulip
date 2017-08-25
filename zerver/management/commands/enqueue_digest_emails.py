@@ -10,7 +10,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import UserProfile, Realm
-from zerver.lib.digest import inactive_since
+from zerver.lib.digest import inactive_since, should_process_digest
 
 ## Logging setup ##
 
@@ -36,13 +36,6 @@ def queue_digest_recipient(user_profile, cutoff):
     event = {"user_profile_id": user_profile.id,
              "cutoff": cutoff.strftime('%s')}
     queue_json_publish("digest_emails", event, lambda event: None)
-
-def should_process_digest(realm_str):
-    # type: (str) -> bool
-    if realm_str in settings.SYSTEM_ONLY_REALMS:
-        # Don't try to send emails to system-only realms
-        return False
-    return True
 
 class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app

@@ -51,6 +51,13 @@ def inactive_since(user_profile, cutoff):
     last_visit = max(most_recent_visit)
     return last_visit < cutoff
 
+def should_process_digest(realm_str):
+    # type: (str) -> bool
+    if realm_str in settings.SYSTEM_ONLY_REALMS:
+        # Don't try to send emails to system-only realms
+        return False
+    return True
+
 def gather_hot_conversations(user_profile, stream_messages):
     # type: (UserProfile, QuerySet) -> List[Dict[str, Any]]
     # Gather stream conversations of 2 types:
