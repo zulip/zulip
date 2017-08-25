@@ -13,7 +13,7 @@ from django.conf import settings
 from zerver.lib.notifications import build_message_list, hash_util_encode, \
     one_click_unsubscribe_link
 from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
+from zerver.models import UserProfile, UserActivity, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams, get_user_profile_by_id
 from zerver.context_processors import common_context
 
@@ -36,6 +36,20 @@ logger.addHandler(file_handler)
 # 3. New users
 # 4. Interesting stream traffic, as determined by the longest and most
 #    diversely comment upon topics.
+
+def inactive_since(user_profile, cutoff):
+    # type: (UserProfile, datetime.datetime) -> bool
+    # Hasn't used the app in the last DIGEST_CUTOFF (5) days.
+    most_recent_visit = [row.last_visit for row in
+                         UserActivity.objects.filter(
+                             user_profile=user_profile)]
+
+    if not most_recent_visit:
+        # This person has never used the app.
+        return True
+
+    last_visit = max(most_recent_visit)
+    return last_visit < cutoff
 
 def gather_hot_conversations(user_profile, stream_messages):
     # type: (UserProfile, QuerySet) -> List[Dict[str, Any]]
