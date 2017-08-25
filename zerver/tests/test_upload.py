@@ -444,9 +444,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         def create_user(email, realm_id):
             # type: (Text, Text) -> UserProfile
-            self.register(email, 'test')
+            self.register(email, 'test', subdomain=realm_id)
             return get_user(email, get_realm(realm_id))
 
+        test_subdomain = "uploadtest.example.com"
         user1_email = 'user1@uploadtest.example.com'
         user2_email = 'test-og-bot@zulip.com'
         user3_email = 'other-user@uploadtest.example.com'
@@ -460,14 +461,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         dep.realms = [get_realm("zulip")]
         dep.save()
 
-        r1 = Realm.objects.create(string_id='uploadtest.example.com', invite_required=False)
-        RealmDomain.objects.create(realm=r1, domain='uploadtest.example.com')
+        r1 = Realm.objects.create(string_id=test_subdomain, invite_required=False)
+        RealmDomain.objects.create(realm=r1, domain=test_subdomain)
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
-        create_user(user1_email, 'uploadtest.example.com')
+        create_user(user1_email, test_subdomain)
         create_user(user2_email, 'zulip')
-        create_user(user3_email, 'uploadtest.example.com')
+        create_user(user3_email, test_subdomain)
 
         # Send a message from @zulip.com -> @uploadtest.example.com
         self.login(user2_email, 'test')
@@ -486,7 +487,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             )
 
         self.login(user1_email, 'test')
-        response = self.client_get(uri)
+        response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
@@ -494,7 +495,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Confirm other cross-realm users can't read it.
         self.login(user3_email, 'test')
-        response = self.client_get(uri)
+        response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
 
