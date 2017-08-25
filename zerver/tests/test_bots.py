@@ -301,7 +301,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         realm = self.example_user('hamlet').realm
         stream = get_stream("Denmark", realm)
-        self.unsubscribe_from_stream(self.example_email('hamlet'), "Denmark", realm)
+        self.unsubscribe(self.example_user('hamlet'), "Denmark")
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
@@ -371,7 +371,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         realm = self.example_user('hamlet').realm
         stream = get_stream("Denmark", realm)
-        self.unsubscribe_from_stream(self.example_email('hamlet'), "Denmark", realm)
+        self.unsubscribe(self.example_user('hamlet'), "Denmark")
         do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
@@ -708,7 +708,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         realm = self.example_user('hamlet').realm
         stream = get_stream("Denmark", realm)
-        self.unsubscribe_from_stream(self.example_email('hamlet'), "Denmark", realm)
+        self.unsubscribe(self.example_user('hamlet'), "Denmark")
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
@@ -788,7 +788,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         realm = self.example_user('hamlet').realm
         stream = get_stream("Denmark", realm)
-        self.unsubscribe_from_stream(self.example_email('hamlet'), "Denmark", realm)
+        self.unsubscribe(self.example_user('hamlet'), "Denmark")
         do_change_stream_invite_only(stream, True)
 
         bot_info = {

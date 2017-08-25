@@ -2250,7 +2250,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         sent_message_list = []
         sent_message_list.append(send_fake_message('Test Message 3', stream))
         # Alter subscription to stream.
-        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe(long_term_idle_user, stream_name)
         send_fake_message('Test Message 4', stream)
         self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message('Test Message 5', stream))
@@ -2272,17 +2272,17 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         sent_message_list.append(send_fake_message('Test Message 6', stream))
         # Unsubscribe from stream and then immediately subscribe back again.
-        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe(long_term_idle_user, stream_name)
         self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message('Test Message 7', stream))
         # Again unsubscribe from stream and send a message.
         # This will make sure that if initially in a unsubscribed state
         # a consecutive subscribe/unsubscribe doesn't misbehave.
-        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe(long_term_idle_user, stream_name)
         send_fake_message('Test Message 8', stream)
         # Do a subscribe and unsubscribe immediately.
         self.subscribe(long_term_idle_user, stream_name)
-        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe(long_term_idle_user, stream_name)
 
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
@@ -2307,7 +2307,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         send_fake_message('Test Message 9', private_stream)
         self.subscribe(self.example_user("hamlet"), stream_name)
         sent_message_list.append(send_fake_message('Test Message 10', private_stream))
-        self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
+        self.unsubscribe(long_term_idle_user, stream_name)
         send_fake_message('Test Message 11', private_stream)
         self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message('Test Message 12', private_stream))

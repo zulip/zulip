@@ -506,10 +506,9 @@ class ZulipTestCase(TestCase):
         bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
         return stream
 
-    def unsubscribe_from_stream(self, email, stream_name, realm):
-        # type: (Text, Text, Realm) -> None
-        user_profile = get_user(email, realm)
-        stream = get_stream(stream_name, realm)
+    def unsubscribe(self, user_profile, stream_name):
+        # type: (UserProfile, Text) -> None
+        stream = get_stream(stream_name, user_profile.realm)
         bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
