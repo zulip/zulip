@@ -107,6 +107,7 @@ class ZulipTestCase(TestCase):
     functions have to fake out the linter by using a local variable called
     django_client to fool the regext.
     '''
+    DEFAULT_SUBDOMAIN = "zulip"
     DEFAULT_REALM = Realm.objects.get(string_id='zulip')
 
     def set_http_host(self, kwargs):
@@ -118,7 +119,11 @@ class ZulipTestCase(TestCase):
                 kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
             del kwargs['subdomain']
         elif 'HTTP_HOST' not in kwargs:
-            kwargs["HTTP_HOST"] = "zulip.%s" % (settings.EXTERNAL_HOST,)
+            if self.DEFAULT_SUBDOMAIN == "":
+                kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
+            else:
+                kwargs["HTTP_HOST"] = "%s.%s" % (self.DEFAULT_SUBDOMAIN,
+                                                 settings.EXTERNAL_HOST,)
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
