@@ -421,7 +421,7 @@ def test_unknown_action_no_data(self):
     # return if no params are sent. The fixture for this test is an empty file.
 
     # subscribe to the target stream
-    self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+    self.subscribe(self.test_user, self.STREAM_NAME)
 
     # post to the webhook url
     post_params = {'stream_name': self.STREAM_NAME,

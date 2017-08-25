@@ -2,6 +2,7 @@
 from typing import Text
 from six.moves import urllib
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.models import get_realm, get_user
 
 class TravisHookTests(WebhookTestCase):
     STREAM_NAME = 'travis'
@@ -31,7 +32,7 @@ class TravisHookTests(WebhookTestCase):
 
     def test_ignore_travis_pull_request_by_default(self):
         # type: () -> None
-        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.STREAM_NAME)
         result = self.client_post(
             self.url,
             self.get_body('pull_request'),

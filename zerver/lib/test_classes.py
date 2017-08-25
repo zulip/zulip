@@ -520,17 +520,17 @@ class ZulipTestCase(TestCase):
         result = self.client_post("/api/v1/users/me/subscriptions", post_data, **self.api_auth(email))
         return result
 
-    def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
-        # type: (Text, Text, Union[Text, Dict[str, Any]], Optional[Text], **Any) -> Message
+    def send_json_payload(self, user_profile, url, payload, stream_name=None, **post_params):
+        # type: (UserProfile, Text, Union[Text, Dict[str, Any]], Optional[Text], **Any) -> Message
         if stream_name is not None:
-            self.subscribe_to_stream(email, stream_name)
+            self.subscribe(user_profile, stream_name)
 
         result = self.client_post(url, payload, **post_params)
         self.assert_json_success(result)
 
         # Check the correct message was sent
         msg = self.get_last_message()
-        self.assertEqual(msg.sender.email, email)
+        self.assertEqual(msg.sender.email, user_profile.email)
         if stream_name is not None:
             self.assertEqual(get_display_recipient(msg.recipient), stream_name)
         # TODO: should also validate recipient for private messages
@@ -571,6 +571,11 @@ class WebhookTestCase(ZulipTestCase):
     URL_TEMPLATE = None  # type: Optional[Text]
     FIXTURE_DIR_NAME = None  # type: Optional[Text]
 
+    @property
+    def test_user(self):
+        # type: () -> UserProfile
+        return get_user_profile_by_email(self.TEST_USER_EMAIL)
+
     def setUp(self):
         # type: () -> None
         self.url = self.build_webhook_url()
@@ -581,7 +586,7 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
-        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+        msg = self.send_json_payload(self.test_user, self.url, payload,
                                      self.STREAM_NAME, **kwargs)
         self.do_test_subject(msg, expected_subject)
         self.do_test_message(msg, expected_message)
@@ -595,7 +600,7 @@ class WebhookTestCase(ZulipTestCase):
         if content_type is not None:
             kwargs['content_type'] = content_type
 
-        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+        msg = self.send_json_payload(self.test_user, self.url, payload,
                                      stream_name=None, **kwargs)
         self.do_test_message(msg, expected_message)
 

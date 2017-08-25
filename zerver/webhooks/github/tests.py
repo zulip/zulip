@@ -28,7 +28,7 @@ class GithubV1HookTests(WebhookTestCase):
         # We subscribe to the stream in this test, even though
         # it won't get written, to avoid failing for the wrong
         # reason.
-        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.STREAM_NAME)
 
         prior_count = Message.objects.count()
 
@@ -168,7 +168,7 @@ class GithubV2HookTests(WebhookTestCase):
         # We subscribe to the stream in this test, even though
         # it won't get written, to avoid failing for the wrong
         # reason.
-        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.STREAM_NAME)
 
         prior_count = Message.objects.count()
 

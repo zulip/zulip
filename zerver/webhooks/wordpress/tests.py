@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from six import text_type
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.models import get_realm, get_user
 
 class WordPressHookTests(WebhookTestCase):
     STREAM_NAME = 'wordpress'
@@ -73,7 +74,7 @@ class WordPressHookTests(WebhookTestCase):
         # return if no params are sent. The fixture for this test is an empty file.
 
         # subscribe to the target stream
-        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.STREAM_NAME)
 
         # post to the webhook url
         post_params = {'stream_name': self.STREAM_NAME,
@@ -89,7 +90,7 @@ class WordPressHookTests(WebhookTestCase):
         # Similar to unknown_action_no_data, except the fixture contains valid blog post
         # params but without the hook parameter. This should also return an error.
 
-        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.STREAM_NAME)
         post_params = {'stream_name': self.STREAM_NAME,
                        'content_type': 'application/x-www-form-urlencoded'}
         result = self.client_post(self.url, 'unknown_action', **post_params)
