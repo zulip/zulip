@@ -431,14 +431,25 @@ exports.navigate = function (event_name) {
     var is_filter_focused = $('.emoji-popover-filter').is(':focus');
     var next_section = 0;
     // special cases
-    if (is_filter_focused && event_name === 'down_arrow') {
-        // move down into emoji map
-        selected_emoji.focus();
-        if (current_section === 0 && current_index < 6) {
-            $(".emoji-popover-emoji-map").scrollTop(0);
+    if (is_filter_focused) {
+        // Move down into emoji map.
+        var filter_text = $(".emoji-popover-filter").val();
+        var is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text.length;
+        if (event_name === "down_arrow" ||
+           (is_cursor_at_end && event_name === "right_arrow")) {
+            selected_emoji.focus();
+            if (current_section === 0 && current_index < 6) {
+                $(".emoji-popover-emoji-map").scrollTop(0);
+            }
+            return true;
         }
-        return true;
-    } else if (current_section === 0 && current_index < 6 && event_name === 'up_arrow') {
+        if (event_name === "tab") {
+            selected_emoji.focus();
+            return true;
+        }
+        return false;
+    } else if ((current_section === 0 && current_index < 6 && event_name === 'up_arrow') ||
+               (current_section === 0 && current_index === 0 && event_name === 'left_arrow')) {
         if (selected_emoji) {
             // In this case, we're move up into the reaction
             // filter. Here, we override the default browser
@@ -455,11 +466,7 @@ exports.navigate = function (event_name) {
             return true;
         }
     } else if (event_name === 'tab') {
-        if (is_filter_focused) {
-            selected_emoji.focus();
-        } else {
-            change_focus_to_filter();
-        }
+        change_focus_to_filter();
         return true;
     } else if (event_name === 'shift_tab') {
         if (!is_filter_focused) {
