@@ -620,10 +620,8 @@ exports.set_userlist_placement = function (placement) {
     userlist_placement = placement || "right";
 };
 
-exports.compute_placement = function (elt) {
-    var popover_height = 350;
-    var popover_width = 350;
-
+exports.compute_placement = function (elt, popover_height, popover_width,
+                                      prefer_vertical_positioning) {
     var client_rect = elt.get(0).getBoundingClientRect();
     var distance_from_top = client_rect.top;
     var distance_from_bottom = message_viewport.height() - client_rect.bottom;
@@ -648,6 +646,13 @@ exports.compute_placement = function (elt) {
     if (distance_from_bottom > popover_height && elt_will_fit_horizontally) {
         placement = 'bottom';
     }
+
+    if (prefer_vertical_positioning && placement !== 'viewport_center') {
+        // If vertical positioning is prefered and the popover fits in
+        // either top or bottom position then return.
+        return placement;
+    }
+
     if (distance_from_left > popover_width && elt_will_fit_vertically) {
         placement = 'left';
     }

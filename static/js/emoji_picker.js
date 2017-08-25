@@ -2,6 +2,11 @@ var emoji_picker = (function () {
 
 var exports = {};
 
+// Emoji picker is of fixed width and height. Update these
+// whenever these values are changed in `reactions.css`.
+var APPROX_HEIGHT = 330;
+var APPROX_WIDTH = 255;
+
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
@@ -193,10 +198,10 @@ exports.render_emoji_popover = function (elt, id) {
         class: "emoji-info-popover",
         categories: get_rendered_emoji_categories(),
     };
+    var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
-        placement: popovers.compute_placement(elt) === 'viewport_center' ?
-            'right' : popovers.compute_placement(elt),
+        placement: placement === 'viewport_center' ? 'left' : placement,
         template:  templates.render('emoji_popover', template_args),
         title:     "",
         content:   generate_emoji_picker_content(id),
