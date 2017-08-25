@@ -1729,21 +1729,40 @@ class TestFindMyTeam(ZulipTestCase):
 
     def test_result(self):
         # type: () -> None
-        url = '/find_my_team/?emails=iago@zulip.com,cordelia@zulip.com'
-        result = self.client_get(url)
+        result = self.client_post('/find_my_team/',
+                                  dict(emails="iago@zulip.com,cordelia@zulip.com"))
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/find_my_team/?emails=iago%40zulip.com%2Ccordelia%40zulip.com")
+        result = self.client_get(result.url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
         self.assertIn(self.example_email("cordelia"), content)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 2)
 
     def test_find_team_ignore_invalid_email(self):
         # type: () -> None
-        url = '/find_my_team/?emails=iago@zulip.com,invalid_email'
-        result = self.client_get(url)
+        result = self.client_post('/find_my_team/',
+                                  dict(emails="iago@zulip.com,invalid_email@zulip.com"))
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/find_my_team/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com")
+        result = self.client_get(result.url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
-        self.assertNotIn("invalid_email", content)
+        self.assertIn("invalid_email@", content)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
+
+    def test_find_team_reject_invalid_email(self):
+        # type: () -> None
+        result = self.client_post('/find_my_team/',
+                                  dict(emails="invalid_string"))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(b"Enter a valid email", result.content)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
 
     def test_find_team_zero_emails(self):
         # type: () -> None
@@ -1751,6 +1770,8 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/find_my_team/', data)
         self.assertIn('This field is required', result.content.decode('utf8'))
         self.assertEqual(result.status_code, 200)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
 
     def test_find_team_one_email(self):
         # type: () -> None
@@ -1758,14 +1779,8 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
-
-    def test_find_team_multiple_emails(self):
-        # type: () -> None
-        data = {'emails': 'hamlet@zulip.com,iago@zulip.com'}
-        result = self.client_post('/find_my_team/', data)
-        self.assertEqual(result.status_code, 302)
-        expected = '/find_my_team/?emails=hamlet%40zulip.com%2Ciago%40zulip.com'
-        self.assertEqual(result.url, expected)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
 
     def test_find_team_more_than_ten_emails(self):
         # type: () -> None
@@ -1773,6 +1788,8 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
 
 class ConfirmationKeyTest(ZulipTestCase):
     def test_confirmation_key(self):
