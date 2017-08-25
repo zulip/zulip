@@ -393,6 +393,9 @@ def find_my_team(request):
     else:
         form = FindMyTeamForm()
         result = request.GET.get('emails')
+        # The below validation is perhaps unnecessary, in that we
+        # shouldn't get able to get here with an invalid email unless
+        # the user hand-edits the URLs.
         if result:
             for email in result.split(','):
                 try:

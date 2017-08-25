@@ -1765,6 +1765,10 @@ class TestFindMyTeam(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
+        # Just for coverage on perhaps-unnecessary validation code.
+        result = self.client_get('/find_my_team/?emails=invalid')
+        self.assertEqual(result.status_code, 200)
+
     def test_find_team_zero_emails(self):
         # type: () -> None
         data = {'emails': ''}
