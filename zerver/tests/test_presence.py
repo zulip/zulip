@@ -153,7 +153,8 @@ class UserPresenceTests(ZulipTestCase):
         # type: () -> None
         """Zephyr mirror realms such as MIT never get a list of users"""
         self.login(self.mit_email("espuser"))
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/users/me/presence", {'status': 'idle'},
+                                  subdomain="zephyr")
         self.assert_json_success(result)
         self.assertEqual(result.json()['presences'], {})
 
@@ -166,7 +167,8 @@ class UserPresenceTests(ZulipTestCase):
 
         def post_presence():
             # type: () -> Dict[str, Any]
-            result = self.client_post("/json/users/me/presence", {'status': 'idle'})
+            result = self.client_post("/json/users/me/presence", {'status': 'idle'},
+                                      subdomain="zephyr")
             self.assert_json_success(result)
             json = result.json()
             return json
@@ -194,7 +196,8 @@ class UserPresenceTests(ZulipTestCase):
     def test_same_realm(self):
         # type: () -> None
         self.login(self.mit_email("espuser"))
-        self.client_post("/json/users/me/presence", {'status': 'idle'})
+        self.client_post("/json/users/me/presence", {'status': 'idle'},
+                         subdomain="zephyr")
         self.logout()
 
         # Ensure we don't see hamlet@zulip.com information leakage
@@ -237,7 +240,8 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assert_json_error(result, "Presence is not supported for bot users.")
 
         self.login(self.mit_email("sipbtest"))
-        result = self.client_get("/json/users/othello@zulip.com/presence")
+        result = self.client_get("/json/users/othello@zulip.com/presence",
+                                 subdomain="zephyr")
         self.assert_json_error(result, "No such user")
 
         # Then, we check everything works
