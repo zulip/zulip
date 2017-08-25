@@ -9,6 +9,7 @@ import traceback
 from datetime import datetime, timedelta
 from django.conf import settings
 from zerver.lib.str_utils import force_bytes
+from logging import Logger
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
@@ -89,3 +90,17 @@ def skip_site_packages_logs(record):
     if 'site-packages' in record.pathname:
         return False
     return True
+
+def create_logger(log_file, log_level, name='', log_format="%(asctime)s %(levelname)-8s %(message)s"):
+    # type: (str, str, str, str) -> Logger
+    logging.basicConfig(format=log_format)
+    logger = logging.getLogger(name)
+    logger.setLevel(getattr(logging, log_level))
+
+    if log_file:
+        formatter = logging.Formatter(log_format)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger

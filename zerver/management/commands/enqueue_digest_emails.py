@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import datetime
-import logging
 
 from typing import Any, List
 
@@ -9,19 +8,11 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.digest import enqueue_emails, DIGEST_CUTOFF
+from zerver.lib.logging_util import create_logger
 
 ## Logging setup ##
-
-log_format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=log_format)
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.DIGEST_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
+logger = create_logger(settings.DIGEST_LOG_PATH,
+                       'DEBUG', name=__name__)
 
 class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app
