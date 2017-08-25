@@ -203,6 +203,7 @@ class ZulipTestCase(TestCase):
         AARON=u'AARON@zulip.com',
         aaron=u'aaron@zulip.com',
         ZOE=u'ZOE@zulip.com',
+        webhook_bot=u'webhook-bot@zulip.com',
     )
 
     mit_user_map = dict(

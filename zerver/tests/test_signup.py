@@ -40,6 +40,7 @@ from zerver.lib.send_email import send_email, send_future_email, FromAddress
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
+    do_deactivate_user,
     do_set_realm_property,
     add_new_user_history,
 )
@@ -1781,6 +1782,35 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
+
+    def test_find_team_deactivated_user(self):
+        # type: () -> None
+        do_deactivate_user(self.example_user("hamlet"))
+        data = {'emails': self.example_email("hamlet")}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
+
+    def test_find_team_deactivated_realm(self):
+        # type: () -> None
+        do_deactivate_realm(get_realm("zulip"))
+        data = {'emails': self.example_email("hamlet")}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
+
+    def test_find_team_bot_email(self):
+        # type: () -> None
+        data = {'emails': self.example_email("webhook_bot")}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/find_my_team/?emails=webhook-bot%40zulip.com')
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
 
     def test_find_team_more_than_ten_emails(self):
         # type: () -> None

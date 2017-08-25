@@ -380,7 +380,8 @@ def find_my_team(request):
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data['emails']
-            for user_profile in UserProfile.objects.filter(email__in=emails):
+            for user_profile in UserProfile.objects.filter(
+                    email__in=emails, is_active=True, is_bot=False, realm__deactivated=False):
                 send_email('zerver/emails/find_team', to_user_id=user_profile.id,
                            context={'user_profile': user_profile})
 
