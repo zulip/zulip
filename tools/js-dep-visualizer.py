@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+import subprocess
 import sys
 from collections import defaultdict
 
@@ -30,6 +31,7 @@ from tools.lib.graph import (
 
 JS_FILES_DIR = os.path.join(ROOT_DIR, 'static/js')
 OUTPUT_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
+PNG_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.png'))
 
 def get_js_edges():
     # type: () -> Tuple[EdgeSet, MethodDict]
@@ -284,8 +286,10 @@ def produce_partial_output(graph):
     graph.report()
     with open(OUTPUT_FILE_PATH, 'w') as f:
         f.write(buffer)
+    subprocess.check_call(["dot", "-Tpng", OUTPUT_FILE_PATH, "-o", PNG_FILE_PATH])
     print()
-    print('see dot file here: {}'.format(OUTPUT_FILE_PATH))
+    print('See dot file here: {}'.format(OUTPUT_FILE_PATH))
+    print('See output png file: {}'.format(PNG_FILE_PATH))
 
 def run():
     # type: () -> None
