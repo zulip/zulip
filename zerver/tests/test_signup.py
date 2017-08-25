@@ -95,21 +95,17 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated"])
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            with patch('zerver.views.registration.get_subdomain',
-                       return_value='zulip'):
-                for url in ('/register/', '/login/'):
-                    result = self.client_get(url)
-                    self.assertEqual(result.status_code, 302)
-                    self.assertIn('deactivated', result.url)
+            for url in ('/register/', '/login/'):
+                result = self.client_get(url)
+                self.assertEqual(result.status_code, 302)
+                self.assertIn('deactivated', result.url)
 
     def test_redirection_for_active_realm(self):
         # type: () -> None
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            with patch('zerver.views.registration.get_subdomain',
-                       return_value='zulip'):
-                for url in ('/register/', '/login/'):
-                    result = self.client_get(url)
-                    self.assertEqual(result.status_code, 200)
+            for url in ('/register/', '/login/'):
+                result = self.client_get(url)
+                self.assertEqual(result.status_code, 200)
 
     def test_deactivation_notice_when_realm_is_active(self):
         # type: () -> None
@@ -124,10 +120,8 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated"])
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            with patch('zerver.views.registration.get_subdomain',
-                       return_value='zulip'):
-                result = self.client_get('/accounts/deactivated/')
-                self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
+            result = self.client_get('/accounts/deactivated/')
+            self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
 
 class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self):
