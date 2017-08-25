@@ -380,3 +380,7 @@ a.no-underline {
     -moz-box-shadow: none;
     z-index: 5;
 }
+
+a.button {
+    text-decoration: none;
+}
