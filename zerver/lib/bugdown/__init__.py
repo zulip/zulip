@@ -12,6 +12,7 @@ from six.moves import urllib
 import re
 import os.path
 import glob
+import html
 import twitter
 import platform
 import time
@@ -44,9 +45,6 @@ from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
 import six
 from six.moves import range, html_parser
-
-if six.PY3:
-    import html
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -88,13 +86,6 @@ def image_preview_enabled_for_realm():
     if realm is None:
         return True
     return realm.inline_image_preview
-
-def unescape(s):
-    # type: (Text) -> (Text)
-    if six.PY2:
-        return html_parser.HTMLParser().unescape(s)
-    else:  # nocoverage since coverage.py doesn't understand else statements.
-        return html.unescape(s)
 
 def list_of_tlds():
     # type: () -> List[Text]
@@ -584,7 +575,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             image_url = user.get('profile_image_url_https', user['profile_image_url'])
             profile_img.set('src', image_url)
 
-            text = unescape(res['text'])
+            text = html.unescape(res['text'])
             urls = res.get('urls', [])
             user_mentions = res.get('user_mentions', [])
             media = res.get('media', [])  # type: List[Dict[Text, Any]]
