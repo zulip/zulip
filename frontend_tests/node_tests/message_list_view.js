@@ -12,7 +12,6 @@ set_global('page_params', {
 set_global('home_msg_list', null);
 set_global('feature_flags', {twenty_four_hour_time: false});
 set_global('people', {small_avatar_url: function () { return ''; }});
-set_global('notifications', {speaking_at_me: function () {}});
 set_global('unread', {message_unread: function () {}});
 // timerender calls setInterval when imported
 set_global('timerender', {

@@ -388,14 +388,6 @@ exports.close_notification = function (message) {
     });
 };
 
-exports.speaking_at_me = function (message) {
-    if (message === undefined) {
-        return false;
-    }
-
-    return message.mentioned_me_directly;
-};
-
 function message_is_notifiable(message) {
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
@@ -411,15 +403,19 @@ function message_is_notifiable(message) {
         return false;
     }
 
-    // @-<username> mentions take precedence over muted-ness. @all mentions
-    // are suppressed.
-    if (exports.speaking_at_me(message)) {
+    // @-<username> mentions take precedence over muted-ness. Note
+    // that @all mentions are still suppressed by muting.
+    if (message.mentioned_me_directly) {
         return true;
     }
+
+    // Messages to muted streams that don't mention us specifically
+    // are not notifiable.
     if ((message.type === "stream") &&
         !stream_data.in_home_view(message.stream_id)) {
         return false;
     }
+
     if ((message.type === "stream") &&
         muting.is_topic_muted(message.stream, message.subject)) {
         return false;
@@ -452,7 +448,7 @@ function should_send_desktop_notification(message) {
         return true;
     }
 
-    if (exports.speaking_at_me(message) &&
+    if (message.mentioned &&
         page_params.enable_desktop_notifications) {
         return true;
     }
@@ -477,7 +473,7 @@ function should_send_audible_notification(message) {
         return true;
     }
 
-    if (exports.speaking_at_me(message) && page_params.enable_sounds) {
+    if (message.mentioned && page_params.enable_sounds) {
         return true;
     }
 
