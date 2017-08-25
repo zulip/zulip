@@ -256,7 +256,7 @@ def run_subsuite(args):
     # type of Partial is different from Callable. All the methods of
     # TestResult are passed TestCase as the first argument but
     # addInstrumentation does not need it.
-    process_instrumented_calls(partial(result.addInstrumentation, None))  # type: ignore
+    process_instrumented_calls(partial(result.addInstrumentation, None))
     return subsuite_index, result.events
 
 # Monkey-patch database creation to fix unnecessary sleep(1)
@@ -365,7 +365,7 @@ class TestSuite(unittest.TestSuite):
         if getattr(result, '_testRunEntered', False) is False:
             result._testRunEntered = topLevel = True
 
-        for test in self:  # type: ignore  # Mypy cannot recognize this
+        for test in self:
             # but this is correct. Taken from unittest.
             if result.shouldStop:
                 break
@@ -503,7 +503,7 @@ def get_test_names(suite):
 
 def get_tests_from_suite(suite):
     # type: (TestSuite) -> TestCase
-    for test in suite:  # type: ignore
+    for test in suite:
         if isinstance(test, TestSuite):
             for child in get_tests_from_suite(test):
                 yield child

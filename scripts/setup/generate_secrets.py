@@ -61,7 +61,7 @@ def get_old_conf(output_filename):
     secrets_file = six.moves.configparser.RawConfigParser()
     secrets_file.read(output_filename)
 
-    return dict(secrets_file.items("secrets"))  # type: ignore # likely typeshed issue
+    return dict(secrets_file.items("secrets"))
 
 def generate_secrets(development=False):
     # type: (bool) -> None

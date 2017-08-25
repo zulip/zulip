@@ -10,7 +10,7 @@ class AbstractEnum(Enum):
     def __new__(cls):
         # type: (Type[AbstractEnum]) -> AbstractEnum
         obj = object.__new__(cls)
-        obj._value_ = len(cls.__members__) + 1  # type: ignore # typeshed enum missing Enum.__members__
+        obj._value_ = len(cls.__members__) + 1
         return obj
 
     # Override all the `Enum` methods that use `_value_`.
@@ -144,7 +144,7 @@ class JsonableError(Exception):
 
     def __str__(self):
         # type: () -> str
-        return self.msg  # type: ignore # remove once py3-only
+        return self.msg
 
 class RateLimited(PermissionDenied):
     def __init__(self, msg=""):

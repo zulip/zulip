@@ -8,28 +8,19 @@ import select
 from tornado import ioloop
 from django.conf import settings
 
-try:
-    # Tornado 2.4
-    orig_poll_impl = ioloop._poll  # type: ignore # cross-version type variation is hard for mypy
+from tornado.ioloop import IOLoop, PollIOLoop
+# There isn't a good way to get at what the underlying poll implementation
+# will be without actually constructing an IOLoop, so we just assume it will
+# be epoll.
+orig_poll_impl = select.epoll
 
-    def instrument_tornado_ioloop():
-        # type: () -> None
-        ioloop._poll = InstrumentedPoll  # type: ignore # cross-version type variation is hard for mypy
-except Exception:
-    # Tornado 3
-    from tornado.ioloop import IOLoop, PollIOLoop
-    # There isn't a good way to get at what the underlying poll implementation
-    # will be without actually constructing an IOLoop, so we just assume it will
-    # be epoll.
-    orig_poll_impl = select.epoll
+class InstrumentedPollIOLoop(PollIOLoop):
+    def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
+        super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
 
-    class InstrumentedPollIOLoop(PollIOLoop):
-        def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
-            super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
-
-    def instrument_tornado_ioloop():
-        # type: () -> None
-        IOLoop.configure(InstrumentedPollIOLoop)
+def instrument_tornado_ioloop():
+    # type: () -> None
+    IOLoop.configure(InstrumentedPollIOLoop)
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.

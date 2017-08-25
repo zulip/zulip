@@ -150,7 +150,7 @@ def block_internet():
                         "https://zulip.readthedocs.io/en/latest/testing.html#internet-access-inside-test-suits")
 
     httplib2.Http.request = internet_guard
-    requests.request = internet_guard  # type: ignore # mypy bug; see our #6017
+    requests.request = internet_guard
 
 if __name__ == "__main__":
     block_internet()

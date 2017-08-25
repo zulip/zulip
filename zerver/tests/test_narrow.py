@@ -8,7 +8,7 @@ from django.test import override_settings
 from sqlalchemy.sql import (
     and_, select, column, table,
 )
-from sqlalchemy.sql import compiler  # type: ignore
+from sqlalchemy.sql import compiler
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
@@ -50,7 +50,7 @@ import ujson
 
 def get_sqlalchemy_query_params(query):
     # type: (Text) -> Dict[Text, Text]
-    dialect = get_sqlalchemy_connection().dialect  # type: ignore
+    dialect = get_sqlalchemy_connection().dialect
     comp = compiler.SQLCompiler(dialect, query)
     return comp.params
 

@@ -24,7 +24,7 @@ def environment(**options):
         'minified_js': minified_js,
     })
 
-    env.install_gettext_translations(translation, True)  # type: ignore # https://github.com/python/typeshed/issues/927
+    env.install_gettext_translations(translation, True)
 
     env.filters['slugify'] = slugify
     env.filters['pluralize'] = pluralize

@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     suite = loader.discover(start_dir=tools_test_dir, top_level_dir=root_dir)
     runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite)  # type: ignore # https://github.com/python/typeshed/issues/372
+    result = runner.run(suite)
     if result.errors or result.failures:
         raise Exception('Test failed!')
 
