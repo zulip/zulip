@@ -32,6 +32,10 @@ def get_caches_in_use(threshold_days):
 
     if ENV == "prod":
         setups_to_check |= get_recent_deployments(threshold_days)
+    if ENV == "dev":
+        CACHE_SYMLINK = os.path.join(os.path.dirname(ZULIP_PATH), "zulip-py3-venv")
+        CURRENT_CACHE = os.path.dirname(os.path.realpath(CACHE_SYMLINK))
+        caches_in_use.add(CURRENT_CACHE)
 
     for path in setups_to_check:
         for filename in os.listdir(os.path.join(path, "requirements")):
