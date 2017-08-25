@@ -28,7 +28,7 @@ function populate_streams(streams_data) {
         filter: {
             element: streams_table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
-                return item.name.toLowerCase().match(value);
+                return item.name.toLowerCase().indexOf(value) >= 0;
             },
         },
     }).init();
@@ -53,7 +53,7 @@ exports.build_default_stream_table = function (streams_data) {
         filter: {
             element: table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
-                return item.name.toLowerCase().match(value);
+                return item.name.toLowerCase().indexOf(value) >= 0;
             },
         },
     }).init();

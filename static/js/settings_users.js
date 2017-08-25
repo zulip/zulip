@@ -120,8 +120,8 @@ function populate_users(realm_people_data) {
             element: $bots_table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
                 return (
-                    item.full_name.toLowerCase().match(value) ||
-                    item.email.toLowerCase().match(value)
+                    item.full_name.toLowerCase().indexOf(value) >= 0 ||
+                    item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
         },
@@ -154,8 +154,8 @@ function populate_users(realm_people_data) {
             element: $users_table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
                 return (
-                    item.full_name.toLowerCase().match(value) ||
-                    item.email.toLowerCase().match(value)
+                    item.full_name.toLowerCase().indexOf(value) >= 0 ||
+                    item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
         },
@@ -171,8 +171,8 @@ function populate_users(realm_people_data) {
             element: $deactivated_users_table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
                 return (
-                    item.full_name.toLowerCase().match(value) ||
-                    item.email.toLowerCase().match(value)
+                    item.full_name.toLowerCase().indexOf(value) >= 0 ||
+                    item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
         },

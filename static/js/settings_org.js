@@ -146,7 +146,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
         filter: {
             element: search_input,
             callback: function (item, value) {
-                return item.name.toLowerCase().match(value);
+                return item.name.toLowerCase().indexOf(value) >= 0;
             },
         },
     }).init();

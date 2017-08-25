@@ -38,7 +38,7 @@ var list_render = (function () {
                         return callback(item, value);
                     }
 
-                    return !!item.toLocaleLowerCase().match(value);
+                    return !!(item.toLocaleLowerCase().indexOf(value) >= 0);
                 });
             },
         };
