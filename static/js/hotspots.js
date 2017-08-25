@@ -137,7 +137,12 @@ function place_popover(hotspot) {
     var popover_offset;
     var arrow_placement;
     var orientation = hotspot.location.popover ||
-        popovers.compute_placement($(hotspot.location.element));
+        popovers.compute_placement(
+            $(hotspot.location.element),
+            popover_height,
+            popover_width,
+            false
+        );
 
     switch (orientation) {
         case TOP:
