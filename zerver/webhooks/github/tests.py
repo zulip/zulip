@@ -40,7 +40,7 @@ class GithubV1HookTests(WebhookTestCase):
 
     def get_body(self, fixture_name):
         # type: (Text) -> Dict[str, Text]
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        api_key = self.test_user.api_key
         data = ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, 'v1_' + fixture_name))
         data.update({'email': self.TEST_USER_EMAIL,
                      'api-key': api_key,
@@ -180,7 +180,7 @@ class GithubV2HookTests(WebhookTestCase):
 
     def get_body(self, fixture_name):
         # type: (Text) -> Dict[str, Text]
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        api_key = self.test_user.api_key
         data = ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, 'v2_' + fixture_name))
         data.update({'email': self.TEST_USER_EMAIL,
                      'api-key': api_key,

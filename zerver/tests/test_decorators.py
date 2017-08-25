@@ -689,9 +689,9 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         do_deactivate_realm(get_realm("zulip"))
-        email = self.example_email("hamlet")
-        api_key = self.get_api_key(email)
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        user_profile = self.example_user("hamlet")
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (
+            user_profile.api_key,)
         data = self.fixture_data('jira', "created_v2")
         result = self.client_post(url, data,
                                   content_type="application/json")
@@ -869,11 +869,10 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
         do_deactivate_user(user_profile)
 
-        api_key = self.get_api_key(email)
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (
+            user_profile.api_key,)
         data = self.fixture_data('jira', "created_v2")
         result = self.client_post(url, data,
                                   content_type="application/json")

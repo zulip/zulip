@@ -560,7 +560,7 @@ class WebhookTestCase(ZulipTestCase):
     @property
     def test_user(self):
         # type: () -> UserProfile
-        return get_user_profile_by_email(self.TEST_USER_EMAIL)
+        return get_user(self.TEST_USER_EMAIL, get_realm("zulip"))
 
     def setUp(self):
         # type: () -> None
@@ -596,7 +596,7 @@ class WebhookTestCase(ZulipTestCase):
         # type: (*Any, **Any) -> Text
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
-            api_key = self.get_api_key(self.TEST_USER_EMAIL)
+            api_key = self.test_user.api_key
             url = self.URL_TEMPLATE.format(api_key=api_key,
                                            stream=self.STREAM_NAME)
         else:
