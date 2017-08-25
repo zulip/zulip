@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import logging
 import os
 import sys
-import optparse
+import argparse
 import subprocess
 
 from linter_lib.printer import print_err, colors
@@ -40,26 +40,29 @@ def run_parallel(lint_functions):
 
 def run():
     # type: () -> None
-    parser = optparse.OptionParser()
-    parser.add_option('--force', default=False,
-                      action="store_true",
-                      help='Run tests despite possible problems.')
-    parser.add_option('--full',
-                      action='store_true',
-                      help='Check some things we typically ignore')
-    parser.add_option('--pep8',
-                      action='store_true',
-                      help='Run the pep8 checker')
-    parser.add_option('--no-gitlint',
-                      action='store_true',
-                      help='Disable gitlint')
-    parser.add_option('--modified', '-m',
-                      action='store_true',
-                      help='Only check modified files')
-    parser.add_option('--verbose', '-v',
-                      action='store_true',
-                      help='Print verbose timing output')
-    (options, args) = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--force', default=False,
+                        action="store_true",
+                        help='Run tests despite possible problems.')
+    parser.add_argument('--full',
+                        action='store_true',
+                        help='Check some things we typically ignore')
+    parser.add_argument('--pep8',
+                        action='store_true',
+                        help='Run the pep8 checker')
+    parser.add_argument('--no-gitlint',
+                        action='store_true',
+                        help='Disable gitlint')
+    parser.add_argument('--modified', '-m',
+                        action='store_true',
+                        help='Only check modified files')
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        help='Print verbose timing output')
+    parser.add_argument('targets',
+                        nargs='*',
+                        help='Specify directories to check')
+    args = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(tools_dir)
@@ -76,7 +79,7 @@ def run():
 
     os.chdir(root_dir)
 
-    if not options.force:
+    if not args.force:
         ok, msg = get_provisioning_status()
         if not ok:
             print(msg)
@@ -84,7 +87,7 @@ def run():
             sys.exit(1)
 
     by_lang = cast(Dict[str, List[str]],
-                   lister.list_files(args, modified_only=options.modified,
+                   lister.list_files(args.targets, modified_only=args.modified,
                                      ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars',
                                              'html', 'json', 'md', 'txt', 'text', 'yaml'],
                                      use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
@@ -94,7 +97,7 @@ def run():
 
     logging.basicConfig(format="%(asctime)s %(message)s")
     logger = logging.getLogger()
-    if options.verbose:
+    if args.verbose:
         logger.setLevel(logging.INFO)
     else:
         logger.setLevel(logging.WARNING)
@@ -154,7 +157,7 @@ def run():
     external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
 
     # gitlint disabled until we can stabilize it more
-    # if not options.no_gitlint:
+    # if not args.no_gitlint:
     #     external_linter('commit_messages', ['tools/commit-message-lint'])
 
     @lint
@@ -172,10 +175,10 @@ def run():
     @lint
     def pyflakes():
         # type: () -> int
-        failed = check_pyflakes(options, by_lang)
+        failed = check_pyflakes(args, by_lang)
         return 1 if failed else 0
 
-    if options.pep8:
+    if args.pep8:
         @lint
         def pep8():
             # type: () -> int
