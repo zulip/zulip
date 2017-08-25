@@ -16,10 +16,10 @@ if [ -z "$changed_files" ]; then
 fi
 
 if [ -z "$VIRTUAL_ENV" ] && `which vagrant > /dev/null` && [ -e .vagrant ]; then
-    vcmd="/srv/zulip/tools/lint --pep8 --no-gitlint --force $changed_files || true"
+    vcmd="/srv/zulip/tools/lint --no-gitlint --force $changed_files || true"
     echo "Running lint using vagrant..."
     vagrant ssh -c "$vcmd"
 else
-    ./tools/lint --pep8 --no-gitlint --force $changed_files || true
+    ./tools/lint --no-gitlint --force $changed_files || true
 fi
 exit 0
