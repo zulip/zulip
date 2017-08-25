@@ -104,6 +104,7 @@ WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE
 if CASPER_TESTS:
     # Don't auto-restart Tornado server during casper tests
     AUTORELOAD = False
+    REALMS_HAVE_SUBDOMAINS = True
 else:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
@@ -123,7 +124,6 @@ LOCAL_UPLOADS_DIR = 'var/test_uploads'
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
-REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'

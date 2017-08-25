@@ -3,16 +3,8 @@ var common = require('../casper_lib/common.js').common;
 var email = 'alice@test.example.com';
 var subdomain = 'testsubdomain';
 var organization_name = 'Awesome Organization';
-var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
-var host;
-var realm_host;
-
-if (REALMS_HAVE_SUBDOMAINS) {
-    host = 'zulipdev.com:9981';
-    realm_host = subdomain + '.' + host;
-} else {
-    host = realm_host = 'localhost:9981';
-}
+var host = "zulipdev.com:9981";
+var realm_host = "testsubdomain" + '.' + host;
 
 casper.start('http://' + host + '/create_realm/');
 

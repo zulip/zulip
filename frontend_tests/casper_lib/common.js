@@ -1,5 +1,4 @@
 var util = require("util");
-var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 var common = (function () {
 
 var exports = {};
@@ -102,12 +101,7 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    var log_in_url = "";
-    if (REALMS_HAVE_SUBDOMAINS) {
-        log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
-    } else {
-        log_in_url = "http://zulipdev.com:9981/accounts/login";
-    }
+    var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
     exports.init_viewport();
     casper.start(log_in_url, function () {
         exports.initialize_casper(viewport);

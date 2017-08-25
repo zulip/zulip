@@ -1,6 +1,5 @@
 var common = require('../casper_lib/common.js').common;
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
-var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 var OUTGOING_WEBHOOK_BOT_TYPE = '3';
 
 common.start_and_log_in();
@@ -120,12 +119,7 @@ casper.then(function create_bot() {
     casper.click('#create_bot_button');
 });
 
-var bot_email;
-if (REALMS_HAVE_SUBDOMAINS) {
-    bot_email = '1-bot@zulip.zulipdev.com';
-} else {
-    bot_email = '1-bot@zulip.localhost';
-}
+var bot_email = '1-bot@zulip.zulipdev.com';
 
 casper.then(function () {
     var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
@@ -280,12 +274,7 @@ casper.then(function () {
     });
 });
 
-var settings_url = "";
-if (REALMS_HAVE_SUBDOMAINS) {
-    settings_url = 'http://zulip.zulipdev.com:9981/de/#settings';
-} else {
-    settings_url = 'http://zulipdev.com:9981/de/#settings';
-}
+var settings_url = 'http://zulip.zulipdev.com:9981/de/#settings';
 
 casper.thenOpen(settings_url);
 
@@ -311,13 +300,7 @@ casper.waitUntilVisible('#display-settings-status', function () {
     casper.test.assertSelectorHasText('#display-settings-status', 'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
 });
 
-if (REALMS_HAVE_SUBDOMAINS) {
-    settings_url = 'http://zulip.zulipdev.com:9981/';
-} else {
-    settings_url = 'http://zulipdev.com:9981/';
-}
-
-casper.thenOpen(settings_url);
+casper.thenOpen("http://zulip.zulipdev.com:9981/");
 
 // TODO: test the "Declare Zulip Bankruptcy option"
 
