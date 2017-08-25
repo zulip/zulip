@@ -482,20 +482,6 @@ class ZulipTestCase(TestCase):
         return stream
 
     # Subscribe to a stream directly
-    def subscribe_to_stream(self, email, stream_name, realm=None):
-        # type: (Text, Text, Optional[Realm]) -> Stream
-        if realm is None:
-            realm = get_realm_by_email_domain(email)
-        try:
-            stream = get_stream(stream_name, realm)
-            from_stream_creation = False
-        except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
-        user_profile = get_user_profile_by_email(email)
-        bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
-        return stream
-
-    # Subscribe to a stream directly
     def subscribe(self, user_profile, stream_name):
         # type: (UserProfile, Text) -> Stream
         try:
