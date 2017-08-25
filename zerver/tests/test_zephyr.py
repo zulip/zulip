@@ -17,15 +17,16 @@ class ZephyrTest(ZulipTestCase):
         email = self.example_email('hamlet')
         self.login(email)
 
-        def post(**kwargs):
+        def post(subdomain, **kwargs):
             # type: (**Any) -> HttpResponse
             params = {k: ujson.dumps(v) for k, v in kwargs.items()}
-            return self.client_post('/accounts/webathena_kerberos_login/', params)
+            return self.client_post('/accounts/webathena_kerberos_login/', params,
+                                    subdomain=subdomain)
 
-        result = post()
+        result = post("zulip")
         self.assert_json_error(result, 'Could not find Kerberos credential')
 
-        result = post(cred='whatever')
+        result = post("zulip", cred='whatever')
         self.assert_json_error(result, 'Webathena login not enabled')
 
         email = str(self.mit_email("starnine"))
@@ -51,20 +52,20 @@ class ZephyrTest(ZulipTestCase):
         cred = dict(cname=dict(nameString=['starnine']))
 
         with ccache_mock(side_effect=KeyError('foo')):
-            result = post(cred=cred)
+            result = post("zephyr", cred=cred)
         self.assert_json_error(result, 'Invalid Kerberos cache')
 
         with \
                 ccache_mock(return_value=b'1234'), \
                 ssh_mock(side_effect=KeyError('foo')), \
                 logging_mock() as log:
-            result = post(cred=cred)
+            result = post("zephyr", cred=cred)
 
         self.assert_json_error(result, 'We were unable to setup mirroring for you')
         log.assert_called_with("Error updating the user's ccache")
 
         with ccache_mock(return_value=b'1234'), mirror_mock(), ssh_mock() as ssh:
-            result = post(cred=cred)
+            result = post("zephyr", cred=cred)
 
         self.assert_json_success(result)
         ssh.assert_called_with([
@@ -91,7 +92,7 @@ class ZephyrTest(ZulipTestCase):
                 mirror_mock(), \
                 ssh_mock() as ssh, \
                 kerberos_alter_egos_mock():
-            result = post(cred=cred)
+            result = post("zephyr", cred=cred)
 
         self.assert_json_success(result)
         ssh.assert_called_with([
