@@ -3176,19 +3176,11 @@ def do_send_confirmation_email(invitee, referrer, body):
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
                from_address=FromAddress.NOREPLY, context=context)
 
-def is_inactive(email):
-    # type: (Text) -> None
-    try:
-        if get_user_profile_by_email(email).is_active:
-            raise ValidationError(u'%s is already active' % (email,))
-    except UserProfile.DoesNotExist:
-        pass
-
 def user_email_is_unique(email):
     # type: (Text) -> None
     try:
         get_user_profile_by_email(email)
-        raise ValidationError(u'%s is already registered' % (email,))
+        raise ValidationError(u'%s already has an account' % (email,))
     except UserProfile.DoesNotExist:
         pass
 
@@ -3202,10 +3194,10 @@ def validate_email_for_realm(target_realm, email):
     if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
         # Mirror dummy users to be activated must be inactive
         if existing_user_profile.is_active:
-            raise ValidationError(u'%s is already active' % (email,))
+            raise ValidationError(u'%s already has an account' % (email,))
     elif existing_user_profile:
         # Other users should not already exist at all.
-        raise ValidationError(u'%s is already registered' % (email,))
+        raise ValidationError(u'%s already has an account' % (email,))
 
 def validate_email(user_profile, email):
     # type: (UserProfile, Text) -> Tuple[Optional[str], Optional[str]]

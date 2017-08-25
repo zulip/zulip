@@ -11,7 +11,8 @@ from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
 
-from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
+from zerver.lib.actions import do_change_password, user_email_is_unique, \
+    validate_email_for_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
@@ -112,7 +113,7 @@ class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
-    email = forms.EmailField(validators=[is_inactive])
+    email = forms.EmailField()
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
@@ -153,6 +154,8 @@ class HomepageForm(forms.Form):
                 _("Your email address, {email}, is not in one of the domains "
                   "that are allowed to register for accounts in this organization.").format(
                       string_id=realm.string_id, email=email))
+
+        validate_email_for_realm(realm, email)
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)

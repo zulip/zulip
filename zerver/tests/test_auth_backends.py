@@ -688,7 +688,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=email, name='Hamlet')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('hamlet@zulip.com is already active',
+            self.assert_in_response('hamlet@zulip.com already has an account',
                                     result)
 
     def test_github_backend_new_user_when_is_signup_is_false(self):
@@ -938,7 +938,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response('hamlet@zulip.com is already active', result)
+            self.assert_in_response('hamlet@zulip.com already has an account', result)
 
     def test_log_into_subdomain_when_is_signup_is_true_and_new_user(self):
         # type: () -> None
