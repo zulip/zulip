@@ -97,7 +97,7 @@ stdout_logfile=/var/log/zulip/events_message_sender.log         ; stdout log pat
 stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=5     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
-numprocs=5
+numprocs=<%= @message_sender_processes %>
 
 ; The below sample group section shows all possible group values,
 ; create one or more 'real' group: sections to create "heterogeneous"
