@@ -8,9 +8,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.queue import queue_json_publish
 from zerver.models import UserProfile, Realm
-from zerver.lib.digest import inactive_since, should_process_digest
+from zerver.lib.digest import inactive_since, should_process_digest, queue_digest_recipient
 
 ## Logging setup ##
 
@@ -27,15 +26,6 @@ logger.addHandler(file_handler)
 
 VALID_DIGEST_DAY = 1  # Tuesdays
 DIGEST_CUTOFF = 5
-
-# Changes to this should also be reflected in
-# zerver/worker/queue_processors.py:DigestWorker.consume()
-def queue_digest_recipient(user_profile, cutoff):
-    # type: (UserProfile, datetime.datetime) -> None
-    # Convert cutoff to epoch seconds for transit.
-    event = {"user_profile_id": user_profile.id,
-             "cutoff": cutoff.strftime('%s')}
-    queue_json_publish("digest_emails", event, lambda event: None)
 
 class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app
