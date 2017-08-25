@@ -22,7 +22,6 @@ from zerver.models import (
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
 class HomeTest(ZulipTestCase):
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @slow('big method')
     def test_home(self):
         # type: () -> None

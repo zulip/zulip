@@ -98,23 +98,17 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
                 <div class="input-box">
                     <label for="id_team_subdomain" class="inline-block label-title">
-                        {% if realms_have_subdomains %}
                         {{ _('Subdomain') }}
-                        {% else %}
-                        {{ _('Organization handle') }}
-                        {% endif %}
                     </label>
                     <div class="inline-block">
                         <div class="inline-block relative">
                             <input id="id_team_subdomain"
-                                class="{% if root_domain_landing_page %}required{% endif %} {% if realms_have_subdomains %}subdomain{% endif %}" type="text"
+                                class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
                                 placeholder="acme"
                                 value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
                                 name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }}
                                 {% if root_domain_landing_page %}required{% endif %} />
-                            {% if realms_have_subdomains %}
                             <p class="realm_subdomain_label">.{{ external_host }}</p>
-                            {% endif %}
                             <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                         </div>
                         {% if form.realm_subdomain.errors %}
@@ -124,11 +118,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endif %}
                     </div>
                     <div class="help-box margin-top">
-                        {% if realms_have_subdomains %}
                         {{ _("The address you'll use to sign in to your organization.") }}
-                        {% else %}
-                        {{ _("a-z, 0-9, and - only.") }}
-                        {% endif %}
                     </div>
                 </div>
                 {% endif %}

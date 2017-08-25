@@ -72,7 +72,6 @@ class AuthBackendTest(ZulipTestCase):
 
         return username
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def verify_backend(self, backend, good_kwargs=None, bad_kwargs=None):
         # type: (Any, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> None
 
@@ -361,7 +360,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
             assert(result is not None)
             self.assertIn('subdomain=1', result.url)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
@@ -399,7 +397,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
                       'return_data': {}}
             result.assert_called_with(None, 'fake-access-token', **kwargs)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
@@ -415,7 +412,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
                           'return_data': {}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_team_auth_failed(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
@@ -431,7 +427,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
                           'return_data': {}}
                 result.assert_called_with(None, 'fake-access-token', **kwargs)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
@@ -447,7 +442,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
                           'return_data': {}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_org_auth_failed(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
@@ -743,7 +737,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         value = ujson.dumps(data)
         return {key: signing.get_cookie_signer(salt=salt).sign(value)}
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_google_oauth2_start(self):
         # type: () -> None
         result = self.client_get('/accounts/login/google/', subdomain="zulip")
@@ -752,7 +745,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         subdomain = urllib.parse.parse_qs(parsed_url.query)['subdomain']
         self.assertEqual(subdomain, ['zulip'])
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_google_oauth2_success(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -772,7 +764,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                  parsed_url.path)
         self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_google_oauth2_no_fullname(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -792,7 +783,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                  parsed_url.path)
         self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_google_oauth2_mobile_success(self):
         # type: () -> None
         mobile_flow_otp = '1234abcd' * 8
@@ -827,7 +817,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain(self):
         # type: () -> None
         data = {'name': 'Full Name',
@@ -850,7 +839,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result['Location'].endswith, '?subdomain=1')
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain_when_is_signup_is_true(self):
         # type: () -> None
         data = {'name': 'Full Name',
@@ -863,7 +851,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('hamlet@zulip.com already has an account', result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain_when_is_signup_is_true_and_new_user(self):
         # type: () -> None
         data = {'name': 'New User Name',
@@ -889,7 +876,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_not_in_success_response(['id_password'], result)
         self.assert_in_success_response(['id_full_name'], result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain_when_using_invite_link(self):
         # type: () -> None
         data = {'name': 'New User Name',
@@ -952,7 +938,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(sorted(self.get_streams('new@zulip.com', realm)), stream_names)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain_when_email_is_none(self):
         # type: () -> None
         data = {'name': None,
@@ -967,7 +952,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assert_in_response("Please click the following button if you "
                                     "wish to register", result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_user_cannot_log_into_nonexisting_realm(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -980,7 +964,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
                                         result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_user_cannot_log_into_wrong_subdomain(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -998,7 +981,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_in_success_response(["Your Zulip account is not a member of the organization associated with this subdomain."],
                                         result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_user_cannot_log_into_wrong_subdomain_with_cookie(self):
         # type: () -> None
         data = {'name': 'Full Name',
@@ -1009,20 +991,17 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
         self.assertEqual(result.status_code, 400)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain_when_signature_is_bad(self):
         # type: () -> None
         self.client.cookies = SimpleCookie({'subdomain.signature': 'invlaid'})
         result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
         self.assertEqual(result.status_code, 400)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_log_into_subdomain_when_state_is_not_passed(self):
         # type: () -> None
         result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
         self.assertEqual(result.status_code, 400)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_google_oauth2_registration(self):
         # type: () -> None
         """If the user doesn't exist yet, Google auth can be used to register an account"""
@@ -1076,7 +1055,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
 class GoogleLoginTest(GoogleOAuthTest):
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_google_oauth2_subdomains_homepage(self):
         # type: () -> None
@@ -1368,7 +1346,6 @@ class FetchAuthBackends(ZulipTestCase):
         if error:
             raise AssertionError(error)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_get_server_settings(self):
         # type: () -> None
         result = self.client_get("/api/v1/server_settings",
@@ -1446,7 +1423,6 @@ class FetchAuthBackends(ZulipTestCase):
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_fetch_auth_backend(self):
         # type: () -> None
         backends = [GoogleMobileOauth2Backend(), DevAuthBackend()]
@@ -1532,7 +1508,6 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_with_subdomain(self):
         # type: () -> None
         user_profile = self.example_user('hamlet')
@@ -1543,7 +1518,6 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_choose_realm(self):
         # type: () -> None
         result = self.client_post('/devlogin/', subdomain="zulip")
@@ -1564,7 +1538,6 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assert_in_success_response(["Click on a user to log in to MIT!"], result)
         self.assert_not_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_choose_realm_with_subdomains_enabled(self):
         # type: () -> None
         with mock.patch('zerver.views.auth.is_subdomain_root_or_alias', return_value=False):
@@ -1654,7 +1627,6 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
             result = self.client_post('/accounts/login/sso/')
             self.assert_json_error_contains(result, "No REMOTE_USER set.", 400)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_failure_due_to_wrong_subdomain(self):
         # type: () -> None
         email = self.example_email("hamlet")
@@ -1666,7 +1638,6 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assert_in_response("No account found for", result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_failure_due_to_empty_subdomain(self):
         # type: () -> None
         email = self.example_email("hamlet")
@@ -1678,7 +1649,6 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assert_in_response("No account found for", result)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_success_under_subdomains(self):
         # type: () -> None
         user_profile = self.example_user('hamlet')
@@ -1771,7 +1741,6 @@ class TestJWTLogin(ZulipTestCase):
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
             self.assertIs(get_session_dict_user(self.client.session), None)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_failure_due_to_wrong_subdomain(self):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
@@ -1785,7 +1754,6 @@ class TestJWTLogin(ZulipTestCase):
                 self.assert_json_error_contains(result, "Wrong subdomain", 400)
                 self.assertEqual(get_session_dict_user(self.client.session), None)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_failure_due_to_empty_subdomain(self):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
@@ -1799,7 +1767,6 @@ class TestJWTLogin(ZulipTestCase):
                 self.assert_json_error_contains(result, "Wrong subdomain", 400)
                 self.assertEqual(get_session_dict_user(self.client.session), None)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_success_under_subdomains(self):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
@@ -2031,7 +1998,6 @@ class TestLDAP(ZulipTestCase):
             user_profile = self.backend.authenticate(self.example_email("hamlet"), 'pass')
             self.assertIs(user_profile, None)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_subdomain(self):
         # type: () -> None
@@ -2041,7 +2007,6 @@ class TestLDAP(ZulipTestCase):
             }
         }
         with self.settings(
-                REALMS_HAVE_SUBDOMAINS=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
@@ -2049,7 +2014,6 @@ class TestLDAP(ZulipTestCase):
                                                      realm_subdomain='acme')
             self.assertIs(user_profile, None)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_empty_subdomain(self):
         # type: () -> None
@@ -2066,7 +2030,6 @@ class TestLDAP(ZulipTestCase):
                                                      realm_subdomain='')
             self.assertIs(user_profile, None)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_when_subdomain_is_none(self):
         # type: () -> None
@@ -2084,7 +2047,6 @@ class TestLDAP(ZulipTestCase):
             assert(user_profile is not None)
             self.assertEqual(user_profile.email, self.example_email("hamlet"))
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_with_valid_subdomain(self):
         # type: () -> None
@@ -2102,7 +2064,6 @@ class TestLDAP(ZulipTestCase):
             assert(user_profile is not None)
             self.assertEqual(user_profile.email, self.example_email("hamlet"))
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_when_user_does_not_exist_with_valid_subdomain(self):
         # type: () -> None

@@ -68,7 +68,6 @@ class DoRestCallTests(ZulipTestCase):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             self.assertTrue(mock_succeed_with_message.called)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_retry_request(self):
         # type: (mock.Mock) -> None
         response = ResponseMock(500, {"message": "testing"}, '')
@@ -83,7 +82,6 @@ The webhook got a response with status code *500*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
         self.mock_event['failed_tries'] = 0
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_fail_request(self, mock_fail_with_message):
         # type: (mock.Mock) -> None
@@ -97,7 +95,6 @@ The webhook got a response with status code *500*.''')
 The webhook got a response with status code *400*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @mock.patch('logging.info')
     @mock.patch('requests.request', side_effect=timeout_error)
     def test_timeout_request(self, mock_requests_request, mock_logger):
@@ -112,7 +109,6 @@ Time is up!
 ```''')
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @mock.patch('logging.exception')
     @mock.patch('requests.request', side_effect=request_exception_error)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')

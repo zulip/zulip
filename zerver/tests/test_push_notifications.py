@@ -131,10 +131,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                   **self.get_auth())
         self.assert_json_error(result, "Invalid token type")
 
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
-                                                 'token': token},
-                                      **self.api_auth(self.example_email("hamlet")))
+        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
+                                             'token': token},
+                                  **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
 

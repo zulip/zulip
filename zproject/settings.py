@@ -225,8 +225,8 @@ DEFAULT_SETTINGS.update({
     # Whether anyone can create a new organization on the Zulip server.
     'OPEN_REALM_CREATION': False,
 
-    # Setting for where the system bot users are.  Likely will have no
-    # purpose after the REALMS_HAVE_SUBDOMAINS migration finishes.
+    # Setting for where the system bot users are.  Likely has no
+    # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
     'SYSTEM_ONLY_REALMS': {"zulip"},
 
     # Whether the server is using the Pgroonga full-text search

@@ -18,7 +18,6 @@ from zerver.views.integrations import (
 )
 
 class DocPageTest(ZulipTestCase):
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def _test(self, url, expected_content, extra_strings=[],
               landing_page=True):
         # type: (str, str, List[str], bool) -> None

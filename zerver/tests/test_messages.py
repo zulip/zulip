@@ -1224,7 +1224,6 @@ class MessagePOSTTest(ZulipTestCase):
                                   subdomain="notzephyr")
         self.assert_json_error(result, "Invalid mirrored realm")
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_send_message_irc_mirror(self):
         # type: () -> None
         self.login(self.example_email('hamlet'))

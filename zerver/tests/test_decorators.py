@@ -211,7 +211,6 @@ class DecoratorTestCase(TestCase):
                 pass  # nocoverage # this function isn't meant to be called
             test(request)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_api_key_only_webhook_view(self):
         # type: () -> None
         @api_key_only_webhook_view('ClientName')
@@ -919,7 +918,6 @@ class TestValidateApiKey(ZulipTestCase):
                                    is_webhook=True)
         self.assertEqual(profile.pk, self.webhook_bot.pk)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):
         # type: () -> None
         with self.settings(RUNNING_INSIDE_TORNADO=False):
@@ -1061,13 +1059,11 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         response = self._do_test(user_email)
         self.assertEqual(response.status_code, 200)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self):
         # type: () -> None
         user_email = self.example_email('hamlet')
         user_realm = get_realm('zulip')
         self._login(user_email, user_realm)
-
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
             self.assert_json_error_contains(self._do_test(user_email),
@@ -1132,7 +1128,6 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         self.login(user_email, password)
 
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_authenticated_json_view_if_subdomain_is_invalid(self):
         # type: () -> None
         user_email = self.example_email("hamlet")
@@ -1162,7 +1157,6 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         return self.client_post(r'/json/tutorial_status', data)
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_zulip_login_required_if_subdomain_is_invalid(self):
         # type: () -> None
         user_email = self.example_email("hamlet")

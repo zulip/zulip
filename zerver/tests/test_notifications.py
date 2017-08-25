@@ -328,7 +328,6 @@ class TestMissedMessages(ZulipTestCase):
         # type: () -> None
         self._deleted_message_in_huddle_missed_stream_messages(False)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_realm_emoji_in_missed_message(self, mock_random_token):
         # type: (MagicMock) -> None
@@ -342,7 +341,6 @@ class TestMissedMessages(ZulipTestCase):
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_stream_link_in_missed_message(self, mock_random_token):
         # type: (MagicMock) -> None

@@ -43,9 +43,7 @@
             {{ csrf_input }}
             <h2>Realm</h2>
             <select name="new_realm" onchange="this.form.submit()">
-                {% if not realms_have_subdomains %}
                 <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All Realms</option>
-                {% endif %}
                 {% for realm in all_realms %}
                 <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
                 {% endfor %}

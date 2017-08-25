@@ -28,8 +28,6 @@ from zerver.models import (
 import datetime
 
 class ActivityTest(ZulipTestCase):
-
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_activity(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
