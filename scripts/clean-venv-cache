@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 import argparse
-import datetime
 import os
-import subprocess
 import sys
-import time
 
 if False:
     from typing import Set, Text
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
+from scripts.lib.hash_reqs import expand_reqs, hash_deps
 from scripts.lib.zulip_tools import GENERIC_CACHE_SCRIPT_PARSER, \
     get_caches_to_be_purged, get_environment, get_recent_deployments, \
     purge_unused_caches
@@ -31,14 +29,17 @@ def get_caches_in_use(threshold_days):
     # type: (int) -> Set[Text]
     setups_to_check = set([ZULIP_PATH, ])
     caches_in_use = set()
+
     if ENV == "prod":
         setups_to_check |= get_recent_deployments(threshold_days)
-    hash_reqs = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+
     for path in setups_to_check:
         for filename in os.listdir(os.path.join(path, "requirements")):
             requirements_file = os.path.join(path, "requirements", filename)
-            hash_val = subprocess.check_output([hash_reqs, requirements_file]).strip()
-            caches_in_use.add(os.path.join(VENV_CACHE_DIR, hash_val.decode('utf-8')))
+            deps = expand_reqs(requirements_file)
+            hash_val = hash_deps(deps)
+            caches_in_use.add(os.path.join(VENV_CACHE_DIR, hash_val))
+
     return caches_in_use
 
 def main():
