@@ -117,7 +117,7 @@ def create_missed_message_address(user_profile, message):
     data = {
         'user_profile_id': user_profile.id,
         'recipient_id': recipient_id,
-        'subject': message.subject,
+        'subject': message.subject.encode('utf-8'),
     }
 
     while True:
@@ -155,7 +155,7 @@ def send_to_missed_message_address(address, message):
     result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
     if not all(val is not None for val in result):
         raise ZulipEmailForwardError('Missing missed message address data')
-    user_profile_id, recipient_id, subject = result
+    user_profile_id, recipient_id, subject_b = result  # type: (bytes, bytes, bytes)
 
     user_profile = get_user_profile_by_id(user_profile_id)
     recipient = Recipient.objects.get(id=recipient_id)
@@ -179,7 +179,8 @@ def send_to_missed_message_address(address, message):
         recipient_type_name = 'private'
 
     internal_send_message(user_profile.realm, user_profile.email,
-                          recipient_type_name, recipient_str, subject, body)
+                          recipient_type_name, recipient_str,
+                          subject_b.decode('utf-8'), body)
     logging.info("Successfully processed email from %s to %s" % (
         user_profile.email, recipient_str))
 
