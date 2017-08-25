@@ -40,14 +40,6 @@ from zerver.models import \
 import ujson
 
 class DecoratorTestCase(TestCase):
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        # This method should be removed when we migrate to version 3 of Python
-        import six
-        if six.PY2:
-            self.assertRaisesRegex = self.assertRaisesRegexp
-        super(TestCase, self).__init__(*args, **kwargs)
-
     def test_get_client_name(self):
         # type: () -> None
         class Request(object):
