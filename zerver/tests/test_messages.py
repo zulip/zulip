@@ -192,8 +192,9 @@ class TestCrossRealmPMs(ZulipTestCase):
 
     def create_user(self, email):
         # type: (Text) -> UserProfile
-        self.register(email, 'test')
-        return get_user(email, get_realm(email.split("@")[1]))
+        subdomain = email.split("@")[1]
+        self.register(email, 'test', subdomain=subdomain)
+        return get_user(email, get_realm(subdomain))
 
     @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
                                                'support@3.example.com'])
@@ -962,7 +963,8 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
                                                      "to": ujson.dumps([self.mit_email("starnine"),
-                                                                        self.mit_email("espuser")])})
+                                                                        self.mit_email("espuser")])},
+                                  subdomain="zephyr")
         self.assert_json_success(result)
 
     def test_mirrored_personal(self):
@@ -975,7 +977,8 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")})
+                                                     "to": self.mit_email("starnine")},
+                                  subdomain="zephyr")
         self.assert_json_success(result)
 
     def test_mirrored_personal_to_someone_else(self):
@@ -988,7 +991,8 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_email("espuser")})
+                                                     "to": self.mit_email("espuser")},
+                                  subdomain="zephyr")
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_duplicated_mirrored_huddle(self):
@@ -1005,10 +1009,12 @@ class MessagePOSTTest(ZulipTestCase):
 
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
             self.login(self.mit_email("starnine"))
-            result1 = self.client_post("/json/messages", msg)
+            result1 = self.client_post("/json/messages", msg,
+                                       subdomain="zephyr")
         with mock.patch('DNS.dnslookup', return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']]):
             self.login(self.mit_email("espuser"))
-            result2 = self.client_post("/json/messages", msg)
+            result2 = self.client_post("/json/messages", msg,
+                                       subdomain="zephyr")
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
 
@@ -1106,7 +1112,8 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")})
+                                                     "to": self.mit_email("starnine")},
+                                  subdomain="zephyr")
         self.assert_json_error(result, "Missing sender")
 
     def test_send_message_as_not_superuser_when_type_is_not_private(self):
@@ -1116,7 +1123,8 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")})
+                                                     "to": self.mit_email("starnine")},
+                                  subdomain="zephyr")
         self.assert_json_error(result, "User not authorized for this query")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -1128,7 +1136,8 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")})
+                                                     "to": self.mit_email("starnine")},
+                                  subdomain="zephyr")
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -1251,7 +1260,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         self.login(self.mit_email("sipbtest"))
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get('/json/messages/' + str(msg_id), subdomain="zephyr")
         self.assert_json_error(result, 'Invalid message(s)')
 
     def test_fetch_raw_message_private_stream(self):
@@ -1832,12 +1841,13 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
 class StarTests(ZulipTestCase):
 
-    def change_star(self, messages, add=True):
-        # type: (List[int], bool) -> HttpResponse
+    def change_star(self, messages, add=True, **kwargs):
+        # type: (List[int], bool, **Any) -> HttpResponse
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
                                  "op": "add" if add else "remove",
-                                 "flag": "starred"})
+                                 "flag": "starred"},
+                                **kwargs)
 
     def test_change_star(self):
         # type: () -> None
@@ -1923,7 +1933,7 @@ class StarTests(ZulipTestCase):
 
         # But it still doesn't work if you're in another realm
         self.login(self.mit_email("sipbtest"))
-        result = self.change_star(message_ids)
+        result = self.change_star(message_ids, subdomain="zephyr")
         self.assert_json_error(result, 'Invalid message(s)')
 
     def test_change_star_private_message_security(self):

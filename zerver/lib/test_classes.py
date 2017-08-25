@@ -285,10 +285,11 @@ class ZulipTestCase(TestCase):
         # type: () -> None
         self.client.logout()
 
-    def register(self, email, password):
-        # type: (Text, Text) -> HttpResponse
-        self.client_post('/accounts/home/', {'email': email})
-        return self.submit_reg_form_for_user(email, password)
+    def register(self, email, password, **kwargs):
+        # type: (Text, Text, **Any) -> HttpResponse
+        self.client_post('/accounts/home/', {'email': email},
+                         **kwargs)
+        return self.submit_reg_form_for_user(email, password, **kwargs)
 
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
                                  realm_subdomain="zuliptest",
