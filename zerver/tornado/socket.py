@@ -47,7 +47,7 @@ def get_user_profile(session_id):
         return None
 
     try:
-        return UserProfile.objects.get(pk=get_session_user(djsession))
+        return get_user_profile_by_id(get_session_user(djsession))
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
