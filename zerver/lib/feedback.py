@@ -20,7 +20,7 @@ def has_enough_time_expired_since_last_message(sender_email, min_delay):
     # of noting that a new message was received.
     key = 'zilencer:feedback:%s' % (sender_email,)
     t = int(time.time())
-    last_time = client.getset(key, t)
+    last_time = client.getset(key, t)  # type: Optional[bytes]
     if last_time is None:
         return True
     delay = t - int(last_time)
