@@ -315,28 +315,19 @@ class ZulipTestCase(TestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-    def get_api_key(self, email):
-        # type: (Text) -> Text
-        if email not in API_KEYS:
-            API_KEYS[email] = get_user_profile_by_email(email).api_key
-        return API_KEYS[email]
-
-    def get_server_api_key(self, server_uuid):
-        # type: (Text) -> Text
-        if server_uuid not in API_KEYS:
-            API_KEYS[server_uuid] = get_remote_server_by_uuid(server_uuid).api_key
-
-        return API_KEYS[server_uuid]
-
     def api_auth(self, identifier):
         # type: (Text) -> Dict[str, Text]
         """
         identifier: Can be an email or a remote server uuid.
         """
-        if is_remote_server(identifier):
-            api_key = self.get_server_api_key(identifier)
+        if identifier in API_KEYS:
+            api_key = API_KEYS[identifier]
         else:
-            api_key = self.get_api_key(identifier)
+            if is_remote_server(identifier):
+                api_key = get_remote_server_by_uuid(identifier).api_key
+            else:
+                api_key = get_user_profile_by_email(identifier).api_key
+            API_KEYS[identifier] = api_key
 
         credentials = u"%s:%s" % (identifier, api_key)
         return {
