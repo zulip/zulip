@@ -1443,7 +1443,27 @@ class FetchAuthBackends(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            ROOT_DOMAIN_LANDING_PAGE=False):
             result = self.client_get("/api/v1/server_settings",
-                                     HTTP_HOST="zulip.testserver")
+                                     subdomain="")
+            self.assert_json_success(result)
+            data = result.json()
+            schema_checker = check_dict_only([
+                ('authentication_methods', check_dict_only([
+                    ('google', check_bool),
+                    ('github', check_bool),
+                    ('dev', check_bool),
+                    ('password', check_bool),
+                ])),
+                ('realm_uri', check_string),
+                ('zulip_version', check_string),
+                ('msg', check_string),
+                ('result', check_string),
+            ])
+            self.assert_on_error(schema_checker("data", data))
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_DOMAIN_LANDING_PAGE=False):
+            result = self.client_get("/api/v1/server_settings",
+                                     subdomain="zulip")
         self.assert_json_success(result)
         data = result.json()
         with_realm_schema_checker = check_dict_only([
