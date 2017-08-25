@@ -443,11 +443,12 @@ class IncludeHistoryTest(ZulipTestCase):
 
 class GetOldMessagesTest(ZulipTestCase):
 
-    def get_and_check_messages(self, modified_params):
-        # type: (Dict[str, Union[str, int]]) -> Dict[str, Dict]
+    def get_and_check_messages(self, modified_params, **kwargs):
+        # type: (Dict[str, Union[str, int]], **Any) -> Dict[str, Dict]
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}  # type: Dict[str, Union[str, int]]
         post_params.update(modified_params)
-        payload = self.client_get("/json/messages", dict(post_params))
+        payload = self.client_get("/json/messages", dict(post_params),
+                                  **kwargs)
         self.assert_json_success(payload)
         result = ujson.loads(payload.content)
 
@@ -619,7 +620,8 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
-                                                  narrow=ujson.dumps(narrow)))
+                                                  narrow=ujson.dumps(narrow)),
+                                             subdomain="zephyr")
 
         messages = get_user_messages(self.mit_user("starnine"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -656,9 +658,9 @@ class GetOldMessagesTest(ZulipTestCase):
                           subject=u"\u03bb-topic.d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
-        result = self.get_and_check_messages(dict(
-            num_after=100,
-            narrow=ujson.dumps(narrow)))
+        result = self.get_and_check_messages(
+            dict(num_after=100, narrow=ujson.dumps(narrow)),
+            subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -696,10 +698,11 @@ class GetOldMessagesTest(ZulipTestCase):
                           subject=u".d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'personal.d.d')]
-        result = self.get_and_check_messages(dict(
-            num_before=50,
-            num_after=50,
-            narrow=ujson.dumps(narrow)))
+        result = self.get_and_check_messages(
+            dict(num_before=50,
+                 num_after=50,
+                 narrow=ujson.dumps(narrow)),
+            subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
