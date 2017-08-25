@@ -312,21 +312,17 @@ def add_new_user_history(user_profile, streams):
 def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None):
     # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> None
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
-    try:
-        if prereg_user is not None:
-            streams = prereg_user.streams.all()
-            acting_user = prereg_user.referred_by  # type: Optional[UserProfile]
-        else:
-            streams = []
-    except AttributeError:
-        # This will catch the case where prereg_user is a MitUser.
+    if prereg_user is not None:
+        streams = prereg_user.streams.all()
+        acting_user = prereg_user.referred_by  # type: Optional[UserProfile]
+    else:
         streams = []
+        acting_user = None
 
     # If the user's invitation didn't explicitly list some streams, we
     # add the default streams
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
-        acting_user = None
 
     bulk_add_subscriptions(streams, [user_profile], acting_user=acting_user)
 
