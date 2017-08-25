@@ -499,12 +499,14 @@ class ZulipTestCase(TestCase):
         bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):
-        # type: (Text, Iterable[Text], Dict[str, Any], bool) -> HttpResponse
+    def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False,
+                                    **kwargs):
+        # type: (Text, Iterable[Text], Dict[str, Any], bool, **Any) -> HttpResponse
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        result = self.client_post("/api/v1/users/me/subscriptions", post_data, **self.api_auth(email))
+        result = self.client_post("/api/v1/users/me/subscriptions", post_data,
+                                  **self.api_auth(email), **kwargs)
         return result
 
     def send_json_payload(self, user_profile, url, payload, stream_name=None, **post_params):

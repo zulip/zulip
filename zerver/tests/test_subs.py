@@ -1458,6 +1458,7 @@ class SubscriptionAPITest(ZulipTestCase):
             extra_post_data=dict(
                 announce='true'
             ),
+            subdomain="testrealm",
         )
         self.assert_json_success(result)
 
@@ -1836,6 +1837,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     self.mit_email("starnine"),
                     streams,
                     dict(principals=ujson.dumps([self.mit_email("starnine")])),
+                    subdomain="zephyr",
                 )
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
@@ -2486,7 +2488,8 @@ class GetSubscribersTest(ZulipTestCase):
             email,
             ["mit_invite_only"],
             dict(principals=ujson.dumps(users_to_subscribe)),
-            invite_only=True)
+            invite_only=True,
+            subdomain="zephyr")
         self.assert_json_success(ret)
 
         with queries_captured() as queries:
@@ -2644,6 +2647,6 @@ class AccessStreamTest(ZulipTestCase):
             access_stream_by_name(sipbtest, mit_stream.name)
 
         # But they can access streams they are subscribed to
-        self.common_subscribe_to_streams(sipbtest.email, [mit_stream.name])
+        self.common_subscribe_to_streams(sipbtest.email, [mit_stream.name], subdomain="zephyr")
         access_stream_by_id(sipbtest, mit_stream.id)
         access_stream_by_name(sipbtest, mit_stream.name)
