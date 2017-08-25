@@ -101,8 +101,7 @@ def accounts_register(request):
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
         # contact support.
-        return render(request, "zerver/deactivated.html",
-                      context={"deactivated_domain_name": realm.name})
+        return redirect_to_deactivation_notice()
 
     try:
         validate_email_for_realm(realm, email)

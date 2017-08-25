@@ -336,7 +336,8 @@ class LoginTest(ZulipTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.register(self.nonreg_email('test'), "test")
-        self.assert_in_response("has been deactivated", result)
+        self.assertEqual(result.status_code, 302)
+        self.assertIn('deactivated', result.url)
 
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user('test')
