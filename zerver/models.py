@@ -16,6 +16,7 @@ from django.core.validators import URLValidator, MinLengthValidator, \
     RegexValidator
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
+    user_profile_by_api_key_cache_key, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     user_profile_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
@@ -1443,6 +1444,11 @@ def get_user_profile_by_id(uid):
 def get_user_profile_by_email(email):
     # type: (Text) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
+
+@cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
+def get_user_profile_by_api_key(api_key):
+    # type: (Text) -> UserProfile
+    return UserProfile.objects.select_related().get(api_key=api_key)
 
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email, realm):

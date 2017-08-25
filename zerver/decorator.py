@@ -6,7 +6,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
 from django.http.multipartparser import MultiPartParser
-from zerver.models import UserProfile, get_client
+from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 from zerver.lib.response import json_error, json_unauthorized, json_success
 from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
@@ -229,7 +229,7 @@ def validate_account_and_subdomain(request, user_profile):
 def access_user_by_api_key(request, api_key, email=None):
     # type: (HttpRequest, Text, Optional[Text]) -> UserProfile
     try:
-        user_profile = UserProfile.objects.get(api_key=api_key)
+        user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("Invalid API key"))
     if email is not None and email != user_profile.email:

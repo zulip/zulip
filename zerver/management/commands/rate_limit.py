@@ -4,7 +4,7 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_user_profile_by_api_key
 from zerver.lib.rate_limiter import block_access, unblock_access, RateLimitedUser
 from zerver.lib.management import ZulipBaseCommand
 
@@ -51,8 +51,8 @@ class Command(ZulipBaseCommand):
             user_profile = self.get_user(options['email'], realm)
         else:
             try:
-                user_profile = UserProfile.objects.get(api_key=options['api_key'])
-            except Exception:
+                user_profile = get_user_profile_by_api_key(options['api_key'])
+            except UserProfile.DoesNotExist:
                 print("Unable to get user profile for api key %s" % (options['api_key'],))
                 exit(1)
 

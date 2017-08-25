@@ -321,6 +321,10 @@ def user_profile_by_id_cache_key(user_profile_id):
     # type: (int) -> Text
     return u"user_profile_by_id:%s" % (user_profile_id,)
 
+def user_profile_by_api_key_cache_key(api_key):
+    # type: (Text) -> Text
+    return u"user_profile_by_api_key:%s" % (api_key,)
+
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
@@ -361,6 +365,7 @@ def delete_user_profile_caches(user_profiles):
     for user_profile in user_profiles:
         keys.append(user_profile_by_email_cache_key(user_profile.email))
         keys.append(user_profile_by_id_cache_key(user_profile.id))
+        keys.append(user_profile_by_api_key_cache_key(user_profile.api_key))
         keys.append(user_profile_cache_key(user_profile.email, user_profile.realm))
 
     cache_delete_many(keys)

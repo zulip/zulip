@@ -11,7 +11,9 @@ from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
 from zerver.lib.cache import cache_with_key, cache_set, \
-    user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
+    user_profile_by_api_key_cache_key, \
+    user_profile_by_email_cache_key, \
+    user_profile_by_id_cache_key, \
     user_profile_cache_key, get_remote_cache_time, get_remote_cache_requests, \
     cache_set_many, to_dict_cache_key_id
 from importlib import import_module
@@ -38,6 +40,7 @@ def user_cache_items(items_for_remote_cache, user_profile):
     # type: (Dict[Text, Tuple[UserProfile]], UserProfile) -> None
     items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
     items_for_remote_cache[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
+    items_for_remote_cache[user_profile_by_api_key_cache_key(user_profile.api_key)] = (user_profile,)
     items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm)] = (user_profile,)
 
 def stream_cache_items(items_for_remote_cache, stream):
