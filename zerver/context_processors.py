@@ -75,7 +75,7 @@ def zulip_default_context(request):
     about_link_disabled = settings.ABOUT_LINK_DISABLED
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
 
-    if settings.SUBDOMAINS_HOMEPAGE and get_subdomain(request) == "":
+    if settings.ROOT_DOMAIN_LANDING_PAGE and get_subdomain(request) == "":
         register_link_disabled = True
         login_link_disabled = True
         about_link_disabled = True

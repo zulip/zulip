@@ -270,7 +270,7 @@ def send_oauth_request_to_google(request):
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
 
     if settings.REALMS_HAVE_SUBDOMAINS:
-        if ((settings.SUBDOMAINS_HOMEPAGE and subdomain == '') or
+        if ((settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == '') or
                 not Realm.objects.filter(string_id=subdomain).exists()):
             return redirect_to_subdomain_login_url()
 
@@ -461,7 +461,7 @@ def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     if request.user.is_authenticated:
         return HttpResponseRedirect("/")
-    if is_subdomain_root_or_alias(request) and settings.SUBDOMAINS_HOMEPAGE:
+    if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.find_my_team')
         return HttpResponseRedirect(redirect_url)
 
@@ -621,10 +621,10 @@ def get_auth_backends_data(request):
             if subdomain != "":
                 raise JsonableError(_("Invalid subdomain"))
             # With the root subdomain, it's an error or not depending
-            # whether SUBDOMAINS_HOMEPAGE (which indicates whether
+            # whether ROOT_DOMAIN_LANDING_PAGE (which indicates whether
             # there are some realms without subdomains on this server)
             # is set.
-            if settings.SUBDOMAINS_HOMEPAGE:
+            if settings.ROOT_DOMAIN_LANDING_PAGE:
                 raise JsonableError(_("Subdomain required"))
             else:
                 realm = None

@@ -20,7 +20,7 @@ def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
     if settings.REALMS_HAVE_SUBDOMAINS:
         subdomain = get_subdomain(request)
-        if subdomain or not settings.SUBDOMAINS_HOMEPAGE:
+        if subdomain or not settings.ROOT_DOMAIN_LANDING_PAGE:
             display_subdomain = subdomain
             html_settings_links = True
         else:

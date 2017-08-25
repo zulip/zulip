@@ -1126,7 +1126,7 @@ class GoogleLoginTest(GoogleOAuthTest):
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                           SUBDOMAINS_HOMEPAGE=True):
+                           ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.google_oauth2_test(token_response, account_response)
             self.assertEqual(result.status_code, 302)
             self.assertIn('subdomain=1', result.url)
@@ -1441,7 +1441,7 @@ class FetchAuthBackends(ZulipTestCase):
         self.assert_on_error(schema_checker("data", data))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                           SUBDOMAINS_HOMEPAGE=False):
+                           ROOT_DOMAIN_LANDING_PAGE=False):
             result = self.client_get("/api/v1/server_settings",
                                      HTTP_HOST="zulip.testserver")
         self.assert_json_success(result)
@@ -1492,7 +1492,7 @@ class FetchAuthBackends(ZulipTestCase):
 
             # Test subdomains cases
             with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                               SUBDOMAINS_HOMEPAGE=False):
+                               ROOT_DOMAIN_LANDING_PAGE=False):
                 result = self.client_get("/api/v1/get_auth_backends")
                 self.assert_json_success(result)
                 data = result.json()
@@ -1529,13 +1529,13 @@ class FetchAuthBackends(ZulipTestCase):
                     'zulip_version': ZULIP_VERSION,
                 })
             with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                               SUBDOMAINS_HOMEPAGE=True):
-                # With SUBDOMAINS_HOMEPAGE, homepage fails
+                               ROOT_DOMAIN_LANDING_PAGE=True):
+                # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
                 result = self.client_get("/api/v1/get_auth_backends",
                                          HTTP_HOST="testserver")
                 self.assert_json_error_contains(result, "Subdomain required", 400)
 
-                # With SUBDOMAINS_HOMEPAGE, subdomain pages succeed
+                # With ROOT_DOMAIN_LANDING_PAGE, subdomain pages succeed
                 result = self.client_get("/api/v1/get_auth_backends",
                                          HTTP_HOST="zulip.testserver")
                 self.assert_json_success(result)

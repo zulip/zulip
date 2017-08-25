@@ -453,7 +453,7 @@ class HomeTest(ZulipTestCase):
         # type: () -> None
         email = self.example_email("hamlet")
         self.login(email)
-        with self.settings(SUBDOMAINS_HOMEPAGE=True):
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             with patch('zerver.views.home.get_subdomain', return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)

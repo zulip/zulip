@@ -1750,7 +1750,7 @@ class TestLoginPage(ZulipTestCase):
         # type: (MagicMock) -> None
         mock_get_host.return_value = 'www.testserver'
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                           SUBDOMAINS_HOMEPAGE=True,
+                           ROOT_DOMAIN_LANDING_PAGE=True,
                            ROOT_SUBDOMAIN_ALIASES=['www']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
@@ -1761,7 +1761,7 @@ class TestLoginPage(ZulipTestCase):
         # type: (MagicMock) -> None
         mock_get_host.return_value = 'testserver'
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                           SUBDOMAINS_HOMEPAGE=True,
+                           ROOT_DOMAIN_LANDING_PAGE=True,
                            ROOT_SUBDOMAIN_ALIASES=['www']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
@@ -1769,7 +1769,7 @@ class TestLoginPage(ZulipTestCase):
 
         mock_get_host.return_value = 'www.testserver.com'
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
-                           SUBDOMAINS_HOMEPAGE=True,
+                           ROOT_DOMAIN_LANDING_PAGE=True,
                            EXTERNAL_HOST='www.testserver.com',
                            ROOT_SUBDOMAIN_ALIASES=['test']):
             result = self.client_get("/en/login/")

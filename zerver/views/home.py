@@ -72,10 +72,10 @@ def home(request):
         response = render(request, 'zerver/handlebars_compilation_failed.html')
         response.status_code = 500
         return response
-    if not settings.SUBDOMAINS_HOMEPAGE:
+    if not settings.ROOT_DOMAIN_LANDING_PAGE:
         return home_real(request)
 
-    # If settings.SUBDOMAINS_HOMEPAGE, sends the user the landing
+    # If settings.ROOT_DOMAIN_LANDING_PAGE, sends the user the landing
     # page, not the login form, on the root domain
 
     subdomain = get_subdomain(request)
