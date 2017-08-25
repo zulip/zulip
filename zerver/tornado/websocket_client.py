@@ -16,7 +16,7 @@ from tornado.websocket import websocket_connect, WebSocketClientConnection
 from six.moves.urllib.parse import urlparse, urlunparse, urljoin
 from six.moves.http_cookies import SimpleCookie
 
-from zerver.models import UserProfile
+from zerver.models import get_system_bot
 
 from typing import Any, Callable, Dict, Generator, Iterable, Optional
 
@@ -27,7 +27,7 @@ class WebsocketClient(object):
         # type: (str, str, str, Callable, bool, **Any) -> None
         self.validate_ssl = validate_ssl
         self.auth_email = sender_email
-        self.user_profile = UserProfile.objects.filter(email=self.auth_email).first()
+        self.user_profile = get_system_bot(sender_email)
         self.request_id_number = 0
         self.parsed_host_url = urlparse(host_url)
         self.sockjs_url = sockjs_url
