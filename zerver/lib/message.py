@@ -182,6 +182,8 @@ class MessageDict(object):
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
                     display_recipient = [display_recipient[0], recip]
+        else:
+            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
 
         obj = dict(
             id                = message_id,
@@ -531,6 +533,8 @@ def apply_unread_message_event(state, message):
             message_type = 'private'
         else:
             message_type = 'huddle'
+    else:
+        raise AssertionError("Invalid message type %s" % (message['type'],))
 
     if message_type == 'stream':
         unread_key = 'streams'
