@@ -20,10 +20,10 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
-    user_email_is_unique, compute_mit_user_fullname
+    user_email_is_unique, compute_mit_user_fullname, validate_email_for_realm, \
+    do_set_user_display_setting
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
-from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ, do_login
@@ -75,10 +75,6 @@ def accounts_register(request):
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
-    try:
-        existing_user_profile = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        existing_user_profile = None
 
     validators.validate_email(email)
     # If OPEN_REALM_CREATION is enabled all user sign ups should go through the
@@ -109,12 +105,7 @@ def accounts_register(request):
                       context={"deactivated_domain_name": realm.name})
 
     try:
-        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
-            # Mirror dummy users to be activated must be inactive
-            is_inactive(email)
-        else:
-            # Other users should not already exist at all.
-            user_email_is_unique(email)
+        validate_email_for_realm(realm, email)
     except ValidationError:
         return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
                                     urllib.parse.quote_plus(email))
@@ -202,7 +193,11 @@ def accounts_register(request):
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
             timezone = request.POST['timezone']
 
-        # FIXME: sanitize email addresses and fullname
+        try:
+            existing_user_profile = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            existing_user_profile = None
+
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
             do_activate_user(user_profile)
@@ -359,10 +354,10 @@ def accounts_home(request):
                 return HttpResponseRedirect("/config-error/smtp")
 
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
+
+        email = request.POST['email']
         try:
-            email = request.POST['email']
-            # Note: We don't check for uniqueness
-            is_inactive(email)
+            validate_email_for_realm(realm, email)
         except ValidationError:
             return redirect_to_email_login_url(email)
     else:

@@ -3192,6 +3192,21 @@ def user_email_is_unique(email):
     except UserProfile.DoesNotExist:
         pass
 
+def validate_email_for_realm(target_realm, email):
+    # type: (Optional[Realm], Text) -> None
+    try:
+        existing_user_profile = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        existing_user_profile = None
+
+    if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+        # Mirror dummy users to be activated must be inactive
+        if existing_user_profile.is_active:
+            raise ValidationError(u'%s is already active' % (email,))
+    elif existing_user_profile:
+        # Other users should not already exist at all.
+        raise ValidationError(u'%s is already registered' % (email,))
+
 def validate_email(user_profile, email):
     # type: (UserProfile, Text) -> Tuple[Optional[str], Optional[str]]
     try:
@@ -3203,17 +3218,7 @@ def validate_email(user_profile, email):
         return _("Outside your domain."), None
 
     try:
-        existing_user_profile = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        existing_user_profile = None
-
-    try:
-        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
-            # Mirror dummy users to be activated must be inactive
-            is_inactive(email)
-        else:
-            # Other users should not already exist at all.
-            user_email_is_unique(email)
+        validate_email_for_realm(user_profile.realm, email)
     except ValidationError:
         return None, _("Already has an account.")
 
