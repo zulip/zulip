@@ -367,7 +367,11 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
     messages_by_recipient_subject = defaultdict(list)  # type: Dict[Tuple[int, Text], List[Message]]
     for msg in messages:
-        messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
+        if msg.recipient.type == Recipient.PERSONAL:
+            # For PM's group using (recipient, sender).
+            messages_by_recipient_subject[(msg.recipient_id, msg.sender_id)].append(msg)
+        else:
+            messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
 
     message_count_by_recipient_subject = {
         recipient_subject: len(msgs)

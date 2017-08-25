@@ -352,3 +352,29 @@ class TestMissedMessages(ZulipTestCase):
         body = '<a class="stream" data-stream-id="5" href="http://testserver/#narrow/stream/Verona">#Verona</a'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_multiple_missed_personal_messages(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_message(self.example_email('othello'),
+                                     hamlet.email,
+                                     Recipient.PERSONAL,
+                                     'Personal Message 1')
+        msg_id_2 = self.send_message(self.example_email('iago'),
+                                     hamlet.email,
+                                     Recipient.PERSONAL,
+                                     'Personal Message 2')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1},
+            {'message_id': msg_id_2},
+        ])
+        self.assertEqual(len(mail.outbox), 2)
+        subject = 'Iago sent you a message'
+        self.assertEqual(mail.outbox[0].subject, subject)
+        subject = 'Othello, the Moor of Venice sent you a message'
+        self.assertEqual(mail.outbox[1].subject, subject)
