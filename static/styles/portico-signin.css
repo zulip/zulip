@@ -522,7 +522,7 @@ html {
 .portico-page .or {
     width: 328px;
     display: block;
-    margin: 0 auto;
+    margin: 10px auto;
     color: hsl(0, 0%, 34%);
     font-weight: 600;
     text-align: center;
@@ -551,7 +551,6 @@ html {
 }
 
 .login-google {
-    margin-top: 10px;
     margin-bottom: 10px;
 }
 
@@ -771,6 +770,7 @@ button.login-google-button {
     .register-page-container,
     .login-page-container {
         width: 400px;
+        text-align: center;
     }
 
     .split-view .org-header .avatar {
