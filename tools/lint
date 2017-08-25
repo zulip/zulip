@@ -47,9 +47,6 @@ def run():
     parser.add_argument('--full',
                         action='store_true',
                         help='Check some things we typically ignore')
-    parser.add_argument('--pep8',
-                        action='store_true',
-                        help='Run the pep8 checker')
     parser.add_argument('--no-gitlint',
                         action='store_true',
                         help='Disable gitlint')
@@ -62,6 +59,13 @@ def run():
     parser.add_argument('targets',
                         nargs='*',
                         help='Specify directories to check')
+    limited_tests_group = parser.add_mutually_exclusive_group()
+    limited_tests_group.add_argument('--frontend',
+                                     action='store_true',
+                                     help='Only check files relevant to frontend')
+    limited_tests_group.add_argument('--backend',
+                                     action='store_true',
+                                     help='Only check files relevant to backend')
     args = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
@@ -86,10 +90,17 @@ def run():
             print('If you really know what you are doing, use --force to run anyway.')
             sys.exit(1)
 
+    backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml']
+    frontend_file_types = ['js', 'css', 'handlebars', 'html']
+    file_types = backend_file_types + frontend_file_types
+    if args.backend:
+        file_types = backend_file_types
+    if args.frontend:
+        file_types = frontend_file_types
+
     by_lang = cast(Dict[str, List[str]],
                    lister.list_files(args.targets, modified_only=args.modified,
-                                     ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars',
-                                             'html', 'json', 'md', 'txt', 'text', 'yaml'],
+                                     ftypes=file_types,
                                      use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     # Invoke the appropriate lint checker for each language,
@@ -178,12 +189,11 @@ def run():
         failed = check_pyflakes(args, by_lang)
         return 1 if failed else 0
 
-    if args.pep8:
-        @lint
-        def pep8():
-            # type: () -> int
-            failed = check_pep8(by_lang['py'])
-            return 1 if failed else 0
+    @lint
+    def pep8():
+        # type: () -> int
+        failed = check_pep8(by_lang['py'])
+        return 1 if failed else 0
 
     failed = run_parallel(lint_functions)
 
