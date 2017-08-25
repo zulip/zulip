@@ -6,7 +6,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
 from django.http.multipartparser import MultiPartParser
-from zerver.models import UserProfile, get_client, get_user_profile_by_email
+from zerver.models import UserProfile, get_client
 from zerver.lib.response import json_error, json_unauthorized, json_success
 from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs

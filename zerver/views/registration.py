@@ -15,7 +15,7 @@ from django.core import validators
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain
+    get_realm, get_realm_by_email_domain, get_user_profile_by_email
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -26,7 +26,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, get_user_profile_by_email, REQ, do_login
+    JsonableError, REQ, do_login
 from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
