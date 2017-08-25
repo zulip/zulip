@@ -1080,7 +1080,7 @@ class GoogleLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        self.google_oauth2_test(token_response, account_response)
+        self.google_oauth2_test(token_response, account_response, subdomain="")
 
         user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
@@ -1094,7 +1094,7 @@ class GoogleLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=email)])
         account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response)
+        result = self.google_oauth2_test(token_response, account_response, subdomain="")
         self.assert_in_response('No account found for',
                                 result)
         self.assert_in_response('newuser@zulip.com. Would you like to register instead?',
@@ -1127,7 +1127,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.google_oauth2_test(token_response, account_response)
+            result = self.google_oauth2_test(token_response, account_response, subdomain="")
             self.assertEqual(result.status_code, 302)
             self.assertIn('subdomain=1', result.url)
 
@@ -1176,7 +1176,7 @@ class GoogleLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        self.google_oauth2_test(token_response, account_response)
+        self.google_oauth2_test(token_response, account_response, subdomain="")
 
         user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
@@ -1188,7 +1188,7 @@ class GoogleLoginTest(GoogleOAuthTest):
                             emails=[])
         account_response = ResponseMock(200, account_data)
         with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, account_response)
+            result = self.google_oauth2_test(token_response, account_response, subdomain="")
         self.assertEqual(result.status_code, 400)
         self.assertIn("Google oauth2 account email not found:", m.call_args_list[0][0][0])
 
@@ -1423,7 +1423,8 @@ class FetchAuthBackends(ZulipTestCase):
 
     def test_get_server_settings(self):
         # type: () -> None
-        result = self.client_get("/api/v1/server_settings")
+        result = self.client_get("/api/v1/server_settings",
+                                 subdomain="")
         self.assert_json_success(result)
         data = result.json()
         schema_checker = check_dict_only([
@@ -1528,7 +1529,7 @@ class FetchAuthBackends(ZulipTestCase):
 
                 # Verify invalid subdomain
                 result = self.client_get("/api/v1/get_auth_backends",
-                                         HTTP_HOST="invalid.testserver")
+                                         subdomain="invalid")
                 self.assert_json_error_contains(result, "Invalid subdomain", 400)
 
                 # Verify correct behavior with a valid subdomain with
@@ -1536,7 +1537,7 @@ class FetchAuthBackends(ZulipTestCase):
                 realm = get_realm("zulip")
                 do_set_realm_authentication_methods(realm, dict(Google=False, Email=False, Dev=True))
                 result = self.client_get("/api/v1/get_auth_backends",
-                                         HTTP_HOST="zulip.testserver")
+                                         subdomain="zulip")
                 self.assert_json_success(result)
                 data = result.json()
                 self.assertEqual(data, {
@@ -1552,12 +1553,12 @@ class FetchAuthBackends(ZulipTestCase):
                                ROOT_DOMAIN_LANDING_PAGE=True):
                 # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
                 result = self.client_get("/api/v1/get_auth_backends",
-                                         HTTP_HOST="testserver")
+                                         subdomain="")
                 self.assert_json_error_contains(result, "Subdomain required", 400)
 
                 # With ROOT_DOMAIN_LANDING_PAGE, subdomain pages succeed
                 result = self.client_get("/api/v1/get_auth_backends",
-                                         HTTP_HOST="zulip.testserver")
+                                         subdomain="zulip")
                 self.assert_json_success(result)
                 data = result.json()
                 self.assertEqual(data, {
@@ -1738,10 +1739,10 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_success(self):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
-        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+        with self.settings(JWT_AUTH_KEYS={'zulip': 'key'}):
             email = self.example_email("hamlet")
             realm = get_realm('zulip')
-            auth_key = settings.JWT_AUTH_KEYS['']
+            auth_key = settings.JWT_AUTH_KEYS['zulip']
             web_token = jwt.encode(payload, auth_key).decode('utf8')
 
             user_profile = get_user(email, realm)
@@ -1753,8 +1754,8 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_failure_when_user_is_missing(self):
         # type: () -> None
         payload = {'realm': 'zulip.com'}
-        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
-            auth_key = settings.JWT_AUTH_KEYS['']
+        with self.settings(JWT_AUTH_KEYS={'zulip': 'key'}):
+            auth_key = settings.JWT_AUTH_KEYS['zulip']
             web_token = jwt.encode(payload, auth_key).decode('utf8')
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
@@ -1763,8 +1764,8 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_failure_when_realm_is_missing(self):
         # type: () -> None
         payload = {'user': 'hamlet'}
-        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
-            auth_key = settings.JWT_AUTH_KEYS['']
+        with self.settings(JWT_AUTH_KEYS={'zulip': 'key'}):
+            auth_key = settings.JWT_AUTH_KEYS['zulip']
             web_token = jwt.encode(payload, auth_key).decode('utf8')
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
@@ -1778,13 +1779,13 @@ class TestJWTLogin(ZulipTestCase):
 
     def test_login_failure_when_key_is_missing(self):
         # type: () -> None
-        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+        with self.settings(JWT_AUTH_KEYS={'zulip': 'key'}):
             result = self.client_post('/accounts/login/jwt/')
             self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
 
     def test_login_failure_when_bad_token_is_passed(self):
         # type: () -> None
-        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+        with self.settings(JWT_AUTH_KEYS={'zulip': 'key'}):
             result = self.client_post('/accounts/login/jwt/')
             self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
             data = {'json_web_token': 'bad token'}
@@ -1794,8 +1795,8 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_failure_when_user_does_not_exist(self):
         # type: () -> None
         payload = {'user': 'nonexisting', 'realm': 'zulip.com'}
-        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
-            auth_key = settings.JWT_AUTH_KEYS['']
+        with self.settings(JWT_AUTH_KEYS={'zulip': 'key'}):
+            auth_key = settings.JWT_AUTH_KEYS['zulip']
             web_token = jwt.encode(payload, auth_key).decode('utf8')
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)

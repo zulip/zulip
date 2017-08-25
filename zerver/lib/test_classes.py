@@ -117,6 +117,8 @@ class ZulipTestCase(TestCase):
             else:
                 kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
             del kwargs["subdomain"]
+        elif 'HTTP_HOST' not in kwargs:
+            kwargs["HTTP_HOST"] = "zulip.%s" % (settings.EXTERNAL_HOST,)
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
