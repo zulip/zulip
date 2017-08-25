@@ -8,7 +8,7 @@ from typing import Any, Union, Mapping, Callable
 from zerver.lib.actions import do_create_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
-    get_realm_by_email_domain,
+    get_realm,
     UserProfile,
     Recipient,
 )
@@ -25,14 +25,14 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="foo-bot@zulip.com",
                                           password="test",
-                                          realm=get_realm_by_email_domain("zulip.com"),
+                                          realm=get_realm("zulip"),
                                           full_name="FooBot",
                                           short_name="foo-bot",
                                           bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                                           bot_owner=self.user_profile)
         self.second_bot_profile = do_create_user(email="bar-bot@zulip.com",
                                                  password="test",
-                                                 realm=get_realm_by_email_domain("zulip.com"),
+                                                 realm=get_realm("zulip"),
                                                  full_name="BarBot",
                                                  short_name="bar-bot",
                                                  bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,

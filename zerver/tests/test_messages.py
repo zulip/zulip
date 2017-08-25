@@ -42,7 +42,7 @@ from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivat
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
-    RealmAuditLog, RealmDomain, get_realm, get_realm_by_email_domain,
+    RealmAuditLog, RealmDomain, get_realm,
     get_stream, get_recipient, get_system_bot, get_user, Reaction,
     sew_messages_and_reactions, flush_per_request_caches
 )
@@ -193,7 +193,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def create_user(self, email):
         # type: (Text) -> UserProfile
         self.register(email, 'test')
-        return get_user(email, get_realm_by_email_domain(email))
+        return get_user(email, get_realm(email.split("@")[1]))
 
     @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
                                                'support@3.example.com'])
@@ -218,7 +218,6 @@ class TestCrossRealmPMs(ZulipTestCase):
                 JsonableError,
                 'Invalid email ')
 
-        random_zulip_email = 'random@zulip.com'
         user1_email = 'user1@1.example.com'
         user1a_email = 'user1a@1.example.com'
         user2_email = 'user2@2.example.com'
@@ -226,7 +225,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         feedback_email = 'feedback@zulip.com'
         support_email = 'support@3.example.com'  # note: not zulip.com
 
-        self.create_user(random_zulip_email)
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
@@ -293,7 +291,7 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
         with assert_invalid_email():
-            self.send_message(user1_email, random_zulip_email, Recipient.PERSONAL)
+            self.send_message(user1_email, "hamlet@zulip.com", Recipient.PERSONAL)
 
         # Users on three different realms can not PM each other
         with assert_invalid_email():
