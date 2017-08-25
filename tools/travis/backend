@@ -5,7 +5,7 @@ source tools/travis/activate-venv
 set -e
 set -x
 
-./tools/lint
+./tools/lint --backend
 ./manage.py makemessages --locale en
 PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
