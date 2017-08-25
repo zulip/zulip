@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import os
 
-from typing import Any, Iterator, List, Tuple, Text
+from typing import Any, Iterator, List, Optional, Tuple, Text
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
@@ -125,8 +125,8 @@ def _get_api_calls_left(entity, range_seconds, max_calls):
 
         results = pipe.execute()
 
-    count = results[0]
-    newest_call = results[1]
+    count = results[0]  # type: int
+    newest_call = results[1]  # type: Optional[bytes]
 
     calls_left = max_calls - count
     if newest_call is not None:
@@ -165,18 +165,18 @@ def is_ratelimited(entity):
         pipe.get(blocking_key)
         pipe.ttl(blocking_key)
 
-        rule_timestamps = pipe.execute()
+        rule_timestamps = pipe.execute()  # type: List[Optional[bytes]]
 
     # Check if there is a manual block on this API key
-    blocking_ttl = rule_timestamps.pop()
+    blocking_ttl_b = rule_timestamps.pop()
     key_blocked = rule_timestamps.pop()
 
     if key_blocked is not None:
         # We are manually blocked. Report for how much longer we will be
-        if blocking_ttl is None:
+        if blocking_ttl_b is None:
             blocking_ttl = 0.5
         else:
-            blocking_ttl = int(blocking_ttl)
+            blocking_ttl = int(blocking_ttl_b)
         return True, blocking_ttl
 
     now = time.time()
@@ -186,8 +186,7 @@ def is_ratelimited(entity):
         if timestamp is None:
             continue
 
-        timestamp = float(timestamp)
-        boundary = timestamp + range_seconds
+        boundary = float(timestamp) + range_seconds
         if boundary > now:
             free = boundary - now
             return True, free
