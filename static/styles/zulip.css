@@ -2739,3 +2739,7 @@ button.topic_edit_cancel {
     visibility: visible;
     opacity: 1;
 }
+
+.hotkey-hint {
+    opacity: 0.75;
+}
