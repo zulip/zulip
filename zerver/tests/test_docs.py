@@ -19,13 +19,33 @@ from zerver.views.integrations import (
 )
 
 class DocPageTest(ZulipTestCase):
-    def _test(self, url, expected_content, extra_strings=[]):
-        # type: (str, str, List[str]) -> None
-        result = self.client_get(url)
+    def _test(self, url, expected_content, extra_strings=[],
+              landing_page=True):
+        # type: (str, str, List[str], bool) -> None
+
+        # Test the URL on the "zulip" subdomain
+        result = self.client_get(url, subdomain="zulip")
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
         for s in extra_strings:
             self.assertIn(s, str(result.content))
+
+        # Test the URL on the root subdomain
+        result = self.client_get(url, subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(expected_content, str(result.content))
+        for s in extra_strings:
+            self.assertIn(s, str(result.content))
+
+        if not landing_page:
+            return
+        # Test the URL on the root subdomain with the landing page setting
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get(url, subdomain="")
+            self.assertEqual(result.status_code, 200)
+            self.assertIn(expected_content, str(result.content))
+            for s in extra_strings:
+                self.assertIn(s, str(result.content))
 
     def test_doc_endpoints(self):
         # type: () -> None
@@ -50,7 +70,7 @@ class DocPageTest(ZulipTestCase):
                        'IFTTT'
                    ])
         self._test('/integrations/doc-html/travis', 'Your Travis CI notifications may look like:')
-        self._test('/devlogin/', 'Normal users')
+        self._test('/devlogin/', 'Normal users', landing_page=False)
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
