@@ -9,7 +9,8 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.queue import queue_json_publish
-from zerver.models import UserActivity, UserProfile, Realm
+from zerver.models import UserProfile, Realm
+from zerver.lib.digest import inactive_since
 
 ## Logging setup ##
 
@@ -26,20 +27,6 @@ logger.addHandler(file_handler)
 
 VALID_DIGEST_DAY = 1  # Tuesdays
 DIGEST_CUTOFF = 5
-
-def inactive_since(user_profile, cutoff):
-    # type: (UserProfile, datetime.datetime) -> bool
-    # Hasn't used the app in the last DIGEST_CUTOFF (5) days.
-    most_recent_visit = [row.last_visit for row in
-                         UserActivity.objects.filter(
-                             user_profile=user_profile)]
-
-    if not most_recent_visit:
-        # This person has never used the app.
-        return True
-
-    last_visit = max(most_recent_visit)
-    return last_visit < cutoff
 
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
