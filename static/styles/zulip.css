@@ -1018,7 +1018,7 @@ td.pointer {
     border-right: 1px solid hsl(0, 0%, 88%);
 }
 
-.mention .messagebox-content {
+.mention .messagebox {
     background-color: hsl(8, 94%, 94%);
 }
 
