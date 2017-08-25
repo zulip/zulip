@@ -481,9 +481,10 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_not_too_many_queries(self):
         # type: () -> None
-        recipient_list  = [self.example_email("hamlet"), self.example_email("iago"), self.example_email("cordelia"), self.example_email("othello")]
-        for email in recipient_list:
-            self.subscribe_to_stream(email, "Denmark")
+        recipient_list  = [self.example_user("hamlet"), self.example_user("iago"),
+                           self.example_user("cordelia"), self.example_user("othello")]
+        for user_profile in recipient_list:
+            self.subscribe(user_profile, "Denmark")
 
         sender = self.example_user('hamlet')
         message_type_name = "stream"
@@ -513,7 +514,7 @@ class StreamMessagesTest(ZulipTestCase):
     def test_stream_message_dict(self):
         # type: () -> None
         user_profile = self.example_user('iago')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
                           content="whatever", subject="my topic")
         message = most_recent_message(user_profile)
@@ -527,7 +528,7 @@ class StreamMessagesTest(ZulipTestCase):
     def test_stream_message_unicode(self):
         # type: () -> None
         user_profile = self.example_user('iago')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
                           content="whatever", subject="my topic")
         message = most_recent_message(user_profile)
@@ -538,7 +539,7 @@ class StreamMessagesTest(ZulipTestCase):
     def test_message_mentions(self):
         # type: () -> None
         user_profile = self.example_user('iago')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
                           content="test @**Iago** rules")
         message = most_recent_message(user_profile)
@@ -594,7 +595,7 @@ class StreamMessagesTest(ZulipTestCase):
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
-            self.subscribe_to_stream(user_profile.email, stream.name)
+            self.subscribe(user_profile, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
@@ -1161,7 +1162,7 @@ class MessagePOSTTest(ZulipTestCase):
         user.is_api_super_user = True
         user.save()
         user = get_user(email, get_realm('zulip'))
-        self.subscribe_to_stream(email, "#IRCland", realm=user.realm)
+        self.subscribe(user, "#IRCland")
         result = self.client_post("/api/v1/messages",
                                   {"type": "stream",
                                    "forged": "true",
@@ -1240,11 +1241,11 @@ class EditMessageTest(ZulipTestCase):
 
     def test_fetch_raw_message_stream_wrong_realm(self):
         # type: () -> None
-        email = self.example_email("hamlet")
-        self.login(email)
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
         stream = self.make_stream('public_stream')
-        self.subscribe_to_stream(email, stream.name)
-        msg_id = self.send_message(email, stream.name, Recipient.STREAM,
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_message(user_profile.email, stream.name, Recipient.STREAM,
                                    subject="test", content="test")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
@@ -1255,11 +1256,11 @@ class EditMessageTest(ZulipTestCase):
 
     def test_fetch_raw_message_private_stream(self):
         # type: () -> None
-        email = self.example_email("hamlet")
-        self.login(email)
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
         stream = self.make_stream('private_stream', invite_only=True)
-        self.subscribe_to_stream(email, stream.name)
-        msg_id = self.send_message(email, stream.name, Recipient.STREAM,
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_message(user_profile.email, stream.name, Recipient.STREAM,
                                    subject="test", content="test")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
@@ -1873,7 +1874,7 @@ class StarTests(ZulipTestCase):
         POST /json/messages/flags.
         """
         stream_name = "new_stream"
-        self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
+        self.subscribe(self.example_user("hamlet"), stream_name)
         self.login(self.example_email("hamlet"))
         message_ids = [self.send_message(self.example_email("hamlet"), stream_name,
                                          Recipient.STREAM, "test")]
@@ -1944,7 +1945,7 @@ class StarTests(ZulipTestCase):
         # type: () -> None
         stream_name = "private_stream"
         self.make_stream(stream_name, invite_only=True)
-        self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
+        self.subscribe(self.example_user("hamlet"), stream_name)
         self.login(self.example_email("hamlet"))
         message_ids = [self.send_message(self.example_email("hamlet"), stream_name,
                                          Recipient.STREAM, "test")]
@@ -2000,7 +2001,6 @@ class AttachmentTest(ZulipTestCase):
 
         # Create dummy DB entry
         user_profile = self.example_user('hamlet')
-        sender_email = user_profile.email
         sample_size = 10
         dummy_files = [
             ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
@@ -2012,13 +2012,13 @@ class AttachmentTest(ZulipTestCase):
             create_attachment(file_name, path_id, user_profile, size)
 
         # Send message referring the attachment
-        self.subscribe_to_stream(sender_email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
 
         body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +  \
                "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." + \
                "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
 
-        self.send_message(sender_email, "Denmark", Recipient.STREAM, body, "test")
+        self.send_message(user_profile.email, "Denmark", Recipient.STREAM, body, "test")
 
         for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
@@ -2150,9 +2150,9 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
     def test_maybe_catch_up_soft_deactivated_user(self):
         # type: () -> None
-        recipient_list  = [self.example_email("hamlet"), self.example_email("iago")]
-        for email in recipient_list:
-            self.subscribe_to_stream(email, "Denmark")
+        recipient_list  = [self.example_user("hamlet"), self.example_user("iago")]
+        for user_profile in recipient_list:
+            self.subscribe(user_profile, "Denmark")
 
         sender = self.example_email('iago')
         stream_name = 'Denmark'
@@ -2189,9 +2189,9 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
     def test_add_missing_messages(self):
         # type: () -> None
-        recipient_list  = [self.example_email("hamlet"), self.example_email("iago")]
-        for email in recipient_list:
-            self.subscribe_to_stream(email, "Denmark")
+        recipient_list  = [self.example_user("hamlet"), self.example_user("iago")]
+        for user_profile in recipient_list:
+            self.subscribe(user_profile, "Denmark")
 
         sender = self.example_user('iago')
         realm = sender.realm
@@ -2252,7 +2252,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Alter subscription to stream.
         self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
         send_fake_message('Test Message 4', stream)
-        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message('Test Message 5', stream))
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
@@ -2273,7 +2273,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         sent_message_list.append(send_fake_message('Test Message 6', stream))
         # Unsubscribe from stream and then immediately subscribe back again.
         self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
-        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message('Test Message 7', stream))
         # Again unsubscribe from stream and send a message.
         # This will make sure that if initially in a unsubscribed state
@@ -2281,7 +2281,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
         send_fake_message('Test Message 8', stream)
         # Do a subscribe and unsubscribe immediately.
-        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        self.subscribe(long_term_idle_user, stream_name)
         self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
 
         sent_message_list.reverse()
@@ -2302,14 +2302,14 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Test for a Private Stream.
         stream_name = "Core"
         private_stream = self.make_stream('Core', invite_only=True)
-        self.subscribe_to_stream(self.example_email("iago"), stream_name)
+        self.subscribe(self.example_user("iago"), stream_name)
         sent_message_list = []
         send_fake_message('Test Message 9', private_stream)
-        self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
+        self.subscribe(self.example_user("hamlet"), stream_name)
         sent_message_list.append(send_fake_message('Test Message 10', private_stream))
         self.unsubscribe_from_stream(long_term_idle_user.email, stream_name, realm)
         send_fake_message('Test Message 11', private_stream)
-        self.subscribe_to_stream(long_term_idle_user.email, stream_name, realm)
+        self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message('Test Message 12', private_stream))
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
@@ -2330,12 +2330,12 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # do_send_messages() in action.py for filtering the messages for which
         # UserMessage rows should be created for a soft-deactivated user.
         recipient_list  = [
-            self.example_email("hamlet"),
-            self.example_email("iago"),
-            self.example_email('cordelia')
+            self.example_user("hamlet"),
+            self.example_user("iago"),
+            self.example_user('cordelia')
         ]
-        for email in recipient_list:
-            self.subscribe_to_stream(email, "Denmark")
+        for user_profile in recipient_list:
+            self.subscribe(user_profile, "Denmark")
 
         cordelia = self.example_user('cordelia')
         sender = self.example_email('iago')

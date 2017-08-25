@@ -584,7 +584,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to subscribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        self.subscribe_to_stream(self.example_email("hamlet"), 'Scotland')
+        self.subscribe(self.example_user("hamlet"), 'Scotland')
         self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM)
         messages = get_user_messages(self.example_user('hamlet'))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -609,10 +609,10 @@ class GetOldMessagesTest(ZulipTestCase):
         # it to ensure that we actually have a stream message in this
         # narrow view.
         lambda_stream_name = u"\u03bb-stream"
-        self.subscribe_to_stream(self.mit_email("starnine"), lambda_stream_name)
+        self.subscribe(self.mit_user("starnine"), lambda_stream_name)
 
         lambda_stream_d_name = u"\u03bb-stream.d"
-        self.subscribe_to_stream(self.mit_email("starnine"), lambda_stream_d_name)
+        self.subscribe(self.mit_user("starnine"), lambda_stream_d_name)
 
         self.send_message(self.mit_email("starnine"), u"\u03bb-stream", Recipient.STREAM)
         self.send_message(self.mit_email("starnine"), u"\u03bb-stream.d", Recipient.STREAM)
@@ -642,7 +642,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        self.subscribe_to_stream(email, "Scotland")
+        self.subscribe(mit_user_profile, "Scotland")
 
         self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic")
@@ -678,7 +678,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(email)  # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        self.subscribe_to_stream(email, "Scotland")
+        self.subscribe(mit_user_profile, "Scotland")
 
         self.send_message(email, "Scotland", Recipient.STREAM,
                           subject=u".d.d")
@@ -865,7 +865,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_with_search_not_subscribed(self):
         # type: () -> None
         """Verify support for searching a stream you're not subscribed to"""
-        self.subscribe_to_stream(self.example_email("hamlet"), "newstream")
+        self.subscribe(self.example_user("hamlet"), "newstream")
         self.send_message(
             sender_name=self.example_email("hamlet"),
             raw_recipients="newstream",

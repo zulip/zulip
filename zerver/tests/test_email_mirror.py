@@ -89,7 +89,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # test valid incoming stream message is processed properly
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -118,7 +118,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # test message with empty body is not sent
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -296,7 +296,7 @@ class TestReplyExtraction(ZulipTestCase):
         email = self.example_email('hamlet')
         self.login(email)
         user_profile = self.example_user('hamlet')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -328,7 +328,7 @@ class TestReplyExtraction(ZulipTestCase):
         email = self.example_email('hamlet')
         self.login(email)
         user_profile = self.example_user('hamlet')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)

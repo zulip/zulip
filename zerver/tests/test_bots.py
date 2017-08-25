@@ -260,7 +260,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         user_profile = self.example_user('hamlet')
         stream = get_stream("Denmark", user_profile.realm)
-        self.subscribe_to_stream(user_profile.email, stream.name)
+        self.subscribe(user_profile, stream.name)
         do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
@@ -330,7 +330,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # type: () -> None
         self.login(self.example_email('hamlet'))
         user_profile = self.example_user('hamlet')
-        stream = self.subscribe_to_stream(user_profile.email, 'Denmark')
+        stream = self.subscribe(user_profile, 'Denmark')
         do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
@@ -682,7 +682,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # type: () -> None
         self.login(self.example_email('hamlet'))
         user_profile = self.example_user('hamlet')
-        stream = self.subscribe_to_stream(user_profile.email, "Denmark")
+        stream = self.subscribe(user_profile, "Denmark")
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
@@ -763,7 +763,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # type: () -> None
         self.login(self.example_email('hamlet'))
         user_profile = self.example_user('hamlet')
-        stream = self.subscribe_to_stream(user_profile.email, "Denmark")
+        stream = self.subscribe(user_profile, "Denmark")
         do_change_stream_invite_only(stream, True)
 
         bot_info = {

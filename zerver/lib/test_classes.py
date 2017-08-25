@@ -495,6 +495,17 @@ class ZulipTestCase(TestCase):
         bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
         return stream
 
+    # Subscribe to a stream directly
+    def subscribe(self, user_profile, stream_name):
+        # type: (UserProfile, Text) -> Stream
+        try:
+            stream = get_stream(stream_name, user_profile.realm)
+            from_stream_creation = False
+        except Stream.DoesNotExist:
+            stream, from_stream_creation = create_stream_if_needed(user_profile.realm, stream_name)
+        bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
+        return stream
+
     def unsubscribe_from_stream(self, email, stream_name, realm):
         # type: (Text, Text, Realm) -> None
         user_profile = get_user(email, realm)

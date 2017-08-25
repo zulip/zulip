@@ -363,10 +363,10 @@ class HomeTest(ZulipTestCase):
 
     def test_new_stream(self):
         # type: () -> None
-        email = self.example_email("hamlet")
+        user_profile = self.example_user("hamlet")
         stream_name = 'New stream'
-        self.subscribe_to_stream(email, stream_name)
-        self.login(email)
+        self.subscribe(user_profile, stream_name)
+        self.login(user_profile.email)
         result = self._get_home_page(stream=stream_name)
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['narrow_stream'], stream_name)

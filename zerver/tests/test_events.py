@@ -1394,7 +1394,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
-        self.subscribe_to_stream(self.user_profile.email, stream.name)
+        self.subscribe(self.user_profile, stream.name)
 
         action = lambda: do_rename_stream(stream, new_name)
         events = self.do_test(action, num_events=2)
@@ -1437,7 +1437,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_subscribe_other_user_never_subscribed(self):
         # type: () -> None
-        action = lambda: self.subscribe_to_stream(self.example_email("othello"), u"test_stream")
+        action = lambda: self.subscribe(self.example_user("othello"), u"test_stream")
         events = self.do_test(action, num_events=2)
         peer_add_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
@@ -1521,14 +1521,14 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
-        action = lambda: self.subscribe_to_stream(self.example_email("hamlet"), "test_stream")  # type: Callable
+        action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")  # type: Callable
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         # Add another user to that totally new stream
-        action = lambda: self.subscribe_to_stream(self.example_email("othello"), "test_stream")
+        action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               state_change_expected=include_subscribers,
@@ -1560,7 +1560,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         # Now resubscribe a user, to make sure that works on a vacated stream
-        action = lambda: self.subscribe_to_stream(self.example_email("hamlet"), "test_stream")
+        action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               num_events=2)
@@ -1669,7 +1669,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         pm1_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello1")
         pm2_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello2")
 
-        muted_stream = self.subscribe_to_stream(user_profile.email, 'Muted Stream')
+        muted_stream = self.subscribe(user_profile, 'Muted Stream')
         mute_stream(user_profile, muted_stream)
         stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
         muted_stream_message_id = self.send_message(sender_email, "Muted Stream", Recipient.STREAM, "hello")

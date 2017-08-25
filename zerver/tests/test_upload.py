@@ -199,7 +199,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         entry = Attachment.objects.get(file_name='zulip.txt')
         self.assertEqual(entry.is_claimed(), False)
 
-        self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
+        self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
@@ -266,7 +266,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d2_attachment.save()
 
         # Send message refering only dummy_1
-        self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
+        self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, body, "test")
 
@@ -294,7 +294,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {'file': d1})
         d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
-        self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
+        self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, body, "test")
         body = "Second message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
@@ -313,7 +313,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         self.make_stream("private_stream", invite_only=True)
-        self.subscribe_to_stream(self.example_email("hamlet"), "private_stream")
+        self.subscribe(self.example_user("hamlet"), "private_stream")
 
         # First, send the mesasge to the new private stream.
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
@@ -355,7 +355,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {'file': f2})
         f2_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
-        self.subscribe_to_stream(self.example_email("hamlet"), "test")
+        self.subscribe(self.example_user("hamlet"), "test")
         body = ("[f1.txt](http://localhost:9991/user_uploads/" + f1_path_id + ")"
                 "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         msg_id = self.send_message(self.example_email("hamlet"), "test", Recipient.STREAM, body, "test")
@@ -502,8 +502,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # type: () -> None
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
         unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
-        for user in subscribed_users:
-            self.subscribe_to_stream(user, "test-subscribe")
+        realm = get_realm("zulip")
+        for email in subscribed_users:
+            self.subscribe(get_user(email, realm), "test-subscribe")
 
         # Make the stream private
         stream = Stream.objects.get(name='test-subscribe')
@@ -541,8 +542,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # type: () -> None
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
         unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
-        for user in subscribed_users:
-            self.subscribe_to_stream(user, "test-subscribe")
+        realm = get_realm("zulip")
+        for email in subscribed_users:
+            self.subscribe(get_user(email, realm), "test-subscribe")
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -972,7 +974,7 @@ class S3Test(ZulipTestCase):
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assertEqual(len(b"zulip!"), uploaded_file.size)
 
-        self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
+        self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, body, "test")
         self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
@@ -1014,7 +1016,7 @@ class S3Test(ZulipTestCase):
 
         self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
 
-        self.subscribe_to_stream(self.example_email("hamlet"), "Denmark")
+        self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)

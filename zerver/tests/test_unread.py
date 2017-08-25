@@ -213,8 +213,8 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
-        stream = self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
-        self.subscribe_to_stream(self.example_email("cordelia"), "test_stream", user_profile.realm)
+        stream = self.subscribe(user_profile, "test_stream")
+        self.subscribe(self.example_user("cordelia"), "test_stream")
 
         message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello")
         unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello")
@@ -273,7 +273,7 @@ class UnreadCountTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
-        self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
+        self.subscribe(user_profile, "test_stream")
 
         message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello", "test_topic")
         unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello", "Denmark2")

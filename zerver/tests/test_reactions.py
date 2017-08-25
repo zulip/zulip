@@ -83,9 +83,8 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Reacting with valid emoji on a historical message succeeds
         """
-        realm = get_realm("zulip")
         stream_name = "Saxony"
-        self.subscribe_to_stream(self.example_email("cordelia"), stream_name, realm=realm)
+        self.subscribe(self.example_user("cordelia"), stream_name)
         message_id = self.send_message(self.example_email("cordelia"), stream_name, Recipient.STREAM)
 
         user_profile = self.example_user('hamlet')

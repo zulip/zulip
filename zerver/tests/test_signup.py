@@ -493,7 +493,7 @@ class InviteUserTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
-        self.subscribe_to_stream(user_profile.email, private_stream_name)
+        self.subscribe(user_profile, private_stream_name)
         public_msg_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
                                           "Public topic", "Public message")
         secret_msg_id = self.send_message(self.example_email("hamlet"), private_stream_name, Recipient.STREAM,
@@ -678,7 +678,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         stream_name = u"hÃ¼mbÃ¼Çµ"
 
         # Make sure we're subscribed before inviting someone.
-        self.subscribe_to_stream(self.example_email("hamlet"), stream_name)
+        self.subscribe(self.example_user("hamlet"), stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
