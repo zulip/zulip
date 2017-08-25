@@ -5,7 +5,7 @@ source tools/travis/activate-venv
 set -e
 set -x
 
-./tools/lint --pep8 # Include the slow and thus non-default pep8 linter check
+./tools/lint
 ./manage.py makemessages --locale en
 PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate

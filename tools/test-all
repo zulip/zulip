@@ -38,7 +38,7 @@ run ./tools/clean-repo
 run ./tools/run-mypy
 
 # travis/backend
-run ./tools/lint --pep8 $FORCEARG
+run ./tools/lint $FORCEARG
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate

@@ -47,9 +47,6 @@ def run():
     parser.add_argument('--full',
                         action='store_true',
                         help='Check some things we typically ignore')
-    parser.add_argument('--pep8',
-                        action='store_true',
-                        help='Run the pep8 checker')
     parser.add_argument('--no-gitlint',
                         action='store_true',
                         help='Disable gitlint')
@@ -62,6 +59,13 @@ def run():
     parser.add_argument('targets',
                         nargs='*',
                         help='Specify directories to check')
+    limited_tests_group = parser.add_mutually_exclusive_group()
+    limited_tests_group.add_argument('--frontend',
+                                     action='store_true',
+                                     help='Only check files relevant to frontend')
+    limited_tests_group.add_argument('--backend',
+                                     action='store_true',
+                                     help='Only check files relevant to backend')
     args = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
@@ -146,44 +150,46 @@ def run():
 
         lint_functions[name] = run_linter
 
-    external_linter('add_class', ['tools/find-add-class'])
-    external_linter('css', ['tools/check-css'], ['css'])
-    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
-    external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
-                               'static/ts/tslint.json'], ['ts'])
-    external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
-    external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
-    external_linter('urls', ['tools/check-urls'])
-    external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
+    if not args.backend:
+        external_linter('add_class', ['tools/find-add-class'])
+        external_linter('css', ['tools/check-css'], ['css'])
+        external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
+        external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
+                                   'static/ts/tslint.json'], ['ts'])
+        external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
+        external_linter('urls', ['tools/check-urls'])
+    if not args.frontend:
+        external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
+        external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
 
     # gitlint disabled until we can stabilize it more
     # if not args.no_gitlint:
     #     external_linter('commit_messages', ['tools/commit-message-lint'])
 
-    @lint
-    def custom_py():
-        # type: () -> int
-        failed = check_custom_checks_py()
-        return 1 if failed else 0
+    if not args.frontend:
+        @lint
+        def custom_py():
+            # type: () -> int
+            failed = check_custom_checks_py()
+            return 1 if failed else 0
+
+        @lint
+        def pyflakes():
+            # type: () -> int
+            failed = check_pyflakes(args, by_lang)
+            return 1 if failed else 0
+
+        @lint
+        def pep8():
+            # type: () -> int
+            failed = check_pep8(by_lang['py'])
+            return 1 if failed else 0
 
     @lint
     def custom_nonpy():
         # type: () -> int
         failed = check_custom_checks_nonpy()
         return 1 if failed else 0
-
-    @lint
-    def pyflakes():
-        # type: () -> int
-        failed = check_pyflakes(args, by_lang)
-        return 1 if failed else 0
-
-    if args.pep8:
-        @lint
-        def pep8():
-            # type: () -> int
-            failed = check_pep8(by_lang['py'])
-            return 1 if failed else 0
 
     failed = run_parallel(lint_functions)
 
