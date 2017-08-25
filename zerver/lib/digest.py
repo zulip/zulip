@@ -16,6 +16,7 @@ from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.models import UserProfile, UserActivity, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams, get_user_profile_by_id
 from zerver.context_processors import common_context
+from zerver.lib.queue import queue_json_publish
 
 import logging
 
@@ -57,6 +58,15 @@ def should_process_digest(realm_str):
         # Don't try to send emails to system-only realms
         return False
     return True
+
+# Changes to this should also be reflected in
+# zerver/worker/queue_processors.py:DigestWorker.consume()
+def queue_digest_recipient(user_profile, cutoff):
+    # type: (UserProfile, datetime.datetime) -> None
+    # Convert cutoff to epoch seconds for transit.
+    event = {"user_profile_id": user_profile.id,
+             "cutoff": cutoff.strftime('%s')}
+    queue_json_publish("digest_emails", event, lambda event: None)
 
 def gather_hot_conversations(user_profile, stream_messages):
     # type: (UserProfile, QuerySet) -> List[Dict[str, Any]]
