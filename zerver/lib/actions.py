@@ -2715,6 +2715,8 @@ def do_update_message_flags(user_profile, operation, flag, messages):
         count = msgs.update(flags=F('flags').bitor(flagattr))
     elif operation == 'remove':
         count = msgs.update(flags=F('flags').bitand(~flagattr))
+    else:
+        raise AssertionError("Invalid message flags operation")
 
     event = {'type': 'update_message_flags',
              'operation': operation,
