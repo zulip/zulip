@@ -1,5 +1,9 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
+{% block illustration %}
+<img src="{{ server_uri }}/static/images/emails/email_logo.png"/>
+{% endblock %}
+
 {% block content %}
 <p>Hi {{ user_profile.full_name }},</p>
 
@@ -9,7 +13,7 @@ at the following link:</p>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
         <td align="center">
-            <a href="{{ user_profile.realm.uri }}" style="color:#08c">{{ user_profile.realm.uri }}</a>
+            <a href="{{ user_profile.realm.uri }}">{{ user_profile.realm.uri }}</a>
         </td>
     </tr>
 </table>
@@ -20,4 +24,10 @@ at the following link:</p>
   this email.</p>
 
 <p>Thanks for using Zulip!</p>
+{% endblock %}
+
+{% block manage_preferences %}
+<p>
+    <a href="{{ user_profile.realm.uri }}/#settings">Manage email preferences</a>
+</p>
 {% endblock %}

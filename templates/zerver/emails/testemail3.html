@@ -279,9 +279,8 @@
                 <td class="container">
                     <div class="content">
                         <a href="#" style="pointer-events:none;cursor:default!important;z-index: 100;">
-                            {% block illustration %}{% endblock %}
+                            <img src="http://i.imgur.com/LrCPhPI.png"/>
                         </a>
-                        {% block preheader %}{% endblock %}
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table class="main">
                             <!-- START MAIN CONTENT AREA -->
@@ -290,11 +289,28 @@
                                     <table border="0" cellpadding="0" cellspacing="0">
                                         <tr>
                                             <td>
-                                                {% block content %}{% endblock %}
+                                                <p>Hey,</p>
+
+                                                <p>I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.</p>
+
+                                                <img src="http://i.imgur.com/WqigZVc.png"/>
+
+                                                <p>Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. One or two words will do it. Don't overthink 'em&mdash;you can always edit the message later!</p>
+
+                                                <p>&#9679; Good topics: screenshot, Bug 345, lunch</p>
+                                                <p>&#9679; Not recommended: "What do people think of this new screenshot?", "I'm looking at Bug 345", "Where should we go to lunch?"</p>
+
+                                                <img src="http://i.imgur.com/aR63BqE.png"/>
+
+                                                <p>Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away&mdash;read the topics that are relevant to you, and ignore the ones that aren't!</p>
+
+                                                <p><a href="https://www.google.co.uk">Take it for a spin now.</a></p>
+
+                                                <p>Thanks,<br />Zulip</p>
                                             </td>
                                         </tr>
                                     </table>
-                                    <img src="{{ realm_uri }}/static/images/emails/footer.png"/>
+                                    <img src="http://i.imgur.com/l7hp60W.png"/>
                                 </td>
                             </tr>
                             <!-- END MAIN CONTENT AREA -->
@@ -305,7 +321,10 @@
                                 <tr>
                                     <td class="content-block">
                                         <span class="apple-link">Kandra Labs, 112 S Park St, San Francisco CA 94107</span>
-                                        {% block manage_preferences %}{% endblock %}
+                                        <p>
+                                            <a href="https://www.google.co.uk">Manage email preferences</a> |
+                                            <a href="https://www.google.co.uk">Unsubscribe from welcome emails</a>
+                                        </p>
                                     </td>
                                 </tr>
                             </table>

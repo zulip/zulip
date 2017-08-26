@@ -1,5 +1,9 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
+{% block illustration %}
+<img src="{{ server_uri }}/static/images/emails/registration_confirmation.png"/>
+{% endblock %}
+
 {% block content %}
     <p>Hi there,
     </p>
@@ -13,14 +17,19 @@
     {% endif %}
     <p>
         To get started, visit the link below:
-        <br />
-        <a href="{{ activate_url }}" style="color:#08c">{{ activate_url }}</a>
+        <a class="button" href="{{ activate_url }}">Complete registration</a>
     </p>
     <p>
-        Feel free to give us a shout at <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a>, if you have any questions.
+        Feel free to give us a shout at <a href="mailto:{{ support_email }}">{{ support_email }}</a>, if you have any questions.
     </p>
     <p>
         Cheers,<br />
         Team Zulip
     </p>
+{% endblock %}
+
+{% block manage_preferences %}
+<p>
+    <a href="{{ server_uri }}/#settings">Manage email preferences</a>
+</p>
 {% endblock %}

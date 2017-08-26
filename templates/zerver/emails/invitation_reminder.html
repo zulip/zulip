@@ -1,21 +1,30 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
+{% block illustration %}
+<img src="{{ server_uri }}/static/images/emails/invitation_reminder.png"/>
+{% endblock %}
+
 {% block content %}
 <p>Hi again,
 </p>
 <p>
-    This is a friendly reminder that {{ referrer_name }} (<a href="mailto:{{ referrer_email }}" style="color:#08c">{{ referrer_email }}</a>) wants you to join them on Zulip, a workplace chat tool that actually makes you more productive.
+    This is a friendly reminder that {{ referrer_name }} (<a href="mailto:{{ referrer_email }}">{{ referrer_email }}</a>) wants you to join them on Zulip, a workplace chat tool that actually makes you more productive.
 </p>
 <p>
     To get started, visit the link below:
-    <br />
-    <a href="{{ activate_url }}" style="color:#08c">{{ activate_url }}</a>
+    <a class="button" href="{{ activate_url }}">Complete registration</a>
 </p>
 <p>
-    We're here for you at <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a> if you have any questions.
+    We're here for you at <a href="mailto:{{ support_email }}">{{ support_email }}</a> if you have any questions.
 </p>
 <p>
     Cheers,<br />
     The Zulip Team
+</p>
+{% endblock %}
+
+{% block manage_preferences %}
+<p>
+    <a href="{{ server_uri }}/#settings">Manage email preferences</a>
 </p>
 {% endblock %}

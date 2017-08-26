@@ -176,7 +176,6 @@
 
             a.button:hover {
             color: #ccf7eb;
-            text-decoration: none;
             }
 
             /* -------------------------------------
@@ -270,6 +269,7 @@
             text-decoration: none !important;
             }
             }
+
         </style>
     </head>
     <body class="">
@@ -279,9 +279,8 @@
                 <td class="container">
                     <div class="content">
                         <a href="#" style="pointer-events:none;cursor:default!important;z-index: 100;">
-                            {% block illustration %}{% endblock %}
+                            <img src="https://chat.zulip.org/static/images/emails/registration_confirmation.png"/>
                         </a>
-                        {% block preheader %}{% endblock %}
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table class="main">
                             <!-- START MAIN CONTENT AREA -->
@@ -290,11 +289,25 @@
                                     <table border="0" cellpadding="0" cellspacing="0">
                                         <tr>
                                             <td>
-                                                {% block content %}{% endblock %}
+                                                <p>Hello there.</p>
+                                                <p>
+                                                    You recently signed up for Zulip. Awesome!
+                                                </p>
+                                                <p>
+                                                    To complete signup, visit this link below:
+                                                    <a class="button" href="http://localhost:9991/accounts/do_confirm/5348720e4af7d2e8f296cbbd04d439489917ddc0">Complete registration</a>
+                                                </p>
+                                                <p>
+                                                    Feel free to give us a shout at <a href="mailto:zulip-admin@example.com">zulip-admin@example.com</a>, if you have any questions.
+                                                </p>
+                                                <p>
+                                                    Cheers,<br />
+                                                    Team Zulip
+                                                </p>
                                             </td>
                                         </tr>
                                     </table>
-                                    <img src="{{ realm_uri }}/static/images/emails/footer.png"/>
+                                    <img src="https://chat.zulip.org/static/images/emails/footer.png"/>
                                 </td>
                             </tr>
                             <!-- END MAIN CONTENT AREA -->
@@ -305,7 +318,9 @@
                                 <tr>
                                     <td class="content-block">
                                         <span class="apple-link">Kandra Labs, 112 S Park St, San Francisco CA 94107</span>
-                                        {% block manage_preferences %}{% endblock %}
+                                        <p>
+                                            <a href="http://localhost:9991/#settings">Manage email preferences</a>
+                                        </p>
                                     </td>
                                 </tr>
                             </table>
