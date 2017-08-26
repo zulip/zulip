@@ -828,8 +828,6 @@ def do_send_messages(messages_maybe_none):
                 if is_me_message:
                     um.flags |= UserMessage.flags.is_me_message
 
-                user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
-
             user_messages = []
             for um in ums_to_create:
                 if (um.user_profile.long_term_idle and
@@ -837,6 +835,7 @@ def do_send_messages(messages_maybe_none):
                         int(um.flags) == 0):
                     continue
                 user_messages.append(um)
+                user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
 
             ums.extend(user_messages)
 
