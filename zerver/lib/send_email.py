@@ -15,7 +15,6 @@ class FromAddress(object):
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
-# Intended only for test code
 def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                 from_address=None, reply_to_email=None, context=None):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Dict[str, Any]]) -> EmailMultiAlternatives
@@ -34,6 +33,7 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+        'email_images_base_uri': settings.SERVER_URI + '/static/images/emails/',
     })
     subject = loader.render_to_string(template_prefix + '.subject',
                                       context=context,
