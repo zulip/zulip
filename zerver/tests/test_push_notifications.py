@@ -357,7 +357,6 @@ class HandlePushNotificationTest(PushNotificationTest):
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
-                mock.patch('zerver.lib.push_notifications._do_push_to_apns_service'), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
                 mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer',
                            side_effect=requests.ConnectionError), \
