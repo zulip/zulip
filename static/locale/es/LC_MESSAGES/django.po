@@ -150,8 +150,8 @@ msgid "Zulip Android"
 msgstr ""
 
 #: templates/zerver/apps.html:97
-msgid "MacOS"
-msgstr "MacOS"
+msgid "macOS"
+msgstr "macOS"
 
 #: templates/zerver/apps.html:118
 msgid "Windows"

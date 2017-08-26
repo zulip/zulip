@@ -15,7 +15,7 @@ Zulip keyboard shortcuts are divided into four categories:
 
 !!! warn ""
     **Note:** We note how to enter keyboard shortcuts using keys not
-    present on the MacOS keyboard in parentheses below.
+    present on the macOS keyboard in parentheses below.
 
 ## Navigation
 

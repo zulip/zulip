@@ -49,8 +49,8 @@ var apps_events = function () {
         },
         mac: {
             image: "/static/images/landing-page/macbook.png",
-            alt: "MacOS",
-            description: "Zulip on MacOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            alt: "macOS",
+            description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_MAC,
         },
         android: {
