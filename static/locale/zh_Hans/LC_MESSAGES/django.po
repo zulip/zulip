@@ -163,7 +163,7 @@ msgid "Zulip Android"
 msgstr ""
 
 #: templates/zerver/apps.html:97
-msgid "MacOS"
+msgid "macOS"
 msgstr ""
 
 #: templates/zerver/apps.html:118

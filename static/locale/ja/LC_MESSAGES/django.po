@@ -246,7 +246,7 @@ msgid "Download now"
 msgstr ""
 
 #: templates/zerver/apps.html:100
-msgid "MacOS"
+msgid "macOS"
 msgstr ""
 
 #: templates/zerver/apps.html:109

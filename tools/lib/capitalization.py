@@ -28,7 +28,7 @@ IGNORED_PHRASES = [
     r"JSON",
     r"Kerberos",
     r"Mac",
-    r"MacOS",
+    r"macOS",
     r"MiB",
     r"OTP",
     r"Pivotal",

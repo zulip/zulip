@@ -9,7 +9,7 @@ to checkout your branch.
 ### Browser
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html) (Chrome, Firefox, IE & Opera)
 
-### MacOS
+### macOS
 - Command-Shift-3 to capture all of the screen
 - Command-Shift-4 and drag cursor to select a specific area
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html)
@@ -29,7 +29,7 @@ to checkout your branch.
 - [Chrome Capture](https://chrome.google.com/webstore/detail/chrome-capture/ggaabchcecdbomdcnbahdfddfikjmphe?hl=en)
 (Tip: Use Alt+i to interact with the page while recording)
 
-### MacOS
+### macOS
 - [GIPHY](https://giphy.com/apps/giphycapture)
 - [GIF Brewery](http://gifbrewery.com/)
 - [Gyazo GIF](https://gyazo.com/en)
