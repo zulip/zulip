@@ -308,7 +308,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
                 mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
                 mock.patch('logging.info') as mock_info, \
-                mock.patch('logging.warn') as mock_warn:
+                mock.patch('logging.warn'):
             apns_devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
