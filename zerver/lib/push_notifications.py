@@ -54,6 +54,7 @@ def hex_to_b64(data):
 _apns_client = None  # type: APNsClient
 
 def get_apns_client():
+    # type: () -> APNsClient
     global _apns_client
     if _apns_client is None:
         # NB if called concurrently, this will make excess connections.
