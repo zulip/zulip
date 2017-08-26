@@ -505,8 +505,10 @@ class ZulipTestCase(TestCase):
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
+        kw = kwargs.copy()
+        kw.update(self.api_auth(email))
         result = self.client_post("/api/v1/users/me/subscriptions", post_data,
-                                  **self.api_auth(email), **kwargs)
+                                  **kw)
         return result
 
     def send_json_payload(self, user_profile, url, payload, stream_name=None, **post_params):
