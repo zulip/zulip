@@ -326,7 +326,7 @@ function maybe_select_emoji(e) {
             } else {
                 reactions.toggle_emoji_reaction(
                     current_msg_list.selected_id(),
-                    first_emoji.attr('title')
+                    first_emoji.data("emoji-name")
                 );
             }
         }
@@ -350,7 +350,7 @@ exports.toggle_selected_emoji = function () {
         return;
     }
 
-    var emoji_name = selected_emoji.title;
+    var emoji_name = $(selected_emoji).data("emoji-name");
 
     reactions.toggle_emoji_reaction(message_id, emoji_name);
 };
@@ -539,7 +539,7 @@ exports.register_click_handlers = function () {
         // if the user has reacted to this message with this emoji
         // the reaction is removed
         // otherwise, the reaction is added
-        var emoji_name = this.title;
+        var emoji_name = $(this).data("emoji-name");
         var message_id = $(this).parent().parent().attr('data-message-id');
 
         var message = message_store.get(message_id);
@@ -555,7 +555,8 @@ exports.register_click_handlers = function () {
     });
 
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
-        var emoji_text = ':' + this.title + ':';
+        var emoji_name = $(this).data("emoji-name");
+        var emoji_text = ':' + emoji_name + ':';
         var textarea = $("#new_message_content");
         textarea.caret(emoji_text);
         textarea.focus();
