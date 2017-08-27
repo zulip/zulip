@@ -74,9 +74,6 @@ exports.apply_markdown = function (message) {
         },
     };
     message.content = marked(message.raw_content + '\n\n', options).trim();
-};
-
-exports.set_is_me_message = function (message) {
     message.is_me_message = (message.raw_content.indexOf('/me ') === 0 &&
                              message.content.indexOf('<p>') === 0 &&
                              message.content.lastIndexOf('</p>') === message.content.length - 4);

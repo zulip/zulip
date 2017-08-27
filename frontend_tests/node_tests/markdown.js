@@ -318,7 +318,6 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var message = {subject: "No links here", raw_content: input};
     message.flags = ['read'];
     markdown.apply_markdown(message);
-    markdown.set_is_me_message(message);
 
     assert.equal(message.is_me_message, true);
     assert.equal(message.flags.length, 1);
@@ -327,7 +326,6 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     input = "testing this @**all** @**Cordelia Lear**";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    markdown.set_is_me_message(message);
 
     assert.equal(message.is_me_message, false);
     assert.equal(message.flags.length, 1);
