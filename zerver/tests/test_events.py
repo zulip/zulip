@@ -507,6 +507,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('content_type', equals('text/html')),
                 ('display_recipient', check_string),
                 ('is_mentioned', check_bool),
+                ('is_me_message', check_bool),
                 ('reactions', check_list(None)),
                 ('recipient_id', check_int),
                 ('sender_realm_str', check_string),

@@ -2441,7 +2441,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, force_text(message))
 
-        # Test UserMessage row is created while user is deactivated if there
+        # Test UserMessage row is not created while user is deactivated if there
         # is a alert word in message.
         do_add_alert_words(long_term_idle_user, ['test_alert_word'])
         general_user_msg_count = len(get_user_messages(cordelia))
@@ -2459,18 +2459,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
         message = '/me says test'
         send_stream_message(message)
-        assert_last_um_content(long_term_idle_user, force_text(message))
-        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
-        assert_um_count(cordelia, general_user_msg_count + 1)
-        assert_last_um_content(cordelia, force_text(message))
-
-        # Test UserMessage row is created while user is deactivated if
-        # user itself is mentioned and message is a me message.
-        general_user_msg_count = len(get_user_messages(cordelia))
-        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
-        message = '/me says @**King Hamlet** mention'
-        send_stream_message(message)
-        assert_last_um_content(long_term_idle_user, force_text(message))
-        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_last_um_content(long_term_idle_user, force_text(message), negate=True)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, force_text(message))
