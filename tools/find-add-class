@@ -29,9 +29,14 @@ def process_files():
     parser.add_argument('-v', '--verbose',
                         action='store_true', default=False,
                         help='show where calls are')
+    parser.add_argument('targets', nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
-    fns = glob.glob('static/js/*.js')
+    if args.targets == []:
+        fns = glob.glob('static/js/*.js')
+    else:
+        fns = args.targets
+
     if args.verbose:
         display(fns)
     else:
