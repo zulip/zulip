@@ -9,13 +9,16 @@ import six
 from django.db.models import Q, QuerySet
 from django.template import loader
 from django.conf import settings
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.notifications import build_message_list, hash_util_encode, \
     one_click_unsubscribe_link
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
-    Subscription, get_active_streams, get_user_profile_by_id
+    Subscription, UserActivity, get_active_streams, get_user_profile_by_id, \
+    Realm
 from zerver.context_processors import common_context
+from zerver.lib.queue import queue_json_publish
 
 import logging
 
@@ -30,12 +33,66 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
+VALID_DIGEST_DAY = 1  # Tuesdays
+DIGEST_CUTOFF = 5
+
 # Digests accumulate 4 types of interesting traffic for a user:
 # 1. Missed PMs
 # 2. New streams
 # 3. New users
 # 4. Interesting stream traffic, as determined by the longest and most
 #    diversely comment upon topics.
+
+def inactive_since(user_profile, cutoff):
+    # type: (UserProfile, datetime.datetime) -> bool
+    # Hasn't used the app in the last DIGEST_CUTOFF (5) days.
+    most_recent_visit = [row.last_visit for row in
+                         UserActivity.objects.filter(
+                             user_profile=user_profile)]
+
+    if not most_recent_visit:
+        # This person has never used the app.
+        return True
+
+    last_visit = max(most_recent_visit)
+    return last_visit < cutoff
+
+def should_process_digest(realm_str):
+    # type: (str) -> bool
+    if realm_str in settings.SYSTEM_ONLY_REALMS:
+        # Don't try to send emails to system-only realms
+        return False
+    return True
+
+# Changes to this should also be reflected in
+# zerver/worker/queue_processors.py:DigestWorker.consume()
+def queue_digest_recipient(user_profile, cutoff):
+    # type: (UserProfile, datetime.datetime) -> None
+    # Convert cutoff to epoch seconds for transit.
+    event = {"user_profile_id": user_profile.id,
+             "cutoff": cutoff.strftime('%s')}
+    queue_json_publish("digest_emails", event, lambda event: None)
+
+def enqueue_emails(cutoff):
+    # type: (datetime.datetime) -> None
+    # To be really conservative while we don't have user timezones or
+    # special-casing for companies with non-standard workweeks, only
+    # try to send mail on Tuesdays.
+    if timezone_now().weekday() != VALID_DIGEST_DAY:
+        return
+
+    for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+        if not should_process_digest(realm.string_id):
+            continue
+
+        user_profiles = UserProfile.objects.filter(
+            realm=realm, is_active=True, is_bot=False, enable_digest_emails=True)
+
+        for user_profile in user_profiles:
+            if inactive_since(user_profile, cutoff):
+                queue_digest_recipient(user_profile, cutoff)
+                logger.info("%s is inactive, queuing for potential digest" % (
+                    user_profile.email,))
 
 def gather_hot_conversations(user_profile, stream_messages):
     # type: (UserProfile, QuerySet) -> List[Dict[str, Any]]
