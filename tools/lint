@@ -164,7 +164,7 @@ def run():
                                'static/ts/tslint.json'], ['ts'])
     external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
     external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
-    external_linter('urls', ['tools/check-urls'])
+    external_linter('urls', ['tools/check-urls'], ['py'])
     external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
 
     # gitlint disabled until we can stabilize it more
