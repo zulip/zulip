@@ -671,7 +671,10 @@ exports.initialize = function () {
                 // render server-side to ensure the preview is
                 // accurate; if the `markdown.contains_backend_only_syntax` logic is
                 // incorrect wrong, users will see a brief flicker).
-                $("#preview_content").html(markdown.apply_markdown(message));
+                var message_obj = {
+                    raw_content: message,
+                };
+                $("#preview_content").html(markdown.apply_markdown(message_obj));
             }
             channel.post({
                 url: '/json/messages/render',

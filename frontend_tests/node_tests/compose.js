@@ -1177,7 +1177,7 @@ function test_with_mock_socket(test_params) {
         setup_mock_markdown_contains_backend_only_syntax('foobarfoobar', false);
         mock_channel_post('foobarfoobar');
         markdown.apply_markdown = function (msg) {
-            assert.equal(msg, 'foobarfoobar');
+            assert.equal(msg.raw_content, 'foobarfoobar');
             apply_markdown_called = true;
             return msg;
         };
