@@ -1508,7 +1508,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
 
         db_data = {'possible_words': possible_words,
                    'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
-                   'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
                    'by_email': dict((user['email'].lower(), user) for user in realm_users),
                    'emoji': message_realm.get_emoji(),
                    'sent_by_bot': sent_by_bot,
