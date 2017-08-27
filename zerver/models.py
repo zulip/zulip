@@ -1287,7 +1287,11 @@ class Reaction(ModelReprMixin, models.Model):
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
 class AbstractUserMessage(ModelReprMixin, models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type:
+    # UserProfile WARNING: We removed the previously-final flag,
+    # is_me_message, without clearing any values it might have had in
+    # the database.  So when we next add a flag, you need to do a
+    # migration to set it to 0 first
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
                  'has_alert_word', "historical"]
