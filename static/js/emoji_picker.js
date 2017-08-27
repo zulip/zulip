@@ -263,6 +263,31 @@ function filter_emojis() {
     }
 }
 
+function get_alias_to_be_used(message_id, emoji_name) {
+    // If the user has reacted to this message, then this function
+    // returns the alias of this emoji he used, otherwise, returns
+    // the passed name as it is.
+    var message = message_store.get(message_id);
+    var aliases = [emoji_name];
+    if (!emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
+        if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+            var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+            aliases = emoji.default_emoji_aliases[codepoint];
+        } else {
+            blueslip.error("Invalid emoji name.");
+            return;
+        }
+    }
+    var user_id = page_params.user_id;
+    var reaction = _.find(message.reactions, function (reaction) {
+        return (reaction.user.id === user_id) && (_.contains(aliases, reaction.emoji_name));
+    });
+    if (reaction) {
+        return reaction.emoji_name;
+    }
+    return emoji_name;
+}
+
 function maybe_select_emoji(e) {
     if (e.keyCode === 13) { // enter key
         e.preventDefault();
