@@ -243,7 +243,7 @@ exports.process_escape_key = function (e) {
 
 // Returns true if we handled it, false if the browser should.
 exports.process_enter_key = function (e) {
-    if ($(".dropdown.open").length) {
+    if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
         // on #gear-menu li a[tabindex] elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
         // default action.
