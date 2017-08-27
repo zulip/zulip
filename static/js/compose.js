@@ -648,6 +648,16 @@ exports.initialize = function () {
         $("#compose #file_input").trigger("click");
     } );
 
+    function show_preview(rendered_content) {
+        var preview_html;
+        if (rendered_content.indexOf("<p>/me ") === 0) {
+            // Handle previews of /me messages
+            preview_html = "<strong>" + page_params.full_name + "</strong> " + rendered_content.slice(4 + 3, -4);
+        } else {
+            preview_html = rendered_content;
+        }
+        $("#preview_content").html(preview_html);
+    }
 
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();
@@ -658,7 +668,7 @@ exports.initialize = function () {
         $("#preview_message_area").show();
 
         if (content.length === 0) {
-            $("#preview_content").html(i18n.t("Nothing to preview"));
+            show_preview(i18n.t("Nothing to preview"));
         } else {
             if (markdown.contains_backend_only_syntax(content))  {
                 var spinner = $("#markdown_preview_spinner").expectOne();
@@ -674,7 +684,7 @@ exports.initialize = function () {
                 var message_obj = {
                     raw_content: content,
                 };
-                $("#preview_content").html(markdown.apply_markdown(message_obj));
+                markdown.apply_markdown(message_obj);
             }
             channel.post({
                 url: '/json/messages/render',
@@ -684,13 +694,13 @@ exports.initialize = function () {
                     if (markdown.contains_backend_only_syntax(content)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
-                    $("#preview_content").html(response_data.rendered);
+                    show_preview(response_data.rendered);
                 },
                 error: function () {
                     if (markdown.contains_backend_only_syntax(content)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
-                    $("#preview_content").html(i18n.t("Failed to generate preview"));
+                    show_preview(i18n.t("Failed to generate preview"));
                 },
             });
         }
