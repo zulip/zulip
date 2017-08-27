@@ -1,8 +1,7 @@
 var settings = (function () {
 
 var exports = {};
-var map = {};
-var map_initialized = false;
+var map;
 
 $("body").ready(function () {
     var $sidebar = $(".form-sidebar");
@@ -51,7 +50,7 @@ function _setup_page() {
     ui.set_up_scrollbar($("#settings_content"));
 
     // only run once -- if the map has not already been initialized.
-    if (!map_initialized) {
+    if (map === undefined) {
         map = {
             "your-account": i18n.t("Your account"),
             "display-settings": i18n.t("Display settings"),
