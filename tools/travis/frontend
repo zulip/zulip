@@ -5,6 +5,7 @@ source tools/travis/activate-venv
 set -e
 set -x
 
+./tools/lint --backend
 ./tools/test-js-with-node --coverage
 ./tools/test-js-with-casper
 
