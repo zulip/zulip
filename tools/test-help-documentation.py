@@ -8,6 +8,7 @@ import subprocess
 
 import time
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # check for the venv
 from lib import sanity_check
@@ -21,9 +22,8 @@ parser.add_option('--force', default=False,
                   help='Run tests despite possible problems.')
 (options, args) = parser.parse_args()
 
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-
+os.chdir(ZULIP_PATH)
+sys.path.insert(0, ZULIP_PATH)
 from tools.lib.test_server import test_server_running
 
 subprocess.check_call(['mkdir', '-p', 'var/help-documentation'])

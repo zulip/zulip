@@ -14,8 +14,10 @@ import glob
 # on how to use remote debugging
 #
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 os.environ["CASPER_TESTS"] = "1"
-os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "../node_modules/.bin/phantomjs")
+os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/phantomjs")
 os.environ["http_proxy"] = ""
 os.environ["https_proxy"] = ""
 
@@ -39,8 +41,7 @@ parser.add_option('--remote-debug',
                   default=False)
 (options, args) = parser.parse_args()
 
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, ZULIP_PATH)
 
 # check for the venv
 from tools.lib import sanity_check
@@ -58,7 +59,7 @@ if not options.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
-os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+os.chdir(ZULIP_PATH)
 
 subprocess.check_call('tools/setup/generate-test-credentials')
 
@@ -70,7 +71,7 @@ LOG_FILE = 'var/casper/server.log'
 
 def run_tests(files, external_host):
     # type: (Iterable[str], str) -> None
-    test_dir = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests')
+    test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
     test_files = []
     for file in files:
         for file_name in os.listdir(test_dir):

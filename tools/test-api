@@ -9,9 +9,9 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 import django
-TOOLS_DIR = os.path.dirname(__file__)
-ROOT_DIR = os.path.dirname(TOOLS_DIR)
-sys.path.insert(0, ROOT_DIR)
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ZULIP_PATH)
+os.chdir(ZULIP_PATH)
 
 from zulip import Client
 
