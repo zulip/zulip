@@ -330,6 +330,11 @@ function start_edit_with_content(row, content, edit_box_open_callback) {
 
 exports.start = function (row, edit_box_open_callback) {
     var message = current_msg_list.get(rows.id(row));
+    if (message === undefined) {
+        blueslip.error("Couldn't find message ID for edit " + rows.id(row));
+        return;
+    }
+
     if (message.raw_content) {
         start_edit_with_content(row, message.raw_content, edit_box_open_callback);
         return;
