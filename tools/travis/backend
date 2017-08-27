@@ -12,6 +12,11 @@ PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 
 ./tools/test-tools
 ./tools/test-backend --coverage
+
+# We run mypy after the backend tests so we get output from the
+# backend tests, which tend to uncover more serious problems, first.
+./tools/run-mypy --linecoverage-report
+
 ./tools/test-migrations
 ./tools/optimize-svg
 ./tools/test-documentation

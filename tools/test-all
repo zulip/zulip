@@ -34,9 +34,6 @@ function run {
 run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
 
-# travis/static-analysis
-run ./tools/run-mypy
-
 # travis/backend
 run ./tools/lint $FORCEARG
 run ./manage.py makemessages --locale en
@@ -44,6 +41,7 @@ run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 run ./tools/test-tools
 run ./tools/test-backend $FORCEARG
+run ./tools/run-mypy
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
 # run ./tools/optimize-svg
