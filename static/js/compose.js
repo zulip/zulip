@@ -651,16 +651,16 @@ exports.initialize = function () {
 
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();
-        var message = $("#new_message_content").val();
+        var content = $("#new_message_content").val();
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
-        if (message.length === 0) {
+        if (content.length === 0) {
             $("#preview_content").html(i18n.t("Nothing to preview"));
         } else {
-            if (markdown.contains_backend_only_syntax(message))  {
+            if (markdown.contains_backend_only_syntax(content))  {
                 var spinner = $("#markdown_preview_spinner").expectOne();
                 loading.make_indicator(spinner);
             } else {
@@ -672,22 +672,22 @@ exports.initialize = function () {
                 // accurate; if the `markdown.contains_backend_only_syntax` logic is
                 // incorrect wrong, users will see a brief flicker).
                 var message_obj = {
-                    raw_content: message,
+                    raw_content: content,
                 };
                 $("#preview_content").html(markdown.apply_markdown(message_obj));
             }
             channel.post({
                 url: '/json/messages/render',
                 idempotent: true,
-                data: {content: message},
+                data: {content: content},
                 success: function (response_data) {
-                    if (markdown.contains_backend_only_syntax(message)) {
+                    if (markdown.contains_backend_only_syntax(content)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
                     $("#preview_content").html(response_data.rendered);
                 },
                 error: function () {
-                    if (markdown.contains_backend_only_syntax(message)) {
+                    if (markdown.contains_backend_only_syntax(content)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
                     $("#preview_content").html(i18n.t("Failed to generate preview"));
