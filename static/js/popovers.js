@@ -55,7 +55,16 @@ function user_last_seen_time_status(user_id) {
         // We don't send presence data to clients in Zephyr mirroring realms
         return i18n.t("Unknown");
     }
-    return timerender.last_seen_status_from_date(presence.last_active_date(user_id).clone());
+
+    // TODO: If the user account has been deactivated, it won't appear
+    // in the presence data set.  Ideally, we'd have a cleaner
+    // solution that had us understand that state declaratively and
+    // thus not need this check (see #4322).
+    var last_active_date = presence.last_active_date(user_id);
+    if (last_active_date === undefined) {
+        return i18n.t("Unknown");
+    }
+    return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
 function show_message_info_popover(element, id) {
