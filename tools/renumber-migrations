@@ -50,10 +50,7 @@ def resolve_conflicts(conflicts, files_list):
     order = list(map(int, order_input.split()))
     validate_order(order, len(conflicts))
 
-    last_correct_migration = str(input('Enter the name of last correct migration file: '))
-    if last_correct_migration not in files_list:
-        print("File not found!")
-        sys.exit(1)
+    last_correct_migration = conflicts[order[0]]
 
     last_correct_migration = last_correct_migration.replace('.py', '')
     renumber_migration(conflicts, order, last_correct_migration)
