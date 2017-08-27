@@ -7,8 +7,8 @@
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
 git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
 git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6
-git+https://github.com/zulip/python-zulip-api.git@0.3.2#egg=zulip==0.3.2&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.3.2#egg=zulip_bots==0.3.2&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@6c47eda92bce0efe0297990965e90e79b54a1cd0#egg=zulip==0.3.2_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@6c47eda92bce0efe0297990965e90e79b54a1cd0#egg=zulip_bots==0.3.2+git&subdirectory=zulip_bots
 apns2==0.3.0
 argon2-cffi==16.3.0
 asn1crypto==0.22.0        # via cryptography
@@ -20,7 +20,6 @@ cchardet==2.1.1
 certifi==2017.7.27.1
 cffi==1.10.0
 chardet==3.0.4
-click==6.7                # via pydictionary
 cryptography==2.0.3
 cssselect==1.0.1
 decorator==4.1.2          # via ipython, traitlets
@@ -36,7 +35,6 @@ docopt==0.6.2
 fonttools==3.15.0
 gitdb==0.6.4
 google-api-python-client==1.6.2
-goslate==1.5.1            # via pydictionary
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2016.9.19
@@ -72,7 +70,6 @@ pyasn1-modules==0.0.11
 pyasn1==0.3.2
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
-pydictionary==1.5.2
 pygments==2.2.0           # via ipython
 pyjwt==1.5.2
 pyldap==2.4.37
