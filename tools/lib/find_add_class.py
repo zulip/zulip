@@ -73,6 +73,10 @@ def find(fns):
     encountered = set()  # type: Set[str]
     tups = []  # type: List[Tuple[str, str]]
     for full_fn in fns:
+        # Don't check frontend tests, since they may do all sorts of
+        # extra hackery that isn't of interest to us.
+        if full_fn.startswith("frontend_tests"):
+            continue
         lines = list(open(full_fn))
         fn = os.path.basename(full_fn)
         module_classes = set()  # type: Set[str]
