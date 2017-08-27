@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import subprocess
 
 from django.http import HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_helpers import (
     most_recent_message,
@@ -18,11 +19,16 @@ from zerver.models import (
     get_display_recipient,
     get_realm,
     get_stream,
-    Recipient
+    get_client,
+    Recipient,
+    UserProfile,
+    UserActivity,
+    Realm
 )
 
 from zerver.lib.actions import (
     encode_email_address,
+    do_create_user
 )
 from zerver.lib.email_mirror import (
     process_message, process_stream_message, ZulipEmailForwardError,
@@ -30,7 +36,7 @@ from zerver.lib.email_mirror import (
     get_missed_message_token_from_address,
 )
 
-from zerver.lib.digest import handle_digest_email
+from zerver.lib.digest import handle_digest_email, enqueue_emails
 from zerver.lib.send_email import FromAddress
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
@@ -286,6 +292,85 @@ class TestDigestEmailMessages(ZulipTestCase):
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)
         self.assertEqual(mock_send_future_email.call_args[1]['to_user_id'], user_profile.id)
+
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_inactive_users_queued_for_digest(self, mock_django_timezone, mock_queue_digest_recipient):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
+
+        cutoff = timezone_now()
+        # Test Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+
+        # Mock user activity for each user
+        realm = get_realm("zulip")
+        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+            for user_profile in UserProfile.objects.filter(realm=realm):
+                UserActivity.objects.create(
+                    last_visit=cutoff - datetime.timedelta(days=1),
+                    user_profile=user_profile,
+                    count=0,
+                    client=get_client('test_client'))
+
+        # Check that inactive users are enqueued
+        enqueue_emails(cutoff)
+        self.assertEqual(mock_queue_digest_recipient.call_count, 13)
+
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_active_users_not_enqueued(self, mock_django_timezone, mock_queue_digest_recipient):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
+
+        cutoff = timezone_now()
+        # A Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+
+        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+            for user_profile in UserProfile.objects.filter(realm=realm):
+                UserActivity.objects.create(
+                    last_visit=cutoff + datetime.timedelta(days=1),
+                    user_profile=user_profile,
+                    count=0,
+                    client=get_client('test_client'))
+
+        # Check that an active user is not enqueued
+        enqueue_emails(cutoff)
+        self.assertEqual(mock_queue_digest_recipient.call_count, 0)
+
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_only_enqueue_on_valid_day(self, mock_django_timezone, mock_queue_digest_recipient):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
+
+        # Not a Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6)
+
+        # Check that digests are not sent on days other than Tuesday.
+        cutoff = timezone_now()
+        enqueue_emails(cutoff)
+        self.assertEqual(mock_queue_digest_recipient.call_count, 0)
+
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_no_email_digest_for_bots(self, mock_django_timezone, mock_queue_digest_recipient):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
+
+        cutoff = timezone_now()
+        # A Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        bot = do_create_user('some_bot@example.com', 'password', get_realm('zulip'), 'some_bot', '',
+                             bot_type=UserProfile.DEFAULT_BOT)
+        UserActivity.objects.create(
+            last_visit=cutoff - datetime.timedelta(days=1),
+            user_profile=bot,
+            count=0,
+            client=get_client('test_client'))
+
+        # Check that bots are not sent emails
+        enqueue_emails(cutoff)
+        for arg in mock_queue_digest_recipient.call_args_list:
+            user = arg[0][0]
+            self.assertNotEqual(user.id, bot.id)
 
 class TestReplyExtraction(ZulipTestCase):
     def test_reply_is_extracted_from_plain(self):
