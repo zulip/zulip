@@ -78,8 +78,10 @@ You can use the command list_realms to find ID of the realms in this server."""
         if "all_users" in options:
             all_users = options["all_users"]
 
-            # User should pass either user list or all_users flag
-            if bool(options["users"]) == all_users:
+            if not options["users"] and not all_users:
+                raise CommandError("You have to pass either -u/--users or -a/--all-users.")
+
+            if options["users"] and all_users:
                 raise CommandError("You can't use both -u/--users and -a/--all-users.")
 
             if all_users and realm is None:
