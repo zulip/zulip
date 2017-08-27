@@ -639,6 +639,26 @@ function render(template_name, args) {
     assert(used_emoji.hasClass("reacted"));
 }());
 
+(function emoji_showcase() {
+    var args = {
+        emoji_dict: {
+            name: "thumbs_up",
+            is_realm_emoji: false,
+            css_class: "1f44d",
+            has_reacted: false,
+        },
+    };
+    var html = render("emoji_showcase", args);
+    var emoji_div = $(html).find(".emoji");
+    var canonical_name = $(html).find(".emoji-canonical-name");
+
+    assert.equal(emoji_div.length, 1);
+    assert(emoji_div.hasClass("emoji-1f44d"));
+    assert.equal(canonical_name.text(), "thumbs_up");
+    assert.equal(canonical_name.attr("title"), "thumbs_up");
+    global.write_handlebars_output("emoji_showcase", html);
+}());
+
 (function group_pms() {
     var args = {
         group_pms: [
