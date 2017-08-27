@@ -157,7 +157,7 @@ def run():
 
         lint_functions[name] = run_linter
 
-    external_linter('add_class', ['tools/find-add-class'])
+    external_linter('add_class', ['tools/find-add-class'], ['js'])
     external_linter('css', ['tools/check-css'], ['css'])
     external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
     external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
