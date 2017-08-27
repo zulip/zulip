@@ -52,8 +52,6 @@ matrix:
     # We only get 4 jobs running at a time, so we try to make the first few
     # the most likely to break.
     - python: "3.4"
-      env: TEST_SUITE=static-analysis
-    - python: "3.4"
       env: TEST_SUITE=frontend
     - python: "3.4"
       env: TEST_SUITE=backend
