@@ -102,7 +102,6 @@ exports.set_message_booleans = function (message, flags) {
     message.mentioned_me_directly =  convert_flag('mentioned');
     message.collapsed = convert_flag('collapsed');
     message.alerted = convert_flag('has_alert_word');
-    message.is_me_message = convert_flag('is_me_message');
 };
 
 exports.add_message_metadata = function (message) {

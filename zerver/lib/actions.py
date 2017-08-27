@@ -813,7 +813,6 @@ def do_send_messages(messages_maybe_none):
             wildcard = message['message'].mentions_wildcard
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
-            is_me_message = message['message'].is_me_message
 
             for um in ums_to_create:
                 if um.user_profile.id == message['message'].sender.id and \
@@ -825,8 +824,6 @@ def do_send_messages(messages_maybe_none):
                     um.flags |= UserMessage.flags.mentioned
                 if um.user_profile_id in ids_with_alert_words:
                     um.flags |= UserMessage.flags.has_alert_word
-                if is_me_message:
-                    um.flags |= UserMessage.flags.is_me_message
 
             user_messages = []
             for um in ums_to_create:
@@ -2780,9 +2777,6 @@ def update_user_message_flags(message, ums):
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
         update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
-
-        is_me_message = getattr(message, 'is_me_message', False)
-        update_flag(um, is_me_message, UserMessage.flags.is_me_message)
 
     for um in changed_ums:
         um.save(update_fields=['flags'])

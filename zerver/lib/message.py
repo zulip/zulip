@@ -243,6 +243,7 @@ class MessageDict(object):
             obj['content'] = content
             obj['content_type'] = 'text/x-markdown'
 
+        obj['is_me_message'] = Message.is_status_message(content, rendered_content)
         obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
                             for reaction in reactions]
         return obj
@@ -314,7 +315,6 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
 
     if message is not None:
         message.mentions_wildcard = False
-        message.is_me_message = False
         message.mentions_user_ids = set()
         message.alert_words = set()
         message.links_for_preview = set()
@@ -348,8 +348,6 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
                 if user_id in message_user_ids:
                     if set(words).intersection(message.alert_words):
                         message.user_ids_with_alert_words.add(user_id)
-
-        message.is_me_message = Message.is_status_message(content, rendered_content)
 
     return rendered_content
 

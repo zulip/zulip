@@ -84,6 +84,7 @@ var message_store = require('js/message_store.js');
         type: 'private',
         display_recipient: [me, bob, cindy],
         flags: ['has_alert_word'],
+        is_me_message: false,
         id: 2067,
     };
     message_store.add_message_metadata(message);

@@ -1290,7 +1290,7 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
-                 'has_alert_word', "historical", 'is_me_message']
+                 'has_alert_word', "historical"]
     flags = BitField(flags=ALL_FLAGS, default=0)  # type: BitHandler
 
     class Meta(object):

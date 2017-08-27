@@ -76,14 +76,10 @@ exports.apply_markdown = function (message) {
     message.content = marked(message.raw_content + '\n\n', options).trim();
 };
 
-exports.add_message_flags = function (message) {
-    // Note: mention flags are set in apply_markdown()
-
-    if (message.raw_content.indexOf('/me ') === 0 &&
-        message.content.indexOf('<p>') === 0 &&
-        message.content.lastIndexOf('</p>') === message.content.length - 4) {
-        message.flags.push('is_me_message');
-    }
+exports.set_is_me_message = function (message) {
+    message.is_me_message = (message.raw_content.indexOf('/me ') === 0 &&
+                             message.content.indexOf('<p>') === 0 &&
+                             message.content.lastIndexOf('</p>') === message.content.length - 4);
 };
 
 exports.add_subject_links = function (message) {
