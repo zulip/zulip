@@ -7,7 +7,7 @@ import sys
 if False:
     from typing import Set, Text
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.node_cache import generate_sha1sum_node_modules
 from scripts.lib.zulip_tools import GENERIC_CACHE_SCRIPT_PARSER, \
