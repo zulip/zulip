@@ -11,6 +11,12 @@ from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInte
 from zerver.lib.test_classes import ZulipTestCase
 from builtins import object
 
+mock_event = {'message': {'display_recipient': '',
+                          'subject': '',
+                          'id': ''},
+              'command': '',
+              'service_name': ''}
+
 rest_operation = {'method': "POST",
                   'relative_url_path': "",
                   'request_kwargs': {},
@@ -52,7 +58,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(500, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None, service_handler, None)
+            do_rest_call(rest_operation, None, mock_event, service_handler, None)
             self.assertTrue(mock_request_retry.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
@@ -60,7 +66,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(400, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None, service_handler, None)
+            do_rest_call(rest_operation, None, mock_event, service_handler, None)
             self.assertTrue(mock_fail_with_message.called)
 
     @mock.patch('logging.info')
@@ -68,7 +74,7 @@ class DoRestCallTests(ZulipTestCase):
     @mock.patch('zerver.lib.outgoing_webhook.request_retry')
     def test_timeout_request(self, mock_request_retry, mock_requests_request, mock_logger):
         # type: (mock.Mock, mock.Mock, mock.Mock) -> None
-        do_rest_call(rest_operation, None, {"command": "", "service_name": ""}, service_handler, None)
+        do_rest_call(rest_operation, None, mock_event, service_handler, None)
         self.assertTrue(mock_request_retry.called)
 
     @mock.patch('logging.exception')
@@ -76,5 +82,5 @@ class DoRestCallTests(ZulipTestCase):
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_request_exception(self, mock_fail_with_message, mock_requests_request, mock_logger):
         # type: (mock.Mock, mock.Mock, mock.Mock) -> None
-        do_rest_call(rest_operation, None, {"command": ""}, service_handler, None)
+        do_rest_call(rest_operation, None, mock_event, service_handler, None)
         self.assertTrue(mock_fail_with_message.called)

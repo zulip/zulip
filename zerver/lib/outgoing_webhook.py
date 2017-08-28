@@ -13,6 +13,7 @@ from requests import Response
 
 from django.utils.translation import ugettext as _
 
+from zerver.context_processors import zulip_default_context
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
@@ -196,13 +197,25 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
             response_message = service_handler.process_success(response, event)
             if response_message is not None:
                 succeed_with_message(event, response_message)
-
-        # On 50x errors, try retry
-        elif str(response.status_code).startswith('5'):
-            request_retry(event, "Internal Server error at third party.")
         else:
-            failure_message = "Third party responded with %d" % (response.status_code)
-            fail_with_message(event, failure_message)
+            context = zulip_default_context(request_data)
+            message_url = ("%(server)s/#narrow/stream/%(stream)s/subject/%(subject)s/near/%(id)s"
+                           % {'server': context['realm_uri'],
+                              'stream': event['message']['display_recipient'],
+                              'subject': event['message']['subject'],
+                              'id': str(event['message']['id'])})
+            logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
+                            "code %(status_code)s.\n Content of response (in quotes): \""
+                            "%(response)s\""
+                            % {'message_url': message_url,
+                               'status_code': response.status_code,
+                               'response': response.content})
+            # On 50x errors, try retry
+            if str(response.status_code).startswith('5'):
+                request_retry(event, "Internal Server error at third party.")
+            else:
+                failure_message = "Third party responded with %d" % (response.status_code)
+                fail_with_message(event, failure_message)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
