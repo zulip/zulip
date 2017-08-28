@@ -40,6 +40,7 @@ if not force:
     do_apply = None
     while do_apply != 'y':
         sys.stdout.write("Apply changes? [y/N] ")
+        sys.stdout.flush()
         do_apply = sys.stdin.readline().strip().lower()
         if do_apply == '' or do_apply == 'n':
             sys.exit(0)
