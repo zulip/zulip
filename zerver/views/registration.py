@@ -387,9 +387,9 @@ def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponse(content=None, status=204)
 
-def find_my_team(request):
+def find_account(request):
     # type: (HttpRequest) -> HttpResponse
-    url = reverse('zerver.views.registration.find_my_team')
+    url = reverse('zerver.views.registration.find_account')
 
     emails = []  # type: List[Text]
     if request.method == 'POST':
@@ -421,6 +421,6 @@ def find_my_team(request):
                     pass
 
     return render(request,
-                  'zerver/find_my_team.html',
+                  'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
                            'emails': emails},)

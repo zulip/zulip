@@ -462,7 +462,7 @@ def login_page(request, **kwargs):
     if request.user.is_authenticated:
         return HttpResponseRedirect("/")
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = reverse('zerver.views.registration.find_my_team')
+        redirect_url = reverse('zerver.views.registration.find_account')
         return HttpResponseRedirect(redirect_url)
 
     realm = get_realm_from_request(request)

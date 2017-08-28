@@ -30,7 +30,7 @@ html {
     color: #aaa;
 }
 
-.find-team-page-container #find_my_team i {
+.find-account-page-container #find_account i {
     font-size: 0.8em;
 }
 
@@ -122,7 +122,7 @@ html {
     font-weight: 400;
 }
 
-.app-main.find-team-page-container {
+.app-main.find-account-page-container {
     width: 456px;
     font-weight: 400;
 }
@@ -156,7 +156,7 @@ html {
     font-size: 19px;
 }
 
-.find-team-page-container h3,
+.find-account-page-container h3,
 .forgot-password-container h3 {
     margin-top: 0px;
 
@@ -836,7 +836,7 @@ button.login-google-button {
 
     .app-main.register-page-container,
     .app-main.login-page-container,
-    .app-main.find-team-page-container,
+    .app-main.find-account-page-container,
     .app-main.forgot-password-container {
         display: inline-block;
         padding: 20px;

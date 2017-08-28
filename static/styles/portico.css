@@ -1663,11 +1663,11 @@ input.new-organization-button {
     float: right;
 }
 
-#find_my_team .form-control {
+#find_account .form-control {
     height: 30px;
 }
 
-#find_my_team .btn {
+#find_account .btn {
     height: 40px;
     border-radius: 5px;
 }

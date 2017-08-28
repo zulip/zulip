@@ -154,7 +154,7 @@ i18n_urls = [
     url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
     url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
     url(r'^for/working-groups-and-communities/$', TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
-    url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
+    url(r'^find_account/$', zerver.views.registration.find_account, name='zerver.views.registration.find_account'),
 
     # Terms of service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),

@@ -2,13 +2,13 @@
 
 {% block portico_content %}
 
-<div class="app find-team-page flex full-page">
+<div class="app find-account-page flex full-page">
     <div class="inline-block new-style">
         <div class="lead">
-            <h1 class="get-started">{{ _("Find your team") }}…</h1>
+            <h1 class="get-started">{{ _("Find your Zulip accounts") }}…</h1>
         </div>
 
-        <div class="app-main find-team-page-container white-box">
+        <div class="app-main find-account-page-container white-box">
             {% if emails %}
             <div id="results">
                 <p>
@@ -31,12 +31,12 @@
 
             </div>
             {% else %}
-            <div class="find-team-form">
+            <div class="find-account-form">
                 <p>
                     We will send you an email with the sign-in information for
                     any Zulip organization(s) associated with the addresses you enter below.
                 </p>
-                <form class="form-inline" id="find_my_team" name="email_form"
+                <form class="form-inline" id="find_account" name="email_form"
                     action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
                     <div class="input-box moving-label horizontal">
@@ -44,7 +44,7 @@
                             <input type="text" autofocus id="emails" name="emails" required />
                             <label for="id_username">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find team') }}</button>
+                        <button type="submit">{{ _('Find accounts') }}</button>
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
