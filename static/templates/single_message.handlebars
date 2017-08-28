@@ -40,7 +40,7 @@
                         <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
                         {{/unless}}
                     {{/if_and}}
-                    <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
+                    <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
                         {{#if msg/sent_by_me}}
                         <div class="edit_content"></div>
                         {{else}}
