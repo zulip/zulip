@@ -18,7 +18,7 @@ formatter = logging.Formatter(log_format)
 file_handler = logging.FileHandler(settings.SOFT_DEACTIVATION_LOG_PATH)
 file_handler.setFormatter(formatter)
 
-logger = logging.getLogger('')
+logger = logging.getLogger('zulip.soft_deactivation')
 logger.setLevel(logging.INFO)
 logger.addHandler(file_handler)
 
