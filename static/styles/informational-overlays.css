@@ -30,12 +30,12 @@
 
 .informational-overlays .overlay-modal {
     padding-bottom: 10px;
-    outline: none;
 }
 
 .informational-overlays .overlay-modal .modal-body {
     height: 70vh;
     text-align: center;
+    outline: none;
 }
 
 .informational-overlays .overlay-modal .modal-header h3 {
