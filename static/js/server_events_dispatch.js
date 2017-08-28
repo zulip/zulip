@@ -11,7 +11,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'default_streams':
-        page_params.realm_default_streams = event.default_streams;
+        stream_data.set_realm_default_streams(event.default_streams);
         settings_streams.update_default_streams_table();
         break;
 
@@ -179,11 +179,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             stream_data.create_streams(event.streams);
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
-                if (stream_data.is_subscribed(stream.name)) {
-                    stream_list.remove_sidebar_row(stream.stream_id);
-                }
-                subs.remove_stream(stream.stream_id);
                 stream_data.delete_sub(stream.stream_id);
+                subs.remove_stream(stream.stream_id);
+                stream_list.remove_sidebar_row(stream.stream_id);
                 settings_streams.remove_default_stream(stream.stream_id);
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {

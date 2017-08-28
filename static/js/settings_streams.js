@@ -10,17 +10,12 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-var all_streams = [];
-
-function failed_listing_streams(xhr) {
-    ui_report.error(i18n.t("Error listing streams"), xhr, $("#organization-status"));
-}
-
-function populate_streams(streams_data) {
+function populate_streams() {
     var streams_table = $("#admin_streams_table").expectOne();
-    all_streams = streams_data;
 
-    list_render(streams_table, all_streams.streams, {
+    var items = stream_data.get_streams_for_admin();
+
+    list_render(streams_table, items, {
         name: "admin_streams_list",
         modifier: function (item) {
             return templates.render("admin_streams_list", { stream: item });
@@ -78,22 +73,6 @@ exports.remove_default_stream = function (stream_id) {
     }
 };
 
-function get_non_default_streams_names(streams_data) {
-    var non_default_streams_names = [];
-    var default_streams_names = [];
-
-    _.each(page_params.realm_default_streams, function (default_stream) {
-        default_streams_names.push(default_stream.name);
-    });
-
-    _.each(streams_data.streams, function (stream) {
-        if (default_streams_names.indexOf(stream.name) < 0) {
-            non_default_streams_names.push(stream.name);
-        }
-    });
-    return non_default_streams_names;
-}
-
 exports.update_default_streams_table = function () {
     if (/#*organization/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
@@ -125,22 +104,9 @@ function make_stream_default(stream_name) {
 }
 
 exports.set_up = function () {
-    loading.make_indicator($('#admin_page_streams_loading_indicator'));
-
-    // Populate streams table
-    channel.get({
-        url:      '/json/streams?include_public=true&include_subscribed=true&include_default=true',
-        timeout:  10*1000,
-        idempotent: true,
-        success: exports.on_load_success,
-        error: failed_listing_streams,
-    });
-};
-
-exports.on_load_success = function (streams_data) {
     meta.loaded = true;
 
-    populate_streams(streams_data);
+    populate_streams();
 
     exports.update_default_streams_table();
 
@@ -172,7 +138,7 @@ exports.on_load_success = function (streams_data) {
         items: 5,
         fixed: true,
         source: function () {
-            return get_non_default_streams_names(all_streams);
+            return stream_data.get_non_default_stream_names();
         },
         highlighter: function (item) {
             return typeahead_helper.render_typeahead_item({ primary: item });

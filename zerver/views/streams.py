@@ -22,7 +22,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams
+    list_to_streams, access_stream_for_delete
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -63,7 +63,7 @@ def principal_to_user_profile(agent, principal):
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_id):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    stream = access_stream_for_delete(user_profile, stream_id)
     do_deactivate_stream(stream)
     return json_success()
 

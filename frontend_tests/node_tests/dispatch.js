@@ -455,8 +455,12 @@ with_overrides(function (override) {
     // default_streams
     var event = event_fixtures.default_streams;
     override('settings_streams.update_default_streams_table', noop);
-    dispatch(event);
-    assert_same(page_params.realm_default_streams, event.default_streams);
+    global.with_stub(function (stub) {
+        override('stream_data.set_realm_default_streams', stub.f);
+        dispatch(event);
+        var args = stub.get_args('realm_default_streams');
+        assert_same(args.realm_default_streams, event.default_streams);
+    });
 
 });
 
