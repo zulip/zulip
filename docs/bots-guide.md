@@ -141,15 +141,20 @@ The Zulip Botserver is for people who want to
 * run bots in production.
 * run multiple bots at once.
 
-It is implemented as a Flask server and hence python-based. It's code can be found [here](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_botserver).
+The Zulip Botserver is a Python (Flask) server that implements Zulip's
+Outgoing Webhooks API.  You can of course write your own servers using
+the Outgoing Webhooks API, but the Botserver is designed to make it
+easy for a novice Python programmer to write a new bot and deploy it
+in production.
 
-### How to run bots using the Zulip Bot server
+### Installing the Zulip Botserver
 
-The Zulip Botserver implements Zulip's Outgoing Webhooks API.  You can
-of course write your own servers using the Outgoing Webhooks API, but
-the Botserver is designed to make it easy for a novice Python
-programmer to write a new bot and deploy it in production.
+Install the `zulip_botserver` PyPI package using `pip`:
+```
+pip install zulip_botserver
+```
+
+### Running bots using the Zulip Botserver
 
 1. Register new bot users on the Zulip server's web interface.
 
@@ -162,11 +167,7 @@ programmer to write a new bot and deploy it in production.
     contains the configuration details for all the active outgoing
     webhook bots. It's structure is very similar to that of zuliprc.
 
-3.  Install the `zulip_botserver` PyPI package using `pip`:
-
-    * `pip install zulip_botserver`
-
-4.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
+3.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
     command format is:
 
     ```
@@ -175,7 +176,7 @@ programmer to write a new bot and deploy it in production.
 
     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
 
-5.  Now set up the outgoing webhook service which will interact with
+4.  Now set up the outgoing webhook service which will interact with
     the server: Create an **Outgoing webhook** bot with its base url
     of the form:
 
@@ -193,7 +194,7 @@ programmer to write a new bot and deploy it in production.
     `outgoing-webhook@zulip.com`. This can be used for interacting
     with flask server bots.
 
-6.  Congrats, everything is set up! Test your botserver like you would
+5.  Congrats, everything is set up! Test your botserver like you would
     test a normal bot.
 
     *Please note that in order to @-mention trigger a bot on a stream,
