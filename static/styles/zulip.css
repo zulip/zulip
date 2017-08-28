@@ -13,7 +13,7 @@ html {
 }
 
 body {
-    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* Common background color */
@@ -31,7 +31,7 @@ input,
 button,
 select,
 textarea {
-    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: normal;
 }
 
@@ -259,7 +259,7 @@ p.n-margin {
 
 textarea,
 input {
-    font-family: 'Humbug', Helvetica, Arial, sans-serif;
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -1859,7 +1859,7 @@ nav a .no-style {
     background: hsl(0, 0%, 100%); /* Old browsers */
     border: none;
     border-radius: 0px;
-    font-family: 'Humbug';
+    font-family: 'Source Sans Pro';
     font-weight: 300;
     line-height: 27px;
 }

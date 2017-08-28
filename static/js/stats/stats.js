@@ -1,5 +1,5 @@
 var font_14pt = {
-    family: 'Humbug',
+    family: 'Source Sans Pro',
     size: 14,
     color: '#000000',
 };
@@ -425,7 +425,7 @@ function populate_messages_sent_by_client(data) {
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: { color: '#537c5e' },
-                font: { family: 'Humbug', size: 18, color: '#000000' },
+                font: { family: 'Source Sans Pro', size: 18, color: '#000000' },
             },
             trace_annotations: {
                 x: annotations.values,

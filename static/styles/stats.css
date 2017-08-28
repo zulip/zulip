@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     background-color: #fafafa;
 
     -webkit-font-smoothing: antialiased;
@@ -116,7 +116,7 @@ hr {
 }
 
 .button {
-    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;

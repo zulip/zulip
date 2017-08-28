@@ -251,7 +251,7 @@ td .button {
     display: inline;
     margin-right: 8px;
 
-    font-family: FontAwesome, "Yantramanav", Humbug;
+    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
     font-weight: 600;
 }
 .dynamic-input {

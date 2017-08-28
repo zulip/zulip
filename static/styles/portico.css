@@ -69,7 +69,7 @@ html {
 }
 
 body {
-    font-family: 'Humbug', Helvetica, Arial, sans-serif;
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
     line-height: 150%;
     height: 100%;
     font-weight: 300;
@@ -1253,7 +1253,7 @@ input.new-organization-button {
 .markdown .tip::before {
     display: inline;
     content: "\f0eb   Tip:  ";
-    font-family: FontAwesome, "Yantramanav", Humbug;
+    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
     font-weight: 600;
 }
 
@@ -1697,7 +1697,7 @@ input.new-organization-button {
 .error_page {
     min-height: calc(100vh - 64px);
     background-color: #c9e9e0;
-    font-family: 'Humbug', Helvetica, Arial, sans-serif;
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
 }
 
 .error_page .row-fluid {
