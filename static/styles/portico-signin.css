@@ -132,6 +132,10 @@ html {
     font-weight: 400;
 }
 
+.app-main.confirm-continue-page-container .white-box {
+    min-width: 365px;
+}
+
 .app-main.confirm-continue-page-container .form-inline {
     display: inline-block;
     width: 180px;
