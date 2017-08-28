@@ -1990,7 +1990,7 @@ nav ul li.active::after {
     position: sticky;
     top: 40px;
     margin: auto;
-    height: 426px;
+    height: 490px;
     z-index: 10;
 }
 
