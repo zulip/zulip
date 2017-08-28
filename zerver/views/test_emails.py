@@ -50,13 +50,13 @@ def email_page(request):
         'referrer_email': 'runner@acme.com',
         'referrer_realm_name': 'Acme Corporation',
         'realm_uri': realm.uri,
-        'server_uri': settings.SERVER_URI,
+        'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'old_email': 'old_address@acme.com',
         'new_email': 'new_address@acme.com',
         'is_realm_admin': True,
-        'activate_url': '%s/accounts/do_confirm/5348720e4af7d2e8f296cbbd04d439489917ddc0' % (settings.SERVER_URI,),
-        'unsubscribe_link': '%s/accounts/unsubscribe/<type>/cf88931365ef1b0f12eae8d488bbc7af3563d7f0' % (settings.SERVER_URI,),
-        'organization_setup_advice_link': '%s/help/getting-your-organization-started-with-zulip' % (settings.SERVER_URI,),
+        'activate_url': '%s/accounts/do_confirm/5348720e4af7d2e8f296cbbd04d439489917ddc0' % (settings.ROOT_DOMAIN_URI,),
+        'unsubscribe_link': '%s/accounts/unsubscribe/<type>/cf88931365ef1b0f12eae8d488bbc7af3563d7f0' % (settings.ROOT_DOMAIN_URI,),
+        'organization_setup_advice_link': '%s/help/getting-your-organization-started-with-zulip' % (settings.ROOT_DOMAIN_URI,),
     }
 
     templates = [

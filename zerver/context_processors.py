@@ -28,7 +28,7 @@ def common_context(user):
     """
     return {
         'realm_uri': user.realm.uri,
-        'server_uri': settings.SERVER_URI,
+        'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
         'external_host': settings.EXTERNAL_HOST,
     }
@@ -57,7 +57,7 @@ def zulip_default_context(request):
     realm = get_realm_from_request(request)
 
     if realm is None:
-        realm_uri = settings.SERVER_URI
+        realm_uri = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
         realm_description = None
@@ -118,7 +118,7 @@ def zulip_default_context(request):
         'realm_name': realm_name,
         'realm_icon': realm_icon,
         'realm_description': realm_description,
-        'server_uri': settings.SERVER_URI,
+        'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
         'apps_page_url': apps_page_url,

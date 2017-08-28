@@ -148,7 +148,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <input id="id_terms" class="required" type="checkbox" name="terms"
                            {% if form.terms.value() %}checked="checked"{% endif %} />
                     <label for="id_terms" class="inline-block">
-                        {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}

@@ -26,10 +26,10 @@
         <ul>
             {% if find_team_link_disabled %}
             {% else %}
-            <li><a href="{{ server_uri }}/find_my_team/">{{ _("Find account") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/find_my_team/">{{ _("Find account") }}</a></li>
             {% endif %}
             {% if open_realm_creation %}
-            <li><a href="{{ server_uri }}/create_realm/">{{ _("New organization") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/create_realm/">{{ _("New organization") }}</a></li>
             {% endif %}
             {% if login_link_disabled %}
             {% else %}
@@ -40,8 +40,8 @@
             {% else %}
             <li><a href="{{ url('register') }}">{{ _("Register") }}</a></li>
             {% endif %}
-            <li><a href="{{ server_uri }}/terms/">{{ _("Terms of service") }}</a></li>
-            <li><a href="{{ server_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of service") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
         </ul>
     </section>
     <section>

@@ -28,11 +28,11 @@
                     {% endif %}
 
                     {% if google_error %}
-                    {{ render_markdown_path('zerver/google-error.md', {"server_uri": server_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                    {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}
 
                     {% if github_error %}
-                    {{ render_markdown_path('zerver/github-error.md', {"server_uri": server_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                    {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}
 
                     <p>After making your changes, remember to restart

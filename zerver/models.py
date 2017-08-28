@@ -252,7 +252,7 @@ class Realm(ModelReprMixin, models.Model):
         if self.subdomain not in [None, ""]:
             return '%s%s.%s' % (settings.EXTERNAL_URI_SCHEME,
                                 self.subdomain, settings.EXTERNAL_HOST)
-        return settings.SERVER_URI
+        return settings.ROOT_DOMAIN_URI
 
     @property
     def host(self):

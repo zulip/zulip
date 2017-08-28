@@ -69,7 +69,7 @@ IGNORED_PHRASES = [
      '<a href="/#streams">Streams page</a>.'),
     (r'Looking for our '
      '<a href="/integrations" target="_blank">Integrations</a> or '
-     '<a href="{{ server_uri }}/api" target="_blank">API</a> '
+     '<a href="{{ root_domain_uri }}/api" target="_blank">API</a> '
      'documentation?'),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
     r"one or more people...",

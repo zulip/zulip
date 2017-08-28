@@ -38,7 +38,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
                     #}
                     <input id="id_terms" class="required" type="checkbox" name="terms"
                            {% if form.terms.value() %}checked="checked"{% endif %} />
-                    {% trans %}I agree to the <a href="{{ server_uri }}/terms">Terms of Service</a>.{% endtrans %}
+                    {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms">Terms of Service</a>.{% endtrans %}
                 </label>
                 {% if form.terms.errors %}
                     {% for error in form.terms.errors %}

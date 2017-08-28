@@ -5,7 +5,7 @@ configured. Please check the following:
 You can create OAuth2 apps at [the Google developer console](https://console.developers.google.com).
 
 * You have configured your OAuth2 client to allow redirects to your
-server's Google auth URL: `{{ server_uri }}/accounts/login/google/done/`.
+server's Google auth URL: `{{ root_domain_uri }}/accounts/login/google/done/`.
 
 * You have set `GOOGLE_OAUTH2_CLIENT_ID` in `{{ settings_path }}` and
 `google_oauth2_client_secret` in `{{ secrets_path }}`.
