@@ -759,7 +759,7 @@ td.pointer {
 
 .stream_topic {
     display: inline-block;
-    padding: 3px 6px 2px 12px;
+    padding: 3px 3px 2px 12px;
     margin-left: -5px;
     height: 17px;
     line-height: 17px;
@@ -1183,6 +1183,7 @@ a.message_label_clickable:hover {
 }
 
 .on_hover_topic_mute {
+    padding-left: 3px;
     opacity: .1;
 }
 
