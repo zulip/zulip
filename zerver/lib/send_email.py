@@ -11,6 +11,12 @@ import ujson
 
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
+from zerver.lib.logging_util import create_logger
+
+## Logging setup ##
+
+logger = create_logger('zulip.send_email', settings.EMAIL_LOG_PATH, 'INFO')
+
 class FromAddress(object):
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
@@ -71,7 +77,11 @@ def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> None
     mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
                        from_address=from_address, reply_to_email=reply_to_email, context=context)
+    template = template_prefix.split("/")[-1]
+    logger.info("Sending %s email to %s" % (template, mail.to))
+
     if mail.send() == 0:
+        logger.error("Error sending %s email to %s" % (template, mail.to))
         raise EmailNotDeliveredException
 
 def send_email_from_dict(email_dict):
