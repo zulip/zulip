@@ -85,13 +85,13 @@ casper.waitForSelector('#settings_overlay_container.show', function () {
 });
 
 casper.then(function () {
-    casper.click("li[data-section='organization-permissions']");
+    casper.click("li[data-section='organization-settings']");
 });
 
 // deactivate "allow message editing"
 casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    casper.click('form.org-permissions-form button.button');
+    casper.click('form.org-settings-form button.button');
 });
 
 casper.then(function () {
@@ -151,9 +151,14 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#organization"]');
 });
+
+casper.waitUntilVisible("li[data-section='organization-settings']", function () {
+    casper.click("li[data-section='organization-settings']");
+});
+
 casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    casper.click('form.org-permissions-form button.button');
+    casper.click('form.org-settings-form button.button');
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
         casper.test.assertEval(function () {
@@ -213,7 +218,7 @@ casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editi
         $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
     });
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    casper.click('form.org-permissions-form button.button');
+    casper.click('form.org-settings-form button.button');
 });
 
 casper.then(function () {
@@ -232,7 +237,7 @@ casper.then(function () {
     // allow message editing again, and check that the old edit limit is still there
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-permissions-form button.button');
+        casper.click('form.org-settings-form button.button');
     });
 });
 
@@ -254,7 +259,7 @@ casper.then(function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('0');
         });
-        casper.click('form.org-permissions-form button.button');
+        casper.click('form.org-settings-form button.button');
     });
 });
 
@@ -277,7 +282,7 @@ casper.then(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('moo');
         });
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-permissions-form button.button');
+        casper.click('form.org-settings-form button.button');
     });
 });
 

@@ -8,6 +8,7 @@ exports.load_admin_section = function (name) {
     var section;
 
     switch (name) {
+        case 'organization-profile':
         case 'organization-settings':
         case 'organization-permissions':
         case 'auth-methods':
