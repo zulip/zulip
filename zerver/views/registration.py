@@ -285,7 +285,8 @@ def send_registration_completion_email(email, request, realm_creation=False):
 def redirect_to_email_login_url(email):
     # type: (str) -> HttpResponseRedirect
     login_url = reverse('django.contrib.auth.views.login')
-    redirect_url = login_url + '?email=' + urllib.parse.quote_plus(email)
+    email = urllib.parse.quote_plus(email)
+    redirect_url = login_url + '?already_registered=' + email
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request, creation_key=None):

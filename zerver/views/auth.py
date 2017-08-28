@@ -496,6 +496,12 @@ def login_page(request, **kwargs):
         pass
 
     try:
+        already_registered = request.GET['already_registered']
+        template_response.context_data['already_registered'] = already_registered
+    except KeyError:
+        pass
+
+    try:
         template_response.context_data['subdomain'] = request.GET['subdomain']
         template_response.context_data['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
     except KeyError:

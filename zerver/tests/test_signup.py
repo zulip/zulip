@@ -1135,6 +1135,8 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertIn('login', result['Location'])
+        result = self.client_get(result.url)
+        self.assert_in_response("You've already registered", result)
 
     def test_signup_invalid_name(self):
         # type: () -> None
