@@ -139,7 +139,6 @@ class Command(makemessages.Command):
 
     def extract_strings(self, data):
         # type: (str) -> Dict[str, str]
-        data = self.ignore_javascript_comments(data)
         translation_strings = {}  # type: Dict[str, str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
@@ -152,7 +151,6 @@ class Command(makemessages.Command):
 
     def ignore_javascript_comments(self, data):
         # type: (str) -> str
-
         # Removes multi line comments.
         data = multiline_js_comment.sub('', data)
         # Removes single line (//) comments.
@@ -177,6 +175,7 @@ class Command(makemessages.Command):
             if filename.endswith('.js') and not filename.startswith('.'):
                 with open(os.path.join(dirname, filename)) as reader:
                     data = reader.read()
+                    data = self.ignore_javascript_comments(data)
                     translation_strings.update(self.extract_strings(data))
 
         return translation_strings
