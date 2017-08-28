@@ -33,6 +33,7 @@ function rerender_subscribers_list(sub) {
     if (subscribers_list) {
         subscribers_list.data(emails);
         subscribers_list.render();
+        ui.update_scrollbar($(".subscriber_list_container"));
     }
 }
 
@@ -196,6 +197,8 @@ function show_subscription_settings(sub_row) {
             },
         },
     }).init();
+
+    ui.set_up_scrollbar($(".subscriber_list_container"));
 
     sub_settings.find('input[name="principal"]').typeahead({
         source: people.get_realm_persons, // This is a function.
