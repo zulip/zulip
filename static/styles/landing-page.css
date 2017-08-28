@@ -1946,9 +1946,9 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .searchbar input {
-    -webkit-box-shadow: 1px 3px 5px 3px rgba(0,0,0,0.03);
-    -moz-box-shadow: 1px 3px 5px 3px rgba(0,0,0,0.03);
-    box-shadow: 1px 3px 5px 3px rgba(0,0,0,0.03);
+    -webkit-box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
+    -moz-box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
+    box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
 
     font-size: 1em;
     font-family: inherit;
