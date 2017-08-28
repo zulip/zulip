@@ -3177,8 +3177,8 @@ def user_email_is_unique(email):
     except UserProfile.DoesNotExist:
         pass
 
-def validate_email_for_realm(target_realm, email):
-    # type: (Optional[Realm], Text) -> None
+def check_email_exists(email):
+    # type: (Text) -> None
     try:
         existing_user_profile = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -3191,6 +3191,10 @@ def validate_email_for_realm(target_realm, email):
     elif existing_user_profile:
         # Other users should not already exist at all.
         raise ValidationError(u'%s already has an account' % (email,))
+
+def validate_email_for_realm(target_realm, email):
+    # type: (Optional[Realm], Text) -> None
+    check_email_exists(email)
 
 def validate_email(user_profile, email):
     # type: (UserProfile, Text) -> Tuple[Optional[str], Optional[str]]
