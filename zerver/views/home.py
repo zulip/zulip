@@ -262,5 +262,5 @@ def is_buggy_ua(agent):
     This may get fixed in the future, but for right now we can
     just serve the more conservative CSS to all our desktop apps.
     """
-    return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
+    return ("Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
         "Mac" not in agent
