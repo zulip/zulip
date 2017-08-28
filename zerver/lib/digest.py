@@ -19,19 +19,9 @@ from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Realm
 from zerver.context_processors import common_context
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.logging_util import create_logger
 
-import logging
-
-log_format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=log_format)
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.DIGEST_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
+logger = create_logger(settings.DIGEST_LOG_PATH, 'DEBUG', name=__name__)
 
 VALID_DIGEST_DAY = 1  # Tuesdays
 DIGEST_CUTOFF = 5

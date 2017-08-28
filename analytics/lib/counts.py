@@ -14,21 +14,13 @@ from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
 
 from collections import defaultdict, OrderedDict
 from datetime import timedelta, datetime
-import logging
+from zerver.lib.logging_util import create_logger
 import time
 
 ## Logging setup ##
 
-log_format = '%(asctime)s %(levelname)-8s %(message)s'
-logging.basicConfig(format=log_format)
-
-formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.ANALYTICS_LOG_PATH)
-file_handler.setFormatter(formatter)
-
-logger = logging.getLogger("zulip.management")
-logger.setLevel(logging.INFO)
-logger.addHandler(file_handler)
+logger = create_logger(settings.ANALYTICS_LOG_PATH,
+                       'INFO', name='zulip.management')
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365*1000)
