@@ -1726,7 +1726,7 @@ class TestLoginPage(ZulipTestCase):
                            ROOT_SUBDOMAIN_ALIASES=['www']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/find_account/')
+            self.assertEqual(result.url, '/accounts/find/')
 
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_redirects_for_root_domain(self, mock_get_host):
@@ -1737,7 +1737,7 @@ class TestLoginPage(ZulipTestCase):
                            ROOT_SUBDOMAIN_ALIASES=['www']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/find_account/')
+            self.assertEqual(result.url, '/accounts/find/')
 
         mock_get_host.return_value = 'www.testserver.com'
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
@@ -1746,7 +1746,7 @@ class TestLoginPage(ZulipTestCase):
                            ROOT_SUBDOMAIN_ALIASES=['test']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/find_account/')
+            self.assertEqual(result.url, '/accounts/find/')
 
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_works_without_subdomains(self, mock_get_host):
@@ -1764,15 +1764,15 @@ class TestLoginPage(ZulipTestCase):
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self):
         # type: () -> None
-        result = self.client_get('/find_account/')
+        result = self.client_get('/accounts/find/')
         self.assertIn("Find your Zulip accounts", result.content.decode('utf8'))
 
     def test_result(self):
         # type: () -> None
-        result = self.client_post('/find_account/',
+        result = self.client_post('/accounts/find/',
                                   dict(emails="iago@zulip.com,cordelia@zulip.com"))
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/find_account/?emails=iago%40zulip.com%2Ccordelia%40zulip.com")
+        self.assertEqual(result.url, "/accounts/find/?emails=iago%40zulip.com%2Ccordelia%40zulip.com")
         result = self.client_get(result.url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
@@ -1783,10 +1783,10 @@ class TestFindMyTeam(ZulipTestCase):
 
     def test_find_team_ignore_invalid_email(self):
         # type: () -> None
-        result = self.client_post('/find_account/',
+        result = self.client_post('/accounts/find/',
                                   dict(emails="iago@zulip.com,invalid_email@zulip.com"))
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/find_account/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com")
+        self.assertEqual(result.url, "/accounts/find/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com")
         result = self.client_get(result.url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
@@ -1797,7 +1797,7 @@ class TestFindMyTeam(ZulipTestCase):
 
     def test_find_team_reject_invalid_email(self):
         # type: () -> None
-        result = self.client_post('/find_account/',
+        result = self.client_post('/accounts/find/',
                                   dict(emails="invalid_string"))
         self.assertEqual(result.status_code, 200)
         self.assertIn(b"Enter a valid email", result.content)
@@ -1805,13 +1805,13 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
         # Just for coverage on perhaps-unnecessary validation code.
-        result = self.client_get('/find_account/?emails=invalid')
+        result = self.client_get('/accounts/find/?emails=invalid')
         self.assertEqual(result.status_code, 200)
 
     def test_find_team_zero_emails(self):
         # type: () -> None
         data = {'emails': ''}
-        result = self.client_post('/find_account/', data)
+        result = self.client_post('/accounts/find/', data)
         self.assertIn('This field is required', result.content.decode('utf8'))
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
@@ -1820,9 +1820,9 @@ class TestFindMyTeam(ZulipTestCase):
     def test_find_team_one_email(self):
         # type: () -> None
         data = {'emails': self.example_email("hamlet")}
-        result = self.client_post('/find_account/', data)
+        result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/find_account/?emails=hamlet%40zulip.com')
+        self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
 
@@ -1830,9 +1830,9 @@ class TestFindMyTeam(ZulipTestCase):
         # type: () -> None
         do_deactivate_user(self.example_user("hamlet"))
         data = {'emails': self.example_email("hamlet")}
-        result = self.client_post('/find_account/', data)
+        result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/find_account/?emails=hamlet%40zulip.com')
+        self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
@@ -1840,25 +1840,25 @@ class TestFindMyTeam(ZulipTestCase):
         # type: () -> None
         do_deactivate_realm(get_realm("zulip"))
         data = {'emails': self.example_email("hamlet")}
-        result = self.client_post('/find_account/', data)
+        result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/find_account/?emails=hamlet%40zulip.com')
+        self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_bot_email(self):
         # type: () -> None
         data = {'emails': self.example_email("webhook_bot")}
-        result = self.client_post('/find_account/', data)
+        result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/find_account/?emails=webhook-bot%40zulip.com')
+        self.assertEqual(result.url, '/accounts/find/?emails=webhook-bot%40zulip.com')
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_more_than_ten_emails(self):
         # type: () -> None
         data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
-        result = self.client_post('/find_account/', data)
+        result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))
         from django.core.mail import outbox

@@ -127,6 +127,9 @@ i18n_urls = [
     # Portico-styled page used to provide email confirmation of terms acceptance.
     url(r'^accounts/accept_terms/$', zerver.views.home.accounts_accept_terms, name='zerver.views.home.accounts_accept_terms'),
 
+    # Find your account
+    url(r'^accounts/find/$', zerver.views.registration.find_account, name='zerver.views.registration.find_account'),
+
     # Realm Creation
     url(r'^create_realm/$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
     url(r'^create_realm/(?P<creation_key>[\w]+)$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
@@ -154,7 +157,6 @@ i18n_urls = [
     url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
     url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
     url(r'^for/working-groups-and-communities/$', TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
-    url(r'^find_account/$', zerver.views.registration.find_account, name='zerver.views.registration.find_account'),
 
     # Terms of service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
