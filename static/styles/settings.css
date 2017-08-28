@@ -1229,12 +1229,8 @@ thead .actions {
     color: hsl(0, 0%, 66%);
 }
 
-/* This is a hack; essentially the issue is that if the ::after element is on
-   a table, then the width of the ::after @ 100% will be the width of the first
-   table column, so we'll just make the ::after 200% to add more space.
-   This is NOT a pattern that should be repeated or built on for other cases. */
 .required-text.thick:empty::after {
-    width: 200%;
+    width: 100%;
 }
 
 #payload_url_inputbox input[type=text] {
