@@ -4,11 +4,11 @@ html {
 
 .flex {
     display: flex;
-    padding: 100px 0px;
+    padding: 80px 0px;
     align-items: center;
     justify-content: center;
 
-    min-height: calc(100vh - 495px);
+    min-height: calc(100vh - 407px);
 }
 
 .m-10 {
@@ -761,6 +761,11 @@ button.login-google-button {
     }
 }
 
+@media (max-width: 815px) {
+    .flex {
+        min-height: calc(100vh - 530px);
+    }
+}
 
 @media (max-width: 795px) {
     .register-account #registration {
@@ -853,5 +858,16 @@ button.login-google-button {
 
     .account-creation {
         font-weight: 400;
+    }
+
+    .flex {
+        /* the header becomes smaller, so comp for that. */
+        min-height: calc(100vh - 505px);
+    }
+}
+
+@media (max-width: 400px) {
+    .flex {
+        min-height: calc(100vh - 560px);
     }
 }
