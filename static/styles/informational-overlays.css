@@ -36,6 +36,7 @@
 .informational-overlays .overlay-modal .modal-body {
     height: 70vh;
     text-align: center;
+    position: relative;
 }
 
 .informational-overlays .overlay-modal .modal-header h3 {

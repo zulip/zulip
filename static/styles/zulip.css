@@ -187,6 +187,7 @@ p.n-margin {
     overflow-y: scroll;
     z-index: 99;
     -webkit-overflow-scrolling: touch;
+    position: relative;
 }
 
 .app-main,

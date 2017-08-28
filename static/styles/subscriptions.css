@@ -724,6 +724,8 @@ form#add_new_subscription {
     overflow: auto;
     outline: none;
     -webkit-overflow-scrolling: touch;
+    height: 100%;
+    position: relative;
 }
 
 #subscription_overlay #stream-creation .modal-footer {

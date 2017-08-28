@@ -183,6 +183,8 @@ function populate_users(realm_people_data) {
 }
 
 exports.set_up = function () {
+    ui.set_up_scrollbar($("#admin-user-list .progressive-table-wrapper"));
+    ui.set_up_scrollbar($("#admin-bot-list .progressive-table-wrapper"));
     loading.make_indicator($('#admin_page_users_loading_indicator'));
     loading.make_indicator($('#admin_page_bots_loading_indicator'));
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));

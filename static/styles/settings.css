@@ -570,6 +570,13 @@ input[type=checkbox].inline-block {
     overflow: auto;
 }
 
+#admin-user-list .progressive-table-wrapper,
+#admin-streams-list .progressive-table-wrapper,
+#admin-bot-list .progressive-table-wrapper {
+    position: relative;
+    height: 100%;
+}
+
 .bots_list {
     display: none;
     list-style-type: none;
