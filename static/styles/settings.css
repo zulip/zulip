@@ -146,6 +146,10 @@ label {
     vertical-align: middle;
 }
 
+#settings_content table + .progressive-table-wrapper table tr td:first-of-type {
+    width: 20%;
+}
+
 td .button {
     margin: 2px 0px;
     box-shadow: none;
