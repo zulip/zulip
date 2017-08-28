@@ -5,7 +5,7 @@ import requests
 import mock
 from mock import call
 import time
-from typing import Any, Dict, Union, SupportsInt, Text
+from typing import Any, Dict, List, Union, SupportsInt, Text
 
 import gcm
 import ujson
@@ -26,6 +26,7 @@ from zerver.models import (
     Stream,
 )
 from zerver.lib import push_notifications as apn
+from zerver.lib.push_notifications import DeviceToken
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -468,6 +469,29 @@ class HandlePushNotificationTest(PushNotificationTest):
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_called_with("Could not find UserMessage with "
                                            "message_id 100")
+
+class TestAPNs(PushNotificationTest):
+    def devices(self):
+        # type: () -> List[DeviceToken]
+        return list(PushDeviceToken.objects.filter(
+            user=self.user_profile, kind=PushDeviceToken.APNS))
+
+    def send(self, payload_data={}):
+        # type: (Dict[str, Any]) -> None
+        apn.send_apple_push_notification(
+            self.user_profile.id, self.devices(), payload_data)
+
+    def test_success(self):
+        # type: () -> None
+        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+            mock_apns.get_notification_result.return_value = 'Success'
+            self.send()
+            mock_logging.warn.assert_not_called()
+            for device in self.devices():
+                mock_logging.info.assert_any_call(
+                    "APNs: Success sending for user %d to device %s",
+                    self.user_profile.id, device.token)
 
 class TestGetAlertFromMessage(PushNotificationTest):
     def test_get_alert_from_message(self):
