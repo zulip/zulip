@@ -9,15 +9,13 @@ exports.set_up = function () {
     $("#emojiset_select").val(page_params.emojiset);
 
     $("#default_language_modal [data-dismiss]").click(function () {
-      $('#default_language_modal').attr('aria-hidden', true);
-      $("#default_language_modal").fadeOut(300);
+      $("#default_language_modal").modal("hide").attr('aria-hidden', true);
     });
 
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').show().attr('aria-hidden', true);
-        $('#default_language_modal').fadeOut(300);
+        $("#default_language_modal").modal("hide").attr('aria-hidden', true);
 
         var data = {};
         var $link = $(e.target).closest("a[data-code]");
@@ -46,7 +44,7 @@ exports.set_up = function () {
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').show().attr('aria-hidden', false);
+        $("#default_language_modal").modal("show").attr('aria-hidden', false);
     });
 
     $("#high_contrast_mode").change(function () {
