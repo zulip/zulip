@@ -610,7 +610,7 @@ function render(template_name, args) {
     html += "</div>";
     // test to make sure the first emoji is present in the popover
     var emoji_key = $(html).find(".emoji-100").attr('title');
-    assert.equal(emoji_key, ':100:');
+    assert.equal(emoji_key, '100');
     global.write_handlebars_output("emoji_popover_content", html);
 }());
 
