@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import itertools
 import requests
 import mock
 from mock import call
@@ -488,6 +489,23 @@ class TestAPNs(PushNotificationTest):
             mock_apns.get_notification_result.return_value = 'Success'
             self.send()
             mock_logging.warn.assert_not_called()
+            for device in self.devices():
+                mock_logging.info.assert_any_call(
+                    "APNs: Success sending for user %d to device %s",
+                    self.user_profile.id, device.token)
+
+    def test_http_retry(self):
+        # type: () -> None
+        import hyper
+        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+            mock_apns.get_notification_result.side_effect = itertools.chain(
+                [hyper.http20.exceptions.StreamResetError()],
+                itertools.repeat('Success'))
+            self.send()
+            mock_logging.warn.assert_called_once_with(
+                "APNs: HTTP error sending for user %d to device %s: %s",
+                self.user_profile.id, self.devices()[0].token, "StreamResetError")
             for device in self.devices():
                 mock_logging.info.assert_any_call(
                     "APNs: Success sending for user %d to device %s",

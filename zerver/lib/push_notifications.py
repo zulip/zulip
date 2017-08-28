@@ -15,6 +15,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from gcm import GCM
+from hyper.http20.exceptions import HTTP20Error
 import requests
 from six.moves import urllib
 import ujson
@@ -64,6 +65,8 @@ def get_apns_client():
                                   use_sandbox=settings.APNS_SANDBOX)
     return _apns_client
 
+APNS_MAX_RETRIES = 3
+
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, payload_data):
     # type: (int, List[DeviceToken], Dict[str, Any]) -> None
@@ -74,12 +77,29 @@ def send_apple_push_notification(user_id, devices, payload_data):
     payload = APNsPayload(**payload_data)
     expiration = int(time.time() + 24 * 3600)
     client = get_apns_client()
+    retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
-        stream_id = client.send_notification_async(
-            device.token, payload, topic='org.zulip.Zulip',
-            expiration=expiration)
-        result = client.get_notification_result(stream_id)
+
+        def attempt_send():
+            # type: () -> Optional[str]
+            stream_id = client.send_notification_async(
+                device.token, payload, topic='org.zulip.Zulip',
+                expiration=expiration)
+            try:
+                return client.get_notification_result(stream_id)
+            except HTTP20Error as e:
+                logging.warn("APNs: HTTP error sending for user %d to device %s: %s",
+                             user_id, device.token, e.__class__.__name__)
+                return None
+
+        result = attempt_send()
+        while result is None and retries_left > 0:
+            retries_left -= 1
+            result = attempt_send()
+        if result is None:
+            result = "HTTP error, retries exhausted"
+
         if result == 'Success':
             logging.info("APNs: Success sending for user %d to device %s",
                          user_id, device.token)
