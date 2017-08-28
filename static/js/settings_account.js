@@ -149,7 +149,7 @@ exports.set_up = function () {
     $('#change_email_button').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#change_email_modal').modal('hide');
+        $('#change_email_modal').modal('hide').attr('aria-hidden', true);
 
         var data = {};
         data.email = $('.email_change_container').find("input[name='email']").val();
@@ -173,7 +173,7 @@ exports.set_up = function () {
     $('#change_email').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#change_email_modal').modal('show');
+        $('#change_email_modal').modal('show').attr('aria-hidden', false);
         var email = $('#email_value').text().trim();
         $('.email_change_container').find("input[name='email']").val(email);
     });
