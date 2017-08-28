@@ -9,3 +9,5 @@ server's Google auth URL: `{{ server_uri }}/accounts/login/google/done/`.
 
 * You have set `GOOGLE_OAUTH2_CLIENT_ID` in `{{ settings_path }}` and
 `google_oauth2_client_secret` in `{{ secrets_path }}`.
+
+* Navigate back to the login page and attempt the Google auth flow again.

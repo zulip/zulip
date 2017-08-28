@@ -8,3 +8,5 @@ in the OAuth application in GitHub. You can create OAuth apps from
 * You have set `SOCIAL_AUTH_GITHUB_KEY` in `{{ settings_path }}` and
 `social_auth_github_secret` in `{{ secrets_path }}` with the values
 from your OAuth application.
+
+* Navigate back to the login page and attempt the GitHub auth flow again.
