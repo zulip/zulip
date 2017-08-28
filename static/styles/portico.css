@@ -471,6 +471,9 @@ input.text-error {
     text-transform: uppercase;
     font-size: 1em;
     font-weight: 600;
+    line-height: 1.2;
+
+    margin-bottom: 5px;
 }
 
 .footer section ul {
@@ -1480,15 +1483,6 @@ input.new-organization-button {
         padding: 0;
     }
 
-    .footer {
-        width: 100%;
-    }
-
-    .footer section {
-        margin: 0px 3px;
-        width: calc(50% - 8px);
-    }
-
     .app-main,
     .header-main,
     .footer-main {
@@ -1535,9 +1529,22 @@ input.new-organization-button {
 
 }
 
-@media (max-width: 350px) {
+@media (max-width: 475px) {
+    .footer {
+        width: auto;
+    }
+
     .footer section {
-        width: calc(100% - 20px);
+        margin: 0px 3px;
+        width: calc(50% - 8px);
+    }
+}
+
+@media (max-width: 400px) {
+    .footer section {
+        width: calc(100% - 40px);
+        max-width: none;
+        text-align: center;
     }
 }
 
