@@ -35,7 +35,7 @@ run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
 
 # travis/backend
-run ./tools/lint $FORCEARG
+run ./tools/lint --backend $FORCEARG
 run ./tools/test-tools
 run ./tools/test-backend $FORCEARG
 run ./tools/run-mypy
@@ -52,6 +52,7 @@ run ./tools/test-api
 # run ./tools/test-queue-worker-reload
 
 # travis/frontend
+run ./tools/lint --frontend $FORCEARG
 run ./tools/test-js-with-node
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
