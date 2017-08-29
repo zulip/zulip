@@ -414,18 +414,25 @@ class ZulipTestCase(TestCase):
         Successful POSTs return a 200 and JSON of the form {"result": "success",
         "msg": ""}.
         """
-        self.assertEqual(result.status_code, 200, result)
-        json = ujson.loads(result.content)
+        try:
+            json = ujson.loads(result.content)
+        except Exception:  # nocoverage
+            json = {'msg': "Error parsing JSON in response!"}
+        self.assertEqual(result.status_code, 200, json['msg'])
         self.assertEqual(json.get("result"), "success")
         # We have a msg key for consistency with errors, but it typically has an
         # empty value.
         self.assertIn("msg", json)
+        self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
         return json
 
     def get_json_error(self, result, status_code=400):
         # type: (HttpResponse, int) -> Dict[str, Any]
-        self.assertEqual(result.status_code, status_code)
-        json = ujson.loads(result.content)
+        try:
+            json = ujson.loads(result.content)
+        except Exception:  # nocoverage
+            json = {'msg': "Error parsing JSON in response!"}
+        self.assertEqual(result.status_code, status_code, msg=json.get('msg'))
         self.assertEqual(json.get("result"), "error")
         return json['msg']
 
