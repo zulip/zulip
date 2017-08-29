@@ -59,6 +59,17 @@
             </tr>
         </tbody>
     </table>
+    <p>Useful management commands include
+        <ul>
+            <li><code>./manage.py mark_all_messages_unread</code>: Useful for testing reading messages.</li>
+            <li><code>./manage.py add_new_realm</code>: Add a new realm. Useful for testing onboarding.</li>
+            <li><code>./manage.py add_new_user</code>: Add a new user. Useful for testing onboarding.</li>
+            <li><code>./manage.py add_mock_conversation</code>: Add test messages, streams, images, emoji, etc.
+                into the dev environment. First edit zilencer/management/commands/add_mock_conversation.py
+                to add the data you're testing.
+            </li>
+        </ul>
+    </p>
     <p>You can find docs on testing Google &amp; GitHub authentication over <a href="http://zulip.readthedocs.io/en/latest/settings.html#testing-google-github-authentication">here</a>.</p>
 </div>
 
