@@ -38,7 +38,6 @@ from zerver.lib.retention import move_message_to_archive
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
-    set_topic_mutes,
     add_topic_mute,
     remove_topic_mute,
 )
@@ -3309,12 +3308,6 @@ def do_set_alert_words(user_profile, alert_words):
     # type: (UserProfile, List[Text]) -> None
     set_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, alert_words)
-
-def do_set_muted_topics(user_profile, muted_topics):
-    # type: (UserProfile, List[List[Text]]) -> None
-    set_topic_mutes(user_profile, muted_topics)
-    event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
-    send_event(event, [user_profile.id])
 
 def do_update_muted_topic(user_profile, stream, topic, op):
     # type: (UserProfile, str, str, str) -> None

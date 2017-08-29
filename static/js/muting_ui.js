@@ -9,6 +9,11 @@ function timestamp_ms() {
 var last_topic_update = 0;
 
 exports.rerender = function () {
+    // Note: We tend to optimistically rerender muting preferences before
+    // the back end actually acknowledges the mute.  This gives a more
+    // immediate feel to the user, and if the back end fails temporarily,
+    // re-doing a mute or unmute is a pretty recoverable thing.
+
     stream_list.update_streams_sidebar();
     current_msg_list.rerender_after_muting_changes();
     if (current_msg_list !== home_msg_list) {
@@ -92,17 +97,28 @@ exports.dismiss_mute_confirmation = function () {
     }
 };
 
-exports.persist_and_rerender = function () {
-    // Optimistically rerender our new muting preferences.  The back
-    // end should eventually save it, and if it doesn't, it's a recoverable
-    // error--the user can just mute the topic again, and the topic might
-    // die down before the next reload anyway, making the muting moot.
-    exports.rerender();
+exports.persist_mute = function (stream_name, topic_name) {
     var data = {
-        muted_topics: JSON.stringify(muting.get_muted_topics()),
+        stream: stream_name,
+        topic: topic_name,
+        op: 'add',
     };
     last_topic_update = timestamp_ms();
-    channel.post({
+    channel.patch({
+        url: '/json/users/me/subscriptions/muted_topics',
+        idempotent: true,
+        data: data,
+    });
+};
+
+exports.persist_unmute = function (stream_name, topic_name) {
+    var data = {
+        stream: stream_name,
+        topic: topic_name,
+        op: 'remove',
+    };
+    last_topic_update = timestamp_ms();
+    channel.patch({
         url: '/json/users/me/subscriptions/muted_topics',
         idempotent: true,
         data: data,
@@ -148,7 +164,8 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
 exports.mute = function (stream, topic) {
     stream_popover.hide_topic_popover();
     exports.mute_topic(stream, topic);
-    exports.persist_and_rerender();
+    exports.rerender();
+    exports.persist_mute(stream, topic);
     exports.notify_with_undo_option(stream, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
@@ -159,7 +176,8 @@ exports.unmute = function (stream, topic) {
     // and miss out on info.
     stream_popover.hide_topic_popover();
     exports.unmute_topic(stream, topic);
-    exports.persist_and_rerender();
+    exports.rerender();
+    exports.persist_unmute(stream, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
     exports.dismiss_mute_confirmation();
 };

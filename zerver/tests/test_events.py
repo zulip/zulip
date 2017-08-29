@@ -54,7 +54,6 @@ from zerver.lib.actions import (
     do_remove_realm_emoji,
     do_remove_realm_filter,
     do_rename_stream,
-    do_set_muted_topics,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_property,
@@ -858,10 +857,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('muted_topics')),
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
-        events = self.do_test(lambda: do_set_muted_topics(self.user_profile, [[u"Denmark", u"topic"]]))
-        error = muted_topics_checker('events[0]', events[0])
-        self.assert_on_error(error)
-
         events = self.do_test(lambda: do_update_muted_topic(
             self.user_profile, "Denmark", "topic", "add"))
         error = muted_topics_checker('events[0]', events[0])
