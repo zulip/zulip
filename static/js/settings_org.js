@@ -253,6 +253,10 @@ function _set_up() {
                 checked_msg: i18n.t("Topics are required in messages to streams"),
                 unchecked_msg: i18n.t("Topics are not required in messages to streams"),
             },
+            waiting_period_threshold: {
+                type: 'integer',
+                msg: i18n.t("Waiting period threshold changed!"),
+            },
         },
     };
 
@@ -265,6 +269,10 @@ function _set_up() {
             }
             if (field.type === 'text') {
                 data[k] = JSON.stringify($('#id_realm_'+k).val().trim());
+                return;
+            }
+            if (field.type === 'integer') {
+                data[k] = JSON.stringify(parseInt($('#id_realm_'+k).val().trim(), 10));
                 return;
             }
         });
@@ -337,10 +345,7 @@ function _set_up() {
         e.stopPropagation();
 
         var url = "/json/realm";
-        var data = {
-            waiting_period_threshold: JSON.stringify(parseInt($("#id_realm_waiting_period_threshold").val(), 10)),
-        };
-        data = populate_data_for_request(data, 'settings');
+        var data = populate_data_for_request({}, 'settings');
 
         channel.patch({
             url: url,
