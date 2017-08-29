@@ -256,7 +256,7 @@ class PasswordResetTest(ZulipTestCase):
         message = outbox.pop()
         self.assertIn("Zulip Account Security", message.from_email)
         self.assertIn(FromAddress.NOREPLY, message.from_email)
-        self.assertIn("Psst. Word on the street is that you forgot your password,",
+        self.assertIn("Psst. Word on the street is that you",
                       message.body)
 
     def test_redirect_endpoints(self):
