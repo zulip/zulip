@@ -203,39 +203,42 @@ pip install zulip_botserver
 
 ### Running Zulip Botserver with `supervisord`
 
-You may feel that running the `zulip-bot-server` command manually is cumbersome
-and brittle: It needs a separate terminal for monitoring and has to be restarted on failure.
-If that's the case, *supervisord* gives you a helping hand: Once configured, it automatically
-runs the botserver, telling you the current botserver status, restarting it if needed, and keeping
-track of all logged information.
+[supervisord](http://supervisord.org/) is a popular tool for running
+services in production.  It helps ensure the service starts on boot,
+manages log files, restarts the service if it crashes, etc.  This
+section documents how to run the Zulip Botserver using *supervisord*.
 
-Running the Zulip Botserver with *supervisord* works almost like running it manually.
+Running the Zulip Botserver with *supervisord* works almost like
+running it manually.
 
-0.  Install *supervisord*:
+0.  Install *supervisord* via your package manager; e.g. on Debian/Ubuntu:
     ```
     sudo apt-get install supervisor
     ```
 
-1.  Configure *supervisord*:
+1.  Configure *supervisord*.  *supervisord* stores its configuration in
+    `/etc/supervisor/conf.d`.
     * Do **one** of the following:
-      * Download the [config file](
+      * Download the [sample config file](
         https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf)
         and store it in `/etc/supervisor/conf.d/zulip-botserver.conf`.
-      * Copy&Paste the following section into your existing supervisord config file.
+      * Copy the following section into your existing supervisord config file.
         ```
         [program:zulip-bot-server]
         command=zulip-bot-server --config-file=<path/to/your/flaskbotrc> --hostname <address> --port <port>
         startsecs=3
-        stdout_logfile=<path/to/your/logfile> ; all output of your botserver will be logged here
+        stdout_logfile=/var/log/zulip-botserver.log ; all output of your botserver will be logged here
         redirect_stderr=true
         ```
-    * Edit the `<>` sections accordingly.
+    * Edit the `<>` sections according to your preferences.
 
 2. Update *supervisord* to read the configuration file:
    ```
    supervisorctl reread
    supervisorctl update
    ```
+   (or you can use `/etc/init.d/supervisord restart`, but this is less
+   disruptive if you're using *supervisord* for other services as well).
 
 3. Test if your setup is successful:
    ```
@@ -243,6 +246,9 @@ Running the Zulip Botserver with *supervisord* works almost like running it manu
    ```
    The output should include a line similar to this:
    > zulip-bot-server                 RUNNING   pid 28154, uptime 0:00:27
+
+   The standard output of the bot server will be logged to the path in
+   your *supervisord* configuration.
 
 ## How to develop a bot
 
