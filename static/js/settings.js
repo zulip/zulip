@@ -42,6 +42,15 @@ $("body").ready(function () {
     });
 
     $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
+
+    $("#settings_overlay_container").click(function (e) {
+        if (!overlays.is_modal_open()) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.close_active_modal();
+    });
 });
 
 
