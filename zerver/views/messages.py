@@ -37,14 +37,14 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, is_public_stream_by_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic_mutes import get_topic_mutes
+from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_stream, parse_usermessage_flags, email_to_domain, get_realm, get_active_streams, \
-    bulk_get_streams, get_user_including_cross_realm
+    get_user_including_cross_realm
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -543,31 +543,7 @@ def exclude_muting_conditions(user_profile, narrow):
             condition = not_(column("recipient_id").in_(muted_recipient_ids))
             conditions.append(condition)
 
-    muted_topics = get_topic_mutes(user_profile)
-    if muted_topics:
-        if stream_name is not None:
-            muted_topics = [m for m in muted_topics if m[0].lower() == stream_name]
-            if not muted_topics:
-                return conditions
-
-        muted_streams = bulk_get_streams(user_profile.realm,
-                                         [muted[0] for muted in muted_topics])
-        muted_recipients = bulk_get_recipients(Recipient.STREAM,
-                                               [stream.id for stream in six.itervalues(muted_streams)])
-        recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
-                             for s in six.itervalues(muted_streams))
-
-        muted_topics = [m for m in muted_topics if m[0].lower() in recipient_map]
-
-        if muted_topics:
-            def mute_cond(muted):
-                # type: (List[str]) -> Selectable
-                stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
-                topic_cond = func.upper(column("subject")) == func.upper(muted[1])
-                return and_(stream_cond, topic_cond)
-
-            condition = not_(or_(*list(map(mute_cond, muted_topics))))
-            return conditions + [condition]
+    conditions = exclude_topic_mutes(conditions, user_profile, stream_name)
 
     return conditions
 
