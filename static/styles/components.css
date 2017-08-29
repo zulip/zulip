@@ -288,7 +288,7 @@
 }
 
 .new-style label.checkbox input[type=checkbox]:disabled ~ span {
-    opacity: 0.3;
+    opacity: 0.7;
 }
 
 .new-style input[type=text] {
