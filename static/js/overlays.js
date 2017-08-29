@@ -16,6 +16,10 @@ exports.is_active = function () {
     return !!open_overlay_name;
 };
 
+exports.is_modal_open = function () {
+    return $(".modal").hasClass("in");
+};
+
 exports.info_overlay_open = function () {
     return open_overlay_name === 'informationalOverlays';
 };
@@ -30,6 +34,14 @@ exports.streams_open = function () {
 
 exports.lightbox_open = function () {
     return open_overlay_name === 'lightbox';
+};
+
+exports.active_modal = function () {
+    if (!exports.is_modal_open()) {
+        blueslip.error("Programming error — Called open_modal when there is no modal open");
+        return;
+    }
+    return $(".modal.in").attr("id");
 };
 
 exports.open_overlay = function (opts) {
@@ -69,6 +81,23 @@ exports.open_overlay = function (opts) {
     };
 };
 
+exports.open_modal = function (name) {
+    if (name === undefined) {
+        blueslip.error('Undefined name was passed into open_modal');
+        return;
+    }
+
+    if (exports.is_modal_open()) {
+        blueslip.error('open_modal() was called while ' + exports.active_modal() +
+            ' modal was open.');
+        return;
+    }
+
+    blueslip.debug('open modal: ' + name);
+
+    $("#" + name).modal("show").attr("aria-hidden", false);
+};
+
 exports.close_overlay = function (name) {
     if (name !== open_overlay_name) {
         blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open." );
@@ -104,6 +133,37 @@ exports.close_active = function () {
     }
 
     exports.close_overlay(open_overlay_name);
+};
+
+exports.close_modal = function (name) {
+    if (name === undefined) {
+        blueslip.error('Undefined name was passed into close_modal');
+        return;
+    }
+
+    if (!exports.is_modal_open()) {
+        blueslip.warn('close_active_modal() called without checking is_modal_open()');
+        return;
+    }
+
+    if (exports.active_modal() !== name) {
+        blueslip.error("Trying to close " + name +
+            " modal when " + exports.active_modal() + " is open." );
+        return;
+    }
+
+    blueslip.debug('close modal: ' + name);
+
+    $("#" + name).modal("hide").attr("aria-hidden", true);
+};
+
+exports.close_active_modal = function () {
+    if (!exports.is_modal_open()) {
+        blueslip.warn('close_active_modal() called without checking is_modal_open()');
+        return;
+    }
+
+    $(".modal.in").modal("hide").attr("aria-hidden", true);
 };
 
 exports.close_for_hash_change = function () {
