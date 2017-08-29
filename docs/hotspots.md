@@ -31,19 +31,9 @@ ALL_HOTSPOTS = {
 ### Step 2: Configure hotspot placement
 
 The target element and visual orientation of each hotspot is specified in
-`HOTSPOT_LOCATIONS` of `static/js/hotspots.js`:
+`HOTSPOT_LOCATIONS` of `static/js/hotspots.js`.
 
-```
-HOTSPOT_LOCATIONS = {
-    ...
-    new_hotspot_name: {
-        element: 'css selector string',
-        icon: TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, or CENTER
-    }
-}
-```
-
-The `icon` property specifies where the pulsing icon is placed *relative to
+The `icon_offset` property specifies where the pulsing icon is placed *relative to
 the width and height of the target element*.
 
 By default, `popovers.compute_placement` is used to responsively

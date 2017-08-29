@@ -2,13 +2,6 @@ var hotspots = (function () {
 
 var exports = {};
 
-// icon placements (relative to element):
-var TOP_LEFT = 'TOP_LEFT';
-var TOP_RIGHT = 'TOP_RIGHT';
-var BOTTOM_RIGHT = 'BOTTOM_RIGHT';
-var BOTTOM_LEFT = 'BOTTOM_LEFT';
-var CENTER = 'CENTER';
-
 // popover orientations
 var TOP = 'top';
 var LEFT = 'left';
@@ -21,15 +14,18 @@ var VIEWPORT_CENTER = 'viewport_center';
 var HOTSPOT_LOCATIONS = {
     click_to_reply: {
         element: '.selected_message .messagebox-content',
-        icon: CENTER,
+        offset_x: 0.5,
+        offset_y: 0.5,
     },
     new_topic_button: {
         element: '#left_bar_compose_stream_button_big',
-        icon: TOP_LEFT,
+        offset_x: 0,
+        offset_y: 0,
     },
     stream_settings: {
         element: '#streams_inline_cog',
-        icon: CENTER,
+        offset_x: 0.5,
+        offset_y: 0.5,
     },
 };
 
@@ -59,54 +55,10 @@ function place_icon(hotspot) {
         return;
     }
 
-    var el_width = $(hotspot.location.element).outerWidth();
-    var el_height = $(hotspot.location.element).outerHeight();
-
-    var offset;
-    switch (hotspot.location.icon) {
-        case TOP_LEFT:
-            offset = {
-                top: 0,
-                left: 0,
-            };
-            break;
-
-        case TOP_RIGHT:
-            offset = {
-                top: 0,
-                left: el_width,
-            };
-            break;
-
-        case BOTTOM_RIGHT:
-            offset = {
-                top: el_height,
-                left: el_width,
-            };
-            break;
-
-        case BOTTOM_LEFT:
-            offset = {
-                top: el_height,
-                left: 0,
-            };
-            break;
-
-        case CENTER:
-            offset = {
-                top: (el_height / 2),
-                left: (el_width / 2),
-            };
-            break;
-
-        default:
-            blueslip.error(
-                'Invalid icon placement value for hotspot \'' +
-                hotspot.name + '\''
-            );
-            break;
-    }
-
+    var offset = {
+        top: $(hotspot.location.element).outerHeight() * hotspot.location.offset_y,
+        left: $(hotspot.location.element).outerWidth() * hotspot.location.offset_x,
+    };
     var client_rect = $(hotspot.location.element).get(0).getBoundingClientRect();
     var placement = {
         top: client_rect.top + offset.top,
