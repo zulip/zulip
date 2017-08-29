@@ -3,8 +3,22 @@ from zerver.models import UserProfile
 
 from typing import List, Text
 
-from zerver.models import UserProfile
+from zerver.models import (
+    bulk_get_recipients,
+    bulk_get_streams,
+    Recipient,
+    UserProfile
+)
+from sqlalchemy.sql import (
+    and_,
+    column,
+    func,
+    not_,
+    or_,
+    Selectable
+)
 
+import six
 import ujson
 
 # Our current model for storing topic mutes, as of August 2017,
@@ -49,3 +63,35 @@ def topic_is_muted(user_profile, stream_name, topic_name):
     muted_topics = get_topic_mutes(user_profile)
     is_muted = [stream_name, topic_name] in muted_topics
     return is_muted
+
+def exclude_topic_mutes(conditions, user_profile, stream_name):
+    # type: (List[Selectable], UserProfile, Text) -> List[Selectable]
+    muted_topics = get_topic_mutes(user_profile)
+    if not muted_topics:
+        return conditions
+
+    if stream_name is not None:
+        muted_topics = [m for m in muted_topics if m[0].lower() == stream_name]
+        if not muted_topics:
+            return conditions
+
+    muted_streams = bulk_get_streams(user_profile.realm,
+                                     [muted[0] for muted in muted_topics])
+    muted_recipients = bulk_get_recipients(Recipient.STREAM,
+                                           [stream.id for stream in six.itervalues(muted_streams)])
+    recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
+                         for s in six.itervalues(muted_streams))
+
+    muted_topics = [m for m in muted_topics if m[0].lower() in recipient_map]
+
+    if not muted_topics:
+        return conditions
+
+    def mute_cond(muted):
+        # type: (List[str]) -> Selectable
+        stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
+        topic_cond = func.upper(column("subject")) == func.upper(muted[1])
+        return and_(stream_cond, topic_cond)
+
+    condition = not_(or_(*list(map(mute_cond, muted_topics))))
+    return conditions + [condition]
