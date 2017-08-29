@@ -22,6 +22,7 @@ from zerver.models import (
     receives_offline_notifications,
     receives_online_notifications,
     get_client,
+    get_realm,
     Recipient,
     Stream,
 )
@@ -60,7 +61,8 @@ class BouncerTestCase(ZulipTestCase):
         if args[0] == "POST":
             result = self.client_post(local_url,
                                       kwargs['data'],
-                                      **self.get_auth())
+                                      **self.get_auth(),
+                                      subdomain="")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -81,6 +83,8 @@ class BouncerTestCase(ZulipTestCase):
         return self.api_auth(self.server_uuid)
 
 class PushBouncerNotificationTest(BouncerTestCase):
+    DEFAULT_SUBDOMAIN = ""
+
     def test_unregister_remote_push_user_params(self):
         # type: () -> None
         token = "111222"
@@ -93,6 +97,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.client_post(endpoint, {'token': token},
                                   **self.get_auth())
         self.assert_json_error(result, "Missing 'token_kind' argument")
+
+        # We need the root ('') subdomain to be in use for this next
+        # test, since the push bouncer API is only available there:
+        realm = get_realm("zulip")
+        realm.string_id = ""
+        realm.save()
+
         result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
                                   **self.api_auth(self.example_email("hamlet")))
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
@@ -114,14 +125,28 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
                                   **self.get_auth())
         self.assert_json_error(result, "Missing 'user_id' argument")
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
-                                             'token': token},
-                                  **self.api_auth(self.example_email("hamlet")))
-        self.assert_json_error(result, "Must validate with valid Zulip server API key")
         result = self.client_post(endpoint, {'user_id': user_id, 'token': token,
                                              'token_kind': 17},
                                   **self.get_auth())
         self.assert_json_error(result, "Invalid token type")
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
+                                                 'token': token},
+                                      **self.api_auth(self.example_email("hamlet")))
+        self.assert_json_error(result, "Account is not associated with this subdomain",
+                               status_code=401)
+
+        # We need the root ('') subdomain to be in use for this next
+        # test, since the push bouncer API is only available there:
+        realm = get_realm("zulip")
+        realm.string_id = ""
+        realm.save()
+
+        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
+                                             'token': token},
+                                  **self.api_auth(self.example_email("hamlet")))
+        self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_remote_push_user_endpoints(self):
         # type: () -> None
@@ -186,25 +211,30 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token,
-                                                 'token_kind': kind})
+                                                 'token_kind': kind},
+                                      subdomain="zulip")
             self.assert_json_error(result, 'Empty or invalid length token')
 
             result = self.client_delete(endpoint, {'token': broken_token,
-                                                   'token_kind': kind})
+                                                   'token_kind': kind},
+                                        subdomain="zulip")
             self.assert_json_error(result, 'Empty or invalid length token')
 
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {'token': 'abcd1234',
-                                                   'token_kind': kind})
+                                                   'token_kind': kind},
+                                        subdomain="zulip")
             self.assert_json_error(result, 'Token does not exist')
 
         # Add tokens
         for endpoint, token, kind in endpoints:
             # Test that we can push twice
-            result = self.client_post(endpoint, {'token': token})
+            result = self.client_post(endpoint, {'token': token},
+                                      subdomain="zulip")
             self.assert_json_success(result)
 
-            result = self.client_post(endpoint, {'token': token})
+            result = self.client_post(endpoint, {'token': token},
+                                      subdomain="zulip")
             self.assert_json_success(result)
 
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
@@ -220,7 +250,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
         # Remove tokens
         for endpoint, token, kind in endpoints:
             result = self.client_delete(endpoint, {'token': token,
-                                                   'token_kind': kind})
+                                                   'token_kind': kind},
+                                        subdomain="zulip")
             self.assert_json_success(result)
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
@@ -268,6 +299,8 @@ class PushNotificationTest(BouncerTestCase):
         )
 
 class HandlePushNotificationTest(PushNotificationTest):
+    DEFAULT_SUBDOMAIN = ""
+
     def bounce_request(self, *args, **kwargs):
         # type: (*Any, **Any) -> HttpResponse
         """This method is used to carry out the push notification bouncer
