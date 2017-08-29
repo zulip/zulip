@@ -182,7 +182,7 @@ li.hidden-filter {
     margin-top: 3px;
     line-height: 12px;
     background: hsl(105, 2%, 50%);
-    padding: 2px 4px 1px 4px;
+    padding: 1px 4px 2px 4px;
     border-radius: 0px;
     color: #ffffff;
     font-size: 12px;
@@ -223,7 +223,7 @@ li.hidden-filter {
     position: absolute;
     line-height: 1em;
     top: 4px;
-    padding: 2px 4px 1px 4px;
+    padding: 1px 4px 2px 4px;
     background: hsl(107, 5%, 66%);
     color: #ffffff;
     border-radius: 1px;
