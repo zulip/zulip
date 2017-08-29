@@ -193,62 +193,6 @@ function refill_section_head_offsets(popover) {
     });
 }
 
-exports.render_emoji_popover = function (elt, id) {
-    var template_args = {
-        class: "emoji-info-popover",
-        categories: get_rendered_emoji_categories(),
-    };
-    var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
-    elt.popover({
-        // temporary patch for handling popover placement of `viewport_center`
-        placement: placement === 'viewport_center' ? 'left' : placement,
-        template:  templates.render('emoji_popover', template_args),
-        title:     "",
-        content:   generate_emoji_picker_content(id),
-        trigger:   "manual",
-    });
-    elt.popover("show");
-    elt.prop('title', 'Add reaction (:)');
-    $('.emoji-popover-filter').focus();
-    add_scrollbar($(".emoji-popover-emoji-map"));
-    add_scrollbar($(".emoji-search-results-container"));
-    current_message_emoji_popover_elem = elt;
-
-    emoji_catalog_last_coordinates = {
-        section: 0,
-        index: 0,
-    };
-    show_emoji_catalog();
-
-    var popover = elt.data('popover').$tip;
-    refill_section_head_offsets(popover);
-    var $emoji_map = popover.find('.emoji-popover-emoji-map');
-    $emoji_map.on("scroll", function () {
-        emoji_picker.emoji_select_tab($emoji_map);
-    });
-};
-
-exports.toggle_emoji_popover = function (element, id) {
-    var last_popover_elem = current_message_emoji_popover_elem;
-    popovers.hide_all();
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
-
-    $(element).closest('.message_row').toggleClass('has_popover has_emoji_popover');
-    var elt = $(element);
-    if (id !== undefined) {
-        current_msg_list.select_id(id);
-    }
-
-    if (elt.data('popover') === undefined) {
-        emoji_picker.render_emoji_popover(elt, id);
-    }
-};
-
 exports.reactions_popped = function () {
     return current_message_emoji_popover_elem !== undefined;
 };
@@ -529,6 +473,62 @@ exports.emoji_select_tab = function (elt) {
     if (currently_selected) {
         $('.emoji-popover-tab-item.active').removeClass('active');
         $('.emoji-popover-tab-item[data-tab-name="'+currently_selected+'"]').addClass('active');
+    }
+};
+
+exports.render_emoji_popover = function (elt, id) {
+    var template_args = {
+        class: "emoji-info-popover",
+        categories: get_rendered_emoji_categories(),
+    };
+    var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
+    elt.popover({
+        // temporary patch for handling popover placement of `viewport_center`
+        placement: placement === 'viewport_center' ? 'left' : placement,
+        template:  templates.render('emoji_popover', template_args),
+        title:     "",
+        content:   generate_emoji_picker_content(id),
+        trigger:   "manual",
+    });
+    elt.popover("show");
+    elt.prop('title', 'Add reaction (:)');
+    $('.emoji-popover-filter').focus();
+    add_scrollbar($(".emoji-popover-emoji-map"));
+    add_scrollbar($(".emoji-search-results-container"));
+    current_message_emoji_popover_elem = elt;
+
+    emoji_catalog_last_coordinates = {
+        section: 0,
+        index: 0,
+    };
+    show_emoji_catalog();
+
+    var popover = elt.data('popover').$tip;
+    refill_section_head_offsets(popover);
+    var $emoji_map = popover.find('.emoji-popover-emoji-map');
+    $emoji_map.on("scroll", function () {
+        emoji_picker.emoji_select_tab($emoji_map);
+    });
+};
+
+exports.toggle_emoji_popover = function (element, id) {
+    var last_popover_elem = current_message_emoji_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    $(element).closest('.message_row').toggleClass('has_popover has_emoji_popover');
+    var elt = $(element);
+    if (id !== undefined) {
+        current_msg_list.select_id(id);
+    }
+
+    if (elt.data('popover') === undefined) {
+        emoji_picker.render_emoji_popover(elt, id);
     }
 };
 
