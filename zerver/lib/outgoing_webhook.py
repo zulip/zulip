@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Iterable, Dict, Tuple, Callable, Text, Mapping, Optional
+from typing import Any, AnyStr, Iterable, Dict, Tuple, Callable, Text, Mapping, Optional
 
 import requests
 import json
@@ -157,8 +157,45 @@ def fail_with_message(event, failure_message):
     failure_message = "Failure! " + failure_message
     send_response_message(event['user_profile_id'], event['message'], failure_message)
 
-def request_retry(event, failure_message):
-    # type: (Dict[str, Any], Text) -> None
+def get_message_url(event, request_data):
+    # type: (Dict[str, Any], Dict[str, Any]) -> Text
+    bot_user = get_user_profile_by_id(event['user_profile_id'])
+    message = event['message']
+    if message['type'] == 'stream':
+        message_url = ("%(server)s/#narrow/stream/%(stream)s/subject/%(subject)s/near/%(id)s"
+                       % {'server': bot_user.realm.uri,
+                          'stream': message['display_recipient'],
+                          'subject': message['subject'],
+                          'id': str(message['id'])})
+    else:
+        recipient_emails = ','.join([recipient['email'] for recipient in message['display_recipient']])
+        recipient_email_encoded = urllib.parse.quote(recipient_emails).replace('.', '%2E').replace('%', '.')
+        message_url = ("%(server)s/#narrow/pm-with/%(recipient_emails)s/near/%(id)s"
+                       % {'server': bot_user.realm.uri,
+                          'recipient_emails': recipient_email_encoded,
+                          'id': str(message['id'])})
+    return message_url
+
+def notify_bot_owner(event, request_data, status_code=None, response_content=None, exception=None):
+    # type: (Dict[str, Any], Dict[str, Any], Optional[int], Optional[AnyStr], Optional[Any]) -> None
+    message_url = get_message_url(event, request_data)
+    bot_id = event['user_profile_id']
+    bot_owner = get_user_profile_by_id(bot_id).bot_owner
+    message_info = {'display_recipient': [{'email': bot_owner.email}],
+                    'type': 'private'}
+    notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
+    if status_code:
+        notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
+    if response_content:
+        notification_message += "\nThe response contains the following payload:\n" \
+                                "```\n%s\n```" % (response_content,)
+    if exception:
+        notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
+                                "of type %s occured:\n```\n%s\n```" % (type(exception).__name__, str(exception))
+    send_response_message(bot_id, message_info, notification_message)
+
+def request_retry(event, request_data, failure_message):
+    # type: (Dict[str, Any], Dict[str, Any], Text) -> None
     def failure_processor(event):
         # type: (Dict[str, Any]) -> None
         """
@@ -168,6 +205,7 @@ def request_retry(event, failure_message):
         """
         bot_user = get_user_profile_by_id(event['user_profile_id'])
         fail_with_message(event, "Maximum retries exceeded! " + failure_message)
+        notify_bot_owner(event, request_data)
         logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (bot_user.email, event['command']))
 
     retry_event('outgoing_webhooks', event, failure_processor)
@@ -185,8 +223,6 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
     if error:
         raise JsonableError(error)
 
-    bot_user = get_user_profile_by_id(event['user_profile_id'])
-
     http_method = rest_operation['method']
     final_url = urllib.parse.urljoin(rest_operation['base_url'], rest_operation['relative_url_path'])
     request_kwargs = rest_operation['request_kwargs']
@@ -199,29 +235,26 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
             if response_message is not None:
                 succeed_with_message(event, response_message)
         else:
-            message_url = ("%(server)s/#narrow/stream/%(stream)s/subject/%(subject)s/near/%(id)s"
-                           % {'server': bot_user.realm.uri,
-                              'stream': event['message']['display_recipient'],
-                              'subject': event['message']['subject'],
-                              'id': str(event['message']['id'])})
             logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
                             "code %(status_code)s.\n Content of response (in quotes): \""
                             "%(response)s\""
-                            % {'message_url': message_url,
+                            % {'message_url': get_message_url(event, request_data),
                                'status_code': response.status_code,
                                'response': response.content})
             # On 50x errors, try retry
             if str(response.status_code).startswith('5'):
-                request_retry(event, "Internal Server error at third party.")
+                request_retry(event, request_data, "Internal Server error at third party.")
             else:
                 failure_message = "Third party responded with %d" % (response.status_code)
                 fail_with_message(event, failure_message)
+                notify_bot_owner(event, request_data, response.status_code, response.content)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
-        request_retry(event, 'Unable to connect with the third party.')
+        request_retry(event, request_data, 'Unable to connect with the third party.')
 
     except requests.exceptions.RequestException as e:
         response_message = "An exception occured for message `%s`! See the logs for more information." % (event["command"],)
         logging.exception("Outhook trigger failed:\n %s" % (e,))
         fail_with_message(event, response_message)
+        notify_bot_owner(event, request_data, exception=e)
