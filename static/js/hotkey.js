@@ -160,10 +160,6 @@ exports.is_editing_stream_name = function (e) {
     return $(e.target).is(".editable-section");
 };
 
-exports.is_modal_open = function () {
-    return $(".modal").hasClass("in");
-};
-
 // Returns true if we handled it, false if the browser should.
 exports.process_escape_key = function (e) {
     var row;
@@ -172,8 +168,8 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if (exports.is_modal_open()) {
-        $(".modal").modal("hide").attr("aria-hidden", false);
+    if (overlays.is_modal_open()) {
+        overlays.close_active_modal();
         return true;
     }
 
