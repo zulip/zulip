@@ -286,6 +286,9 @@ class HostRequestMock(object):
         self.path = ''
         self.user = user_profile
         self.method = ''
+        self.body = ''
+        self.content_type = ''
+        self._email = ''
 
     def get_host(self):
         # type: () -> Text

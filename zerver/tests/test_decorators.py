@@ -219,22 +219,15 @@ class DecoratorTestCase(TestCase):
             # type: (HttpRequest, UserProfile) -> None
             raise Exception("raised by webhook function")
 
-        class Request(HostRequestMock):
-            GET = {}  # type: Dict[str, str]
-            POST = {}  # type: Dict[str, str]
-            COOKIES = {}  # type: Dict[str, str]
-            META = {'PATH_INFO': ''}
-
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
         webhook_bot_api_key = webhook_bot.api_key
         webhook_client_name = "ZulipClientNameWebhook"
 
-        request = Request()  # type: Any
-        request.host = settings.EXTERNAL_HOST
-
+        request = HostRequestMock()
         request.POST['api_key'] = 'not_existing_api_key'
+
         with self.assertRaisesRegex(JsonableError, "Invalid API key"):
             my_webhook(request)
 
@@ -261,6 +254,7 @@ class DecoratorTestCase(TestCase):
                     "User {} attempted to access API on wrong "
                     "subdomain {}".format(webhook_bot_email, 'acme'))
 
+        request.host = "zulip.testserver"
         # Test when content_type is application/json and request.body
         # is valid JSON; exception raised in the webhook function
         # should be re-raised
@@ -671,7 +665,8 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         do_deactivate_realm(get_realm("zulip"))
-        result = self.login_with_return(self.example_email("hamlet"))
+        result = self.login_with_return(self.example_email("hamlet"),
+                                        subdomain="zulip")
         self.assert_in_response("has been deactivated", result)
 
     def test_webhook_deactivated_realm(self):
@@ -823,7 +818,7 @@ class InactiveUserTest(ZulipTestCase):
 
         password = initial_password(user_profile.email)
         request = mock.MagicMock()
-        request.get_host.return_value = 'testserver'
+        request.get_host.return_value = 'zulip.testserver'
 
         # Test a mirror-dummy active user.
         form = OurAuthenticationForm(request,
@@ -926,7 +921,9 @@ class TestValidateApiKey(ZulipTestCase):
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self):
         # type: () -> None
-        profile = validate_api_key(HostRequestMock(), self.webhook_bot.email, self.webhook_bot.api_key, is_webhook=True)
+        profile = validate_api_key(HostRequestMock(host="zulip.testserver"),
+                                   self.webhook_bot.email, self.webhook_bot.api_key,
+                                   is_webhook=True)
         self.assertEqual(profile.pk, self.webhook_bot.pk)
 
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):

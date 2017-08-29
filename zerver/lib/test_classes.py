@@ -273,12 +273,13 @@ class ZulipTestCase(TestCase):
         # type: () -> UserProfile
         return get_user('notification-bot@zulip.com', get_realm('zulip'))
 
-    def login_with_return(self, email, password=None):
-        # type: (Text, Optional[Text]) -> HttpResponse
+    def login_with_return(self, email, password=None, **kwargs):
+        # type: (Text, Optional[Text], **Any) -> HttpResponse
         if password is None:
             password = initial_password(email)
         return self.client_post('/accounts/login/',
-                                {'username': email, 'password': password})
+                                {'username': email, 'password': password},
+                                **kwargs)
 
     def login(self, email, password=None, fails=False):
         # type: (Text, Optional[Text], bool) -> HttpResponse
