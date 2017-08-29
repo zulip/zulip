@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 from zerver.models import UserProfile
 
-from typing import List, Text
+from typing import Callable, List, Text
 
 from zerver.models import (
     bulk_get_recipients,
     bulk_get_streams,
     Recipient,
+    Stream,
     UserProfile
 )
 from sqlalchemy.sql import (
@@ -95,3 +96,35 @@ def exclude_topic_mutes(conditions, user_profile, stream_name):
 
     condition = not_(or_(*list(map(mute_cond, muted_topics))))
     return conditions + [condition]
+
+def build_topic_mute_checker(user_profile):
+    # type: (UserProfile) -> Callable[[int, Text], bool]
+    rows = ujson.loads(user_profile.muted_topics)
+    stream_names = {row[0] for row in rows}
+    stream_dict = dict()
+    for name in stream_names:
+        try:
+            stream_id = Stream.objects.get(
+                name__iexact=name.strip(),
+                realm_id=user_profile.realm_id,
+            ).id
+            stream_dict[name.lower()] = stream_id
+        except Stream.DoesNotExist:
+            # If the stream doesn't exist, this is just a stale entry
+            # in the muted_topics structure.
+            continue
+    tups = set()
+    for row in rows:
+        stream_name = row[0].lower()
+        topic = row[1]
+        if stream_name not in stream_dict:
+            # No such stream
+            continue
+        stream_id = stream_dict[stream_name]
+        tups.add((stream_id, topic.lower()))
+
+    def is_muted(stream_id, topic):
+        # type: (int, Text) -> bool
+        return (stream_id, topic.lower()) in tups
+
+    return is_muted

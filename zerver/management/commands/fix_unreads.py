@@ -14,9 +14,10 @@ from django.core.management.base import CommandError
 from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.topic_mutes import build_topic_mute_checker
+
 from zerver.models import (
     Realm,
-    Stream,
     UserProfile
 )
 
@@ -122,38 +123,6 @@ def fix_unsubscribed(cursor, user_profile):
         'fixing unread messages for non-active streams',
         fix
     )
-
-def build_topic_mute_checker(user_profile):
-    # type: (UserProfile) -> Callable[[int, Text], bool]
-    rows = ujson.loads(user_profile.muted_topics)
-    stream_names = {row[0] for row in rows}
-    stream_dict = dict()
-    for name in stream_names:
-        try:
-            stream_id = Stream.objects.get(
-                name__iexact=name.strip(),
-                realm_id=user_profile.realm_id,
-            ).id
-            stream_dict[name.lower()] = stream_id
-        except Stream.DoesNotExist:
-            # If the stream doesn't exist, this is just a stale entry
-            # in the muted_topics structure.
-            continue
-    tups = set()
-    for row in rows:
-        stream_name = row[0].lower()
-        topic = row[1]
-        if stream_name not in stream_dict:
-            # No such stream
-            continue
-        stream_id = stream_dict[stream_name]
-        tups.add((stream_id, topic.lower()))
-
-    def is_muted(stream_id, topic):
-        # type: (int, Text) -> bool
-        return (stream_id, topic.lower()) in tups
-
-    return is_muted
 
 def fix_pre_pointer(cursor, user_profile):
     # type: (CursorObj, UserProfile) -> None

@@ -11,9 +11,9 @@ from django.core.management.base import CommandError
 from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.topic_mutes import build_topic_mute_checker
 from zerver.models import (
     Recipient,
-    Stream,
     Subscription,
     UserMessage,
     UserProfile
@@ -56,30 +56,6 @@ def get_muted_streams(user_profile, stream_ids):
         for row in rows}
 
     return muted_stream_ids
-
-def build_topic_mute_checker(user_profile):
-    # type: (UserProfile) -> Callable[[int, Text], bool]
-    rows = ujson.loads(user_profile.muted_topics)
-    stream_names = {row[0] for row in rows}
-    stream_dict = dict()
-    for name in stream_names:
-        stream_id = Stream.objects.get(
-            name__iexact=name.strip(),
-            realm_id=user_profile.realm_id,
-        ).id
-        stream_dict[name] = stream_id
-    tups = set()
-    for row in rows:
-        stream_name = row[0]
-        topic = row[1]
-        stream_id = stream_dict[stream_name]
-        tups.add((stream_id, topic))
-
-    def is_muted(stream_id, topic):
-        # type: (int, Text) -> bool
-        return (stream_id, topic) in tups
-
-    return is_muted
 
 def show_all_unread(user_profile):
     # type: (UserProfile) -> None
