@@ -141,7 +141,7 @@ tornado==4.5.1
 typing==3.6.2
 
 # Fast JSON parser
-ujson==1.35
+-e git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 
 uritemplate==3.0.0
 
