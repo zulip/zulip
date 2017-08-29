@@ -185,15 +185,15 @@ function _set_up() {
     var property_types = {
         settings: {
             name: {
-                type: 'Text',
+                type: 'text',
                 msg: i18n.t("Name changed!"),
             },
             description: {
-                type: 'Text',
+                type: 'text',
                 msg: i18n.t("Description changed!"),
             },
             default_language: {
-                type: 'Text',
+                type: 'text',
                 msg: i18n.t("Default language changed!"),
             },
         },
@@ -263,7 +263,7 @@ function _set_up() {
                 data[k] = JSON.stringify($('#id_realm_'+k).prop('checked'));
                 return;
             }
-            if (field.type === 'Text') {
+            if (field.type === 'text') {
                 data[k] = JSON.stringify($('#id_realm_'+k).val().trim());
                 return;
             }
@@ -296,7 +296,7 @@ function _set_up() {
                 return;
             }
 
-            if (setting_type === 'Text') {
+            if (setting_type === 'text') {
                 ui_report.success(field_info.msg,
                                   property_type_status_element(key));
                 return;
