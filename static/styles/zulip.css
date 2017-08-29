@@ -2366,6 +2366,7 @@ button.topic_edit_cancel {
     padding: .5em .75em;
     margin-bottom: 0.25em;
     word-break: break-word;
+    min-height: 48px;
 }
 
 .twitter-avatar {
