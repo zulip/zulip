@@ -29,11 +29,7 @@ def check_pyflakes(options, by_lang):
             b"from .prod_settings_template import *" in ln or
             (b"settings.py" in ln and
              (b"settings import *' used; unable to detect undefined names" in ln or
-              b"may be undefined, or defined from star imports" in ln)) or
-            (b"zerver/tornado/ioloop_logging.py" in ln and
-             b"redefinition of function 'instrument_tornado_ioloop'" in ln) or
-            (b"zephyr_mirror_backend.py:" in ln and
-             b"redefinition of unused 'simplejson' from line" in ln)):
+              b"may be undefined, or defined from star imports" in ln))):
 
             print_err('pyflakes', color, ln)
             failed = True
