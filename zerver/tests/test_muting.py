@@ -9,30 +9,9 @@ from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user
-from zerver.lib.actions import do_set_muted_topics
+from zerver.lib.actions import do_update_muted_topic
 
 class MutedTopicsTests(ZulipTestCase):
-    def test_json_set(self):
-        # type: () -> None
-        email = self.example_email('hamlet')
-        self.login(email)
-
-        url = '/api/v1/users/me/subscriptions/muted_topics'
-        data = {'muted_topics': '[["stream", "topic"]]'}
-        result = self.client_post(url, data, **self.api_auth(email))
-        self.assert_json_success(result)
-
-        user = self.example_user('hamlet')
-        self.assertEqual(ujson.loads(user.muted_topics), [["stream", "topic"]])
-
-        url = '/api/v1/users/me/subscriptions/muted_topics'
-        data = {'muted_topics': '[["stream2", "topic2"]]'}
-        result = self.client_post(url, data, **self.api_auth(email))
-        self.assert_json_success(result)
-
-        user = self.example_user('hamlet')
-        self.assertEqual(ujson.loads(user.muted_topics), [["stream2", "topic2"]])
-
     def test_add_muted_topic(self):
         # type: () -> None
         email = self.example_email('hamlet')
@@ -52,7 +31,7 @@ class MutedTopicsTests(ZulipTestCase):
         email = self.user_profile.email
         self.login(email)
 
-        do_set_muted_topics(self.user_profile, [[u'Verona', u'Verona3']])
+        do_update_muted_topic(self.user_profile, u'Verona', u'Verona3', op='add')
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'remove'}
         result = self.client_patch(url, data, **self.api_auth(email))
@@ -67,7 +46,7 @@ class MutedTopicsTests(ZulipTestCase):
         email = self.user_profile.email
         self.login(email)
 
-        do_set_muted_topics(self.user_profile, [[u'Verona', u'Verona3']])
+        do_update_muted_topic(self.user_profile, u'Verona', u'Verona3', op='add')
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'add'}
         result = self.client_patch(url, data, **self.api_auth(email))
@@ -79,7 +58,6 @@ class MutedTopicsTests(ZulipTestCase):
         email = self.user_profile.email
         self.login(email)
 
-        do_set_muted_topics(self.user_profile, [[u'Denmark', u'Denmark3']])
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'remove'}
         result = self.client_patch(url, data, **self.api_auth(email))
