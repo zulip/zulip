@@ -476,6 +476,17 @@ exports.emoji_select_tab = function (elt) {
     }
 };
 
+function register_popover_events(popover) {
+    var $emoji_map = popover.find('.emoji-popover-emoji-map');
+
+    $emoji_map.on("scroll", function () {
+        emoji_picker.emoji_select_tab($emoji_map);
+    });
+
+    $('.emoji-popover-filter').on('input', filter_emojis);
+    $('.emoji-popover-filter').keydown(maybe_select_emoji);
+}
+
 exports.render_emoji_popover = function (elt, id) {
     var template_args = {
         class: "emoji-info-popover",
@@ -505,10 +516,7 @@ exports.render_emoji_popover = function (elt, id) {
 
     var popover = elt.data('popover').$tip;
     refill_section_head_offsets(popover);
-    var $emoji_map = popover.find('.emoji-popover-emoji-map');
-    $emoji_map.on("scroll", function () {
-        emoji_picker.emoji_select_tab($emoji_map);
-    });
+    register_popover_events(popover);
 };
 
 exports.toggle_emoji_popover = function (element, id) {
@@ -588,9 +596,6 @@ exports.register_click_handlers = function () {
         // .icon-vector-chevron-down element as the base for the popover.
         emoji_picker.toggle_emoji_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
     });
-
-    $(document).on('input', '.emoji-popover-filter', filter_emojis);
-    $(document).on('keydown', '.emoji-popover-filter', maybe_select_emoji);
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
         e.stopPropagation();
