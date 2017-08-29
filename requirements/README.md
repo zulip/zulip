@@ -24,5 +24,3 @@ common.txt and propagate it to dev_lock.txt and prod_lock.txt:
 The reason the steps to remove the `-e` is necessary is because `pip-compile`
 doesn't support installing from vcs without `-e` yet.
 You may track the ongoing progress here https://github.com/jazzband/pip-tools/issues/355.
-You may hassle @**Rein Zustand**:chat.zulip.org for introducing all these
-necessary messy steps.
