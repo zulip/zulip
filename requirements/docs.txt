@@ -2,6 +2,10 @@
 # valuable to keep this file as just the dependencies for our
 # documentation.
 
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev_lock.txt.
+# See requirements/README.md for more detail.
+
 # Needed to build RTD docs
 sphinx==1.6.2
 sphinx-rtd-theme==0.2.4
