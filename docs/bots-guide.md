@@ -201,6 +201,49 @@ pip install zulip_botserver
     the bot **and** the outgoing webhook bot need to be subscribed to
     it.*
 
+### Running Zulip Botserver with `supervisord`
+
+You may feel that running the `zulip-bot-server` command manually is cumbersome
+and brittle: It needs a separate terminal for monitoring and has to be restarted on failure.
+If that's the case, *supervisord* gives you a helping hand: Once configured, it automatically
+runs the botserver, telling you the current botserver status, restarting it if needed, and keeping
+track of all logged information.
+
+Running the Zulip Botserver with *supervisord* works almost like running it manually.
+
+0.  Install *supervisord*:
+    ```
+    sudo apt-get install supervisor
+    ```
+
+1.  Configure *supervisord*:
+    * Do **one** of the following:
+      * Download the [config file](
+        https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf)
+        and store it in `/etc/supervisor/conf.d/zulip-botserver.conf`.
+      * Copy&Paste the following section into your existing supervisord config file.
+        ```
+        [program:zulip-bot-server]
+        command=zulip-bot-server --config-file=<path/to/your/flaskbotrc> --hostname <address> --port <port>
+        startsecs=3
+        stdout_logfile=<path/to/your/logfile> ; all output of your botserver will be logged here
+        redirect_stderr=true
+        ```
+    * Edit the `<>` sections accordingly.
+
+2. Update *supervisord* to read the configuration file:
+   ```
+   supervisorctl reread
+   supervisorctl update
+   ```
+
+3. Test if your setup is successful:
+   ```
+   supervisorctl status
+   ```
+   The output should include a line similar to this:
+   > zulip-bot-server                 RUNNING   pid 28154, uptime 0:00:27
+
 ## How to develop a bot
 
 The tutorial below explains the structure of a bot `<my-bot>.py`,
