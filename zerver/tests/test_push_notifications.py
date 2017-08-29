@@ -61,8 +61,8 @@ class BouncerTestCase(ZulipTestCase):
         if args[0] == "POST":
             result = self.client_post(local_url,
                                       kwargs['data'],
-                                      **self.get_auth(),
-                                      subdomain="")
+                                      subdomain="",
+                                      **self.get_auth())
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
