@@ -1,8 +1,7 @@
+from django.conf import settings
 from zerver.models import UserProfile, UserHotspot
 
 from typing import List, Text, Dict
-
-SEND_ALL = False
 
 ALL_HOTSPOTS = {
     # TODO: Tag these for translation once we've finalized the content.
@@ -30,18 +29,15 @@ ALL_HOTSPOTS = {
 
 def get_next_hotspots(user):
     # type: (UserProfile) -> List[Dict[str, object]]
-
-    if SEND_ALL:
-        result = []
-        for hotspot in ALL_HOTSPOTS:
-            result.append({
-                'name': hotspot,
-                'title': ALL_HOTSPOTS[hotspot]['title'],
-                'description': ALL_HOTSPOTS[hotspot]['description'],
-                'delay': 5,
-            })
-
-        return result
+    # Only used for manual testing
+    SEND_ALL = False
+    if settings.DEVELOPMENT and SEND_ALL:
+        return [{
+            'name': hotspot,
+            'title': ALL_HOTSPOTS[hotspot]['title'],
+            'description': ALL_HOTSPOTS[hotspot]['description'],
+            'delay': 0,
+        } for hotspot in ALL_HOTSPOTS]
 
     seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
     for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_compose']:
