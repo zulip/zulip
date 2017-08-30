@@ -1318,6 +1318,7 @@ input.new-organization-button {
         width: calc(100vw - 50px);
         height: calc(100vh - 64px);
         left: 50px;
+        padding: 0px;
     }
 
     .app.help .markdown .content {
