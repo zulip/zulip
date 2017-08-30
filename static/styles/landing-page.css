@@ -2315,13 +2315,6 @@ nav ul li.active::after {
     transition-timing-function: ease;
 }
 
-.pricing-model .pricing-container .block > div:not(.plan-title):hover {
-    box-shadow: 0px 0px 50px rgba(0,0,0,0.2);
-
-    z-index: 2;
-    transform: scale(1.03);
-}
-
 .pricing-model .pricing-container .text-content {
     margin: 20px;
 }
