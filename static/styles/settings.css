@@ -559,7 +559,8 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
-.add-new-emoji-box input[type=text] {
+.add-new-emoji-box input[type=text],
+.add-new-default-stream-box input[type=text] {
     padding: 6px;
 }
 
@@ -768,7 +769,6 @@ input[type=checkbox].inline-block {
 #get_api_key_box .control-label,
 .admin-emoji-form .control-label,
 .admin-filter-form .control-label,
-.default-stream-form .control-label,
 .edit_bot_form .control-label {
     width: 10em;
     text-align: right;
