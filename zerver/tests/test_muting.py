@@ -10,6 +10,7 @@ from typing import Any, Dict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user
 from zerver.lib.actions import do_update_muted_topic
+from zerver.lib.topic_mutes import get_topic_mutes
 
 class MutedTopicsTests(ZulipTestCase):
     def test_add_muted_topic(self):
@@ -23,7 +24,7 @@ class MutedTopicsTests(ZulipTestCase):
         self.assert_json_success(result)
 
         user = self.example_user('hamlet')
-        self.assertIn([u'Verona', u'Verona3'], ujson.loads(user.muted_topics))
+        self.assertIn([u'Verona', u'Verona3'], get_topic_mutes(user))
 
     def test_remove_muted_topic(self):
         # type: () -> None
@@ -38,7 +39,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         self.assert_json_success(result)
         user = self.example_user('hamlet')
-        self.assertNotIn([[u'Verona', u'Verona3']], ujson.loads(user.muted_topics))
+        self.assertNotIn([[u'Verona', u'Verona3']], get_topic_mutes(user))
 
     def test_muted_topic_add_invalid(self):
         # type: () -> None
