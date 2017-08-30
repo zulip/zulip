@@ -37,11 +37,6 @@ a:visited {
     color: hsl(170, 47%, 53%);
 }
 
-a.no-style:hover {
-    text-decoration: none;
-    color: inherit;
-}
-
 a.arrow:after {
     content: " ";
     display: inline-block;
@@ -72,24 +67,7 @@ a {
 }
 
 a:hover {
-    text-decoration: none;
-}
-
-a:not(.no-style):before {
-    content: " ";
-
-    position: absolute;
-    bottom: -1px;
-
-    height: 1px;
-    width: 0%;
-
-    background-color: hsl(170, 47%, 53%);
-    transition: all 0.5s ease;
-}
-
-a:not(.no-style):hover:before {
-    width: 100%;
+    text-decoration: underline;
 }
 
 .flex {
