@@ -380,3 +380,13 @@ a.no-underline {
     -moz-box-shadow: none;
     z-index: 5;
 }
+
+.grey-box {
+    margin: 0px;
+    padding: 5px 10px;
+    background-color: hsl(0, 0%, 97%);
+    border: 1px solid hsl(0, 0%, 86%);
+    border-radius: 4px;
+
+    list-style-type: none;
+}

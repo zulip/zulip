@@ -900,16 +900,6 @@ form#add_new_subscription {
     display: block;
 }
 
-#subscription_overlay .grey-box {
-    margin: 0px;
-    padding: 5px 10px;
-    background-color: hsl(0, 0%, 97%);
-    border: 1px solid hsl(0, 0%, 86%);
-    border-radius: 4px;
-
-    list-style-type: none;
-}
-
 #subscription_overlay ul.grey-box li {
     border-bottom: 1px solid hsl(0, 0%, 86%);
     padding: 5px 0px;
