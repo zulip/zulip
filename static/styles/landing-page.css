@@ -1301,8 +1301,8 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .testimonials {
-    color: hsl(220, 15%, 76%);
-    background-color: hsl(219, 21%, 19%);
+    color: #fff;
+    background-color: hsl(169, 35%, 35%);
 }
 
 .portico-landing.hello .testimonials .text-header .text-content {
@@ -1337,7 +1337,8 @@ nav ul li.active::after {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: hsl(221, 8%, 51%);
+    color: white;
+    opacity: 0.5;
     font-weight: 400;
 }
 
@@ -1349,6 +1350,8 @@ nav ul li.active::after {
     line-height: 1.6;
     text-align: left;
     border: none;
+
+    opacity: 0.8;
 }
 
 .portico-landing.hello .testimonials hr {
