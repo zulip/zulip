@@ -1390,7 +1390,7 @@ nav ul li.active::after {
     margin: 10px 20px;
 
     height: 60px;
-    width: calc(20% - 44px);
+    width: calc(25% - 44px);
 
     background-color: hsl(0, 0%, 66%);
     background-size: contain;
@@ -2649,6 +2649,10 @@ nav ul li.active::after {
     .portico-landing.hello .apps .left-side .content {
         margin: 0px auto 50px;
     }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        width: calc(33% - 44px);
+    }
 }
 
 @media (max-width: 1024px) {
@@ -2778,6 +2782,10 @@ nav ul li.active::after {
     .portico-landing.hello .testimonials hr,
     .portico-landing.hello .testimonials .company-container {
         width: 100%;
+    }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        width: calc(25% - 44px);
     }
 }
 
