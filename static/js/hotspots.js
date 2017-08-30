@@ -12,10 +12,11 @@ var VIEWPORT_CENTER = 'viewport_center';
 // popover orientation can optionally be fixed here (property: popover),
 // otherwise popovers.compute_placement is used to compute orientation
 var HOTSPOT_LOCATIONS = {
-    click_to_reply: {
+    intro_reply: {
         element: '.selected_message .messagebox-content',
-        offset_x: 0.5,
-        offset_y: 0.5,
+        offset_x: 0.85,
+        offset_y: 0.7,
+        popover: BOTTOM,
     },
     new_topic_button: {
         element: '#left_bar_compose_stream_button_big',

@@ -18,12 +18,12 @@ class TestGetNextHotspots(ZulipTestCase):
         user = self.example_user('hamlet')
         hotspots = get_next_hotspots(user)
         self.assertEqual(len(hotspots), 1)
-        self.assertEqual(hotspots[0]['name'], 'click_to_reply')
+        self.assertEqual(hotspots[0]['name'], 'intro_reply')
 
     def test_some_done_some_not(self):
         # type: () -> None
         user = self.example_user('hamlet')
-        do_mark_hotspot_as_read(user, 'click_to_reply')
+        do_mark_hotspot_as_read(user, 'intro_reply')
         do_mark_hotspot_as_read(user, 'stream_settings')
         hotspots = get_next_hotspots(user)
         self.assertEqual(len(hotspots), 1)
@@ -49,13 +49,13 @@ class TestHotspots(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login(user.email)
         result = self.client_post('/json/users/me/hotspots',
-                                  {'hotspot': ujson.dumps('click_to_reply')})
+                                  {'hotspot': ujson.dumps('intro_reply')})
         self.assert_json_success(result)
         self.assertEqual(list(UserHotspot.objects.filter(user=user)
-                              .values_list('hotspot', flat=True)), ['click_to_reply'])
+                              .values_list('hotspot', flat=True)), ['intro_reply'])
 
         result = self.client_post('/json/users/me/hotspots',
                                   {'hotspot': ujson.dumps('invalid')})
         self.assert_json_error(result, "Unknown hotspot: invalid")
         self.assertEqual(list(UserHotspot.objects.filter(user=user)
-                              .values_list('hotspot', flat=True)), ['click_to_reply'])
+                              .values_list('hotspot', flat=True)), ['intro_reply'])
