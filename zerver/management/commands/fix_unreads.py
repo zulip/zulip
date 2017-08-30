@@ -132,8 +132,6 @@ def fix_pre_pointer(cursor, user_profile):
     if not pointer:
         return
 
-    is_topic_muted = build_topic_mute_checker(user_profile)
-
     recipient_ids = []
 
     def find_non_muted_recipients():
@@ -173,18 +171,17 @@ def fix_pre_pointer(cursor, user_profile):
         # type: () -> None
         recips = ', '.join(str(id) for id in recipient_ids)
 
+        is_topic_muted = build_topic_mute_checker(user_profile)
+
         query = '''
             SELECT
                 zerver_usermessage.id,
-                zerver_recipient.type_id,
-                subject
+                zerver_message.recipient_id,
+                zerver_message.subject
             FROM
                 zerver_usermessage
             INNER JOIN zerver_message ON (
                 zerver_message.id = zerver_usermessage.message_id
-            )
-            INNER JOIN zerver_recipient ON (
-                zerver_recipient.id = zerver_message.recipient_id
             )
             WHERE (
                 zerver_usermessage.user_profile_id = %s AND
@@ -199,8 +196,8 @@ def fix_pre_pointer(cursor, user_profile):
 
         cursor.execute(query)
         rows = cursor.fetchall()
-        for (um_id, stream_id, topic) in rows:
-            if not is_topic_muted(stream_id, topic):
+        for (um_id, recipient_id, topic) in rows:
+            if not is_topic_muted(recipient_id, topic):
                 user_message_ids.append(um_id)
         print('rows found: %d' % (len(user_message_ids),))
 

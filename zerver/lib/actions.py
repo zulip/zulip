@@ -3309,13 +3309,15 @@ def do_set_alert_words(user_profile, alert_words):
     set_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, alert_words)
 
-def do_update_muted_topic(user_profile, stream, topic, op):
-    # type: (UserProfile, str, str, str) -> None
-    if op == 'add':
-        add_topic_mute(user_profile, stream, topic)
-    elif op == 'remove':
-        remove_topic_mute(user_profile, stream, topic)
+def do_mute_topic(user_profile, stream, recipient, topic):
+    # type: (UserProfile, Stream, Recipient, str) -> None
+    add_topic_mute(user_profile, stream.id, recipient.id, topic)
+    event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
+    send_event(event, [user_profile.id])
 
+def do_unmute_topic(user_profile, stream, topic):
+    # type: (UserProfile, Stream, str) -> None
+    remove_topic_mute(user_profile, stream.id, topic)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(event, [user_profile.id])
 
