@@ -15,6 +15,7 @@ Highlights:
   multiple operators.
 - Overhauled the emails sent by Zulip to be more consistent and
   readable.
+- Added support for iOS mobile push notifications.
 - Completely redesigned the /integrations and /apps pages to be
   more usable and more attractive.
 - Redesigned several settings subpages to be visually cleaner.
