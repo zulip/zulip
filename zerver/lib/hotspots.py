@@ -10,9 +10,10 @@ ALL_HOTSPOTS = {
         'title': 'Reply to a message',
         'description': 'Click anywhere on a message to reply.',
     },
-    'new_topic_button': {
-        'title': 'Start a new topic',
-        'description': 'Click the "New topic" button to start a new conversation.',
+    'intro_compose': {
+        'title': 'Compose',
+        'description': 'Click here to start a new conversation. Pick a topic '
+        '(2-3 words is best), and give it a go!',
     },
     'stream_settings': {
         'title': 'Stream settings',
@@ -36,7 +37,7 @@ def get_next_hotspots(user):
         return result
 
     seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
-    for hotspot in ['intro_reply', 'new_topic_button', 'stream_settings']:
+    for hotspot in ['intro_reply', 'intro_compose', 'stream_settings']:
         if hotspot not in seen_hotspots:
             return [{
                 'name': hotspot,

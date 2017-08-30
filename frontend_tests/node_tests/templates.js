@@ -662,14 +662,14 @@ function render(template_name, args) {
 (function hotspot_overlay() {
     var args = {
         title: 'Start a new conversation',
-        name: 'new_topic_button',
+        name: 'intro_compose',
         description: 'Click the "New topic" button to start a new conversation.',
     };
 
     var html = render('hotspot_overlay', args);
     global.write_handlebars_output("hotspot_overlay", html);
 
-    assert.equal($(html).attr('id'), 'hotspot_new_topic_button_overlay');
+    assert.equal($(html).attr('id'), 'hotspot_intro_compose_overlay');
     assert.equal($(html).find('.hotspot-title').text(), 'Start a new conversation');
     assert.equal(
         $(html).find('.hotspot-description').text(),
