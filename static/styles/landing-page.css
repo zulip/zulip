@@ -34,7 +34,8 @@ p {
 a,
 a:hover,
 a:visited {
-    color: hsl(170, 47%, 53%);
+    color: hsl(170, 47%, 33%);
+    font-weight: 500;
 }
 
 a.arrow:after {
@@ -944,6 +945,10 @@ nav ul li.active::after {
     line-height: 1.2;
 
     color: hsla(0, 0%, 100%, 0.8);
+}
+
+.compare .terms a {
+    color: hsl(170, 47%, 73%);
 }
 
 /* -- faq css -- */
