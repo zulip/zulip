@@ -986,45 +986,8 @@ nav ul li.active::after {
     font-weight: 600;
 }
 
-.faqs .faq .question::before {
-    content: "?";
-
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-
-    top: -1px;
-    padding: 0px 10px;
-    margin-right: 10px;
-
-    text-shadow:
-        0px 0px 3px rgba(255,255,255,0.5),
-        -0.5px 0.5px 0px rgba(48, 166, 146, 0.02),
-        -1px 1px 0px rgba(48, 166, 146, 0.02),
-        -1.5px 1.5px 0px rgba(48, 166, 146, 0.02),
-        -2px 2px 0px rgba(48, 166, 146, 0.02),
-        -2.5px 2.5px 0px rgba(48, 166, 146, 0.02),
-        -3px 3px 0px rgba(48, 166, 146, 0.02),
-        -3.5px 3.5px 0px rgba(48, 166, 146, 0.02),
-        -4px 4px 0px rgba(48, 166, 146, 0.02),
-        -4.5px 4.5px 0px rgba(48, 166, 146, 0.02),
-        -5px 5px 0px rgba(48, 166, 146, 0.02),
-        -5.5px 5.5px 0px rgba(48, 166, 146, 0.02),
-        -6px 6px 0px rgba(48, 166, 146, 0.02),
-        -6.5px 6.5px 0px rgba(48, 166, 146, 0.02),
-        -7px 7px 0px rgba(48, 166, 146, 0.02),
-        -7.5px 7.5px 0px rgba(48, 166, 146, 0.02),
-        -8px 8px 0px rgba(48, 166, 146, 0.02);
-
-    color: #4fc0ad;
-
-    border-radius: 50%;
-
-    overflow: hidden;
-}
-
 .faqs .faq .answer {
-    margin: 20px 0px 0px 45px;
+    margin: 20px 0px 0px 0px;
 }
 
 .screen .line {
