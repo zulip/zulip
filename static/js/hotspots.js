@@ -18,7 +18,7 @@ var HOTSPOT_LOCATIONS = {
         offset_y: 0.7,
         popover: BOTTOM,
     },
-    new_topic_button: {
+    intro_compose: {
         element: '#left_bar_compose_stream_button_big',
         offset_x: 0,
         offset_y: 0,
