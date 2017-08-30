@@ -18,15 +18,20 @@ var HOTSPOT_LOCATIONS = {
         offset_y: 0.7,
         popover: BOTTOM,
     },
+    intro_streams: {
+        element: '#streams_header .sidebar-title',
+        offset_x: 1.35,
+        offset_y: 0.39,
+    },
+    intro_topics: {
+        element: '.topic-name',
+        offset_x: 0.8,
+        offset_y: 0.39,
+    },
     intro_compose: {
         element: '#left_bar_compose_stream_button_big',
         offset_x: 0,
         offset_y: 0,
-    },
-    stream_settings: {
-        element: '#streams_inline_cog',
-        offset_x: 0.5,
-        offset_y: 0.5,
     },
 };
 
