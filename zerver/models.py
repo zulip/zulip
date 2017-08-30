@@ -962,6 +962,19 @@ class Recipient(ModelReprMixin, models.Model):
         display_recipient = get_display_recipient(self)
         return u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
+class MutedTopic(ModelReprMixin, models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
+    topic_name = models.CharField(max_length=MAX_SUBJECT_LENGTH)
+
+    class Meta(object):
+        unique_together = ('user_profile', 'stream', 'topic_name')
+
+    def __unicode__(self):
+        # type: () -> Text
+        return u"<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
+
 class Client(ModelReprMixin, models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)  # type: Text
 

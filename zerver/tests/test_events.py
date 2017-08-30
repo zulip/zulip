@@ -45,6 +45,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_delete_message,
     do_mark_hotspot_as_read,
+    do_mute_topic,
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
@@ -59,10 +60,10 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_user_display_setting,
     do_set_realm_notifications_stream,
+    do_unmute_topic,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
-    do_update_muted_topic,
     do_update_pointer,
     do_update_user_presence,
     log_event,
@@ -857,13 +858,15 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('muted_topics')),
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
-        events = self.do_test(lambda: do_update_muted_topic(
-            self.user_profile, "Denmark", "topic", "add"))
+        stream = get_stream('Denmark', self.user_profile.realm)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+        events = self.do_test(lambda: do_mute_topic(
+            self.user_profile, stream, recipient, "topic"))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_update_muted_topic(
-            self.user_profile, "Denmark", "topic", "remove"))
+        events = self.do_test(lambda: do_unmute_topic(
+            self.user_profile, stream, "topic"))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
