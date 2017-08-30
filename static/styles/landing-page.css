@@ -1274,8 +1274,11 @@ nav ul li.active::after {
     position: relative;
     z-index: 1;
 
-    background-color: #262d3a;
-    color: hsl(220, 15%, 76%);
+    background-color: #e9ecf1;
+}
+
+.portico-landing.hello .open-source .flex {
+    min-height: 0px;
 }
 
 .portico-landing.hello .open-source img {
@@ -1301,8 +1304,8 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .testimonials {
-    color: hsl(220, 15%, 76%);
-    background-color: hsl(219, 21%, 19%);
+    color: #fff;
+    background-color: hsl(169, 35%, 35%);
 }
 
 .portico-landing.hello .testimonials .text-header .text-content {
@@ -1337,7 +1340,8 @@ nav ul li.active::after {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: hsl(221, 8%, 51%);
+    color: white;
+    opacity: 0.5;
     font-weight: 400;
 }
 
@@ -1349,6 +1353,8 @@ nav ul li.active::after {
     line-height: 1.6;
     text-align: left;
     border: none;
+
+    opacity: 0.8;
 }
 
 .portico-landing.hello .testimonials hr {
@@ -1383,7 +1389,7 @@ nav ul li.active::after {
     margin: 10px 20px;
 
     height: 60px;
-    width: calc(20% - 44px);
+    width: calc(25% - 44px);
 
     background-color: hsl(0, 0%, 66%);
     background-size: contain;
@@ -1573,34 +1579,31 @@ nav ul li.active::after {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 125px 100px 60px 100px;
+    padding: 125px 100px 0px 100px;
     margin-top: 0px;
 
-    background-color: hsl(218, 23%, 16%);
 }
 
 .portico-landing.hello .call-to-action-bottom button {
     display: block;
     margin: 20px auto 0 auto;
-    padding: 12px 25px 10px 25px;
+    padding: 11px 25px 11px 25px;
 
     font-size: 1.2rem;
-    color: hsl(220, 15%, 76%);
+    color: hsl(220, 15%, 66%);
 
-    border: 1px solid hsl(220, 15%, 76%);
+    border: 1px solid hsl(220, 15%, 66%);
     background: transparent;
 
     transition: all 0.2s ease;
 }
 
 .portico-landing.hello .call-to-action-bottom button:hover {
-    border-color: #fff;
-    background: #fff;
     color: hsl(219, 23%, 33%);
+    border: 1px solid hsl(220, 15%, 20%);
 }
 
 .portico-landing.hello .call-to-action-bottom h1 {
-    color: #fff;
     text-align: center;
     margin-top: 20px;
 }
@@ -1611,6 +1614,10 @@ nav ul li.active::after {
     height: 30px;
     background-image: url(/static/images/landing-page/zulip-octopus.png);
     background-size: cover;
+
+    -webkit-filter: invert(0.9);
+    -moz-filter: invert(0.9);
+    filter: invert(0.9);
 }
 
 .footer.hello {
@@ -2641,6 +2648,10 @@ nav ul li.active::after {
     .portico-landing.hello .apps .left-side .content {
         margin: 0px auto 50px;
     }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        width: calc(33% - 44px);
+    }
 }
 
 @media (max-width: 1024px) {
@@ -2770,6 +2781,10 @@ nav ul li.active::after {
     .portico-landing.hello .testimonials hr,
     .portico-landing.hello .testimonials .company-container {
         width: 100%;
+    }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        width: calc(25% - 44px);
     }
 }
 
