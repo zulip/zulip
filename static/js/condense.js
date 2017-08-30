@@ -85,9 +85,19 @@ exports.toggle_collapse = function (message) {
     if (!row) {
         return;
     }
+    var condensed = row.find(".could-be-condensed");
     if (message.collapsed) {
+        message.condensed = true;
         condense.uncollapse(row);
-    } else {
+        condensed.addClass("condensed");
+        exports.show_message_expander(row);
+        row.find(".message_condenser").hide();
+    } else if (!message.collapsed && condensed.hasClass("condensed")) {
+        message.condensed = false;
+        condensed.removeClass("condensed");
+        exports.hide_message_expander(row);
+        row.find(".message_condenser").show();
+    } else if (!message.collapsed && !condensed.hasClass("condensed")) {
         condense.collapse(row);
     }
 };
