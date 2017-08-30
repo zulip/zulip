@@ -1382,7 +1382,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('delay', check_int),
             ]))),
         ])
-        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'click_to_reply'))
+        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'intro_reply'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

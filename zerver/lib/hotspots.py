@@ -6,8 +6,8 @@ SEND_ALL = False
 
 ALL_HOTSPOTS = {
     # TODO: Tag these for translation once we've finalized the content.
-    'click_to_reply': {
-        'title': 'Respond to a message',
+    'intro_reply': {
+        'title': 'Reply to a message',
         'description': 'Click anywhere on a message to reply.',
     },
     'new_topic_button': {
@@ -36,7 +36,7 @@ def get_next_hotspots(user):
         return result
 
     seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
-    for hotspot in ['click_to_reply', 'new_topic_button', 'stream_settings']:
+    for hotspot in ['intro_reply', 'new_topic_button', 'stream_settings']:
         if hotspot not in seen_hotspots:
             return [{
                 'name': hotspot,

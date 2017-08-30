@@ -14,9 +14,8 @@ for discussion.
 ### Step 1: Create hotspot content
 
 In `zerver/lib/hotspots.py`, add your content to the `ALL_HOTSPOTS` dictionary.
-Each key-value pair in `ALL_HOTSPOTS` associates the name of the hotspot - e.g.
-`click_to_reply`, `new_topic_button`, `stream_settings` - with content
-displayed to the user.
+Each key-value pair in `ALL_HOTSPOTS` associates the name of the hotspot with the
+content displayed to the user.
 
 ```
 ALL_HOTSPOTS = {
