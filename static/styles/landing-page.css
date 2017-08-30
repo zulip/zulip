@@ -1274,12 +1274,16 @@ nav ul li.active::after {
     position: relative;
     z-index: 1;
 
-    background-color: #262d3a;
-    color: hsl(220, 15%, 76%);
+    background-color: #e9ecf1;
+}
+
+.portico-landing.hello .open-source .flex {
+    min-height: 0px;
+    padding: 50px 0px;
 }
 
 .portico-landing.hello .open-source img {
-    margin: 20px 2%;
+    margin: 0px 2%;
     width: 28%;
     max-width: 500px;
 }
