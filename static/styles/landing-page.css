@@ -2581,6 +2581,12 @@ nav ul li.active::after {
     }
 }
 
+@media (max-width: 1390px) {
+    .portico-landing.plans .pricing-container .block .use-our-servers {
+        color: inherit;
+    }
+}
+
 @media (max-width: 1376px) {
     .portico-landing.plans .price-box {
         height: 500px !important;
