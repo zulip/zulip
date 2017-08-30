@@ -222,9 +222,6 @@ td .button {
     font-size: 0.9em;
 }
 
-.settings-section .settings-section-title {
-}
-
 .settings-section .settings-section-title .table-title {
     display: inline-block;
     padding: 6px 0px;
@@ -470,7 +467,6 @@ input[type=checkbox].inline-block {
     #settings .settings-section .account-settings-form,
     #settings .settings-section .new-bot-form,
     #settings .settings-section .new-alert-word-form,
-    #emoji-settings .new-emoji-form,
     #filter-settings .new-filter-form,
     #settings .settings-section .notification-settings-form,
     #settings .settings-section .display-settings-form,
@@ -482,7 +478,6 @@ input[type=checkbox].inline-block {
     #settings .settings-section .account-settings-form .control-label,
     #settings .settings-section .new-bot-form .control-label,
     #settings .settings-section .new-alert-word-form .control-label,
-    #emoji-settings .new-emoji-form .control-label,
     #filter-settings .new-filter-form .control-label,
     #settings .settings-section .edit-bot-form-box .control-label {
         display: block;
@@ -498,7 +493,6 @@ input[type=checkbox].inline-block {
     #settings .settings-section .account-settings-form .controls,
     #settings .settings-section .new-bot-form .controls,
     #settings .settings-section .new-alert-word-form button,
-    #emoji-settings .new-emoji-form .controls,
     #filter-settings .new-filter-form .controls,
     #settings .settings-section .edit-bot-form-box .controls {
         margin: auto;
@@ -555,6 +549,35 @@ input[type=checkbox].inline-block {
 
 .emoji_image img {
     max-width: 100%;
+}
+
+.add-new-emoji-box {
+    margin-bottom: 20px;
+}
+
+.add-new-emoji-box .new-emoji-form {
+    margin: 10px 0px;
+}
+
+.add-new-emoji-box input[type=text] {
+    padding: 6px;
+}
+
+.add-new-emoji-box #emoji-file-name,
+.add-new-emoji-box #emoji_file_input_error {
+    width: 0;
+    top: -19px;
+    left: 3px;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+
+    white-space: nowrap;
+    font-style: italic;
+}
+
+.add-new-emoji-box #emoji-file-name {
+    color: #aaa;
 }
 
 .admin_filters_table {
