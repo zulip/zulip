@@ -980,7 +980,7 @@ nav ul li.active::after {
 }
 
 .faqs header {
-    width: 800px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -990,7 +990,7 @@ nav ul li.active::after {
 
 .faqs .faq {
     margin: 50px auto;
-    width: 800px;
+    max-width: 800px;
     font-size: 1.3em;
 }
 
@@ -2696,6 +2696,10 @@ nav ul li.active::after {
     .portico-landing.features-app section .headliner .feature-box {
         width: calc(100% - 200px - 20px);
     }
+
+    .portico-landing.plans .compare .padded-content {
+        width: auto;
+    }
 }
 
 @media (max-width: 985px) {
@@ -2883,6 +2887,7 @@ nav ul li.active::after {
     nav {
         padding-left: 50px;
         padding-right: 50px;
+        width: calc(100% - 100px);
     }
 
     .portico-landing.integrations .main,
@@ -3224,6 +3229,14 @@ nav ul li.active::after {
 
     .portico-landing.integrations #integration-instructions-group {
         padding: 0 25px;
+    }
+
+    .portico-landing.plans .compare .padded-content {
+        padding: 20px;
+    }
+
+    .portico-landing.plans .pricing-container .block {
+        margin: 0;
     }
 
     .main .padded-content {
