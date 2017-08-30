@@ -24,10 +24,10 @@ class TestGetNextHotspots(ZulipTestCase):
         # type: () -> None
         user = self.example_user('hamlet')
         do_mark_hotspot_as_read(user, 'intro_reply')
-        do_mark_hotspot_as_read(user, 'stream_settings')
+        do_mark_hotspot_as_read(user, 'intro_compose')
         hotspots = get_next_hotspots(user)
         self.assertEqual(len(hotspots), 1)
-        self.assertEqual(hotspots[0]['name'], 'intro_compose')
+        self.assertEqual(hotspots[0]['name'], 'intro_streams')
 
     def test_all_done(self):
         # type: () -> None
