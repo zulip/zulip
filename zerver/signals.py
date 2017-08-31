@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, Optional
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.models import UserProfile
-
+# Select a browser to open.
 def get_device_browser(user_agent):
     # type: (str) -> Optional[str]
     user_agent = user_agent.lower()
@@ -32,7 +32,7 @@ def get_device_browser(user_agent):
     else:
         return None
 
-
+# Select the operating system to use.
 def get_device_os(user_agent):
     # type: (str) -> Optional[str]
     user_agent = user_agent.lower()
