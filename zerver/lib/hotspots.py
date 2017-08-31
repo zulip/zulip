@@ -39,6 +39,9 @@ def get_next_hotspots(user):
             'delay': 0,
         } for hotspot in ALL_HOTSPOTS]
 
+    if user.tutorial_status == UserProfile.TUTORIAL_FINISHED:
+        return []
+
     seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
     for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_compose']:
         if hotspot not in seen_hotspots:
@@ -48,4 +51,7 @@ def get_next_hotspots(user):
                 'description': ALL_HOTSPOTS[hotspot]['description'],
                 'delay': 0.5,
             }]
+
+    user.tutorial_status = UserProfile.TUTORIAL_FINISHED
+    user.save(update_fields=['tutorial_status'])
     return []
