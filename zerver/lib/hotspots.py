@@ -46,6 +46,6 @@ def get_next_hotspots(user):
                 'name': hotspot,
                 'title': ALL_HOTSPOTS[hotspot]['title'],
                 'description': ALL_HOTSPOTS[hotspot]['description'],
-                'delay': 5,
+                'delay': 0.5,
             }]
     return []

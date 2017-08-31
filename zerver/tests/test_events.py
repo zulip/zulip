@@ -1379,7 +1379,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('name', check_string),
                 ('title', check_string),
                 ('description', check_string),
-                ('delay', check_int),
+                ('delay', check_float),
             ]))),
         ])
         events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'intro_reply'))
