@@ -377,6 +377,8 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         super(EventsRegisterTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
+        self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
+        self.user_profile.save(update_fields=['tutorial_status'])
 
     def create_bot(self, email):
         # type: (str) -> UserProfile
