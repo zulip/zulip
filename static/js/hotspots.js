@@ -52,7 +52,7 @@ exports.post_hotspot_as_read = function (hotspot_name) {
 function place_icon(hotspot) {
     if ($(hotspot.location.element).length === 0) {
         $('#hotspot_' + hotspot.name + '_icon').css('display', 'none');
-        return;
+        return false;
     }
 
     var offset = {
@@ -69,10 +69,11 @@ function place_icon(hotspot) {
         !$(hotspot.location.element).is(':visible') ||
         $(hotspot.location.element).is(':hidden')) {
         $('#hotspot_' + hotspot.name + '_icon').css('display', 'none');
-    } else {
-        $('#hotspot_' + hotspot.name + '_icon').css('display', 'block');
-        $('#hotspot_' + hotspot.name + '_icon').css(placement);
+        return false;
     }
+    $('#hotspot_' + hotspot.name + '_icon').css('display', 'block');
+    $('#hotspot_' + hotspot.name + '_icon').css(placement);
+    return true;
 }
 
 function place_popover(hotspot) {
@@ -188,17 +189,18 @@ function insert_hotspot_into_DOM(hotspot) {
 
     setTimeout(function () {
         $('body').prepend(hotspot_icon_HTML);
-        place_icon(hotspot);
-
         $('body').prepend(hotspot_overlay_HTML);
-        place_popover(hotspot);
+        if (place_icon(hotspot)) {
+            place_popover(hotspot);
+        }
 
         // reposition on any event that might update the UI
         ['resize', 'scroll', 'onkeydown', 'click']
         .forEach(function (event_name) {
             window.addEventListener(event_name, _.debounce(function () {
-                place_icon(hotspot);
-                place_popover(hotspot);
+                if (place_icon(hotspot)) {
+                    place_popover(hotspot);
+                }
             }, 10), true);
         });
     }, (hotspot.delay * 100));
