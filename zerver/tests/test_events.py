@@ -79,6 +79,9 @@ from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.topic_mutes import (
+    add_topic_mute,
+)
 from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
     equals, check_none_or, Validator
@@ -1655,11 +1658,25 @@ class FetchInitialStateDataTest(ZulipTestCase):
             subscription.in_home_view = False
             subscription.save()
 
+        def mute_topic(user_profile, stream_name, topic_name):
+            # type: (UserProfile, Text, Text) -> None
+            stream = get_stream(stream_name, realm)
+            recipient = get_recipient(Recipient.STREAM, stream.id)
+
+            add_topic_mute(
+                user_profile=user_profile,
+                stream_id=stream.id,
+                recipient_id=recipient.id,
+                topic_name='muted-topic',
+            )
+
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
         sender_email = cordelia.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
+
+        realm = user_profile.realm
 
         # our tests rely on order
         assert(sender_email < user_profile.email)
@@ -1670,8 +1687,12 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
         mute_stream(user_profile, muted_stream)
+        mute_topic(user_profile, 'Denmark', 'muted-topic')
+
         stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
         muted_stream_message_id = self.send_message(sender_email, "Muted Stream", Recipient.STREAM, "hello")
+        muted_topic_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM,
+                                                   subject="muted-topic", content="hello")
 
         huddle_message_id = self.send_message(sender_email,
                                               [user_profile.email, othello.email],
@@ -1696,10 +1717,15 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         unread_stream = result['streams'][0]
         self.assertEqual(unread_stream['stream_id'], get_stream('Denmark', user_profile.realm).id)
+        self.assertEqual(unread_stream['topic'], 'muted-topic')
+        self.assertEqual(unread_stream['unread_message_ids'], [muted_topic_message_id])
+
+        unread_stream = result['streams'][1]
+        self.assertEqual(unread_stream['stream_id'], get_stream('Denmark', user_profile.realm).id)
         self.assertEqual(unread_stream['topic'], 'test')
         self.assertEqual(unread_stream['unread_message_ids'], [stream_message_id])
 
-        unread_stream = result['streams'][1]
+        unread_stream = result['streams'][2]
         self.assertEqual(unread_stream['stream_id'], get_stream('Muted Stream', user_profile.realm).id)
         self.assertEqual(unread_stream['topic'], 'test')
         self.assertEqual(unread_stream['unread_message_ids'], [muted_stream_message_id])
