@@ -666,10 +666,6 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     alert_words = models.TextField(default=u'[]')  # type: Text # json-serialized list of strings
 
-    # Contains serialized JSON of the form:
-    # [["social", "mit"], ["devel", "ios"]]
-    muted_topics = models.TextField(default=u'[]')  # type: Text
-
     objects = UserManager()  # type: UserManager
 
     DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
