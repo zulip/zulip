@@ -47,6 +47,7 @@
 /* popover */
 .hotspot.overlay {
     z-index: 104;
+    background-color: hsla(191, 7%, 20%, 0.15);
 }
 
 .hotspot.overlay .hotspot-popover {
