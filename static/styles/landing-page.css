@@ -193,6 +193,10 @@ nav {
     z-index: 4;
 }
 
+nav .brand.logo {
+    text-decoration: none;
+}
+
 nav.white {
     background-color: #fff;
 }
