@@ -32,13 +32,6 @@ var HOTSPOT_LOCATIONS = {
 // popover illustration url(s)
 var WHALE = '/static/images/hotspots/whale.svg';
 
-
-exports.map_hotspots_to_DOM = function (hotspots, locations) {
-    hotspots.forEach(function (hotspot) {
-        hotspot.location = locations[hotspot.name];
-    });
-};
-
 exports.post_hotspot_as_read = function (hotspot_name) {
     channel.post({
         url: '/json/users/me/hotspots',
@@ -208,7 +201,9 @@ exports.is_open = function () {
 };
 
 exports.load_new = function (new_hotspots) {
-    exports.map_hotspots_to_DOM(new_hotspots, HOTSPOT_LOCATIONS);
+    new_hotspots.forEach(function (hotspot) {
+        hotspot.location = HOTSPOT_LOCATIONS[hotspot.name];
+    });
     new_hotspots.forEach(insert_hotspot_into_DOM);
 };
 
