@@ -100,7 +100,7 @@ casper.then(function () {
             subject: 'tests',
             content: 'Test Stream Message',
         }, "Stream message box filled with draft content");
-        casper.test.assertSelectorHasText('title', 'tests - Zulip Dev - Zulip', 'Narrowed to topic');
+        casper.test.assertSelectorHasText('title', 'all - Zulip Dev - Zulip', 'Narrowed to stream');
     });
 });
 

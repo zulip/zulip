@@ -130,9 +130,18 @@ exports.restore_draft = function (draft_id) {
 
     if (draft.type === "stream") {
         if (draft.stream !== "") {
-            narrow.activate([{operator: "stream", operand: draft.stream},
-                             {operator: "topic", operand: draft.subject}],
-                             {select_first_unread: true, trigger: "restore draft"});
+            var stream_id = stream_data.get_stream_id("Scotland");
+            var topics = topic_data.get_recent_names(stream_id);
+
+            // Only narrow to topic if this topic has already been created.
+            if (_.contains(topics, draft.subject)) {
+                narrow.activate([{operator: "stream", operand: draft.stream},
+                                 {operator: "topic", operand: draft.subject}],
+                                 {select_first_unread: true, trigger: "restore draft"});
+            } else {
+                narrow.activate([{operator: "stream", operand: draft.stream}],
+                                 {select_first_unread: true, trigger: "restore draft"});
+            }
         }
     } else {
         if (draft.private_message_recipient !== "") {
