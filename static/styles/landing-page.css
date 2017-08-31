@@ -1766,9 +1766,11 @@ nav ul li.active::after {
 .portico-landing.why-page .main li {
     color: #555;
     line-height: 1.6;
+    font-size: 1.2em;
 }
 
 .portico-landing.why-page .main p {
+    font-size: 1.2em;
     line-height: 1.6;
 }
 
