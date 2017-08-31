@@ -652,7 +652,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         payload = apn.get_apns_payload(message)
         expected = {
-            'alert': "New private group message from King Hamlet",
+            'alert': {
+                'title': "New private group message from King Hamlet",
+                'body': message.content,
+            },
             'badge': 1,
             'custom': {
                 'zulip': {

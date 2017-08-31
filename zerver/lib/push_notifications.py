@@ -344,7 +344,10 @@ def get_alert_from_message(message):
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
     return {
-        'alert': get_alert_from_message(message),
+        'alert': {
+            'title': get_alert_from_message(message),
+            'body': message.content[:200],
+        },
         # TODO: set badge count in a better way
         'badge': 1,
         'custom': {
