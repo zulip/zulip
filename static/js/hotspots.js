@@ -199,7 +199,7 @@ function insert_hotspot_into_DOM(hotspot) {
                 }
             }, 10), true);
         });
-    }, (hotspot.delay * 100));
+    }, (hotspot.delay * 1000));
 }
 
 exports.is_open = function () {
