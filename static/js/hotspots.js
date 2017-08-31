@@ -50,29 +50,31 @@ exports.post_hotspot_as_read = function (hotspot_name) {
 };
 
 function place_icon(hotspot) {
-    if ($(hotspot.location.element).length === 0) {
-        $('#hotspot_' + hotspot.name + '_icon').css('display', 'none');
+    var element = $(hotspot.location.element);
+    var icon = $('#hotspot_' + hotspot.name + '_icon');
+    if (element.length === 0) {
+        icon.css('display', 'none');
         return false;
     }
 
     var offset = {
-        top: $(hotspot.location.element).outerHeight() * hotspot.location.offset_y,
-        left: $(hotspot.location.element).outerWidth() * hotspot.location.offset_x,
+        top: element.outerHeight() * hotspot.location.offset_y,
+        left: element.outerWidth() * hotspot.location.offset_x,
     };
-    var client_rect = $(hotspot.location.element).get(0).getBoundingClientRect();
+    var client_rect = element.get(0).getBoundingClientRect();
     var placement = {
         top: client_rect.top + offset.top,
         left: client_rect.left + offset.left,
     };
 
-    if ($(hotspot.location.element).css('display') === 'none' ||
-        !$(hotspot.location.element).is(':visible') ||
-        $(hotspot.location.element).is(':hidden')) {
-        $('#hotspot_' + hotspot.name + '_icon').css('display', 'none');
+    if (element.css('display') === 'none' ||
+        !element.is(':visible') ||
+        element.is(':hidden')) {
+        icon.css('display', 'none');
         return false;
     }
-    $('#hotspot_' + hotspot.name + '_icon').css('display', 'block');
-    $('#hotspot_' + hotspot.name + '_icon').css(placement);
+    icon.css('display', 'block');
+    icon.css(placement);
     return true;
 }
 
