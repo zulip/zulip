@@ -1778,6 +1778,10 @@ nav ul li.active::after {
     line-height: 1.6;
 }
 
+.portico-landing.why-page .main h3 {
+    margin-top: 20px;
+}
+
 .portico-landing.why-page .main li strong {
     font-weight: 600;
     color: #333;
