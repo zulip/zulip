@@ -10,7 +10,8 @@ import random
 from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
 
 from apns2.client import APNsClient
-from apns2.payload import Payload as APNsPayload
+from apns2.payload import Payload as APNsPayload, \
+    PayloadAlert as APNsAlertPayload
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
@@ -74,7 +75,7 @@ def send_apple_push_notification(user_id, devices, payload_data):
         return
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
-    payload = APNsPayload(**payload_data)
+    payload = APNsPayload(alert=APNsAlertPayload(**payload_data['alert']), custom=payload_data['custom'])
     expiration = int(time.time() + 24 * 3600)
     client = get_apns_client()
     retries_left = APNS_MAX_RETRIES
@@ -340,10 +341,16 @@ def get_alert_from_message(message):
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
+    content = message.content
+    content_truncated = (len(content) > 200)
+    if content_truncated:
+        content = content[:200] + "..."
     return {
-        'alert': get_alert_from_message(message),
+        'alert': {
+            'title': get_alert_from_message(message),
+            'body': content,
+        },
         # TODO: set badge count in a better way
-        'badge': 1,
         'custom': {
             'zulip': {
                 'message_ids': [message.id],
