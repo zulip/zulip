@@ -1,0 +1,34 @@
+Production Installation
+Make sure you want to install a Zulip production server. If you'd instead like to test or develop a new feature, we recommend the Zulip server development environment instead.
+
+You will need an Ubuntu system that satisfies the installation requirements. In short, you need:
+
+Either a dedicated machine, or a fresh VM on an existing machine.
+Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial, 64-bit.
+At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
+A DNS name, an SSL certificate, and credentials for sending email.
+Step 1: Install SSL Certificates
+Zulip runs over https only, and requires SSL certificates in order to work. It looks for the certificates in /etc/ssl/private/zulip.key and /etc/ssl/certs/zulip.combined-chain.crt. Note that Zulip uses nginx as its webserver and thus expects a chained certificate bundle.
+
+If you need an SSL certificate, see our SSL certificate documentation. If you already have an SSL certificate, just install (or symlink) it into place at the above paths, and move on to the next step.
+
+Step 2: Download and install latest release
+If you haven't already, download and unpack the latest built server tarball with the following commands:
+
+cd $(mktemp -d)
+wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+tar -xf zulip-server-latest.tar.gz
+Then, run the Zulip install script:
+
+sudo -s  # If not already root
+./zulip-server-*/scripts/setup/install
+This may take a while to run, since it will install a large number of dependencies.
+
+The Zulip install script is designed to be idempotent, so if it fails, you can just rerun it after correcting the issue that caused it to fail. Also note that it automatically logs a transcript to /var/log/zulip/install.log; please include a copy of that file in any bug reports.
+
+The install script does several things:
+
+Creates zulip user, which the various Zulip servers will run as,
+Creates /home/zulip/deployments/, which the Zulip code for this deployment (and future deployments when you upgrade) go into. At the very end of the install process, the script moves the Zulip code tree it's running from (which you unpacked from a tarball above) to a directory there, and makes /home/zulip/deployments/current as a symbolic link to it.
+Installs Zulip's various dependencies.
+Cconfigures the various third-party services Zulip uses, including Postgres, RabbitMQ, Memcached and Redis.
