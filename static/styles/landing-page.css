@@ -145,6 +145,18 @@ button {
     outline: none;
 }
 
+button.green:hover {
+    -webkit-filter: brightness(1.05);
+    -moz-filter: brightness(1.05);
+    filter: brightness(1.05);
+}
+
+button.green:active {
+    -webkit-filter: brightness(0.95);
+    -moz-filter: brightness(0.95);
+    filter: brightness(0.95);
+}
+
 button:active {
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 73%);
@@ -2383,8 +2395,9 @@ nav ul li.active::after {
     width: 100%;
 
     font-size: 0.9em;
-}
 
+    transition: all 0.3s ease;
+}
 
 .pricing-model .pricing-container .price-box:focus {
     outline: none;
