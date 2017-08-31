@@ -52,7 +52,9 @@ exports.post_hotspot_as_read = function (hotspot_name) {
 function place_icon(hotspot) {
     var element = $(hotspot.location.element);
     var icon = $('#hotspot_' + hotspot.name + '_icon');
-    if (element.length === 0) {
+
+    if (element.length === 0 || element.css('display') === 'none' ||
+        !element.is(':visible') || element.is(':hidden')) {
         icon.css('display', 'none');
         return false;
     }
@@ -66,13 +68,6 @@ function place_icon(hotspot) {
         top: client_rect.top + offset.top,
         left: client_rect.left + offset.left,
     };
-
-    if (element.css('display') === 'none' ||
-        !element.is(':visible') ||
-        element.is(':hidden')) {
-        icon.css('display', 'none');
-        return false;
-    }
     icon.css('display', 'block');
     icon.css(placement);
     return true;
