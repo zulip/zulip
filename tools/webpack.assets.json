@@ -33,7 +33,8 @@
         "./static/styles/pygments.scss"
     ],
     "help": [
-            "./node_modules/perfect-scrollbar/dist/perfect-scrollbar.js",
+            "./node_modules/simplebar/dist/simplebar.css",
+            "./node_modules/simplebar/dist/simplebar.js",
             "./static/js/portico/help.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",

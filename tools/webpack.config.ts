@@ -124,6 +124,7 @@ export default (env?: string) : webpack.Configuration => {
         { path: "../node_modules/clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "../node_modules/xdate/src/xdate.js", name: "XDate" },
         { path: "../node_modules/perfect-scrollbar/dist/perfect-scrollbar.js", name: "PerfectScrollbar" },
+        { path: "../node_modules/simplebar/dist/simplebar.js"},
         { path: "../static/third/marked/lib/marked.js" },
         { path: "../static/generated/emoji/emoji_codes.js" },
         { path: "../static/generated/pygments_data.js" },

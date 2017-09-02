@@ -68,6 +68,7 @@ run(['cp', '-R', 'node_modules/katex/dist/fonts',
     stdout=fp, stderr=fp)
 
 CSS_FILES = [
+    'node_modules/simplebar/dist/simplebar.css',
     'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
     'node_modules/flatpickr/dist/flatpickr.css',
     'node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.css',
