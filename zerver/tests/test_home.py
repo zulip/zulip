@@ -193,6 +193,7 @@ class HomeTest(ZulipTestCase):
             'full_name',
             'is_active',
             'owner',
+            'services',
             'user_id',
         ]
 

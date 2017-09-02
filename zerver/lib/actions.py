@@ -59,7 +59,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id
+    get_display_recipient_by_id, get_service_dicts_for_bots, get_bot_services
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -404,6 +404,7 @@ def notify_created_bot(user_profile):
                default_events_register_stream=default_events_register_stream_name,
                default_all_public_streams=user_profile.default_all_public_streams,
                avatar_url=avatar_url(user_profile),
+               services=get_service_dicts_for_bots(user_profile.id),
                )
 
     # Set the owner key only when the bot has an owner.
@@ -3539,3 +3540,19 @@ def do_update_user_custom_profile_data(user_profile, data):
             update_or_create(user_profile=user_profile,
                              field_id=field['id'],
                              defaults={'value': field['value']})
+
+def do_update_outgoing_webhook_service(bot_profile, interface_type, payload_url):
+    # type: (UserProfile, int, Text) -> None
+    # TODO: First service is chosen because currently one bot can have one service. Update it if multiple services
+    # are supported.
+
+    service = get_bot_services(bot_profile.id)[0]
+    service.base_url = payload_url
+    service.interface = interface_type
+    service.save()
+
+    payload = dict(email=bot_profile.email,
+                   user_id=bot_profile.id,
+                   services=get_service_dicts_for_bots(bot_profile.id))
+
+    send_event(dict(type='realm_bot', op='update', bot=payload), bot_owner_userids(bot_profile))

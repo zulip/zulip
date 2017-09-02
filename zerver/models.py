@@ -1503,6 +1503,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
              'avatar_url': avatar_url_from_dict(botdict),
+             'services': get_service_dicts_for_bots(botdict['id']),
              }
             for botdict in result]
 
@@ -1888,3 +1889,13 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+def get_service_dicts_for_bots(user_profile_id):
+    # type: (int) -> List[Dict[str, Any]]
+    services = get_bot_services(str(user_profile_id))
+    service_dicts = ([{'name': service.name,
+                       'base_url': service.base_url,
+                       'interface': service.interface,
+                       }
+                      for service in services])
+    return service_dicts

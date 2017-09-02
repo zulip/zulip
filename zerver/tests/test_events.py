@@ -63,6 +63,7 @@ from zerver.lib.actions import (
     do_update_message,
     do_update_message_flags,
     do_update_muted_topic,
+    do_update_outgoing_webhook_service,
     do_update_pointer,
     do_update_user_presence,
     log_event,
@@ -80,13 +81,14 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
-    equals, check_none_or, Validator
+    equals, check_none_or, Validator, check_url
 )
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
 from zerver.tornado.event_queue import allocate_client_descriptor, EventQueue
 from zerver.tornado.views import get_events_backend
+from zerver.views.users import add_outgoing_webhook_service
 
 from collections import OrderedDict
 import mock
@@ -1222,6 +1224,11 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
                 ('owner', check_string),
+                ('services', check_list(check_dict_only([
+                    ('name', check_string),
+                    ('base_url', check_url),
+                    ('interface', check_int),
+                ]))),
             ])),
         ])
         action = lambda: self.create_bot('test-bot@zulip.com')
@@ -1328,6 +1335,37 @@ class EventsRegisterTest(ZulipTestCase):
         error = change_bot_owner_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_do_update_outgoing_webhook_service(self):
+        # type: () -> None
+
+        update_outgoing_webhook_service_checker = self.check_events_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('update')),
+            ('bot', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('services', check_list(check_dict_only([
+                    ('name', check_string),
+                    ('base_url', check_url),
+                    ('interface', check_int),
+                ]))),
+            ])),
+        ])
+
+        self.user_profile = self.example_user('iago')
+        bot = do_create_user('test-bot@zulip.com', '123', get_realm('zulip'), 'Test Bot', 'test',
+                             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=self.user_profile)
+        add_outgoing_webhook_service(user_profile=bot,
+                                     name="test",
+                                     base_url="http://hostname.domain1.com",
+                                     interface=1,
+                                     token="abced")
+
+        action = lambda: do_update_outgoing_webhook_service(bot, 1, 'http://hostname.domain2.com')
+        events = self.do_test(action)
+        error = update_outgoing_webhook_service_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_do_deactivate_user(self):
         # type: () -> None
         bot_deactivate_checker = self.check_events_dict([
@@ -1362,6 +1400,11 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
                 ('owner', check_none_or(check_string)),
+                ('services', check_list(check_dict_only([
+                    ('name', check_string),
+                    ('base_url', check_url),
+                    ('interface', check_int),
+                ]))),
             ])),
         ])
         bot = self.create_bot('foo-bot@zulip.com')
