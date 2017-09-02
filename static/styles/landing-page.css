@@ -3208,6 +3208,22 @@ nav ul li.active::after {
     .footer {
         width: 100vw;
     }
+
+    /* the gradients leave the bottom of the text and the button white so we
+       want to have the gradients stay darker for longer.
+    */
+    .gradients .gradient.green {
+        background: linear-gradient(-25deg, transparent 10%, #3fb082 80%);
+    }
+
+    .gradients .gradient.blue {
+        background: linear-gradient(25deg, transparent 10%, #5298b1 80%);
+    }
+
+    .gradients .gradient.sunburst {
+        background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
+    }
+
 }
 
 @media (max-width: 375px) {
