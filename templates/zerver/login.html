@@ -111,8 +111,9 @@ common.autofocus('#id_username');
                 <div class="or">or</div>
                 {% endif %}
 
-                {% endif %} <!-- if password_auth_enabled -->
+                {% endif %}
 
+                <!-- if password_auth_enabled -->
                 {% if google_auth_enabled %}
                 <div class="login-google">
                     <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
