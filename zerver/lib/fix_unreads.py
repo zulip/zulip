@@ -4,17 +4,46 @@ from __future__ import print_function
 import time
 import logging
 
-from typing import Callable, List, TypeVar
+from typing import Callable, List, TypeVar, Text
 from psycopg2.extensions import cursor
 CursorObj = TypeVar('CursorObj', bound=cursor)
 
 from django.db import connection
 
-from zerver.lib.topic_mutes import build_topic_mute_checker
 from zerver.models import UserProfile
 
 logger = logging.getLogger('zulip.fix_unreads')
 logger.setLevel(logging.WARNING)
+
+def build_topic_mute_checker(cursor, user_profile):
+    # type: (CursorObj, UserProfile) -> Callable[[int, Text], bool]
+    '''
+    This function is similar to the function of the same name
+    in zerver/lib/topic_mutes.py, but it works without the ORM,
+    so that we can use it in migrations.
+    '''
+    query = '''
+        SELECT
+            recipient_id,
+            topic_name
+        FROM
+            zerver_mutedtopic
+        WHERE
+            user_profile_id = %s
+    '''
+    cursor.execute(query, [user_profile.id])
+    rows = cursor.fetchall()
+
+    tups = {
+        (recipient_id, topic_name.lower())
+        for (recipient_id, topic_name) in rows
+    }
+
+    def is_muted(recipient_id, topic):
+        # type: (int, Text) -> bool
+        return (recipient_id, topic.lower()) in tups
+
+    return is_muted
 
 def update_unread_flags(cursor, user_message_ids):
     # type: (CursorObj, List[int]) -> None
@@ -166,7 +195,7 @@ def fix_pre_pointer(cursor, user_profile):
         # type: () -> None
         recips = ', '.join(str(id) for id in recipient_ids)
 
-        is_topic_muted = build_topic_mute_checker(user_profile)
+        is_topic_muted = build_topic_mute_checker(cursor, user_profile)
 
         query = '''
             SELECT
