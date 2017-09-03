@@ -113,18 +113,71 @@ exports.set_up = function () {
         });
     });
 
-    function clear_password_change() {
-        // Clear the password boxes so that passwords don't linger in the DOM
-        // for an XSS attacker to find.
-        $('#old_password, #new_password, #confirm_password').val('');
-    }
+    var change_password_modal = new Modal(
+        templates.render('change_password_modal')
+    );
 
-    clear_password_change();
+    change_password_modal.setUp(function (modal) {
+        function clear_password_change() {
+            // Clear the password boxes so that passwords don't linger in the DOM
+            // for an XSS attacker to find.
+            $('#old_password, #new_password, #confirm_password').val('');
+        }
+
+        clear_password_change();
+
+        $('body').on('change keyup', '#new_password', function () {
+            var field = $('#new_password');
+            common.password_quality(field.val(), $('#pw_strength .bar'), field);
+        });
+
+        $("form.your-account-settings").ajaxForm({
+            dataType: 'json', // This seems to be ignored. We still get back an xhr.
+            beforeSubmit: function () {
+                if (page_params.realm_password_auth_enabled !== false) {
+                    // FIXME: Check that the two password fields match
+                    // FIXME: Use the same jQuery validation plugin as the signup form?
+                    var field = $('#new_password');
+                    var new_pw = $('#new_password').val();
+                    if (new_pw !== '') {
+                        var password_ok = common.password_quality(new_pw, undefined, field);
+                        if (password_ok === undefined) {
+                            // zxcvbn.js didn't load, for whatever reason.
+                            settings_change_error(
+                                'An internal error occurred; try reloading the page. ' +
+                                'Sorry for the trouble!');
+                            return false;
+                        } else if (!password_ok) {
+                            settings_change_error('New password is too weak');
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
+            success: function () {
+                settings_change_success("Updated settings!");
+            },
+            error: function (xhr) {
+                settings_change_error("Error changing settings", xhr);
+            },
+            complete: function () {
+                // Whether successful or not, clear the password boxes.
+                // TODO: Clear these earlier, while the request is still pending.
+                clear_password_change();
+            },
+        });
+
+        $('body').on('click', '.close_change_password_modal', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            modal.hide();
+        });
+    });
 
     $('#pw_change_link').on('click', function (e) {
         e.preventDefault();
-        $('#pw_change_link').hide();
-        $('#pw_change_controls').show();
+        change_password_modal.show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
@@ -138,48 +191,6 @@ exports.set_up = function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
-    });
-
-    $('#new_password').on('change keyup', function () {
-        var field = $('#new_password');
-        common.password_quality(field.val(), $('#pw_strength .bar'), field);
-    });
-
-    $("form.your-account-settings").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function () {
-            if (page_params.realm_password_auth_enabled !== false) {
-                // FIXME: Check that the two password fields match
-                // FIXME: Use the same jQuery validation plugin as the signup form?
-                var field = $('#new_password');
-                var new_pw = $('#new_password').val();
-                if (new_pw !== '') {
-                    var password_ok = common.password_quality(new_pw, undefined, field);
-                    if (password_ok === undefined) {
-                        // zxcvbn.js didn't load, for whatever reason.
-                        settings_change_error(
-                            'An internal error occurred; try reloading the page. ' +
-                            'Sorry for the trouble!');
-                        return false;
-                    } else if (!password_ok) {
-                        settings_change_error('New password is too weak');
-                        return false;
-                    }
-                }
-            }
-            return true;
-        },
-        success: function () {
-            settings_change_success("Updated settings!");
-        },
-        error: function (xhr) {
-            settings_change_error("Error changing settings", xhr);
-        },
-        complete: function () {
-            // Whether successful or not, clear the password boxes.
-            // TODO: Clear these earlier, while the request is still pending.
-            clear_password_change();
-        },
     });
 
     $('#change_email').on('click', function (e) {
