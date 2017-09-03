@@ -8,6 +8,7 @@ from typing import Any, List, Text
 
 from argparse import ArgumentParser
 from django.core.management.base import CommandError
+from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.fix_unreads import fix
@@ -44,6 +45,7 @@ class Command(ZulipBaseCommand):
         ))
         for user_profile in user_profiles:
             fix(user_profile)
+            connection.commit()
 
     def fix_emails(self, realm, emails):
         # type: (Realm, List[Text]) -> None
@@ -56,6 +58,7 @@ class Command(ZulipBaseCommand):
                 return
 
             fix(user_profile)
+            connection.commit()
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
