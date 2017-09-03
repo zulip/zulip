@@ -453,8 +453,7 @@ class FixUnreadTests(ZulipTestCase):
         assert_read(um_unsubscribed_id)
 
         # test idempotency
-        with mock.patch('zerver.lib.fix_unreads.connection.commit'):
-            fix(user)
+        fix(user)
 
         assert_read(um_normal_id)
         assert_unread(um_muted_topic_id)

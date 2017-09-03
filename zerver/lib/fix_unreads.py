@@ -248,4 +248,3 @@ def fix(user_profile):
     with connection.cursor() as cursor:
         fix_unsubscribed(cursor, user_profile)
         fix_pre_pointer(cursor, user_profile)
-        connection.commit()
