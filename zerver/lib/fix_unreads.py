@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import time
+import logging
 
 from typing import Callable, List, TypeVar
 from psycopg2.extensions import cursor
@@ -11,6 +12,9 @@ from django.db import connection
 
 from zerver.lib.topic_mutes import build_topic_mute_checker
 from zerver.models import UserProfile
+
+logger = logging.getLogger('zulip.fix_unreads')
+logger.setLevel(logging.WARNING)
 
 def update_unread_flags(cursor, user_message_ids):
     # type: (CursorObj, List[int]) -> None
@@ -27,10 +31,10 @@ def update_unread_flags(cursor, user_message_ids):
 def get_timing(message, f):
     # type: (str, Callable) -> None
     start = time.time()
-    print(message)
+    logger.info(message)
     f()
     elapsed = time.time() - start
-    print('elapsed time: %.03f\n' % (elapsed,))
+    logger.info('elapsed time: %.03f\n' % (elapsed,))
 
 
 def fix_unsubscribed(cursor, user_profile):
@@ -58,7 +62,7 @@ def fix_unsubscribed(cursor, user_profile):
         rows = cursor.fetchall()
         for row in rows:
             recipient_ids.append(row[0])
-        print(recipient_ids)
+        logger.info(str(recipient_ids))
 
     get_timing(
         'get recipients',
@@ -89,14 +93,14 @@ def fix_unsubscribed(cursor, user_profile):
             )
         ''' % (user_profile.id, recips)
 
-        print('''
+        logger.info('''
             EXPLAIN analyze''' + query.rstrip() + ';')
 
         cursor.execute(query)
         rows = cursor.fetchall()
         for row in rows:
             user_message_ids.append(row[0])
-        print('rows found: %d' % (len(user_message_ids),))
+        logger.info('rows found: %d' % (len(user_message_ids),))
 
     get_timing(
         'finding unread messages for non-active streams',
@@ -146,7 +150,7 @@ def fix_pre_pointer(cursor, user_profile):
         rows = cursor.fetchall()
         for row in rows:
             recipient_ids.append(row[0])
-        print(recipient_ids)
+        logger.info(str(recipient_ids))
 
     get_timing(
         'find_non_muted_recipients',
@@ -182,7 +186,7 @@ def fix_pre_pointer(cursor, user_profile):
             )
         ''' % (user_profile.id, pointer, recips)
 
-        print('''
+        logger.info('''
             EXPLAIN analyze''' + query.rstrip() + ';')
 
         cursor.execute(query)
@@ -190,7 +194,7 @@ def fix_pre_pointer(cursor, user_profile):
         for (um_id, recipient_id, topic) in rows:
             if not is_topic_muted(recipient_id, topic):
                 user_message_ids.append(um_id)
-        print('rows found: %d' % (len(user_message_ids),))
+        logger.info('rows found: %d' % (len(user_message_ids),))
 
     get_timing(
         'finding pre-pointer messages that are not muted',
@@ -211,7 +215,7 @@ def fix_pre_pointer(cursor, user_profile):
 
 def fix(user_profile):
     # type: (UserProfile) -> None
-    print('\n---\nFixing %s:' % (user_profile.email,))
+    logger.info('\n---\nFixing %s:' % (user_profile.email,))
     with connection.cursor() as cursor:
         fix_unsubscribed(cursor, user_profile)
         fix_pre_pointer(cursor, user_profile)
