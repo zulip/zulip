@@ -132,7 +132,8 @@ a:hover {
 }
 
 /* -- component styling -- */
-button {
+button,
+.button {
     padding: 5px 12px;
 
     font-family: inherit;
@@ -1657,7 +1658,8 @@ nav ul li.active::after {
     height: 100%;
 }
 
-.portico-landing.apps .hero .info button {
+.portico-landing.apps .hero .info a.button {
+    display: inline-block;
     padding: 10px 20px;
     margin-top: 50px;
 
