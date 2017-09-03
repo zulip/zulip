@@ -1086,8 +1086,8 @@ function test_with_mock_socket(test_params) {
 
         handler(event);
 
-        // video link ids consist of 20 random digits
-        var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{20}\)/;
+        // video link ids consist of 15 random digits
+        var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert(video_link_regex.test($('#new_message_content').val()));
     }());
 

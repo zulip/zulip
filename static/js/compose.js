@@ -662,7 +662,7 @@ exports.initialize = function () {
     $('#compose').on('click', '#video_link', function (e) {
         e.preventDefault();
 
-        var video_id = util.random_int(10000000000000000000, 99999999999999999999);
+        var video_id = util.random_int(100000000000000, 999999999999999);
         var video_link = 'https://meet.jit.si' + '/' + video_id;
         var video_link_text = '[Click to join video call](' + video_link + ')';
 
