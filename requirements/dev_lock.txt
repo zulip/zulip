@@ -129,6 +129,7 @@ simplegeneric==0.8.1      # via ipython
 simplejson==3.11.1
 six==1.10.0
 smmap==0.9.0
+snakeviz==0.4.2
 snowballstemmer==1.2.1
 social-auth-app-django==1.2.0
 social-auth-core==1.4.0   # via social-auth-app-django

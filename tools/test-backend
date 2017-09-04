@@ -401,6 +401,9 @@ if __name__ == "__main__":
         prof.dump_stats("/tmp/profile.data")
         print("Profile data saved to /tmp/profile.data")
         print("You can visualize it using e.g. `snakeviz /tmp/profile.data`")
+        print("Note: If you are using vagrant for development environment you will need to do:")
+        print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
+        print("2.) `snakeviz -s /tmp/profile.data`")
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests
