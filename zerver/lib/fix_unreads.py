@@ -12,6 +12,13 @@ from django.db import connection
 
 from zerver.models import UserProfile
 
+'''
+NOTE!  Be careful modifying this library, as it is used
+in a migration, and it needs to be valid for the state
+of the database that is in place when the 0104_fix_unreads
+migration runs.
+'''
+
 logger = logging.getLogger('zulip.fix_unreads')
 logger.setLevel(logging.WARNING)
 
