@@ -1,17 +1,14 @@
 var util = require("util");
+
 var common = (function () {
-
 var exports = {};
-
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
-
 function timestamp() {
     return new Date().getTime();
 }
 
 // The timestamp of the last message send or get_events result.
 var last_send_or_update = -1;
-
 function log_in(credentials) {
     if (credentials === undefined) {
         credentials = test_credentials.default_user;
@@ -30,7 +27,7 @@ exports.init_viewport = function () {
 };
 
 exports.initialize_casper = function () {
-    if (casper.zulip_initialized !== undefined) {
+    if (casper.zulip_initialized != undefined) {
         return;
     }
     casper.zulip_initialized = true;
@@ -83,7 +80,7 @@ exports.initialize_casper = function () {
                 if (util.isRegExp(text)) {
                     return text.test(content);
                 }
-                return content.indexOf(text) !== -1;
+                return content.indexOf(text) != -1;
             }, then, onTimeout, timeout);
         }, onTimeout, timeout);
         return this;
