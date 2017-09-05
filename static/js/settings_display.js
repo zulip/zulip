@@ -154,7 +154,7 @@ exports.set_up = function () {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("Your time zone have been set to " + timezone), $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Your time zone have been set to __timezone__", {timezone: timezone}), $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error updating time zone"), xhr, $('#display-settings-status').expectOne());

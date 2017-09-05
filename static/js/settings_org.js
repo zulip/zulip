@@ -111,9 +111,7 @@ exports.populate_auth_methods = function (auth_methods) {
         // Don't prepend a tip to custom emoji settings page. We handle it separately.
         $(".organization-box").find(".settings-section:not(.can-edit)")
             .not("#emoji-settings")
-            .prepend("<div class='tip'>" +
-                     i18n.t("Only organization administrators can edit these settings.") +
-                     "</div>");
+            .prepend(i18n.t("<div class='tip'>Only organization administrators can edit these settings.</div>"));
     }
 };
 

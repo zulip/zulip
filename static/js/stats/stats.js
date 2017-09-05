@@ -219,8 +219,7 @@ function populate_messages_sent_over_time(data) {
 
     info = aggregate_data('week');
     date_formatter = function (date) {
-        // return i18n.t("Week of __date__", {date: format_date(date, false)});
-        return i18n.t("Week of ") + format_date(date, false);
+        return i18n.t("Week of __date__", {date: format_date(date, false)});
     };
     var last_week_is_partial = info.last_value_is_partial;
     var weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
