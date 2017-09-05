@@ -55,9 +55,9 @@ regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            '{{\s*t "(.*?)"\W*}}',
            "{{\s*t '(.*?)'\W*}}",
            "i18n\.t\('([^\']*?)'\)",
-           "i18n\.t\('(.*?)',.*?[^,]\)",
+           "i18n\.t\('(.*?)',\s*.*?[^,]\)",
            'i18n\.t\("([^\"]*?)"\)',
-           'i18n\.t\("(.*?)",.*?[^,]\)',
+           'i18n\.t\("(.*?)",\s*.*?[^,]\)',
            ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
