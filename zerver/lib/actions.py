@@ -889,18 +889,22 @@ def do_send_messages(messages_maybe_none):
 
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
-        user_presences = get_status_dict(sender)
-        presences = {}
-        for user_profile in message['active_recipients']:
-            if user_profile.email in user_presences:
-                presences[user_profile.id] = user_presences[user_profile.email]
+        message_type = message_dict_no_markdown['type']
+
+        missed_message_userids = get_userids_for_missed_messages(
+            realm=sender.realm,
+            sender_id=sender.id,
+            message_type=message_type,
+            active_recipients=message['active_recipients'],
+            user_flags=user_flags,
+        )
 
         event = dict(
             type='message',
             message=message['message'].id,
             message_dict_markdown=message_dict_markdown,
             message_dict_no_markdown=message_dict_no_markdown,
-            presences=presences,
+            missed_message_userids=missed_message_userids,
         )
 
         users = [{'id': user.id,
@@ -3139,6 +3143,34 @@ def gather_subscriptions(user_profile):
                 sub['subscribers'] = [email_dict[user_id] for user_id in sub['subscribers']]
 
     return (subscribed, unsubscribed)
+
+def get_userids_for_missed_messages(realm, sender_id, message_type, active_recipients, user_flags):
+    # type: (Realm, int, str, List[UserProfile], Dict[int, List[str]]) -> List[int]
+    if realm.presence_disabled:
+        return []
+
+    is_pm = message_type == 'private'
+
+    user_ids = set()
+    for user in active_recipients:
+        flags = user_flags.get(user.id, [])  # type: Iterable[str]
+        mentioned = 'mentioned' in flags
+        received_pm = is_pm and user.id != sender_id
+        if mentioned or received_pm:
+            user_ids.add(user.id)
+
+    if not user_ids:
+        return []
+
+    # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
+    recent = timezone_now() - datetime.timedelta(seconds=140)
+    rows = UserPresence.objects.filter(
+        user_profile_id__in=user_ids,
+        timestamp__gte=recent
+    ).distinct('user_profile_id').values('user_profile_id')
+    active_user_ids = {row['user_profile_id'] for row in rows}
+    idle_user_ids = user_ids - active_user_ids
+    return sorted(list(idle_user_ids))
 
 def get_status_dict(requesting_user_profile):
     # type: (UserProfile) -> Dict[Text, Dict[Text, Dict[str, Any]]]

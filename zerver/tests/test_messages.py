@@ -15,6 +15,7 @@ from zilencer.models import Deployment
 from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
+    get_userids_for_missed_messages,
     internal_send_private_message,
 )
 
@@ -42,7 +43,7 @@ from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivat
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
-    RealmAuditLog, RealmDomain, get_realm,
+    RealmAuditLog, RealmDomain, get_realm, UserPresence,
     get_stream, get_recipient, get_system_bot, get_user, Reaction,
     sew_messages_and_reactions, flush_per_request_caches
 )
@@ -68,7 +69,7 @@ import mock
 import time
 import ujson
 from six.moves import range
-from typing import Any, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 from collections import namedtuple
 
@@ -510,7 +511,7 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 16)
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self):
         # type: () -> None
@@ -2033,6 +2034,55 @@ class AttachmentTest(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
+
+class MissedMessageTest(ZulipTestCase):
+    def test_missed_message_userids(self):
+        # type: () -> None
+        UserPresence.objects.all().delete()
+
+        sender = self.example_user('cordelia')
+        realm = sender.realm
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        recipients = [hamlet, othello]
+        message_type = 'stream'
+        user_flags = {}  # type: Dict[int, List[str]]
+
+        def assert_missing(user_ids):
+            # type: (List[int]) -> None
+            missed_message_userids = get_userids_for_missed_messages(
+                realm=realm,
+                sender_id=sender.id,
+                message_type=message_type,
+                active_recipients=recipients,
+                user_flags=user_flags,
+            )
+            self.assertEqual(sorted(user_ids), sorted(missed_message_userids))
+
+        def set_presence(user_id, client_name, ago):
+            # type: (int, Text, int) -> None
+            when = timezone_now() - datetime.timedelta(seconds=ago)
+            UserPresence.objects.create(
+                user_profile_id=user_id,
+                client=get_client(client_name),
+                timestamp=when,
+            )
+
+        message_type = 'private'
+        assert_missing([hamlet.id, othello.id])
+
+        message_type = 'stream'
+        user_flags[hamlet.id] = ['mentioned']
+        assert_missing([hamlet.id])
+
+        set_presence(hamlet.id, 'iPhone', ago=5000)
+        assert_missing([hamlet.id])
+
+        set_presence(hamlet.id, 'webapp', ago=15)
+        assert_missing([])
+
+        message_type = 'private'
+        assert_missing([othello.id])
 
 class LogDictTest(ZulipTestCase):
     def test_to_log_dict(self):
