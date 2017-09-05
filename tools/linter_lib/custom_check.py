@@ -135,6 +135,12 @@ def build_custom_checkers(by_lang):
          'description': 'The module blueslip has no function warning, try using blueslip.warn'},
         {'pattern': '[)]{$',
          'description': 'Missing space between ) and {'},
+        {'pattern': 'i18n\.t\([^)]+[^,\{]$',
+         'description': 'i18n string should not be a multiline string'},
+        {'pattern': 'i18n\.t([^)]+?\+.+?)',
+         'description': 'Do not concatenate i18n strings'},
+        {'pattern': 'i18n\.t([^+]+?).+?\+',
+         'description': 'Do not concatenate i18n strings'},
         {'pattern': '["\']json/',
          'description': 'Relative URL for JSON route not supported by i18n'},
         # This rule is constructed with + to avoid triggering on itself
