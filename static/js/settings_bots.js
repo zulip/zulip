@@ -354,6 +354,7 @@ exports.set_up = function () {
         $("#add-a-new-bot-form").show();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").hide();
+        $('#bot_table_error').hide();
     });
 
     $("#bots_lists_navbar .active-bots-tab").click(function (e) {
@@ -378,6 +379,7 @@ exports.set_up = function () {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
+        $('#bot_table_error').hide();
     });
 
 };
