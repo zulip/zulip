@@ -884,6 +884,9 @@ def do_send_messages(messages_maybe_none):
     for message in messages:
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
+        message_dict_markdown = message_to_dict(message['message'], apply_markdown=True)
+        message_dict_no_markdown = message_to_dict(message['message'], apply_markdown=False)
+
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
         user_presences = get_status_dict(sender)
@@ -893,11 +896,13 @@ def do_send_messages(messages_maybe_none):
                 presences[user_profile.id] = user_presences[user_profile.email]
 
         event = dict(
-            type         = 'message',
-            message      = message['message'].id,
-            message_dict_markdown = message_to_dict(message['message'], apply_markdown=True),
-            message_dict_no_markdown = message_to_dict(message['message'], apply_markdown=False),
-            presences    = presences)
+            type='message',
+            message=message['message'].id,
+            message_dict_markdown=message_dict_markdown,
+            message_dict_no_markdown=message_dict_no_markdown,
+            presences=presences,
+        )
+
         users = [{'id': user.id,
                   'flags': user_flags.get(user.id, []),
                   'always_push_notify': user.enable_online_push_notifications}
