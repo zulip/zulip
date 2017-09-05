@@ -654,39 +654,9 @@ def receiver_is_off_zulip(user_profile_id):
     off_zulip = len(message_event_queues) == 0
     return off_zulip
 
-def receiver_is_idle(user_profile_id, realm_presences):
-    # type: (int, Optional[Dict[int, Dict[Text, Dict[str, Any]]]]) -> bool
-
-    # It's possible a recipient is not in the realm of a sender. We don't have
-    # presence information in this case (and it's hard to get without an additional
-    # db query) so we simply don't try to guess if this cross-realm recipient
-    # has been idle for too long
-    if realm_presences is None or user_profile_id not in realm_presences:
-        return False
-
-    # We want to find the newest "active" presence entity and compare that to the
-    # activity expiry threshold.
-    user_presence = realm_presences[user_profile_id]
-    latest_active_timestamp = None
-    idle = False
-
-    for client, status in six.iteritems(user_presence):
-        if (latest_active_timestamp is None or status['timestamp'] > latest_active_timestamp) and \
-                status['status'] == 'active':
-            latest_active_timestamp = status['timestamp']
-
-    if latest_active_timestamp is None:
-        idle = True
-    else:
-        active_datetime = timestamp_to_datetime(latest_active_timestamp)
-        # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
-        idle = timezone_now() - active_datetime > datetime.timedelta(seconds=140)
-
-    return idle
-
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
-    realm_presences = {int(k): v for k, v in event_template['presences'].items()}  # type: Dict[int, Dict[Text, Dict[str, Any]]]
+    missed_message_userids = set(event_template.get('missed_message_userids', []))
     sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
     message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
     message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
@@ -722,7 +692,7 @@ def process_message_event(event_template, users):
         mentioned = 'mentioned' in flags
 
         if (received_pm or mentioned):
-            idle = receiver_is_off_zulip(user_profile_id) or receiver_is_idle(user_profile_id, realm_presences)
+            idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
             always_push_notify = user_data.get('always_push_notify', False)
 
             if (idle or always_push_notify):
