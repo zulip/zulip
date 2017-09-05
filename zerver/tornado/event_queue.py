@@ -645,20 +645,24 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if notify_info.get('send_email', False):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
 
-def receiver_is_idle(user_profile_id, realm_presences):
-    # type: (int, Optional[Dict[int, Dict[Text, Dict[str, Any]]]]) -> bool
+def receiver_is_off_zulip(user_profile_id):
+    # type: (int) -> bool
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
     all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
     message_event_queues = [client for client in all_client_descriptors if client.accepts_messages()]
     off_zulip = len(message_event_queues) == 0
+    return off_zulip
+
+def receiver_is_idle(user_profile_id, realm_presences):
+    # type: (int, Optional[Dict[int, Dict[Text, Dict[str, Any]]]]) -> bool
 
     # It's possible a recipient is not in the realm of a sender. We don't have
     # presence information in this case (and it's hard to get without an additional
     # db query) so we simply don't try to guess if this cross-realm recipient
     # has been idle for too long
     if realm_presences is None or user_profile_id not in realm_presences:
-        return off_zulip
+        return False
 
     # We want to find the newest "active" presence entity and compare that to the
     # activity expiry threshold.
@@ -678,7 +682,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
         # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
         idle = timezone_now() - active_datetime > datetime.timedelta(seconds=140)
 
-    return off_zulip or idle
+    return idle
 
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
@@ -718,7 +722,7 @@ def process_message_event(event_template, users):
         mentioned = 'mentioned' in flags
 
         if (received_pm or mentioned):
-            idle = receiver_is_idle(user_profile_id, realm_presences)
+            idle = receiver_is_off_zulip(user_profile_id) or receiver_is_idle(user_profile_id, realm_presences)
             always_push_notify = user_data.get('always_push_notify', False)
 
             if (idle or always_push_notify):
