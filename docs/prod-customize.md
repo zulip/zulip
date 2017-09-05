@@ -54,7 +54,7 @@ By the end of summer 2017, all of the Zulip apps will have full
 support for multiple accounts, potentially on different Zulip servers,
 with a convenient UI for switching between them.
 
-### Terms of service and Privacy policy
+### Terms of Service and Privacy policy
 
 Zulip allows you to configure your server's Terms of Service and
 Privacy Policy pages (`/terms` and `/privacy`, respectively).  You can
