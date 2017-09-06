@@ -7,7 +7,7 @@ set -x
 
 if [ -n "$RABBITMQ_NODE" ]; then
     RABBITMQ_FLAGS="-n $RABBITMQ_NODE"
-fi
+
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
 sudo rabbitmqctl $RABBITMQ_FLAGS delete_user "$RABBITMQ_USERNAME" || true

@@ -30,9 +30,11 @@ from social_django.strategy import DjangoStrategy
 
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
-    """Pads an authentication methods dict to contain all auth backends
-    supported by the software, regardless of whether they are
-    configured on this server"""
+    """
+        Pads an authentication methods dict to contain all auth backends
+        supported by the software, regardless of whether they are
+         configured on this server
+    """
     for key in AUTH_BACKEND_NAME_MAP:
         if key not in method_dict:
             method_dict[key] = False
@@ -79,8 +81,10 @@ def github_auth_enabled(realm=None):
 
 def any_oauth_backend_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    """Used by the login page process to determine whether to show the
-    'OR' for login with Google"""
+    """
+        Used by the login page process to determine whether to show the
+        'OR' for login with Google
+    """
     return auth_enabled_helper([u'GitHub', u'Google'], realm)
 
 def common_get_active_user_by_email(email, return_data=None):
@@ -102,7 +106,9 @@ def common_get_active_user_by_email(email, return_data=None):
 class ZulipAuthMixin(object):
     def get_user(self, user_profile_id):
         # type: (int) -> Optional[UserProfile]
-        """ Get a UserProfile object from the user_profile_id. """
+        """  
+            Get a UserProfile object from the user_profile_id. 
+        """
         try:
             return get_user_profile_by_id(user_profile_id)
         except UserProfile.DoesNotExist:
@@ -130,12 +136,12 @@ class SocialAuthMixin(ZulipAuthMixin):
                      ):
         # type: (...) -> Optional[UserProfile]
         """
-        Django decides which `authenticate` to call by inspecting the
-        arguments. So it's better to create `authenticate` function
-        with well defined arguments.
+          Django decides which `authenticate` to call by inspecting the
+          arguments. So it's better to create `authenticate` function
+          with well defined arguments.
 
-        Keeping this function separate so that it can easily be
-        overridden.
+          Keeping this function separate so that it can easily be
+          overridden.
         """
         if user is None:
             user = {}
@@ -239,8 +245,8 @@ class SocialAuthMixin(ZulipAuthMixin):
     def auth_complete(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
         """
-        Returning `None` from this function will redirect the browser
-        to the login page.
+            Returning `None` from this function will redirect the browser
+             to the login page.
         """
         try:
             # Call the auth_complete method of BaseOAuth2 is Python Social Auth
@@ -252,9 +258,9 @@ class SocialAuthMixin(ZulipAuthMixin):
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
-    """
-    Used when we want to log you in but we don't know which backend to use.
-    """
+    
+    # Used when we want to log you in but we don't know which backend to use.
+    
 
     def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
                      return_data=None):
@@ -273,15 +279,17 @@ class ZulipDummyBackend(ZulipAuthMixin):
 
 class EmailAuthBackend(ZulipAuthMixin):
     """
-    Email Authentication Backend
+        Email Authentication Backend
 
-    Allows a user to sign in using an email/password pair rather than
-    a username/password pair.
+        Allows a user to sign in using an email/password pair rather than
+        a username/password pair.
     """
 
     def authenticate(self, username=None, password=None, realm_subdomain=None, return_data=None):
+        
         # type: (Optional[Text], Optional[str], Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         """ Authenticate a user based on email address as the user name. """
+        
         if username is None or password is None:
             # Return immediately.  Otherwise we will look for a SQL row with
             # NULL username.  While that's probably harmless, it's needless
@@ -309,14 +317,14 @@ class EmailAuthBackend(ZulipAuthMixin):
 
 class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
-    Google Apps authentication for mobile devices
+         Google Apps authentication for mobile devices
 
-    Allows a user to sign in using a Google-issued OAuth2 token.
+         Allows a user to sign in using a Google-issued OAuth2 token.
 
-    Ref:
-        https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
-        https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
-
+        Ref:
+           https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
+           https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
+    
     """
 
     def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data=None):
@@ -385,15 +393,19 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return False
 
     def get_all_permissions(self, user, obj=None):
-        # type: (Optional[UserProfile], Any) -> Set
-        # Using Any type is safe because we are not doing anything with
-        # the arguments.
+      """
+         type: (Optional[UserProfile], Any) -> Set
+         Using Any type is safe because we are not doing anything with
+         the arguments.
+      """
         return set()
-
+     
     def get_group_permissions(self, user, obj=None):
-        # type: (Optional[UserProfile], Any) -> Set
-        # Using Any type is safe because we are not doing anything with
-        # the arguments.
+      """
+         type: (Optional[UserProfile], Any) -> Set
+         Using Any type is safe because we are not doing anything with
+         the arguments.
+      """
         return set()
 
     def django_to_ldap_username(self, username):
@@ -488,11 +500,13 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             return None
 
     def get_full_name(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Text
-        # In case of any error return an empty string. Name is used by
-        # the registration page to pre-populate the name field. However,
-        # if it is not supplied, our registration process will make sure
-        # that the user enters a valid name.
+      """  
+         type: (*Any, **Any) -> Text
+         In case of any error return an empty string. Name is used by
+         the registration page to pre-populate the name field. However,
+         if it is not supplied, our registration process will make sure
+         that the user enters a valid name.
+      """
         try:
             name = kwargs['response']['name']
         except KeyError:
