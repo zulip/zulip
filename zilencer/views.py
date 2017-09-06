@@ -36,8 +36,8 @@ def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dic
     return do_report_error(deployment.name, type, report)
 
 @has_request_variables
-def remote_server_register_push(request, entity, user_id=REQ(),
-                                token=REQ(), token_kind=REQ(validator=check_int), ios_app_id=None):
+def remote_server_register_push(request, entity, user_id=REQ(), token=REQ(), 
+                                token_kind=REQ(validator=check_int), ios_app_id=None):
     # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], int, bytes, int, Optional[Text]) -> HttpResponse
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
@@ -45,9 +45,7 @@ def remote_server_register_push(request, entity, user_id=REQ(),
     # If a user logged out on a device and failed to unregister,
     # we should delete any other user associations for this token
     # & RemoteServer pair
-    RemotePushDeviceToken.objects.filter(
-        token=token, kind=token_kind, server=server).exclude(user_id=user_id).delete()
-
+    RemotePushDeviceToken.objects.filter(token=token, kind=token_kind, server=server).exclude(user_id=user_id).delete()
     # Save or update
     remote_token, created = RemotePushDeviceToken.objects.update_or_create(
         user_id=user_id,
@@ -61,8 +59,7 @@ def remote_server_register_push(request, entity, user_id=REQ(),
     return json_success()
 
 @has_request_variables
-def remote_server_unregister_push(request, entity, token=REQ(),
-                                  token_kind=REQ(validator=check_int), ios_app_id=None):
+def remote_server_unregister_push(request, entity, token=REQ(), token_kind=REQ(validator=check_int), ios_app_id=None):
     # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], bytes, int, Optional[Text]) -> HttpResponse
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
