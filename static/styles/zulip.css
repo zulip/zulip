@@ -1647,8 +1647,8 @@ blockquote p {
     border-top-color: hsla(0, 0%, 0%, 0.0);
     border-right-color: hsla(0, 0%, 0%, 0.0);
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
-    background-color: hsl(0, 0%, 7%);
-    border-left-color: hsl(0, 0%, 7%);
+    background-color: hsl(0, 0%, 27%);
+    border-left-color: hsl(0, 0%, 27%);
     color: #ffffff;
     border-width: 0px;
 }
