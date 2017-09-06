@@ -128,15 +128,18 @@ var page_params = {{ page_params }};
                 {% include "zerver/debug.html" %}
             </div>
             {% endif %}
-        </div><!--/tab-content-->
+        </div>
+        <!--/tab-content-->
     </div>
     <div class="column-right">
           {% include "zerver/right_sidebar.html" %}
-    </div><!--/right sidebar-->
+    </div>
+    <!--/right side bar-->
     {% include "zerver/lightbox_overlay.html" %}
     {% include "zerver/subscriptions.html" %}
     {% include "zerver/drafts.html" %}
-</div><!--/row-->
+</div>
+    <!--/row-->
     <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
         <div class="overlay-content">
             <div class="overlay-tabs">
@@ -148,6 +151,7 @@ var page_params = {{ page_params }};
                 {% include "zerver/markdown_help.html" %}
             </div>
         </div>
+        <!--End row-->
     </div>
     {% include "zerver/invite_user.html" %}
     {% include "zerver/bankruptcy.html" %}
