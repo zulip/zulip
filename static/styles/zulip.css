@@ -2330,21 +2330,13 @@ button.topic_edit_cancel {
 }
 
 .empty_feed_notice {
-    padding: 3em 4em;
+    padding: 3em 1em;
     display: none;
-}
-
-.empty_feed_notice h4 {
     text-align: center;
 }
 
 .notification {
     cursor: pointer;
-}
-
-#empty_narrow_private_message p,
-#empty_narrow_message p {
-    text-align: center;
 }
 
 .message-fade,
