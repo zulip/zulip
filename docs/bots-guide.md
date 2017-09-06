@@ -39,15 +39,19 @@ zulip_bots
     │   ├───bot1
     │   └───bot2
     │       │
-    │       ├───readme.md
     │       ├───bot2.py
-    │       ├───bot2.config
-    │       ├───libraries
+    │       ├───bot2.conf
+    │       ├───doc.md
+    │       ├───test_bot2.py
+    │       ├───assets
     │       │   │
-    │       │   └───lib1.py
-    │       └───assets
+    │       │   └───pic.png
+    │       ├───fixtures
+    │       │   │
+    │       │   └───test1.json
+    │       └───libraries
     │           │
-    │           └───pic.png
+    │           └───lib1.py
     ├─── lib.py
     ├─── test_lib.py
     ├─── run.py
@@ -86,17 +90,16 @@ You need:
 2. Register a new bot user on the Zulip server's web interface.
 
     * Log in to the Zulip server.
-    * Navigate to *Settings* -> *Active bots* -> *Add a new bot*.
+    * Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* -> *Add a new bot*.
       Select *Generic bot* for bot type, fill out the form and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-3. Download the bot's `zuliprc` configuration file to your computer.
+3. Download the bot's `.zuliprc` configuration file to your computer.
 
-    * In the *Active bots* panel, click on the green icon to download
-      its configuration file *zuliprc* (the structure of this file is
+    * In the *Active bots* panel, click on the little green download icon
+      to download its configuration file *.zuliprc* (the structure of this file is
       explained [here](#configuration-file)).
-    * Copy the file to a destination of your choice, e.g. to `~/zuliprc`
-      or `~/zuliprc-test`.
+    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`.
 
 4. Subscribe the bot to the streams that the bot needs to interact with.
 
@@ -110,9 +113,9 @@ You need:
 
     * Run
       ```
-      zulip-run-bot <bot-name> --config-file ~/zuliprc`
+      zulip-run-bot <bot-name> --config-file ~/.zuliprc
       ```
-      (using the path to the `zuliprc` file from step 3).
+      (using the path to the `.zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
       to this:
@@ -159,13 +162,13 @@ pip install zulip_botserver
 1. Register new bot users on the Zulip server's web interface.
 
     * Log in to the Zulip server.
-    * Navigate to *Settings* -> *Active bots* -> *Add a new bot*.
+    * Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* -> *Add a new bot*.
       Select *Outgoing webhook* for bot type, fill out the form and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
 2.  Download the `flaskbotrc` from the `your-bots` settings page. It
     contains the configuration details for all the active outgoing
-    webhook bots. It's structure is very similar to that of zuliprc.
+    webhook bots. It's structure is very similar to that of .zuliprc.
 
 3.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
     command format is:
