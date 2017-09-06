@@ -71,6 +71,7 @@ python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
 
 # Use zulip-py3-venv's mypy if it's available.
+# venv is "virtual environments." 
 VENV_DIR = "/srv/zulip-py3-venv"
 MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
 if os.path.exists(MYPY_VENV_PATH):
