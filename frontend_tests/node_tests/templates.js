@@ -557,7 +557,7 @@ function render(template_name, args) {
     assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
 
     var row_2 = $(html).find(".draft-row[data-draft-id='2']");
-    assert.equal(row_2.find(".stream_label").text().trim(), "You and Jordan, Michael");
+    assert.equal(row_2.find(".stream_label").text().trim(), "PM with Jordan, Michael");
     assert(row_2.find(".message_row").hasClass("private-message"));
     assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
 }());

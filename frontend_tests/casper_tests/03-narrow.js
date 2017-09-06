@@ -50,8 +50,8 @@ function expect_home() {
         casper.waitUntilVisible('#zhome', function () {
             common.expected_messages('zhome', [
                 'Verona > frontend test',
-                'You and Cordelia Lear, King Hamlet',
-                'You and Cordelia Lear',
+                'PM with Cordelia Lear, King Hamlet',
+                'PM with Cordelia Lear',
             ], [
                 '<p>test message D</p>',
                 '<p>personal D</p>',
@@ -113,7 +113,7 @@ function expect_huddle() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear, King Hamlet',
+                'PM with Cordelia Lear, King Hamlet',
             ], [
                 '<p>personal A</p>',
                 '<p>personal B</p>',
@@ -127,7 +127,7 @@ function expect_1on1() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear',
+                'PM with Cordelia Lear',
             ], [
                 '<p>personal C</p>',
                 '<p>personal E</p>',
@@ -140,8 +140,8 @@ function expect_all_pm() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear, King Hamlet',
-                'You and Cordelia Lear',
+                'PM with Cordelia Lear, King Hamlet',
+                'PM with Cordelia Lear',
             ], [
                 '<p>personal A</p>',
                 '<p>personal B</p>',

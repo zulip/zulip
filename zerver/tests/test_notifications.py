@@ -95,7 +95,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
-        body = 'You and Othello, the Moor of Venice Extremely personal message!'
+        body = 'PM with Othello, the Moor of Venice Extremely personal message!'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
@@ -136,7 +136,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.HUDDLE,
                                    'Group personal message!')
 
-        body = ('You and Iago, Othello, the Moor of Venice Othello,'
+        body = ('PM with Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
         subject = 'Group PMs with Iago and Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -152,7 +152,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.HUDDLE,
                                    'Group personal message!')
 
-        body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice Othello,'
+        body = ('PM with Cordelia Lear, Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
         subject = 'Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -171,7 +171,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.HUDDLE,
                                    'Group personal message!')
 
-        body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice, Prospero from The Tempest'
+        body = ('PM with Cordelia Lear, Iago, Othello, the Moor of Venice, Prospero from The Tempest'
                 ' Othello, the Moor of Venice Group personal message')
         subject = 'Group PMs with Cordelia Lear, Iago, and 2 others'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)

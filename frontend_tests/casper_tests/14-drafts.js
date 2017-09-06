@@ -85,7 +85,7 @@ casper.then(function () {
         casper.test.assertTextExists('Test Stream Message', 'Stream draft contains message content');
 
         casper.test.assertSelectorHasText('.draft-row .message_header_private_message .stream_label',
-                                          'You and Cordelia Lear, King Hamlet');
+                                          'PM with Cordelia Lear, King Hamlet');
         casper.test.assertTextExists('Test Private Message', 'Private draft contains message content');
     });
 });
@@ -191,7 +191,7 @@ casper.then(function () {
     waitUntilDraftsVisible(function () {
         casper.test.assertElementCount('.draft-row', 2, 'Drafts loaded');
         casper.test.assertSelectorHasText('.draft-row .message_header_private_message .stream_label',
-                                          'You and Cordelia Lear');
+                                          'PM with Cordelia Lear');
         casper.test.assertTextExists('Test Private Message');
     });
 });

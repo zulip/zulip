@@ -213,7 +213,7 @@ exports.start = function (msg_type, opts) {
 
     compose_state.set_message_type(msg_type);
 
-    // Show either stream/topic fields or "You and" field.
+    // Show either stream/topic fields or "PM with" field.
     show_box(msg_type, opts);
 
     exports.complete_starting_tasks(msg_type, opts);
