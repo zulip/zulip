@@ -252,9 +252,9 @@ class SocialAuthMixin(ZulipAuthMixin):
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
-    """
-    Used when we want to log you in but we don't know which backend to use.
-    """
+    
+    # Used when we want to log you in but we don't know which backend to use.
+    
 
     def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
                      return_data=None):
@@ -488,11 +488,13 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             return None
 
     def get_full_name(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Text
-        # In case of any error return an empty string. Name is used by
-        # the registration page to pre-populate the name field. However,
-        # if it is not supplied, our registration process will make sure
-        # that the user enters a valid name.
+      """  
+         type: (*Any, **Any) -> Text
+         In case of any error return an empty string. Name is used by
+         the registration page to pre-populate the name field. However,
+         if it is not supplied, our registration process will make sure
+         that the user enters a valid name.
+      """
         try:
             name = kwargs['response']['name']
         except KeyError:
