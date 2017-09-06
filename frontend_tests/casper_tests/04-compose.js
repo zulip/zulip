@@ -198,6 +198,7 @@ casper.then(function () {
 
 common.then_log_out();
 
+// Run the above queued actions.
 casper.run(function () {
     casper.test.done();
 });
