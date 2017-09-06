@@ -480,6 +480,24 @@ function render(template_name, args) {
     assert.equal(option.text(), "Hamlet");
 }());
 
+(function change_email_modal() {
+    var args = {
+        email: 'alice@zulip.com',
+    };
+    var html = render('change_email_modal', args);
+
+    global.write_handlebars_output("change_email_modal", html);
+
+    var modal_input = $(html).find('.email_change_container input[type=text]');
+    assert.equal(modal_input.val(), 'alice@zulip.com');
+
+    var modal_label = $(html).find("#change_email_modal_label");
+    assert.equal(modal_label.text(), 'Change email');
+
+    var button = $(html).find("#change_email_button");
+    assert(button.hasClass("sea-green"));
+    assert.equal(button.text().trim(), "Change");
+}());
 
 (function compose_invite_users() {
     var args = {

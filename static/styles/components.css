@@ -380,3 +380,17 @@ a.no-underline {
     -moz-box-shadow: none;
     z-index: 5;
 }
+
+/* -- modal styling -- */
+.overlay.new {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay.new .zulip-modal {
+    width: 600px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.3);
+}

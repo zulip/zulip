@@ -27,14 +27,14 @@ casper.then(function () {
         casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, 'URL suggests we are on settings page');
         casper.test.assertVisible('.account-settings-form', 'Settings page is active');
 
-        casper.test.assertNotVisible("#pw_change_controls");
+        casper.test.assertNotVisible("#change_password_modal");
 
         casper.click(".change_password_button");
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible("#pw_change_controls", function () {
+    casper.waitUntilVisible("#change_password_modal", function () {
         casper.waitForResource("zxcvbn.js", function () {
             casper.test.assertVisible("#old_password");
             casper.test.assertVisible("#new_password");
