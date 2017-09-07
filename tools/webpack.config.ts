@@ -27,6 +27,10 @@ export default (env?: string) : Config => {
                     test: /\.css$/,
                     use: ['style-loader', 'css-loader'],
                 },
+                {
+                    test: /\.(eot|otf|svg|ttf|woff|woff2|png|jpg)$/,
+                    use: 'file-loader',
+                },
                 // This loads and transforms sourcemap files from other compiliers.
                 // The typescript comilier will generate a sourcemap and
                 // source-map-loader will output the correct sourcemap from that.
@@ -89,7 +93,7 @@ export default (env?: string) : Config => {
             filename: production ? '[name]-[hash].js' : '[name].js',
         },
         resolve: {
-            extensions: [".tsx", ".ts", ".js", ".json"],
+            extensions: [".tsx", ".ts", ".js", ".json", ".css"],
         },
         devtool: production ? 'source-map' : 'eval',
     };
@@ -122,7 +126,7 @@ export default (env?: string) : Config => {
             clientLogLevel: "warning",
             hot: true,
             inline: false,
-            stats: "errors-only",
+            stats: "normal",
             watchOptions: {
                 aggregateTimeout: 300,
                 poll: 1000,
