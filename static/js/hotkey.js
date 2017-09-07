@@ -467,6 +467,10 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (overlays.info_overlay_open()) {
+        if (event_name === 'show_shortcuts') {
+            overlays.close_active();
+            return true;
+        }
         return false;
     }
 
