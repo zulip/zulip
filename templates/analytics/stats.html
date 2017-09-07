@@ -1,15 +1,13 @@
 {% extends "zerver/base.html" %}
 
-{% block customhead %}
-{% stylesheet 'portico' %}
-{% endblock %}
-
 {% block content %}
 <div class="app portico-page">
 
+{{ render_bundle('portico_css') }}
+{{ render_bundle('stats_css') }}
+
 {{ render_bundle('translations') }}
 {{ render_bundle('stats') }}
-{% stylesheet 'stats' %}
 
 <div class="page-content">
   <div id="id_stats_errors" class="alert alert-error"></div>
