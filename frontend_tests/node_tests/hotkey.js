@@ -174,7 +174,7 @@ function stubbing(func_name_to_stub, test_function) {
         assert_unmapped(' ');
         assert_unmapped('[]\\.,;');
         assert_unmapped('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-        assert_unmapped('~!@#$%^*()_+{}:"<>?');
+        assert_unmapped('~!@#$%^*()_+{}:"<>');
     }
 
     _.each([return_true, return_false], function (settings_open) {
