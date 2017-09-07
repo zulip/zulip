@@ -23,6 +23,10 @@ export default (env?: string) : Config => {
                     test: /\.tsx?$/,
                     use: 'ts-loader',
                 },
+                {
+                    test: /\.css$/,
+                    use: ['style-loader', 'css-loader'],
+                },
                 // This loads and transforms sourcemap files from other compiliers.
                 // The typescript comilier will generate a sourcemap and
                 // source-map-loader will output the correct sourcemap from that.

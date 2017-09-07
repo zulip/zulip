@@ -26,5 +26,74 @@
               "./node_modules/plotly.js/dist/plotly-basic.min.js"
              ],
     "translations": "./static/js/translations.js",
-    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js"
+    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
+
+    "activity_css": "./static/styles/activity.css",
+    "stats_css": "./static/styles/stats.css",
+    "portico_css": [
+        "./static/third/zocial/zocial.css",
+        "./static/styles/portico.css",
+        "./static/styles/portico-signin.css",
+        "./static/styles/pygments.css",
+        "./static/third/thirdparty-fonts.css",
+        "./static/styles/fonts.css"
+    ],
+    "landing_page_css": "./static/styles/landing-page.css",
+
+    "app_fontcompat_css": [
+        "./static/third/bootstrap-notify/css/bootstrap-notify.css",
+        "./static/third/spectrum/spectrum.css",
+        "./static/third/thirdparty-fonts.css",
+        "./static/styles/components.css",
+        "./static/styles/zulip.css",
+        "./static/styles/alerts.css",
+        "./static/styles/settings.css",
+        "./static/styles/subscriptions.css",
+        "./static/styles/drafts.css",
+        "./static/styles/informational-overlays.css",
+        "./static/styles/compose.css",
+        "./static/styles/reactions.css",
+        "./static/styles/left-sidebar.css",
+        "./static/styles/right-sidebar.css",
+        "./static/styles/lightbox.css",
+        "./static/styles/popovers.css",
+        "./static/styles/pygments.css",
+        "./static/styles/media.css",
+        "./static/styles/typing_notifications.css",
+        "./static/styles/hotspots.css"
+    ],
+    "app_css": [
+        "./static/third/bootstrap-notify/css/bootstrap-notify.css",
+        "./static/third/spectrum/spectrum.css",
+        "./static/third/thirdparty-fonts.css",
+        "./static/node_modules/katex/dist/katex.css",
+        "./static/styles/components.css",
+        "./static/styles/zulip.css",
+        "./static/styles/alerts.css",
+        "./static/styles/settings.css",
+        "./static/styles/subscriptions.css",
+        "./static/styles/drafts.css",
+        "./static/styles/informational-overlays.css",
+        "./static/styles/compose.css",
+        "./static/styles/reactions.css",
+        "./static/styles/left-sidebar.css",
+        "./static/styles/right-sidebar.css",
+        "./static/styles/lightbox.css",
+        "./static/styles/popovers.css",
+        "./static/styles/pygments.css",
+        "./static/styles/fonts.css",
+        "./static/styles/media.css",
+        "./static/styles/typing_notifications.css",
+        "./static/styles/hotspots.css"
+    ],
+    "common_css": [
+        "./static/third/bootstrap/css/bootstrap.css",
+        "./static/third/bootstrap/css/bootstrap-btn.css",
+        "./static/third/bootstrap/css/bootstrap-responsive.css",
+        "./node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css"
+    ],
+    "apple_sprite_css": "./static/generated/emoji/google_sprite.css",
+    "emojione_sprite_css": "./static/generated/emoji/google_sprite.css",
+    "google_sprite_css": "./static/generated/emoji/google_sprite.css",
+    "twitter_sprite_css": "./static/generated/emoji/google_sprite.css"
 }
