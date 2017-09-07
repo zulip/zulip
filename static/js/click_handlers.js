@@ -704,6 +704,11 @@ $(function () {
             popovers.hide_all();
         }
 
+        // Refocus compose message text box if link is clicked
+        if (compose_state.composing() && $(e.target).is("a")) {
+            $("#new_message_content").focus();
+        }
+
         // Unfocus our compose area if we click out of it. Don't let exits out
         // of overlays or selecting text (for copy+paste) trigger cancelling.
         if (compose_state.composing() && !$(e.target).is("a") &&
