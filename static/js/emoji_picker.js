@@ -618,7 +618,7 @@ exports.register_click_handlers = function () {
         emoji_picker.toggle_emoji_popover(this);
     });
 
-    $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
+    $("#main_div").on("click", ".reaction_button", function (e) {
         e.stopPropagation();
 
         var message_id = rows.get_message_id(this);
@@ -634,7 +634,8 @@ exports.register_click_handlers = function () {
         // message wasn't sent by us and thus the .reaction_hover
         // element is not present, we use the message's
         // .icon-vector-chevron-down element as the base for the popover.
-        emoji_picker.toggle_emoji_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
+        var elem = $(".selected_message .actions_hover")[0];
+        emoji_picker.toggle_emoji_popover(elem, msgid);
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
