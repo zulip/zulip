@@ -7,7 +7,7 @@
 #}
 
 {% block customhead %}
-{% stylesheet 'portico' %}
+{{ render_bundle('portico_css') }}
 {{ render_bundle('translations') }}
 {% endblock %}
 
