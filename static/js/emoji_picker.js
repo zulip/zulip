@@ -205,6 +205,7 @@ exports.hide_emoji_popover = function () {
         $(".emoji-search-results-container").perfectScrollbar("destroy");
         current_message_emoji_popover_elem.popover("destroy");
         current_message_emoji_popover_elem.prop("title", orig_title);
+        current_message_emoji_popover_elem.removeClass("reaction_button_visible");
         current_message_emoji_popover_elem = undefined;
     }
 };
@@ -538,6 +539,8 @@ exports.toggle_emoji_popover = function (element, id) {
     }
 
     if (elt.data('popover') === undefined) {
+        // Keep the element over which the popover is based off visible.
+        elt.addClass("reaction_button_visible");
         emoji_picker.render_emoji_popover(elt, id);
     }
 };
