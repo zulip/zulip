@@ -7,8 +7,8 @@
         padding-bottom: 0px;
     }
 </style>
-{% stylesheet 'portico' %}
-{% stylesheet 'landing-page' %}
+{{ render_bundle('portico_css') }}
+{{ render_bundle('landing_page_css') }}
 {{ render_bundle('landing-page') }}
 
 {% endblock %}
