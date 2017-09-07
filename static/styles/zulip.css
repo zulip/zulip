@@ -1189,19 +1189,14 @@ a.message_label_clickable:hover {
     color: hsl(200, 100%, 40%);
 }
 
-.reactions_hover {
+.message_controls > .reaction_button {
     display: inline-block;
     position: relative;
     color: hsl(0, 0%, 73%);
 }
 
-.reactions_hover:hover {
+.message_controls > .reaction_button:hover {
     color: hsl(200, 100%, 40%);
-}
-
-.message_hovered .reactions_hover,
-.has_emoji_popover .reactions_hover {
-    opacity: 1;
 }
 
 .message_hovered .info,
