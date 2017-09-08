@@ -1669,9 +1669,7 @@ class UserPresence(models.Model):
         )
 
         mobile_query = PushDeviceToken.objects.filter(
-            user__realm_id=realm_id,
-            user__is_active=True,
-            user__is_bot=False,
+            user_id__in=user_profile_ids,
         )
 
         mobile_user_ids = set(mobile_query.distinct("user_id").values_list("user_id", flat=True))
