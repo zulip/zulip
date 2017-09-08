@@ -19,6 +19,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     email_to_domain,
     Client,
+    PushDeviceToken,
     UserActivity,
     UserProfile,
     UserPresence,
@@ -91,6 +92,36 @@ class UserPresenceModelTests(ZulipTestCase):
         back_date(num_weeks=3)
         presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
         self.assertEqual(len(presence_dct), 0)
+
+    def test_push_tokens(self):
+        # type: () -> None
+        UserPresence.objects.all().delete()
+
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+
+        self.login(email)
+        result = self.client_post("/json/users/me/presence", {'status': 'active'})
+        self.assert_json_success(result)
+
+        def pushable():
+            # type: () -> bool
+            presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
+            self.assertEqual(len(presence_dct), 1)
+            return presence_dct[email]['website']['pushable']
+
+        self.assertFalse(pushable())
+
+        user_profile.enable_offline_push_notifications = True
+        user_profile.save()
+
+        self.assertFalse(pushable())
+
+        PushDeviceToken.objects.create(
+            user=user_profile,
+            kind=PushDeviceToken.APNS
+        )
+        self.assertTrue(pushable())
 
 class UserPresenceTests(ZulipTestCase):
     def test_invalid_presence(self):
