@@ -1670,7 +1670,7 @@ class UserPresence(models.Model):
         )
 
         mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
-            user__realm_id=1,
+            user__realm_id=realm_id,
             user__is_active=True,
             user__is_bot=False,
         ).distinct("user").values("user")]
