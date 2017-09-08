@@ -1627,10 +1627,9 @@ class UserPresence(models.Model):
             'user_profile__enable_offline_push_notifications',
         )
 
+        mobile_user_ids = set()  # type: Set[int]
         if PushDeviceToken.objects.filter(user=user_profile).exists():
-            mobile_user_ids = [user_profile.id]  # type: List[int]
-        else:
-            mobile_user_ids = []
+            mobile_user_ids.add(user_profile.id)
 
         return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
 
@@ -1669,17 +1668,19 @@ class UserPresence(models.Model):
             'user_profile__enable_offline_push_notifications',
         )
 
-        mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
+        mobile_query = PushDeviceToken.objects.filter(
             user__realm_id=realm_id,
             user__is_active=True,
             user__is_bot=False,
-        ).distinct("user").values("user")]
+        )
+
+        mobile_user_ids = set(mobile_query.distinct("user_id").values_list("user_id", flat=True))
 
         return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
 
     @staticmethod
     def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, List[int]) -> Dict[Text, Dict[Any, Any]]
+        # type: (QuerySet, Set[int]) -> Dict[Text, Dict[Any, Any]]
 
         info_row_dct = defaultdict(list)  # type: DefaultDict[Text, List[Dict[str, Any]]]
         for row in query:
