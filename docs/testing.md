@@ -104,7 +104,7 @@ This is easy to do using test fixtures (a fancy word for fixed data
 used in tests) and the `mock.patch` function to specify what HTTP
 response should be used by the tests for every outgoing HTTP (or other
 network) request.  Consult
-[our guide on mocking](testing-with-django.html#mocks-and-stubs) to
+[our guide on mocking](testing-with-django.html#zulip-mocking-practices) to
 learn how to mock network requests easily; there are also a number of
 examples throughout the codebase.
 
