@@ -353,6 +353,7 @@ $(function () {
     $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui_util.change_tab_to('#home');
         narrow.deactivate();
+        search.update_button_visibility();
         // We need to maybe scroll to the selected message
         // once we have the proper viewport set up
         setTimeout(navigate.maybe_scroll_to_selected, 0);
