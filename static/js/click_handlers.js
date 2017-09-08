@@ -713,18 +713,17 @@ $(function () {
             popovers.hide_all();
         }
 
-        // Refocus compose message text box if link is clicked
-        if (compose_state.composing() && $(e.target).is("a")) {
-            $("#new_message_content").focus();
-        }
-
-        // Unfocus our compose area if we click out of it. Don't let exits out
-        // of overlays or selecting text (for copy+paste) trigger cancelling.
-        if (compose_state.composing() && !$(e.target).is("a") &&
-            ($(e.target).closest(".overlay").length === 0) &&
-            window.getSelection().toString() === "" &&
-            ($(e.target).closest('.popover-content').length === 0)) {
-            compose_actions.cancel();
+        if (compose_state.composing()) {
+            if ($(e.target).is("a")) {
+                // Refocus compose message text box if link is clicked
+                $("#new_message_content").focus();
+            } else if (!$(e.target).closest(".overlay").length &&
+            !window.getSelection().toString() &&
+            !$(e.target).closest('.popover-content').length) {
+                // Unfocus our compose area if we click out of it. Don't let exits out
+                // of overlays or selecting text (for copy+paste) trigger cancelling.
+                compose_actions.cancel();
+            }
         }
     });
 
