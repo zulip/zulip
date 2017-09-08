@@ -1625,7 +1625,6 @@ class UserPresence(models.Model):
             'user_profile__email',
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
-            'user_profile__is_mirror_dummy',
         )
 
         if PushDeviceToken.objects.filter(user=user_profile).exists():
@@ -1659,7 +1658,6 @@ class UserPresence(models.Model):
             'user_profile__email',
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
-            'user_profile__is_mirror_dummy',
         )
 
         mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
@@ -1723,8 +1721,8 @@ class UserPresence(models.Model):
 
     @staticmethod
     def to_presence_dict(client_name, status, dt, push_enabled=False,
-                         has_push_devices=False, is_mirror_dummy=None):
-        # type: (Text, int, datetime.datetime, bool, bool, Optional[bool]) -> Dict[str, Any]
+                         has_push_devices=False):
+        # type: (Text, int, datetime.datetime, bool, bool) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
