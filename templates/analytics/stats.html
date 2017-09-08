@@ -22,35 +22,35 @@
         <div class="button-container">
           <label>{{ _("Aggregation") }}</label>
           <div class="buttons">
-            <button class="button" type="button" id='hourly_button'>{{ _("Hourly") }} </button>
-            <button class="button" type="button" id='daily_button'>{{ _("Daily") }} </button>
-            <button class="button" type="button" id='weekly_button'>{{ _("Weekly") }} </button>
-            <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
+                 <button class="button" type="button" id='hourly_button'>{{ _("Hourly") }} </button>
+                 <button class="button" type="button" id='daily_button'>{{ _("Daily") }} </button>
+                 <button class="button" type="button" id='weekly_button'>{{ _("Weekly") }} </button>
+                 <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
           </div>
         </div>
         <div id="id_messages_sent_over_time"></div>
-        <div id="hoverinfo">
-            <span id="hover_date"></span>
-            <span id="hover_me">{{ _("Me") }}:</span>
-            <span id="hover_me_value"></span>
-            <b id="hover_human">{{ _("Humans") }}:</b>
-            <span id="hover_human_value"></span>
-            <b id="hover_bot">{{ _("Bots") }}:</b>
-            <span id="hover_bot_value"></span>
-        </div>
-      </div>
+            <div id="hoverinfo">
+                <span id="hover_date"></span>
+                <span id="hover_me">{{ _("Me") }}:</span>
+                <span id="hover_me_value"></span>
+                <b id="hover_human">{{ _("Humans") }}:</b>
+                <span id="hover_human_value"></span>
+                <b id="hover_bot">{{ _("Bots") }}:</b>
+                <span id="hover_bot_value"></span>
+            </div>
+       </div>
 
       <div class="chart-container pie-chart">
         <div id="pie_messages_sent_by_client">
           <h1>{{ _("Messages sent by client") }}</h1>
           <div id="id_messages_sent_by_client" class="number-stat"></div>
           <div class="buttons">
-            <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
-            <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
-            <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
-            <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
-            <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
-            <button class="button" type="button" data-time="cumulative">{{ _("All time") }}</button>
+                <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
+                <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
+                <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
+                <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
+                <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
+                <button class="button" type="button" data-time="cumulative">{{ _("All time") }}</button>
           </div>
         </div>
       </div>
@@ -61,17 +61,17 @@
         <div id="pie_messages_sent_by_type">
           <h1>{{ _("Messages sent by recipient type") }}</h1>
           <div id="id_messages_sent_by_message_type"></div>
-          <div id="pie_messages_sent_by_type_total" class="number-stat"></div>
-          <div class="buttons">
-            <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
-            <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
-            <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
-            <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
-            <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
-            <button class="button" type="button" data-time="cumulative">{{ _("All time") }}</button>
-          </div>
+            <div id="pie_messages_sent_by_type_total" class="number-stat"></div>
+                <div class="buttons">
+                    <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
+                    <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
+                    <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
+                    <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
+                    <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
+                    <button class="button" type="button" data-time="cumulative">{{ _("All time") }}</button>
+                </div>
+            </div>
         </div>
-      </div>
 
       <div class="chart-container">
         <h1>{{ _("Active users") }}</h1>
