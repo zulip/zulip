@@ -1643,10 +1643,19 @@ class UserPresence(models.Model):
     @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> Dict[Text, Dict[Any, Any]]
+        user_profile_ids = UserProfile.objects.filter(
+            realm_id=realm_id,
+            is_active=True,
+            is_bot=False
+        ).order_by('id').values_list('id', flat=True)
+
+        user_profile_ids = list(user_profile_ids)
+
+        if not user_profile_ids:
+            return {}
+
         query = UserPresence.objects.filter(
-            user_profile__realm_id=realm_id,
-            user_profile__is_active=True,
-            user_profile__is_bot=False
+            user_profile_id__in=user_profile_ids
         )
 
         query = UserPresence.exclude_old_users(query)
