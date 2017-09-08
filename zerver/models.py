@@ -1617,7 +1617,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_user(user_profile):
-        # type: (UserProfile) -> DefaultDict[Any, Dict[Any, Any]]
+        # type: (UserProfile) -> Dict[Text, Dict[Any, Any]]
         query = UserPresence.objects.filter(user_profile=user_profile).values(
             'client__name',
             'status',
@@ -1643,7 +1643,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
-        # type: (int) -> DefaultDict[Any, Dict[Any, Any]]
+        # type: (int) -> Dict[Text, Dict[Any, Any]]
         query = UserPresence.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
@@ -1672,26 +1672,53 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, List[int]) -> DefaultDict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict)  # type: DefaultDict[Any, Dict[Any, Any]]
-        # Order of query is important to get a latest status as aggregated status.
-        for row in query.order_by("user_profile__id", "-timestamp"):
-            info = UserPresence.to_presence_dict(
-                row['client__name'],
-                row['status'],
-                row['timestamp'],
-                push_enabled=row['user_profile__enable_offline_push_notifications'],
-                has_push_devices=row['user_profile__id'] in mobile_user_ids,
-                is_mirror_dummy=row['user_profile__is_mirror_dummy'],
+        # type: (QuerySet, List[int]) -> Dict[Text, Dict[Any, Any]]
+
+        info_row_dct = defaultdict(list)  # type: DefaultDict[Text, List[Dict[str, Any]]]
+        for row in query:
+            email = row['user_profile__email']
+            client_name = row['client__name']
+            status = UserPresence.status_to_string(row['status'])
+            dt = row['timestamp']
+            timestamp = datetime_to_timestamp(dt)
+            push_enabled = row['user_profile__enable_offline_push_notifications']
+            has_push_devices = row['user_profile__id'] in mobile_user_ids
+            pushable = (push_enabled and has_push_devices)
+
+            info = dict(
+                client=client_name,
+                status=status,
+                dt=dt,
+                timestamp=timestamp,
+                pushable=pushable,
             )
-            if not user_statuses.get(row['user_profile__email']):
-                # Applying the latest status as aggregated status for user.
-                user_statuses[row['user_profile__email']]['aggregated'] = {
-                    'status': info['status'],
-                    'timestamp': info['timestamp'],
-                    'client': info['client']
-                }
-            user_statuses[row['user_profile__email']][row['client__name']] = info
+
+            info_row_dct[email].append(info)
+
+        user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
+
+        for email, info_rows in info_row_dct.items():
+            # Note that datetime values have sub-second granularity, which is
+            # mostly important for avoiding test flakes, but it's also technically
+            # more precise for real users.
+            by_time = lambda row: row['dt']
+            most_recent_info = max(info_rows, key=by_time)
+
+            # We don't send datetime values to the client.
+            for r in info_rows:
+                del r['dt']
+
+            client_dict = {info['client']: info for info in info_rows}
+            user_statuses[email] = client_dict
+
+            # The word "aggegrated" here is possibly misleading.
+            # It's really just the most recent client's info.
+            user_statuses[email]['aggregated'] = dict(
+                client=most_recent_info['client'],
+                status=most_recent_info['status'],
+                timestamp=most_recent_info['timestamp'],
+            )
+
         return user_statuses
 
     @staticmethod
