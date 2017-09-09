@@ -724,23 +724,25 @@ def get_recipient_user_profiles(recipient, sender_id):
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
     elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
-        # We use select_related()/only() here, while the PERSONAL case above uses
-        # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
-        # typically have more recipients than PMs, so get_user_profile_by_id() would be
-        # a bit more expensive here, given that we need to hit the DB anyway and only
-        # care about the email from the user profile.
+        user_ids = Subscription.objects.filter(
+            recipient=recipient,
+            active=True,
+        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+
+        query = UserProfile.objects.filter(
+            id__in=user_ids
+        )
+
         fields = [
-            'user_profile__id',
-            'user_profile__email',
-            'user_profile__enable_online_push_notifications',
-            'user_profile__is_active',
-            'user_profile__is_bot',
-            'user_profile__bot_type',
-            'user_profile__long_term_idle',
+            'id',
+            'email',
+            'enable_online_push_notifications',
+            'is_active',
+            'is_bot',
+            'bot_type',
+            'long_term_idle',
         ]
-        query = Subscription.objects.select_related("user_profile").only(*fields).filter(
-            recipient=recipient, active=True)
-        recipients = [s.user_profile for s in query]
+        recipients = list(query.only(*fields))
     else:
         raise ValueError('Bad recipient type')
     return recipients
