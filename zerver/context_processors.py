@@ -43,7 +43,7 @@ def get_realm_from_request(request):
     # This will return None if there is no unique, open realm.
     return get_unique_non_system_realm()
 
-def zulip_default_context(request):
+def zulip_default_context(request):   
     # type: (HttpRequest) -> Dict[str, Any]
     """Context available to all Zulip Jinja2 templates that have a request
     passed in.  Designed to provide the long list of variables at the
@@ -81,9 +81,9 @@ def zulip_default_context(request):
         about_link_disabled = True
         find_team_link_disabled = False
 
-    apps_page_url = 'https://zulipchat.com/apps/'
+    apps_page_url = 'https://zulipchat.com/apps'
     if settings.ZILENCER_ENABLED:
-        apps_page_url = '/apps/'
+        apps_page_url = '/apps'
 
     user_is_authenticated = False
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
