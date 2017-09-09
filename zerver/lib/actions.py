@@ -2,8 +2,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, List, Mapping, MutableMapping,
-    Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast,
+    Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast
 )
+from mypy_extensions import TypedDict
 
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -745,8 +746,17 @@ def get_typing_user_profiles(recipient, sender_id):
     users = [get_user_profile_by_id(user_id) for user_id in user_ids]
     return users
 
-def get_recipient_user_profiles(recipient, sender_id):
-    # type: (Recipient, int) -> List[UserProfile]
+RecipientInfoResult = TypedDict('RecipientInfoResult', {
+    'recipient_user_ids': Set[int],
+    'active_user_ids': Set[int],
+    'push_notify_user_ids': Set[int],
+    'um_eligible_user_ids': Set[int],
+    'long_term_idle_user_ids': Set[int],
+    'service_bot_tuples': List[Tuple[int, int]],
+})
+
+def get_recipient_info(recipient, sender_id):
+    # type: (Recipient, int) -> RecipientInfoResult
     user_ids = get_recipient_user_ids(recipient, sender_id)
 
     if recipient.type == Recipient.PERSONAL:
@@ -768,7 +778,55 @@ def get_recipient_user_profiles(recipient, sender_id):
         recipients = list(query.only(*fields))
     else:
         raise ValueError('Bad recipient type')
-    return recipients
+
+    recipient_user_ids = {
+        user_profile.id
+        for user_profile in recipients
+    }
+
+    # Only deliver the message to active user recipients
+    active_user_ids = {
+        user_profile.id
+        for user_profile in recipients
+        if user_profile.is_active
+    }
+
+    push_notify_user_ids = {
+        user_profile.id
+        for user_profile in recipients
+        if user_profile.is_active and user_profile.enable_online_push_notifications
+    }
+
+    # Service bots don't get UserMessage rows.
+    # is_service_bot is derived from is_bot and bot_type, and both of these fields
+    # should have been pre-fetched.
+    um_eligible_user_ids = {
+        user_profile.id
+        for user_profile in recipients
+        if user_profile.is_active and (not user_profile.is_service_bot)
+    }
+
+    long_term_idle_user_ids = {
+        user_profile.id
+        for user_profile in recipients
+        if user_profile.long_term_idle
+    }
+
+    service_bot_tuples = [
+        (user_profile.id, user_profile.bot_type)
+        for user_profile in recipients
+        if user_profile.is_active and user_profile.is_service_bot
+    ]
+
+    info = dict(
+        recipient_user_ids=recipient_user_ids,
+        active_user_ids=active_user_ids,
+        push_notify_user_ids=push_notify_user_ids,
+        um_eligible_user_ids=um_eligible_user_ids,
+        long_term_idle_user_ids=long_term_idle_user_ids,
+        service_bot_tuples=service_bot_tuples
+    )  # type: RecipientInfoResult
+    return info
 
 def do_send_messages(messages_maybe_none):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
@@ -795,47 +853,15 @@ def do_send_messages(messages_maybe_none):
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
     for message in messages:
-        message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
-                                                            message['message'].sender_id)
+        info = get_recipient_info(message['message'].recipient,
+                                  message['message'].sender_id)
 
-        message['recipient_user_ids'] = {
-            user_profile.id
-            for user_profile in message['recipients']
-        }
-
-        # Only deliver the message to active user recipients
-        message['active_user_ids'] = {
-            user_profile.id
-            for user_profile in message['recipients']
-            if user_profile.is_active
-        }
-
-        message['push_notify_user_ids'] = {
-            user_profile.id
-            for user_profile in message['recipients']
-            if user_profile.is_active and user_profile.enable_online_push_notifications
-        }
-
-        # Service bots don't get UserMessage rows.
-        # is_service_bot is derived from is_bot and bot_type, and both of these fields
-        # should have been pre-fetched.
-        message['um_eligible_user_ids'] = {
-            user_profile.id
-            for user_profile in message['recipients']
-            if user_profile.is_active and (not user_profile.is_service_bot)
-        }
-
-        message['long_term_idle_user_ids'] = {
-            user_profile.id
-            for user_profile in message['recipients']
-            if user_profile.long_term_idle
-        }
-
-        message['service_bot_tuples'] = [
-            (user_profile.id, user_profile.bot_type)
-            for user_profile in message['recipients']
-            if user_profile.is_active and user_profile.is_service_bot
-        ]
+        message['recipient_user_ids'] = info['recipient_user_ids']
+        message['active_user_ids'] = info['active_user_ids']
+        message['push_notify_user_ids'] = info['push_notify_user_ids']
+        message['um_eligible_user_ids'] = info['um_eligible_user_ids']
+        message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
+        message['service_bot_tuples'] = info['service_bot_tuples']
 
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
