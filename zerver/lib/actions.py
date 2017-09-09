@@ -698,8 +698,8 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
         except IntegrityError:
             return get_user(email, realm)
 
-def render_incoming_message(message, content, message_users, realm):
-    # type: (Message, Text, Set[UserProfile], Realm) -> Text
+def render_incoming_message(message, content, user_ids, realm):
+    # type: (Message, Text, Set[int], Realm) -> Text
     realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
@@ -707,7 +707,7 @@ def render_incoming_message(message, content, message_users, realm):
             content=content,
             realm=realm,
             realm_alert_words=realm_alert_words,
-            message_users=message_users,
+            user_ids=user_ids,
         )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
@@ -801,6 +801,12 @@ def do_send_messages(messages_maybe_none):
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
 
+        message['active_user_ids'] = {
+            user_profile.id
+            for user_profile in message['recipients']
+            if user_profile.is_active
+        }
+
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
     for message in messages:
@@ -808,7 +814,7 @@ def do_send_messages(messages_maybe_none):
         rendered_content = render_incoming_message(
             message['message'],
             message['message'].content,
-            message['active_recipients'],
+            message['active_user_ids'],
             message['realm'])
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version

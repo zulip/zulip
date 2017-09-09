@@ -310,18 +310,18 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, realm=None, realm_alert_words=None, message_users=None):
-    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Set[UserProfile]) -> Text
+def render_markdown(message, content, realm=None, realm_alert_words=None, user_ids=None):
+    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[int]]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
     database.
     """
 
-    if message_users is None:
+    if user_ids is None:
         message_user_ids = set()  # type: Set[int]
     else:
-        message_user_ids = {u.id for u in message_users}
+        message_user_ids = user_ids
 
     if message is not None:
         message.mentions_wildcard = False
