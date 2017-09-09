@@ -14,7 +14,7 @@ from six.moves import range
 from typing import Any, Dict, List, Text
 
 from zerver.lib.notifications import handle_missedmessage_emails
-from zerver.lib.actions import render_incoming_message, do_update_message
+from zerver.lib.actions import do_update_message
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress

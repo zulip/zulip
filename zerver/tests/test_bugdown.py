@@ -681,7 +681,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words=realm_alert_words,
-                                   message_users={user_profile})
+                                   user_ids={user_profile.id})
 
         content = "We have an ALERTWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
