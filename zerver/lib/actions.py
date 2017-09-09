@@ -759,63 +759,57 @@ def get_recipient_info(recipient, sender_id):
     # type: (Recipient, int) -> RecipientInfoResult
     user_ids = get_recipient_user_ids(recipient, sender_id)
 
-    if recipient.type == Recipient.PERSONAL:
-        recipients = [get_user_profile_by_id(user_id) for user_id in user_ids]
-    elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
-        query = UserProfile.objects.filter(
-            id__in=user_ids
-        )
-
-        fields = [
-            'id',
-            'email',
-            'enable_online_push_notifications',
-            'is_active',
-            'is_bot',
-            'bot_type',
-            'long_term_idle',
-        ]
-        recipients = list(query.only(*fields))
-    else:
-        raise ValueError('Bad recipient type')
+    query = UserProfile.objects.filter(
+        id__in=user_ids
+    ).values(
+        'id',
+        'enable_online_push_notifications',
+        'is_active',
+        'is_bot',
+        'bot_type',
+        'long_term_idle',
+    )
+    rows = list(query)
 
     recipient_user_ids = {
-        user_profile.id
-        for user_profile in recipients
+        row['id']
+        for row in rows
     }
+
+    def get_ids_for(f):
+        # type: (Callable[[Dict[str, Any]], bool]) -> Set[int]
+        return {
+            row['id']
+            for row in rows
+            if f(row)
+        }
+
+    def is_service_bot(row):
+        # type: (Dict[str, Any]) -> bool
+        return row['is_bot'] and (row['bot_type'] in UserProfile.SERVICE_BOT_TYPES)
 
     # Only deliver the message to active user recipients
-    active_user_ids = {
-        user_profile.id
-        for user_profile in recipients
-        if user_profile.is_active
-    }
+    active_user_ids = get_ids_for(
+        lambda r: r['is_active']
+    )
 
-    push_notify_user_ids = {
-        user_profile.id
-        for user_profile in recipients
-        if user_profile.is_active and user_profile.enable_online_push_notifications
-    }
+    push_notify_user_ids = get_ids_for(
+        lambda r: r['is_active'] and r['enable_online_push_notifications']
+    )
 
     # Service bots don't get UserMessage rows.
-    # is_service_bot is derived from is_bot and bot_type, and both of these fields
-    # should have been pre-fetched.
-    um_eligible_user_ids = {
-        user_profile.id
-        for user_profile in recipients
-        if user_profile.is_active and (not user_profile.is_service_bot)
-    }
+    um_eligible_user_ids = get_ids_for(
+        lambda r: r['is_active'] and (not is_service_bot(r))
+    )
 
-    long_term_idle_user_ids = {
-        user_profile.id
-        for user_profile in recipients
-        if user_profile.long_term_idle
-    }
+    long_term_idle_user_ids = get_ids_for(
+        lambda r: r['long_term_idle']
+    )
 
     service_bot_tuples = [
-        (user_profile.id, user_profile.bot_type)
-        for user_profile in recipients
-        if user_profile.is_active and user_profile.is_service_bot
+        (row['id'], row['bot_type'])
+        for row in rows
+        if row['is_active'] and is_service_bot(row)
     ]
 
     info = dict(
