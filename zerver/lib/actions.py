@@ -713,22 +713,31 @@ def render_incoming_message(message, content, message_users, realm):
         raise JsonableError(_('Unable to render message'))
     return rendered_content
 
-def get_recipient_user_profiles(recipient, sender_id):
-    # type: (Recipient, int) -> List[UserProfile]
+def get_recipient_user_ids(recipient, sender_id):
+    # type: (Recipient, int) -> List[int]
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
         user_ids = list({recipient.type_id, sender_id})
-        recipients = [get_user_profile_by_id(user_id) for user_id in user_ids]
-        # For personals, you send out either 1 or 2 copies, for
-        # personals to yourself or to someone else, respectively.
-        assert((len(recipients) == 1) or (len(recipients) == 2))
+        assert(len(user_ids) in [1, 2])
+        return user_ids
+
     elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
         user_ids = Subscription.objects.filter(
             recipient=recipient,
             active=True,
         ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+        return user_ids
 
+    raise ValueError('Bad recipient type')
+
+def get_recipient_user_profiles(recipient, sender_id):
+    # type: (Recipient, int) -> List[UserProfile]
+    user_ids = get_recipient_user_ids(recipient, sender_id)
+
+    if recipient.type == Recipient.PERSONAL:
+        recipients = [get_user_profile_by_id(user_id) for user_id in user_ids]
+    elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
         query = UserProfile.objects.filter(
             id__in=user_ids
         )
