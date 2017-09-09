@@ -330,16 +330,16 @@ def get_alert_from_message(message):
     """
     sender_str = message.sender.full_name
     if message.recipient.type == Recipient.HUDDLE and message.triggers['received_pm']:
-        return "New private group message from %s" % (sender_str,)
+        return _("New private group message from %s" % (sender_str,))
     elif message.recipient.type == Recipient.PERSONAL and message.triggers['received_pm']:
-        return "New private message from %s" % (sender_str,)
+        return _("New private message from %s" % (sender_str,))
     elif message.recipient.type == Recipient.STREAM and message.triggers['mentioned']:
-        return "New mention from %s" % (sender_str,)
+        return _("New mention from %s" % (sender_str,))
     elif (message.recipient.type == Recipient.STREAM and
             (message.triggers['stream_push_notify'] and message.stream_name)):
-        return "New stream message from %s in %s" % (sender_str, message.stream_name,)
+        return _("New stream message from %s in %s" % (sender_str, message.stream_name,))
     else:
-        return "New Zulip mentions and private messages from %s" % (sender_str,)
+        return _("New Zulip mentions and private messages from %s" % (sender_str,))
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
