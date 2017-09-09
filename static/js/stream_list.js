@@ -545,7 +545,7 @@ function maybe_select_stream(e) {
     }
 }
 
-function toggle_filter_displayed(e) {
+exports.toggle_filter_displayed = function (e) {
     if (e.target.id === 'streams_inline_cog') {
         return;
     }
@@ -555,7 +555,7 @@ function toggle_filter_displayed(e) {
         exports.initiate_search();
     }
     e.preventDefault();
-}
+};
 
 $(function () {
     $(".stream-list-filter").expectOne()
@@ -566,8 +566,9 @@ $(function () {
 });
 
 $(function () {
-    $("#streams_header").expectOne()
-        .on('click', toggle_filter_displayed);
+    $("#streams_header").expectOne().click(function (e) {
+        exports.toggle_filter_displayed(e);
+    });
 });
 
 exports.scroll_stream_into_view = function (stream_li) {
