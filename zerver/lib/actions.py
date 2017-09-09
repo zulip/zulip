@@ -797,14 +797,18 @@ def do_send_messages(messages_maybe_none):
     for message in messages:
         message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
                                                             message['message'].sender_id)
-        # Only deliver the message to active user recipients
-        message['active_recipients'] = [user_profile for user_profile in message['recipients']
-                                        if user_profile.is_active]
 
+        # Only deliver the message to active user recipients
         message['active_user_ids'] = {
             user_profile.id
             for user_profile in message['recipients']
             if user_profile.is_active
+        }
+
+        message['push_notify_user_ids'] = {
+            user_profile.id
+            for user_profile in message['recipients']
+            if user_profile.is_active and user_profile.enable_online_push_notifications
         }
 
         # Service bots don't get UserMessage rows.
@@ -954,10 +958,15 @@ def do_send_messages(messages_maybe_none):
             missed_message_userids=missed_message_userids,
         )
 
-        users = [{'id': user.id,
-                  'flags': user_flags.get(user.id, []),
-                  'always_push_notify': user.enable_online_push_notifications}
-                 for user in message['active_recipients']]
+        users = [
+            dict(
+                id=user_id,
+                flags=user_flags.get(user_id, []),
+                always_push_notify=(user_id in message['push_notify_user_ids'])
+            )
+            for user_id in message['active_user_ids']
+        ]
+
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
