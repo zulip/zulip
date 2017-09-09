@@ -942,7 +942,7 @@ def do_send_messages(messages_maybe_none):
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
-            active_recipients=message['active_recipients'],
+            active_user_ids=message['active_user_ids'],
             user_flags=user_flags,
         )
 
@@ -3191,20 +3191,20 @@ def gather_subscriptions(user_profile):
 
     return (subscribed, unsubscribed)
 
-def get_userids_for_missed_messages(realm, sender_id, message_type, active_recipients, user_flags):
-    # type: (Realm, int, str, List[UserProfile], Dict[int, List[str]]) -> List[int]
+def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_ids, user_flags):
+    # type: (Realm, int, str, Set[int], Dict[int, List[str]]) -> List[int]
     if realm.presence_disabled:
         return []
 
     is_pm = message_type == 'private'
 
     user_ids = set()
-    for user in active_recipients:
-        flags = user_flags.get(user.id, [])  # type: Iterable[str]
+    for user_id in active_user_ids:
+        flags = user_flags.get(user_id, [])  # type: Iterable[str]
         mentioned = 'mentioned' in flags
-        received_pm = is_pm and user.id != sender_id
+        received_pm = is_pm and user_id != sender_id
         if mentioned or received_pm:
-            user_ids.add(user.id)
+            user_ids.add(user_id)
 
     if not user_ids:
         return []

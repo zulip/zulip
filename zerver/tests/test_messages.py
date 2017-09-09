@@ -2110,7 +2110,7 @@ class MissedMessageTest(ZulipTestCase):
         realm = sender.realm
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        recipients = [hamlet, othello]
+        recipient_ids = {hamlet.id, othello.id}
         message_type = 'stream'
         user_flags = {}  # type: Dict[int, List[str]]
 
@@ -2120,7 +2120,7 @@ class MissedMessageTest(ZulipTestCase):
                 realm=realm,
                 sender_id=sender.id,
                 message_type=message_type,
-                active_recipients=recipients,
+                active_user_ids=recipient_ids,
                 user_flags=user_flags,
             )
             self.assertEqual(sorted(user_ids), sorted(missed_message_userids))
