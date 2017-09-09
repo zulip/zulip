@@ -822,6 +822,12 @@ def do_send_messages(messages_maybe_none):
             if user_profile.long_term_idle
         }
 
+        message['service_bot_tuples'] = [
+            (user_profile.id, user_profile.bot_type)
+            for user_profile in message['recipients']
+            if user_profile.is_active and user_profile.is_service_bot
+        ]
+
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
     for message in messages:
@@ -890,22 +896,19 @@ def do_send_messages(messages_maybe_none):
 
             # TODO: Right now, service bots need to be subscribed to a stream in order to
             # receive messages when mentioned; we will want to change that structure.
-            for user_profile in message['active_recipients']:
-                if not user_profile.is_service_bot:
-                    continue
-
-                if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+            for user_profile_id, bot_type in message['service_bot_tuples']:
+                if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
                     queue_name = 'outgoing_webhooks'
-                elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+                elif bot_type == UserProfile.EMBEDDED_BOT:
                     queue_name = 'embedded_bots'
                 else:
                     logging.error(
-                        'Unexpected bot_type for Service bot %s: %s' %
-                        (user_profile.email, user_profile.bot_type))
+                        'Unexpected bot_type for Service bot id=%s: %s' %
+                        (user_profile_id, bot_type))
                     continue
 
                 # Mention triggers, primarily for stream messages
-                if user_profile.id in mentioned_ids:
+                if user_profile_id in mentioned_ids:
                     trigger = 'mention'
                 # PM triggers for personal and huddle messsages
                 elif message['message'].recipient.type != Recipient.STREAM:
@@ -915,7 +918,7 @@ def do_send_messages(messages_maybe_none):
 
                 message['message'].service_queue_events[queue_name].append({
                     'trigger': trigger,
-                    'user_profile': user_profile,
+                    'user_profile_id': user_profile_id,
                 })
 
         UserMessage.objects.bulk_create(ums)
@@ -999,7 +1002,7 @@ def do_send_messages(messages_maybe_none):
                     {
                         "message": message_to_dict(message['message'], apply_markdown=False),
                         "trigger": event['trigger'],
-                        "user_profile_id": event["user_profile"].id,
+                        "user_profile_id": event["user_profile_id"],
                         "failed_tries": 0,
                     },
                     lambda x: None
