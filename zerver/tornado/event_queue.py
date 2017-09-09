@@ -698,6 +698,12 @@ def process_message_event(event_template, users):
 
             if (idle or always_push_notify or stream_push_notify):
                 notice = build_offline_notification(user_profile_id, message_id)
+                notice['triggers'] = {
+                    'received_pm': received_pm,
+                    'mentioned': mentioned,
+                    'stream_push_notify': stream_push_notify,
+                }
+                notice['stream_name'] = event_template.get('stream_name')
                 queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
                 notified = dict(push_notified=True)  # type: Dict[str, bool]
                 # Don't send missed message emails if always_push_notify or stream_push_notify is True
