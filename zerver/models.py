@@ -1320,7 +1320,17 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
 
     def flags_list(self):
         # type: () -> List[str]
-        return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
+        '''
+        This function is highly optimized, because it actually slows down
+        sending messages in a naive implementation.
+        '''
+        flags = int(self.flags)
+        names = self.ALL_FLAGS
+        return [
+            names[i]
+            for i in range(len(names))
+            if flags & (2 ** i)
+        ]
 
     def __unicode__(self):
         # type: () -> Text
