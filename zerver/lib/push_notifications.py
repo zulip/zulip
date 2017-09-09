@@ -329,12 +329,15 @@ def get_alert_from_message(message):
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE:
+    if message.recipient.type == Recipient.HUDDLE and message.triggers['received_pm']:
         return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL:
+    elif message.recipient.type == Recipient.PERSONAL and message.triggers['received_pm']:
         return "New private message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.STREAM:
+    elif message.recipient.type == Recipient.STREAM and message.triggers['mentioned']:
         return "New mention from %s" % (sender_str,)
+    elif (message.recipient.type == Recipient.STREAM and
+            (message.triggers['stream_push_notify'] and message.stream_name)):
+        return "New stream message from %s in %s" % (sender_str, message.stream_name,)
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
 
@@ -397,11 +400,21 @@ def handle_push_notification(user_profile_id, missed_message):
         umessage = UserMessage.objects.get(user_profile=user_profile,
                                            message__id=missed_message['message_id'])
         message = umessage.message
+        triggers = missed_message.get('triggers')
+        message.triggers = {
+            'received_pm': triggers.get('received_pm', False),
+            'mentioned': triggers.get('mentioned', False),
+            'stream_push_notify': triggers.get('stream_push_notify', False),
+        }
+        message.stream_name = missed_message.get('stream_name', None)
+
         if umessage.flags.read:
             return
-        logging.info("Sending push notification to user %s" % (user_profile_id))
+
         apns_payload = get_apns_payload(message)
         gcm_payload = get_gcm_payload(user_profile, message)
+        logging.info("Sending push notification to user %s: \"%s\"",
+                     user_profile_id, apns_payload.get('alert'))
 
         if uses_notification_bouncer():
             try:
