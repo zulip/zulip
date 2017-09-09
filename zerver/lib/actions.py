@@ -807,6 +807,21 @@ def do_send_messages(messages_maybe_none):
             if user_profile.is_active
         }
 
+        # Service bots don't get UserMessage rows.
+        # is_service_bot is derived from is_bot and bot_type, and both of these fields
+        # should have been pre-fetched.
+        message['um_eligible_user_ids'] = {
+            user_profile.id
+            for user_profile in message['recipients']
+            if user_profile.is_active and (not user_profile.is_service_bot)
+        }
+
+        message['long_term_idle_user_ids'] = {
+            user_profile.id
+            for user_profile in message['recipients']
+            if user_profile.long_term_idle
+        }
+
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
     for message in messages:
@@ -832,11 +847,9 @@ def do_send_messages(messages_maybe_none):
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
             ums_to_create = []
-            for user_profile in message['active_recipients']:
-                # is_service_bot is derived from is_bot and bot_type, and both of these fields
-                # should have been pre-fetched.
-                if not user_profile.is_service_bot:
-                    ums_to_create.append(UserMessage(user_profile=user_profile, message=message['message']))
+
+            for user_profile_id in message['um_eligible_user_ids']:
+                ums_to_create.append(UserMessage(user_profile_id=user_profile_id, message=message['message']))
 
             # These properties on the Message are set via
             # render_markdown by code in the bugdown inline patterns
@@ -845,7 +858,7 @@ def do_send_messages(messages_maybe_none):
             ids_with_alert_words = message['message'].user_ids_with_alert_words
 
             for um in ums_to_create:
-                if um.user_profile.id == message['message'].sender.id and \
+                if um.user_profile_id == message['message'].sender.id and \
                         message['message'].sent_by_human():
                     um.flags |= UserMessage.flags.read
                 if wildcard:
@@ -857,7 +870,7 @@ def do_send_messages(messages_maybe_none):
 
             user_messages = []
             for um in ums_to_create:
-                if (um.user_profile.long_term_idle and
+                if (um.user_profile_id in message['long_term_idle_user_ids'] and
                         um.message.recipient.type == Recipient.STREAM and
                         int(um.flags) == 0):
                     continue
