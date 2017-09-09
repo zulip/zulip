@@ -731,6 +731,20 @@ def get_recipient_user_ids(recipient, sender_id):
 
     raise ValueError('Bad recipient type')
 
+def get_typing_user_profiles(recipient, sender_id):
+    # type: (Recipient, int) -> List[UserProfile]
+    if recipient.type == Recipient.STREAM:
+        '''
+        We don't support typing indicators for streams because they
+        are expensive and initial user feedback was they were too
+        distracting.
+        '''
+        raise ValueError('Typing indicators not supported for streams')
+
+    user_ids = get_recipient_user_ids(recipient, sender_id)
+    users = [get_user_profile_by_id(user_id) for user_id in user_ids]
+    return users
+
 def get_recipient_user_profiles(recipient, sender_id):
     # type: (Recipient, int) -> List[UserProfile]
     user_ids = get_recipient_user_ids(recipient, sender_id)
@@ -1028,8 +1042,8 @@ def do_remove_reaction(user_profile, message, emoji_name):
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
-    recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],
-                                                          notification['sender'].id)
+    recipient_user_profiles = get_typing_user_profiles(notification['recipient'],
+                                                       notification['sender'].id)
     # Only deliver the notification to active user recipients
     user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
     sender_dict = {'user_id': notification['sender'].id, 'email': notification['sender'].email}
