@@ -456,10 +456,18 @@ $(function () {
     });
 
     $("#join_unsub_stream").click(function (e) {
-        e.preventDefault();
         e.stopPropagation();
-
         window.location.hash = "streams/all";
+    });
+
+    $("#streams_inline_cog").click(function (e) {
+        e.stopPropagation();
+        window.location.hash = "streams";
+    });
+
+    $("#streams_filter_icon").click(function (e) {
+        e.stopPropagation();
+        stream_list.toggle_filter_displayed(e);
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function () {
