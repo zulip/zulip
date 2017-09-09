@@ -7,8 +7,8 @@
 
 <p>Webathena is the easiest way to use Zulip.  With Webathena, you don't need
 to run any software in a screen session.  Your Athena password never leaves
-your computer and the only access that any Zulip computer ever receives is the
-ability to send/receive zephyrs as you.</p>
+your computer and the only access that any Zulip computer ever receives is the ability 
+to send/receive zephyrs as you.</p>
 
 <p>We recommend that you use Webathena instead of following these instructions.
 Please only follow these instructions if you know that you want to run the zephyr
@@ -18,8 +18,7 @@ mirror script instead of using Webathena.</p>
     <p>On an Athena dialup
     (<a href="https://linerva.mit.edu">linerva.mit.edu</a>,
      <a href="https://athena.dialup.mit.edu">athena.dialup.mit.edu</a>,
-    etc.), run the Zephyr mirroring script inside a screen
-    session.</p>
+    etc.), run the Zephyr mirroring script inside a screen session.</p>
 
     <p><strong>IMPORTANT: You must keep the Zephyr mirroring script
     always running in a session with unexpired Kerberos
@@ -27,8 +26,8 @@ mirror script instead of using Webathena.</p>
     Zephyr to Zulip, and forwards messages you send in Zulip to
     Zephyr.  <strong>If it is not running, only other Zulip users
     will receive messages you send from Zulip!</strong>.  The Zulip
-    web application will warn you if the Zephyr mirroring script is
-    not running.</p>
+    web application will warn you if the Zephyr mirroring script is not running.
+    </p>
 
     <p>If you already have Barnowl running in screen/tmux somewhere,
     you can just run:</p>
@@ -42,7 +41,8 @@ mirror script instead of using Webathena.</p>
     <p>If you are not already running a screen/tmux for Barnowl, you
     can setup a screen session to run the Zephyr mirroring script by
     running the following on a dialup such
-    as <a href="https://linerva.mit.edu">linerva.mit.edu</a>:</p>
+    as <a href="https://linerva.mit.edu">linerva.mit.edu</a>:
+    </p>
 
       <ol>
     <li><code>kinit -l7d && aklog</code></li>
@@ -68,7 +68,7 @@ mirror script instead of using Webathena.</p>
     </ol>
 
     <p>Don't run multiple copies of the Zephyr mirroring script;
-    doing so will result in messages you sent being forwarded to
-    Zephyr twice.</p>
+    doing so will result in messages you sent being forwarded to Zephyr twice.
+    </p>
 
 {% endblock %}
