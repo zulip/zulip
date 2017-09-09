@@ -798,6 +798,11 @@ def do_send_messages(messages_maybe_none):
         message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
                                                             message['message'].sender_id)
 
+        message['recipient_user_ids'] = {
+            user_profile.id
+            for user_profile in message['recipients']
+        }
+
         # Only deliver the message to active user recipients
         message['active_user_ids'] = {
             user_profile.id
@@ -995,14 +1000,16 @@ def do_send_messages(messages_maybe_none):
                 'urls': links_for_embed}
             queue_json_publish('embed_links', event_data, lambda x: None)
 
-        if (settings.ENABLE_FEEDBACK and
-            message['message'].recipient.type == Recipient.PERSONAL and
-                settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
-            queue_json_publish(
-                'feedback_messages',
-                message_to_dict(message['message'], apply_markdown=False),
-                lambda x: None
-            )
+        if (settings.ENABLE_FEEDBACK and settings.FEEDBACK_BOT and
+                message['message'].recipient.type == Recipient.PERSONAL):
+
+            feedback_bot_id = get_user_profile_by_email(email=settings.FEEDBACK_BOT).id
+            if feedback_bot_id in message['recipient_user_ids']:
+                queue_json_publish(
+                    'feedback_messages',
+                    message_to_dict(message['message'], apply_markdown=False),
+                    lambda x: None
+                )
 
         for queue_name, events in message['message'].service_queue_events.items():
             for event in events:
