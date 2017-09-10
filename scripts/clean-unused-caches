@@ -24,6 +24,6 @@ def main():
     subprocess.check_call(["./scripts/lib/clean-venv-cache"] + sys.argv[1:])
     subprocess.check_call(["./scripts/lib/clean-npm-cache"] + sys.argv[1:])
     subprocess.check_call(["./scripts/lib/clean-emoji-cache"] + sys.argv[1:])
-
+#Checkmain
 if __name__ == "__main__":
     main()
