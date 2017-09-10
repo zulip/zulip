@@ -1897,6 +1897,23 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.email, self.example_email("hamlet"))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_with_email_attr(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=letham,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'email': ['hamlet@zulip.com'],
+            }
+        }
+        with self.settings(LDAP_EMAIL_ATTR='email',
+                           AUTH_LDAP_BIND_PASSWORD='',
+                           AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate("letham", 'testing')
+
+            assert (user_profile is not None)
+            self.assertEqual(user_profile.email, self.example_email("hamlet"))
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_password(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -2021,6 +2038,19 @@ class TestLDAP(ZulipTestCase):
             email = 'nonexisting@zulip.com'
             backend._realm = None
             with self.assertRaisesRegex(Exception, 'Realm is None'):
+                backend.get_or_create_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_create_user_when_ldap_has_no_email_attr(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        nonexisting_attr = 'email'
+        with self.settings(LDAP_EMAIL_ATTR=nonexisting_attr):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            with self.assertRaisesRegex(Exception, 'LDAP user doesn\'t have the needed email attribute'):
                 backend.get_or_create_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
