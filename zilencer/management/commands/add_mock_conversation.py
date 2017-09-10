@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import argparse
 
 from __future__ import absolute_import, print_function
 
@@ -9,7 +10,7 @@ from zerver.lib.actions import create_stream_if_needed, \
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import get_realm, UserProfile, Message
 
-import argparse
+
 from datetime import datetime
 from typing import Any, Dict, List
 
