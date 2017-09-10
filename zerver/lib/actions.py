@@ -950,7 +950,7 @@ def do_send_messages(messages_maybe_none):
                     'user_profile_id': user_profile_id,
                 })
 
-        UserMessage.objects.bulk_create(ums)
+        bulk_insert_ums(ums)
 
         # Claim attachments in message
         for message in messages:
@@ -1049,6 +1049,30 @@ def do_send_messages(messages_maybe_none):
     # mirror single zephyr messages at a time and don't otherwise
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
+
+def bulk_insert_ums(ums):
+    # type: (List[UserMessage]) -> None
+    '''
+    Doing bulk inserts this way is much faster than using Django,
+    since we don't have any ORM overhead.  Profiling with 1000
+    users shows a speedup of 0.436 -> 0.027 seconds, so we're
+    talking about a 15x speedup.
+    '''
+    if not ums:
+        return
+
+    vals = ','.join([
+        '(%d, %d, %d)' % (um.user_profile_id, um.message_id, um.flags)
+        for um in ums
+    ])
+    query = '''
+        INSERT into
+            zerver_usermessage (user_profile_id, message_id, flags)
+        VALUES
+    ''' + vals
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
 
 def notify_reaction_update(user_profile, message, reaction, op):
     # type: (UserProfile, Message, Reaction, Text) -> None
