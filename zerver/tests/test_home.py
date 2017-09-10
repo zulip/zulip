@@ -25,7 +25,6 @@ class HomeTest(ZulipTestCase):
     @slow('big method')
     def test_home(self):
         # type: () -> None
-
         # Keep this list sorted!!!
         html_bits = [
             'Compose your message here...',
@@ -257,7 +256,7 @@ class HomeTest(ZulipTestCase):
         with \
                 self.settings(FIRST_TIME_TOS_TEMPLATE='hello.html'), \
                 self.settings(TOS_VERSION='99.99'):
-            result = self.client_post('/accounts/accept_terms/')
+            result = self.client_post('/accounts/accept_terms')
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
             self.assert_in_response("most productive group chat", result)
@@ -267,7 +266,7 @@ class HomeTest(ZulipTestCase):
         email = self.example_email("hamlet")
         self.login(email)
 
-        result = self.client_post('/accounts/accept_terms/')
+        result = self.client_post('/accounts/accept_terms')
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("I agree to the", result)
 
