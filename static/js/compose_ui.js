@@ -3,7 +3,7 @@ var compose_ui = (function () {
 var exports = {};
 
 exports.autosize_textarea = function () {
-    $("#new_message_content").trigger("autosize.resize");
+    autosize.update($("#new_message_content"));
 };
 
 return exports;

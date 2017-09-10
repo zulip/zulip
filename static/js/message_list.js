@@ -497,7 +497,7 @@ exports.MessageList.prototype = {
         row.find(".message_edit_form").empty().append(edit_obj.form);
         row.find(".message_content, .status-message").hide();
         row.find(".message_edit").show();
-        row.find(".message_edit_content").autosize();
+        autosize(row.find(".message_edit_content"));
     },
 
     hide_edit_message: function MessageList_hide_edit_message(row) {

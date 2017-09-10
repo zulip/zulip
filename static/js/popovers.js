@@ -480,7 +480,7 @@ exports.register_click_handlers = function () {
                 } else {
                     textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
                 }
-                $("#new_message_content").trigger("autosize.resize");
+                autosize.update($("#new_message_content"));
             },
         });
         popovers.hide_actions_popover();

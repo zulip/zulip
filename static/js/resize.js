@@ -197,8 +197,8 @@ exports.watch_manual_resize = function (element) {
     }(function (height) {
         // This callback disables autosize on the textarea.  It
         // will be re-enabled when this component is next opened.
-        $(element).trigger("autosize.destroy")
-            .height(height + "px");
+        autosize.destroy($(element));
+        $(element).height(height + "px");
     }));
 };
 

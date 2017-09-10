@@ -24,6 +24,7 @@ add_dependencies({
     people: 'js/people',
     util: 'js/util',
     compose_ui: 'js/compose_ui',
+    autosize: 'node_modules/autosize/dist/autosize.js',
 });
 
 var compose_actions = require('js/compose_actions.js');
