@@ -453,6 +453,7 @@ _.each(matches, function (person) {
         { emoji_name: 'thumbs_down' },
         { emoji_name: '+1' },
         { emoji_name: 'pig' },
+        { emoji_name: ' ' },
     ]);
 }());
 
