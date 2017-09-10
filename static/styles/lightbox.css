@@ -19,6 +19,11 @@
     background-position: center center;
 }
 
+#lightbox_overlay .image-preview div {
+    width: 80%;
+    height: 100%;
+}
+
 #lightbox_overlay .image-preview img {
     max-height: 100%;
     max-width: 100%;

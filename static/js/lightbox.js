@@ -53,6 +53,24 @@ function display_image(payload, options) {
     $(".image-actions .open, .image-actions .download").attr("href", payload.source);
 }
 
+function display_360_image(payload, options) {
+    render_lightbox_list_images(payload.preview);
+
+    $(".player-container").hide();
+    $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
+
+    $("#lightbox_overlay .image-preview").html("<div></div>");
+    var container = $("#lightbox_overlay .image-preview div")[0];
+    var viewer = new PANOLENS.Viewer({container:container});
+    var panorama = new PANOLENS.ImagePanorama(payload.source);
+    viewer.add(panorama);
+
+    $(".image-description .title").text(payload.title || "N/A");
+    $(".image-description .user").text(payload.user);
+
+    $(".image-actions .open, .image-actions .download").attr("href", payload.source);
+}
+
 function display_youtube_video(payload) {
     render_lightbox_list_images(payload.preview);
 
@@ -84,6 +102,7 @@ exports.open = function (image, options) {
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
     var is_youtube_video = !!$image.closest(".youtube-video").length;
+    var is_360_image = !!$image.closest(".360_image").length;
 
     var payload;
     // if the asset_map already contains the metadata required to display the
@@ -108,6 +127,8 @@ exports.open = function (image, options) {
 
     if (payload.type === "youtube-video") {
         display_youtube_video(payload);
+    } else if (payload.type === "image" && is_360_image) {
+        display_360_image(payload, options);
     } else if (payload.type === "image") {
         display_image(payload, options);
     }

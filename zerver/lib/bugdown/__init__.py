@@ -363,6 +363,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         return url
 
+
+    def is_360_image(self, url):
+      return self.is_image(url) and url.rsplit('.', 1)[0].endswith("_360")
+
     def is_image(self, url):
         # type: (Text) -> bool
         if not image_preview_enabled_for_realm():
@@ -651,7 +655,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       desc=dropbox_image.get('desc', ""),
                       class_attr=class_attr)
                 continue
-            if self.is_image(url):
+            if self.is_360_image(url):
+                add_a(root, self.get_actual_image_url(url), url, title=text, class_attr="message_inline_image 360_image")
+                continue
+            elif self.is_image(url):
                 add_a(root, self.get_actual_image_url(url), url, title=text)
                 continue
             if get_tweet_id(url) is not None:
