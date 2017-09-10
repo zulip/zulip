@@ -386,10 +386,7 @@ provisioning failed and you should look at the
 Next, start the Zulip server:
 
 ```
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd zulip
-
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -535,7 +532,7 @@ From the window where run-dev.py is running:
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth via ?)
 ^C
 KeyboardInterrupt
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip$ exit
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
@@ -571,10 +568,7 @@ christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
 
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd zulip
-
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
