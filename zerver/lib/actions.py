@@ -881,35 +881,15 @@ def do_send_messages(messages_maybe_none):
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
-            ums_to_create = []
+            mentioned_user_ids = message['message'].mentions_user_ids
+            user_messages = create_user_messages(
+                message=message['message'],
+                um_eligible_user_ids=message['um_eligible_user_ids'],
+                long_term_idle_user_ids=message['long_term_idle_user_ids'],
+                mentioned_user_ids=mentioned_user_ids,
+            )
 
-            for user_profile_id in message['um_eligible_user_ids']:
-                ums_to_create.append(UserMessage(user_profile_id=user_profile_id, message=message['message']))
-
-            # These properties on the Message are set via
-            # render_markdown by code in the bugdown inline patterns
-            wildcard = message['message'].mentions_wildcard
-            mentioned_ids = message['message'].mentions_user_ids
-            ids_with_alert_words = message['message'].user_ids_with_alert_words
-
-            for um in ums_to_create:
-                if um.user_profile_id == message['message'].sender.id and \
-                        message['message'].sent_by_human():
-                    um.flags |= UserMessage.flags.read
-                if wildcard:
-                    um.flags |= UserMessage.flags.wildcard_mentioned
-                if um.user_profile_id in mentioned_ids:
-                    um.flags |= UserMessage.flags.mentioned
-                if um.user_profile_id in ids_with_alert_words:
-                    um.flags |= UserMessage.flags.has_alert_word
-
-            user_messages = []
-            for um in ums_to_create:
-                if (um.user_profile_id in message['long_term_idle_user_ids'] and
-                        um.message.recipient.type == Recipient.STREAM and
-                        int(um.flags) == 0):
-                    continue
-                user_messages.append(um)
+            for um in user_messages:
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
 
             ums.extend(user_messages)
@@ -937,7 +917,7 @@ def do_send_messages(messages_maybe_none):
                     continue
 
                 # Mention triggers, primarily for stream messages
-                if user_profile_id in mentioned_ids:
+                if user_profile_id in mentioned_user_ids:
                     trigger = 'mention'
                 # PM triggers for personal and huddle messsages
                 elif message['message'].recipient.type != Recipient.STREAM:
@@ -1049,6 +1029,43 @@ def do_send_messages(messages_maybe_none):
     # mirror single zephyr messages at a time and don't otherwise
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
+
+def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids, mentioned_user_ids):
+    # type: (Message, Set[int], Set[int], Set[int]) -> List[UserMessage]
+    ums_to_create = []
+
+    for user_profile_id in um_eligible_user_ids:
+        um = UserMessage(
+            user_profile_id=user_profile_id,
+            message=message,
+        )
+        ums_to_create.append(um)
+
+    # These properties on the Message are set via
+    # render_markdown by code in the bugdown inline patterns
+    wildcard = message.mentions_wildcard
+    ids_with_alert_words = message.user_ids_with_alert_words
+
+    for um in ums_to_create:
+        if um.user_profile_id == message.sender.id and \
+                message.sent_by_human():
+            um.flags |= UserMessage.flags.read
+        if wildcard:
+            um.flags |= UserMessage.flags.wildcard_mentioned
+        if um.user_profile_id in mentioned_user_ids:
+            um.flags |= UserMessage.flags.mentioned
+        if um.user_profile_id in ids_with_alert_words:
+            um.flags |= UserMessage.flags.has_alert_word
+
+    user_messages = []
+    for um in ums_to_create:
+        if (um.user_profile_id in long_term_idle_user_ids and
+                um.message.recipient.type == Recipient.STREAM and
+                int(um.flags) == 0):
+            continue
+        user_messages.append(um)
+
+    return user_messages
 
 def bulk_insert_ums(ums):
     # type: (List[UserMessage]) -> None
