@@ -877,7 +877,7 @@ def do_send_messages(messages_maybe_none):
     user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
-        ums = []  # type: List[UserMessage]
+        ums = []  # type: List[UserMessageLite]
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
@@ -1030,14 +1030,30 @@ def do_send_messages(messages_maybe_none):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
+class UserMessageLite(object):
+    '''
+    The Django ORM is too slow for bulk operations.  This class
+    is optimized for the simple use case of inserting a bunch of
+    rows into zerver_usermessage.
+    '''
+    def __init__(self, user_profile_id, message_id):
+        # type: (int, int) -> None
+        self.user_profile_id = user_profile_id
+        self.message_id = message_id
+        self.flags = 0
+
+    def flags_list(self):
+        # type: () -> List[str]
+        return UserMessage.flags_list_for_flags(self.flags)
+
 def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids, mentioned_user_ids):
-    # type: (Message, Set[int], Set[int], Set[int]) -> List[UserMessage]
+    # type: (Message, Set[int], Set[int], Set[int]) -> List[UserMessageLite]
     ums_to_create = []
 
     for user_profile_id in um_eligible_user_ids:
-        um = UserMessage(
+        um = UserMessageLite(
             user_profile_id=user_profile_id,
-            message=message,
+            message_id=message.id,
         )
         ums_to_create.append(um)
 
@@ -1060,7 +1076,7 @@ def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids,
     user_messages = []
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
-                um.message.recipient.type == Recipient.STREAM and
+                message.recipient.type == Recipient.STREAM and
                 int(um.flags) == 0):
             continue
         user_messages.append(um)
@@ -1068,7 +1084,7 @@ def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids,
     return user_messages
 
 def bulk_insert_ums(ums):
-    # type: (List[UserMessage]) -> None
+    # type: (List[UserMessageLite]) -> None
     '''
     Doing bulk inserts this way is much faster than using Django,
     since we don't have any ORM overhead.  Profiling with 1000

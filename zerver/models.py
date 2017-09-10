@@ -1320,12 +1320,17 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
 
     def flags_list(self):
         # type: () -> List[str]
+        flags = int(self.flags)
+        return self.flags_list_for_flags(flags)
+
+    @staticmethod
+    def flags_list_for_flags(flags):
+        # type: (int) -> List[str]
         '''
         This function is highly optimized, because it actually slows down
         sending messages in a naive implementation.
         '''
-        flags = int(self.flags)
-        names = self.ALL_FLAGS
+        names = AbstractUserMessage.ALL_FLAGS
         return [
             names[i]
             for i in range(len(names))
