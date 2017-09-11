@@ -121,9 +121,11 @@ Additionally, you can observe any calls made to your mocked object.
 
 When writing tests, it often occurs that you make calls to functions taking complex arguments. Creating a real
 instance of such an argument would require the use of various different libraries, a lot of boilerplate code, etc.
-Another scenario is that the tested code accesses files or objects that don't exist at testing time.
+Another scenario is that the tested code accesses files or objects that don't exist at testing time. Finally, it is good
+practice to keep tests independent from others. Mocks help you to isolate test cases by simulating objects and methods irrelevant
+to a test's goal.
 
-In such cases, you can "mock out" the function calls / objects and replace them with fake instances that only implement a
+In all of these cases, you can "mock out" the function calls / objects and replace them with fake instances that only implement a
 limited interface. On top of that, these fake instances can be easily analyzed.
 
 Say you have a method `foo(input_str)`:
