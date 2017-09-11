@@ -252,17 +252,17 @@ running it manually.
    The standard output of the bot server will be logged to the path in
    your *supervisord* configuration.
 
-##Running a bot in your Zulip Development Environment
+### Running a bot in your Zulip Development Environment
 For experimental purposes, you may find it easier and safer to develop and run your bot in your local server rather than on a public server like chat.zulip.org.
 So, to run a bot within your local environment, the steps are as follows:
-- Start up your Development Environment (http://localhost:9991)
-- Go to Settings >> Your Bots and create a bot
-- Click the icon below your bot name to download the .zuliprc file to your computer
-- create a corresponding bot file and place it in zulip_bots/bots directory which you cloned earlier.
-- Optinally you could put a ```print('hello bot')```as a way to test your bot.
+  - Start up your Development Environment (http://localhost:9991)
+  - Go to Settings >> Your Bots and create a bot
+  - Click the icon below your bot name to download the .zuliprc file to your computer
+  - create a corresponding bot file and place it in zulip_bots/bots directory which you cloned earlier.
+  - Optionally you could put a ```print('hello bot')```as a way to test your bot.
  
- Now, to spin up your bot, assuming you are in the zulip_bots directory, 
-you would do zulip-run-bot --path-to-bot <bot/botdirectory/botname.py> --config-file ~/.zuliprc.
+Now, to spin up your bot, assuming you are in the zulip_bots directory, 
+you would do `zulip-run-bot --path-to-bot <bot/botdirectory/botname.py> --config-file ~/.zuliprc.`
 
 
 ## How to develop a bot
