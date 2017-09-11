@@ -1,7 +1,5 @@
 var stream_list = (function () {
-
 var exports = {};
-
 exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
