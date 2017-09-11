@@ -17,7 +17,7 @@ if __name__ == "__main__":
     from scripts.lib.zulip_tools import log_management_command
 
     if 'posix' in os.name and os.geteuid() == 0:
-        raise CommandError("manage.py should not be run as root.  Use `su zulip` to drop root.")
+        raise CommandError("manage.py should not be run as root.  Use 'su zulip' to drop root.")
 
     log_management_command(" ".join(sys.argv), settings.MANAGEMENT_LOG_PATH)
 
