@@ -218,13 +218,7 @@ On the other hand, if we had used `import os.urandom`, we would need to call `mo
 
 * Including the Python mocking library:
 
-     import six
-     if six.PY2:
-         import mock import as mock
-     else:
-         import unittest.mock as mock
-
-  This code accounts for the fact that since Python 3.3 `mock` is part of the `unittest` module.
+      from unittest import mock
 
 * Mocking a class with a context manager:
 
