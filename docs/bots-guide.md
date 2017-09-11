@@ -82,7 +82,7 @@ You need:
 
 1. Install all requirements. You can either
 
-    * run `pip install zulip_bots` for a stable version, or	
+* run `pip install zulip_bots` for a stable version, or	
     * clone the [`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
 - `pip -e <path/to/zulip_bots>`; you will be able to make changes to the code.
 
@@ -253,19 +253,21 @@ running it manually.
    your *supervisord* configuration.
 
 ### Running a bot in your Zulip Development Environment
+
 For experimental purposes, you may find it easier and safer to develop and run your bot in your local server rather than on a public server like chat.zulip.org.
 So, to run a bot within your local environment, the steps are as follows:
-  - Start up your Development Environment (http://localhost:9991)
-  - Go to Settings >> Your Bots and create a bot
-  - Click the icon below your bot name to download the .zuliprc file to your computer
-  - create a corresponding bot file and place it in zulip_bots/bots directory which you cloned earlier.
-  - Optionally you could put a ```print('hello bot')```as a way to test your bot.
+
+1.  Start up your Development Environment (http://localhost:9991)
+2.  Go to Settings >> Your Bots and create a bot
+3.  Click the icon below your bot name to download the .zuliprc file to your computer
+4.  create a corresponding bot file and place it in zulip_bots/bots directory which you cloned earlier.
+5.  Optionally you could put a ```print('hello bot')```as a way to test your bot.
  
-Now, to spin up your bot, assuming you are in the zulip_bots directory, 
+Now,to spin up your bot, assuming you are in the zulip_bots directory, 
 you would do `zulip-run-bot --path-to-bot <bot/botdirectory/botname.py> --config-file ~/.zuliprc.`
 
-
 ## How to develop a bot
+
 Ok, it's time to start putting life into your bot.
 The tutorial below explains the structure of a bot `<my-bot>.py`,
 which is the only file you need to create for a new bot. You
