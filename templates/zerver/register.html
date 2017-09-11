@@ -16,6 +16,16 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 <div class="register-account flex full-page">
     <div class="center-block new-style" style="padding: 20px 0px">
 
+        {% if realm_name %}
+        <div class="org-header">
+            <img class="avatar" src="{{ realm_icon }}" alt="" />
+            <div class="info-box">
+                <div class="organization-name">{{ realm_name }}</div>
+                <div class="organization-path">{{ realm_uri }}</div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="pitch">
             {% trans %}
             <h1>You're almost there.</h1>
