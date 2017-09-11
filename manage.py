@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     log_management_command(" ".join(sys.argv), settings.MANAGEMENT_LOG_PATH)
 
-    os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py"))
+    os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py/"))
     if "--no-traceback" not in sys.argv and len(sys.argv) > 1:
         sys.argv.append("--traceback")
     try:
