@@ -119,8 +119,7 @@ def build_custom_checkers(by_lang):
         trailing_whitespace_rule,
         {'pattern': '\t',
          'strip': '\n',
-         'exclude': set(['zerver/lib/bugdown/codehilite.py',
-                         'tools/travis/success-http-headers.txt']),
+         'exclude': set(['tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
     ]  # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
@@ -270,7 +269,6 @@ def build_custom_checkers(by_lang):
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
         {'pattern': 'self\.client\.(get|post|patch|put|delete)',
-         'exclude': set(['zilencer/tests.py']),
          'description': \
          '''Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
@@ -323,11 +321,6 @@ def build_custom_checkers(by_lang):
         {'pattern': 'render_to_response\(',
          'description': "Use render() instead of render_to_response().",
          },
-        {'pattern': '(^|\s)open\s*\(',
-         'description': 'open() should not be used in Zulip\'s bots. Use functions'
-                        ' provided by the bots framework to access the filesystem.',
-         'include_only': set(['api/bots/']),
-         'exclude': set(['api/bots/john/john.py'])},
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
