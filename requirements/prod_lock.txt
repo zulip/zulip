@@ -8,8 +8,8 @@ git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead8
 git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6
-git+https://github.com/zulip/python-zulip-api.git@0.3.3#egg=zulip==0.3.3_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.3.3#egg=zulip_bots==0.3.3+git&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@0.3.4#egg=zulip==0.3.4_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@0.3.4#egg=zulip_bots==0.3.4+git&subdirectory=zulip_bots
 apns2==0.3.0
 argon2-cffi==16.3.0
 asn1crypto==0.22.0        # via cryptography
