@@ -103,6 +103,12 @@ def build_custom_checkers(by_lang):
 
         return failed
 
+    # By default, a rule applies to all files within the extension for which it is specified (e.g. all .py files)
+    # There are three operators we can use to manually include or exclude files from linting for a rule:
+    # 'exclude': 'set([<path>, ...])' - if <path> is a filename, excludes that file.
+    #                                   if <path> is a directory, excludes all files directly below the directory <path>.
+    # 'exclude_line': 'set([(<path>, <line>), ...])' - excludes all lines matching <line> in the file <path> from linting.
+    # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
     trailing_whitespace_rule = {
         'pattern': '\s+$',
         'strip': '\n',
