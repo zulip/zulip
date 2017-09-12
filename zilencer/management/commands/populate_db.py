@@ -18,6 +18,9 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
+from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+    setup_initial_private_stream, send_initial_realm_messages
+from zerver.lib.actions import do_create_user, do_create_realm
 
 
 import random
@@ -127,16 +130,27 @@ class Command(BaseCommand):
             # Create our two default realms
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
-            zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
-                description="The Zulip development environment default organization.  It's great for testing!",
-                invite_required=False, org_type=Realm.CORPORATE)
-            RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
+            zulip_realm = do_create_realm("zulip", "Zulip Dev", restricted_to_domain=True, 
+                invite_required=False, org_type=Realm.CORPORATE )
+            realm_domain = RealmDomain.objects.create(realm=zulip_realm, domain='zulip.com', 
+                allow_subdomains=False)
+            setup_initial_streams(zulip_realm)
+            user = do_create_user('iago@zulip.com', 'password', zulip_realm, 'Iago', 'Iago',
+                active=True, is_realm_admin=True) 
+            setup_initial_private_stream(user)
+            send_initial_pms(user)
+            send_initial_realm_messages(zulip_realm)
             if options["test_suite"]:
-                mit_realm = Realm.objects.create(
-                    string_id="zephyr", name="MIT", restricted_to_domain=True,
-                    invite_required=False, org_type=Realm.CORPORATE)
-                RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
+                mit_realm = do_create_realm("zephyr", "MIT", restricted_to_domain=True, 
+                invite_required=False, org_type=Realm.CORPORATE )
+                realm_domain = RealmDomain.objects.create(realm=mit_realm, domain='mit.edu', 
+                    allow_subdomains=False)
+                setup_initial_streams(mit_realm)
+                user = do_create_user('iago@zulip.com', 'password', mit_realm, 'Iago', 'Iago',active=True, 
+                    is_realm_admin=True) 
+                setup_initial_private_stream(user)
+                send_initial_pms(user)
+                send_initial_realm_messages(mit_realm)
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -154,22 +168,11 @@ class Command(BaseCommand):
             create_users(zulip_realm, names)
 
             iago = get_user("iago@zulip.com", zulip_realm)
-            do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
-            # Create public streams.
-            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-            stream_dict = {
-                "Verona": {"description": "A city in Italy", "invite_only": False},
-                "Denmark": {"description": "A Scandinavian country", "invite_only": False},
-                "Scotland": {"description": "Located in the United Kingdom", "invite_only": False},
-                "Venice": {"description": "A northeastern Italian city", "invite_only": False},
-                "Rome": {"description": "Yet another Italian city", "invite_only": False}
-            }  # type: Dict[Text, Dict[Text, Any]]
-
-            bulk_create_streams(zulip_realm, stream_dict)
-            recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
-                                 for name in stream_list]  # type: List[int]
+            
+            recipient_streams = [klass.type_id for klass in
+                                 Recipient.objects.filter(type=Recipient.STREAM)]
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
