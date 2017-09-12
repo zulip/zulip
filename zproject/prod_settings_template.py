@@ -162,6 +162,12 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 # Controls whether or not error reports (tracebacks) are emailed to the
 # server administrators.
 #ERROR_REPORTING = True
+
+# Controls whether errors get reported to files.  For some configurations
+# the console already gets redirected to container logging mechanisms,
+# and files become a nuisance if you don't rotate them.
+#USE_ERROR_FILES = True
+
 # For frontend (JavaScript) tracebacks
 #BROWSER_ERROR_REPORTING = False
 
