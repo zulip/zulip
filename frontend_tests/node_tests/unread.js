@@ -18,9 +18,6 @@ var stream_data = require('js/stream_data.js');
 set_global('stream_data', stream_data);
 set_global('blueslip', {});
 set_global('page_params', {});
-set_global('feature_flags', {
-    load_server_counts: true,
-});
 
 var Dict = global.Dict;
 var muting = global.muting;
