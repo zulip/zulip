@@ -170,9 +170,10 @@ class Command(BaseCommand):
             iago = get_user("iago@zulip.com", zulip_realm)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
-            
+
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
+                                 
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
