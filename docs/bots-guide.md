@@ -71,8 +71,8 @@ just need to write the `<my-bot>.py` script and put it into `zulip_bots/bots/<my
 You need:
 
 * An account in an organization on a Zulip server
-  (e.g. [chat.zulip.org](https://chat.zulip.org) or
-  yourSubdomain.zulipchat.com, or your own development server).
+  (e.g. [chat.zulip.org](https://chat.zulip.org),
+  yourSubdomain.zulipchat.com, or http://localhost:9991).
   Within that Zulip organization, users will be able to interact with
   your bot.
 * A computer where you're running the bot from.
@@ -82,9 +82,10 @@ You need:
 
 1. Install all requirements. You can either
 
-* run `pip install zulip_bots` for a stable version, or	
+    * run `pip install zulip_bots` for a stable version, or
     * clone the [`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
-- `pip -e <path/to/zulip_bots>`; you will be able to make changes to the code.
+      repository for the latest code. Install it with
+      `pip -e <path/to/zulip_bots>`; you will be able to make changes to the code.
 
 2. Register a new bot user on the Zulip server's web interface.
 
@@ -108,11 +109,14 @@ You need:
     * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
-5. Run the bot.
+5. Run the bot. (There are two ways to run your bot.)
 
     * Run
       ```
       zulip-run-bot <bot-name> --config-file ~/.zuliprc
+      ```
+      ```
+      zulip-run-bot --path-to-bot <path/to/twibot.py> --config-file ~/.zuliprc
       ```
       (using the path to the `.zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
@@ -252,23 +256,8 @@ running it manually.
    The standard output of the bot server will be logged to the path in
    your *supervisord* configuration.
 
-### Running a bot in your Zulip Development Environment
-
-For experimental purposes, you may find it easier and safer to develop and run your bot in your local server rather than on a public server like chat.zulip.org.
-So, to run a bot within your local environment, the steps are as follows:
-
-1.  Start up your Development Environment (http://localhost:9991)
-2.  Go to Settings >> Your Bots and create a bot
-3.  Click the icon below your bot name to download the .zuliprc file to your computer
-4.  create a corresponding bot file and place it in zulip_bots/bots directory which you cloned earlier.
-5.  Optionally you could put a ```print('hello bot')```as a way to test your bot.
- 
-Now,to spin up your bot, assuming you are in the zulip_bots directory, 
-you would do `zulip-run-bot --path-to-bot <bot/botdirectory/botname.py> --config-file ~/.zuliprc.`
-
 ## How to develop a bot
 
-Ok, it's time to start putting life into your bot.
 The tutorial below explains the structure of a bot `<my-bot>.py`,
 which is the only file you need to create for a new bot. You
 can use this as boilerplate code for developing your own bot.
