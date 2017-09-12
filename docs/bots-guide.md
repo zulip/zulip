@@ -85,7 +85,7 @@ You need:
     * run `pip install zulip_bots` for a stable version, or
     * clone the [`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
       repository for the latest code. Install it with
-      `pip -e <path/to/zulip_bots>`; you will be able to make changes to the code.
+      `pip install -e <path/to/zulip_bots>`; you will be able to make changes to the code.
 
 2. Register a new bot user on the Zulip server's web interface.
 
