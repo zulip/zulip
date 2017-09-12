@@ -1,4 +1,4 @@
-var common = require('../casper_lib/common.js').common;
+var common = include('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
