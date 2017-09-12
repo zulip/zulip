@@ -28,7 +28,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_notifications, \
-    receives_online_notifications, get_user_profile_by_id
+    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id
 from version import ZULIP_VERSION
 
 if settings.ZILENCER_ENABLED:
@@ -329,14 +329,17 @@ def get_alert_from_message(message):
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE:
-        return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL:
-        return "New private message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.STREAM:
-        return "New mention from %s" % (sender_str,)
+    if message.recipient.type == Recipient.HUDDLE and message.triggers['received_pm']:
+        return _("New private group message from %s" % (sender_str,))
+    elif message.recipient.type == Recipient.PERSONAL and message.triggers['received_pm']:
+        return _("New private message from %s" % (sender_str,))
+    elif message.recipient.type == Recipient.STREAM and message.triggers['mentioned']:
+        return _("New mention from %s" % (sender_str,))
+    elif (message.recipient.type == Recipient.STREAM and
+            (message.triggers['stream_push_notify'] and message.stream_name)):
+        return _("New stream message from %s in %s" % (sender_str, message.stream_name,))
     else:
-        return "New Zulip mentions and private messages from %s" % (sender_str,)
+        return _("New Zulip mentions and private messages from %s" % (sender_str,))
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
@@ -389,17 +392,29 @@ def handle_push_notification(user_profile_id, missed_message):
     """
     try:
         user_profile = get_user_profile_by_id(user_profile_id)
-        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
+        if not (receives_offline_notifications(user_profile) or
+                receives_online_notifications(user_profile) or
+                receives_stream_notifications(user_profile)):
             return
 
         umessage = UserMessage.objects.get(user_profile=user_profile,
                                            message__id=missed_message['message_id'])
         message = umessage.message
+        triggers = missed_message.get('triggers')
+        message.triggers = {
+            'received_pm': triggers.get('received_pm', False),
+            'mentioned': triggers.get('mentioned', False),
+            'stream_push_notify': triggers.get('stream_push_notify', False),
+        }
+        message.stream_name = missed_message.get('stream_name', None)
+
         if umessage.flags.read:
             return
 
         apns_payload = get_apns_payload(message)
         gcm_payload = get_gcm_payload(user_profile, message)
+        logging.info("Sending push notification to user %s: \"%s\"",
+                     user_profile_id, apns_payload.get('alert'))
 
         if uses_notification_bouncer():
             try:

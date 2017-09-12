@@ -714,12 +714,12 @@ def render_incoming_message(message, content, message_users, realm):
     return rendered_content
 
 def get_recipient_user_profiles(recipient, sender_id):
-    # type: (Recipient, int) -> List[UserProfile]
+    # type: (Recipient, int) -> Dict[UserProfile, Dict[str, bool]]
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
         user_ids = list({recipient.type_id, sender_id})
-        recipients = [get_user_profile_by_id(user_id) for user_id in user_ids]
+        recipients = {get_user_profile_by_id(user_id): {} for user_id in user_ids}  # type: Dict[UserProfile, dict]
         # For personals, you send out either 1 or 2 copies, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
@@ -737,10 +737,11 @@ def get_recipient_user_profiles(recipient, sender_id):
             'user_profile__is_bot',
             'user_profile__bot_type',
             'user_profile__long_term_idle',
+            'push_notifications',
         ]
         query = Subscription.objects.select_related("user_profile").only(*fields).filter(
             recipient=recipient, active=True)
-        recipients = [s.user_profile for s in query]
+        recipients = {s.user_profile: {'push_notifications': s.push_notifications} for s in query}
     else:
         raise ValueError('Bad recipient type')
     return recipients
@@ -773,8 +774,10 @@ def do_send_messages(messages_maybe_none):
         message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
                                                             message['message'].sender_id)
         # Only deliver the message to active user recipients
-        message['active_recipients'] = [user_profile for user_profile in message['recipients']
-                                        if user_profile.is_active]
+        message['active_recipients'] = {
+            user_profile: message['recipients'][user_profile] for user_profile
+            in message['recipients'] if user_profile.is_active
+        }
 
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
@@ -909,7 +912,10 @@ def do_send_messages(messages_maybe_none):
 
         users = [{'id': user.id,
                   'flags': user_flags.get(user.id, []),
-                  'always_push_notify': user.enable_online_push_notifications}
+                  'always_push_notify': user.enable_online_push_notifications,
+                  'stream_push_notify': (message['active_recipients'][user]['push_notifications']
+                                         if message['active_recipients'][user] else False),
+                  }
                  for user in message['active_recipients']]
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
@@ -1653,6 +1659,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     email_address=encode_email_address(stream),
                     desktop_notifications=subscription.desktop_notifications,
                     audible_notifications=subscription.audible_notifications,
+                    push_notifications=subscription.push_notifications,
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
                     subscribers=stream_emails(stream))
@@ -1737,7 +1744,9 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         sub_to_add = Subscription(user_profile=user_profile, active=True,
                                   color=color, recipient_id=recipient_id,
                                   desktop_notifications=user_profile.enable_stream_desktop_notifications,
-                                  audible_notifications=user_profile.enable_stream_sounds)
+                                  audible_notifications=user_profile.enable_stream_sounds,
+                                  push_notifications=user_profile.enable_stream_push_notifications,
+                                  )
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 
@@ -3035,7 +3044,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "active", "pin_to_top")
+        "audible_notifications", "push_notifications", "active", "pin_to_top")
 
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
@@ -3089,6 +3098,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
+                       'push_notifications': sub["push_notifications"],
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
