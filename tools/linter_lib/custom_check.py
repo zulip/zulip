@@ -14,95 +14,101 @@ from typing import cast, Any, Callable, Dict, List, Optional, Tuple
 RuleList = List[Dict[str, Any]]  # mypy currently requires Aliases at global scope
 # https://github.com/python/mypy/issues/3145
 
+def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
+    # type: (str, str, RuleList, str, Optional[Any], Optional[int]) -> bool
+    failed = False
+
+    line_tups = []
+    for i, line in enumerate(open(fn)):
+        line_newline_stripped = line.strip('\n')
+        line_fully_stripped = line_newline_stripped.strip()
+        skip = False
+        for rule in skip_rules or []:
+            if re.match(rule, line):
+                skip = True
+        if line_fully_stripped.endswith('  # nolint'):
+            continue
+        if skip:
+            continue
+        tup = (i, line, line_newline_stripped, line_fully_stripped)
+        line_tups.append(tup)
+
+    rules_to_apply = []
+    fn_dirname = os.path.dirname(fn)
+    for rule in rules:
+        exclude_list = rule.get('exclude', set())
+        if fn in exclude_list or fn_dirname in exclude_list:
+            continue
+        if rule.get("include_only"):
+            found = False
+            for item in rule.get("include_only", set()):
+                if item in fn:
+                    found = True
+            if not found:
+                continue
+        rules_to_apply.append(rule)
+
+    for rule in rules_to_apply:
+        exclude_lines = {
+            line for
+            (exclude_fn, line) in rule.get('exclude_line', set())
+            if exclude_fn == fn
+        }
+
+        pattern = rule['pattern']
+        for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
+            if line_fully_stripped in exclude_lines:
+                exclude_lines.remove(line_fully_stripped)
+                continue
+            try:
+                line_to_check = line_fully_stripped
+                if rule.get('strip') is not None:
+                    if rule['strip'] == '\n':
+                        line_to_check = line_newline_stripped
+                    else:
+                        raise Exception("Invalid strip rule")
+                if re.search(pattern, line_to_check):
+                    print_err(identifier, color, '{} at {} line {}:'.format(
+                        rule['description'], fn, i+1))
+                    print_err(identifier, color, line)
+                    failed = True
+            except Exception:
+                print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
+                traceback.print_exc()
+
+        if exclude_lines:
+            print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
+
+    lastLine = None
+    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
+        if isinstance(line, bytes):
+            line_length = len(line.decode("utf-8"))
+        else:
+            line_length = len(line)
+        if (max_length is not None and line_length > max_length and
+            '# type' not in line and 'test' not in fn and 'example' not in fn and
+            not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+            not re.match("`\{\{ external_api_uri_subdomain \}\}[^`]+`", line) and
+                "#ignorelongline" not in line and 'migrations' not in fn):
+            print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
+            failed = True
+        lastLine = line
+
+    if lastLine and ('\n' not in lastLine):
+        print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
+        failed = True
+
+    return failed
+
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
 
-    def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
-        # type: (str, str, RuleList, str, Optional[Any], Optional[int]) -> bool
-        failed = False
-
-        line_tups = []
-        for i, line in enumerate(open(fn)):
-            line_newline_stripped = line.strip('\n')
-            line_fully_stripped = line_newline_stripped.strip()
-            skip = False
-            for rule in skip_rules or []:
-                if re.match(rule, line):
-                    skip = True
-            if line_fully_stripped.endswith('  # nolint'):
-                continue
-            if skip:
-                continue
-            tup = (i, line, line_newline_stripped, line_fully_stripped)
-            line_tups.append(tup)
-
-        rules_to_apply = []
-        fn_dirname = os.path.dirname(fn)
-        for rule in rules:
-            exclude_list = rule.get('exclude', set())
-            if fn in exclude_list or fn_dirname in exclude_list:
-                continue
-            if rule.get("include_only"):
-                found = False
-                for item in rule.get("include_only", set()):
-                    if item in fn:
-                        found = True
-                if not found:
-                    continue
-            rules_to_apply.append(rule)
-
-        for rule in rules_to_apply:
-            exclude_lines = {
-                line for
-                (exclude_fn, line) in rule.get('exclude_line', set())
-                if exclude_fn == fn
-            }
-
-            pattern = rule['pattern']
-            for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-                if line_fully_stripped in exclude_lines:
-                    exclude_lines.remove(line_fully_stripped)
-                    continue
-                try:
-                    line_to_check = line_fully_stripped
-                    if rule.get('strip') is not None:
-                        if rule['strip'] == '\n':
-                            line_to_check = line_newline_stripped
-                        else:
-                            raise Exception("Invalid strip rule")
-                    if re.search(pattern, line_to_check):
-                        print_err(identifier, color, '{} at {} line {}:'.format(
-                            rule['description'], fn, i+1))
-                        print_err(identifier, color, line)
-                        failed = True
-                except Exception:
-                    print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
-                    traceback.print_exc()
-
-            if exclude_lines:
-                print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
-
-        lastLine = None
-        for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-            if isinstance(line, bytes):
-                line_length = len(line.decode("utf-8"))
-            else:
-                line_length = len(line)
-            if (max_length is not None and line_length > max_length and
-                '# type' not in line and 'test' not in fn and 'example' not in fn and
-                not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
-                not re.match("`\{\{ external_api_uri_subdomain \}\}[^`]+`", line) and
-                    "#ignorelongline" not in line and 'migrations' not in fn):
-                print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
-                failed = True
-            lastLine = line
-
-        if lastLine and ('\n' not in lastLine):
-            print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
-            failed = True
-
-        return failed
-
+    # By default, a rule applies to all files within the extension for which it is specified (e.g. all .py files)
+    # There are three operators we can use to manually include or exclude files from linting for a rule:
+    # 'exclude': 'set([<path>, ...])' - if <path> is a filename, excludes that file.
+    #                                   if <path> is a directory, excludes all files directly below the directory <path>.
+    # 'exclude_line': 'set([(<path>, <line>), ...])' - excludes all lines matching <line> in the file <path> from linting.
+    # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
     trailing_whitespace_rule = {
         'pattern': '\s+$',
         'strip': '\n',
@@ -113,8 +119,7 @@ def build_custom_checkers(by_lang):
         trailing_whitespace_rule,
         {'pattern': '\t',
          'strip': '\n',
-         'exclude': set(['zerver/lib/bugdown/codehilite.py',
-                         'tools/travis/success-http-headers.txt']),
+         'exclude': set(['tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
     ]  # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
@@ -264,7 +269,6 @@ def build_custom_checkers(by_lang):
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
         {'pattern': 'self\.client\.(get|post|patch|put|delete)',
-         'exclude': set(['zilencer/tests.py']),
          'description': \
          '''Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
@@ -317,11 +321,6 @@ def build_custom_checkers(by_lang):
         {'pattern': 'render_to_response\(',
          'description': "Use render() instead of render_to_response().",
          },
-        {'pattern': '(^|\s)open\s*\(',
-         'description': 'open() should not be used in Zulip\'s bots. Use functions'
-                        ' provided by the bots framework to access the filesystem.',
-         'include_only': set(['api/bots/']),
-         'exclude': set(['api/bots/john/john.py'])},
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
