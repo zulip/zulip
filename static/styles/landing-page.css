@@ -805,12 +805,10 @@ nav ul li.active::after {
 .portico-landing.hello .hero header a {
     display: block;
     margin: 20px auto 0px auto;
-    width: 150px;
     text-align: center;
 }
 
 .portico-landing.hello .hero header button {
-    width: 170px;
     margin-top: 0px;
     padding: 12px 20px;
 
