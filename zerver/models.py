@@ -1641,12 +1641,13 @@ class UserPresence(models.Model):
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
         )
+        presence_rows = list(query)
 
         mobile_user_ids = set()  # type: Set[int]
         if PushDeviceToken.objects.filter(user=user_profile).exists():
             mobile_user_ids.add(user_profile.id)
 
-        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
     def exclude_old_users(query):
@@ -1682,6 +1683,7 @@ class UserPresence(models.Model):
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
         )
+        presence_rows = list(query)
 
         mobile_query = PushDeviceToken.objects.filter(
             user_id__in=user_profile_ids,
@@ -1689,14 +1691,14 @@ class UserPresence(models.Model):
 
         mobile_user_ids = set(mobile_query.distinct("user_id").values_list("user_id", flat=True))
 
-        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
-    def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, Set[int]) -> Dict[Text, Dict[Any, Any]]
+    def get_status_dicts_for_rows(presence_rows, mobile_user_ids):
+        # type: (List[Dict[str, Any]], Set[int]) -> Dict[Text, Dict[Any, Any]]
 
         info_row_dct = defaultdict(list)  # type: DefaultDict[Text, List[Dict[str, Any]]]
-        for row in query:
+        for row in presence_rows:
             email = row['user_profile__email']
             client_name = row['client__name']
             status = UserPresence.status_to_string(row['status'])
