@@ -113,6 +113,7 @@ import platform
 import logging
 import itertools
 from collections import defaultdict
+from operator import itemgetter
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
@@ -1790,9 +1791,15 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict, stream_re
     cursor.close()
 
     recip_to_stream_id = stream_recipient.recipient_to_stream_id_dict()
-    for recip_id, user_profile_id in rows:
+
+    '''
+    Using groupby/itemgetter here is important for performance, at scale.
+    It makes it so that all interpreter overhead is just O(N) in nature.
+    '''
+    for recip_id, recip_rows in itertools.groupby(rows, itemgetter(0)):
+        user_profile_ids = [r[1] for r in recip_rows]
         stream_id = recip_to_stream_id[recip_id]
-        result[stream_id].append(user_profile_id)
+        result[stream_id] = list(user_profile_ids)
 
     return result
 
