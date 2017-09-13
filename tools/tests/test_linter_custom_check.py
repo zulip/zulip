@@ -13,7 +13,7 @@ CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py
 class TestCustomRulesFormat(TestCase):
     def test_paths_in_rules(self, mock_custom_check_file):
         # type: (MagicMock) -> None
-        """Verifies that the paths mentoned in linter rules actually exist"""
+        """Verifies that the paths mentioned in linter rules actually exist"""
         by_lang = dict.fromkeys(['py', 'js', 'sh', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text', 'yaml'],
                                 ['foo/bar.baz'])
         check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)
