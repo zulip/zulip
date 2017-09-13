@@ -71,7 +71,7 @@ just need to write the `<my-bot>.py` script and put it into `zulip_bots/bots/<my
 You need:
 
 * An account in an organization on a Zulip server
-  e.g. chat.zulip.org, yourSubdomain.zulipchat.com,
+  such as chat.zulip.org, yourSubdomain.zulipchat.com,
   or [your own development server](http://localhost:9991).
   Within that Zulip organization, users will be able to interact with
   your bot.
