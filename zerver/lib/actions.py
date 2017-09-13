@@ -3310,7 +3310,7 @@ def gather_subscriptions(user_profile):
     for subs in [subscribed, unsubscribed]:
         for sub in subs:
             if 'subscribers' in sub:
-                sub['subscribers'] = [email_dict[user_id] for user_id in sub['subscribers']]
+                sub['subscribers'] = sorted([email_dict[user_id] for user_id in sub['subscribers']])
 
     return (subscribed, unsubscribed)
 
