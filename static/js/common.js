@@ -23,7 +23,7 @@ exports.autofocus = function (selector) {
 //
 // This is in common.js because we want to use it from the signup page
 // and also from the in-app password change interface.
-exports.password_quality = function (password, bar, password_field) {
+exports.password_quality = function (password, bar, score, password_field) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
     if (typeof zxcvbn === 'undefined') {
         return undefined;
@@ -35,6 +35,8 @@ exports.password_quality = function (password, bar, password_field) {
     var result = zxcvbn(password);
     var acceptable = (password.length >= min_length
                       && result.guesses >= min_guesses);
+
+    var pw_score = [i18n.t('Very weak'),i18n.t('Weak'),i18n.t('Medium'),i18n.t('Strong'),i18n.t('Very strong')];
 
     if (bar !== undefined) {
         var t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
@@ -53,6 +55,17 @@ exports.password_quality = function (password, bar, password_field) {
            .addClass(acceptable ? 'bar-success' : 'bar-danger');
     }
 
+    if (score !== undefined) {
+        // Display password score/strength
+        score.text(pw_score[zxcvbn(password).score])
+             .removeClass('text-success text-error');
+        if (acceptable) {
+            score.addClass('text-success');
+        } else {
+            score.addClass('text-error');
+        }
+    }
+
     return acceptable;
 };
 
@@ -62,11 +75,32 @@ exports.password_warning = function (password, password_field) {
     }
 
     var min_length = password_field.data('minLength');
+    var result = zxcvbn(password);
 
     if (password.length < min_length) {
         return i18n.t('Password should be at least __length__ characters long', {length: min_length});
     }
-    return zxcvbn(password).feedback.warning || i18n.t("Password is too weak");
+
+    var warning = i18n.t('__warning__ __suggestions__',{
+                warning: result.feedback.warning || "Password is too weak.",
+                suggestions: result.feedback.suggestions});
+
+    return warning;
+};
+
+exports.password_crack_time = function (password, crack_time) {
+    if (typeof zxcvbn === 'undefined') {
+        return undefined;
+    }
+
+    var crackTime = zxcvbn(password).crack_times_display.offline_slow_hashing_1e4_per_second;
+
+    if (crack_time !== undefined) {
+        crack_time.text(i18n.t('Crack time: __time__', {time: crackTime}));
+        crack_time.attr('title', i18n.t('This password can be cracked in __time__.', {time: crackTime}));
+    }
+
+    return crackTime;
 };
 
 return exports;
