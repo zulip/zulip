@@ -64,6 +64,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
+from zerver.lib.stream_recipient import StreamRecipientMap
 
 from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q, Max
@@ -1736,8 +1737,8 @@ def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_
         raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
 
 # sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
-def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
-    # type: (Iterable[Mapping[str, Any]], UserProfile, Mapping[int, bool]) -> Dict[int, List[int]]
+def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict, stream_recipient):
+    # type: (Iterable[Mapping[str, Any]], UserProfile, Mapping[int, bool], StreamRecipientMap) -> Dict[int, List[int]]
     target_stream_dicts = []
     for stream_dict in stream_dicts:
         try:
@@ -1747,15 +1748,30 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
             continue
         target_stream_dicts.append(stream_dict)
 
-    subscriptions = Subscription.objects.select_related("recipient").filter(
-        recipient__type=Recipient.STREAM,
-        recipient__type_id__in=[stream["id"] for stream in target_stream_dicts],
+    stream_ids = [stream['id'] for stream in target_stream_dicts]
+    stream_recipient.populate_for_stream_ids(stream_ids)
+    recipient_ids = sorted([
+        stream_recipient.recipient_id_for(stream_id)
+        for stream_id in stream_ids
+    ])
+
+    subscriptions = Subscription.objects.filter(
+        recipient_id__in=recipient_ids,
         user_profile__is_active=True,
-        active=True).values("user_profile_id", "recipient__type_id")
+        active=True
+    ).values(
+        'recipient_id',
+        'user_profile_id',
+    ).order_by('recipient_id')
+    subscriptions = list(subscriptions)
 
     result = dict((stream["id"], []) for stream in stream_dicts)  # type: Dict[int, List[int]]
+    recip_to_stream_id = stream_recipient.recipient_to_stream_id_dict()
     for sub in subscriptions:
-        result[sub["recipient__type_id"]].append(sub["user_profile_id"])
+        recip_id = sub['recipient_id']
+        stream_id = recip_to_stream_id[recip_id]
+        user_profile_id = sub['user_profile_id']
+        result[stream_id].append(user_profile_id)
 
     return result
 
@@ -3200,13 +3216,27 @@ def decode_email_address(email):
 # subscriptions, so it's worth optimizing.
 def gather_subscriptions_helper(user_profile, include_subscribers=True):
     # type: (UserProfile, bool) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
-    sub_dicts = Subscription.objects.select_related("recipient").filter(
+    sub_dicts = Subscription.objects.filter(
         user_profile    = user_profile,
-        recipient__type = Recipient.STREAM).values(
-        "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "push_notifications", "active", "pin_to_top")
+        recipient__type = Recipient.STREAM
+    ).values(
+        "recipient_id", "in_home_view", "color", "desktop_notifications",
+        "audible_notifications", "push_notifications", "active", "pin_to_top"
+    ).order_by("recipient_id")
 
-    stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
+    sub_dicts = list(sub_dicts)
+    sub_recipient_ids = [
+        sub['recipient_id']
+        for sub in sub_dicts
+    ]
+    stream_recipient = StreamRecipientMap()
+    stream_recipient.populate_for_recipient_ids(sub_recipient_ids)
+
+    stream_ids = set()  # type: Set[int]
+    for sub in sub_dicts:
+        sub['stream_id'] = stream_recipient.stream_id_for(sub['recipient_id'])
+        stream_ids.add(sub['stream_id'])
+
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
                         "email_token", "description")
@@ -3223,15 +3253,20 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     never_subscribed = []
 
     # Deactivated streams aren't in stream_hash.
-    streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts
-               if sub["recipient__type_id"] in stream_hash]
-    streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
+    streams = [stream_hash[sub["stream_id"]] for sub in sub_dicts
+               if sub["stream_id"] in stream_hash]
+    streams_subscribed_map = dict((sub["stream_id"], sub["active"]) for sub in sub_dicts)
 
     # Add never subscribed streams to streams_subscribed_map
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
 
     if include_subscribers:
-        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)  # type: Mapping[int, Optional[List[int]]]
+        subscriber_map = bulk_get_subscriber_user_ids(
+            all_streams,
+            user_profile,
+            streams_subscribed_map,
+            stream_recipient
+        )  # type: Mapping[int, Optional[List[int]]]
     else:
         # If we're not including subscribers, always return None,
         # which the below code needs to check for anyway.
@@ -3239,8 +3274,8 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
 
     sub_unsub_stream_ids = set()
     for sub in sub_dicts:
-        sub_unsub_stream_ids.add(sub["recipient__type_id"])
-        stream = stream_hash.get(sub["recipient__type_id"])
+        sub_unsub_stream_ids.add(sub["stream_id"])
+        stream = stream_hash.get(sub["stream_id"])
         if not stream:
             # This stream has been deactivated, don't include it.
             continue
