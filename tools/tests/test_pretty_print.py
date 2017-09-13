@@ -14,7 +14,7 @@ BAD_HTML = """
 <!DOCTYPE html>
 
 
-
+#TestHTML
 <html>
     <!-- test -->
     <head>
