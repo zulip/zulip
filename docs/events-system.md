@@ -140,7 +140,7 @@ those events could be lost).
 [api-bindings-code]: https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py
 
 The queue servers are a very high-traffic system, processing at a
-minimum a request for every message delivered to every Zulip client.
+minimum a request for every message delivered to each Zulip client.
 Additionally, as a workaround for low-quality NAT servers that kill
 HTTP connections that are open without activity for more than 60s, the
 queue servers also send a heartbeat event to each queue at least once
@@ -184,7 +184,7 @@ an event in the queue for the name change) or before (the new name is
 in the initial state, and there is no event for that name change in
 the queue).
 
-Achieving this atomicity goals means we save a huge amount of work
+Achieving these atomicity goals means we save a huge amount of work
 that the N clients for Zulip don't need to worry about a wide range of
 potential rare and hard to reproduce race conditions; we just have to
 implement things correctly once in the Zulip server.
