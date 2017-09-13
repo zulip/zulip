@@ -15,6 +15,7 @@ from zilencer.models import Deployment
 from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
+    do_send_messages,
     get_userids_for_missed_messages,
     internal_send_private_message,
 )
@@ -43,7 +44,7 @@ from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivat
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
-    RealmAuditLog, RealmDomain, get_realm, UserPresence,
+    RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_recipient, get_system_bot, get_user, Reaction,
     sew_messages_and_reactions, flush_per_request_caches
 )
@@ -480,6 +481,71 @@ class StreamMessagesTest(ZulipTestCase):
 
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
+
+    def test_performance(self):
+        # type: () -> None
+        '''
+        This test is part of the automated test suite, but
+        it is more intended as an aid to measuring the
+        performance of do_send_messages() with consistent
+        data setup across different commits.  You can modify
+        the values below and run just this test, and then
+        comment out the print statement toward the bottom.
+        '''
+        num_messages = 2
+        num_extra_users = 10
+
+        sender = self.example_user('cordelia')
+        realm = sender.realm
+        message_content = 'whatever'
+        stream = get_stream('Denmark', realm)
+        subject = 'lunch'
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+        sending_client = make_client(name="test suite")
+
+        for i in range(num_extra_users):
+            # Make every other user be idle.
+            long_term_idle = i % 2 > 0
+
+            email = 'foo%d@example.com' % (i,)
+            user = UserProfile.objects.create(
+                realm=realm,
+                email=email,
+                pointer=0,
+                long_term_idle=long_term_idle,
+            )
+            Subscription.objects.create(
+                user_profile=user,
+                recipient=recipient
+            )
+
+        def send_test_message():
+            # type: () -> None
+            message = Message(
+                sender=sender,
+                recipient=recipient,
+                subject=subject,
+                content=message_content,
+                pub_date=timezone_now(),
+                sending_client=sending_client,
+            )
+            do_send_messages([dict(message=message)])
+
+        before_um_count = UserMessage.objects.count()
+
+        t = time.time()
+        for i in range(num_messages):
+            send_test_message()
+
+        delay = time.time() - t
+        assert(delay)  # quiet down lint
+        # print(delay)
+
+        after_um_count = UserMessage.objects.count()
+        ums_created = after_um_count - before_um_count
+
+        num_active_users = num_extra_users / 2
+        self.assertTrue(ums_created > (num_active_users * num_messages))
 
     def test_not_too_many_queries(self):
         # type: () -> None
@@ -2044,7 +2110,7 @@ class MissedMessageTest(ZulipTestCase):
         realm = sender.realm
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        recipients = [hamlet, othello]
+        recipient_ids = {hamlet.id, othello.id}
         message_type = 'stream'
         user_flags = {}  # type: Dict[int, List[str]]
 
@@ -2054,7 +2120,7 @@ class MissedMessageTest(ZulipTestCase):
                 realm=realm,
                 sender_id=sender.id,
                 message_type=message_type,
-                active_recipients=recipients,
+                active_user_ids=recipient_ids,
                 user_flags=user_flags,
             )
             self.assertEqual(sorted(user_ids), sorted(missed_message_userids))

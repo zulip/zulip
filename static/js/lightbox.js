@@ -90,12 +90,6 @@ exports.open = function (image, options) {
     // asset, just recall that metadata.
     if (asset_map[$image.attr("src")]) {
         payload = asset_map[$image.attr("src")];
-
-        if (payload.type === "youtube-video") {
-            display_youtube_video(payload);
-        } else if (payload.type === "image") {
-            display_image(payload, options);
-        }
     // otherwise retrieve the metadata from the DOM and store into the asset_map.
     } else {
         var $parent = $image.parent();
@@ -110,12 +104,12 @@ exports.open = function (image, options) {
         };
 
         asset_map[payload.preview] = payload;
+    }
 
-        if (payload.type === "youtube-video") {
-            display_youtube_video(payload);
-        } else if (payload.type === "image") {
-            display_image(payload, options);
-        }
+    if (payload.type === "youtube-video") {
+        display_youtube_video(payload);
+    } else if (payload.type === "image") {
+        display_image(payload, options);
     }
 
     if (is_open) {

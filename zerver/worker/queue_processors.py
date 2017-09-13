@@ -438,9 +438,10 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         if message.content != event['message_content']:
             return
         if message.content is not None:
-            ums = UserMessage.objects.filter(
-                message=message.id).select_related("user_profile")
-            message_users = {um.user_profile for um in ums}
+            query = UserMessage.objects.filter(
+                message=message.id
+            )
+            message_user_ids = set(query.values_list('user_profile_id', flat=True))
 
             # Fetch the realm whose settings we're using for rendering
             realm = Realm.objects.get(id=event['message_realm_id'])
@@ -449,7 +450,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             rendered_content = render_incoming_message(
                 message,
                 message.content,
-                message_users,
+                message_user_ids,
                 realm)
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)

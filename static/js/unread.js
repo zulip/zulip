@@ -480,9 +480,7 @@ exports.load_server_counts = function () {
 };
 
 exports.initialize = function () {
-    if (feature_flags.load_server_counts) {
-        exports.load_server_counts();
-    }
+    exports.load_server_counts();
 };
 
 return exports;

@@ -2,8 +2,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, List, Mapping, MutableMapping,
-    Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast,
+    Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast
 )
+from mypy_extensions import TypedDict
 
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -698,8 +699,8 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
         except IntegrityError:
             return get_user(email, realm)
 
-def render_incoming_message(message, content, message_users, realm):
-    # type: (Message, Text, Set[UserProfile], Realm) -> Text
+def render_incoming_message(message, content, user_ids, realm):
+    # type: (Message, Text, Set[int], Realm) -> Text
     realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
@@ -707,43 +708,119 @@ def render_incoming_message(message, content, message_users, realm):
             content=content,
             realm=realm,
             realm_alert_words=realm_alert_words,
-            message_users=message_users,
+            user_ids=user_ids,
         )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
     return rendered_content
 
-def get_recipient_user_profiles(recipient, sender_id):
-    # type: (Recipient, int) -> List[UserProfile]
+def get_recipient_user_ids(recipient, sender_id):
+    # type: (Recipient, int) -> List[int]
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
         user_ids = list({recipient.type_id, sender_id})
-        recipients = [get_user_profile_by_id(user_id) for user_id in user_ids]
-        # For personals, you send out either 1 or 2 copies, for
-        # personals to yourself or to someone else, respectively.
-        assert((len(recipients) == 1) or (len(recipients) == 2))
+        assert(len(user_ids) in [1, 2])
+        return user_ids
+
     elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
-        # We use select_related()/only() here, while the PERSONAL case above uses
-        # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
-        # typically have more recipients than PMs, so get_user_profile_by_id() would be
-        # a bit more expensive here, given that we need to hit the DB anyway and only
-        # care about the email from the user profile.
-        fields = [
-            'user_profile__id',
-            'user_profile__email',
-            'user_profile__enable_online_push_notifications',
-            'user_profile__is_active',
-            'user_profile__is_bot',
-            'user_profile__bot_type',
-            'user_profile__long_term_idle',
-        ]
-        query = Subscription.objects.select_related("user_profile").only(*fields).filter(
-            recipient=recipient, active=True)
-        recipients = [s.user_profile for s in query]
-    else:
-        raise ValueError('Bad recipient type')
-    return recipients
+        user_ids = Subscription.objects.filter(
+            recipient=recipient,
+            active=True,
+        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+        return user_ids
+
+    raise ValueError('Bad recipient type')
+
+def get_typing_user_profiles(recipient, sender_id):
+    # type: (Recipient, int) -> List[UserProfile]
+    if recipient.type == Recipient.STREAM:
+        '''
+        We don't support typing indicators for streams because they
+        are expensive and initial user feedback was they were too
+        distracting.
+        '''
+        raise ValueError('Typing indicators not supported for streams')
+
+    user_ids = get_recipient_user_ids(recipient, sender_id)
+    users = [get_user_profile_by_id(user_id) for user_id in user_ids]
+    return users
+
+RecipientInfoResult = TypedDict('RecipientInfoResult', {
+    'recipient_user_ids': Set[int],
+    'active_user_ids': Set[int],
+    'push_notify_user_ids': Set[int],
+    'um_eligible_user_ids': Set[int],
+    'long_term_idle_user_ids': Set[int],
+    'service_bot_tuples': List[Tuple[int, int]],
+})
+
+def get_recipient_info(recipient, sender_id):
+    # type: (Recipient, int) -> RecipientInfoResult
+    user_ids = get_recipient_user_ids(recipient, sender_id)
+
+    query = UserProfile.objects.filter(
+        id__in=user_ids
+    ).values(
+        'id',
+        'enable_online_push_notifications',
+        'is_active',
+        'is_bot',
+        'bot_type',
+        'long_term_idle',
+    )
+    rows = list(query)
+
+    recipient_user_ids = {
+        row['id']
+        for row in rows
+    }
+
+    def get_ids_for(f):
+        # type: (Callable[[Dict[str, Any]], bool]) -> Set[int]
+        return {
+            row['id']
+            for row in rows
+            if f(row)
+        }
+
+    def is_service_bot(row):
+        # type: (Dict[str, Any]) -> bool
+        return row['is_bot'] and (row['bot_type'] in UserProfile.SERVICE_BOT_TYPES)
+
+    # Only deliver the message to active user recipients
+    active_user_ids = get_ids_for(
+        lambda r: r['is_active']
+    )
+
+    push_notify_user_ids = get_ids_for(
+        lambda r: r['is_active'] and r['enable_online_push_notifications']
+    )
+
+    # Service bots don't get UserMessage rows.
+    um_eligible_user_ids = get_ids_for(
+        lambda r: r['is_active'] and (not is_service_bot(r))
+    )
+
+    long_term_idle_user_ids = get_ids_for(
+        lambda r: r['long_term_idle']
+    )
+
+    service_bot_tuples = [
+        (row['id'], row['bot_type'])
+        for row in rows
+        if row['is_active'] and is_service_bot(row)
+    ]
+
+    info = dict(
+        recipient_user_ids=recipient_user_ids,
+        active_user_ids=active_user_ids,
+        push_notify_user_ids=push_notify_user_ids,
+        um_eligible_user_ids=um_eligible_user_ids,
+        long_term_idle_user_ids=long_term_idle_user_ids,
+        service_bot_tuples=service_bot_tuples
+    )  # type: RecipientInfoResult
+    return info
 
 def do_send_messages(messages_maybe_none):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
@@ -770,11 +847,15 @@ def do_send_messages(messages_maybe_none):
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
     for message in messages:
-        message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
-                                                            message['message'].sender_id)
-        # Only deliver the message to active user recipients
-        message['active_recipients'] = [user_profile for user_profile in message['recipients']
-                                        if user_profile.is_active]
+        info = get_recipient_info(message['message'].recipient,
+                                  message['message'].sender_id)
+
+        message['recipient_user_ids'] = info['recipient_user_ids']
+        message['active_user_ids'] = info['active_user_ids']
+        message['push_notify_user_ids'] = info['push_notify_user_ids']
+        message['um_eligible_user_ids'] = info['um_eligible_user_ids']
+        message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
+        message['service_bot_tuples'] = info['service_bot_tuples']
 
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
@@ -783,7 +864,7 @@ def do_send_messages(messages_maybe_none):
         rendered_content = render_incoming_message(
             message['message'],
             message['message'].content,
-            message['active_recipients'],
+            message['active_user_ids'],
             message['realm'])
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
@@ -796,41 +877,19 @@ def do_send_messages(messages_maybe_none):
     user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
-        ums = []  # type: List[UserMessage]
+        ums = []  # type: List[UserMessageLite]
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
-            ums_to_create = []
-            for user_profile in message['active_recipients']:
-                # is_service_bot is derived from is_bot and bot_type, and both of these fields
-                # should have been pre-fetched.
-                if not user_profile.is_service_bot:
-                    ums_to_create.append(UserMessage(user_profile=user_profile, message=message['message']))
+            mentioned_user_ids = message['message'].mentions_user_ids
+            user_messages = create_user_messages(
+                message=message['message'],
+                um_eligible_user_ids=message['um_eligible_user_ids'],
+                long_term_idle_user_ids=message['long_term_idle_user_ids'],
+                mentioned_user_ids=mentioned_user_ids,
+            )
 
-            # These properties on the Message are set via
-            # render_markdown by code in the bugdown inline patterns
-            wildcard = message['message'].mentions_wildcard
-            mentioned_ids = message['message'].mentions_user_ids
-            ids_with_alert_words = message['message'].user_ids_with_alert_words
-
-            for um in ums_to_create:
-                if um.user_profile.id == message['message'].sender.id and \
-                        message['message'].sent_by_human():
-                    um.flags |= UserMessage.flags.read
-                if wildcard:
-                    um.flags |= UserMessage.flags.wildcard_mentioned
-                if um.user_profile_id in mentioned_ids:
-                    um.flags |= UserMessage.flags.mentioned
-                if um.user_profile_id in ids_with_alert_words:
-                    um.flags |= UserMessage.flags.has_alert_word
-
-            user_messages = []
-            for um in ums_to_create:
-                if (um.user_profile.long_term_idle and
-                        um.message.recipient.type == Recipient.STREAM and
-                        int(um.flags) == 0):
-                    continue
-                user_messages.append(um)
+            for um in user_messages:
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
 
             ums.extend(user_messages)
@@ -846,22 +905,19 @@ def do_send_messages(messages_maybe_none):
 
             # TODO: Right now, service bots need to be subscribed to a stream in order to
             # receive messages when mentioned; we will want to change that structure.
-            for user_profile in message['active_recipients']:
-                if not user_profile.is_service_bot:
-                    continue
-
-                if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+            for user_profile_id, bot_type in message['service_bot_tuples']:
+                if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
                     queue_name = 'outgoing_webhooks'
-                elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+                elif bot_type == UserProfile.EMBEDDED_BOT:
                     queue_name = 'embedded_bots'
                 else:
                     logging.error(
-                        'Unexpected bot_type for Service bot %s: %s' %
-                        (user_profile.email, user_profile.bot_type))
+                        'Unexpected bot_type for Service bot id=%s: %s' %
+                        (user_profile_id, bot_type))
                     continue
 
                 # Mention triggers, primarily for stream messages
-                if user_profile.id in mentioned_ids:
+                if user_profile_id in mentioned_user_ids:
                     trigger = 'mention'
                 # PM triggers for personal and huddle messsages
                 elif message['message'].recipient.type != Recipient.STREAM:
@@ -871,10 +927,10 @@ def do_send_messages(messages_maybe_none):
 
                 message['message'].service_queue_events[queue_name].append({
                     'trigger': trigger,
-                    'user_profile': user_profile,
+                    'user_profile_id': user_profile_id,
                 })
 
-        UserMessage.objects.bulk_create(ums)
+        bulk_insert_ums(ums)
 
         # Claim attachments in message
         for message in messages:
@@ -895,7 +951,7 @@ def do_send_messages(messages_maybe_none):
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
-            active_recipients=message['active_recipients'],
+            active_user_ids=message['active_user_ids'],
             user_flags=user_flags,
         )
 
@@ -907,10 +963,15 @@ def do_send_messages(messages_maybe_none):
             missed_message_userids=missed_message_userids,
         )
 
-        users = [{'id': user.id,
-                  'flags': user_flags.get(user.id, []),
-                  'always_push_notify': user.enable_online_push_notifications}
-                 for user in message['active_recipients']]
+        users = [
+            dict(
+                id=user_id,
+                flags=user_flags.get(user_id, []),
+                always_push_notify=(user_id in message['push_notify_user_ids'])
+            )
+            for user_id in message['active_user_ids']
+        ]
+
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
@@ -939,14 +1000,16 @@ def do_send_messages(messages_maybe_none):
                 'urls': links_for_embed}
             queue_json_publish('embed_links', event_data, lambda x: None)
 
-        if (settings.ENABLE_FEEDBACK and
-            message['message'].recipient.type == Recipient.PERSONAL and
-                settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
-            queue_json_publish(
-                'feedback_messages',
-                message_to_dict(message['message'], apply_markdown=False),
-                lambda x: None
-            )
+        if (settings.ENABLE_FEEDBACK and settings.FEEDBACK_BOT and
+                message['message'].recipient.type == Recipient.PERSONAL):
+
+            feedback_bot_id = get_user_profile_by_email(email=settings.FEEDBACK_BOT).id
+            if feedback_bot_id in message['recipient_user_ids']:
+                queue_json_publish(
+                    'feedback_messages',
+                    message_to_dict(message['message'], apply_markdown=False),
+                    lambda x: None
+                )
 
         for queue_name, events in message['message'].service_queue_events.items():
             for event in events:
@@ -955,7 +1018,7 @@ def do_send_messages(messages_maybe_none):
                     {
                         "message": message_to_dict(message['message'], apply_markdown=False),
                         "trigger": event['trigger'],
-                        "user_profile_id": event["user_profile"].id,
+                        "user_profile_id": event["user_profile_id"],
                         "failed_tries": 0,
                     },
                     lambda x: None
@@ -966,6 +1029,83 @@ def do_send_messages(messages_maybe_none):
     # mirror single zephyr messages at a time and don't otherwise
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
+
+class UserMessageLite(object):
+    '''
+    The Django ORM is too slow for bulk operations.  This class
+    is optimized for the simple use case of inserting a bunch of
+    rows into zerver_usermessage.
+    '''
+    def __init__(self, user_profile_id, message_id):
+        # type: (int, int) -> None
+        self.user_profile_id = user_profile_id
+        self.message_id = message_id
+        self.flags = 0
+
+    def flags_list(self):
+        # type: () -> List[str]
+        return UserMessage.flags_list_for_flags(self.flags)
+
+def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids, mentioned_user_ids):
+    # type: (Message, Set[int], Set[int], Set[int]) -> List[UserMessageLite]
+    ums_to_create = []
+
+    for user_profile_id in um_eligible_user_ids:
+        um = UserMessageLite(
+            user_profile_id=user_profile_id,
+            message_id=message.id,
+        )
+        ums_to_create.append(um)
+
+    # These properties on the Message are set via
+    # render_markdown by code in the bugdown inline patterns
+    wildcard = message.mentions_wildcard
+    ids_with_alert_words = message.user_ids_with_alert_words
+
+    for um in ums_to_create:
+        if um.user_profile_id == message.sender.id and \
+                message.sent_by_human():
+            um.flags |= UserMessage.flags.read
+        if wildcard:
+            um.flags |= UserMessage.flags.wildcard_mentioned
+        if um.user_profile_id in mentioned_user_ids:
+            um.flags |= UserMessage.flags.mentioned
+        if um.user_profile_id in ids_with_alert_words:
+            um.flags |= UserMessage.flags.has_alert_word
+
+    user_messages = []
+    for um in ums_to_create:
+        if (um.user_profile_id in long_term_idle_user_ids and
+                message.recipient.type == Recipient.STREAM and
+                int(um.flags) == 0):
+            continue
+        user_messages.append(um)
+
+    return user_messages
+
+def bulk_insert_ums(ums):
+    # type: (List[UserMessageLite]) -> None
+    '''
+    Doing bulk inserts this way is much faster than using Django,
+    since we don't have any ORM overhead.  Profiling with 1000
+    users shows a speedup of 0.436 -> 0.027 seconds, so we're
+    talking about a 15x speedup.
+    '''
+    if not ums:
+        return
+
+    vals = ','.join([
+        '(%d, %d, %d)' % (um.user_profile_id, um.message_id, um.flags)
+        for um in ums
+    ])
+    query = '''
+        INSERT into
+            zerver_usermessage (user_profile_id, message_id, flags)
+        VALUES
+    ''' + vals
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
 
 def notify_reaction_update(user_profile, message, reaction, op):
     # type: (UserProfile, Message, Reaction, Text) -> None
@@ -1017,8 +1157,8 @@ def do_remove_reaction(user_profile, message, emoji_name):
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
-    recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],
-                                                          notification['sender'].id)
+    recipient_user_profiles = get_typing_user_profiles(notification['recipient'],
+                                                       notification['sender'].id)
     # Only deliver the notification to active user recipients
     user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
     sender_dict = {'user_id': notification['sender'].id, 'email': notification['sender'].email}
@@ -3144,20 +3284,20 @@ def gather_subscriptions(user_profile):
 
     return (subscribed, unsubscribed)
 
-def get_userids_for_missed_messages(realm, sender_id, message_type, active_recipients, user_flags):
-    # type: (Realm, int, str, List[UserProfile], Dict[int, List[str]]) -> List[int]
+def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_ids, user_flags):
+    # type: (Realm, int, str, Set[int], Dict[int, List[str]]) -> List[int]
     if realm.presence_disabled:
         return []
 
     is_pm = message_type == 'private'
 
     user_ids = set()
-    for user in active_recipients:
-        flags = user_flags.get(user.id, [])  # type: Iterable[str]
+    for user_id in active_user_ids:
+        flags = user_flags.get(user_id, [])  # type: Iterable[str]
         mentioned = 'mentioned' in flags
-        received_pm = is_pm and user.id != sender_id
+        received_pm = is_pm and user_id != sender_id
         if mentioned or received_pm:
-            user_ids.add(user.id)
+            user_ids.add(user_id)
 
     if not user_ids:
         return []
