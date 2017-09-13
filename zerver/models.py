@@ -54,6 +54,25 @@ MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[Text], AbstractSet[Text])
 
+def query_for_ids(query, user_ids, field):
+    # type: (QuerySet, List[int], str) -> QuerySet
+    '''
+    This function optimizes searches of the form
+    `user_profile_id in (1, 2, 3, 4)` by quickly
+    building the where clauses.  Profiling shows significant
+    speedups over the normal Django-based approach.
+
+    Use this very carefully!  Also, the caller should
+    guard against empty lists of user_ids.
+    '''
+    assert(user_ids)
+    value_list = ', '.join(str(int(user_id)) for user_id in user_ids)
+    clause = '%s in (%s)' % (field, value_list)
+    query = query.extra(
+        where=[clause]
+    )
+    return query
+
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
 per_request_display_recipient_cache = {}  # type: Dict[int, List[Dict[str, Any]]]
@@ -1650,12 +1669,6 @@ class UserPresence(models.Model):
         return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
-    def exclude_old_users(query):
-        # type: (QuerySet) -> QuerySet
-        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
-        return query.filter(timestamp__gte=two_weeks_ago)
-
-    @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> Dict[Text, Dict[Any, Any]]
         user_profile_ids = UserProfile.objects.filter(
@@ -1669,13 +1682,10 @@ class UserPresence(models.Model):
         if not user_profile_ids:
             return {}
 
+        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
         query = UserPresence.objects.filter(
-            user_profile_id__in=user_profile_ids
-        )
-
-        query = UserPresence.exclude_old_users(query)
-
-        query = query.values(
+            timestamp__gte=two_weeks_ago
+        ).values(
             'client__name',
             'status',
             'timestamp',
@@ -1683,13 +1693,27 @@ class UserPresence(models.Model):
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
         )
+
+        query = query_for_ids(
+            query=query,
+            user_ids=user_profile_ids,
+            field='user_profile_id'
+        )
         presence_rows = list(query)
 
-        mobile_query = PushDeviceToken.objects.filter(
-            user_id__in=user_profile_ids,
+        mobile_query = PushDeviceToken.objects.distinct(
+            'user_id'
+        ).values_list(
+            'user_id',
+            flat=True
         )
 
-        mobile_user_ids = set(mobile_query.distinct("user_id").values_list("user_id", flat=True))
+        mobile_query = query_for_ids(
+            query=mobile_query,
+            user_ids=user_profile_ids,
+            field='user_id'
+        )
+        mobile_user_ids = set(mobile_query)
 
         return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
