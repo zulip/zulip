@@ -1,17 +1,18 @@
 import os
 
 from itertools import chain
-from mock import patch, MagicMock
+from mock import patch
 from unittest import TestCase
 
 from typing import Any, Dict, List
 
 from tools.linter_lib.custom_check import build_custom_checkers
+from tools.linter_lib.custom_check import custom_check_file
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
 CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py`."
 
-class TestCustomRulesFormat(TestCase):
+class TestCustomRules(TestCase):
 
     def setUp(self):
         # type: () -> None
@@ -45,3 +46,22 @@ class TestCustomRulesFormat(TestCase):
                 if not os.path.splitext(path)[1]:
                     self.assertTrue(path.endswith('/'),
                                     "The path '{}' should end with '/'. {}".format(path, CHECK_MESSAGE))
+
+    def test_rule_patterns(self):
+        # type: () -> None
+        """Verifies that the search regex specified in a custom rule actually matches
+           the expectation and doesn't throw false positives."""
+        for rule in self.all_rules:
+            pattern = rule['pattern']
+            for line in rule.get('good_lines', []):
+                # create=True is superfluous when mocking built-ins in Python >= 3.5
+                with patch('builtins.open', return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True):
+                    self.assertFalse(custom_check_file('foo.bar', 'baz', [rule], ''),
+                                     "The pattern '{}' matched the line '{}' while it shouldn't.".format(pattern, line))
+
+            for line in rule.get('bad_lines', []):
+                # create=True is superfluous when mocking built-ins in Python >= 3.5
+                with patch('builtins.open',
+                           return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True), patch('builtins.print'):
+                    self.assertTrue(custom_check_file('foo.bar', 'baz', [rule], ''),
+                                    "The pattern '{}' didn't match the line '{}' while it should.".format(pattern, line))

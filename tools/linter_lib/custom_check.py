@@ -131,7 +131,9 @@ def build_custom_checkers(by_lang):
          'description': 'Fix trailing whitespace'},
         {'pattern': '^#+[A-Za-z0-9]',
          'strip': '\n',
-         'description': 'Missing space after # in heading'},
+         'description': 'Missing space after # in heading',
+         'good_lines': ['### some heading', '# another heading'],
+         'bad_lines': ['###some heading', '#another heading']},
     ]  # type: RuleList
     js_rules = cast(RuleList, [
         {'pattern': '[^_]function\(',
