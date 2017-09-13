@@ -1755,22 +1755,43 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict, stream_re
         for stream_id in stream_ids
     ])
 
-    subscriptions = Subscription.objects.filter(
-        recipient_id__in=recipient_ids,
-        user_profile__is_active=True,
-        active=True
-    ).values(
-        'recipient_id',
-        'user_profile_id',
-    ).order_by('recipient_id')
-    subscriptions = list(subscriptions)
-
     result = dict((stream["id"], []) for stream in stream_dicts)  # type: Dict[int, List[int]]
+    if not recipient_ids:
+        return result
+
+    '''
+    The raw SQL below leads to more than a 2x speedup when tested with
+    20k+ total subscribers.  (For large realms with lots of default
+    streams, this function deals with LOTS of data, so it is important
+    to optimize.)
+    '''
+
+    id_list = ', '.join(str(recipient_id) for recipient_id in recipient_ids)
+
+    query = '''
+        SELECT
+            zerver_subscription.recipient_id,
+            zerver_subscription.user_profile_id
+        FROM
+            zerver_subscription
+        INNER JOIN zerver_userprofile ON
+            zerver_userprofile.id = zerver_subscription.user_profile_id
+        WHERE
+            zerver_subscription.recipient_id in (%s) AND
+            zerver_subscription.active AND
+            zerver_userprofile.is_active
+        ORDER BY
+            zerver_subscription.recipient_id
+        ''' % (id_list,)
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    cursor.close()
+
     recip_to_stream_id = stream_recipient.recipient_to_stream_id_dict()
-    for sub in subscriptions:
-        recip_id = sub['recipient_id']
+    for recip_id, user_profile_id in rows:
         stream_id = recip_to_stream_id[recip_id]
-        user_profile_id = sub['user_profile_id']
         result[stream_id].append(user_profile_id)
 
     return result
