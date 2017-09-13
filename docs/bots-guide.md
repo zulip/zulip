@@ -109,7 +109,9 @@ You need:
     * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
+
 5. Run the bot.
+
     * Run
       ```
       zulip-run-bot <bot-name> --config-file ~/.zuliprc
