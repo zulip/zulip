@@ -966,7 +966,7 @@ need to specify the proxy settings before running `Vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
 ```
-vagrant plugin install vagrant-proxyconf.
+vagrant plugin install vagrant-proxyconf
 ```
 
 Then create `~/.zulip-vagrant-config` and add the following lines to
