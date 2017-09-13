@@ -129,11 +129,12 @@ function handle_keydown(e) {
                 nextFocus = false;
             }
 
-            // Send the message on Ctrl/Cmd-Enter or if the user has configured enter to
+            // Send the message on Ctrl/Cmd-Enter, Shift/Cmd-Enter
+            // Send message if the user has configured enter to
             // send and the Shift/Ctrl/Cmd/Alt keys are not pressed.
-            // Otherwise, make sure to insert a newline instead
+            // Otherwise, add a newline for Shift/Ctrl/Cmd
             if (e.target.id === "new_message_content" && code === 13) {
-                if ((!page_params.enter_sends && (e.metaKey || e.ctrlKey)) ||
+                if ((!page_params.enter_sends && (e.metaKey || e.ctrlKey || e.shiftKey)) ||
                     (page_params.enter_sends && !(e.shiftKey || e.ctrlKey || e.metaKey || e.altKey))
                 ) {
                     e.preventDefault();
@@ -141,6 +142,8 @@ function handle_keydown(e) {
                         $("#compose-send-button").attr('disabled', 'disabled');
                         compose.finish();
                     }
+                } else if (page_params.enter_sends && e.ctrlKey) {
+                    $("#new_message_content").val($("#new_message_content").val() + "\n");
                 }
                 // Don't prevent default -- just let the enter key go in as usual.
             }

@@ -618,7 +618,7 @@ global.people.add(deactivated_user);
     event.ctrlKey = true;
     $('form#send_message_form').keydown(event);
     page_params.enter_sends = true;
-    event.ctrlKey = false;
+    event.ctrlKey = true;
     event.altKey = true;
     $('form#send_message_form').keydown(event);
     event.metaKey = true;
