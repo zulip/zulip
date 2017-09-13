@@ -12,27 +12,27 @@ Unattended-Upgrade::Package-Blacklist {
 <% end -%>
 };
 
-// This option allows you to control if on a unclean dpkg exit
-// unattended-upgrades will automatically run 
-//   dpkg --force-confold --configure -a
-// The default is true, to ensure updates keep getting installed
+/* This option allows you to control if on a unclean dpkg exit
+   unattended-upgrades will automatically run 
+   dpkg --force-confold --configure -a
+   The default is true, to ensure updates keep getting installed*/
 Unattended-Upgrade::AutoFixInterruptedDpkg "<%= @auto_fix %>";
 
-// Split the upgrade into the smallest possible chunks so that
-// they can be interrupted with SIGUSR1. This makes the upgrade
-// a bit slower but it has the benefit that shutdown while a upgrade
-// is running is possible (with a small delay)
+/* Split the upgrade into the smallest possible chunks so that
+   they can be interrupted with SIGUSR1. This makes the upgrade
+   a bit slower but it has the benefit that shutdown while a upgrade
+   is running is possible (with a small delay)*/
 Unattended-Upgrade::MinimalSteps "<%= @minimal_steps %>";
 
-// Install all unattended-upgrades when the machine is shuting down
-// instead of doing it in the background while the machine is running
-// This will (obviously) make shutdown slower
+/* Install all unattended-upgrades when the machine is shuting down
+   instead of doing it in the background while the machine is running
+   This will (obviously) make shutdown slower*/
 Unattended-Upgrade::InstallOnShutdown "<%= @install_on_shutdown %>";
 
-// Send email to this address for problems or packages upgrades
-// If empty or unset then no email is sent, make sure that you
-// have a working mail setup on your system. A package that provides
-// 'mailx' must be installed.
+/* Send email to this address for problems or packages upgrades
+   If empty or unset then no email is sent, make sure that you
+   have a working mail setup on your system. A package that provides
+   'mailx' must be installed.*/
 <% if @mail_to != "NONE" %>Unattended-Upgrade::Mail "<%= @mail_to %>";<% end %>
 
 // Set this value to "true" to get emails only on errors. Default
