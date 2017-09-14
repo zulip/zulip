@@ -445,6 +445,7 @@ def update_subscription_properties_backend(request, user_profile, subscription_d
     property_converters = {"color": check_string, "in_home_view": check_bool,
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
+                           "push_notifications": check_bool,
                            "pin_to_top": check_bool}
     response_data = []
 
