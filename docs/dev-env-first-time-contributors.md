@@ -982,6 +982,10 @@ Now run `vagrant up` in your terminal to install the development
 server. If you ran `vagrant up` before and failed, you'll need to run
 `vagrant destroy` first to clean up the failed installation.
 
+**If you no longer want to use proxy with Vagrant, set values of HTTP_PROXY
+and HTTPS_PROXY to `""` in `~/.zulip-vagrant-config` file and
+restart Vagrant.**
+
 You can also change the port on the host machine that Vagrant uses by
 adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
 
