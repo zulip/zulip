@@ -1429,6 +1429,7 @@ class Attachment(AbstractAttachment):
             'id': self.id,
             'name': self.file_name,
             'path_id': self.path_id,
+            'size': self.size,
             'messages': [{
                 'id': m.id,
                 # convert to JavaScript-style UNIX timestamp so we can take
