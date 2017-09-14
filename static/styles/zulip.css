@@ -1860,9 +1860,6 @@ nav a .no-style {
 }
 
 #search_arrows {
-    margin-left: -4px;
-    margin-bottom: 5px;
-
     /* Bootstrap wants font-size: 0 to eliminate space between
        the buttons.  We need to inherit the font size, so we
        remove the button gap by adjusting "letter" spacing. */
