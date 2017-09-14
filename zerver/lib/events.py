@@ -81,6 +81,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
 
+    if want('upload_quota'):
+        state['upload_quota'] = user_profile.quota
+
     if want('total_uploads_size'):
         state['total_uploads_size'] = get_total_uploads_size_for_user(user_profile)
 

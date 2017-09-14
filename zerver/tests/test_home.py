@@ -148,6 +148,7 @@ class HomeTest(ZulipTestCase):
             "twenty_four_hour_time",
             "unread_msgs",
             "unsubscribed",
+            "upload_quota",
             "use_websockets",
             "user_id",
             "zulip_version",
