@@ -16,8 +16,7 @@ pip-compile --output-file requirements/dev_lock.txt requirements/dev.txt
 sed -i 's/-e //' requirements/prod_lock.txt requirements/dev_lock.txt
 
 # pip-tools bug; future, futures are obsolete in python3
-sed -i '/futures==/d' requirements/prod_lock.txt
-sed -i '/future==/d' requirements/prod_lock.txt
-sed -i '/futures==/d' requirements/dev_lock.txt
+sed -i '/futures==/d' requirements/prod_lock.txt requirements/dev_lock.txt
+sed -i '/future==/d' requirements/prod_lock.txt requirements/dev_lock.txt
 
 deactivate
