@@ -38,7 +38,17 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm, UserProfile
+from zerver.models import (
+    all_realm_filters,
+    get_active_streams,
+    get_active_user_dicts_in_realm,
+    get_system_bot,
+    Message,
+    Realm,
+    RealmFilter,
+    realm_filters_for_realm,
+    UserProfile,
+)
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
@@ -1386,7 +1396,6 @@ def make_md_engine(key, opts):
 
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
-    from zerver.models import RealmFilter, realm_filters_for_realm
     matches = []  # type: List[Text]
 
     realm_filters = realm_filters_for_realm(realm_filters_key)
@@ -1413,8 +1422,6 @@ def make_realm_filters(realm_filters_key, filters):
 
 def maybe_update_realm_filters(realm_filters_key):
     # type: (Optional[int]) -> None
-    from zerver.models import realm_filters_for_realm, all_realm_filters
-
     # If realm_filters_key is None, load all filters
     if realm_filters_key is None:
         all_filters = all_realm_filters()
@@ -1461,8 +1468,6 @@ def log_bugdown_error(msg):
 def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
     # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
-    from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
-
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
@@ -1520,7 +1525,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         return timeout(5, _md_engine.convert, content)
     except Exception:
         from zerver.lib.actions import internal_send_message
-        from zerver.models import get_system_bot
 
         cleaned = _sanitize_for_log(content)
 
