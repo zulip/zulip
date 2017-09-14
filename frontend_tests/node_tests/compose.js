@@ -1252,17 +1252,28 @@ function test_with_mock_socket(test_params) {
         $("#error-msg").text('');
     }
 
-    function assert_side_effects(msg) {
+    function assert_side_effects(msg, check_html=false) {
         assert($("#send-status").hasClass("alert-error"));
         assert(!$("#send-status").hasClass("alert-info"));
         assert.equal($("#compose-send-button").prop("disabled"), false);
-        assert.equal($("#error-msg").text(), msg);
+        if (check_html) {
+            assert.equal($("#error-msg").html(), msg);
+        } else {
+            assert.equal($("#error-msg").text(), msg);
+        }
     }
 
     function test(err, file, msg) {
         setup_test();
         compose.uploadError(err, file);
-        assert_side_effects(msg);
+        // The text function and html function in zjquery is not in sync
+        // with each other. QuotaExceeded changes html while all other errors
+        // changes body.
+        if (err === 'QuotaExceeded') {
+            assert_side_effects(msg, true);
+        } else {
+            assert_side_effects(msg);
+        }
     }
 
     var msg_prefix = 'translated: ';
@@ -1270,8 +1281,9 @@ function test_with_mock_socket(test_params) {
     var msg_2 = 'Unable to upload that many files at once.';
     var msg_3 = '"foobar.txt" was too large; the maximum file size is 25MiB.';
     var msg_4 = 'Sorry, the file was too large.';
-    var msg_5 = 'Upload would exceed your maximum quota.' +
-                ' Consider deleting some previously uploaded files.';
+    var msg_5 = 'Upload would exceed your maximum quota. You can delete old attachments to ' +
+                'free up space. <a href="#settings/uploaded-files">translated: Click here</a>';
+
     var msg_6 = 'An unknown error occurred.';
 
     test('BrowserNotSupported', {}, msg_prefix + msg_1);
