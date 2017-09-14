@@ -5,10 +5,6 @@
     font-size: 0.89rem;
 }
 
-#left-sidebar .brand {
-    display: table-row;
-}
-
 #left-sidebar #user-list,
 #left-sidebar #group-pm-list {
     padding-left: 10px;
