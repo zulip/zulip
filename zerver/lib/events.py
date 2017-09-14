@@ -36,6 +36,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, get_cross_realm_dicts,
     get_status_dict, streams_to_dicts_sorted
 )
+from zerver.lib.upload import get_total_uploads_size_for_user
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
@@ -79,6 +80,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
+
+    if want('total_uploads_size'):
+        state['total_uploads_size'] = get_total_uploads_size_for_user(user_profile)
 
     if want('hotspots'):
         state['hotspots'] = get_next_hotspots(user_profile)

@@ -144,6 +144,7 @@ class HomeTest(ZulipTestCase):
             "subscriptions",
             "test_suite",
             "timezone",
+            "total_uploads_size",
             "twenty_four_hour_time",
             "unread_msgs",
             "unsubscribed",
