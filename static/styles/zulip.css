@@ -1787,7 +1787,6 @@ nav a .no-style {
     height: 40px;
     padding: 0px;
     color: hsl(0, 0%, 13%);
-    box-shadow: inset 2px 0px 0px 0px hsl(204, 20%, 74%);
     padding-left: 35px;
     padding-right: 20px;
     background: hsl(0, 0%, 100%); /* Old browsers */
