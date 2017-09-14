@@ -123,7 +123,7 @@ Fridays at 10AM Pacific time.  [Agendas][infra-agendas].
 
 * Bots and integrations team on
 [#integrations](https://chat.zulip.org/#narrow/stream/integrations),
-generally Thursdays at 9AM Pacific time.  [Agendas][bots-agendas].
+generally Fridays at 9AM Pacific time.  [Agendas][bots-agendas].
 
 [mobile-agendas]: https://paper.dropbox.com/doc/Zulip-mobile-agendas-nVdb9I7SDiom9hY8Zw8Ge
 [infra-agendas]: https://paper.dropbox.com/doc/Zulip-infrastructure-team-agendas-kGyCvF2u2kLcZ1Hzyd9iD
