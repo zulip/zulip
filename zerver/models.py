@@ -1430,10 +1430,11 @@ class Attachment(AbstractAttachment):
             'name': self.file_name,
             'path_id': self.path_id,
             'size': self.size,
+            # convert to JavaScript-style UNIX timestamp so we can take
+            # advantage of client timezones.
+            'create_time': time.mktime(self.create_time.timetuple()) * 1000,
             'messages': [{
                 'id': m.id,
-                # convert to JavaScript-style UNIX timestamp so we can take
-                # advantage of client timezones.
                 'name': time.mktime(m.pub_date.timetuple()) * 1000
             } for m in self.messages.all()]
         }
