@@ -412,10 +412,11 @@ def gc_event_queues():
     # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
-    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
-                  '  Now %d active queues, %s')
-                 % (len(to_remove), len(affected_users), time.time() - start,
-                    len(clients), handler_stats_string()))
+    if settings.PRODUCTION:
+        logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+                      '  Now %d active queues, %s')
+                     % (len(to_remove), len(affected_users), time.time() - start,
+                        len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
