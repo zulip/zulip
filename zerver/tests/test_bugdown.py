@@ -1034,6 +1034,19 @@ class BugdownErrorTests(ZulipTestCase):
 
 
 class BugdownAvatarTestCase(ZulipTestCase):
+    def test_possible_avatar_emails(self):
+        # type: () -> None
+        content = '''
+            hello !avatar(foo@example.com) my email is ignore@ignore.com
+            !gravatar(bar@yo.tv)
+
+            smushing!avatar(hamlet@example.org) is allowed
+        '''
+        self.assertEqual(
+            bugdown.possible_avatar_emails(content),
+            {'foo@example.com', 'bar@yo.tv', 'hamlet@example.org'},
+        )
+
     def test_avatar_with_id(self):
         # type: () -> None
         sender_user_profile = self.example_user('othello')
