@@ -28,6 +28,7 @@
 #streams_filter_icon:hover,
 #join_unsub_stream:hover {
     color: hsl(0, 0%, 33%);
+    cursor: pointer;
 }
 
 #streams_header #join_unsub_stream {
