@@ -13,6 +13,7 @@ from zerver.lib.actions import (
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import get_emoji_url
+from zerver.lib.mention import possible_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
@@ -44,7 +45,7 @@ import six
 
 from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
-from typing import Any, AnyStr, Dict, List, Optional, Tuple, Text
+from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
@@ -740,6 +741,22 @@ class BugdownTest(ZulipTestCase):
                          '@King Hamlet</span></p>' % (self.example_email("hamlet"), user_id))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
+    def test_possible_mentions(self):
+        # type: () -> None
+        def assert_mentions(content, names):
+            # type: (Text, Set[Text]) -> None
+            self.assertEqual(possible_mentions(content), names)
+
+        assert_mentions('', set())
+        assert_mentions('boring', set())
+        assert_mentions('@all', set())
+        assert_mentions('smush@**steve**smush', set())
+
+        assert_mentions(
+            'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson** @**all**',
+            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson'}
+        )
+
     def test_mention_multiple(self):
         # type: () -> None
         sender_user_profile = self.example_user('othello')
@@ -748,6 +765,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet** and @**Cordelia Lear**, check this out"
+
         self.assertEqual(render_markdown(msg, content),
                          '<p>'
                          '<span class="user-mention" '

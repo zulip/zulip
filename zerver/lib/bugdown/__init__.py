@@ -3,6 +3,7 @@ import subprocess
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
+from mypy_extensions import TypedDict
 from typing.re import Match
 
 import markdown
@@ -16,6 +17,7 @@ import html
 import twitter
 import platform
 import time
+import functools
 import httplib2
 import itertools
 import ujson
@@ -29,11 +31,13 @@ import requests
 
 from django.core import mail
 from django.conf import settings
+from django.db.models import Q
 
 from markdown.extensions import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
+from zerver.lib.mention import possible_mentions
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
@@ -55,6 +59,12 @@ from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
 import six
 from six.moves import range, html_parser
+
+FullNameInfo = TypedDict('FullNameInfo', {
+    'id': int,
+    'email': Text,
+    'full_name': Text,
+})
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -1118,7 +1128,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 name = match
 
             wildcard = mention.user_mention_matches_wildcard(name)
-            user = db_data['full_names'].get(name.lower(), None)
+            user = db_data['full_name_info'].get(name.lower(), None)
 
             if wildcard:
                 current_message.mentions_wildcard = True
@@ -1465,6 +1475,32 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
+def get_full_name_info(realm_id, full_names):
+    # type: (int, Set[Text]) -> Dict[Text, FullNameInfo]
+    if not full_names:
+        return dict()
+
+    q_list = {
+        Q(full_name__iexact=full_name)
+        for full_name in full_names
+    }
+
+    rows = UserProfile.objects.filter(
+        realm_id=realm_id
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list),
+    ).values(
+        'id',
+        'full_name',
+        'email',
+    )
+
+    dct = {
+        row['full_name'].lower(): row
+        for row in rows
+    }
+    return dct
+
 def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
     # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
@@ -1511,9 +1547,12 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         if possible_words is None:
             possible_words = set()  # Set[Text]
 
+        full_names = possible_mentions(content)
+        full_name_info = get_full_name_info(message_realm.id, full_names)
+
         db_data = {'possible_words': possible_words,
-                   'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
                    'by_email': dict((user['email'].lower(), user) for user in realm_users),
+                   'full_name_info': full_name_info,
                    'emoji': message_realm.get_emoji(),
                    'sent_by_bot': sent_by_bot,
                    'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
