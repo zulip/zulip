@@ -440,6 +440,10 @@ exports.process_hotkey = function (e, hotkey) {
             subs.keyboard_sub();
             return true;
         }
+        if (overlays.lightbox_open()) {
+            overlays.close_active();
+            return true;
+        }
         return false;
     }
 
@@ -467,6 +471,10 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (overlays.info_overlay_open()) {
+        if (event_name === 'show_shortcuts') {
+            overlays.close_active();
+            return true;
+        }
         return false;
     }
 
