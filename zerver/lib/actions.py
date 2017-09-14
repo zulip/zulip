@@ -743,7 +743,6 @@ def get_typing_user_profiles(recipient, sender_id):
     return users
 
 RecipientInfoResult = TypedDict('RecipientInfoResult', {
-    'recipient_user_ids': Set[int],
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
     'stream_push_user_ids': Set[int],
@@ -801,11 +800,6 @@ def get_recipient_info(recipient, sender_id):
     )
     rows = list(query)
 
-    recipient_user_ids = {
-        row['id']
-        for row in rows
-    }
-
     def get_ids_for(f):
         # type: (Callable[[Dict[str, Any]], bool]) -> Set[int]
         return {
@@ -843,7 +837,6 @@ def get_recipient_info(recipient, sender_id):
     ]
 
     info = dict(
-        recipient_user_ids=recipient_user_ids,
         active_user_ids=active_user_ids,
         push_notify_user_ids=push_notify_user_ids,
         stream_push_user_ids=stream_push_user_ids,
@@ -881,7 +874,6 @@ def do_send_messages(messages_maybe_none):
         info = get_recipient_info(message['message'].recipient,
                                   message['message'].sender_id)
 
-        message['recipient_user_ids'] = info['recipient_user_ids']
         message['active_user_ids'] = info['active_user_ids']
         message['push_notify_user_ids'] = info['push_notify_user_ids']
         message['stream_push_user_ids'] = info['stream_push_user_ids']
@@ -1037,7 +1029,7 @@ def do_send_messages(messages_maybe_none):
                 message['message'].recipient.type == Recipient.PERSONAL):
 
             feedback_bot_id = get_user_profile_by_email(email=settings.FEEDBACK_BOT).id
-            if feedback_bot_id in message['recipient_user_ids']:
+            if feedback_bot_id in message['active_user_ids']:
                 queue_json_publish(
                     'feedback_messages',
                     message_to_dict(message['message'], apply_markdown=False),
