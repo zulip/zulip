@@ -844,6 +844,17 @@ class BugdownTest(ZulipTestCase):
             render_markdown(msg, content),
             '<p>#<strong>casesens</strong></p>')
 
+    def test_possible_stream_names(self):
+        # type: () -> None
+        content = '''#**test here**
+            This mentions #**Denmark** too.
+            #**garçon** #**천국** @**Ignore Person**
+        '''
+        self.assertEqual(
+            bugdown.possible_linked_stream_names(content),
+            {'test here', 'Denmark', 'garçon', '천국'}
+        )
+
     def test_stream_unicode(self):
         # type: () -> None
         realm = get_realm('zulip')

@@ -80,6 +80,13 @@ if False:
 AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 
+STREAM_LINK_REGEX = r"""
+                     (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
+                     \#\*\*                       # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*]+)  # stream name can contain anything
+                     \*\*                         # ends by double asterisks
+                    """
+
 class BugdownRenderingException(Exception):
     pass
 
@@ -1193,6 +1200,11 @@ class StreamPattern(VerbosePattern):
             return el
         return None
 
+def possible_linked_stream_names(content):
+    # type: (Text) -> Set[Text]
+    matches = re.findall(STREAM_LINK_REGEX, content, re.VERBOSE)
+    return set(matches)
+
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
         # type: (Iterable[Text]) -> Iterable[Text]
@@ -1303,13 +1315,7 @@ class Bugdown(markdown.Extension):
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
             '>avatar')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
-        stream_group = r"""
-                        (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
-                        \#\*\*                       # and after hash sign followed by double asterisks
-                            (?P<stream_name>[^\*]+)  # stream name can contain anything
-                        \*\*                         # ends by double asterisks
-                       """
-        md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
+        md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
         md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
@@ -1539,6 +1545,32 @@ def get_full_name_info(realm_id, full_names):
     }
     return dct
 
+def get_stream_name_info(realm, stream_names):
+    # type: (Realm, Set[Text]) -> Dict[Text, FullNameInfo]
+    if not stream_names:
+        return dict()
+
+    q_list = {
+        Q(name=name)
+        for name in stream_names
+    }
+
+    rows = get_active_streams(
+        realm=realm,
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list),
+    ).values(
+        'id',
+        'name',
+    )
+
+    dct = {
+        row['name']: row
+        for row in rows
+    }
+    return dct
+
+
 def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
     # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
@@ -1579,8 +1611,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     global db_data
     if message is not None:
         assert message_realm is not None  # ensured above if message is not None
-        realm_streams = get_active_streams(message_realm).values('id', 'name')
-
         if possible_words is None:
             possible_words = set()  # Set[Text]
 
@@ -1590,12 +1620,17 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         emails = possible_avatar_emails(content)
         email_info = get_email_info(message_realm.id, emails)
 
-        db_data = {'possible_words': possible_words,
-                   'email_info': email_info,
-                   'full_name_info': full_name_info,
-                   'emoji': message_realm.get_emoji(),
-                   'sent_by_bot': sent_by_bot,
-                   'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
+        stream_names = possible_linked_stream_names(content)
+        stream_name_info = get_stream_name_info(message_realm, stream_names)
+
+        db_data = {
+            'possible_words': possible_words,
+            'email_info': email_info,
+            'full_name_info': full_name_info,
+            'emoji': message_realm.get_emoji(),
+            'sent_by_bot': sent_by_bot,
+            'stream_names': stream_name_info,
+        }
 
     try:
         # Spend at most 5 seconds rendering.
