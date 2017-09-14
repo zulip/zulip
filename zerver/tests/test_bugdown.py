@@ -365,9 +365,9 @@ class BugdownTest(ZulipTestCase):
 
     def test_twitter_id_extraction(self):
         # type: () -> None
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/status/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/statuses/409030735191097344'), '409030735191097344')
+        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
+        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/VizzQuotes/status/409030735191097344'), '409030735191097344')
+        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/VizzQuotes/statuses/409030735191097344'), '409030735191097344')
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858'), '1017581858')
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858/'), '1017581858')
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/photo/1'), '410766290349879296')
@@ -387,12 +387,12 @@ class BugdownTest(ZulipTestCase):
                              '<a href="https://twitter.com/episod" target="_blank"'
                              ' title="https://twitter.com/episod">@episod</a> '
                              '<a href="http://t.co/6J2EgYM" target="_blank"'
-                             ' title="http://t.co/6J2EgYM">http://instagram.com/p/MuW67/</a>')
+                             ' title="http://t.co/6J2EgYM">https://instagram.com/p/MuW67/</a>')
 
         mention_in_link_tweet_html = """<a href="http://t.co/@foo" target="_blank" title="http://t.co/@foo">http://foo.com</a>"""
 
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
-                            'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
+                            'https://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
         emoji_in_tweet_html = """Zulip is <img alt=":hundred_points:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4af.png" title="hundred points">% open-source!"""
 
@@ -411,33 +411,27 @@ class BugdownTest(ZulipTestCase):
                     '</div>'
                     '</div>') % (url, tweet_html, image_html)
 
-        msg = 'http://www.twitter.com'
+        msg = 'https://www.twitter.com'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com'))
+        self.assertEqual(converted, '<p>%s</p>' % make_link('https://www.twitter.com'))
 
-        msg = 'http://www.twitter.com/wdaher/'
+        msg = 'https://www.twitter.com/wdaher/'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/'))
+        self.assertEqual(converted, '<p>%s</p>' % make_link('https://www.twitter.com/wdaher/'))
 
-        msg = 'http://www.twitter.com/wdaher/status/3'
+        msg = 'https://www.twitter.com/wdaher/status/3'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/3'))
+        self.assertEqual(converted, '<p>%s</p>' % make_link('https://www.twitter.com/wdaher/status/3'))
 
         # id too long
-        msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
+        msg = 'https://www.twitter.com/wdaher/status/2879779692873154569'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'))
+        self.assertEqual(converted, '<p>%s</p>' % make_link('https://www.twitter.com/wdaher/status/2879779692873154569'))
 
         # id too large (i.e. tweet doesn't exist)
-        msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
+        msg = 'https://www.twitter.com/wdaher/status/999999999999999999'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/999999999999999999'))
-
-        msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
-            make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+        self.assertEqual(converted, '<p>%s</p>' % make_link('https://www.twitter.com/wdaher/status/999999999999999999'))
 
         msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
@@ -445,42 +439,48 @@ class BugdownTest(ZulipTestCase):
             make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
-        msg = 'http://twitter.com/wdaher/status/287977969287315456'
+        msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315456'),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+            make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+
+        msg = 'https://twitter.com/wdaher/status/287977969287315456'
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('https://twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         # A max of 3 will be converted
-        msg = ('http://twitter.com/wdaher/status/287977969287315456 '
-               'http://twitter.com/wdaher/status/287977969287315457 '
-               'http://twitter.com/wdaher/status/287977969287315457 '
-               'http://twitter.com/wdaher/status/287977969287315457')
+        msg = ('https://twitter.com/wdaher/status/287977969287315456 '
+               'https://twitter.com/wdaher/status/287977969287315457 '
+               'https://twitter.com/wdaher/status/287977969287315457 '
+               'https://twitter.com/wdaher/status/287977969287315457')
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s %s %s %s</p>\n%s%s%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315456'),
-            make_link('http://twitter.com/wdaher/status/287977969287315457'),
-            make_link('http://twitter.com/wdaher/status/287977969287315457'),
-            make_link('http://twitter.com/wdaher/status/287977969287315457'),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
+            make_link('https://twitter.com/wdaher/status/287977969287315456'),
+            make_link('https://twitter.com/wdaher/status/287977969287315457'),
+            make_link('https://twitter.com/wdaher/status/287977969287315457'),
+            make_link('https://twitter.com/wdaher/status/287977969287315457'),
+            make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
+            make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
+            make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
 
         # Tweet has a mention in a URL, only the URL is linked
-        msg = 'http://twitter.com/wdaher/status/287977969287315458'
+        msg = 'https://twitter.com/wdaher/status/287977969287315458'
 
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315458'),
+            make_link('https://twitter.com/wdaher/status/287977969287315458'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
         # Tweet with an image
-        msg = 'http://twitter.com/wdaher/status/287977969287315459'
+        msg = 'https://twitter.com/wdaher/status/287977969287315459'
 
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315459'),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
+            make_link('https://twitter.com/wdaher/status/287977969287315459'),
+            make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315459',
                                         media_tweet_html,
                                         ('<div class="twitter-image">'
                                          '<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
@@ -488,11 +488,11 @@ class BugdownTest(ZulipTestCase):
                                          '</a>'
                                          '</div>'))))
 
-        msg = 'http://twitter.com/wdaher/status/287977969287315460'
+        msg = 'https://twitter.com/wdaher/status/287977969287315460'
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315460'),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
+            make_link('https://twitter.com/wdaher/status/287977969287315460'),
+            make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 
     def test_fetch_tweet_data_settings_validation(self):
         # type: () -> None
