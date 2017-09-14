@@ -45,7 +45,6 @@ from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
     all_realm_filters,
     get_active_streams,
-    get_active_user_dicts_in_realm,
     get_system_bot,
     Message,
     Realm,
@@ -77,6 +76,9 @@ _T = TypeVar('_T')
 if False:
     # mypy requires the Optional to be inside Union
     ElementStringNone = Union[Element, Optional[Text]]
+
+AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
+GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 
 class BugdownRenderingException(Exception):
     pass
@@ -718,7 +720,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
         profile_id = None
 
         if db_data is not None:
-            user_dict = db_data['by_email'].get(email)
+            user_dict = db_data['email_info'].get(email)
             if user_dict is not None:
                 profile_id = user_dict['id']
 
@@ -727,6 +729,17 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('title', email)
         img.set('alt', email)
         return img
+
+def possible_avatar_emails(content):
+    # type: (Text) -> Set[Text]
+    emails = set()
+    for regex in [AVATAR_REGEX, GRAVATAR_REGEX]:
+        matches = re.findall(regex, content)
+        for email in matches:
+            if email:
+                emails.add(email)
+
+    return emails
 
 path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
 with open(path_to_name_to_codepoint) as name_to_codepoint_file:
@@ -1280,8 +1293,8 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('indent', ListIndentProcessor(md.parser), '<ulist')
 
         # Note that !gravatar syntax should be deprecated long term.
-        md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '>backtick')
-        md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '>backtick')
+        md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
+        md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
 
         md.inlinePatterns.add('stream_subscribe_button',
                               StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
@@ -1475,6 +1488,31 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
+def get_email_info(realm_id, emails):
+    # type: (int, Set[Text]) -> Dict[Text, FullNameInfo]
+    if not emails:
+        return dict()
+
+    q_list = {
+        Q(email__iexact=email.strip().lower())
+        for email in emails
+    }
+
+    rows = UserProfile.objects.filter(
+        realm_id=realm_id
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list),
+    ).values(
+        'id',
+        'email',
+    )
+
+    dct = {
+        row['email'].strip().lower(): row
+        for row in rows
+    }
+    return dct
+
 def get_full_name_info(realm_id, full_names):
     # type: (int, Set[Text]) -> Dict[Text, FullNameInfo]
     if not full_names:
@@ -1541,7 +1579,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     global db_data
     if message is not None:
         assert message_realm is not None  # ensured above if message is not None
-        realm_users = get_active_user_dicts_in_realm(message_realm)
         realm_streams = get_active_streams(message_realm).values('id', 'name')
 
         if possible_words is None:
@@ -1550,8 +1587,11 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         full_names = possible_mentions(content)
         full_name_info = get_full_name_info(message_realm.id, full_names)
 
+        emails = possible_avatar_emails(content)
+        email_info = get_email_info(message_realm.id, emails)
+
         db_data = {'possible_words': possible_words,
-                   'by_email': dict((user['email'].lower(), user) for user in realm_users),
+                   'email_info': email_info,
                    'full_name_info': full_name_info,
                    'emoji': message_realm.get_emoji(),
                    'sent_by_bot': sent_by_bot,
