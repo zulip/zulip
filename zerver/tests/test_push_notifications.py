@@ -340,7 +340,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'triggers': {
-                'received_pm': True,
+                'private_message': True,
                 'mentioned': False,
                 'stream_push_notify': False,
             },
@@ -399,7 +399,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'user_profile_id': self.user_profile.id,
             'message_id': message.id,
             'triggers': {
-                'received_pm': True,
+                'private_message': True,
                 'mentioned': False,
                 'stream_push_notify': False,
             },
@@ -450,7 +450,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'triggers': {
-                'received_pm': True,
+                'private_message': True,
                 'mentioned': False,
                 'stream_push_notify': False,
             },
@@ -469,7 +469,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'triggers': {
-                'received_pm': True,
+                'private_message': True,
                 'mentioned': False,
                 'stream_push_notify': False,
             },
@@ -512,7 +512,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'triggers': {
-                'received_pm': True,
+                'private_message': True,
                 'mentioned': False,
                 'stream_push_notify': False,
             },
@@ -586,7 +586,7 @@ class TestGetAlertFromMessage(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.HUDDLE)
         message.triggers = {
-            'received_pm': True,
+            'private_message': True,
             'mentioned': False,
             'stream_push_notify': False,
         }
@@ -597,7 +597,7 @@ class TestGetAlertFromMessage(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.PERSONAL)
         message.triggers = {
-            'received_pm': True,
+            'private_message': True,
             'mentioned': False,
             'stream_push_notify': False,
         }
@@ -608,7 +608,7 @@ class TestGetAlertFromMessage(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.STREAM)
         message.triggers = {
-            'received_pm': False,
+            'private_message': False,
             'mentioned': True,
             'stream_push_notify': False,
         }
@@ -619,7 +619,7 @@ class TestGetAlertFromMessage(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.STREAM)
         message.triggers = {
-            'received_pm': False,
+            'private_message': False,
             'mentioned': False,
             'stream_push_notify': True,
         }
@@ -631,7 +631,7 @@ class TestGetAlertFromMessage(PushNotificationTest):
         # type: () -> None
         message = self.get_message(0)
         message.triggers = {
-            'received_pm': False,
+            'private_message': False,
             'mentioned': False,
             'stream_push_notify': False,
         }
@@ -646,7 +646,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.HUDDLE)
         message.triggers = {
-            'received_pm': True,
+            'private_message': True,
             'mentioned': False,
             'stream_push_notify': False,
         }
@@ -670,7 +670,7 @@ class TestGetGCMPayload(PushNotificationTest):
         message.content = 'a' * 210
         message.save()
         message.triggers = {
-            'received_pm': False,
+            'private_message': False,
             'mentioned': True,
             'stream_push_notify': False,
         }
@@ -698,7 +698,7 @@ class TestGetGCMPayload(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.PERSONAL, 1)
         message.triggers = {
-            'received_pm': True,
+            'private_message': True,
             'mentioned': False,
             'stream_push_notify': False,
         }
@@ -723,7 +723,7 @@ class TestGetGCMPayload(PushNotificationTest):
         # type: () -> None
         message = self.get_message(Recipient.STREAM, 1)
         message.triggers = {
-            'received_pm': False,
+            'private_message': False,
             'mentioned': False,
             'stream_push_notify': True,
         }

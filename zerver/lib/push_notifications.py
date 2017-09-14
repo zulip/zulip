@@ -329,9 +329,9 @@ def get_alert_from_message(message):
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE and message.triggers['received_pm']:
+    if message.recipient.type == Recipient.HUDDLE and message.triggers['private_message']:
         return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL and message.triggers['received_pm']:
+    elif message.recipient.type == Recipient.PERSONAL and message.triggers['private_message']:
         return "New private message from %s" % (sender_str,)
     elif message.recipient.type == Recipient.STREAM and message.triggers['mentioned']:
         return "New mention from %s" % (sender_str,)
@@ -401,7 +401,7 @@ def handle_push_notification(user_profile_id, missed_message):
         message = umessage.message
         triggers = missed_message.get('triggers')
         message.triggers = {
-            'received_pm': triggers.get('received_pm', False),
+            'private_message': triggers.get('private_message', False),
             'mentioned': triggers.get('mentioned', False),
             'stream_push_notify': triggers.get('stream_push_notify', False),
         }

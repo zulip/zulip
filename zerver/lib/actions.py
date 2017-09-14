@@ -3332,8 +3332,8 @@ def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_
     for user_id in active_user_ids:
         flags = user_flags.get(user_id, [])  # type: Iterable[str]
         mentioned = 'mentioned' in flags
-        received_pm = is_pm and user_id != sender_id
-        if mentioned or received_pm:
+        private_message = is_pm and user_id != sender_id
+        if mentioned or private_message:
             user_ids.add(user_id)
 
     if not user_ids:

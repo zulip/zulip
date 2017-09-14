@@ -688,18 +688,18 @@ def process_message_event(event_template, users):
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
-        received_pm = message_type == "private" and user_profile_id != sender_id
+        private_message = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
 
-        if (received_pm or mentioned or stream_push_notify):
+        if (private_message or mentioned or stream_push_notify):
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
             always_push_notify = user_data.get('always_push_notify', False)
 
             if (idle or always_push_notify):
                 notice = build_offline_notification(user_profile_id, message_id)
                 notice['triggers'] = {
-                    'received_pm': received_pm,
+                    'private_message': private_message,
                     'mentioned': mentioned,
                     'stream_push_notify': stream_push_notify,
                 }
