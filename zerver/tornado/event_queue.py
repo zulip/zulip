@@ -696,6 +696,7 @@ def process_message_event(event_template, users):
         if (private_message or mentioned or stream_push_notify):
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
             always_push_notify = user_data.get('always_push_notify', False)
+            notified = dict()  # type: Dict[str, bool]
 
             if (idle or always_push_notify):
                 notice = build_offline_notification(user_profile_id, message_id)
@@ -706,7 +707,7 @@ def process_message_event(event_template, users):
                 }
                 notice['stream_name'] = event_template.get('stream_name')
                 queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-                notified = dict(push_notified=True)  # type: Dict[str, bool]
+                notified['push_notified'] = True
                 # Don't send missed message emails if always_push_notify or stream_push_notify is True
                 if idle:
                     # We require RabbitMQ to do this, as we can't call the email handler
@@ -714,6 +715,7 @@ def process_message_event(event_template, users):
                     queue_json_publish("missedmessage_emails", notice, lambda notice: None)
                     notified['email_notified'] = True
 
+            if len(notified) > 0:
                 extra_user_data[user_profile_id] = notified
 
     for client_data in six.itervalues(send_to_clients):
