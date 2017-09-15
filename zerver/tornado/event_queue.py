@@ -693,12 +693,12 @@ def process_message_event(event_template, users):
         mentioned = 'mentioned' in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
 
-        if (private_message or mentioned or stream_push_notify):
+        if private_message or mentioned or stream_push_notify:
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
             always_push_notify = user_data.get('always_push_notify', False)
             notified = dict()  # type: Dict[str, bool]
 
-            if (idle or always_push_notify):
+            if idle or always_push_notify:
                 notice = build_offline_notification(user_profile_id, message_id)
                 notice['triggers'] = {
                     'private_message': private_message,
