@@ -329,7 +329,7 @@ handler_class = MyBotHandler
 
 * These functions are documented in the [next section](#bot-api).
 
-## Bot API
+### Bot API
 
 This section documents functions available to the bot and the structure of the bot's config file.
 
@@ -345,21 +345,21 @@ With this API, you *cannot*
 * intercept private messages (except for PMs with the bot as an
 explicit recipient).
 
-### usage
+#### usage
 
 *usage(self)*
 
 is called to retrieve information about the bot.
 
-##### Arguments
+###### Arguments
 
 * self - the instance the method is called on.
 
-#### Return values
+##### Return values
 
 * A string describing the bot's functionality
 
-#### Example implementation
+##### Example implementation
 
 ```
 def usage(self):
@@ -372,13 +372,13 @@ def usage(self):
         '''
 ```
 
-### handle_message
+#### handle_message
 
 *handle_message(self, message, bot_handler)*
 
 handles user message.
 
-#### Arguments
+##### Arguments
 
 * self - the instance the method is called on.
 
@@ -390,11 +390,11 @@ handles user message.
     * use `state_handler.set_state(state)` to set a state (any object)
     * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
 
-#### Return values
+##### Return values
 
 None.
 
-#### Example implementation
+##### Example implementation
 
  ```
   def handle_message(self, message, bot_handler, state_handler):
@@ -410,7 +410,7 @@ None.
          content=new_content,
      ))
  ```
-### bot_handler.send_message
+#### bot_handler.send_message
 
 *bot_handler.send_message(message)*
 
@@ -418,11 +418,11 @@ will send a message as the bot user.  Generally, this is less
 convenient than *send_reply*, but it offers additional flexibility
 about where the message is sent to.
 
-### Arguments
+#### Arguments
 
 * message - a dictionary describing the message to be sent by the bot
 
-### Example implementation
+#### Example implementation
 
 ```
 bot_handler.send_message(dict(
@@ -433,30 +433,30 @@ bot_handler.send_message(dict(
 ))
 ```
 
-### bot_handler.send_reply
+#### bot_handler.send_reply
 
 *bot_handler.send_reply(message, response)*
 
 will reply to the triggering message to the same place the original
 message was sent to, with the content of the reply being *response*.
 
-### Arguments
+#### Arguments
 
 * message - Dictionary containing information on message to respond to
  (provided by `handle_message`).
 * response - Response message from the bot (string).
 
-### bot_handler.update_message
+#### bot_handler.update_message
 
 *bot_handler.update_message(message)*
 
 will edit the content of a previously sent message.
 
-### Arguments
+#### Arguments
 
 * message - dictionary defining what message to edit and the new content
 
-### Example
+#### Example
 
 From `zulip_bots/bots/incrementor/incrementor.py`:
 
@@ -484,6 +484,128 @@ bot_handler.update_message(dict(
 * site - your development environment URL; if you are working on a
   development environment hosted on your computer, use
   `localhost:9991`
+
+### Writing tests for bots
+
+Bots, like most software that you want to work, should have unit tests. In this section,
+we detail our framework for writing unit tests for bots. We require that bots in the main
+[`python-zulip-api`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+repository include a reasonable set of unit tests, so that future developers can easily
+refactor them.
+
+*Unit tests for bots make heavy use of mocking. If you want to get comfortable with mocking,
+ mocking strategies, etc. you should check out our [mocking guide](
+ testing-with-django.html#testing-with-mocks).*
+
+#### A simple example
+
+ Let's have a look at a simple test suite for the [`helloworld`](
+ https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/helloworld)
+ bot (the actual test is written slightly more compact).
+
+    from __future__ import absolute_import
+    from __future__ import print_function
+
+    from zulip_bots.test_lib import BotTestCase  # A base class for bot test suites that comes with various helpful testing methods.
+
+    class TestHelloWorldBot(BotTestCase):  # Our test suite for the bot.
+        bot_name = "helloworld"  # The bot's name (equivalent to the name of the bot module).
+
+        def test_bot(self): # A test case (must start with `test`)
+            # Messages we want to test and the expected bot responses.
+            message_response_pairs = {"" : "beep boop",
+                                      "foo" : "beep boop",
+                                      "Hi, my name is abc" : "beep boop"}
+            self.check_expected_responses(message_response_pairs)  # Test the bot with our message_response_pair dict.
+
+The `helloworld` bot replies with "beep boop" to every message @-mentioning it.
+Note that our helper method `check_expected_responses` adds the @-mention for us - the only
+thing we need to do is to specify the rest of the message and the expected response. In this
+case, we want to assert that the bot always replies with "beep boop". To do so, we specify
+several test messages ("", "foo", "Hi, my name is abc") and assert that the response is always
+correct, which for this simple bot, means always sending a reply with the content "beep boop".
+
+#### Test your test
+
+Once you have written a test suite, you want to verify that everything works as expected.
+
+* To test a bot in [Zulip's bot directory](
+  https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots):
+  `tools/test-bots <botname>`
+
+* To run any test: `python -m unittest -v <package.bot_test>`
+
+* To run all bot tests: `tools/test-bots`
+
+#### Advanced testing
+
+This section shows advanced testing techniques for more complicated bots that have
+configuration files or interact with third-party APIs.
+*The code for the bot testing library can be found [here](
+ https://github.com/zulip/python-zulip-api/blob/master/zulip_bots/zulip_bots/test_lib.py).*
+
+##### Asserting individual messages
+
+    self.assert_bot_response(
+        message = {'content': 'foo'},
+        response = {'content': 'bar'},
+        expected_method='send_reply'
+    )
+
+Use `assert_bot_response()` to test individual messages. Specify additional message
+settings, such as the stream or subject, in the `message` and `response` dicts.
+
+##### Testing bots with config files
+
+Some bots, such as [Giphy](
+https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
+support or require user configuration options to control how the bot works. To test such
+a bot, you can use the following helper method:
+
+    with self.mock_config_info({'entry': 'value'}):
+        # self.assert_bot_response(...)
+
+`mock_config_info()` mocks a bot's config file. All config files are specified in the
+.ini format, with one default section. The dict passed to `mock_config_info()` specifies
+the keys and values of that section.
+
+##### Testing bots with internet access
+
+Some bots, such as [Giphy](
+https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
+depend on a third-party we service, such as the Giphy webapp, in order to work. Because
+we want our test suite to be reliable and not add load to these third-party APIs, tests
+for these services need to have "test fixtures": sample HTTP request/response pairs to
+be used by the tests. You can specify which one to use in your test code using the
+following helper method:
+
+    with self.mock_http_conversation('test_fixture_name'):
+        # self.assert_bot_response(...)
+
+`mock_http_conversation(fixture_name)` patches `requests.get` and returns the data specified
+in the file `fixtures/<fixture_name>.py`. For an example, check out the [giphy bot](
+https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy).
+
+*Tip: You can use [requestb.in](http://requestb.in) or a similar tool to capture payloads from the
+service your bot is interacting with.*
+
+##### Testing bots that specify `initialize()`
+
+Some bots, such as [Giphy](
+https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
+implement an `initialize()` method, which is executed on the startup of the bot. To test
+such a bot, you can call its `initialize()` method with the following helper method:
+
+    self.initialize_bot()
+
+Calling `initialize_bot()` invokes the `initialize()` method specified by the bot.
+
+##### Examples
+
+Check out our [bots](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+to see examples of bot tests.
+
+*Feel free to add tests cases to existing test suites, or to write new test for existing bots.*
 
 ## Common problems
 
