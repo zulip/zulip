@@ -83,6 +83,13 @@ def any_oauth_backend_enabled(realm=None):
     'OR' for login with Google"""
     return auth_enabled_helper([u'GitHub', u'Google'], realm)
 
+def require_email_format_usernames(realm=None):
+    # type: (Optional[Realm]) -> bool
+    if ldap_auth_enabled(realm):
+        if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
+            return False
+    return True
+
 def common_get_active_user_by_email(email, return_data=None):
     # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
     try:
