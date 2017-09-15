@@ -115,3 +115,12 @@ class TrelloHookTests(WebhookTestCase):
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_message_mock.called)
         self.assert_json_success(result)
+
+    @patch('zerver.webhooks.trello.view.check_send_message')
+    def test_trello_webhook_when_board_background_is_changed_ignore(
+            self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        payload = self.get_body('change_board_background_image')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)

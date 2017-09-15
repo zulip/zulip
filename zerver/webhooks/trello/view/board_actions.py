@@ -24,15 +24,21 @@ ACTIONS_TO_MESSAGE_MAPPER = {
 }
 
 def process_board_action(payload, action_type):
-    # type: (Mapping[str, Any], Text) -> Tuple[Text, Text]
+    # type: (Mapping[str, Any], Text) -> Optional[Tuple[Text, Text]]
     action_type = get_proper_action(payload, action_type)
-    return get_subject(payload), get_body(payload, action_type)
+    if action_type is not None:
+        return get_subject(payload), get_body(payload, action_type)
+    return None
 
 def get_proper_action(payload, action_type):
-    # type: (Mapping[str, Any], Text) -> Text
+    # type: (Mapping[str, Any], Text) -> Optional[Text]
     if action_type == 'updateBoard':
         data = get_action_data(payload)
-        if data['old']['name']:
+        # we don't support events for when a board's background
+        # is changed
+        if data['old'].get('prefs', {}).get('background') is not None:
+            return None
+        elif data['old']['name']:
             return CHANGE_NAME
         raise UnknownUpdateBoardAction()
     return action_type
