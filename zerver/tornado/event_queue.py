@@ -708,12 +708,13 @@ def process_message_event(event_template, users):
                 notice['stream_name'] = event_template.get('stream_name')
                 queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
                 notified['push_notified'] = True
-                # Don't send missed message emails if always_push_notify or stream_push_notify is True
-                if idle:
-                    # We require RabbitMQ to do this, as we can't call the email handler
-                    # from the Tornado process. So if there's no rabbitmq support do nothing
-                    queue_json_publish("missedmessage_emails", notice, lambda notice: None)
-                    notified['email_notified'] = True
+
+            # Don't send missed message emails if always_push_notify or stream_push_notify is True
+            if idle:
+                # We require RabbitMQ to do this, as we can't call the email handler
+                # from the Tornado process. So if there's no rabbitmq support do nothing
+                queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+                notified['email_notified'] = True
 
             if len(notified) > 0:
                 extra_user_data[user_profile_id] = notified
