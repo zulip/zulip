@@ -14,6 +14,7 @@ the Zulip UI.
 {!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
-2. Select the **Prevent users from changing their email address** checkbox.
+2. Select the **Prevent users from changing their email address** checkbox
+under the **User identity** section.
 
 {!save-changes.md!} organization settings.
