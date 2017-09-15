@@ -743,7 +743,6 @@ def get_typing_user_profiles(recipient, sender_id):
     return users
 
 RecipientInfoResult = TypedDict('RecipientInfoResult', {
-    'recipient_user_ids': Set[int],
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
     'stream_push_user_ids': Set[int],
@@ -790,7 +789,8 @@ def get_recipient_info(recipient, sender_id):
         raise ValueError('Bad recipient type')
 
     query = UserProfile.objects.filter(
-        id__in=user_ids
+        id__in=user_ids,
+        is_active=True,
     ).values(
         'id',
         'enable_online_push_notifications',
@@ -801,7 +801,7 @@ def get_recipient_info(recipient, sender_id):
     )
     rows = list(query)
 
-    recipient_user_ids = {
+    active_user_ids = {
         row['id']
         for row in rows
     }
@@ -818,18 +818,13 @@ def get_recipient_info(recipient, sender_id):
         # type: (Dict[str, Any]) -> bool
         return row['is_bot'] and (row['bot_type'] in UserProfile.SERVICE_BOT_TYPES)
 
-    # Only deliver the message to active user recipients
-    active_user_ids = get_ids_for(
-        lambda r: r['is_active']
-    )
-
     push_notify_user_ids = get_ids_for(
-        lambda r: r['is_active'] and r['enable_online_push_notifications']
+        lambda r: r['enable_online_push_notifications']
     )
 
     # Service bots don't get UserMessage rows.
     um_eligible_user_ids = get_ids_for(
-        lambda r: r['is_active'] and (not is_service_bot(r))
+        lambda r: not is_service_bot(r)
     )
 
     long_term_idle_user_ids = get_ids_for(
@@ -839,11 +834,10 @@ def get_recipient_info(recipient, sender_id):
     service_bot_tuples = [
         (row['id'], row['bot_type'])
         for row in rows
-        if row['is_active'] and is_service_bot(row)
+        if is_service_bot(row)
     ]
 
     info = dict(
-        recipient_user_ids=recipient_user_ids,
         active_user_ids=active_user_ids,
         push_notify_user_ids=push_notify_user_ids,
         stream_push_user_ids=stream_push_user_ids,
@@ -881,7 +875,6 @@ def do_send_messages(messages_maybe_none):
         info = get_recipient_info(message['message'].recipient,
                                   message['message'].sender_id)
 
-        message['recipient_user_ids'] = info['recipient_user_ids']
         message['active_user_ids'] = info['active_user_ids']
         message['push_notify_user_ids'] = info['push_notify_user_ids']
         message['stream_push_user_ids'] = info['stream_push_user_ids']
@@ -1037,7 +1030,7 @@ def do_send_messages(messages_maybe_none):
                 message['message'].recipient.type == Recipient.PERSONAL):
 
             feedback_bot_id = get_user_profile_by_email(email=settings.FEEDBACK_BOT).id
-            if feedback_bot_id in message['recipient_user_ids']:
+            if feedback_bot_id in message['active_user_ids']:
                 queue_json_publish(
                     'feedback_messages',
                     message_to_dict(message['message'], apply_markdown=False),
