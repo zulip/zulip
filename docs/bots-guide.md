@@ -287,7 +287,7 @@ handler_class = MyBotHandler
 
 * These functions are documented in the [next section](#bot-api).
 
-## Bot API
+### Bot API
 
 This section documents functions available to the bot and the structure of the bot's config file.
 
@@ -303,21 +303,21 @@ With this API, you *cannot*
 * intercept private messages (except for PMs with the bot as an
 explicit recipient).
 
-### usage
+#### usage
 
 *usage(self)*
 
 is called to retrieve information about the bot.
 
-##### Arguments
+###### Arguments
 
 * self - the instance the method is called on.
 
-#### Return values
+##### Return values
 
 * A string describing the bot's functionality
 
-#### Example implementation
+##### Example implementation
 
 ```
 def usage(self):
@@ -330,13 +330,13 @@ def usage(self):
         '''
 ```
 
-### handle_message
+#### handle_message
 
 *handle_message(self, message, bot_handler)*
 
 handles user message.
 
-#### Arguments
+##### Arguments
 
 * self - the instance the method is called on.
 
@@ -348,11 +348,11 @@ handles user message.
     * use `state_handler.set_state(state)` to set a state (any object)
     * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
 
-#### Return values
+##### Return values
 
 None.
 
-#### Example implementation
+##### Example implementation
 
  ```
   def handle_message(self, message, bot_handler, state_handler):
@@ -368,7 +368,7 @@ None.
          content=new_content,
      ))
  ```
-### bot_handler.send_message
+#### bot_handler.send_message
 
 *bot_handler.send_message(message)*
 
@@ -376,11 +376,11 @@ will send a message as the bot user.  Generally, this is less
 convenient than *send_reply*, but it offers additional flexibility
 about where the message is sent to.
 
-### Arguments
+#### Arguments
 
 * message - a dictionary describing the message to be sent by the bot
 
-### Example implementation
+#### Example implementation
 
 ```
 bot_handler.send_message(dict(
@@ -391,30 +391,30 @@ bot_handler.send_message(dict(
 ))
 ```
 
-### bot_handler.send_reply
+#### bot_handler.send_reply
 
 *bot_handler.send_reply(message, response)*
 
 will reply to the triggering message to the same place the original
 message was sent to, with the content of the reply being *response*.
 
-### Arguments
+#### Arguments
 
 * message - Dictionary containing information on message to respond to
  (provided by `handle_message`).
 * response - Response message from the bot (string).
 
-### bot_handler.update_message
+#### bot_handler.update_message
 
 *bot_handler.update_message(message)*
 
 will edit the content of a previously sent message.
 
-### Arguments
+#### Arguments
 
 * message - dictionary defining what message to edit and the new content
 
-### Example
+#### Example
 
 From `zulip_bots/bots/incrementor/incrementor.py`:
 
