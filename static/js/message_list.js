@@ -392,8 +392,14 @@ exports.MessageList.prototype = {
             if (!this.last_message_historical) {
                 trailing_bookend_content = this.unsubscribed_bookend_content(stream_name);
 
-                // For invite only streams, hide the resubscribe button
-                show_button = !stream_data.get_sub(stream_name).invite_only;
+                // For invite only streams or streams that no longer
+                // exist, hide the resubscribe button
+                var sub = stream_data.get_sub(stream_name);
+                if (sub !== undefined) {
+                    show_button = !sub.invite_only;
+                } else {
+                    show_button = false;
+                }
             } else {
                 trailing_bookend_content = this.not_subscribed_bookend_content(stream_name);
             }
