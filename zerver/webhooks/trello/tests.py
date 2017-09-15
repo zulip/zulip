@@ -99,7 +99,7 @@ class TrelloHookTests(WebhookTestCase):
 
     def test_trello_webhook_when_comment_was_added_to_card(self):
         # type: () -> None
-        expected_message = u"TomaszKolek commented on [New card](https://trello.com/c/xPKXoSTQ)."
+        expected_message = u"TomaszKolek commented on [New card](https://trello.com/c/xPKXoSTQ)\n>New comment\n."
         self.send_and_test_stream_message('adding_comment_to_card', u"Welcome Board.", expected_message)
 
     def test_trello_webhook_when_board_was_renamed(self):
@@ -107,11 +107,27 @@ class TrelloHookTests(WebhookTestCase):
         expected_message = u"TomaszKolek renamed the board from Welcome Board to [New name](https://trello.com/b/iqXXzYEj)."
         self.send_and_test_stream_message('renaming_board', u"New name.", expected_message)
 
-    @patch('zerver.webhooks.trello.view.check_send_message')
-    def test_trello_webhook_when_card_is_moved_within_single_list_ignore(
-            self, check_send_message_mock):
-        # type: (MagicMock) -> None
-        payload = self.get_body('moving_card_within_single_list')
-        result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_message_mock.called)
-        self.assert_json_success(result)
+    def test_trello_webhook_when_description_was_added_to_card(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) to\n>New Description\n\n."
+        self.send_and_test_stream_message('adding_description_to_card', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_description_was_removed_from_card(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo removed description from [New Card](https://trello.com/c/P2r0z66z)."
+        self.send_and_test_stream_message('removing_description_from_card', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_description_was_changed_on_card(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo changed description for [New Card](https://trello.com/c/P2r0z66z) from\n>New Description\n\nto\n>Changed Description\n\n."
+        self.send_and_test_stream_message('changing_description_on_card', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_card_was_moved_up_in_list(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo moved [New Card](https://trello.com/c/P2r0z66z) up in the list List."
+        self.send_and_test_stream_message('moving_card_up_in_list', u"Welcome Board.", expected_message)
+
+    def test_trello_webhook_when_card_was_moved_down_in_list(self):
+        # type: () -> None
+        expected_message = u"Marco Matarazzo moved [New Card](https://trello.com/c/P2r0z66z) down in the list List."
+        self.send_and_test_stream_message('moving_card_down_in_list', u"Welcome Board.", expected_message)
