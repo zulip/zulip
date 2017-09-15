@@ -3,6 +3,7 @@ import subprocess
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
+from mypy_extensions import TypedDict
 from typing.re import Match
 
 import markdown
@@ -16,6 +17,7 @@ import html
 import twitter
 import platform
 import time
+import functools
 import httplib2
 import itertools
 import ujson
@@ -29,22 +31,39 @@ import requests
 
 from django.core import mail
 from django.conf import settings
+from django.db.models import Q
 
 from markdown.extensions import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
+from zerver.lib.mention import possible_mentions
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm, UserProfile
+from zerver.models import (
+    all_realm_filters,
+    get_active_streams,
+    get_system_bot,
+    Message,
+    Realm,
+    RealmFilter,
+    realm_filters_for_realm,
+    UserProfile,
+)
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
 import six
 from six.moves import range, html_parser
+
+FullNameInfo = TypedDict('FullNameInfo', {
+    'id': int,
+    'email': Text,
+    'full_name': Text,
+})
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -57,6 +76,17 @@ _T = TypeVar('_T')
 if False:
     # mypy requires the Optional to be inside Union
     ElementStringNone = Union[Element, Optional[Text]]
+
+AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
+GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
+EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
+
+STREAM_LINK_REGEX = r"""
+                     (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
+                     \#\*\*                       # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*]+)  # stream name can contain anything
+                     \*\*                         # ends by double asterisks
+                    """
 
 class BugdownRenderingException(Exception):
     pass
@@ -698,7 +728,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
         profile_id = None
 
         if db_data is not None:
-            user_dict = db_data['by_email'].get(email)
+            user_dict = db_data['email_info'].get(email)
             if user_dict is not None:
                 profile_id = user_dict['id']
 
@@ -707,6 +737,17 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('title', email)
         img.set('alt', email)
         return img
+
+def possible_avatar_emails(content):
+    # type: (Text) -> Set[Text]
+    emails = set()
+    for regex in [AVATAR_REGEX, GRAVATAR_REGEX]:
+        matches = re.findall(regex, content)
+        for email in matches:
+            if email:
+                emails.add(email)
+
+    return emails
 
 path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
 with open(path_to_name_to_codepoint) as name_to_codepoint_file:
@@ -811,7 +852,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
 
         realm_emoji = {}  # type: Dict[Text, Dict[str, Text]]
         if db_data is not None:
-            realm_emoji = db_data['emoji']
+            realm_emoji = db_data['realm_emoji']
 
         if current_message and name in realm_emoji and not realm_emoji[name]['deactivated']:
             return make_realm_emoji(realm_emoji[name]['source_url'], orig_syntax)
@@ -821,6 +862,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
             return make_emoji(name_to_codepoint[name], orig_syntax)
         else:
             return None
+
+def content_has_emoji_syntax(content):
+    # type: (Text) -> bool
+    return re.search(EMOJI_REGEX, content) is not None
 
 class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
     # This markdown extension has required javascript in
@@ -1108,7 +1153,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 name = match
 
             wildcard = mention.user_mention_matches_wildcard(name)
-            user = db_data['full_names'].get(name.lower(), None)
+            user = db_data['full_name_info'].get(name.lower(), None)
 
             if wildcard:
                 current_message.mentions_wildcard = True
@@ -1159,6 +1204,11 @@ class StreamPattern(VerbosePattern):
             el.text = u'#{stream_name}'.format(stream_name=name)
             return el
         return None
+
+def possible_linked_stream_names(content):
+    # type: (Text) -> Set[Text]
+    matches = re.findall(STREAM_LINK_REGEX, content, re.VERBOSE)
+    return set(matches)
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
@@ -1260,8 +1310,8 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('indent', ListIndentProcessor(md.parser), '<ulist')
 
         # Note that !gravatar syntax should be deprecated long term.
-        md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '>backtick')
-        md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '>backtick')
+        md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
+        md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
 
         md.inlinePatterns.add('stream_subscribe_button',
                               StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
@@ -1270,15 +1320,9 @@ class Bugdown(markdown.Extension):
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
             '>avatar')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
-        stream_group = r"""
-                        (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
-                        \#\*\*                       # and after hash sign followed by double asterisks
-                            (?P<stream_name>[^\*]+)  # stream name can contain anything
-                        \*\*                         # ends by double asterisks
-                       """
-        md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
+        md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
         md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
+        md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
@@ -1386,7 +1430,6 @@ def make_md_engine(key, opts):
 
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
-    from zerver.models import RealmFilter, realm_filters_for_realm
     matches = []  # type: List[Text]
 
     realm_filters = realm_filters_for_realm(realm_filters_key)
@@ -1413,8 +1456,6 @@ def make_realm_filters(realm_filters_key, filters):
 
 def maybe_update_realm_filters(realm_filters_key):
     # type: (Optional[int]) -> None
-    from zerver.models import realm_filters_for_realm, all_realm_filters
-
     # If realm_filters_key is None, load all filters
     if realm_filters_key is None:
         all_filters = all_realm_filters()
@@ -1458,11 +1499,86 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
+def get_email_info(realm_id, emails):
+    # type: (int, Set[Text]) -> Dict[Text, FullNameInfo]
+    if not emails:
+        return dict()
+
+    q_list = {
+        Q(email__iexact=email.strip().lower())
+        for email in emails
+    }
+
+    rows = UserProfile.objects.filter(
+        realm_id=realm_id
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list),
+    ).values(
+        'id',
+        'email',
+    )
+
+    dct = {
+        row['email'].strip().lower(): row
+        for row in rows
+    }
+    return dct
+
+def get_full_name_info(realm_id, full_names):
+    # type: (int, Set[Text]) -> Dict[Text, FullNameInfo]
+    if not full_names:
+        return dict()
+
+    q_list = {
+        Q(full_name__iexact=full_name)
+        for full_name in full_names
+    }
+
+    rows = UserProfile.objects.filter(
+        realm_id=realm_id
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list),
+    ).values(
+        'id',
+        'full_name',
+        'email',
+    )
+
+    dct = {
+        row['full_name'].lower(): row
+        for row in rows
+    }
+    return dct
+
+def get_stream_name_info(realm, stream_names):
+    # type: (Realm, Set[Text]) -> Dict[Text, FullNameInfo]
+    if not stream_names:
+        return dict()
+
+    q_list = {
+        Q(name=name)
+        for name in stream_names
+    }
+
+    rows = get_active_streams(
+        realm=realm,
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list),
+    ).values(
+        'id',
+        'name',
+    )
+
+    dct = {
+        row['name']: row
+        for row in rows
+    }
+    return dct
+
+
 def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
     # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
-    from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
-
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
@@ -1500,18 +1616,31 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     global db_data
     if message is not None:
         assert message_realm is not None  # ensured above if message is not None
-        realm_users = get_active_user_dicts_in_realm(message_realm)
-        realm_streams = get_active_streams(message_realm).values('id', 'name')
-
         if possible_words is None:
             possible_words = set()  # Set[Text]
 
-        db_data = {'possible_words': possible_words,
-                   'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
-                   'by_email': dict((user['email'].lower(), user) for user in realm_users),
-                   'emoji': message_realm.get_emoji(),
-                   'sent_by_bot': sent_by_bot,
-                   'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
+        full_names = possible_mentions(content)
+        full_name_info = get_full_name_info(message_realm.id, full_names)
+
+        emails = possible_avatar_emails(content)
+        email_info = get_email_info(message_realm.id, emails)
+
+        stream_names = possible_linked_stream_names(content)
+        stream_name_info = get_stream_name_info(message_realm, stream_names)
+
+        if content_has_emoji_syntax(content):
+            realm_emoji = message_realm.get_emoji()
+        else:
+            realm_emoji = dict()
+
+        db_data = {
+            'possible_words': possible_words,
+            'email_info': email_info,
+            'full_name_info': full_name_info,
+            'realm_emoji': realm_emoji,
+            'sent_by_bot': sent_by_bot,
+            'stream_names': stream_name_info,
+        }
 
     try:
         # Spend at most 5 seconds rendering.
@@ -1520,7 +1649,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         return timeout(5, _md_engine.convert, content)
     except Exception:
         from zerver.lib.actions import internal_send_message
-        from zerver.models import get_system_bot
 
         cleaned = _sanitize_for_log(content)
 
