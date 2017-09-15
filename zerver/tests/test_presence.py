@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from mock import mock
 
@@ -27,6 +28,8 @@ from zerver.models import (
 import datetime
 
 class ActivityTest(ZulipTestCase):
+
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_activity(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
@@ -46,7 +49,7 @@ class ActivityTest(ZulipTestCase):
         with queries_captured() as queries:
             self.client_get('/activity')
 
-        self.assert_length(queries, 2)
+        self.assert_length(queries, 3)
 
 class TestClientModel(ZulipTestCase):
     def test_client_stringification(self):

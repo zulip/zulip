@@ -293,6 +293,7 @@ class LoginTest(ZulipTestCase):
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assert_in_response("Please enter a correct email and password", result)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_register(self):
         # type: () -> None
         realm = get_realm("zulip")
@@ -310,7 +311,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 67)
+        self.assert_length(queries, 68)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
