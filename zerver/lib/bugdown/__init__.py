@@ -1619,6 +1619,11 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         if possible_words is None:
             possible_words = set()  # Set[Text]
 
+        # Here we fetch the data structures needed to render
+        # mentions/avatars/stream mentions from the database, but only
+        # if there is syntax in the message that might use them, since
+        # the fetches are somewhat expensive and these types of syntax
+        # are uncommon enough that it's a useful optimization.
         full_names = possible_mentions(content)
         full_name_info = get_full_name_info(message_realm.id, full_names)
 
