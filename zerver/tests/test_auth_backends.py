@@ -1605,18 +1605,26 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_choose_realm(self):
         # type: () -> None
-        result = self.client_post('/devlogin/')
+        result = self.client_post('/devlogin/', subdomain="zulip")
+        self.assert_in_success_response(["Click on a user to log in to Zulip Dev!"], result)
+        self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+
+        result = self.client_post('/devlogin/', subdomain="")
         self.assert_in_success_response(["Click on a user to log in!"], result)
         self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
         self.assert_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
 
         data = {'new_realm': 'zephyr'}
-        result = self.client_post('/devlogin/', data)
-        self.assert_not_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+        result = self.client_post('/devlogin/', data, subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://zephyr.testserver")
+        result = self.client_get('/devlogin/', subdomain="zephyr")
         self.assert_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
         self.assert_in_success_response(["Click on a user to log in to MIT!"], result)
+        self.assert_not_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
 
     def test_choose_realm_with_subdomains_enabled(self):
         # type: () -> None
