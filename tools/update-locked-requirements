@@ -22,6 +22,22 @@ compile_requirements () {
     # pip-tools bug; future, futures are obsolete in python3
     sed -i '/futures==/d' "$output"
     sed -i '/future==/d' "$output"
+
+    (
+        cat <<EOF
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.txt, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+EOF
+        # This perl invocation strips the existing block of header comments.
+        perl -0pe 's/\A(^#.*\n)*//m' "$output"
+    ) | sponge "$output"
 }
 
 compile_requirements requirements/prod.txt requirements/prod_lock.txt
