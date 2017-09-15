@@ -7,14 +7,22 @@ if [ ! -d /srv/zulip-py3-venv ]; then
 fi
 source /srv/zulip-py3-venv/bin/activate
 
-pip-compile --output-file requirements/prod_lock.txt requirements/prod.txt
-pip-compile --output-file requirements/dev_lock.txt requirements/dev.txt
+compile_requirements () {
+    source="$1"
+    output="$2"
 
-# Remove the editable flag in the lock files.  It's there because pip-compile
-# can't yet do without it (see https://github.com/jazzband/pip-tools/issues/272
-# upstream), but in the output of pip-compile it's no longer needed.
-sed -i 's/-e //' requirements/prod_lock.txt requirements/dev_lock.txt
+    pip-compile --output-file "$output" "$source"
 
-# pip-tools bug; future, futures are obsolete in python3
-sed -i '/futures==/d' requirements/prod_lock.txt requirements/dev_lock.txt
-sed -i '/future==/d' requirements/prod_lock.txt requirements/dev_lock.txt
+    # Remove the editable flag.  It's there because pip-compile can't
+    # yet do without it (see
+    # https://github.com/jazzband/pip-tools/issues/272 upstream), but
+    # in the output of pip-compile it's no longer needed.
+    sed -i 's/-e //' "$output"
+
+    # pip-tools bug; future, futures are obsolete in python3
+    sed -i '/futures==/d' "$output"
+    sed -i '/future==/d' "$output"
+}
+
+compile_requirements requirements/prod.txt requirements/prod_lock.txt
+compile_requirements requirements/dev.txt requirements/dev_lock.txt
