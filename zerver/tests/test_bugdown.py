@@ -500,6 +500,17 @@ class BugdownTest(ZulipTestCase):
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
             self.assertIs(None, bugdown.fetch_tweet_data('287977969287315459'))
 
+    def test_content_has_emoji(self):
+        # type: () -> None
+        self.assertFalse(bugdown.content_has_emoji_syntax('boring'))
+        self.assertFalse(bugdown.content_has_emoji_syntax('hello: world'))
+        self.assertFalse(bugdown.content_has_emoji_syntax(':foobar'))
+        self.assertFalse(bugdown.content_has_emoji_syntax('::: hello :::'))
+
+        self.assertTrue(bugdown.content_has_emoji_syntax('foo :whatever:'))
+        self.assertTrue(bugdown.content_has_emoji_syntax('\n:whatever:'))
+        self.assertTrue(bugdown.content_has_emoji_syntax(':smile: ::::::'))
+
     def test_realm_emoji(self):
         # type: () -> None
         def emoji_img(name, file_name, realm_id):
