@@ -713,7 +713,7 @@ def render_incoming_message(message, content, user_ids, realm):
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
     return rendered_content
-
+  
 def get_typing_user_profiles(recipient, sender_id):
     # type: (Recipient, int) -> List[UserProfile]
     if recipient.type == Recipient.STREAM:
@@ -723,14 +723,12 @@ def get_typing_user_profiles(recipient, sender_id):
         distracting.
         '''
         raise ValueError('Typing indicators not supported for streams')
-
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
         user_ids = list({recipient.type_id, sender_id})
         assert(len(user_ids) in [1, 2])
-
-    elif recipient.type == Recipient.HUDDLE:
+elif recipient.type == Recipient.HUDDLE:
         user_ids = Subscription.objects.filter(
             recipient=recipient,
             active=True,
@@ -738,7 +736,6 @@ def get_typing_user_profiles(recipient, sender_id):
 
     else:
         raise ValueError('Bad recipient type')
-
     users = [get_user_profile_by_id(user_id) for user_id in user_ids]
     return users
 
@@ -788,8 +785,7 @@ def get_recipient_info(recipient, sender_id):
 
     else:
         raise ValueError('Bad recipient type')
-
-    query = UserProfile.objects.filter(
+query = UserProfile.objects.filter(
         id__in=user_ids
     ).values(
         'id',

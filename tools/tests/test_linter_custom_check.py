@@ -3,9 +3,7 @@ import os
 from itertools import chain
 from mock import patch, MagicMock
 from unittest import TestCase
-
 from typing import Any, Dict, List
-
 from tools.linter_lib.custom_check import build_custom_checkers
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
@@ -45,3 +43,4 @@ class TestCustomRulesFormat(TestCase):
                 if not os.path.splitext(path)[1]:
                     self.assertTrue(path.endswith('/'),
                                     "The path '{}' should end with '/'. {}".format(path, CHECK_MESSAGE))
+
