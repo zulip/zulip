@@ -379,23 +379,23 @@ exports.MessageList.prototype = {
         if (!this.narrowed) {
             return;
         }
-        var stream = narrow_state.stream();
-        if (stream === undefined) {
+        var stream_name = narrow_state.stream();
+        if (stream_name === undefined) {
             return;
         }
         var trailing_bookend_content;
         var show_button = true;
-        var subscribed = stream_data.is_subscribed(stream);
+        var subscribed = stream_data.is_subscribed(stream_name);
         if (subscribed) {
-            trailing_bookend_content = this.subscribed_bookend_content(stream);
+            trailing_bookend_content = this.subscribed_bookend_content(stream_name);
         } else {
             if (!this.last_message_historical) {
-                trailing_bookend_content = this.unsubscribed_bookend_content(stream);
+                trailing_bookend_content = this.unsubscribed_bookend_content(stream_name);
 
                 // For invite only streams, hide the resubscribe button
-                show_button = !stream_data.get_sub(stream).invite_only;
+                show_button = !stream_data.get_sub(stream_name).invite_only;
             } else {
-                trailing_bookend_content = this.not_subscribed_bookend_content(stream);
+                trailing_bookend_content = this.not_subscribed_bookend_content(stream_name);
             }
         }
         if (trailing_bookend_content !== undefined) {
