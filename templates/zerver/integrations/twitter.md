@@ -1,12 +1,26 @@
-See Twitter search results in Zulip! This is great for seeing and
+Fetch tweets from Twitter in Zulip! This is great for seeing and
 discussing who is talking about you, friends, competitors, or
 important topics in real time.
 
 {!create-stream.md!}
 
+Next, on your {{ settings_html|safe }},
+[create a bot](/help/add-a-bot-or-integration) for
+{{ integration_display_name }}. Make sure that you select
+**Incoming webhook** as the **Bot type**:
+
+![](/static/images/help/bot_types.png)
+
+The API keys for "Incoming webhook" bots are limited to only
+sending messages via webhooks. Thus, this bot type lessens
+the security risks associated with exposing the bot's API
+key to third-party services.
+
+Download your new bot's `zuliprc` configuration file.
+
 {!download-python-bindings.md!}
 
-This bot should be set up on a trusted machine, because your API
+The Twitter bot should be set up on a trusted machine, because your API
 key is visible to local users through the command line or config
 file.
 
@@ -20,11 +34,9 @@ authenticate with Twitter, and in order to obtain a consumer key &
 secret, you must register a new application under your Twitter
 account:
 
-1. Log in to <http://dev.twitter.com>.
+1. Log in to <https://apps.twitter.com/>.
 
-2. In the menu under your username, click
-   [My Applications](https://dev.twitter.com/apps). From this page,
-   create a new application.
+2. Click on `Create New App` and fill out the form.
 
 3. Click on the application you created and click **create my access
    token**. Fill in the requested values.
@@ -39,19 +51,25 @@ To configure and deploy this bot:
         access_token_key =
         access_token_secret =
 
-2.  Test the script by running it manually:
+2. Place your bot's `zuliprc` in a directory of your choice (for the next step,
+   `~/zuliprc` is used).
 
-        /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum
-        physics" --site={{ external_api_uri_subdomain }}
+3.  Test the script by running it manually:
 
-    Note: `twitter-search-bot` may install to a different location on
+        /usr/local/share/zulip/integrations/twitter/twitter-bot --search="@nprnews,quantum
+        physics" --site={{ realm_uri }} --config-file=~/zuliprc
+
+        /usr/local/share/zulip/integrations/twitter/twitter-bot --twitter-name="<@your-
+        twitter-handle>" --site={{ realm_uri }} --config-file=~/zuliprc
+
+    Note: `twitter-bot` may install to a different location on
     your operating system distribution.
 
-3.  Configure a crontab entry for this script. A sample crontab entry
+4.  Configure a crontab entry for this script. A sample crontab entry
     that will process tweets every minute is:
 
-        * * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot
-        --search="@nprnews,quantum physics" --site={{ external_api_uri_subdomain }}
+        * * * * * /usr/local/share/zulip/integrations/twitter/twitter-bot --search="@nprnews,
+        quantum physics" --site={{ realm_uri }} --config-file=~/zuliprc
 
 When someone tweets a message containing one of your search terms,
 you’ll get a Zulip on your specified stream, with the search term as

@@ -61,12 +61,39 @@ zulip_bots
 Each subdirectory in `bots` contains a bot. When developing bots, try to use the structure outlined
 above as an orientation.
 
+## Installing the `zulip_bots` package
+
+The `zulip_bots` package comes with all you need to run a bot.
+
+### Installing a stable version
+
+Run `pip install zulip_bots`.
+
+### Installing a development version
+
+1. `git clone https://github.com/zulip/python-zulip-api.git` - clone the [python-zulip-api](
+  https://github.com/zulip/python-zulip-api) repository.
+
+2. `cd python-zulip-api` - navigate into your cloned repository.
+
+3. `./tools/provision` - install all requirements in a Python virtualenv.
+
+4. Run the `source <activation/path>` command printed in the previous step to activate the virtualenv.
+
+5. *Finished*. You should now see the name of your venv preceding your prompt, e.g. `(ZULIP-~1)`.
+
+*Hint: `./tools/provision` installs `zulip`, `zulip_bots`, and `zulip_botserver` in developer
+ mode. This enables you to make changes to the code after the packages are installed.*
+
 ## How to run a bot
 
 This guide will show you how to run a bot on a running Zulip
 server.  It assumes you want to use one of the existing `zulip_bots/bots`
 bots in your Zulip organization.  If you want to write a new one, you
 just need to write the `<my-bot>.py` script and put it into `zulip_bots/bots/<my-bot>` directory.
+
+*Looking for an easy way to test a bot's output? Check out [this](
+ #testing-a-bot-s-output) section.*
 
 You need:
 
@@ -80,12 +107,7 @@ You need:
 **Note: Please be considerate when testing experimental bots on
   public servers such as chat.zulip.org.**
 
-1. Install all requirements. You can either
-
-    * run `pip install zulip_bots` for a stable version, or
-    * clone the [`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
-      repository for the latest code. Install it with
-      `pip -e <path/to/zulip_bots>`; you will be able to make changes to the code.
+1. [Install all requirements](#installing-the-zulip-bots-package).
 
 2. Register a new bot user on the Zulip server's web interface.
 
@@ -142,6 +164,26 @@ You need:
   typing `@<your bot name>` followed by some commands. If the bot is
   the `helloworld` bot, you should expect the bot to respond with
   "beep boop".
+
+### Testing a bot's output
+
+If you just want to see how a bot reacts to a message, but don't want to set it up on a server,
+we have a little tool to help you out: `zulip-bot-output`
+
+* [Install all requirements](#installing-the-zulip-bots-package).
+
+* Run `zulip-bot-output <bot-name> --message "<your-message>"` to test one of the bots in
+  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+
+  * Example: `zulip-bot-output converter --message "12 meter yard"`
+
+    Response: `12.0 meter = 13.12336 yard`
+
+* Run `zulip-bot-output <path/to/bot.py> --message "<your-message>"` to specify the bot's path yourself.
+
+  * Example: `zulip-bot-output zulip_bots/zulip_bots/bots/converter/converter.py --message "12 meter yard"`
+
+    Response: `12.0 meter = 13.12336 yard`
 
 ## Zulip Botserver
 

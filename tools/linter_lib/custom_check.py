@@ -355,7 +355,8 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]',  # exclude usage in hrefs/divs
          'description': "github should be spelled GitHub"},
         {'pattern': '[oO]rganisation',  # exclude usage in hrefs/divs
-         'description': "Organization is spelled with a z"},
+         'description': "Organization is spelled with a z",
+         'exclude_line': [('docs/french.md', '* organization - **organisation**')]},
         {'pattern': '!!! warning',
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
         {'pattern': 'Terms of service',

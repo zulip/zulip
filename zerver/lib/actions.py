@@ -713,25 +713,7 @@ def render_incoming_message(message, content, user_ids, realm):
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
     return rendered_content
-
-def get_recipient_user_ids(recipient, sender_id):
-    # type: (Recipient, int) -> List[int]
-    if recipient.type == Recipient.PERSONAL:
-        # The sender and recipient may be the same id, so
-        # de-duplicate using a set.
-        user_ids = list({recipient.type_id, sender_id})
-        assert(len(user_ids) in [1, 2])
-        return user_ids
-
-    elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
-        user_ids = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
-        return user_ids
-
-    raise ValueError('Bad recipient type')
-
+  
 def get_typing_user_profiles(recipient, sender_id):
     # type: (Recipient, int) -> List[UserProfile]
     if recipient.type == Recipient.STREAM:
@@ -741,8 +723,19 @@ def get_typing_user_profiles(recipient, sender_id):
         distracting.
         '''
         raise ValueError('Typing indicators not supported for streams')
+    if recipient.type == Recipient.PERSONAL:
+        # The sender and recipient may be the same id, so
+        # de-duplicate using a set.
+        user_ids = list({recipient.type_id, sender_id})
+        assert(len(user_ids) in [1, 2])
+elif recipient.type == Recipient.HUDDLE:
+        user_ids = Subscription.objects.filter(
+            recipient=recipient,
+            active=True,
+        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
 
-    user_ids = get_recipient_user_ids(recipient, sender_id)
+    else:
+        raise ValueError('Bad recipient type')
     users = [get_user_profile_by_id(user_id) for user_id in user_ids]
     return users
 
@@ -750,6 +743,7 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'recipient_user_ids': Set[int],
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
+    'stream_push_user_ids': Set[int],
     'um_eligible_user_ids': Set[int],
     'long_term_idle_user_ids': Set[int],
     'service_bot_tuples': List[Tuple[int, int]],
@@ -757,9 +751,41 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
 
 def get_recipient_info(recipient, sender_id):
     # type: (Recipient, int) -> RecipientInfoResult
-    user_ids = get_recipient_user_ids(recipient, sender_id)
+    stream_push_user_ids = set()  # type: Set[int]
 
-    query = UserProfile.objects.filter(
+    if recipient.type == Recipient.PERSONAL:
+        # The sender and recipient may be the same id, so
+        # de-duplicate using a set.
+        user_ids = list({recipient.type_id, sender_id})
+        assert(len(user_ids) in [1, 2])
+
+    elif recipient.type == Recipient.STREAM:
+        subscription_rows = Subscription.objects.filter(
+            recipient=recipient,
+            active=True,
+        ).values(
+            'user_profile_id',
+            'push_notifications',
+        ).order_by('user_profile_id')
+        user_ids = [
+            row['user_profile_id']
+            for row in subscription_rows
+        ]
+        stream_push_user_ids = {
+            row['user_profile_id']
+            for row in subscription_rows
+            if row['push_notifications']
+        }
+
+    elif recipient.type == Recipient.HUDDLE:
+        user_ids = Subscription.objects.filter(
+            recipient=recipient,
+            active=True,
+        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+
+    else:
+        raise ValueError('Bad recipient type')
+query = UserProfile.objects.filter(
         id__in=user_ids
     ).values(
         'id',
@@ -816,6 +842,7 @@ def get_recipient_info(recipient, sender_id):
         recipient_user_ids=recipient_user_ids,
         active_user_ids=active_user_ids,
         push_notify_user_ids=push_notify_user_ids,
+        stream_push_user_ids=stream_push_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         service_bot_tuples=service_bot_tuples
@@ -853,6 +880,7 @@ def do_send_messages(messages_maybe_none):
         message['recipient_user_ids'] = info['recipient_user_ids']
         message['active_user_ids'] = info['active_user_ids']
         message['push_notify_user_ids'] = info['push_notify_user_ids']
+        message['stream_push_user_ids'] = info['stream_push_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
         message['service_bot_tuples'] = info['service_bot_tuples']
@@ -967,7 +995,8 @@ def do_send_messages(messages_maybe_none):
             dict(
                 id=user_id,
                 flags=user_flags.get(user_id, []),
-                always_push_notify=(user_id in message['push_notify_user_ids'])
+                always_push_notify=(user_id in message['push_notify_user_ids']),
+                stream_push_notify=(user_id in message['stream_push_user_ids']),
             )
             for user_id in message['active_user_ids']
         ]
@@ -1793,6 +1822,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     email_address=encode_email_address(stream),
                     desktop_notifications=subscription.desktop_notifications,
                     audible_notifications=subscription.audible_notifications,
+                    push_notifications=subscription.push_notifications,
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
                     subscribers=stream_emails(stream))
@@ -1877,7 +1907,9 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         sub_to_add = Subscription(user_profile=user_profile, active=True,
                                   color=color, recipient_id=recipient_id,
                                   desktop_notifications=user_profile.enable_stream_desktop_notifications,
-                                  audible_notifications=user_profile.enable_stream_sounds)
+                                  audible_notifications=user_profile.enable_stream_sounds,
+                                  push_notifications=user_profile.enable_stream_push_notifications,
+                                  )
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 
@@ -3175,7 +3207,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "active", "pin_to_top")
+        "audible_notifications", "push_notifications", "active", "pin_to_top")
 
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
@@ -3229,6 +3261,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
+                       'push_notifications': sub["push_notifications"],
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
@@ -3295,8 +3328,8 @@ def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_
     for user_id in active_user_ids:
         flags = user_flags.get(user_id, [])  # type: Iterable[str]
         mentioned = 'mentioned' in flags
-        received_pm = is_pm and user_id != sender_id
-        if mentioned or received_pm:
+        private_message = is_pm and user_id != sender_id
+        if mentioned or private_message:
             user_ids.add(user_id)
 
     if not user_ids:

@@ -1468,6 +1468,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('in_home_view', check_bool),
             ('name', check_string),
             ('desktop_notifications', check_bool),
+            ('push_notifications', check_bool),
             ('audible_notifications', check_bool),
             ('stream_id', check_int),
         ]

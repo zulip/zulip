@@ -54,6 +54,25 @@ MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[Text], AbstractSet[Text])
 
+def query_for_ids(query, user_ids, field):
+    # type: (QuerySet, List[int], str) -> QuerySet
+    '''
+    This function optimizes searches of the form
+    `user_profile_id in (1, 2, 3, 4)` by quickly
+    building the where clauses.  Profiling shows significant
+    speedups over the normal Django-based approach.
+
+    Use this very carefully!  Also, the caller should
+    guard against empty lists of user_ids.
+    '''
+    assert(user_ids)
+    value_list = ', '.join(str(int(user_id)) for user_id in user_ids)
+    clause = '%s in (%s)' % (field, value_list)
+    query = query.extra(
+        where=[clause]
+    )
+    return query
+
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
 per_request_display_recipient_cache = {}  # type: Dict[int, List[Dict[str, Any]]]
@@ -598,6 +617,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # Stream notifications.
     enable_stream_desktop_notifications = models.BooleanField(default=False)  # type: bool
+    enable_stream_push_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_sounds = models.BooleanField(default=False)  # type: bool
 
     # PM + @-mention notifications.
@@ -708,6 +728,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         enable_online_push_notifications=bool,
         enable_sounds=bool,
         enable_stream_desktop_notifications=bool,
+        enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
         pm_content_in_desktop_notifications=bool,
     )
@@ -805,6 +826,11 @@ def receives_offline_notifications(user_profile):
 def receives_online_notifications(user_profile):
     # type: (UserProfile) -> bool
     return (user_profile.enable_online_push_notifications and
+            not user_profile.is_bot)
+
+def receives_stream_notifications(user_profile):
+    # type: (UserProfile) -> bool
+    return (user_profile.enable_stream_push_notifications and
             not user_profile.is_bot)
 
 def remote_user_to_email(remote_user):
@@ -1451,6 +1477,7 @@ class Subscription(ModelReprMixin, models.Model):
 
     desktop_notifications = models.BooleanField(default=True)  # type: bool
     audible_notifications = models.BooleanField(default=True)  # type: bool
+    push_notifications = models.BooleanField(default=False)  # type: bool
 
     # Combination desktop + audible notifications superseded by the
     # above.
@@ -1641,18 +1668,13 @@ class UserPresence(models.Model):
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
         )
+        presence_rows = list(query)
 
         mobile_user_ids = set()  # type: Set[int]
         if PushDeviceToken.objects.filter(user=user_profile).exists():
             mobile_user_ids.add(user_profile.id)
 
-        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
-
-    @staticmethod
-    def exclude_old_users(query):
-        # type: (QuerySet) -> QuerySet
-        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
-        return query.filter(timestamp__gte=two_weeks_ago)
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
@@ -1668,13 +1690,10 @@ class UserPresence(models.Model):
         if not user_profile_ids:
             return {}
 
+        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
         query = UserPresence.objects.filter(
-            user_profile_id__in=user_profile_ids
-        )
-
-        query = UserPresence.exclude_old_users(query)
-
-        query = query.values(
+            timestamp__gte=two_weeks_ago
+        ).values(
             'client__name',
             'status',
             'timestamp',
@@ -1683,20 +1702,35 @@ class UserPresence(models.Model):
             'user_profile__enable_offline_push_notifications',
         )
 
-        mobile_query = PushDeviceToken.objects.filter(
-            user_id__in=user_profile_ids,
+        query = query_for_ids(
+            query=query,
+            user_ids=user_profile_ids,
+            field='user_profile_id'
+        )
+        presence_rows = list(query)
+
+        mobile_query = PushDeviceToken.objects.distinct(
+            'user_id'
+        ).values_list(
+            'user_id',
+            flat=True
         )
 
-        mobile_user_ids = set(mobile_query.distinct("user_id").values_list("user_id", flat=True))
+        mobile_query = query_for_ids(
+            query=mobile_query,
+            user_ids=user_profile_ids,
+            field='user_id'
+        )
+        mobile_user_ids = set(mobile_query)
 
-        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
-    def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, Set[int]) -> Dict[Text, Dict[Any, Any]]
+    def get_status_dicts_for_rows(presence_rows, mobile_user_ids):
+        # type: (List[Dict[str, Any]], Set[int]) -> Dict[Text, Dict[Any, Any]]
 
         info_row_dct = defaultdict(list)  # type: DefaultDict[Text, List[Dict[str, Any]]]
-        for row in query:
+        for row in presence_rows:
             email = row['user_profile__email']
             client_name = row['client__name']
             status = UserPresence.status_to_string(row['status'])

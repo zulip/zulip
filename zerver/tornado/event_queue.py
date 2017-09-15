@@ -412,10 +412,11 @@ def gc_event_queues():
     # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
-    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
-                  '  Now %d active queues, %s')
-                 % (len(to_remove), len(affected_users), time.time() - start,
-                    len(clients), handler_stats_string()))
+    if settings.PRODUCTION:
+        logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+                      '  Now %d active queues, %s')
+                     % (len(to_remove), len(affected_users), time.time() - start,
+                        len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
@@ -688,24 +689,39 @@ def process_message_event(event_template, users):
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
-        received_pm = message_type == "private" and user_profile_id != sender_id
+        private_message = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags
+        stream_push_notify = user_data.get('stream_push_notify', False)
 
-        if (received_pm or mentioned):
+        # We first check if a message is potentially mentionable,
+        # since receiver_is_off_zulip is somewhat expensive.
+        if private_message or mentioned or stream_push_notify:
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
             always_push_notify = user_data.get('always_push_notify', False)
+            notified = dict()  # type: Dict[str, bool]
 
-            if (idle or always_push_notify):
+            if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
                 notice = build_offline_notification(user_profile_id, message_id)
+                notice['triggers'] = {
+                    'private_message': private_message,
+                    'mentioned': mentioned,
+                    'stream_push_notify': stream_push_notify,
+                }
+                notice['stream_name'] = event_template.get('stream_name')
                 queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-                notified = dict(push_notified=True)  # type: Dict[str, bool]
-                # Don't send missed message emails if always_push_notify is True
-                if idle:
-                    # We require RabbitMQ to do this, as we can't call the email handler
-                    # from the Tornado process. So if there's no rabbitmq support do nothing
-                    queue_json_publish("missedmessage_emails", notice, lambda notice: None)
-                    notified['email_notified'] = True
+                notified['push_notified'] = True
 
+            # Send missed_message emails if a private message or a
+            # mention.  Eventually, we'll add settings to allow email
+            # notifications to match the model of push notifications
+            # above.
+            if idle and (private_message or mentioned):
+                # We require RabbitMQ to do this, as we can't call the email handler
+                # from the Tornado process. So if there's no rabbitmq support do nothing
+                queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+                notified['email_notified'] = True
+
+            if len(notified) > 0:
                 extra_user_data[user_profile_id] = notified
 
     for client_data in six.itervalues(send_to_clients):

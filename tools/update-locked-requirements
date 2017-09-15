@@ -1,26 +1,44 @@
 #!/usr/bin/env bash
 set -e
 
-# Check if zulip-.*venv in particular has been installed
-# It is sufficient to check just for /srv/zulip-py3-venv because it must be
-# present in both cases of py2 and py3
+# Make sure the Zulip dev virtualenv exists, and operate within it.
 if [ ! -d /srv/zulip-py3-venv ]; then
     ./tools/setup/setup_venvs.py
 fi
+source /srv/zulip-py3-venv/bin/activate
 
-source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
-pip-compile --output-file requirements/prod_lock.txt requirements/prod.txt
-# Add the editable flag to mypy for the purpose of building the lockfile for
-# dev.txt
-sed -i 's/git/-e git/' requirements/mypy.txt
-pip-compile --output-file requirements/dev_lock.txt requirements/dev.txt
-# Remove the editable flag in the lock file for safer build
-sed -i 's/-e git/git/' requirements/mypy.txt
-sed -i 's/-e //' requirements/prod_lock.txt
-sed -i 's/-e //' requirements/dev_lock.txt
-# pip-tools bug; future, futures are obsolete in python3
-sed -i '/futures==/d' requirements/prod_lock.txt
-sed -i '/future==/d' requirements/prod_lock.txt
-sed -i '/futures==/d' requirements/dev_lock.txt
+compile_requirements () {
+    source="$1"
+    output="$2"
 
-deactivate
+    pip-compile --output-file "$output" "$source"
+
+    # Remove the editable flag.  It's there because pip-compile can't
+    # yet do without it (see
+    # https://github.com/jazzband/pip-tools/issues/272 upstream), but
+    # in the output of pip-compile it's no longer needed.
+    sed -i 's/-e //' "$output"
+
+    # pip-tools bug; future, futures are obsolete in python3
+    sed -i '/futures==/d' "$output"
+    sed -i '/future==/d' "$output"
+
+    (
+        cat <<EOF
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.txt, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+EOF
+        # This perl invocation strips the existing block of header comments.
+        perl -0pe 's/\A(^#.*\n)*//m' "$output"
+    ) | sponge "$output"
+}
+
+compile_requirements requirements/prod.txt requirements/prod_lock.txt
+compile_requirements requirements/dev.txt requirements/dev_lock.txt
