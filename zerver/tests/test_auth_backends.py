@@ -422,7 +422,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         rf = RequestFactory()
         request = rf.get('/complete')
         request.session = {}
-        request.get_host = lambda: 'acme.testserver'
+        request.get_host = lambda: 'zulip.testserver'
         request.user = self.user_profile
         self.backend.strategy.request = request
 
@@ -466,16 +466,16 @@ class GitHubAuthBackendTest(ZulipTestCase):
                 assert(result is not None)
                 self.assertIn('subdomain=1', result.url)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
-            with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-                self.backend.strategy.session_set('subdomain', 'zulip')
-                response = dict(email=self.email, name=self.name)
-                result = self.backend.do_auth(response=response)
-                assert(result is not None)
-                self.assertEqual('http://zulip.testserver/accounts/login/subdomain/', result.url)
+            self.backend.strategy.session_set('subdomain', 'zulip')
+            response = dict(email=self.email, name=self.name)
+            result = self.backend.do_auth(response=response)
+            assert(result is not None)
+            self.assertEqual('http://zulip.testserver/accounts/login/subdomain/', result.url)
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
@@ -485,7 +485,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
             self.backend.do_auth('fake-access-token', response=response)
 
-            kwargs = {'realm_subdomain': 'acme',
+            kwargs = {'realm_subdomain': 'zulip',
                       'response': response,
                       'return_data': {}}
             result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
@@ -499,63 +499,71 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
 
             self.backend.do_auth('fake-access-token', response=response)
-            kwargs = {'realm_subdomain': 'acme',
+            kwargs = {'realm_subdomain': 'zulip',
                       'response': response,
                       'return_data': {}}
             result.assert_called_with(None, 'fake-access-token', **kwargs)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            self.backend.strategy.session_set('subdomain', 'zulip')
             response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
 
-                kwargs = {'realm_subdomain': 'acme',
+                kwargs = {'realm_subdomain': 'zulip',
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_team_auth_failed(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            self.backend.strategy.session_set('subdomain', 'zulip')
             response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
-                kwargs = {'realm_subdomain': 'acme',
+                kwargs = {'realm_subdomain': 'zulip',
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(None, 'fake-access-token', **kwargs)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            self.backend.strategy.session_set('subdomain', 'zulip')
             response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
 
-                kwargs = {'realm_subdomain': 'acme',
+                kwargs = {'realm_subdomain': 'zulip',
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_github_backend_do_auth_for_org_auth_failed(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            self.backend.strategy.session_set('subdomain', 'zulip')
             response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
-                kwargs = {'realm_subdomain': 'acme',
+                kwargs = {'realm_subdomain': 'zulip',
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(None, 'fake-access-token', **kwargs)
