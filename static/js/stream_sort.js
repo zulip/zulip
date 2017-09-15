@@ -25,8 +25,10 @@ function filter_streams_by_search(streams, search_term) {
 
     var filtered_streams = _.filter(streams, function (stream) {
         return _.any(search_terms, function (search_term) {
-            var lower_stream_name = stream.toLowerCase().split(" ");
-            return _.any(lower_stream_name, function (name) {
+            var lower_stream_name = stream.toLowerCase();
+            var cands = lower_stream_name.split(" ");
+            cands.push(lower_stream_name);
+            return _.any(cands, function (name) {
                 return name.indexOf(search_term) === 0;
             });
         });
