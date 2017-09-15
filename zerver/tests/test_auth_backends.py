@@ -44,7 +44,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
-    SocialAuthMixin, AUTH_BACKEND_NAME_MAP
+    require_email_format_usernames, SocialAuthMixin, AUTH_BACKEND_NAME_MAP
 
 from zerver.views.auth import (maybe_send_to_registration,
                                login_or_register_remote_user)
@@ -1897,6 +1897,23 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.email, self.example_email("hamlet"))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_with_email_attr(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=letham,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'email': ['hamlet@zulip.com'],
+            }
+        }
+        with self.settings(LDAP_EMAIL_ATTR='email',
+                           AUTH_LDAP_BIND_PASSWORD='',
+                           AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate("letham", 'testing')
+
+            assert (user_profile is not None)
+            self.assertEqual(user_profile.email, self.example_email("hamlet"))
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_password(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -2024,6 +2041,19 @@ class TestLDAP(ZulipTestCase):
                 backend.get_or_create_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_create_user_when_ldap_has_no_email_attr(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        nonexisting_attr = 'email'
+        with self.settings(LDAP_EMAIL_ATTR=nonexisting_attr):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            with self.assertRaisesRegex(Exception, 'LDAP user doesn\'t have email attribute'):
+                backend.get_or_create_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_when_domain_does_not_match(self):
         # type: () -> None
         backend = self.backend
@@ -2143,6 +2173,43 @@ class TestPasswordAuthEnabled(ZulipTestCase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
             realm = Realm.objects.get(string_id='zulip')
             self.assertTrue(password_auth_enabled(realm))
+
+class TestRequireEmailFormatUsernames(ZulipTestCase):
+    def test_require_email_format_usernames_for_ldap_with_append_domain(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
+                           LDAP_APPEND_DOMAIN="zulip.com"):
+            realm = Realm.objects.get(string_id='zulip')
+            self.assertFalse(require_email_format_usernames(realm))
+
+    def test_require_email_format_usernames_for_ldap_with_email_attr(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
+                           LDAP_EMAIL_ATTR="email"):
+            realm = Realm.objects.get(string_id='zulip')
+            self.assertFalse(require_email_format_usernames(realm))
+
+    def test_require_email_format_usernames_for_email_only(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
+            realm = Realm.objects.get(string_id='zulip')
+            self.assertTrue(require_email_format_usernames(realm))
+
+    def test_require_email_format_usernames_for_email_and_ldap_with_email_attr(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                                    'zproject.backends.ZulipLDAPAuthBackend'),
+                           LDAP_EMAIL_ATTR="email"):
+            realm = Realm.objects.get(string_id='zulip')
+            self.assertFalse(require_email_format_usernames(realm))
+
+    def test_require_email_format_usernames_for_email_and_ldap_with_append_email(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                                    'zproject.backends.ZulipLDAPAuthBackend'),
+                           LDAP_APPEND_DOMAIN="zulip.com"):
+            realm = Realm.objects.get(string_id='zulip')
+            self.assertFalse(require_email_format_usernames(realm))
 
 class TestMaybeSendToRegistration(ZulipTestCase):
     def test_sso_only_when_preregistration_user_does_not_exist(self):

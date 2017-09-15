@@ -11,6 +11,8 @@ from zproject.backends import (
     github_auth_enabled,
     google_auth_enabled,
     password_auth_enabled,
+    email_auth_enabled,
+    require_email_format_usernames,
     auth_enabled_helper,
     AUTH_BACKEND_NAME_MAP
 )
@@ -127,6 +129,8 @@ def zulip_default_context(request):
         'dev_auth_enabled': dev_auth_enabled(realm),
         'google_auth_enabled': google_auth_enabled(realm),
         'github_auth_enabled': github_auth_enabled(realm),
+        'email_auth_enabled': email_auth_enabled(realm),
+        'require_email_format_usernames': require_email_format_usernames(realm),
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
         'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
         'development_environment': settings.DEVELOPMENT,
