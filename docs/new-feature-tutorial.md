@@ -83,7 +83,7 @@ based on the event you just created.
 required for your feature to do what it's supposed to do (this will
 be unique to the feature you're implementing).
 
-**New views:** Add any new application views to `zerver/urls.py`, or
+**New views:** Add any new application views to `zproject/urls.py`, or
 update the appropriate existing view in `zerver/views/`. This
 includes both views that serve HTML (new pages on Zulip) as well as new
 API endpoints that serve JSON-formatted data.
