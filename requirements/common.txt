@@ -1,3 +1,7 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev_lock.txt
+# and requirements/prod_lock.txt.
+# See requirements/README.md for more detail.
 # Django itself; we use a slightly patched version
 Django==1.11.4
 

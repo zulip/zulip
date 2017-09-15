@@ -1,3 +1,6 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev_lock.txt.
+# See requirements/README.md for more detail.
 -r common.txt
 -r docs.txt
 
@@ -34,11 +37,7 @@ snakeviz==0.4.2
 # Needed to sync translations from transifex
 transifex-client==0.12.4
 
-# Dependency of transifex-client
-urllib3==1.22
-
 # Needed for updating the locked pip dependencies
-first==2.0.1
 pip-tools==1.9.0
 
 -r mypy.txt

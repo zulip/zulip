@@ -17,8 +17,9 @@ Steps to update a lock file, e.g. to update ipython from 5.3.0 to 6.0.0 in
 common.txt and propagate it to dev_lock.txt and prod_lock.txt:
 0. Replace `ipython==5.4.1` with `ipython==6.0.0` in common.txt
 1. Run './tools/update-locked-requirements'
-2. Run `./tools/provision` to install the new deps and test them
-3. Commit your changes.
+2. Bump the provision version
+3. Run `./tools/provision` to install the new deps and test them
+4. Commit your changes.
 
 The reason the steps to remove the `-e` is necessary is because `pip-compile`
 doesn't support installing from vcs without `-e` yet.
