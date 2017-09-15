@@ -103,6 +103,12 @@ function report_error(msg, stack, opts) {
         stack = 'No stacktrace available';
     }
 
+    if (page_params.debug_mode) {
+        // In development, we display blueslip errors in the web UI,
+        // to make them hard to miss.
+        exports.display_errors_on_screen(msg, stack);
+    }
+
     var key = ':' + msg + stack;
     if (reported_errors.hasOwnProperty(key)
         || (last_report_attempt.hasOwnProperty(key)
@@ -213,10 +219,6 @@ exports.wrap_function = function blueslip_wrap_function(func) {
         return func.blueslip_wrapper;
     }
     var new_func = function blueslip_wrapper() {
-        if (page_params.debug_mode) {
-            return func.apply(this, arguments);
-        }
-
         try {
             return func.apply(this, arguments);
         } catch (ex) {
@@ -381,25 +383,30 @@ exports.warn = function blueslip_warn (msg, more_info) {
     }
 };
 
+exports.display_errors_on_screen = function (error, stack) {
+    var $exit = "<div class='exit'></div>";
+    var $error = "<div class='error'>" + error + "</div>";
+    var $pre = "<pre>" + stack + "</pre>";
+    var $alert = $("<div class='alert browser-alert home-error-bar'></div>").html($error + $exit + $pre);
+
+    $(".app .alert-box").append($alert.addClass("show"));
+};
+
 exports.error = function blueslip_error (msg, more_info, stack) {
+    if (stack === undefined) {
+        stack = Error().stack;
+    }
+    var args = build_arg_list(msg, more_info);
+    logger.error.apply(logger, args);
+    report_error(msg, stack, {more_info: more_info});
+
     if (page_params.debug_mode) {
-        console.log(stack);
         throw new BlueslipError(msg, more_info);
-    } else {
-        if (stack === undefined) {
-            stack = Error().stack;
-        }
-        var args = build_arg_list(msg, more_info);
-        logger.error.apply(logger, args);
-        report_error(msg, stack, {more_info: more_info});
     }
 };
 
 exports.fatal = function blueslip_fatal (msg, more_info) {
-    if (! page_params.debug_mode) {
-        report_error(msg, Error().stack, {more_info: more_info});
-    }
-
+    report_error(msg, Error().stack, {more_info: more_info});
     throw new BlueslipError(msg, more_info);
 };
 
