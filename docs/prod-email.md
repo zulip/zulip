@@ -91,7 +91,7 @@ hosting provider's firewall.
 
 Once you have it working from the management command, remember to
 restart your Zulip server using
-`/home/zulip/deployments/current/restart-server` so that the running
+`/home/zulip/deployments/current/scripts/restart-server` so that the running
 server is using the latest configuration.
 
 #### Advanced troubleshooting
