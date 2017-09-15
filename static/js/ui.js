@@ -46,6 +46,20 @@ function update_message_in_all_views(message_id, callback) {
     });
 }
 
+exports.show_error_for_unsupported_platform = function () {
+    if (/ZulipDesktop/.test(navigator.userAgent)) {
+        // We don't internationalize this string because it is long,
+        // and few users will have both the old desktop app and an
+        // internationalized version of Zulip anyway.
+        var error = "Hello! You're using the unsupported old Zulip desktop app," +
+            " which is no longer developed. We recommend switching to the new, " +
+            "modern desktop app, which you can download at " +
+            "<a href='https://zulipchat.com/apps'>zulipchat.com/apps</a>.";
+
+        ui_report.generic_embed_error(error);
+    }
+};
+
 exports.find_message = function (message_id) {
     // Try to find the message object. It might be in the narrow list
     // (if it was loaded when narrowed), or only in the message_list.all
@@ -285,6 +299,7 @@ $(function () {
 
 exports.initialize = function () {
     i18n.ensure_i18n(_setup_info_overlay);
+    exports.show_error_for_unsupported_platform();
 };
 
 return exports;
