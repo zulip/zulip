@@ -5,7 +5,6 @@ from typing import (
     Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast
 )
 from mypy_extensions import TypedDict
-
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -715,6 +714,23 @@ def render_incoming_message(message, content, user_ids, realm):
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
     return rendered_content
+def get_recipient_user_ids(recipient, sender_id):
+    # type: (Recipient, int) -> List[int]
+    if recipient.type == Recipient.PERSONAL:
+        # The sender and recipient may be the same id, so
+        # de-duplicate using a set.
+        user_ids = list({recipient.type_id, sender_id})
+        assert(len(user_ids) in [1, 2])
+        return user_ids
+
+    elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
+        user_ids = Subscription.objects.filter(
+            recipient=recipient,
+            active=True,
+        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+        return user_ids
+
+    raise ValueError('Bad recipient type')
 
 def get_typing_user_profiles(recipient, sender_id):
     # type: (Recipient, int) -> List[UserProfile]
@@ -726,28 +742,14 @@ def get_typing_user_profiles(recipient, sender_id):
         '''
         raise ValueError('Typing indicators not supported for streams')
 
-    if recipient.type == Recipient.PERSONAL:
-        # The sender and recipient may be the same id, so
-        # de-duplicate using a set.
-        user_ids = list({recipient.type_id, sender_id})
-        assert(len(user_ids) in [1, 2])
-
-    elif recipient.type == Recipient.HUDDLE:
-        user_ids = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
-
-    else:
-        raise ValueError('Bad recipient type')
-
+    user_ids = get_recipient_user_ids(recipient, sender_id)
     users = [get_user_profile_by_id(user_id) for user_id in user_ids]
     return users
 
 RecipientInfoResult = TypedDict('RecipientInfoResult', {
+    'recipient_user_ids': Set[int],
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
-    'stream_push_user_ids': Set[int],
     'um_eligible_user_ids': Set[int],
     'long_term_idle_user_ids': Set[int],
     'service_bot_tuples': List[Tuple[int, int]],
@@ -755,44 +757,10 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
 
 def get_recipient_info(recipient, sender_id):
     # type: (Recipient, int) -> RecipientInfoResult
-    stream_push_user_ids = set()  # type: Set[int]
-
-    if recipient.type == Recipient.PERSONAL:
-        # The sender and recipient may be the same id, so
-        # de-duplicate using a set.
-        user_ids = list({recipient.type_id, sender_id})
-        assert(len(user_ids) in [1, 2])
-
-    elif recipient.type == Recipient.STREAM:
-        subscription_rows = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).values(
-            'user_profile_id',
-            'push_notifications',
-        ).order_by('user_profile_id')
-        user_ids = [
-            row['user_profile_id']
-            for row in subscription_rows
-        ]
-        stream_push_user_ids = {
-            row['user_profile_id']
-            for row in subscription_rows
-            if row['push_notifications']
-        }
-
-    elif recipient.type == Recipient.HUDDLE:
-        user_ids = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
-
-    else:
-        raise ValueError('Bad recipient type')
+    user_ids = get_recipient_user_ids(recipient, sender_id)
 
     query = UserProfile.objects.filter(
-        id__in=user_ids,
-        is_active=True,
+        id__in=user_ids
     ).values(
         'id',
         'enable_online_push_notifications',
@@ -802,8 +770,7 @@ def get_recipient_info(recipient, sender_id):
         'long_term_idle',
     )
     rows = list(query)
-
-    active_user_ids = {
+    recipient_user_ids = {
         row['id']
         for row in rows
     }
@@ -819,14 +786,18 @@ def get_recipient_info(recipient, sender_id):
     def is_service_bot(row):
         # type: (Dict[str, Any]) -> bool
         return row['is_bot'] and (row['bot_type'] in UserProfile.SERVICE_BOT_TYPES)
+    # Only deliver the message to active user recipients
+    active_user_ids = get_ids_for(
+        lambda r: r['is_active']
+    )
 
     push_notify_user_ids = get_ids_for(
-        lambda r: r['enable_online_push_notifications']
+        lambda r: r['is_active'] and r['enable_online_push_notifications']
     )
 
     # Service bots don't get UserMessage rows.
     um_eligible_user_ids = get_ids_for(
-        lambda r: not is_service_bot(r)
+        lambda r: r['is_active'] and (not is_service_bot(r))
     )
 
     long_term_idle_user_ids = get_ids_for(
@@ -836,13 +807,13 @@ def get_recipient_info(recipient, sender_id):
     service_bot_tuples = [
         (row['id'], row['bot_type'])
         for row in rows
-        if is_service_bot(row)
+        if row['is_active'] and is_service_bot(row)
     ]
 
     info = dict(
+        recipient_user_ids=recipient_user_ids,
         active_user_ids=active_user_ids,
         push_notify_user_ids=push_notify_user_ids,
-        stream_push_user_ids=stream_push_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         service_bot_tuples=service_bot_tuples
@@ -876,10 +847,9 @@ def do_send_messages(messages_maybe_none):
     for message in messages:
         info = get_recipient_info(message['message'].recipient,
                                   message['message'].sender_id)
-
+        message['recipient_user_ids'] = info['recipient_user_ids']
         message['active_user_ids'] = info['active_user_ids']
         message['push_notify_user_ids'] = info['push_notify_user_ids']
-        message['stream_push_user_ids'] = info['stream_push_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
         message['service_bot_tuples'] = info['service_bot_tuples']
@@ -994,8 +964,7 @@ def do_send_messages(messages_maybe_none):
             dict(
                 id=user_id,
                 flags=user_flags.get(user_id, []),
-                always_push_notify=(user_id in message['push_notify_user_ids']),
-                stream_push_notify=(user_id in message['stream_push_user_ids']),
+    always_push_notify=(user_id in message['push_notify_user_ids'])
             )
             for user_id in message['active_user_ids']
         ]
@@ -1032,7 +1001,7 @@ def do_send_messages(messages_maybe_none):
                 message['message'].recipient.type == Recipient.PERSONAL):
 
             feedback_bot_id = get_user_profile_by_email(email=settings.FEEDBACK_BOT).id
-            if feedback_bot_id in message['active_user_ids']:
+            if feedback_bot_id in message['recipient_user_ids']:
                 queue_json_publish(
                     'feedback_messages',
                     message_to_dict(message['message'], apply_markdown=False),
@@ -3388,8 +3357,8 @@ def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_
     for user_id in active_user_ids:
         flags = user_flags.get(user_id, [])  # type: Iterable[str]
         mentioned = 'mentioned' in flags
-        private_message = is_pm and user_id != sender_id
-        if mentioned or private_message:
+        received_pm = is_pm and user_id != sender_id
+        if mentioned or received_pm:
             user_ids.add(user_id)
 
     if not user_ids:

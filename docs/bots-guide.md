@@ -98,8 +98,8 @@ just need to write the `<my-bot>.py` script and put it into `zulip_bots/bots/<my
 You need:
 
 * An account in an organization on a Zulip server
-  (e.g. [chat.zulip.org](https://chat.zulip.org) or
-  yourSubdomain.zulipchat.com, or your own development server).
+  e.g. chat.zulip.org, yourSubdomain.zulipchat.com,
+  or [your own development server](http://localhost:9991).
   Within that Zulip organization, users will be able to interact with
   your bot.
 * A computer where you're running the bot from.
@@ -131,11 +131,14 @@ You need:
     * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
-5. Run the bot.
+5. Run the bot. (There are two ways to run your bot.)
 
     * Run
       ```
       zulip-run-bot <bot-name> --config-file ~/.zuliprc
+      ```
+      ```
+      zulip-run-bot <path/to/twibot.py> --config-file ~/.zuliprc
       ```
       (using the path to the `.zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
