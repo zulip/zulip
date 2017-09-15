@@ -2,6 +2,7 @@
 import os
 import time
 import ujson
+import smtplib
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -59,6 +60,31 @@ class WorkerTest(ZulipTestCase):
                 worker = queue_processors.MirrorWorker()
                 worker.setup()
                 worker.start()
+
+    def test_email_sending_worker_retries(self):
+        # type: () -> None
+        """Tests the retry_send_email_failures decorator to make sure it
+        retries sending the email 3 times and then gives up."""
+        fake_client = self.FakeClient()
+
+        data = {'test': 'test', 'failed_tries': 0, 'id': 'test_missed'}
+        fake_client.queue.append(('missedmessage_email_senders', data))
+
+        def fake_publish(queue_name, event, processor):
+            # type: (str, Dict[str, Any], Callable[[Any], None]) -> None
+            fake_client.queue.append((queue_name, event))
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.MissedMessageSendingWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.send_email_from_dict',
+                       side_effect=smtplib.SMTPServerDisconnected), \
+                    patch('zerver.lib.queue.queue_json_publish',
+                          side_effect=fake_publish), \
+                    patch('logging.exception'):
+                worker.start()
+
+        self.assertEqual(data['failed_tries'], 4)
 
     def test_UserActivityWorker(self):
         # type: () -> None
