@@ -50,8 +50,13 @@ exports.build_default_stream_table = function (streams_data) {
             callback: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
+            onupdate: function () {
+                ui.update_scrollbar(table);
+            },
         },
     }).init();
+
+    ui.set_up_scrollbar(table.closest(".progressive-table-wrapper"));
 
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
 

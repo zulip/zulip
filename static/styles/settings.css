@@ -599,8 +599,13 @@ input[type=checkbox].inline-block {
 }
 
 .progressive-table-wrapper {
+    position: relative;
     max-height: calc(95vh - 200px);
     overflow: auto;
+}
+
+#admin-default-streams-list .progressive-table-wrapper {
+    max-height: calc(95vh - 270px);
 }
 
 .bots_list {
