@@ -79,6 +79,7 @@ if False:
 
 AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
+EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 
 STREAM_LINK_REGEX = r"""
                      (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
@@ -851,7 +852,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
 
         realm_emoji = {}  # type: Dict[Text, Dict[str, Text]]
         if db_data is not None:
-            realm_emoji = db_data['emoji']
+            realm_emoji = db_data['realm_emoji']
 
         if current_message and name in realm_emoji and not realm_emoji[name]['deactivated']:
             return make_realm_emoji(realm_emoji[name]['source_url'], orig_syntax)
@@ -861,6 +862,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
             return make_emoji(name_to_codepoint[name], orig_syntax)
         else:
             return None
+
+def content_has_emoji_syntax(content):
+    # type: (Text) -> bool
+    return re.search(EMOJI_REGEX, content) is not None
 
 class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
     # This markdown extension has required javascript in
@@ -1317,7 +1322,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
         md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
+        md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
@@ -1623,11 +1628,16 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         stream_names = possible_linked_stream_names(content)
         stream_name_info = get_stream_name_info(message_realm, stream_names)
 
+        if content_has_emoji_syntax(content):
+            realm_emoji = message_realm.get_emoji()
+        else:
+            realm_emoji = dict()
+
         db_data = {
             'possible_words': possible_words,
             'email_info': email_info,
             'full_name_info': full_name_info,
-            'emoji': message_realm.get_emoji(),
+            'realm_emoji': realm_emoji,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
         }
