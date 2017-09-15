@@ -90,6 +90,7 @@ not_yet_fully_covered = {
     'zerver/lib/push_notifications.py',
     'zerver/lib/upload.py',
     'zerver/models.py',
+    'zproject/backends.py',
     # Webhook integrations with incomplete coverage
     'zerver/webhooks/basecamp/view.py',
     'zerver/webhooks/beanstalk/view.py',
