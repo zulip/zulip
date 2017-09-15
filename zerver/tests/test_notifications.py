@@ -327,6 +327,7 @@ class TestMissedMessages(ZulipTestCase):
         # type: () -> None
         self._deleted_message_in_huddle_missed_stream_messages(False)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_realm_emoji_in_missed_message(self, mock_random_token):
         # type: (MagicMock) -> None
@@ -336,10 +337,11 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message with a realm emoji :green_tick:!')
-        body = '<img alt=":green_tick:" height="20px" src="http://testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
+        body = '<img alt=":green_tick:" height="20px" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_stream_link_in_missed_message(self, mock_random_token):
         # type: (MagicMock) -> None
@@ -349,7 +351,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Come and join us in #**Verona**.')
-        body = '<a class="stream" data-stream-id="5" href="http://testserver/#narrow/stream/Verona">#Verona</a'
+        body = '<a class="stream" data-stream-id="5" href="http://zulip.testserver/#narrow/stream/Verona">#Verona</a'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
