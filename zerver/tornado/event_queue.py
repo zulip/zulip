@@ -693,12 +693,14 @@ def process_message_event(event_template, users):
         mentioned = 'mentioned' in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
 
+        # We first check if a message is potentially mentionable,
+        # since receiver_is_off_zulip is somewhat expensive.
         if private_message or mentioned or stream_push_notify:
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
             always_push_notify = user_data.get('always_push_notify', False)
             notified = dict()  # type: Dict[str, bool]
 
-            if idle or always_push_notify:
+            if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
                 notice = build_offline_notification(user_profile_id, message_id)
                 notice['triggers'] = {
                     'private_message': private_message,
@@ -709,7 +711,10 @@ def process_message_event(event_template, users):
                 queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
                 notified['push_notified'] = True
 
-            # Send missed_message emails if a private message or a mention
+            # Send missed_message emails if a private message or a
+            # mention.  Eventually, we'll add settings to allow email
+            # notifications to match the model of push notifications
+            # above.
             if idle and (private_message or mentioned):
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
