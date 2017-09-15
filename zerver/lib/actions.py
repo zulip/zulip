@@ -60,7 +60,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id
+    get_display_recipient_by_id, query_for_ids
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -790,18 +790,34 @@ def get_recipient_info(recipient, sender_id):
     else:
         raise ValueError('Bad recipient type')
 
-    query = UserProfile.objects.filter(
-        id__in=user_ids,
-        is_active=True,
-    ).values(
-        'id',
-        'enable_online_push_notifications',
-        'is_active',
-        'is_bot',
-        'bot_type',
-        'long_term_idle',
-    )
-    rows = list(query)
+    if user_ids:
+        query = UserProfile.objects.filter(
+            is_active=True,
+        ).values(
+            'id',
+            'enable_online_push_notifications',
+            'is_active',
+            'is_bot',
+            'bot_type',
+            'long_term_idle',
+        )
+
+        # query_for_ids is fast highly optimized for large queries, and we
+        # need this codepath to be fast (it's part of sending messages)
+        query = query_for_ids(
+            query=query,
+            user_ids=user_ids,
+            field='id'
+        )
+        rows = list(query)
+    else:
+        # TODO: We should always have at least one user_id as a recipient
+        #       of any message we send.  Right now the exception to this
+        #       rule is `notify_new_user`, which, at least in a possibly
+        #       contrived test scenario, can attempt to send messages
+        #       to an inactive bot.  When we plug that hole, we can avoid
+        #       this `else` clause and just `assert(user_ids)`.
+        rows = []
 
     active_user_ids = {
         row['id']
