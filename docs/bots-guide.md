@@ -131,15 +131,17 @@ You need:
     * Now, the bot can do its job on the streams you subscribed it to.
     * (In future versions of the API, this step may not be required).
 
-5. Run the bot. (There are two ways to run your bot.)
+5. Run the bot.
 
     * Run
       ```
       zulip-run-bot <bot-name> --config-file ~/.zuliprc
       ```
+      `bot-name` argument takes the name of the bot. Or
       ```
-      zulip-run-bot <path/to/twibot.py> --config-file ~/.zuliprc
+      zulip-run-bot <path/to/bot.py> --config-file ~/.zuliprc
       ```
+      `path/to/bot.py` specifies the full path to your bot file.
       (using the path to the `.zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
