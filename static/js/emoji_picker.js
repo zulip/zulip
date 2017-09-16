@@ -451,6 +451,34 @@ exports.navigate = function (event_name) {
     return false;
 };
 
+function process_keypress(e) {
+    var is_filter_focused = $('.emoji-popover-filter').is(':focus');
+    if (!is_filter_focused) {
+        var pressed_key = e.which;
+
+        if (pressed_key >= 32 && pressed_key <= 126 || pressed_key === 8) {
+            // Handle only printable characters or backspace.
+            e.preventDefault();
+            e.stopPropagation();
+
+            var emoji_filter = $('.emoji-popover-filter');
+            var old_query = emoji_filter.val();
+            var new_query = "";
+
+            if (pressed_key === 8) {    // Handles backspace.
+                new_query = old_query.slice(0, -1);
+            } else {    // Handles any printable character.
+                var key_str = String.fromCharCode(e.which);
+                new_query = old_query + key_str;
+            }
+
+            emoji_filter.val(new_query);
+            change_focus_to_filter();
+            filter_emojis();
+        }
+    }
+}
+
 exports.emoji_select_tab = function (elt) {
     var scrolltop = elt.scrollTop();
     var scrollheight = elt.prop('scrollHeight');
@@ -485,6 +513,16 @@ function register_popover_events(popover) {
 
     $('.emoji-popover-filter').on('input', filter_emojis);
     $('.emoji-popover-filter').keydown(maybe_select_emoji);
+    $('.emoji-popover').keypress(process_keypress);
+    $('.emoji-popover').keydown(function (e) {
+        // Because of cross-browser issues we need to handle backspace
+        // key separately. Firefox fires `keypress` event for backspace
+        // key but chrome doesn't so we need to trigger the logic for
+        // handling backspace in `keydown` event which is fired by both.
+        if (e.which === 8) {
+            process_keypress(e);
+        }
+    });
 }
 
 exports.render_emoji_popover = function (elt, id) {
