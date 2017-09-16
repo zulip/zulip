@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import datetime
 import os
 import subprocess
 import sys
@@ -10,7 +11,7 @@ if False:
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments, \
-    may_be_perform_purging
+    may_be_perform_purging, TIMESTAMP_FORMAT
 
 def parse_args():
     # type: () -> argparse.Namespace
@@ -35,6 +36,14 @@ def get_deployments_to_be_purged(recent_deployments):
                            for deployment in os.listdir(DEPLOYMENTS_DIR)])
     deployments_to_purge = set()
     for deployment in all_deployments:
+        if not os.path.isdir(deployment):
+            # Skip things like uwsgi sockets.
+            continue
+        try:
+            datetime.datetime.strptime(deployment, TIMESTAMP_FORMAT)
+        except ValueError:
+            # Never purge deployments whose name is not in the format of a timestamp.
+            continue
         if deployment not in recent_deployments:
             deployments_to_purge.add(deployment)
     return deployments_to_purge
