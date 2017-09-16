@@ -771,6 +771,11 @@ def get_recipient_info(recipient, sender_id):
             'user_profile_id',
             'push_notifications',
         ).order_by('user_profile_id')
+
+        # This next line is important!  We don't want
+        # to exhaust the generator.
+        subscription_rows = list(subscription_rows)
+
         user_ids = [
             row['user_profile_id']
             for row in subscription_rows
