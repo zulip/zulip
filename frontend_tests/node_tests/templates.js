@@ -1255,7 +1255,9 @@ function render(template_name, args) {
     global.write_handlebars_output("user_info_popover_title", html);
 
     html = '<div>' + html + '</div>';
-    assert($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
+    assert.equal($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
+}());
+
 }());
 
 (function user_presence_rows() {
