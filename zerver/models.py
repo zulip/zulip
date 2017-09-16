@@ -1026,12 +1026,14 @@ def get_client_remote_cache(name):
     (client, _) = Client.objects.get_or_create(name=name)
     return client
 
-# get_stream_backend takes either a realm id or a realm
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_stream_backend(stream_name, realm_id):
     # type: (Text, int) -> Stream
-    return Stream.objects.select_related("realm").get(
-        name__iexact=stream_name.strip(), realm_id=realm_id)
+    stream = Stream.objects.get(
+        name__iexact=stream_name.strip(),
+        realm_id=realm_id
+    )
+    return stream
 
 def stream_name_in_use(stream_name, realm_id):
     # type: (Text, int) -> bool
