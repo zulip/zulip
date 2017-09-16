@@ -488,6 +488,23 @@ a:hover code {
     display: inline;
 }
 
+.tooltip.in {
+    font-size: 12px;
+    line-height: 1.3;
+
+    opacity: 1;
+}
+
+.tooltip.in.left {
+    margin-left: -12px;
+    margin-top: 3px;
+}
+
+.tooltip .tooltip-inner {
+    background-color: rgba(20, 20, 20, 0.8);
+    padding: 3px 5px;
+}
+
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
