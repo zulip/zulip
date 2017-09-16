@@ -246,9 +246,7 @@ class Realm(ModelReprMixin, models.Model):
         # type: () -> str
         # Remove the port. Mainly needed for development environment.
         external_host = settings.EXTERNAL_HOST.split(':')[0]
-        if settings.REALMS_HAVE_SUBDOMAINS or \
-           Realm.objects.filter(deactivated=False) \
-                        .exclude(string_id__in=settings.SYSTEM_ONLY_REALMS).count() > 1:
+        if self.subdomain not in [None, ""]:
             return "%s.%s" % (self.string_id, external_host)
         return external_host
 

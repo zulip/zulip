@@ -6,6 +6,7 @@ import os
 import ujson
 
 from django.http import HttpResponse
+from django.test import override_settings
 from mock import MagicMock, patch
 from six.moves import urllib
 from typing import Any, Dict, List
@@ -22,6 +23,7 @@ from zerver.models import (
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
 class HomeTest(ZulipTestCase):
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @slow('big method')
     def test_home(self):
         # type: () -> None
