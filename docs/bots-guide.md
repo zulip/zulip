@@ -98,8 +98,8 @@ just need to write the `<my-bot>.py` script and put it into `zulip_bots/bots/<my
 You need:
 
 * An account in an organization on a Zulip server
-  (e.g. [chat.zulip.org](https://chat.zulip.org) or
-  yourSubdomain.zulipchat.com, or your own development server).
+  e.g. chat.zulip.org, yourSubdomain.zulipchat.com,
+  or [your own development server](http://localhost:9991).
   Within that Zulip organization, users will be able to interact with
   your bot.
 * A computer where you're running the bot from.
@@ -137,6 +137,11 @@ You need:
       ```
       zulip-run-bot <bot-name> --config-file ~/.zuliprc
       ```
+      `bot-name` argument takes the name of the bot. Or
+      ```
+      zulip-run-bot <path/to/bot.py> --config-file ~/.zuliprc
+      ```
+      `path/to/bot.py` specifies the full path to your bot file.
       (using the path to the `.zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
