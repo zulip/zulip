@@ -149,7 +149,7 @@ def log_event(event):
 
 def active_user_ids(realm):
     # type: (Realm) -> List[int]
-    return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
+    return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm.id)]
 
 def can_access_stream_user_ids(stream):
     # type: (Stream) -> Set[int]

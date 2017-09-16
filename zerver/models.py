@@ -1523,10 +1523,12 @@ def get_system_bot(email):
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
 @cache_with_key(active_user_dicts_in_realm_cache_key, timeout=3600*24*7)
-def get_active_user_dicts_in_realm(realm):
-    # type: (Realm) -> List[Dict[str, Any]]
-    return UserProfile.objects.filter(realm=realm, is_active=True) \
-                              .values(*active_user_dict_fields)
+def get_active_user_dicts_in_realm(realm_id):
+    # type: (int) -> List[Dict[str, Any]]
+    return UserProfile.objects.filter(
+        realm_id=realm_id,
+        is_active=True
+    ).values(*active_user_dict_fields)
 
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_bot_dicts_in_realm(realm):

@@ -55,7 +55,7 @@ def get_realm_user_dicts(user_profile):
              'is_bot': userdict['is_bot'],
              'full_name': userdict['full_name'],
              'timezone': userdict['timezone']}
-            for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
+            for userdict in get_active_user_dicts_in_realm(user_profile.realm_id)]
 
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you

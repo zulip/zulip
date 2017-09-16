@@ -333,9 +333,9 @@ active_user_dict_fields = [
     'avatar_source', 'avatar_version',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
-def active_user_dicts_in_realm_cache_key(realm):
-    # type: (Realm) -> Text
-    return u"active_user_dicts_in_realm:%s" % (realm.id,)
+def active_user_dicts_in_realm_cache_key(realm_id):
+    # type: (int) -> Text
+    return u"active_user_dicts_in_realm:%s" % (realm_id,)
 
 bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'is_active', 'default_sending_stream__name',
@@ -385,7 +385,7 @@ def flush_user_profile(sender, **kwargs):
     if kwargs.get('update_fields') is None or \
             len(set(active_user_dict_fields + ['is_active', 'email']) &
                 set(kwargs['update_fields'])) > 0:
-        cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
+        cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm_id))
 
     if kwargs.get('updated_fields') is None or \
             'email' in kwargs['update_fields']:
@@ -412,7 +412,7 @@ def flush_realm(sender, **kwargs):
     delete_user_profile_caches(users)
 
     if realm.deactivated:
-        cache_delete(active_user_dicts_in_realm_cache_key(realm))
+        cache_delete(active_user_dicts_in_realm_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
 
