@@ -25,7 +25,8 @@ certifi==2017.7.27.1
 cffi==1.10.0
 chardet==3.0.4
 cryptography==2.0.3
-cssselect==1.0.1
+cssselect==1.0.1          # via premailer
+cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 diff-match-patch==20121119
@@ -51,7 +52,7 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==6.1.0
 jedi==0.10.2              # via ipython
 jinja2==2.9.6
-lxml==3.8.0
+lxml==3.8.0               # via premailer
 markdown-include==0.5.1
 markdown==2.6.9           # via markdown-include
 markupsafe==1.0
@@ -67,6 +68,7 @@ pickleshare==0.7.4        # via ipython
 pika==0.10.0
 pillow==4.2.1
 polib==1.0.8
+premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
 psycopg2==2.7.3
 ptyprocess==0.5.2         # via pexpect

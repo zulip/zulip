@@ -39,7 +39,8 @@ constantly==15.1.0        # via twisted
 cookies==2.2.1            # via moto
 coverage==4.4.1
 cryptography==2.0.3
-cssselect==1.0.1          # via parsel, scrapy
+cssselect==1.0.1          # via parsel, premailer, scrapy
+cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 dicttoxml==1.7.4          # via moto
@@ -73,7 +74,7 @@ ipython==6.1.0
 jedi==0.10.2              # via ipython
 jinja2==2.9.6
 jmespath==0.9.3           # via boto3, botocore
-lxml==3.8.0               # via parsel, scrapy
+lxml==3.8.0               # via parsel, premailer, scrapy
 markdown-include==0.5.1
 markdown==2.6.9           # via markdown-include
 markupsafe==1.0
@@ -93,6 +94,7 @@ pika==0.10.0
 pillow==4.2.1
 pip-tools==1.9.0
 polib==1.0.8
+premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
 psycopg2==2.7.3
 ptyprocess==0.5.2         # via pexpect
