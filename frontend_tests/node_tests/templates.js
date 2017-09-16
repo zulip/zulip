@@ -363,22 +363,6 @@ function render(template_name, args) {
     global.write_handlebars_output("announce_stream_docs", html);
 }());
 
-(function attachment_settings_item() {
-    var html = '<ul id="attachments">';
-    var attachments = [
-        {messages: [], id: 42, name: "foo.txt"},
-        {messages: [], id: 43, name: "bar.txt"},
-    ];
-    _.each(attachments, function (attachment) {
-        var args = {attachment: attachment};
-        html += render('attachment-item', args);
-    });
-    html += "</ul>";
-    global.write_handlebars_output("attachment-item", html);
-    var li = $(html).find("li.attachment-item:first");
-    assert.equal(li.attr('data-attachment'), 42);
-}());
-
 (function bankruptcy_modal() {
     var args = {
         unread_count: 99,
@@ -1257,6 +1241,29 @@ function render(template_name, args) {
     html = '<div>' + html + '</div>';
     assert.equal($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
 }());
+
+(function uploaded_files_list_popover() {
+    var args = {
+        attachment: {
+            name: "file_name.txt",
+            create_time: "Apr 12 04:18 AM",
+            messages: [
+                {
+                    id: "1",
+                },
+                {
+                    id: "2",
+                },
+            ],
+            size: 1234,
+            path_id: "2/65/6wITdgsd63hdskjuFqEeEy7_r/file_name.txt",
+        },
+    };
+
+    var html = render('uploaded_files_list', args);
+    assert.equal($(html).find('.ind-message').attr("href"), "/#narrow/id/1");
+    assert.equal($(html).find('#download_attachment').attr("href"),
+                 "/user_uploads/2/65/6wITdgsd63hdskjuFqEeEy7_r/file_name.txt");
 
 }());
 
