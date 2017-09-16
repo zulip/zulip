@@ -381,9 +381,22 @@ exports.warn = function blueslip_warn (msg, more_info) {
     }
 };
 
+exports.display_errors_on_screen = function (error, stack) {
+    var $exit = "<div class='exit'></div>";
+    var $error = "<div class='error'>" + error + "</div>";
+    var $pre = "<pre>" + stack + "</pre>";
+    var $alert = $("<div class='alert browser-alert home-error-bar'></div>").html($error + $exit + $pre);
+
+    $(".app .alert-box").append($alert.addClass("show"));
+};
+
 exports.error = function blueslip_error (msg, more_info, stack) {
     if (page_params.debug_mode) {
-        console.log(stack);
+        if (stack === undefined) {
+            stack = Error().stack;
+        }
+
+        exports.display_errors_on_screen(msg, stack);
         throw new BlueslipError(msg, more_info);
     } else {
         if (stack === undefined) {
