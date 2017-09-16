@@ -47,6 +47,9 @@ $("body").ready(function () {
         if (!overlays.is_modal_open()) {
             return;
         }
+        if ($(e.target).closest(".modal").length > 0) {
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
         overlays.close_active_modal();
