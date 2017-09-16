@@ -743,13 +743,13 @@ class StreamAdminTest(ZulipTestCase):
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm):
         # type: (Realm) -> Set[Text]
-        streams = get_default_streams_for_realm(realm)
+        streams = get_default_streams_for_realm(realm.id)
         stream_names = [s.name for s in streams]
         return set(stream_names)
 
     def get_default_stream_descriptions(self, realm):
         # type: (Realm) -> Set[Text]
-        streams = get_default_streams_for_realm(realm)
+        streams = get_default_streams_for_realm(realm.id)
         stream_descriptions = [s.description for s in streams]
         return set(stream_descriptions)
 

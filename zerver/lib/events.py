@@ -176,7 +176,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
     if want('default_streams'):
-        state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm))
+        state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm_id))
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:

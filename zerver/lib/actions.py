@@ -609,7 +609,7 @@ def do_deactivate_stream(stream, log=True):
 
     # If this is a default stream, remove it, properly sending a
     # notification to browser clients.
-    if DefaultStream.objects.filter(realm=stream.realm, stream=stream).exists():
+    if DefaultStream.objects.filter(realm_id=stream.realm_id, stream_id=stream.id).exists():
         do_remove_default_stream(stream)
 
     # Remove the old stream information from remote cache.
@@ -2671,35 +2671,39 @@ def set_default_streams(realm, stream_dict):
                'realm': realm.string_id,
                'streams': stream_names})
 
-def notify_default_streams(realm):
-    # type: (Realm) -> None
+def notify_default_streams(realm_id):
+    # type: (int) -> None
     event = dict(
         type="default_streams",
-        default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm))
+        default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm_id))
     )
-    send_event(event, active_user_ids(realm.id))
+    send_event(event, active_user_ids(realm_id))
 
 def do_add_default_stream(stream):
     # type: (Stream) -> None
-    if not DefaultStream.objects.filter(realm=stream.realm, stream=stream).exists():
-        DefaultStream.objects.create(realm=stream.realm, stream=stream)
-        notify_default_streams(stream.realm)
+    realm_id = stream.realm_id
+    stream_id = stream.id
+    if not DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).exists():
+        DefaultStream.objects.create(realm_id=realm_id, stream_id=stream_id)
+        notify_default_streams(realm_id)
 
 def do_remove_default_stream(stream):
     # type: (Stream) -> None
-    DefaultStream.objects.filter(realm=stream.realm, stream=stream).delete()
-    notify_default_streams(stream.realm)
+    realm_id = stream.realm_id
+    stream_id = stream.id
+    DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).delete()
+    notify_default_streams(realm_id)
 
-def get_default_streams_for_realm(realm):
-    # type: (Realm) -> List[Stream]
+def get_default_streams_for_realm(realm_id):
+    # type: (int) -> List[Stream]
     return [default.stream for default in
-            DefaultStream.objects.select_related("stream", "stream__realm").filter(realm=realm)]
+            DefaultStream.objects.select_related("stream", "stream__realm").filter(realm_id=realm_id)]
 
 def get_default_subs(user_profile):
     # type: (UserProfile) -> List[Stream]
     # Right now default streams are realm-wide.  This wrapper gives us flexibility
     # to some day further customize how we set up default streams for new users.
-    return get_default_streams_for_realm(user_profile.realm)
+    return get_default_streams_for_realm(user_profile.realm_id)
 
 # returns default streams in json serializeable format
 def streams_to_dicts_sorted(streams):
@@ -3720,7 +3724,7 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     streams.sort(key=lambda elt: elt["name"])
     if include_default:
         is_default = {}
-        default_streams = get_default_streams_for_realm(user_profile.realm)
+        default_streams = get_default_streams_for_realm(user_profile.realm_id)
         for default_stream in default_streams:
             is_default[default_stream.id] = True
         for stream in streams:
