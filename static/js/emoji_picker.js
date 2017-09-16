@@ -200,9 +200,12 @@ exports.reactions_popped = function () {
 exports.hide_emoji_popover = function () {
     $('.has_popover').removeClass('has_popover has_emoji_popover');
     if (exports.reactions_popped()) {
+        var orig_title = current_message_emoji_popover_elem.data("original-title");
         $(".emoji-popover-emoji-map").perfectScrollbar("destroy");
         $(".emoji-search-results-container").perfectScrollbar("destroy");
         current_message_emoji_popover_elem.popover("destroy");
+        current_message_emoji_popover_elem.prop("title", orig_title);
+        current_message_emoji_popover_elem.removeClass("reaction_button_visible");
         current_message_emoji_popover_elem = undefined;
     }
 };
@@ -540,7 +543,7 @@ exports.render_emoji_popover = function (elt, id) {
         trigger:   "manual",
     });
     elt.popover("show");
-    elt.prop('title', 'Add reaction (:)');
+    elt.prop("title", i18n.t("Add emoji reaction (:)"));
     $('.emoji-popover-filter').focus();
     add_scrollbar($(".emoji-popover-emoji-map"));
     add_scrollbar($(".emoji-search-results-container"));
@@ -574,6 +577,8 @@ exports.toggle_emoji_popover = function (element, id) {
     }
 
     if (elt.data('popover') === undefined) {
+        // Keep the element over which the popover is based off visible.
+        elt.addClass("reaction_button_visible");
         emoji_picker.render_emoji_popover(elt, id);
     }
 };
@@ -616,7 +621,7 @@ exports.register_click_handlers = function () {
         emoji_picker.toggle_emoji_popover(this);
     });
 
-    $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
+    $("#main_div").on("click", ".reaction_button", function (e) {
         e.stopPropagation();
 
         var message_id = rows.get_message_id(this);
@@ -632,7 +637,8 @@ exports.register_click_handlers = function () {
         // message wasn't sent by us and thus the .reaction_hover
         // element is not present, we use the message's
         // .icon-vector-chevron-down element as the base for the popover.
-        emoji_picker.toggle_emoji_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
+        var elem = $(".selected_message .actions_hover")[0];
+        emoji_picker.toggle_emoji_popover(elem, msgid);
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {

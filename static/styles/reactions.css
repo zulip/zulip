@@ -75,6 +75,13 @@
     color: hsl(0, 0%, 73%);
 }
 
+.reaction_button_visible {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+    color: hsl(0, 0%, 73%);
+}
+
 .message_reactions .reaction_button i {
     font-size: 1em;
     margin-right: 3px;

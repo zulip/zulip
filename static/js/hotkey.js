@@ -17,9 +17,9 @@ function focus_in_empty_compose() {
 
 function open_reactions() {
     var message = current_msg_list.selected_message();
-    var target = $(current_msg_list.selected_row()).find(".icon-vector-chevron-down")[0];
+    var target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
     if (!message.sent_by_me) {
-        target = $(current_msg_list.selected_row()).find(".icon-vector-smile")[0];
+        target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
     }
     emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
     return true;
