@@ -877,6 +877,26 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                  parsed_url.path)
         self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
+    def test_google_oauth2_no_fullname(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(givenName="Test", familyName="User"),
+                            emails=[dict(type="account",
+                                         value=self.example_email("hamlet"))])
+        account_response = ResponseMock(200, account_data)
+        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip')
+
+        data = unsign_subdomain_cookie(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['name'], 'Test User')
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+
     def test_google_oauth2_mobile_success(self):
         # type: () -> None
         mobile_flow_otp = '1234abcd' * 8
@@ -989,6 +1009,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assert_in_response("Please click the following button if you "
                                     "wish to register", result)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_user_cannot_log_into_nonexisting_realm(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -996,15 +1017,34 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain='acme')
-        self.assertEqual(result.status_code, 302)
-        self.assertIn('subdomain=1', result.url)
+        result = self.google_oauth2_test(token_response, account_response,
+                                         subdomain='nonexistent')
+        self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
+                                        result)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_user_cannot_log_into_wrong_subdomain(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(formatted="Full Name"),
+                            emails=[dict(type="account",
+                                         value=self.example_email("hamlet"))])
+        account_response = ResponseMock(200, account_data)
+        result = self.google_oauth2_test(token_response, account_response,
+                                         subdomain='zephyr')
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://zephyr.testserver/accounts/login/subdomain/")
+        result = self.client_get('/accounts/login/subdomain/', subdomain="zephyr")
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get('/accounts/login/?subdomain=1', subdomain="zephyr")
+        self.assert_in_success_response(["Your Zulip account is not a member of the organization associated with this subdomain."],
+                                        result)
+
+    def test_user_cannot_log_into_wrong_subdomain_with_cookie(self):
         # type: () -> None
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
-                'subdomain': 'acme'}
+                'subdomain': 'zephyr'}
 
         self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
@@ -1177,18 +1217,6 @@ class GoogleLoginTest(GoogleOAuthTest):
         self.assertEqual(m.call_args_list[0][0][0],
                          "Google login failed making API call: Response text")
 
-    def test_google_oauth2_no_fullname(self):
-        # type: () -> None
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(givenName="Test", familyName="User"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
-        account_response = ResponseMock(200, account_data)
-        self.google_oauth2_test(token_response, account_response, subdomain="")
-
-        user_profile = self.example_user('hamlet')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
     def test_google_oauth2_account_response_no_email(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -1196,7 +1224,8 @@ class GoogleLoginTest(GoogleOAuthTest):
                             emails=[])
         account_response = ResponseMock(200, account_data)
         with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, account_response, subdomain="")
+            result = self.google_oauth2_test(token_response, account_response,
+                                             subdomain="zulip")
         self.assertEqual(result.status_code, 400)
         self.assertIn("Google oauth2 account email not found:", m.call_args_list[0][0][0])
 
