@@ -607,7 +607,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'n_key':
             if (overlays.streams_open()) {
-                subs.new_stream_clicked();
+                if (page_params.can_create_streams) {
+                    subs.new_stream_clicked();
+                }
             } else {
                 narrow.narrow_to_next_topic();
             }
