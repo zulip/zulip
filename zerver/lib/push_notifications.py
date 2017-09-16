@@ -399,11 +399,11 @@ def handle_push_notification(user_profile_id, missed_message):
         umessage = UserMessage.objects.get(user_profile=user_profile,
                                            message__id=missed_message['message_id'])
         message = umessage.message
-        triggers = missed_message.get('triggers')
+        triggers = missed_message['triggers']
         message.triggers = {
-            'private_message': triggers.get('private_message', False),
-            'mentioned': triggers.get('mentioned', False),
-            'stream_push_notify': triggers.get('stream_push_notify', False),
+            'private_message': triggers['private_message'],
+            'mentioned': triggers['mentioned'],
+            'stream_push_notify': triggers['stream_push_notify'],
         }
         message.stream_name = missed_message.get('stream_name', None)
 
