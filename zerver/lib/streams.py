@@ -95,6 +95,27 @@ def access_stream_by_name(user_profile, stream_name):
     (recipient, sub) = access_stream_common(user_profile, stream, error)
     return (stream, recipient, sub)
 
+def access_stream_for_unmute_topic(user_profile, stream_name, error):
+    # type: (UserProfile, Text, Text) -> Stream
+    """
+    It may seem a little silly to have this helper function for unmuting
+    topics, but it gets around a linter warning, and it helps to be able
+    to review all security-related stuff in one place.
+
+    Our policy for accessing streams when you unmute a topic is that you
+    don't necessarily need to have an active subscription or even "legal"
+    access to the stream.  Instead, we just verify the stream_id has been
+    muted in the past (not here, but in the caller).
+
+    Long term, we'll probably have folks just pass us in the id of the
+    MutedTopic row to unmute topics.
+    """
+    try:
+        stream = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(error)
+    return stream
+
 def is_public_stream_by_name(stream_name, realm):
     # type: (Text, Realm) -> bool
     """Determine whether a stream is public, so that

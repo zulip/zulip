@@ -73,10 +73,19 @@ common.autofocus('#id_username');
 
                     <!-- .no-validation is for removing the red star in CSS -->
                     <div class="input-box no-validation">
-                        <input id="id_username" type="email" name="username" class="email required"
+                        <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
+                               name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
                             {% if email %} value="{{ email }}" {% else %} value="" {% endif %}
                             maxlength="72" required />
-                        <label for="id_username">{{ _('Email') }}</label>
+                        <label for="id_username">
+                            {% if not require_email_format_usernames and email_auth_enabled %}
+                                {{ _('Email or username') }}
+                            {% elif not require_email_format_usernames %}
+                                {{ _('Username') }}
+                            {% else %}
+                                {{ _('Email') }}
+                            {% endif %}
+                        </label>
                     </div>
 
                     <div class="input-box no-validation">

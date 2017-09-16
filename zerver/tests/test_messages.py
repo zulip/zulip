@@ -15,6 +15,8 @@ from zilencer.models import Deployment
 from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
+    do_send_messages,
+    get_userids_for_missed_messages,
     internal_send_private_message,
 )
 
@@ -42,7 +44,7 @@ from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivat
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
-    RealmAuditLog, RealmDomain, get_realm,
+    RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_recipient, get_system_bot, get_user, Reaction,
     sew_messages_and_reactions, flush_per_request_caches
 )
@@ -68,7 +70,7 @@ import mock
 import time
 import ujson
 from six.moves import range
-from typing import Any, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 from collections import namedtuple
 
@@ -480,6 +482,71 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
+    def test_performance(self):
+        # type: () -> None
+        '''
+        This test is part of the automated test suite, but
+        it is more intended as an aid to measuring the
+        performance of do_send_messages() with consistent
+        data setup across different commits.  You can modify
+        the values below and run just this test, and then
+        comment out the print statement toward the bottom.
+        '''
+        num_messages = 2
+        num_extra_users = 10
+
+        sender = self.example_user('cordelia')
+        realm = sender.realm
+        message_content = 'whatever'
+        stream = get_stream('Denmark', realm)
+        subject = 'lunch'
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+        sending_client = make_client(name="test suite")
+
+        for i in range(num_extra_users):
+            # Make every other user be idle.
+            long_term_idle = i % 2 > 0
+
+            email = 'foo%d@example.com' % (i,)
+            user = UserProfile.objects.create(
+                realm=realm,
+                email=email,
+                pointer=0,
+                long_term_idle=long_term_idle,
+            )
+            Subscription.objects.create(
+                user_profile=user,
+                recipient=recipient
+            )
+
+        def send_test_message():
+            # type: () -> None
+            message = Message(
+                sender=sender,
+                recipient=recipient,
+                subject=subject,
+                content=message_content,
+                pub_date=timezone_now(),
+                sending_client=sending_client,
+            )
+            do_send_messages([dict(message=message)])
+
+        before_um_count = UserMessage.objects.count()
+
+        t = time.time()
+        for i in range(num_messages):
+            send_test_message()
+
+        delay = time.time() - t
+        assert(delay)  # quiet down lint
+        # print(delay)
+
+        after_um_count = UserMessage.objects.count()
+        ums_created = after_um_count - before_um_count
+
+        num_active_users = num_extra_users / 2
+        self.assertTrue(ums_created > (num_active_users * num_messages))
+
     def test_not_too_many_queries(self):
         # type: () -> None
         recipient_list  = [self.example_user("hamlet"), self.example_user("iago"),
@@ -510,7 +577,7 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 16)
+        self.assert_length(queries, 12)
 
     def test_stream_message_dict(self):
         # type: () -> None
@@ -1156,6 +1223,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": email}, name='gownooo')
         self.assert_json_error(result, "Invalid mirrored realm")
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_send_message_irc_mirror(self):
         # type: () -> None
         self.login(self.example_email('hamlet'))
@@ -2033,6 +2101,55 @@ class AttachmentTest(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
+
+class MissedMessageTest(ZulipTestCase):
+    def test_missed_message_userids(self):
+        # type: () -> None
+        UserPresence.objects.all().delete()
+
+        sender = self.example_user('cordelia')
+        realm = sender.realm
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        recipient_ids = {hamlet.id, othello.id}
+        message_type = 'stream'
+        user_flags = {}  # type: Dict[int, List[str]]
+
+        def assert_missing(user_ids):
+            # type: (List[int]) -> None
+            missed_message_userids = get_userids_for_missed_messages(
+                realm=realm,
+                sender_id=sender.id,
+                message_type=message_type,
+                active_user_ids=recipient_ids,
+                user_flags=user_flags,
+            )
+            self.assertEqual(sorted(user_ids), sorted(missed_message_userids))
+
+        def set_presence(user_id, client_name, ago):
+            # type: (int, Text, int) -> None
+            when = timezone_now() - datetime.timedelta(seconds=ago)
+            UserPresence.objects.create(
+                user_profile_id=user_id,
+                client=get_client(client_name),
+                timestamp=when,
+            )
+
+        message_type = 'private'
+        assert_missing([hamlet.id, othello.id])
+
+        message_type = 'stream'
+        user_flags[hamlet.id] = ['mentioned']
+        assert_missing([hamlet.id])
+
+        set_presence(hamlet.id, 'iPhone', ago=5000)
+        assert_missing([hamlet.id])
+
+        set_presence(hamlet.id, 'webapp', ago=15)
+        assert_missing([])
+
+        message_type = 'private'
+        assert_missing([othello.id])
 
 class LogDictTest(ZulipTestCase):
     def test_to_log_dict(self):

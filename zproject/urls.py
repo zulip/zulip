@@ -148,8 +148,6 @@ i18n_urls = [
     url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
     url(r'^plans/$', TemplateView.as_view(template_name='zerver/plans.html'), name='landing-page'),
 
-    url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt', permanent=True)),
-
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
@@ -159,7 +157,7 @@ i18n_urls = [
     url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
     url(r'^for/working-groups-and-communities/$', TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
 
-    # Terms of service and privacy pages.
+    # Terms of Service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy'),
 

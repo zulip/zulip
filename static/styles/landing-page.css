@@ -145,6 +145,18 @@ button {
     outline: none;
 }
 
+button.green:hover {
+    -webkit-filter: brightness(1.05);
+    -moz-filter: brightness(1.05);
+    filter: brightness(1.05);
+}
+
+button.green:active {
+    -webkit-filter: brightness(0.95);
+    -moz-filter: brightness(0.95);
+    filter: brightness(0.95);
+}
+
 button:active {
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 73%);
@@ -191,6 +203,10 @@ nav {
     padding: 40px;
 
     z-index: 4;
+}
+
+nav .brand.logo {
+    text-decoration: none;
 }
 
 nav.white {
@@ -1765,10 +1781,17 @@ nav ul li.active::after {
 
 .portico-landing.why-page .main li {
     color: #555;
+    line-height: 1.6;
+    font-size: 1.2em;
 }
 
 .portico-landing.why-page .main p {
-    line-height: 1.8;
+    font-size: 1.2em;
+    line-height: 1.6;
+}
+
+.portico-landing.why-page .main h3 {
+    margin-top: 20px;
 }
 
 .portico-landing.why-page .main li strong {
@@ -2383,8 +2406,9 @@ nav ul li.active::after {
     width: 100%;
 
     font-size: 0.9em;
-}
 
+    transition: all 0.3s ease;
+}
 
 .pricing-model .pricing-container .price-box:focus {
     outline: none;
@@ -2484,7 +2508,7 @@ nav ul li.active::after {
 
 .text-content .pricing-details {
     padding: 15px 0px 15px 0px;
-    height: 17px;
+    height: 20px;
 
     font-weight: 400;
     color: #888;
@@ -2571,10 +2595,16 @@ nav ul li.active::after {
     }
 }
 
+@media (min-width: 1295px), (max-width: 986px) and (min-width: 684px) {
+    /* while there are nine, show only two rows of four. */
+    .portico-landing.hello .testimonials .company-box > div:last-of-type {
+        display: none;
+    }
+}
+
 @media (max-width: 1295px) {
     .portico-landing.hello .apps .right-side {
         display: none;
-
     }
 
     .portico-landing.hello .apps .left-side {
@@ -3204,6 +3234,22 @@ nav ul li.active::after {
     .footer {
         width: 100vw;
     }
+
+    /* the gradients leave the bottom of the text and the button white so we
+       want to have the gradients stay darker for longer.
+    */
+    .gradients .gradient.green {
+        background: linear-gradient(-25deg, transparent 10%, #3fb082 80%);
+    }
+
+    .gradients .gradient.blue {
+        background: linear-gradient(25deg, transparent 10%, #5298b1 80%);
+    }
+
+    .gradients .gradient.sunburst {
+        background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
+    }
+
 }
 
 @media (max-width: 375px) {

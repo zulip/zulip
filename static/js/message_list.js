@@ -379,23 +379,29 @@ exports.MessageList.prototype = {
         if (!this.narrowed) {
             return;
         }
-        var stream = narrow_state.stream();
-        if (stream === undefined) {
+        var stream_name = narrow_state.stream();
+        if (stream_name === undefined) {
             return;
         }
         var trailing_bookend_content;
         var show_button = true;
-        var subscribed = stream_data.is_subscribed(stream);
+        var subscribed = stream_data.is_subscribed(stream_name);
         if (subscribed) {
-            trailing_bookend_content = this.subscribed_bookend_content(stream);
+            trailing_bookend_content = this.subscribed_bookend_content(stream_name);
         } else {
             if (!this.last_message_historical) {
-                trailing_bookend_content = this.unsubscribed_bookend_content(stream);
+                trailing_bookend_content = this.unsubscribed_bookend_content(stream_name);
 
-                // For invite only streams, hide the resubscribe button
-                show_button = !stream_data.get_sub(stream).invite_only;
+                // For invite only streams or streams that no longer
+                // exist, hide the resubscribe button
+                var sub = stream_data.get_sub(stream_name);
+                if (sub !== undefined) {
+                    show_button = !sub.invite_only;
+                } else {
+                    show_button = false;
+                }
             } else {
-                trailing_bookend_content = this.not_subscribed_bookend_content(stream);
+                trailing_bookend_content = this.not_subscribed_bookend_content(stream_name);
             }
         }
         if (trailing_bookend_content !== undefined) {
@@ -496,7 +502,7 @@ exports.MessageList.prototype = {
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
         row.find(".message_edit_form").empty().append(edit_obj.form);
         row.find(".message_content, .status-message").hide();
-        row.find(".message_edit").show();
+        row.find(".message_edit").css("display", "block");
         row.find(".message_edit_content").autosize();
     },
 

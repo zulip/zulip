@@ -6,6 +6,7 @@ import os
 import ujson
 
 from django.http import HttpResponse
+from django.test import override_settings
 from mock import MagicMock, patch
 from six.moves import urllib
 from typing import Any, Dict, List
@@ -22,6 +23,7 @@ from zerver.models import (
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
 class HomeTest(ZulipTestCase):
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @slow('big method')
     def test_home(self):
         # type: () -> None
@@ -68,6 +70,7 @@ class HomeTest(ZulipTestCase):
             "enable_online_push_notifications",
             "enable_sounds",
             "enable_stream_desktop_notifications",
+            "enable_stream_push_notifications",
             "enable_stream_sounds",
             "enter_sends",
             "first_in_realm",
@@ -143,9 +146,11 @@ class HomeTest(ZulipTestCase):
             "subscriptions",
             "test_suite",
             "timezone",
+            "total_uploads_size",
             "twenty_four_hour_time",
             "unread_msgs",
             "unsubscribed",
+            "upload_quota",
             "use_websockets",
             "user_id",
             "zulip_version",

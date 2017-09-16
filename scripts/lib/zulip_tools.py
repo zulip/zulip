@@ -227,19 +227,7 @@ def purge_unused_caches(caches_dir, caches_in_use, threshold_days, dry_run, cach
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
-    if dry_run:
-        print("Performing a dry run...")
-    else:
-        print("Cleaning unused %s caches..." % (cache_type,))
-
-    for cache_dir in caches_to_purge:
-        print("Cleaning unused %s cache: %s" % (cache_type, cache_dir))
-        if not dry_run:
-            subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
-
-    for cache_dir in caches_to_keep:
-        print("Keeping used %s cache: %s" % (cache_type, cache_dir))
-
+    may_be_perform_purging(caches_to_purge, caches_to_keep, cache_type, dry_run)
     print("Done!\n")
 
 def generate_sha1sum_emoji(zulip_path):
@@ -264,3 +252,18 @@ def generate_sha1sum_emoji(zulip_path):
     sha.update(emoji_datasource_version)
 
     return sha.hexdigest()
+
+def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run):
+    # type: (Set[Text], Set[Text], Text, bool) -> None
+    if dry_run:
+        print("Performing a dry run...")
+    else:
+        print("Cleaning unused %ss..." % (dir_type,))
+
+    for directory in dirs_to_purge:
+        print("Cleaning unused %s: %s" % (dir_type, directory))
+        if not dry_run:
+            subprocess.check_call(["sudo", "rm", "-rf", directory])
+
+    for directory in dirs_to_keep:
+        print("Keeping used %s: %s" % (dir_type, directory))

@@ -47,7 +47,7 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended), Git,
-  [VirtualBox][vbox-dl], [Vagrant][vagrant-dl-macos].
+  [VirtualBox][vbox-dl-macos], [Vagrant][vagrant-dl-macos].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
@@ -81,7 +81,7 @@ Jump to:
 #### macOS
 
 1. Install [Vagrant][vagrant-dl-macos] (1.8.4-1.8.6, do not use 1.8.7).
-2. Install [VirtualBox][vbox-dl] (>= 5.1.8).
+2. Install [VirtualBox][vbox-dl-macos] (5.1.8).
 
 (For a non-free option, but better performance, you can also use [VMWare
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
@@ -386,10 +386,7 @@ provisioning failed and you should look at the
 Next, start the Zulip server:
 
 ```
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd zulip
-
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -535,7 +532,7 @@ From the window where run-dev.py is running:
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth via ?)
 ^C
 KeyboardInterrupt
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip$ exit
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
@@ -571,10 +568,7 @@ christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
 
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd zulip
-
-(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -972,7 +966,7 @@ need to specify the proxy settings before running `Vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
 ```
-vagrant plugin install vagrant-proxyconf.
+vagrant plugin install vagrant-proxyconf
 ```
 
 Then create `~/.zulip-vagrant-config` and add the following lines to
@@ -987,6 +981,10 @@ NO_PROXY localhost,127.0.0.1,.example.com
 Now run `vagrant up` in your terminal to install the development
 server. If you ran `vagrant up` before and failed, you'll need to run
 `vagrant destroy` first to clean up the failed installation.
+
+**If you no longer want to use proxy with Vagrant, set values of HTTP_PROXY
+and HTTPS_PROXY to `""` in `~/.zulip-vagrant-config` file and
+restart Vagrant.**
 
 You can also change the port on the host machine that Vagrant uses by
 adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
@@ -1017,6 +1015,7 @@ for the IP address that means any IP address can connect to your development ser
 [vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
+[vbox-dl-macos]: http://download.virtualbox.org/virtualbox/5.1.8/VirtualBox-5.1.8-111374-OSX.dmg
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords

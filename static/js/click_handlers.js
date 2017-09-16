@@ -353,6 +353,7 @@ $(function () {
     $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui_util.change_tab_to('#home');
         narrow.deactivate();
+        search.update_button_visibility();
         // We need to maybe scroll to the selected message
         // once we have the proper viewport set up
         setTimeout(navigate.maybe_scroll_to_selected, 0);
@@ -456,10 +457,18 @@ $(function () {
     });
 
     $("#join_unsub_stream").click(function (e) {
-        e.preventDefault();
         e.stopPropagation();
-
         window.location.hash = "streams/all";
+    });
+
+    $("#streams_inline_cog").click(function (e) {
+        e.stopPropagation();
+        window.location.hash = "streams";
+    });
+
+    $("#streams_filter_icon").click(function (e) {
+        e.stopPropagation();
+        stream_list.toggle_filter_displayed(e);
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function () {
@@ -704,13 +713,17 @@ $(function () {
             popovers.hide_all();
         }
 
-        // Unfocus our compose area if we click out of it. Don't let exits out
-        // of overlays or selecting text (for copy+paste) trigger cancelling.
-        if (compose_state.composing() && !$(e.target).is("a") &&
-            ($(e.target).closest(".overlay").length === 0) &&
-            window.getSelection().toString() === "" &&
-            ($(e.target).closest('.popover-content').length === 0)) {
-            compose_actions.cancel();
+        if (compose_state.composing()) {
+            if ($(e.target).is("a")) {
+                // Refocus compose message text box if link is clicked
+                $("#new_message_content").focus();
+            } else if (!$(e.target).closest(".overlay").length &&
+            !window.getSelection().toString() &&
+            !$(e.target).closest('.popover-content').length) {
+                // Unfocus our compose area if we click out of it. Don't let exits out
+                // of overlays or selecting text (for copy+paste) trigger cancelling.
+                compose_actions.cancel();
+            }
         }
     });
 

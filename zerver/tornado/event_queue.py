@@ -412,10 +412,11 @@ def gc_event_queues():
     # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
-    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
-                  '  Now %d active queues, %s')
-                 % (len(to_remove), len(affected_users), time.time() - start,
-                    len(clients), handler_stats_string()))
+    if settings.PRODUCTION:
+        logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+                      '  Now %d active queues, %s')
+                     % (len(to_remove), len(affected_users), time.time() - start,
+                        len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
@@ -645,44 +646,18 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if notify_info.get('send_email', False):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
 
-def receiver_is_idle(user_profile_id, realm_presences):
-    # type: (int, Optional[Dict[int, Dict[Text, Dict[str, Any]]]]) -> bool
+def receiver_is_off_zulip(user_profile_id):
+    # type: (int) -> bool
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
     all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
     message_event_queues = [client for client in all_client_descriptors if client.accepts_messages()]
     off_zulip = len(message_event_queues) == 0
-
-    # It's possible a recipient is not in the realm of a sender. We don't have
-    # presence information in this case (and it's hard to get without an additional
-    # db query) so we simply don't try to guess if this cross-realm recipient
-    # has been idle for too long
-    if realm_presences is None or user_profile_id not in realm_presences:
-        return off_zulip
-
-    # We want to find the newest "active" presence entity and compare that to the
-    # activity expiry threshold.
-    user_presence = realm_presences[user_profile_id]
-    latest_active_timestamp = None
-    idle = False
-
-    for client, status in six.iteritems(user_presence):
-        if (latest_active_timestamp is None or status['timestamp'] > latest_active_timestamp) and \
-                status['status'] == 'active':
-            latest_active_timestamp = status['timestamp']
-
-    if latest_active_timestamp is None:
-        idle = True
-    else:
-        active_datetime = timestamp_to_datetime(latest_active_timestamp)
-        # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
-        idle = timezone_now() - active_datetime > datetime.timedelta(seconds=140)
-
-    return off_zulip or idle
+    return off_zulip
 
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
-    realm_presences = {int(k): v for k, v in event_template['presences'].items()}  # type: Dict[int, Dict[Text, Dict[str, Any]]]
+    missed_message_userids = set(event_template.get('missed_message_userids', []))
     sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
     message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
     message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
@@ -714,22 +689,40 @@ def process_message_event(event_template, users):
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
-        received_pm = message_type == "private" and user_profile_id != sender_id
+        private_message = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags
-        idle = receiver_is_idle(user_profile_id, realm_presences)
-        always_push_notify = user_data.get('always_push_notify', False)
-        if (received_pm or mentioned) and (idle or always_push_notify):
-            notice = build_offline_notification(user_profile_id, message_id)
-            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-            notified = dict(push_notified=True)  # type: Dict[str, bool]
-            # Don't send missed message emails if always_push_notify is True
-            if idle:
+        stream_push_notify = user_data.get('stream_push_notify', False)
+
+        # We first check if a message is potentially mentionable,
+        # since receiver_is_off_zulip is somewhat expensive.
+        if private_message or mentioned or stream_push_notify:
+            idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in missed_message_userids)
+            always_push_notify = user_data.get('always_push_notify', False)
+            notified = dict()  # type: Dict[str, bool]
+
+            if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
+                notice = build_offline_notification(user_profile_id, message_id)
+                notice['triggers'] = {
+                    'private_message': private_message,
+                    'mentioned': mentioned,
+                    'stream_push_notify': stream_push_notify,
+                }
+                notice['stream_name'] = event_template.get('stream_name')
+                queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
+                notified['push_notified'] = True
+
+            # Send missed_message emails if a private message or a
+            # mention.  Eventually, we'll add settings to allow email
+            # notifications to match the model of push notifications
+            # above.
+            if idle and (private_message or mentioned):
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
                 queue_json_publish("missedmessage_emails", notice, lambda notice: None)
                 notified['email_notified'] = True
 
-            extra_user_data[user_profile_id] = notified
+            if len(notified) > 0:
+                extra_user_data[user_profile_id] = notified
 
     for client_data in six.itervalues(send_to_clients):
         client = client_data['client']

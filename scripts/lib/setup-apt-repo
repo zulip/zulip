@@ -2,6 +2,7 @@
 set -x
 
 SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
+STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
 zulip_source_hash=`shasum $SOURCES_FILE`
 
 apt-get install -y lsb-release
@@ -31,8 +32,12 @@ else
     exit 1
 fi
 
-if [ "$zulip_source_hash" = "`shasum $SOURCES_FILE`" ]; then
+if [ "$zulip_source_hash" = "`shasum $SOURCES_FILE`" ] && ! [ -e "$STAMP_FILE" ]; then
     echo "zulip.list file did not change; skipping apt-get update"
 else
-    apt-get update
+    # We create this stamp file to ensure `apt-get update` will be run
+    # the next time this script is invoked, and each time after, until
+    # `apt-get update` finishes successfully.
+    touch "$STAMP_FILE"
+    apt-get update && rm -f "$STAMP_FILE"
 fi

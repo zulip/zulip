@@ -54,6 +54,25 @@ MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[Text], AbstractSet[Text])
 
+def query_for_ids(query, user_ids, field):
+    # type: (QuerySet, List[int], str) -> QuerySet
+    '''
+    This function optimizes searches of the form
+    `user_profile_id in (1, 2, 3, 4)` by quickly
+    building the where clauses.  Profiling shows significant
+    speedups over the normal Django-based approach.
+
+    Use this very carefully!  Also, the caller should
+    guard against empty lists of user_ids.
+    '''
+    assert(user_ids)
+    value_list = ', '.join(str(int(user_id)) for user_id in user_ids)
+    clause = '%s in (%s)' % (field, value_list)
+    query = query.extra(
+        where=[clause]
+    )
+    return query
+
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
 per_request_display_recipient_cache = {}  # type: Dict[int, List[Dict[str, Any]]]
@@ -227,9 +246,7 @@ class Realm(ModelReprMixin, models.Model):
         # type: () -> str
         # Remove the port. Mainly needed for development environment.
         external_host = settings.EXTERNAL_HOST.split(':')[0]
-        if settings.REALMS_HAVE_SUBDOMAINS or \
-           Realm.objects.filter(deactivated=False) \
-                        .exclude(string_id__in=settings.SYSTEM_ONLY_REALMS).count() > 1:
+        if self.subdomain not in [None, ""]:
             return "%s.%s" % (self.string_id, external_host)
         return external_host
 
@@ -598,6 +615,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # Stream notifications.
     enable_stream_desktop_notifications = models.BooleanField(default=False)  # type: bool
+    enable_stream_push_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_sounds = models.BooleanField(default=False)  # type: bool
 
     # PM + @-mention notifications.
@@ -666,10 +684,6 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     alert_words = models.TextField(default=u'[]')  # type: Text # json-serialized list of strings
 
-    # Contains serialized JSON of the form:
-    # [["social", "mit"], ["devel", "ios"]]
-    muted_topics = models.TextField(default=u'[]')  # type: Text
-
     objects = UserManager()  # type: UserManager
 
     DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
@@ -712,6 +726,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         enable_online_push_notifications=bool,
         enable_sounds=bool,
         enable_stream_desktop_notifications=bool,
+        enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
         pm_content_in_desktop_notifications=bool,
     )
@@ -809,6 +824,11 @@ def receives_offline_notifications(user_profile):
 def receives_online_notifications(user_profile):
     # type: (UserProfile) -> bool
     return (user_profile.enable_online_push_notifications and
+            not user_profile.is_bot)
+
+def receives_stream_notifications(user_profile):
+    # type: (UserProfile) -> bool
+    return (user_profile.enable_stream_push_notifications and
             not user_profile.is_bot)
 
 def remote_user_to_email(remote_user):
@@ -961,6 +981,19 @@ class Recipient(ModelReprMixin, models.Model):
         # type: () -> Text
         display_recipient = get_display_recipient(self)
         return u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
+
+class MutedTopic(ModelReprMixin, models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
+    topic_name = models.CharField(max_length=MAX_SUBJECT_LENGTH)
+
+    class Meta(object):
+        unique_together = ('user_profile', 'stream', 'topic_name')
+
+    def __unicode__(self):
+        # type: () -> Text
+        return u"<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
 
 class Client(ModelReprMixin, models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)  # type: Text
@@ -1311,7 +1344,22 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
 
     def flags_list(self):
         # type: () -> List[str]
-        return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
+        flags = int(self.flags)
+        return self.flags_list_for_flags(flags)
+
+    @staticmethod
+    def flags_list_for_flags(flags):
+        # type: (int) -> List[str]
+        '''
+        This function is highly optimized, because it actually slows down
+        sending messages in a naive implementation.
+        '''
+        names = AbstractUserMessage.ALL_FLAGS
+        return [
+            names[i]
+            for i in range(len(names))
+            if flags & (2 ** i)
+        ]
 
     def __unicode__(self):
         # type: () -> Text
@@ -1379,10 +1427,12 @@ class Attachment(AbstractAttachment):
             'id': self.id,
             'name': self.file_name,
             'path_id': self.path_id,
+            'size': self.size,
+            # convert to JavaScript-style UNIX timestamp so we can take
+            # advantage of client timezones.
+            'create_time': time.mktime(self.create_time.timetuple()) * 1000,
             'messages': [{
                 'id': m.id,
-                # convert to JavaScript-style UNIX timestamp so we can take
-                # advantage of client timezones.
                 'name': time.mktime(m.pub_date.timetuple()) * 1000
             } for m in self.messages.all()]
         }
@@ -1427,6 +1477,7 @@ class Subscription(ModelReprMixin, models.Model):
 
     desktop_notifications = models.BooleanField(default=True)  # type: bool
     audible_notifications = models.BooleanField(default=True)  # type: bool
+    push_notifications = models.BooleanField(default=False)  # type: bool
 
     # Combination desktop + audible notifications superseded by the
     # above.
@@ -1608,7 +1659,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_user(user_profile):
-        # type: (UserProfile) -> DefaultDict[Any, Dict[Any, Any]]
+        # type: (UserProfile) -> Dict[Text, Dict[Any, Any]]
         query = UserPresence.objects.filter(user_profile=user_profile).values(
             'client__name',
             'status',
@@ -1616,79 +1667,119 @@ class UserPresence(models.Model):
             'user_profile__email',
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
-            'user_profile__is_mirror_dummy',
         )
+        presence_rows = list(query)
 
+        mobile_user_ids = set()  # type: Set[int]
         if PushDeviceToken.objects.filter(user=user_profile).exists():
-            mobile_user_ids = [user_profile.id]  # type: List[int]
-        else:
-            mobile_user_ids = []
+            mobile_user_ids.add(user_profile.id)
 
-        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
-
-    @staticmethod
-    def exclude_old_users(query):
-        # type: (QuerySet) -> QuerySet
-        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
-        return query.filter(timestamp__gte=two_weeks_ago)
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
-        # type: (int) -> DefaultDict[Any, Dict[Any, Any]]
+        # type: (int) -> Dict[Text, Dict[Any, Any]]
+        user_profile_ids = UserProfile.objects.filter(
+            realm_id=realm_id,
+            is_active=True,
+            is_bot=False
+        ).order_by('id').values_list('id', flat=True)
+
+        user_profile_ids = list(user_profile_ids)
+
+        if not user_profile_ids:
+            return {}
+
+        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
         query = UserPresence.objects.filter(
-            user_profile__realm_id=realm_id,
-            user_profile__is_active=True,
-            user_profile__is_bot=False
-        )
-
-        query = UserPresence.exclude_old_users(query)
-
-        query = query.values(
+            timestamp__gte=two_weeks_ago
+        ).values(
             'client__name',
             'status',
             'timestamp',
             'user_profile__email',
             'user_profile__id',
             'user_profile__enable_offline_push_notifications',
-            'user_profile__is_mirror_dummy',
         )
 
-        mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
-            user__realm_id=1,
-            user__is_active=True,
-            user__is_bot=False,
-        ).distinct("user").values("user")]
+        query = query_for_ids(
+            query=query,
+            user_ids=user_profile_ids,
+            field='user_profile_id'
+        )
+        presence_rows = list(query)
 
-        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+        mobile_query = PushDeviceToken.objects.distinct(
+            'user_id'
+        ).values_list(
+            'user_id',
+            flat=True
+        )
+
+        mobile_query = query_for_ids(
+            query=mobile_query,
+            user_ids=user_profile_ids,
+            field='user_id'
+        )
+        mobile_user_ids = set(mobile_query)
+
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
 
     @staticmethod
-    def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, List[int]) -> DefaultDict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict)  # type: DefaultDict[Any, Dict[Any, Any]]
-        # Order of query is important to get a latest status as aggregated status.
-        for row in query.order_by("user_profile__id", "-timestamp"):
-            info = UserPresence.to_presence_dict(
-                row['client__name'],
-                row['status'],
-                row['timestamp'],
-                push_enabled=row['user_profile__enable_offline_push_notifications'],
-                has_push_devices=row['user_profile__id'] in mobile_user_ids,
-                is_mirror_dummy=row['user_profile__is_mirror_dummy'],
+    def get_status_dicts_for_rows(presence_rows, mobile_user_ids):
+        # type: (List[Dict[str, Any]], Set[int]) -> Dict[Text, Dict[Any, Any]]
+
+        info_row_dct = defaultdict(list)  # type: DefaultDict[Text, List[Dict[str, Any]]]
+        for row in presence_rows:
+            email = row['user_profile__email']
+            client_name = row['client__name']
+            status = UserPresence.status_to_string(row['status'])
+            dt = row['timestamp']
+            timestamp = datetime_to_timestamp(dt)
+            push_enabled = row['user_profile__enable_offline_push_notifications']
+            has_push_devices = row['user_profile__id'] in mobile_user_ids
+            pushable = (push_enabled and has_push_devices)
+
+            info = dict(
+                client=client_name,
+                status=status,
+                dt=dt,
+                timestamp=timestamp,
+                pushable=pushable,
             )
-            if not user_statuses.get(row['user_profile__email']):
-                # Applying the latest status as aggregated status for user.
-                user_statuses[row['user_profile__email']]['aggregated'] = {
-                    'status': info['status'],
-                    'timestamp': info['timestamp'],
-                    'client': info['client']
-                }
-            user_statuses[row['user_profile__email']][row['client__name']] = info
+
+            info_row_dct[email].append(info)
+
+        user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
+
+        for email, info_rows in info_row_dct.items():
+            # Note that datetime values have sub-second granularity, which is
+            # mostly important for avoiding test flakes, but it's also technically
+            # more precise for real users.
+            by_time = lambda row: row['dt']
+            most_recent_info = max(info_rows, key=by_time)
+
+            # We don't send datetime values to the client.
+            for r in info_rows:
+                del r['dt']
+
+            client_dict = {info['client']: info for info in info_rows}
+            user_statuses[email] = client_dict
+
+            # The word "aggegrated" here is possibly misleading.
+            # It's really just the most recent client's info.
+            user_statuses[email]['aggregated'] = dict(
+                client=most_recent_info['client'],
+                status=most_recent_info['status'],
+                timestamp=most_recent_info['timestamp'],
+            )
+
         return user_statuses
 
     @staticmethod
     def to_presence_dict(client_name, status, dt, push_enabled=False,
-                         has_push_devices=False, is_mirror_dummy=None):
-        # type: (Text, int, datetime.datetime, bool, bool, Optional[bool]) -> Dict[str, Any]
+                         has_push_devices=False):
+        # type: (Text, int, datetime.datetime, bool, bool) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)

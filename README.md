@@ -61,16 +61,15 @@ The Zulip community has a [Code of Conduct][code-of-conduct].
 ## Installing the Zulip Development environment
 
 The Zulip development environment is the recommended option for folks
-interested in trying out Zulip.  This is documented in [the developer
-installation guide][dev-install].
+interested in trying out Zulip, since it is very easy to install.
+This is documented in [the developer installation guide][dev-install].
 
 ## Running Zulip in production
 
 Zulip in production supports Ubuntu 14.04 Trusty and Ubuntu 16.04
-Xenial. Work is ongoing on adding support for additional
-platforms. The installation process is documented at
-<https://zulip.org/server.html> and in more detail in [the
-documentation](https://zulip.readthedocs.io/en/latest/prod-install.html).
+Xenial. We're happy to support work to enable Zulip to run on
+additional platforms. The installation process is
+[documented here](https://zulip.readthedocs.io/en/latest/prod.html).
 
 ## Ways to contribute
 

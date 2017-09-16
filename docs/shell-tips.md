@@ -318,6 +318,9 @@ know what they do. You can use `man <command>` to see the **man**ual page for
 that specific command. Also, you may find useful
 [explainshell](http://explainshell.com/), a webpage that explains what most
 commands do, part by part.
+Finally, [docopt](http://docopt.org/) can help you understand the syntax used
+by command-line tools to describe their interface, and make sense of strings like
+`cd: usage: cd [-L|[-P [-e]] [-@]] [dir]`).
 
 ## Cheatsheet
 

@@ -47,6 +47,7 @@
 /* popover */
 .hotspot.overlay {
     z-index: 104;
+    background-color: hsla(191, 7%, 20%, 0.15);
 }
 
 .hotspot.overlay .hotspot-popover {
@@ -180,6 +181,7 @@
 }
 
 /* individual icon z-indexing */
-#hotspot_stream_settings_icon {
+#hotspot_intro_streams_icon,
+#hotspot_intro_topics_icon {
     z-index: 103;
 }

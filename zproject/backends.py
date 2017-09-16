@@ -83,6 +83,13 @@ def any_oauth_backend_enabled(realm=None):
     'OR' for login with Google"""
     return auth_enabled_helper([u'GitHub', u'Google'], realm)
 
+def require_email_format_usernames(realm=None):
+    # type: (Optional[Realm]) -> bool
+    if ldap_auth_enabled(realm):
+        if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
+            return False
+    return True
+
 def common_get_active_user_by_email(email, return_data=None):
     # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
     try:
@@ -416,7 +423,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         try:
             if settings.REALMS_HAVE_SUBDOMAINS:
                 self._realm = get_realm(realm_subdomain)
-            else:
+            elif settings.LDAP_EMAIL_ATTR is not None:
                 self._realm = get_realm_by_email_domain(username)
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
@@ -433,6 +440,14 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def get_or_create_user(self, username, ldap_user):
         # type: (str, _LDAPUser) -> Tuple[UserProfile, bool]
         try:
+            if settings.LDAP_EMAIL_ATTR is not None:
+                # Get email from ldap attributes.
+                if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
+                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (settings.LDAP_EMAIL_ATTR,))
+
+                username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+                self._realm = get_realm_by_email_domain(username)
+
             user_profile = get_user_profile_by_email(username)
             if not user_profile.is_active or user_profile.realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")

@@ -45,6 +45,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_delete_message,
     do_mark_hotspot_as_read,
+    do_mute_topic,
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
@@ -59,10 +60,10 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_user_display_setting,
     do_set_realm_notifications_stream,
+    do_unmute_topic,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
-    do_update_muted_topic,
     do_update_pointer,
     do_update_user_presence,
     log_event,
@@ -77,6 +78,9 @@ from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
     stub_event_queue_user_events
 from zerver.lib.test_classes import (
     ZulipTestCase,
+)
+from zerver.lib.topic_mutes import (
+    add_topic_mute,
 )
 from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
@@ -373,6 +377,8 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         super(EventsRegisterTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
+        self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
+        self.user_profile.save(update_fields=['tutorial_status'])
 
     def create_bot(self, email):
         # type: (str) -> UserProfile
@@ -440,6 +446,9 @@ class EventsRegisterTest(ZulipTestCase):
         def normalize(state):
             # type: (Dict[str, Any]) -> None
             state['realm_users'] = {u['email']: u for u in state['realm_users']}
+            for u in state['never_subscribed']:
+                if 'subscribers' in u:
+                    u['subscribers'].sort()
             for u in state['subscriptions']:
                 if 'subscribers' in u:
                     u['subscribers'].sort()
@@ -857,13 +866,15 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('muted_topics')),
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
-        events = self.do_test(lambda: do_update_muted_topic(
-            self.user_profile, "Denmark", "topic", "add"))
+        stream = get_stream('Denmark', self.user_profile.realm)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+        events = self.do_test(lambda: do_mute_topic(
+            self.user_profile, stream, recipient, "topic"))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_update_muted_topic(
-            self.user_profile, "Denmark", "topic", "remove"))
+        events = self.do_test(lambda: do_unmute_topic(
+            self.user_profile, stream, "topic"))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1379,10 +1390,10 @@ class EventsRegisterTest(ZulipTestCase):
                 ('name', check_string),
                 ('title', check_string),
                 ('description', check_string),
-                ('delay', check_int),
+                ('delay', check_float),
             ]))),
         ])
-        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'click_to_reply'))
+        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'intro_reply'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1462,6 +1473,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('in_home_view', check_bool),
             ('name', check_string),
             ('desktop_notifications', check_bool),
+            ('push_notifications', check_bool),
             ('audible_notifications', check_bool),
             ('stream_id', check_int),
         ]
@@ -1652,11 +1664,25 @@ class FetchInitialStateDataTest(ZulipTestCase):
             subscription.in_home_view = False
             subscription.save()
 
+        def mute_topic(user_profile, stream_name, topic_name):
+            # type: (UserProfile, Text, Text) -> None
+            stream = get_stream(stream_name, realm)
+            recipient = get_recipient(Recipient.STREAM, stream.id)
+
+            add_topic_mute(
+                user_profile=user_profile,
+                stream_id=stream.id,
+                recipient_id=recipient.id,
+                topic_name='muted-topic',
+            )
+
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
         sender_email = cordelia.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
+
+        realm = user_profile.realm
 
         # our tests rely on order
         assert(sender_email < user_profile.email)
@@ -1667,8 +1693,12 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
         mute_stream(user_profile, muted_stream)
+        mute_topic(user_profile, 'Denmark', 'muted-topic')
+
         stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
         muted_stream_message_id = self.send_message(sender_email, "Muted Stream", Recipient.STREAM, "hello")
+        muted_topic_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM,
+                                                   subject="muted-topic", content="hello")
 
         huddle_message_id = self.send_message(sender_email,
                                               [user_profile.email, othello.email],
@@ -1693,10 +1723,15 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         unread_stream = result['streams'][0]
         self.assertEqual(unread_stream['stream_id'], get_stream('Denmark', user_profile.realm).id)
+        self.assertEqual(unread_stream['topic'], 'muted-topic')
+        self.assertEqual(unread_stream['unread_message_ids'], [muted_topic_message_id])
+
+        unread_stream = result['streams'][1]
+        self.assertEqual(unread_stream['stream_id'], get_stream('Denmark', user_profile.realm).id)
         self.assertEqual(unread_stream['topic'], 'test')
         self.assertEqual(unread_stream['unread_message_ids'], [stream_message_id])
 
-        unread_stream = result['streams'][1]
+        unread_stream = result['streams'][2]
         self.assertEqual(unread_stream['stream_id'], get_stream('Muted Stream', user_profile.realm).id)
         self.assertEqual(unread_stream['topic'], 'test')
         self.assertEqual(unread_stream['unread_message_ids'], [muted_stream_message_id])

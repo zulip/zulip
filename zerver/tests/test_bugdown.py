@@ -13,6 +13,7 @@ from zerver.lib.actions import (
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import get_emoji_url
+from zerver.lib.mention import possible_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
@@ -44,7 +45,7 @@ import six
 
 from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
-from typing import Any, AnyStr, Dict, List, Optional, Tuple, Text
+from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
@@ -499,6 +500,17 @@ class BugdownTest(ZulipTestCase):
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
             self.assertIs(None, bugdown.fetch_tweet_data('287977969287315459'))
 
+    def test_content_has_emoji(self):
+        # type: () -> None
+        self.assertFalse(bugdown.content_has_emoji_syntax('boring'))
+        self.assertFalse(bugdown.content_has_emoji_syntax('hello: world'))
+        self.assertFalse(bugdown.content_has_emoji_syntax(':foobar'))
+        self.assertFalse(bugdown.content_has_emoji_syntax('::: hello :::'))
+
+        self.assertTrue(bugdown.content_has_emoji_syntax('foo :whatever:'))
+        self.assertTrue(bugdown.content_has_emoji_syntax('\n:whatever:'))
+        self.assertTrue(bugdown.content_has_emoji_syntax(':smile: ::::::'))
+
     def test_realm_emoji(self):
         # type: () -> None
         def emoji_img(name, file_name, realm_id):
@@ -681,7 +693,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words=realm_alert_words,
-                                   message_users={user_profile})
+                                   user_ids={user_profile.id})
 
         content = "We have an ALERTWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
@@ -740,6 +752,22 @@ class BugdownTest(ZulipTestCase):
                          '@King Hamlet</span></p>' % (self.example_email("hamlet"), user_id))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
+    def test_possible_mentions(self):
+        # type: () -> None
+        def assert_mentions(content, names):
+            # type: (Text, Set[Text]) -> None
+            self.assertEqual(possible_mentions(content), names)
+
+        assert_mentions('', set())
+        assert_mentions('boring', set())
+        assert_mentions('@all', set())
+        assert_mentions('smush@**steve**smush', set())
+
+        assert_mentions(
+            'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson** @**all**',
+            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson'}
+        )
+
     def test_mention_multiple(self):
         # type: () -> None
         sender_user_profile = self.example_user('othello')
@@ -748,6 +776,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet** and @**Cordelia Lear**, check this out"
+
         self.assertEqual(render_markdown(msg, content),
                          '<p>'
                          '<span class="user-mention" '
@@ -825,6 +854,17 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content),
             '<p>#<strong>casesens</strong></p>')
+
+    def test_possible_stream_names(self):
+        # type: () -> None
+        content = '''#**test here**
+            This mentions #**Denmark** too.
+            #**garçon** #**천국** @**Ignore Person**
+        '''
+        self.assertEqual(
+            bugdown.possible_linked_stream_names(content),
+            {'test here', 'Denmark', 'garçon', '천국'}
+        )
 
     def test_stream_unicode(self):
         # type: () -> None
@@ -1016,6 +1056,19 @@ class BugdownErrorTests(ZulipTestCase):
 
 
 class BugdownAvatarTestCase(ZulipTestCase):
+    def test_possible_avatar_emails(self):
+        # type: () -> None
+        content = '''
+            hello !avatar(foo@example.com) my email is ignore@ignore.com
+            !gravatar(bar@yo.tv)
+
+            smushing!avatar(hamlet@example.org) is allowed
+        '''
+        self.assertEqual(
+            bugdown.possible_avatar_emails(content),
+            {'foo@example.com', 'bar@yo.tv', 'hamlet@example.org'},
+        )
+
     def test_avatar_with_id(self):
         # type: () -> None
         sender_user_profile = self.example_user('othello')

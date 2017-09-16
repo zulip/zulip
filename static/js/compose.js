@@ -766,9 +766,11 @@ exports.initialize = function () {
             msg = i18n.t("Sorry, the file was too large.");
             break;
         case 'QuotaExceeded':
-            msg = i18n.t("Upload would exceed your maximum quota."
-                      + " Consider deleting some previously uploaded files.");
-            break;
+            var translation_part1 = i18n.t('Upload would exceed your maximum quota. You can delete old attachments to free up space.');
+            var translation_part2 = i18n.t('Click here');
+            msg = translation_part1 + ' <a href="#settings/uploaded-files">' + translation_part2 + '</a>';
+            $("#error-msg").html(msg);
+            return;
         default:
             msg = i18n.t("An unknown error occurred.");
             break;

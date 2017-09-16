@@ -11,6 +11,8 @@ from django.conf import settings
 
 import polib
 
+from zerver.lib.i18n import with_language
+
 class Command(compilemessages.Command):
 
     def handle(self, *args, **options):
@@ -24,6 +26,27 @@ class Command(compilemessages.Command):
             settings.LOCALE_PATHS = (os.path.join(settings.DEPLOY_ROOT, 'static/locale'),)
         super(Command, self).handle(*args, **options)
         self.extract_language_options()
+        self.create_language_name_map()
+
+    def create_language_name_map(self):
+        # type: () -> None
+        join = os.path.join
+        static_root = settings.STATIC_ROOT
+        path = join(static_root, 'locale', 'language_options.json')
+        output_path = join(static_root, 'locale', 'language_name_map.json')
+
+        with open(path, 'r') as reader:
+            languages = ujson.load(reader)
+            lang_list = []
+            for lang_info in languages['languages']:
+                name = lang_info['name']
+                lang_info['name'] = with_language(name, lang_info['code'])
+                lang_list.append(lang_info)
+
+            lang_list.sort(key=lambda lang: lang['name'])
+
+        with open(output_path, 'w') as output_file:
+            ujson.dump({'name_map': lang_list}, output_file, indent=4)
 
     def get_po_filename(self, locale_path, locale):
         # type: (Text, Text) -> Text

@@ -108,12 +108,12 @@ exports.populate_auth_methods = function (auth_methods) {
     if (!page_params.is_admin) {
         $(".organization-box [data-name='auth-methods']")
             .find("input, button, select, checked").attr("disabled", true);
+        var tip_box = $("<div class='tip'></div>")
+            .text(i18n.t("Only organization administrators can edit these settings."));
         // Don't prepend a tip to custom emoji settings page. We handle it separately.
         $(".organization-box").find(".settings-section:not(.can-edit)")
             .not("#emoji-settings")
-            .prepend("<div class='tip'>" +
-                     i18n.t("Only organization administrators can edit these settings.") +
-                     "</div>");
+            .prepend(tip_box);
     }
 };
 
@@ -386,11 +386,10 @@ function _set_up() {
                         Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui_report.success(i18n.t("Users can now edit topics for all their messages,"
-                                                      +" and the content of messages which are less than __num_minutes__ minutes old.",
-                                                     {num_minutes :
-                                                       data_message_content_edit_limit_minutes}),
-                                              message_editing_status);
+                            ui_report.success(
+                                i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
+                                       {num_minutes : data_message_content_edit_limit_minutes}),
+                                message_editing_status);
                         } else {
                             ui_report.success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
                         }

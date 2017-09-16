@@ -57,8 +57,8 @@ organization in Zulip). The following files are involved in the process:
 ./manage.py migrate
 ```
 
-**Test your changes:** Once you've run the migration, restart memcached
-on your development server (`/etc/init.d/memcached restart`) and then
+**Test your changes:** Once you've run the migration, flush memcached
+on your development server (`./scripts/setup/flush-memcached`) and then
 [restart the development server](
 http://zulip.readthedocs.io/en/latest/dev-remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
 to avoid interacting with cached objects.
@@ -83,7 +83,7 @@ based on the event you just created.
 required for your feature to do what it's supposed to do (this will
 be unique to the feature you're implementing).
 
-**New views:** Add any new application views to `zerver/urls.py`, or
+**New views:** Add any new application views to `zproject/urls.py`, or
 update the appropriate existing view in `zerver/views/`. This
 includes both views that serve HTML (new pages on Zulip) as well as new
 API endpoints that serve JSON-formatted data.

@@ -58,7 +58,13 @@
                             <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
                             <label class="subscription-control-label">{{t "Receive audible notifications" }}</label>
                         </div>
-
+                    </li>
+                    <li>
+                        <div id="sub_push_notifications_setting"
+                            class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+                            <input id="push-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if push_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                            <label class="subscription-control-label">{{t "Receive push notifications" }}</label>
+                        </div>
                     </li>
                     <li>
                         <div id="sub_pin_setting" class="sub_setting_checkbox">

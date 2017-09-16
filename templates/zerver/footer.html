@@ -5,7 +5,7 @@
             <li><a href="/">{{ _("Home") }}</a></li>
             <li><a href="/why-zulip/">{{ _("Why Zulip") }}</a></li>
             <li><a href="/features/">{{ _("Features") }}</a></li>
-            {# <li><a href="/plans/">{{ _("Plans & pricing") }}</a></li> #}
+            <li><a href="/plans/">{{ _("Plans &amp; pricing") }}</a></li>
             {% if about_link_disabled %}
             {% else %}
             <li><a href="/about/">{{ _("About") }}</a></li>
@@ -13,7 +13,7 @@
         </ul>
     </section>
     <section>
-        <h3>{{ _("Help & community") }}</h3>
+        <h3>{{ _("Help &amp; community") }}</h3>
         <ul>
             <li><a href="/help/">{{ _("Help center") }}</a></li>
             <li><a href="https://twitter.com/zulip/">Twitter</a></li>
@@ -40,14 +40,14 @@
             {% else %}
             <li><a href="{{ url('register') }}">{{ _("Register") }}</a></li>
             {% endif %}
-            <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of service") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of Service") }}</a></li>
             <li><a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
         </ul>
     </section>
     <section>
-        <h3>{{ _("Apps & integrations") }}</h3>
+        <h3>{{ _("Apps &amp; integrations") }}</h3>
         <ul>
-            <li><a href="/apps/">{{ _("Desktop & mobile apps") }}</a></li>
+            <li><a href="/apps/">{{ _("Desktop &amp; mobile apps") }}</a></li>
             <li><a href="/integrations/">{{ _("Integrations") }}</a></li>
             {# Interactive bots would go here? #}
             <li><a href="/api/">REST API</a></li>

@@ -17,9 +17,9 @@ function focus_in_empty_compose() {
 
 function open_reactions() {
     var message = current_msg_list.selected_message();
-    var target = $(current_msg_list.selected_row()).find(".icon-vector-chevron-down")[0];
+    var target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
     if (!message.sent_by_me) {
-        target = $(current_msg_list.selected_row()).find(".icon-vector-smile")[0];
+        target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
     }
     emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
     return true;
@@ -160,10 +160,6 @@ exports.is_editing_stream_name = function (e) {
     return $(e.target).is(".editable-section");
 };
 
-exports.is_modal_open = function () {
-    return $(".modal").hasClass("in");
-};
-
 // Returns true if we handled it, false if the browser should.
 exports.process_escape_key = function (e) {
     var row;
@@ -172,8 +168,8 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if (exports.is_modal_open()) {
-        $(".modal").modal("hide").attr("aria-hidden", false);
+    if (overlays.is_modal_open()) {
+        overlays.close_active_modal();
         return true;
     }
 
@@ -444,6 +440,10 @@ exports.process_hotkey = function (e, hotkey) {
             subs.keyboard_sub();
             return true;
         }
+        if (overlays.lightbox_open()) {
+            overlays.close_active();
+            return true;
+        }
         return false;
     }
 
@@ -471,6 +471,10 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (overlays.info_overlay_open()) {
+        if (event_name === 'show_shortcuts') {
+            overlays.close_active();
+            return true;
+        }
         return false;
     }
 
@@ -599,14 +603,18 @@ exports.process_hotkey = function (e, hotkey) {
         case 'view_selected_stream':
             if (overlays.streams_open()) {
                 subs.view_stream();
+                return true;
             }
-            return true;
+            break;
         case 'n_key':
             if (overlays.streams_open()) {
-                subs.new_stream_clicked();
-            } else {
-                narrow.narrow_to_next_topic();
+                if (page_params.can_create_streams) {
+                    subs.new_stream_clicked();
+                    return true;
+                }
+                return false;
             }
+            narrow.narrow_to_next_topic();
             return true;
         case 'open_drafts':
             drafts.toggle();

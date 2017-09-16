@@ -313,17 +313,22 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 # * Fill in the LDAP configuration options below so that Zulip can
 # connect to your LDAP server
 #
-# * Setup the mapping between email addresses (used as login names in
-# Zulip) and LDAP usernames.  There are two supported ways to setup
-# the username mapping:
+# * Setup the mapping between LDAP attributes and Zulip.
+# There are three supported ways to setup the username and/or email mapping:
 #
-#   (A) If users' email addresses are in LDAP, set
+#   (A) If users' email addresses are in LDAP and used as username, set
 #       LDAP_APPEND_DOMAIN = None
 #       AUTH_LDAP_USER_SEARCH to lookup users by email address
 #
 #   (B) If LDAP only has usernames but email addresses are of the form
 #       username@example.com, you should set:
 #       LDAP_APPEND_DOMAIN = example.com and
+#       AUTH_LDAP_USER_SEARCH to lookup users by username
+#
+#   (C) If LDAP username are completely unrelated to email addresses,
+#       you should set:
+#       LDAP_EMAIL_ATTR = "email"
+#       LDAP_APPEND_DOMAIN = None
 #       AUTH_LDAP_USER_SEARCH to lookup users by username
 #
 # You can quickly test whether your configuration works by running:
@@ -364,6 +369,10 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.
 LDAP_APPEND_DOMAIN = None  # type: Optional[str]
+
+# If username and email are two different LDAP attributes, specify the
+# attribute to get the user's email address from LDAP here.
+LDAP_EMAIL_ATTR = None  # type: Optional[str]
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {

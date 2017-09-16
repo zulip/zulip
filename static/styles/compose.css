@@ -364,8 +364,8 @@ input.recipient_box {
 
 #send_controls #compose-send-button {
     border-radius: 4px;
-    padding-top: 4px;
-    padding-bottom: 2px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     margin-right: 7px;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);

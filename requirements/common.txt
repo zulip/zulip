@@ -1,3 +1,7 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev_lock.txt
+# and requirements/prod_lock.txt.
+# See requirements/README.md for more detail.
 # Django itself; we use a slightly patched version
 Django==1.11.4
 
@@ -74,6 +78,9 @@ google-api-python-client==1.6.2
 html2text==2016.9.19
 httplib2==0.10.3
 -e git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
+
+# Needed for inlining the CSS in emails
+premailer==3.1.1
 
 # Needed for JWT-based auth
 PyJWT==1.5.2
@@ -172,8 +179,8 @@ beautifulsoup4==4.6.0
 # The Zulip API bindings, from its own repository.
 # We integrate with these tightly, so often it makes sense to pin a
 # version from Git rather than a release.
--e "git+https://github.com/zulip/python-zulip-api.git@6c47eda92bce0efe0297990965e90e79b54a1cd0#egg=zulip==0.3.2_git&subdirectory=zulip"
--e "git+https://github.com/zulip/python-zulip-api.git@6c47eda92bce0efe0297990965e90e79b54a1cd0#egg=zulip_bots==0.3.2+git&subdirectory=zulip_bots"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.4#egg=zulip==0.3.4_git&subdirectory=zulip"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.4#egg=zulip_bots==0.3.4+git&subdirectory=zulip_bots"
 
 # Used for Hesiod lookups, etc.
 py3dns==3.1.0

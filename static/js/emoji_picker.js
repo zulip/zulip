@@ -108,6 +108,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
         exports.emoji_collection[realm_emoji_name] = {
             name: realm_emoji_name,
+            aliases: [realm_emoji_name],
             is_realm_emoji: true,
             url: realm_emoji.emoji_url,
             has_reacted: false,
@@ -123,6 +124,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
                 if (!exports.emoji_collection.hasOwnProperty(emoji_name)) {
                     exports.emoji_collection[emoji_name] = {
                         name: emoji_name,
+                        aliases: emoji.default_emoji_aliases[codepoint],
                         is_realm_emoji: false,
                         css_class: codepoint,
                         has_reacted: false,
@@ -165,7 +167,9 @@ var generate_emoji_picker_content = function (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
     _.each(exports.emoji_collection, function (emoji_dict) {
-        emoji_dict.has_reacted = _.contains(emojis_used, emoji_dict.name);
+        emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
+            return _.contains(emojis_used, alias);
+        });
     });
 
     return templates.render('emoji_popover_content', {
@@ -200,9 +204,12 @@ exports.reactions_popped = function () {
 exports.hide_emoji_popover = function () {
     $('.has_popover').removeClass('has_popover has_emoji_popover');
     if (exports.reactions_popped()) {
+        var orig_title = current_message_emoji_popover_elem.data("original-title");
         $(".emoji-popover-emoji-map").perfectScrollbar("destroy");
         $(".emoji-search-results-container").perfectScrollbar("destroy");
         current_message_emoji_popover_elem.popover("destroy");
+        current_message_emoji_popover_elem.prop("title", orig_title);
+        current_message_emoji_popover_elem.removeClass("reaction_button_visible");
         current_message_emoji_popover_elem = undefined;
     }
 };
@@ -238,12 +245,15 @@ function filter_emojis() {
             }
             var emojis = category.emojis;
             _.each(emojis, function (emoji_dict) {
-                var match = _.every(search_terms, function (search_term) {
-                    return emoji_dict.name.indexOf(search_term) >= 0;
+                _.any(emoji_dict.aliases, function (alias) {
+                    var match = _.every(search_terms, function (search_term) {
+                        return alias.indexOf(search_term) >= 0;
+                    });
+                    if (match) {
+                        search_results.push(_.extend({}, emoji_dict, {name: alias}));
+                        return true;
+                    }
                 });
-                if (match) {
-                    search_results.push(emoji_dict);
-                }
             });
         });
         var search_results_rendered = templates.render('emoji_popover_search_results', {
@@ -260,6 +270,43 @@ function filter_emojis() {
     }
 }
 
+function get_alias_to_be_used(message_id, emoji_name) {
+    // If the user has reacted to this message, then this function
+    // returns the alias of this emoji he used, otherwise, returns
+    // the passed name as it is.
+    var message = message_store.get(message_id);
+    var aliases = [emoji_name];
+    if (!emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
+        if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+            var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+            aliases = emoji.default_emoji_aliases[codepoint];
+        } else {
+            blueslip.error("Invalid emoji name.");
+            return;
+        }
+    }
+    var user_id = page_params.user_id;
+    var reaction = _.find(message.reactions, function (reaction) {
+        return (reaction.user.id === user_id) && (_.contains(aliases, reaction.emoji_name));
+    });
+    if (reaction) {
+        return reaction.emoji_name;
+    }
+    return emoji_name;
+}
+
+function toggle_reaction(emoji_name) {
+    var message_id = current_msg_list.selected_id();
+    var message = message_store.get(message_id);
+    if (!message) {
+        blueslip.error('reactions: Bad message id: ' + message_id);
+        return;
+    }
+
+    var alias = get_alias_to_be_used(message_id, emoji_name);
+    reactions.toggle_emoji_reaction(message_id, alias);
+}
+
 function maybe_select_emoji(e) {
     if (e.keyCode === 13) { // enter key
         e.preventDefault();
@@ -268,10 +315,7 @@ function maybe_select_emoji(e) {
             if (emoji_picker.is_composition(first_emoji)) {
                 first_emoji.click();
             } else {
-                reactions.toggle_emoji_reaction(
-                    current_msg_list.selected_id(),
-                    first_emoji.data("emoji-name")
-                );
+                toggle_reaction(first_emoji.data("emoji-name"));
             }
         }
     }
@@ -279,15 +323,6 @@ function maybe_select_emoji(e) {
 
 exports.toggle_selected_emoji = function () {
     // Toggle the currently selected emoji.
-    var message_id = current_msg_list.selected_id();
-
-    var message = message_store.get(message_id);
-
-    if (!message) {
-        blueslip.error('reactions: Bad message id: ' + message_id);
-        return;
-    }
-
     var selected_emoji = get_selected_emoji();
 
     if (selected_emoji === undefined) {
@@ -296,7 +331,7 @@ exports.toggle_selected_emoji = function () {
 
     var emoji_name = $(selected_emoji).data("emoji-name");
 
-    reactions.toggle_emoji_reaction(message_id, emoji_name);
+    toggle_reaction(emoji_name);
 };
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
@@ -451,6 +486,34 @@ exports.navigate = function (event_name) {
     return false;
 };
 
+function process_keypress(e) {
+    var is_filter_focused = $('.emoji-popover-filter').is(':focus');
+    if (!is_filter_focused) {
+        var pressed_key = e.which;
+
+        if (pressed_key >= 32 && pressed_key <= 126 || pressed_key === 8) {
+            // Handle only printable characters or backspace.
+            e.preventDefault();
+            e.stopPropagation();
+
+            var emoji_filter = $('.emoji-popover-filter');
+            var old_query = emoji_filter.val();
+            var new_query = "";
+
+            if (pressed_key === 8) {    // Handles backspace.
+                new_query = old_query.slice(0, -1);
+            } else {    // Handles any printable character.
+                var key_str = String.fromCharCode(e.which);
+                new_query = old_query + key_str;
+            }
+
+            emoji_filter.val(new_query);
+            change_focus_to_filter();
+            filter_emojis();
+        }
+    }
+}
+
 exports.emoji_select_tab = function (elt) {
     var scrolltop = elt.scrollTop();
     var scrollheight = elt.prop('scrollHeight');
@@ -485,6 +548,16 @@ function register_popover_events(popover) {
 
     $('.emoji-popover-filter').on('input', filter_emojis);
     $('.emoji-popover-filter').keydown(maybe_select_emoji);
+    $('.emoji-popover').keypress(process_keypress);
+    $('.emoji-popover').keydown(function (e) {
+        // Because of cross-browser issues we need to handle backspace
+        // key separately. Firefox fires `keypress` event for backspace
+        // key but chrome doesn't so we need to trigger the logic for
+        // handling backspace in `keydown` event which is fired by both.
+        if (e.which === 8) {
+            process_keypress(e);
+        }
+    });
 }
 
 exports.render_emoji_popover = function (elt, id) {
@@ -502,7 +575,7 @@ exports.render_emoji_popover = function (elt, id) {
         trigger:   "manual",
     });
     elt.popover("show");
-    elt.prop('title', 'Add reaction (:)');
+    elt.prop("title", i18n.t("Add emoji reaction (:)"));
     $('.emoji-popover-filter').focus();
     add_scrollbar($(".emoji-popover-emoji-map"));
     add_scrollbar($(".emoji-search-results-container"));
@@ -536,6 +609,8 @@ exports.toggle_emoji_popover = function (element, id) {
     }
 
     if (elt.data('popover') === undefined) {
+        // Keep the element over which the popover is based off visible.
+        elt.addClass("reaction_button_visible");
         emoji_picker.render_emoji_popover(elt, id);
     }
 };
@@ -548,18 +623,7 @@ exports.register_click_handlers = function () {
         // the reaction is removed
         // otherwise, the reaction is added
         var emoji_name = $(this).data("emoji-name");
-        var message_id = $(this).parent().parent().attr('data-message-id');
-
-        var message = message_store.get(message_id);
-        if (!message) {
-            blueslip.error('reactions: Bad message id: ' + message_id);
-            return;
-        }
-
-        if (reactions.current_user_has_reacted_to_emoji(message, emoji_name)) {
-            $(this).removeClass('reacted');
-        }
-        reactions.toggle_emoji_reaction(message_id, emoji_name);
+        toggle_reaction(emoji_name);
     });
 
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
@@ -578,7 +642,7 @@ exports.register_click_handlers = function () {
         emoji_picker.toggle_emoji_popover(this);
     });
 
-    $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
+    $("#main_div").on("click", ".reaction_button", function (e) {
         e.stopPropagation();
 
         var message_id = rows.get_message_id(this);
@@ -594,7 +658,8 @@ exports.register_click_handlers = function () {
         // message wasn't sent by us and thus the .reaction_hover
         // element is not present, we use the message's
         // .icon-vector-chevron-down element as the base for the popover.
-        emoji_picker.toggle_emoji_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
+        var elem = $(".selected_message .actions_hover")[0];
+        emoji_picker.toggle_emoji_popover(elem, msgid);
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {

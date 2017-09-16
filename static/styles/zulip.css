@@ -488,6 +488,23 @@ a:hover code {
     display: inline;
 }
 
+.tooltip.in {
+    font-size: 12px;
+    line-height: 1.3;
+
+    opacity: 1;
+}
+
+.tooltip.in.left {
+    margin-left: -12px;
+    margin-top: 3px;
+}
+
+.tooltip .tooltip-inner {
+    background-color: rgba(20, 20, 20, 0.8);
+    padding: 3px 5px;
+}
+
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
@@ -702,15 +719,11 @@ td.pointer {
 
 .stream_label {
     display: inline-block;
-    padding: 3px 4px 2px 4px;
+    padding: 3px 7px 2px 6px;
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    border-top-color: hsla(0, 0%, 0%, 0.0);
-    border-right-color: hsla(0, 0%, 0%, 0.0);
-    border-bottom-color: hsla(0, 0%, 0%, 0.0);
     background-color: hsl(0, 0%, 88%);
-    border-left-color: hsl(0, 0%, 88%);
     border-width: 0px;
     position: relative;
     text-decoration: none;
@@ -730,41 +743,9 @@ td.pointer {
     text-decoration: none;
 }
 
-.stream_label:after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -11px;
-    border-style: solid;
-    border-width: 11px 0 11px 5px;
-    border-color: inherit;
-    z-index: 2;
-    -moz-transform: scale(.9999);
-}
-
-.stream_label:before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -14px;
-    border-style: solid;
-    border-width: 14px 0 14px 6px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
-    z-index: 1;
-    -moz-transform: scale(.9999);
-}
-
 .stream_topic {
     display: inline-block;
-    padding: 3px 3px 2px 12px;
+    padding: 3px 4px 2px 7px;
     margin-left: -5px;
     height: 17px;
     line-height: 17px;
@@ -1003,7 +984,6 @@ td.pointer {
     font-size: 14px;
     height: 17px;
     line-height: 17px;
-    border-left-color: hsl(0, 0%, 27%);
 }
 
 /* Base color backgrounds for messageboxes,
@@ -1209,19 +1189,14 @@ a.message_label_clickable:hover {
     color: hsl(200, 100%, 40%);
 }
 
-.reactions_hover {
+.message_controls > .reaction_button {
     display: inline-block;
     position: relative;
     color: hsl(0, 0%, 73%);
 }
 
-.reactions_hover:hover {
+.message_controls > .reaction_button:hover {
     color: hsl(200, 100%, 40%);
-}
-
-.message_hovered .reactions_hover,
-.has_emoji_popover .reactions_hover {
-    opacity: 1;
 }
 
 .message_hovered .info,
@@ -1569,35 +1544,18 @@ blockquote p {
     padding: 0px;
     text-overflow: ellipsis;
     height: 40px;
+    padding: 0 5px;
 }
 
 #tab_list li.inactive {
-    border-top-color: hsla(0, 0%, 0%, 0.0);
-    border-right-color: hsla(0, 0%, 0%, 0.0);
-    border-bottom-color: hsla(0, 0%, 0%, 0.0);
     background-color: hsl(0, 0%, 88%);
-    border-left-color: hsl(0, 0%, 88%);
     border-width: 0px;
+    margin-right: -4px;
+    font-size: 14px;
 }
 
 #tab_list li.private_message a {
     color: #ffffff;
-}
-
-#tab_list li.inactive:after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -25px;
-    border-style: solid;
-    border-width: 25px 0 25px 12px;
-    border-color: inherit;
-    z-index: 2;
-    -moz-transform: scale(.9999);
 }
 
 #tab_list li.inactive:before {
@@ -1608,10 +1566,6 @@ blockquote p {
     width: 0px;
     position: absolute;
     pointer-events: none;
-    margin-top: -28px;
-    border-style: solid;
-    border-width: 28px 0 28px 14px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
     z-index: 1;
     -moz-transform: scale(.9999);
 }
@@ -1622,18 +1576,16 @@ blockquote p {
     border-color: inherit;
     width: 100%;
     display: inline-block;
-    padding: 0px 8px;
-    max-width: 120px;
+    padding: 0px 5px;
+    max-width: 150px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 #tab_list li.active {
-    padding-left: 17px;
-    padding-right: 10px;
     background-color: hsl(0, 0%, 88%);
-    max-width: 120px;
+    max-width: 150px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1647,8 +1599,8 @@ blockquote p {
     border-top-color: hsla(0, 0%, 0%, 0.0);
     border-right-color: hsla(0, 0%, 0%, 0.0);
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
-    background-color: hsl(0, 0%, 7%);
-    border-left-color: hsl(0, 0%, 7%);
+    background-color: hsl(0, 0%, 27%);
+    border-left-color: hsl(0, 0%, 27%);
     color: #ffffff;
     border-width: 0px;
 }
@@ -1657,12 +1609,6 @@ blockquote p {
     border-color: hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
     margin: 0px;
-}
-
-#tab_list li.stream a,
-#tab_list li.private_message a {
-    padding-left: 17px;
-    padding-right: 4px;
 }
 
 #tab_list li.root a {
@@ -1849,11 +1795,10 @@ nav a .no-style {
 
 #search_query {
     width: 100%;
-    font-size: 18px;
+    font-size: 16px;
     height: 40px;
     padding: 0px;
     color: hsl(0, 0%, 13%);
-    box-shadow: inset 2px 0px 0px 0px hsl(204, 20%, 74%);
     padding-left: 35px;
     padding-right: 20px;
     background: hsl(0, 0%, 100%); /* Old browsers */
@@ -1926,8 +1871,6 @@ nav a .no-style {
 }
 
 #search_arrows {
-    margin-bottom: 5px;
-
     /* Bootstrap wants font-size: 0 to eliminate space between
        the buttons.  We need to inherit the font size, so we
        remove the button gap by adjusting "letter" spacing. */
@@ -2330,21 +2273,13 @@ button.topic_edit_cancel {
 }
 
 .empty_feed_notice {
-    padding: 3em 4em;
+    padding: 3em 1em;
     display: none;
-}
-
-.empty_feed_notice h4 {
     text-align: center;
 }
 
 .notification {
     cursor: pointer;
-}
-
-#empty_narrow_private_message p,
-#empty_narrow_message p {
-    text-align: center;
 }
 
 .message-fade,

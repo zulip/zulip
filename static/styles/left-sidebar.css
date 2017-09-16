@@ -5,10 +5,6 @@
     font-size: 0.89rem;
 }
 
-#left-sidebar .brand {
-    display: table-row;
-}
-
 #left-sidebar #user-list,
 #left-sidebar #group-pm-list {
     padding-left: 10px;
@@ -28,10 +24,11 @@
 #streams_filter_icon:hover,
 #join_unsub_stream:hover {
     color: hsl(0, 0%, 33%);
+    cursor: pointer;
 }
 
 #streams_header #join_unsub_stream {
-    margin-top: 1px;
+    margin-top: 3px;
 }
 
 #streams_inline_cog {
@@ -182,7 +179,7 @@ li.hidden-filter {
     margin-top: 3px;
     line-height: 12px;
     background: hsl(105, 2%, 50%);
-    padding: 2px 4px 1px 4px;
+    padding: 1px 4px 2px 4px;
     border-radius: 0px;
     color: #ffffff;
     font-size: 12px;
@@ -223,7 +220,7 @@ li.hidden-filter {
     position: absolute;
     line-height: 1em;
     top: 4px;
-    padding: 2px 4px 1px 4px;
+    padding: 1px 4px 2px 4px;
     background: hsl(107, 5%, 66%);
     color: #ffffff;
     border-radius: 1px;

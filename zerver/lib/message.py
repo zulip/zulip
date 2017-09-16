@@ -14,6 +14,7 @@ from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic_mutes import build_topic_mute_checker
 
 from zerver.models import (
     get_display_recipient_by_id,
@@ -309,18 +310,18 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, realm=None, realm_alert_words=None, message_users=None):
-    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Set[UserProfile]) -> Text
+def render_markdown(message, content, realm=None, realm_alert_words=None, user_ids=None):
+    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[int]]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
     database.
     """
 
-    if message_users is None:
+    if user_ids is None:
         message_user_ids = set()  # type: Set[int]
     else:
-        message_user_ids = {u.id for u in message_users}
+        message_user_ids = user_ids
 
     if message is not None:
         message.mentions_wildcard = False
@@ -448,10 +449,23 @@ def get_unread_message_ids_per_recipient(user_profile):
     rows = list(reversed(user_msgs))
 
     muted_recipient_ids = get_muted_recipient_ids(user_profile)
-    active_stream_rows = [
-        row for row in rows
-        if row['message__recipient_id'] not in muted_recipient_ids
-    ]
+
+    topic_mute_checker = build_topic_mute_checker(user_profile)
+
+    def is_row_muted(row):
+        # type: (Dict[str, Any]) -> bool
+        recipient_id = row['message__recipient_id']
+
+        if recipient_id in muted_recipient_ids:
+            return True
+
+        topic_name = row['message__subject']
+        if topic_mute_checker(recipient_id, topic_name):
+            return True
+
+        return False
+
+    active_stream_rows = [row for row in rows if not is_row_muted(row)]
 
     count = len(active_stream_rows)
 

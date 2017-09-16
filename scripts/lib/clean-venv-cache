@@ -50,7 +50,8 @@ def main():
     # type: () -> None
     args = parse_args()
     caches_in_use = get_caches_in_use(args.threshold_days)
-    purge_unused_caches(VENV_CACHE_DIR, caches_in_use, args.threshold_days, args.dry_run, "venv")
+    purge_unused_caches(
+        VENV_CACHE_DIR, caches_in_use, args.threshold_days, args.dry_run, "venv cache")
 
 if __name__ == "__main__":
     main()

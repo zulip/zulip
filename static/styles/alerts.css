@@ -98,6 +98,11 @@
     content: "\d7";
 }
 
+.alert-box .browser-alert .error::before {
+    content: "Browser Error: ";
+    font-weight: 600;
+}
+
 /* animation section */
 @keyframes fadeIn {
     0% {

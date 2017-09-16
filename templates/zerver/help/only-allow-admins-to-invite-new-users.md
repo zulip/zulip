@@ -10,7 +10,7 @@ invite new users.
 {!admin.md!}
 
 2. Select the **Users cannot join without an invitation** and **Only admins can invite new users**
-checkboxes.
+checkboxes under the **Joining the organization** section.
 
     If this option is enabled, only administrators in your organization can send
     email invitations to new users.

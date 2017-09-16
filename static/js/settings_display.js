@@ -9,15 +9,13 @@ exports.set_up = function () {
     $("#emojiset_select").val(page_params.emojiset);
 
     $("#default_language_modal [data-dismiss]").click(function () {
-      $('#default_language_modal').attr('aria-hidden', true);
-      $("#default_language_modal").fadeOut(300);
+        overlays.close_modal('default_language_modal');
     });
 
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').show().attr('aria-hidden', true);
-        $('#default_language_modal').fadeOut(300);
+        overlays.close_modal('default_language_modal');
 
         var data = {};
         var $link = $(e.target).closest("a[data-code]");
@@ -46,7 +44,7 @@ exports.set_up = function () {
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').show().attr('aria-hidden', false);
+        overlays.open_modal('default_language_modal');
     });
 
     $("#high_contrast_mode").change(function () {
@@ -154,7 +152,7 @@ exports.set_up = function () {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("Your time zone have been set to " + timezone), $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Your time zone have been set to __timezone__", {timezone: timezone}), $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error updating time zone"), xhr, $('#display-settings-status').expectOne());

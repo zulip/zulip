@@ -1,16 +1,36 @@
 # -*- coding: utf-8 -*-AA
 from __future__ import absolute_import
 
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Text
+
+from django.db import connection
 
 from zerver.models import (
-    get_user, Recipient, UserMessage, get_stream, get_realm
+    get_realm,
+    get_recipient,
+    get_stream,
+    get_user,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
 )
 
-from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.lib.fix_unreads import (
+    fix,
+    fix_pre_pointer,
+    fix_unsubscribed,
+)
+from zerver.lib.test_helpers import (
+    get_subscription,
+    tornado_redirected_to_list,
+)
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.topic_mutes import add_topic_mute
+
+import mock
 import ujson
 
 class PointerTest(ZulipTestCase):
@@ -316,3 +336,127 @@ class UnreadCountTests(ZulipTestCase):
             "topic_name": invalid_topic_name,
         })
         self.assert_json_error(result, 'No such topic \'abc\'')
+
+class FixUnreadTests(ZulipTestCase):
+    def test_fix_unreads(self):
+        # type: () -> None
+        user = self.example_user('hamlet')
+        realm = get_realm('zulip')
+
+        def send_message(stream_name, topic_name):
+            # type: (Text, Text) -> int
+            msg_id = self.send_message(
+                self.example_email("othello"),
+                stream_name,
+                Recipient.STREAM,
+                subject=topic_name)
+            um = UserMessage.objects.get(
+                user_profile=user,
+                message_id=msg_id)
+            return um.id
+
+        def assert_read(user_message_id):
+            # type: (int) -> None
+            um = UserMessage.objects.get(id=user_message_id)
+            self.assertTrue(um.flags.read)
+
+        def assert_unread(user_message_id):
+            # type: (int) -> None
+            um = UserMessage.objects.get(id=user_message_id)
+            self.assertFalse(um.flags.read)
+
+        def mute_stream(stream_name):
+            # type: (Text) -> None
+            stream = get_stream(stream_name, realm)
+            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+            subscription = Subscription.objects.get(
+                user_profile=user,
+                recipient=recipient
+            )
+            subscription.in_home_view = False
+            subscription.save()
+
+        def mute_topic(stream_name, topic_name):
+            # type: (Text, Text) -> None
+            stream = get_stream(stream_name, realm)
+            recipient = get_recipient(Recipient.STREAM, stream.id)
+
+            add_topic_mute(
+                user_profile=user,
+                stream_id=stream.id,
+                recipient_id=recipient.id,
+                topic_name=topic_name,
+            )
+
+        def force_unsubscribe(stream_name):
+            # type: (Text) -> None
+            '''
+            We don't want side effects here, since the eventual
+            unsubscribe path may mark messages as read, defeating
+            the test setup here.
+            '''
+            sub = get_subscription(stream_name, user)
+            sub.active = False
+            sub.save()
+
+        # The data setup here is kind of funny, because some of these
+        # conditions should not actually happen in practice going forward,
+        # but we may have had bad data from the past.
+
+        mute_stream('Denmark')
+        mute_topic('Verona', 'muted_topic')
+
+        um_normal_id = send_message('Verona', 'normal')
+        um_muted_topic_id = send_message('Verona', 'muted_topic')
+        um_muted_stream_id = send_message('Denmark', 'whatever')
+
+        user.pointer = self.get_last_message().id
+        user.save()
+
+        um_post_pointer_id = send_message('Verona', 'muted_topic')
+
+        self.subscribe(user, 'temporary')
+        um_unsubscribed_id = send_message('temporary', 'whatever')
+        force_unsubscribe('temporary')
+
+        # verify data setup
+        assert_unread(um_normal_id)
+        assert_unread(um_muted_topic_id)
+        assert_unread(um_muted_stream_id)
+        assert_unread(um_post_pointer_id)
+        assert_unread(um_unsubscribed_id)
+
+        with connection.cursor() as cursor:
+            fix_pre_pointer(cursor, user)
+
+        # The only message that should have been fixed is the "normal"
+        # unumuted message before the pointer.
+        assert_read(um_normal_id)
+
+        # We don't "fix" any messages that are either muted or after the
+        # pointer, because they can be legitimately unread.
+        assert_unread(um_muted_topic_id)
+        assert_unread(um_muted_stream_id)
+        assert_unread(um_post_pointer_id)
+        assert_unread(um_unsubscribed_id)
+
+        # fix unsubscribed
+        with connection.cursor() as cursor:
+            fix_unsubscribed(cursor, user)
+
+        # Most messages don't change.
+        assert_unread(um_muted_topic_id)
+        assert_unread(um_muted_stream_id)
+        assert_unread(um_post_pointer_id)
+
+        # The unsubscribed entry should change.
+        assert_read(um_unsubscribed_id)
+
+        # test idempotency
+        fix(user)
+
+        assert_read(um_normal_id)
+        assert_unread(um_muted_topic_id)
+        assert_unread(um_muted_stream_id)
+        assert_unread(um_post_pointer_id)
+        assert_read(um_unsubscribed_id)

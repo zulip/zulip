@@ -51,7 +51,7 @@ iterative development, but you can override this behavior with the
 the `--rerun` option, which will rerun just the tests that failed in
 the last test run.
 
-## How to write tests.
+## Writing tests
 
 Before you write your first tests of Zulip, it is worthwhile to read
 the rest of this document, and you can also read some of the existing tests
@@ -101,6 +101,164 @@ Here are some example action methods that tests may use for data setup:
 - do_change_is_admin
 - do_create_user
 - do_make_stream_private
+
+### Testing with mocks
+
+This section is a beginner's guide to mocking with Python's `unittest.mock` library. It will give you answers
+to the most common questions around mocking, and a selection of commonly used mocking techniques.
+
+#### What is mocking?
+
+When writing tests, *mocks allow you to replace methods or objects with fake entities
+suiting your testing requirements*. Once an object is mocked, **its original code does not
+get executed anymore**.
+
+Rather, you can think of a mocked object as an initially empty shell:
+Calling it won't do anything, but you can fill your shell with custom code, return values, etc.
+Additionally, you can observe any calls made to your mocked object.
+
+#### Why is mocking useful?
+
+When writing tests, it often occurs that you make calls to functions
+taking complex arguments. Creating a real instance of such an argument
+would require the use of various different libraries, a lot of
+boilerplate code, etc.  Another scenario is that the tested code
+accesses files or objects that don't exist at testing time. Finally,
+it is good practice to keep tests independent from others. Mocks help
+you to isolate test cases by simulating objects and methods irrelevant
+to a test's goal.
+
+In all of these cases, you can "mock out" the function calls / objects
+and replace them with fake instances that only implement a limited
+interface. On top of that, these fake instances can be easily
+analyzed.
+
+Say you have a method `foo(input_str)`:
+
+    def greet(name_key):
+        name = fetch_database(name_key)
+        return "Hello " + name
+
+* You want to test `greet()`.
+
+* In your test, you want to call `greet("Mario")` and verify that it returns the correct greeting:
+
+        def test_greet():
+            greeting = greet("Mario")
+            assert greeting == "Hello Mr. Mario Mario"
+
+-> **You have a problem**: `greet()` calls `fetch_database()`. `fetch_database()` does some look-ups in
+   a database. *You haven't created that database for your tests, so your test would fail, even though
+   the code is correct.*
+
+* Luckily, you know that `fetch_database("Mario")` should return "Mr. Mario Mario".
+
+  * *Hint*: Sometimes, you might not know the exact return value, but one that is equally valid and works
+    with the rest of the code. In that case, just use this one.
+
+-> **Solution**: You mock `fetch_database()`. This is also referred to as "mocking out" `fetch_database()`.
+
+    from unittest.mock import MagickMock # Our mocking class that will replace `fetch_database()`
+
+    def test_greet():
+        # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
+        # but doesn't do any database lookup. We "fill" the shell with a return value; This value will be returned on every
+        # call to `fetch_database()`.
+        fetch_database = MagicMock(return_value="Mr. Mario Mario")
+        greet("Mario")
+        assert greeting == "Hello Mr. Mario Mario"
+
+That's all. Note that **this mock is suitable for testing `greet()`, but not for testing `fetch_database()`**.
+More generally, you should only mock those functions you explicitly don't want to test.
+
+#### How does mocking work under the hood?
+
+Since Python 3.3, the standard mocking library is `unittest.mock`. `unittest.mock` implements the basic mocking class `Mock`.
+It also implements `MagickMock`, which is the same as `Mock`, but contains many default magic methods (in Python,
+those are the ones starting with with a dunder `__`). From the docs:
+
+> In most of these examples the Mock and MagicMock classes are interchangeable. As the MagicMock is the more capable class
+  it makes a sensible one to use by default.
+
+`Mock` itself is a class that principally accepts and records any and all calls. A piece of code like
+
+    from unittest import mock
+
+    foo = mock.Mock()
+    foo.bar('quux')
+    foo.baz
+    foo.qux = 42
+
+is *not* going to throw any errors. Our mock silently accepts all these calls and records them.
+`Mock` also implements methods for us to access and assert its records, e.g.
+
+    foo.bar.assert_called_with('quux')
+
+Finally, `unittest.mock` also provides a method to mock objects only within a scope: `patch()`. We can use `patch()` either
+as a decorator or as a context manager. In both cases, the mock created by `patch()` will apply for the scope of the decorator /
+context manager. `patch()` takes only one required argument `target`. `target` is a string in dot notation that *refers to
+the name of the object you want to mock*. It will then assign a `MagickMock()` to that object.
+As an example, look at the following code:
+
+    from unittest import mock
+    from os import urandom
+
+    with mock.patch('__main__.urandom', return_value=42):
+        print(urandom(1))
+        print(urandom(1)) # No matter what value we plug in for urandom, it will always return 42.
+    print(urandom(1)) # We exited the context manager, so the mock doesn't apply anymore. Will return a random byte.
+
+*Note that calling `mock.patch('os.urandom', return_value=42)` wouldn't work here*: `os.urandom` would be the name of our patched
+object. However, we imported `urandom` with `from os import urandom`; hence, we bound the `urandom` name to our current module
+`__main__`.
+
+On the other hand, if we had used `import os.urandom`, we would need to call `mock.patch('os.urandom', return_value=42)` instead.
+
+#### Boilerplate code
+
+* Including the Python mocking library:
+
+      from unittest import mock
+
+* Mocking a class with a context manager:
+
+      with mock.patch('module.ClassName', foo=42, return_value='I am a mock') as my_mock:
+        # In here, 'module.ClassName' is mocked with a MagicMock() object my_mock.
+        # my_mock has an attribute named foo with the value 42.
+        # var = module.ClassName() will assign 'I am a mock' to var.
+
+* Mocking a class with a decorator:
+
+      @mock.patch('module.ClassName', foo=42, return_value='I am a mock')
+      def my_function(my_mock):
+        # In here, 'module.ClassName' will behave as in the previous example.
+
+* Mocking a class attribute:
+
+      with mock.patch.object(module.ClassName, 'class_method', return_value=42)
+        # In here, 'module.ClassName' has the same properties as before, except for 'class_method'
+        # Calling module.ClassName.class_method() will now return 42.
+
+  Note the missing quotes around module.ClassName in the patch.object() call.
+
+#### Zulip mocking practices
+
+For mocking we generally use the "mock" library and use `mock.patch` as
+a context manager or decorator.  We also take advantage of some context managers
+from Django as well as our own custom helpers.  Here is an example:
+
+    with self.settings(RATE_LIMITING=True):
+        with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+            api_result = my_webhook(request)
+
+    self.assertTrue(rate_limit_mock.called)
+
+Follow [this link](settings.html#testing-non-default-settings) for more
+information on the "settings" context manager.
+
+A common use is to prevent a call to a third-party service from using
+the Internet; `git grep mock.patch | grep requests` is a good way to
+find several examples of doing this.
 
 ## Zulip Testing Philosophy
 
@@ -172,23 +330,8 @@ We use mocks and stubs for all the typical reasons:
 
 [no-internet]: testing.html#internet-access-inside-test-suites
 
-For mocking we generally use the "mock" library and use `mock.patch` as
-a context manager or decorator.  We also take advantage of some context managers
-from Django as well as our own custom helpers.  Here is an example:
-
-
-        with self.settings(RATE_LIMITING=True):
-            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
-                api_result = my_webhook(request)
-
-        self.assertTrue(rate_limit_mock.called)
-
-Follow [this link](settings.html#testing-non-default-settings) for more
-information on the "settings" context manager.
-
-A common use is to prevent a call to a third-party service from using
-the Internet; `git grep mock.patch | grep requests` is a good way to
-find several examples of doing this.
+A detailed description of mocks, along with useful coded snippets, can be found in the section
+[Testing with mocks](#testing-with-mocks).
 
 ### Template tests
 

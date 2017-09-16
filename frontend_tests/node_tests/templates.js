@@ -662,14 +662,14 @@ function render(template_name, args) {
 (function hotspot_overlay() {
     var args = {
         title: 'Start a new conversation',
-        name: 'new_topic_button',
+        name: 'intro_compose',
         description: 'Click the "New topic" button to start a new conversation.',
     };
 
     var html = render('hotspot_overlay', args);
     global.write_handlebars_output("hotspot_overlay", html);
 
-    assert.equal($(html).attr('id'), 'hotspot_new_topic_button_overlay');
+    assert.equal($(html).attr('id'), 'hotspot_intro_compose_overlay');
     assert.equal($(html).find('.hotspot-title').text(), 'Start a new conversation');
     assert.equal(
         $(html).find('.hotspot-description').text(),
@@ -875,6 +875,7 @@ function render(template_name, args) {
 (function settings_tab() {
     var page_param_checkbox_options = {
         enable_stream_desktop_notifications: true,
+        enable_stream_push_notifications: true,
         enable_stream_sounds: true, enable_desktop_notifications: true,
         enable_sounds: true, enable_offline_email_notifications: true,
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
@@ -887,6 +888,7 @@ function render(template_name, args) {
     });
 
     var checkbox_ids = ["enable_stream_desktop_notifications",
+                        "enable_stream_push_notifications",
                         "enable_stream_sounds", "enable_desktop_notifications",
                         "enable_sounds", "enable_offline_push_notifications",
                         "enable_online_push_notifications",

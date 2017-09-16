@@ -26,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
-  http_proxy = https_proxy = no_proxy = ""
+  http_proxy = https_proxy = no_proxy = nil
   host_ip_addr = "127.0.0.1"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
@@ -48,20 +48,26 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
-
   if Vagrant.has_plugin?("vagrant-proxyconf")
-    if http_proxy != ""
+    if !http_proxy.nil?
       config.proxy.http = http_proxy
     end
-    if https_proxy != ""
+    if !https_proxy.nil?
       config.proxy.https = https_proxy
     end
-    if https_proxy != ""
+    if !no_proxy.nil?
       config.proxy.no_proxy = no_proxy
     end
+  elsif !http_proxy.nil? or !https_proxy.nil?
+    # This prints twice due to https://github.com/hashicorp/vagrant/issues/7504
+    # We haven't figured out a workaround.
+    puts 'You have specified value for proxy in ~/.zulip-vagrant-config file but did not ' \
+         'install the vagrant-proxyconf plugin. To install it, run `vagrant plugin install ' \
+         'vagrant-proxyconf` in a terminal.  This error will appear twice.'
+    exit
   end
 
+  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
   # Specify LXC provider before VirtualBox provider so it's preferred.
   config.vm.provider "lxc" do |lxc|
     if command? "lxc-ls"

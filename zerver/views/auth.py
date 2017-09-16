@@ -669,7 +669,13 @@ def api_get_server_settings(request):
     # * If they do, that means the server URL has only one realm on it
     # * If they don't, the server has multiple realms, and it's not clear which is
     #   the requested realm, so we can't send back these data.
-    for settings_item in ["realm_uri", "realm_name", "realm_icon", "realm_description"]:
+    for settings_item in [
+            "email_auth_enabled",
+            "require_email_format_usernames",
+            "realm_uri",
+            "realm_name",
+            "realm_icon",
+            "realm_description"]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
     return json_success(result)

@@ -14,9 +14,8 @@ for discussion.
 ### Step 1: Create hotspot content
 
 In `zerver/lib/hotspots.py`, add your content to the `ALL_HOTSPOTS` dictionary.
-Each key-value pair in `ALL_HOTSPOTS` associates the name of the hotspot - e.g.
-`click_to_reply`, `new_topic_button`, `stream_settings` - with content
-displayed to the user.
+Each key-value pair in `ALL_HOTSPOTS` associates the name of the hotspot with the
+content displayed to the user.
 
 ```
 ALL_HOTSPOTS = {
@@ -31,19 +30,9 @@ ALL_HOTSPOTS = {
 ### Step 2: Configure hotspot placement
 
 The target element and visual orientation of each hotspot is specified in
-`HOTSPOT_LOCATIONS` of `static/js/hotspots.js`:
+`HOTSPOT_LOCATIONS` of `static/js/hotspots.js`.
 
-```
-HOTSPOT_LOCATIONS = {
-    ...
-    new_hotspot_name: {
-        element: 'css selector string',
-        icon: TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, or CENTER
-    }
-}
-```
-
-The `icon` property specifies where the pulsing icon is placed *relative to
+The `icon_offset` property specifies where the pulsing icon is placed *relative to
 the width and height of the target element*.
 
 By default, `popovers.compute_placement` is used to responsively

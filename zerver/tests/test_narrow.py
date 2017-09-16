@@ -1272,6 +1272,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         realm = get_realm('zulip')
         self.make_stream('web stuff')
+        self.make_stream('bogus')
         user_profile = self.example_user('hamlet')
         muted_topics = [
             ['Scotland', 'golf'],
@@ -1315,6 +1316,8 @@ class GetOldMessagesTest(ZulipTestCase):
         self.make_stream('web stuff')
         user_profile = self.example_user('hamlet')
 
+        self.make_stream('irrelevant_stream')
+
         # Test the do-nothing case first.
         muted_topics = [
             ['irrelevant_stream', 'irrelevant_topic']
@@ -1333,7 +1336,6 @@ class GetOldMessagesTest(ZulipTestCase):
         muted_topics = [
             ['Scotland', 'golf'],
             ['web stuff', 'css'],
-            ['bogus', 'bogus']
         ]
         set_topic_mutes(user_profile, muted_topics)
 

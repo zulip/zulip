@@ -29,6 +29,7 @@ def get_unread_messages(user_profile):
     ).values(
         'message_id',
         'message__subject',
+        'message__recipient_id',
         'message__recipient__type_id',
     ).order_by("message_id")
 
@@ -37,6 +38,7 @@ def get_unread_messages(user_profile):
             message_id=row['message_id'],
             topic=row['message__subject'],
             stream_id=row['message__recipient__type_id'],
+            recipient_id=row['message__recipient_id'],
         )
         for row in list(user_msgs)]
 
@@ -69,7 +71,7 @@ def show_all_unread(user_profile):
 
     for row in unreads:
         row['stream_muted'] = row['stream_id'] in muted_stream_ids
-        row['topic_muted'] = is_topic_muted(row['stream_id'], row['topic'])
+        row['topic_muted'] = is_topic_muted(row['recipient_id'], row['topic'])
         row['before'] = row['message_id'] < user_profile.pointer
 
     for row in unreads:
