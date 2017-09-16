@@ -796,7 +796,6 @@ def get_recipient_info(recipient, sender_id):
         ).values(
             'id',
             'enable_online_push_notifications',
-            'is_active',
             'is_bot',
             'bot_type',
             'long_term_idle',
