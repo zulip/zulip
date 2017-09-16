@@ -36,7 +36,7 @@ from zerver.lib.test_runner import (
 
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
-    DefaultStream, UserProfile, get_user_profile_by_id
+    DefaultStream, UserProfile, get_user_profile_by_id, active_user_ids,
 )
 
 from zerver.lib.actions import (
@@ -45,7 +45,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user, set_default_streams, check_stream_name,
-    create_stream_if_needed, create_streams_if_needed, active_user_ids,
+    create_stream_if_needed, create_streams_if_needed,
     do_deactivate_stream,
     stream_welcome_message,
 )

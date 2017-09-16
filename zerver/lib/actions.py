@@ -53,7 +53,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_user, get_stream_cache_key, \
-    UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
+    UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
     get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
@@ -146,10 +146,6 @@ def log_event(event):
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
             log.write(force_str(ujson.dumps(event) + u'\n'))
-
-def active_user_ids(realm_id):
-    # type: (int) -> List[int]
-    return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm_id)]
 
 def can_access_stream_user_ids(stream):
     # type: (Stream) -> Set[int]
