@@ -1317,8 +1317,6 @@ class UserSignUpTest(ZulipTestCase):
             result = self.client_post(
                 '/accounts/register/',
                 {'full_name': 'New User',
-                 'realm_name': 'Zulip Test',
-                 'realm_subdomain': 'zuliptest',
                  'key': find_key_by_email(email),
                  'terms': True})
 
@@ -1351,8 +1349,6 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post(
             '/accounts/register/',
             {'password': password,
-             'realm_name': 'Zulip Test',
-             'realm_subdomain': 'zuliptest',
              'key': find_key_by_email(email),
              'terms': True,
              'from_confirmation': '1'})
@@ -1385,8 +1381,6 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post(
             '/accounts/register/',
             {'password': password,
-             'realm_name': 'Zulip Test',
-             'realm_subdomain': 'zuliptest',
              'key': find_key_by_email(email),
              'terms': True,
              'full_name': "New Guy",
@@ -1425,8 +1419,6 @@ class UserSignUpTest(ZulipTestCase):
                     '/accounts/register/',
                     {'password': password,
                      'full_name': 'New User',
-                     'realm_name': 'Zulip Test',
-                     'realm_subdomain': 'zuliptest',
                      'key': find_key_by_email(email),
                      'terms': True})
         mock_error.assert_called_once()
@@ -1437,7 +1429,6 @@ class UserSignUpTest(ZulipTestCase):
         password = "test"
         email = "user1@acme.com"
         subdomain = "zulip"
-        realm_name = "Zulip"
 
         realm = get_realm('zulip')
         realm.restricted_to_domain = False
@@ -1472,8 +1463,7 @@ class UserSignUpTest(ZulipTestCase):
 
         result = self.submit_reg_form_for_user(email,
                                                password,
-                                               realm_name=realm_name,
-                                               realm_subdomain=subdomain,
+                                               from_confirmation="1",
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
         self.assert_in_success_response(["You're almost there."], result)
