@@ -340,7 +340,7 @@ class StreamAdminTest(ZulipTestCase):
         stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
 
-        self.assertEqual(notified_user_ids, set(active_user_ids(realm)))
+        self.assertEqual(notified_user_ids, set(active_user_ids(realm.id)))
         self.assertIn(user_profile.id,
                       notified_user_ids)
         self.assertIn(self.example_user('prospero').id,
@@ -429,7 +429,7 @@ class StreamAdminTest(ZulipTestCase):
         notified_user_ids = set(events[0]['users'])
 
         stream = get_stream('stream_name1', realm)
-        self.assertEqual(notified_user_ids, set(active_user_ids(realm)))
+        self.assertEqual(notified_user_ids, set(active_user_ids(realm.id)))
         self.assertIn(user_profile.id,
                       notified_user_ids)
         self.assertIn(self.example_user('prospero').id,

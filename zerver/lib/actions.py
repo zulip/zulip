@@ -147,9 +147,9 @@ def log_event(event):
         with open(template % ('events',), 'a') as log:
             log.write(force_str(ujson.dumps(event) + u'\n'))
 
-def active_user_ids(realm):
-    # type: (Realm) -> List[int]
-    return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm.id)]
+def active_user_ids(realm_id):
+    # type: (int) -> List[int]
+    return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm_id)]
 
 def can_access_stream_user_ids(stream):
     # type: (Stream) -> Set[int]
@@ -157,7 +157,7 @@ def can_access_stream_user_ids(stream):
     # return user ids of users who can access the attributes of
     # a stream, such as its name/description
     if stream.is_public():
-        return set(active_user_ids(stream.realm))
+        return set(active_user_ids(stream.realm_id))
     else:
         return private_stream_user_ids(stream)
 
@@ -383,7 +383,7 @@ def notify_created_user(user_profile):
                              avatar_url=avatar_url(user_profile),
                              timezone=user_profile.timezone,
                              is_bot=user_profile.is_bot))
-    send_event(event, active_user_ids(user_profile.realm))
+    send_event(event, active_user_ids(user_profile.realm_id))
 
 def notify_created_bot(user_profile):
     # type: (UserProfile) -> None
@@ -471,7 +471,7 @@ def do_set_realm_property(realm, name, value):
         property=name,
         value=value,
     )
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 
 def do_set_realm_authentication_methods(realm, authentication_methods):
@@ -486,7 +486,7 @@ def do_set_realm_authentication_methods(realm, authentication_methods):
         property='default',
         data=dict(authentication_methods=realm.authentication_methods_dict())
     )
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 
 def do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds):
@@ -501,7 +501,7 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
         data=dict(allow_message_editing=allow_message_editing,
                   message_content_edit_limit_seconds=message_content_edit_limit_seconds),
     )
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 def do_set_realm_notifications_stream(realm, stream, stream_id):
     # type: (Realm, Stream, int) -> None
@@ -513,7 +513,7 @@ def do_set_realm_notifications_stream(realm, stream, stream_id):
         property="notifications_stream_id",
         value=stream_id
     )
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
@@ -563,7 +563,7 @@ def do_deactivate_user(user_profile, acting_user=None, _cascade=True):
                  person=dict(email=user_profile.email,
                              user_id=user_profile.id,
                              full_name=user_profile.full_name))
-    send_event(event, active_user_ids(user_profile.realm))
+    send_event(event, active_user_ids(user_profile.realm_id))
 
     if user_profile.is_bot:
         event = dict(type="realm_bot", op="remove",
@@ -637,7 +637,7 @@ def do_change_user_email(user_profile, new_email):
     payload = dict(user_id=user_profile.id,
                    new_email=new_email)
     send_event(dict(type='realm_user', op='update', person=payload),
-               active_user_ids(user_profile.realm))
+               active_user_ids(user_profile.realm_id))
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
                                  modified_user=user_profile, event_type='user_email_changed',
@@ -1284,7 +1284,7 @@ def create_stream_if_needed(realm, stream_name, invite_only=False, stream_descri
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if stream.is_public():
-            send_stream_creation_event(stream, active_user_ids(stream.realm))
+            send_stream_creation_event(stream, active_user_ids(stream.realm_id))
     return stream, created
 
 def create_streams_if_needed(realm, stream_dicts):
@@ -1909,7 +1909,7 @@ def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users)
         # We now do "peer_add" or "peer_remove" events even for streams
         # users were never subscribed to, in order for the neversubscribed
         # structure to stay up-to-date.
-        return set(active_user_ids(stream.realm)) - set(altered_user_ids)
+        return set(active_user_ids(stream.realm_id)) - set(altered_user_ids)
 
 def query_all_subs_by_stream(streams):
     # type: (Iterable[Stream]) -> Dict[int, List[UserProfile]]
@@ -2007,7 +2007,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         event = dict(type="stream", op="occupy",
                      streams=[stream.to_dict()
                               for stream in new_occupied_streams])
-        send_event(event, active_user_ids(user_profile.realm))
+        send_event(event, active_user_ids(user_profile.realm_id))
 
     # Notify all existing users on streams that users have joined
 
@@ -2145,7 +2145,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         event = dict(type="stream", op="vacate",
                      streams=[stream.to_dict()
                               for stream in new_vacant_public_streams])
-        send_event(event, active_user_ids(user_profile.realm))
+        send_event(event, active_user_ids(user_profile.realm_id))
     if new_vacant_private_streams:
         # Deactivate any newly-vacant private streams
         for stream in new_vacant_private_streams:
@@ -2277,7 +2277,7 @@ def do_change_full_name(user_profile, full_name, acting_user):
                    user_id=user_profile.id,
                    full_name=user_profile.full_name)
     send_event(dict(type='realm_user', op='update', person=payload),
-               active_user_ids(user_profile.realm))
+               active_user_ids(user_profile.realm_id))
     if user_profile.is_bot:
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_userids(user_profile))
@@ -2356,7 +2356,7 @@ def do_change_avatar_fields(user_profile, avatar_source):
     send_event(dict(type='realm_user',
                     op='update',
                     person=payload),
-               active_user_ids(user_profile.realm))
+               active_user_ids(user_profile.realm_id))
 
 
 def do_change_icon_source(realm, icon_source, log=True):
@@ -2375,7 +2375,7 @@ def do_change_icon_source(realm, icon_source, log=True):
                     property="icon",
                     data=dict(icon_source=realm.icon_source,
                               icon_url=realm_icon_url(realm))),
-               active_user_ids(realm))
+               active_user_ids(realm.id))
 
 def _default_stream_permision_check(user_profile, stream):
     # type: (UserProfile, Optional[Stream]) -> None
@@ -2467,7 +2467,7 @@ def do_change_is_admin(user_profile, value, permission='administer'):
                      person=dict(email=user_profile.email,
                                  user_id=user_profile.id,
                                  is_admin=value))
-        send_event(event, active_user_ids(user_profile.realm))
+        send_event(event, active_user_ids(user_profile.realm_id))
 
 def do_change_bot_type(user_profile, value):
     # type: (UserProfile, int) -> None
@@ -2654,7 +2654,7 @@ def do_set_user_display_setting(user_profile, setting_name, setting_value):
                        user_id=user_profile.id,
                        timezone=user_profile.timezone)
         send_event(dict(type='realm_user', op='update', person=payload),
-                   active_user_ids(user_profile.realm))
+                   active_user_ids(user_profile.realm_id))
 
 def set_default_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
@@ -2682,7 +2682,7 @@ def notify_default_streams(realm):
         type="default_streams",
         default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm))
     )
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 def do_add_default_stream(stream):
     # type: (Stream) -> None
@@ -2755,7 +2755,7 @@ def send_presence_changed(user_profile, presence):
     event = dict(type="presence", email=user_profile.email,
                  server_timestamp=time.time(),
                  presence={presence_dict['client']: presence_dict})
-    send_event(event, active_user_ids(user_profile.realm))
+    send_event(event, active_user_ids(user_profile.realm_id))
 
 def consolidate_client(client):
     # type: (Client) -> Client
@@ -3558,7 +3558,7 @@ def notify_realm_emoji(realm):
     # type: (Realm) -> None
     event = dict(type="realm_emoji", op="update",
                  realm_emoji=realm.get_emoji())
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 def check_add_realm_emoji(realm, name, file_name, author=None):
     # type: (Realm, Text, Text, Optional[UserProfile]) -> None
@@ -3616,7 +3616,7 @@ def notify_realm_filters(realm):
     # type: (Realm) -> None
     realm_filters = realm_filters_for_realm(realm.id)
     event = dict(type="realm_filters", realm_filters=realm_filters)
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
@@ -3655,7 +3655,7 @@ def do_add_realm_domain(realm, domain, allow_subdomains):
     event = dict(type="realm_domains", op="add",
                  realm_domain=dict(domain=realm_domain.domain,
                                    allow_subdomains=realm_domain.allow_subdomains))
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
     return realm_domain
 
 def do_change_realm_domain(realm_domain, allow_subdomains):
@@ -3665,7 +3665,7 @@ def do_change_realm_domain(realm_domain, allow_subdomains):
     event = dict(type="realm_domains", op="change",
                  realm_domain=dict(domain=realm_domain.domain,
                                    allow_subdomains=realm_domain.allow_subdomains))
-    send_event(event, active_user_ids(realm_domain.realm))
+    send_event(event, active_user_ids(realm_domain.realm_id))
 
 def do_remove_realm_domain(realm_domain):
     # type: (RealmDomain) -> None
@@ -3679,7 +3679,7 @@ def do_remove_realm_domain(realm_domain):
         # confusing than the alternative.
         do_set_realm_property(realm, 'restricted_to_domain', False)
     event = dict(type="realm_domains", op="remove", domain=domain)
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 def get_occupied_streams(realm):
     # type: (Realm) -> QuerySet
@@ -3794,7 +3794,7 @@ def notify_realm_custom_profile_fields(realm):
     fields = custom_profile_fields_for_realm(realm.id)
     event = dict(type="custom_profile_fields",
                  fields=[f.as_dict() for f in fields])
-    send_event(event, active_user_ids(realm))
+    send_event(event, active_user_ids(realm.id))
 
 def try_add_realm_custom_profile_field(realm, name, field_type):
     # type: (Realm, Text, int) -> CustomProfileField
