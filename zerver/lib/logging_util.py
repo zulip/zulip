@@ -5,6 +5,7 @@ from django.utils.timezone import utc as timezone_utc
 
 import hashlib
 import logging
+import re
 import traceback
 from datetime import datetime, timedelta
 from django.conf import settings
@@ -80,6 +81,39 @@ def skip_200_and_304(record):
     if getattr(record, 'status_code') in [200, 304]:
         return False
 
+    return True
+
+IGNORABLE_404_URLS = [
+    re.compile(r'^/apple-touch-icon.*\.png$'),
+    re.compile(r'^/favicon\.ico$'),
+    re.compile(r'^/robots\.txt$'),
+    re.compile(r'^/django_static_404.html$'),
+    re.compile(r'^/wp-login.php$'),
+]
+
+def skip_boring_404s(record):
+    # type: (logging.LogRecord) -> bool
+    """Prevents Django's 'Not Found' warnings from being logged for common
+    404 errors that don't reflect a problem in Zulip.  The overall
+    result is to keep the Zulip error logs cleaner than they would
+    otherwise be.
+
+    Assumes that its input is a django.request log record.
+    """
+    # Apparently, `status_code` is added by Django and is not an actual
+    # attribute of LogRecord; as a result, mypy throws an error if we
+    # access the `status_code` attribute directly.
+    if getattr(record, 'status_code') != 404:
+        return True
+
+    # We're only interested in filtering the "Not Found" errors.
+    if getattr(record, 'msg') != 'Not Found: %s':
+        return True
+
+    path = getattr(record, 'args', [''])[0]
+    for pattern in IGNORABLE_404_URLS:
+        if re.match(pattern, path):
+            return False
     return True
 
 def skip_site_packages_logs(record):

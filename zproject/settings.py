@@ -1073,6 +1073,10 @@ LOGGING = {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_200_and_304,
         },
+        'skip_boring_404s': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': zerver.lib.logging_util.skip_boring_404s,
+        },
         'skip_site_packages_logs': {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_site_packages_logs,
@@ -1139,6 +1143,12 @@ LOGGING = {
         'django.security.DisallowedHost': {
             'handlers': ['file'],
             'propagate': False,
+        },
+        'django.request': {
+            'handlers': DEFAULT_ZULIP_HANDLERS,
+            'level': 'WARNING',
+            'propagate': False,
+            'filters': ['skip_boring_404s'],
         },
         'django.server': {
             'handlers': ['console', 'file'],
