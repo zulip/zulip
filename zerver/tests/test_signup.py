@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 
 from mock import patch, MagicMock
@@ -1702,24 +1702,24 @@ class UserSignUpTest(ZulipTestCase):
         mock_ldap.reset()
         mock_initialize.stop()
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
     def test_registration_of_mirror_dummy_user(self, ignored):
         # type: (Any) -> None
         password = "test"
-        subdomain = "sipb"
-        realm_name = "MIT"
+        subdomain = "zephyr"
         user_profile = self.mit_user("sipbtest")
         email = user_profile.email
         user_profile.is_mirror_dummy = True
         user_profile.is_active = False
         user_profile.save()
 
-        result = self.client_post('/register/', {'email': email})
+        result = self.client_post('/register/', {'email': email}, subdomain="zephyr")
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
             "/accounts/send_confirm/%s" % (email,)))
-        result = self.client_get(result["Location"])
+        result = self.client_get(result["Location"], subdomain="zephyr")
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
@@ -1732,7 +1732,7 @@ class UserSignUpTest(ZulipTestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-        result = self.client_get(confirmation_url)
+        result = self.client_get(confirmation_url, subdomain="zephyr")
         self.assertEqual(result.status_code, 200)
 
         # If the mirror dummy user is already active, attempting to submit the
@@ -1741,11 +1741,10 @@ class UserSignUpTest(ZulipTestCase):
         user_profile.save()
         result = self.submit_reg_form_for_user(email,
                                                password,
-                                               realm_name=realm_name,
-                                               realm_subdomain=subdomain,
                                                from_confirmation='1',
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
+
         self.assertEqual(result.status_code, 302)
         self.assertIn('login', result['Location'])
         user_profile.is_active = False
@@ -1753,16 +1752,12 @@ class UserSignUpTest(ZulipTestCase):
 
         result = self.submit_reg_form_for_user(email,
                                                password,
-                                               realm_name=realm_name,
-                                               realm_subdomain=subdomain,
                                                from_confirmation='1',
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEqual(result.status_code, 200)
         result = self.submit_reg_form_for_user(email,
                                                password,
-                                               realm_name=realm_name,
-                                               realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEqual(result.status_code, 302)
