@@ -145,7 +145,7 @@ casper.then(function () {
             $('#new_message_content').expectOne().focus().val('test');
             $('#new_message_content').trigger($.Event('keydown', { which: 37 }));
         });
-        casper.test.assertNotVisible('form.message_edit_form', "Last own message edit doesn't open if the compose box not empty");
+        casper.test.assertNotVisible('form.message_edit_form', "Last own message edit does not open if the compose box not empty");
     });
 });
 
