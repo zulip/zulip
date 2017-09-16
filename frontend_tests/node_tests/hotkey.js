@@ -17,6 +17,9 @@ set_global('activity', {
 set_global('drafts', {
 });
 
+set_global('page_params', {
+});
+
 set_global('overlays', {
 });
 
@@ -194,12 +197,15 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.processing_text = return_false;
     overlays.settings_open = return_false;
 
+    page_params.can_create_streams = true;
     overlays.streams_open = return_true;
     overlays.is_active = return_true;
     assert_mapping('S', 'subs.keyboard_sub');
-    overlays.is_active = return_false;
     assert_mapping('V', 'subs.view_stream');
     assert_mapping('n', 'subs.new_stream_clicked');
+    page_params.can_create_streams = false;
+    assert_unmapped('n');
+    overlays.is_active = return_false;
     overlays.streams_open = return_false;
 
     assert_mapping('?', 'ui.maybe_show_keyboard_shortcuts');
