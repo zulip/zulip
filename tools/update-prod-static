@@ -45,6 +45,10 @@ subprocess.check_call(['./tools/setup/emoji/build_emoji'],
 subprocess.check_call(['./tools/inline-email-css'],
                       stdout=fp, stderr=fp)
 
+# Copy over static files from the zulip_bots package
+subprocess.check_call(['./tools/setup/generate_zulip_bots_static_files'],
+                      stdout=fp, stderr=fp)
+
 # Build pygment data
 subprocess.check_call(['./tools/setup/build_pygments_data.py'],
                       stdout=fp, stderr=fp)

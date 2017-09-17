@@ -965,8 +965,12 @@ default_template_engine_settings = deepcopy(base_template_engine_settings)
 default_template_engine_settings.update({
     'NAME': 'Jinja2',
     'DIRS': [
+        # The main templates directory
         os.path.join(DEPLOY_ROOT, 'templates'),
+        # The webhook integration templates
         os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
+        # The python-zulip-api:zulip_bots package templates
+        os.path.join(STATIC_ROOT, 'generated', 'bots'),
     ],
     'APP_DIRS': True,
 })
@@ -989,7 +993,6 @@ TEMPLATES = [
     default_template_engine_settings,
     non_html_template_engine_settings,
 ]
-
 ########################################################################
 # LOGGING SETTINGS
 ########################################################################
