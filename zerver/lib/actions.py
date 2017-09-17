@@ -605,7 +605,7 @@ def do_deactivate_stream(stream, log=True):
     # code path.
 
     stream.name = new_name[:Stream.MAX_NAME_LENGTH]
-    stream.save()
+    stream.save(update_fields=['name', 'deactivated', 'invite_only'])
 
     # If this is a default stream, remove it, properly sending a
     # notification to browser clients.
