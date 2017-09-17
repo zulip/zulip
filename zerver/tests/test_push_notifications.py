@@ -547,7 +547,7 @@ class TestAPNs(PushNotificationTest):
         return list(PushDeviceToken.objects.filter(
             user=self.user_profile, kind=PushDeviceToken.APNS))
 
-    def send(self, payload_data={}):
+    def send(self, payload_data={'alert': {}, 'custom': {}}):
         # type: (Dict[str, Any]) -> None
         apn.send_apple_push_notification(
             self.user_profile.id, self.devices(), payload_data)
@@ -652,8 +652,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         payload = apn.get_apns_payload(message)
         expected = {
-            'alert': "New private group message from King Hamlet",
-            'badge': 1,
+            'alert': {
+                'title': "New private group message from King Hamlet",
+                'body': message.content,
+            },
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
