@@ -84,6 +84,16 @@ exports.set_up = function () {
             $("#pm_content_in_desktop_notifications_label").parent().addClass("control-label-disabled");
         }
     });
+
+    $("#enable_offline_push_notifications").change(function () {
+        if (this.checked) {
+            $("#enable_online_push_notifications").prop("disabled", false);
+            $("#enable_online_push_notifications_label").parent().removeClass("control-label-disabled");
+        } else {
+            $("#enable_online_push_notifications").prop("disabled", true);
+            $("#enable_online_push_notifications_label").parent().addClass("control-label-disabled");
+        }
+    });
 };
 
 function _update_page() {

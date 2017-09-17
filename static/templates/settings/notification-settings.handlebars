@@ -114,15 +114,16 @@
                 </label>
             </div>
 
-            <div class="input-group">
+            <div class="input-group disableable {{#unless page_params.enable_offline_push_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
+                           {{#unless page_params.enable_offline_push_notifications}}disabled="disabled"{{/unless}}
                            {{#if page_params.enable_online_push_notifications}}
                            checked="checked"
                            {{/if}} />
                     <span></span>
                 </label>
-                <label for="enable_online_push_notifications" class="inline-block">
+                <label for="enable_online_push_notifications" id="enable_online_push_notifications_label" class="inline-block">
                     {{t "Mobile push notifications always (even when online)" }}
                 </label>
             </div>
