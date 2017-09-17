@@ -890,7 +890,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         user_profile = self.example_user('hamlet')
         email = user_profile.email
-        user_profile.default_sending_stream = get_stream('Verona', user_profile.realm)
+        user_profile.default_sending_stream_id = get_stream('Verona', user_profile.realm).id
         user_profile.save()
         result = self.client_post("/api/v1/messages", {"type": "stream",
                                                        "client": "test suite",

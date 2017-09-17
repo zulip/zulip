@@ -136,7 +136,7 @@ class TestNotifyNewUser(ZulipTestCase):
         # type: () -> None
         new_user = self.example_user('cordelia')
         stream = self.make_stream('announce')
-        new_user.realm.notifications_stream = stream
+        new_user.realm.notifications_stream_id = stream.id
         new_user.realm.save()
         new_user = self.example_user('cordelia')
         notify_new_user(new_user)

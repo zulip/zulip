@@ -508,7 +508,7 @@ class InviteUserTest(ZulipTestCase):
         """
         realm = get_realm('zulip')
         notifications_stream = get_stream('Verona', realm)
-        realm.notifications_stream = notifications_stream
+        realm.notifications_stream_id = notifications_stream.id
         realm.save()
 
         self.login(self.example_email("hamlet"))
@@ -518,8 +518,8 @@ class InviteUserTest(ZulipTestCase):
         self.check_sent_emails([invitee])
 
         prereg_user = get_prereg_user_by_email(invitee)
-        streams = list(prereg_user.streams.all())
-        self.assertTrue(notifications_stream in streams)
+        stream_ids = [stream.id for stream in prereg_user.streams.all()]
+        self.assertTrue(notifications_stream.id in stream_ids)
 
     def test_invite_user_signup_initial_history(self):
         # type: () -> None

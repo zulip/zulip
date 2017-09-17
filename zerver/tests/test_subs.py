@@ -214,18 +214,18 @@ class StreamAdminTest(ZulipTestCase):
         # type: () -> None
         stream = self.make_stream('new_stream')
         do_add_default_stream(stream)
-        self.assertEqual(1, DefaultStream.objects.filter(stream=stream).count())
+        self.assertEqual(1, DefaultStream.objects.filter(stream_id=stream.id).count())
         do_deactivate_stream(stream)
-        self.assertEqual(0, DefaultStream.objects.filter(stream=stream).count())
+        self.assertEqual(0, DefaultStream.objects.filter(stream_id=stream.id).count())
 
     def test_vacate_private_stream_removes_default_stream(self):
         # type: () -> None
         stream = self.make_stream('new_stream', invite_only=True)
         self.subscribe(self.example_user("hamlet"), stream.name)
         do_add_default_stream(stream)
-        self.assertEqual(1, DefaultStream.objects.filter(stream=stream).count())
+        self.assertEqual(1, DefaultStream.objects.filter(stream_id=stream.id).count())
         self.unsubscribe(self.example_user("hamlet"), stream.name)
-        self.assertEqual(0, DefaultStream.objects.filter(stream=stream).count())
+        self.assertEqual(0, DefaultStream.objects.filter(stream_id=stream.id).count())
         # Fetch stream again from database.
         stream = Stream.objects.get(id=stream.id)
         self.assertTrue(stream.deactivated)
@@ -1393,7 +1393,7 @@ class SubscriptionAPITest(ZulipTestCase):
             'announce': 'true',
         }
         notifications_stream = get_stream(self.streams[0], self.test_realm)
-        self.test_realm.notifications_stream = notifications_stream
+        self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
         # Delete the UserProfile from the cache so the realm change will be
@@ -1436,7 +1436,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invite_streams = self.make_random_stream_names([current_stream])[:1]
 
         notifications_stream = get_stream(current_stream, self.test_realm)
-        self.test_realm.notifications_stream = notifications_stream
+        self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
         # Delete the UserProfile from the cache so the realm change will be
@@ -1509,7 +1509,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         current_stream = self.get_streams(invitee, self.test_realm)[0]
         notifications_stream = get_stream(current_stream, self.test_realm)
-        self.test_realm.notifications_stream = notifications_stream
+        self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
         invite_streams = ['strange ) \\ test']
@@ -2694,11 +2694,11 @@ class AccessStreamTest(ZulipTestCase):
 
         # Hamlet can access the private stream
         (stream_ret, rec_ret, sub_ret) = access_stream_by_id(hamlet, stream.id)
-        self.assertEqual(stream, stream_ret)
+        self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
         (stream_ret2, rec_ret2, sub_ret2) = access_stream_by_name(hamlet, stream.name)
-        self.assertEqual(stream_ret, stream_ret2)
+        self.assertEqual(stream_ret.id, stream_ret2.id)
         self.assertEqual(sub_ret, sub_ret2)
         self.assertEqual(rec_ret, rec_ret2)
 

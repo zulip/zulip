@@ -357,7 +357,7 @@ class HomeTest(ZulipTestCase):
         # type: () -> None
         email = self.example_email("hamlet")
         realm = get_realm('zulip')
-        realm.notifications_stream = get_stream('Denmark', realm)
+        realm.notifications_stream_id = get_stream('Denmark', realm).id
         realm.save()
         self.login(email)
         result = self._get_home_page()

@@ -207,11 +207,11 @@ class RealmTest(ZulipTestCase):
         # type: () -> None
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
-        realm.notifications_stream = verona
+        realm.notifications_stream_id = verona.id
         realm.save()
 
         notifications_stream = realm.get_notifications_stream()
-        self.assertEqual(notifications_stream, verona)
+        self.assertEqual(notifications_stream.id, verona.id)
         do_deactivate_stream(notifications_stream)
         self.assertIsNone(realm.get_notifications_stream())
 
