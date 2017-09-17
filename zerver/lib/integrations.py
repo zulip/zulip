@@ -47,6 +47,7 @@ CATEGORIES = {
     'project-management': _('Project management'),
     'productivity': _('Productivity'),
     'version-control': _('Version control'),
+    'bots': _('Interactive bots'),
 }  # type: Dict[str, str]
 
 class Integration(object):
@@ -93,6 +94,42 @@ class Integration(object):
     def add_doc_context(self, context):
         # type: (Dict[Any, Any]) -> None
         self.doc_context = context
+
+class BotIntegration(Integration):
+    DEFAULT_LOGO_STATIC_PATH_PNG = 'static/generated/bots/{name}/logo.png'
+    DEFAULT_LOGO_STATIC_PATH_SVG = 'static/generated/bots/{name}/logo.svg'
+    ZULIP_LOGO_STATIC_PATH_PNG = 'static/images/logo/zulip-icon-128x128.png'
+    DEFAULT_DOC_PATH = '{name}/doc.md'
+
+    def __init__(self, name, categories, logo=None, secondary_line_text=None,
+                 display_name=None, doc=None):
+        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+        super(BotIntegration, self).__init__(
+            name,
+            client_name=name,
+            categories=categories,
+            secondary_line_text=secondary_line_text,
+        )
+
+        if logo is None:
+            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)):
+                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
+            elif os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
+                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
+            else:
+                # TODO: Add a test for this by initializing one in a test.
+                logo = self.ZULIP_LOGO_STATIC_PATH_PNG  # nocoverage
+        self.logo = logo
+
+        if display_name is None:
+            display_name = "{} Bot".format(name.title())  # nocoverage
+        else:
+            display_name = "{} Bot".format(display_name)
+        self.display_name = display_name
+
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(name=name)
+        self.doc = doc
 
 class EmailIntegration(Integration):
     def is_enabled(self):
@@ -387,6 +424,12 @@ INTEGRATIONS = {
                            doc='zerver/integrations/twitter.md'),
 }  # type: Dict[str, Integration]
 
+BOT_INTEGRATIONS = [
+    BotIntegration('github_detail', ['version-control', 'bots'],
+                   display_name='GitHub Detail'),
+    BotIntegration('googlesearch', ['bots'], display_name='Google Search'),
+]  # type: List[BotIntegration]
+
 HUBOT_LOZENGES = {
     'assembla': HubotLozenge('assembla', ['project-management', 'version-control']),
     'bonusly': HubotLozenge('bonusly', ['hr']),
@@ -403,3 +446,6 @@ HUBOT_LOZENGES = {
 
 for integration in WEBHOOK_INTEGRATIONS:
     INTEGRATIONS[integration.name] = integration
+
+for bot_integration in BOT_INTEGRATIONS:
+    INTEGRATIONS[bot_integration.name] = bot_integration
