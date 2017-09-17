@@ -23,22 +23,6 @@ var search_is_active = false;
 var search_results = [];
 var section_head_offsets = [];
 
-function get_rendered_emoji_categories() {
-    if (exports.complete_emoji_catalog.length === 0) {
-        blueslip.error('emoji_picker: Emoji catalog empty');
-        return;
-    }
-
-    var current_emoji_categories = [];
-    _.each(exports.complete_emoji_catalog, function (category) {
-        current_emoji_categories.push({
-            name: category.name,
-            icon: category.icon,
-        });
-    });
-    return current_emoji_categories;
-}
-
 function get_all_emoji_categories() {
     return [
         { name: "Popular", icon: "fa-thumbs-o-up" },
@@ -563,7 +547,6 @@ function register_popover_events(popover) {
 exports.render_emoji_popover = function (elt, id) {
     var template_args = {
         class: "emoji-info-popover",
-        categories: get_rendered_emoji_categories(),
     };
     var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 

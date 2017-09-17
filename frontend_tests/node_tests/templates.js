@@ -557,16 +557,12 @@ function render(template_name, args) {
 (function emoji_popover() {
     var args = {
         class: "emoji-info-popover",
-        categories: [
-            { name: "Test category 1", icon: "test-icon-1" },
-            { name: "Test category 2", icon: "test-icon-2" },
-        ],
     };
-    var html = render('emoji_popover', args);
-    var categories = $(html).find(".emoji-popover-tab-item");
-    assert.equal(categories.length, 2);
-    var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test category 1']");
-    assert(category_1.hasClass("active"));
+    var html = "<div>";
+    html += render('emoji_popover', args);
+    html += "</div>";
+    var popover = $(html).find(".popover");
+    assert(popover.hasClass("emoji-info-popover"));
     global.write_handlebars_output("emoji_popover", html);
 }());
 
@@ -586,6 +582,17 @@ function render(template_name, args) {
                     },
                 ],
             },
+            {
+                name: 'Test1',
+                emojis: [
+                    {
+                        has_reacted: false,
+                        is_realm_emoji: true,
+                        name: 'zulip',
+                        url: 'zulip',
+                    },
+                ],
+            },
         ],
     };
 
@@ -595,6 +602,13 @@ function render(template_name, args) {
     // test to make sure the first emoji is present in the popover
     var emoji_key = $(html).find(".emoji-100").attr('title');
     assert.equal(emoji_key, '100');
+
+    var categories = $(html).find(".emoji-popover-tab-item");
+    assert.equal(categories.length, 2);
+
+    var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test']");
+    assert(category_1.hasClass("active"));
+
     global.write_handlebars_output("emoji_popover_content", html);
 }());
 
