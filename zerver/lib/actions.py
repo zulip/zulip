@@ -1968,6 +1968,10 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 
+    # Note that we are grabbing the last user_profile from the loop
+    # above to get the realm.
+    is_zephyr_realm = user_profile.realm.is_zephyr_mirror_realm
+
     # TODO: XXX: This transaction really needs to be done at the serializeable
     # transaction isolation level.
     with transaction.atomic():
@@ -2017,7 +2021,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
 
     def fetch_stream_subscriber_emails(stream):
         # type: (Stream) -> List[Text]
-        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+        if is_zephyr_realm and not stream.invite_only:
             return []
         users = all_subs_by_stream[stream.id]
         return [u.email for u in users]
@@ -2052,7 +2056,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     # subscribers lists of streams in their browser; everyone for
     # public streams and only existing subscribers for private streams.
     for stream in streams:
-        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+        if is_zephyr_realm and not stream.invite_only:
             continue
 
         new_users = [user for user in users if (user.id, stream.id) in new_streams]
@@ -2112,6 +2116,10 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         for recipient_id in recipients_to_unsub:
             not_subscribed.append((user_profile, stream_map[recipient_id]))
 
+    # Note that we are grabbing the last user_profile from the loop
+    # above to get the realm.
+    is_zephyr_realm = user_profile.realm.is_zephyr_mirror_realm
+
     # TODO: XXX: This transaction really needs to be done at the serializeable
     # transaction isolation level.
     with transaction.atomic():
@@ -2164,7 +2172,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
     all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
     for stream in streams:
-        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+        if is_zephyr_realm and not stream.invite_only:
             continue
 
         altered_users = altered_user_dict[stream.id]
