@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from zerver.models import UserProfile
 
-from typing import Any, Callable, Dict, List, Text
+from typing import Any, Callable, Dict, List, Optional, Text
 
 from zerver.models import (
     bulk_get_recipients,
@@ -89,20 +89,16 @@ def topic_is_muted(user_profile, stream, topic_name):
     ).exists()
     return is_muted
 
-def exclude_topic_mutes(conditions, user_profile, stream_name):
-    # type: (List[Selectable], UserProfile, Text) -> List[Selectable]
+def exclude_topic_mutes(conditions, user_profile, stream_id):
+    # type: (List[Selectable], UserProfile, Optional[int]) -> List[Selectable]
     query = MutedTopic.objects.filter(
         user_profile=user_profile,
     )
 
-    if stream_name is not None:
+    if stream_id is not None:
         # If we are narrowed to a stream, we can optimize the query
         # by not considering topic mutes outside the stream.
-        try:
-            stream = get_stream(stream_name, user_profile.realm)
-            query = query.filter(stream=stream)
-        except Stream.DoesNotExist:
-            pass
+        query = query.filter(stream_id=stream_id)
 
     query = query.values(
         'recipient_id',

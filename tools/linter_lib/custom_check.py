@@ -298,6 +298,8 @@ def build_custom_checkers(by_lang):
              ('zerver/lib/actions.py', 'get_stream(signups_stream, admin_realm)'),
              # Here we need get_stream to access streams you've since unsubscribed from.
              ('zerver/views/messages.py', 'stream = get_stream(operand, self.user_profile.realm)'),
+             # Use stream_id to exclude mutes.
+             ('zerver/views/messages.py', 'stream_id = get_stream(stream_name, user_profile.realm).id'),
          ]),
          'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },

@@ -530,7 +530,18 @@ def exclude_muting_conditions(user_profile, narrow):
     conditions = []
     stream_name = get_stream_name_from_narrow(narrow)
 
-    if stream_name is None:
+    stream_id = None
+    if stream_name is not None:
+        try:
+            # Note that this code works around a lint rule that
+            # says we should use access_stream_by_name to get the
+            # stream.  It is okay here, because we are only using
+            # the stream id to exclude data, not to include results.
+            stream_id = get_stream(stream_name, user_profile.realm).id
+        except Stream.DoesNotExist:
+            pass
+
+    if stream_id is None:
         rows = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
@@ -543,7 +554,7 @@ def exclude_muting_conditions(user_profile, narrow):
             condition = not_(column("recipient_id").in_(muted_recipient_ids))
             conditions.append(condition)
 
-    conditions = exclude_topic_mutes(conditions, user_profile, stream_name)
+    conditions = exclude_topic_mutes(conditions, user_profile, stream_id)
 
     return conditions
 
