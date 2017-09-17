@@ -1023,7 +1023,7 @@ def do_send_messages(messages_maybe_none):
             if message['stream'] is None:
                 message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
             assert message['stream'] is not None  # assert needed because stubs for django are missing
-            if message['stream'].is_public():
+            if message['stream'].is_public(realm=sender.realm):
                 event['realm_id'] = message['stream'].realm_id
                 event['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
@@ -1282,7 +1282,7 @@ def create_stream_if_needed(realm, stream_name, invite_only=False, stream_descri
                   'invite_only': invite_only})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-        if stream.is_public():
+        if stream.is_public(realm):
             send_stream_creation_event(stream, active_user_ids(stream.realm_id))
     return stream, created
 
@@ -2041,7 +2041,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         # Users newly added to invite-only streams need a `create`
         # notification, since they didn't have the invite-only stream
         # in their browser yet.
-        if not stream.is_public():
+        if not stream.is_public(user_profile.realm):
             send_stream_creation_event(stream, [user.id for user in new_users])
 
     # The second batch is events for the users themselves that they
@@ -3753,7 +3753,8 @@ def do_claim_attachments(message):
         user_profile = message.sender
         is_message_realm_public = False
         if message.recipient.type == Recipient.STREAM:
-            is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
+            stream_id = message.recipient.type_id
+            is_message_realm_public = Stream.objects.get(id=stream_id).is_public(user_profile.realm)
 
         if not validate_attachment_request(user_profile, path_id):
             # Technically, there are 2 cases here:

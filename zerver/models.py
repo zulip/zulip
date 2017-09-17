@@ -920,10 +920,13 @@ class Stream(ModelReprMixin, models.Model):
         # type: () -> Text
         return u"<Stream: %s>" % (self.name,)
 
-    def is_public(self):
-        # type: () -> bool
+    def is_public(self, realm=None):
+        # type: (Optional[Realm]) -> bool
         # All streams are private in Zephyr mirroring realms.
-        return not self.invite_only and not self.realm.is_zephyr_mirror_realm
+        # We allow the caller to supply the realm to avoid DB hops.
+        if realm is None:
+            realm = self.realm
+        return not self.invite_only and not realm.is_zephyr_mirror_realm
 
     class Meta(object):
         unique_together = ("name", "realm")
