@@ -55,7 +55,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
-    get_owned_bot_dicts, \
+    get_owned_bot_dicts, stream_name_in_use, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
@@ -594,12 +594,11 @@ def do_deactivate_stream(stream, log=True):
     old_name = stream.name
     new_name = ("!DEACTIVATED:" + old_name)[:Stream.MAX_NAME_LENGTH]
     for i in range(20):
-        try:
-            get_stream(new_name, stream.realm)
+        if stream_name_in_use(new_name, stream.realm_id):
             # This stream has alrady been deactivated, keep prepending !s until
             # we have a unique stream name or you've hit a rename limit.
             new_name = ("!" + new_name)[:Stream.MAX_NAME_LENGTH]
-        except Stream.DoesNotExist:
+        else:
             break
 
     # If you don't have a unique name at this point, this will fail later in the

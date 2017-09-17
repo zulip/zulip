@@ -1030,6 +1030,13 @@ def get_stream_backend(stream_name, realm_id):
     return Stream.objects.select_related("realm").get(
         name__iexact=stream_name.strip(), realm_id=realm_id)
 
+def stream_name_in_use(stream_name, realm_id):
+    # type: (Text, int) -> bool
+    return Stream.objects.filter(
+        name__iexact=stream_name.strip(),
+        realm_id=realm_id
+    ).exists()
+
 def get_active_streams(realm):
     # type: (Optional[Realm]) -> QuerySet
     """
