@@ -573,7 +573,7 @@ class StreamMessagesTest(ZulipTestCase):
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
-        cache_delete(get_stream_cache_key(stream, realm))
+        cache_delete(get_stream_cache_key(stream, realm.id))
         with queries_captured() as queries:
             send_message()
 

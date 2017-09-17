@@ -618,7 +618,7 @@ def do_deactivate_stream(stream, log=True):
         do_remove_default_stream(stream)
 
     # Remove the old stream information from remote cache.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm)
+    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
     cache_delete(old_cache_key)
 
     stream_dict = stream.to_dict()
@@ -2495,8 +2495,8 @@ def do_rename_stream(stream, new_name, log=True):
 
     # Update the display recipient and stream, which are easy single
     # items to set.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm)
-    new_cache_key = get_stream_cache_key(stream.name, stream.realm)
+    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
+    new_cache_key = get_stream_cache_key(stream.name, stream.realm_id)
     if old_cache_key != new_cache_key:
         cache_delete(old_cache_key)
         cache_set(new_cache_key, stream)

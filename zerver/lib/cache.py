@@ -349,13 +349,8 @@ def bot_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
     return u"bot_dicts_in_realm:%s" % (realm.id,)
 
-def get_stream_cache_key(stream_name, realm):
-    # type: (Text, Union[Realm, int]) -> Text
-    from zerver.models import Realm
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
+def get_stream_cache_key(stream_name, realm_id):
+    # type: (Text, int) -> Text
     return u"stream_by_realm_and_name:%s:%s" % (
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
@@ -432,7 +427,7 @@ def flush_stream(sender, **kwargs):
     from zerver.models import UserProfile
     stream = kwargs['instance']
     items_for_remote_cache = {}
-    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
+    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
     cache_set_many(items_for_remote_cache)
 
     if kwargs.get('update_fields') is None or 'name' in kwargs['update_fields'] and \
