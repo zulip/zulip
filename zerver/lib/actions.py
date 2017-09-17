@@ -1588,7 +1588,7 @@ def check_message(sender, client, addressee,
         if not stream.invite_only:
             # This is a public stream
             pass
-        elif subscribed_to_stream(sender, stream):
+        elif subscribed_to_stream(sender, stream.id):
             # Or it is private, but your are subscribed
             pass
         elif sender.is_api_super_user or (forwarder_user_profile is not None and
@@ -1596,7 +1596,7 @@ def check_message(sender, client, addressee,
             # Or this request is being done on behalf of a super user
             pass
         elif sender.is_bot and (sender.bot_owner is not None and
-                                subscribed_to_stream(sender.bot_owner, stream)):
+                                subscribed_to_stream(sender.bot_owner, stream.id)):
             # Or you're a bot and your owner is subscribed.
             pass
         elif sender.email == settings.WELCOME_BOT:
@@ -1775,7 +1775,7 @@ def validate_user_access_to_subscribers(user_profile, stream):
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
-        lambda: subscribed_to_stream(cast(UserProfile, user_profile), stream))
+        lambda: subscribed_to_stream(cast(UserProfile, user_profile), stream.id))
 
 def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_user_subscribed):
     # type: (Optional[UserProfile], Mapping[str, Any], Callable[[], bool]) -> None
@@ -2441,7 +2441,7 @@ def _default_stream_permision_check(user_profile, stream):
             user = user_profile.bot_owner
         else:
             user = user_profile
-        if stream.invite_only and (user is None or not subscribed_to_stream(user, stream)):
+        if stream.invite_only and (user is None or not subscribed_to_stream(user, stream.id)):
             raise JsonableError(_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
@@ -3020,13 +3020,13 @@ def do_update_message_flags(user_profile, operation, flag, messages):
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count
 
-def subscribed_to_stream(user_profile, stream):
-    # type: (UserProfile, Stream) -> bool
+def subscribed_to_stream(user_profile, stream_id):
+    # type: (UserProfile, int) -> bool
     try:
         if Subscription.objects.get(user_profile=user_profile,
                                     active=True,
                                     recipient__type=Recipient.STREAM,
-                                    recipient__type_id=stream.id):
+                                    recipient__type_id=stream_id):
             return True
         return False
     except Subscription.DoesNotExist:
