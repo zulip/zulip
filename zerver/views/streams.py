@@ -169,7 +169,7 @@ def remove_subscriptions_backend(request, user_profile,
 
     for stream in streams:
         if removing_someone_else and stream.invite_only and \
-                not subscribed_to_stream(user_profile, stream):
+                not subscribed_to_stream(user_profile, stream.id):
             # Even as an admin, you can't remove other people from an
             # invite-only stream you're not on.
             return json_error(_("Cannot administer invite-only streams this way"))
