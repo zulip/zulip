@@ -153,15 +153,15 @@ def can_access_stream_user_ids(stream):
     if stream.is_public():
         return set(active_user_ids(stream.realm_id))
     else:
-        return private_stream_user_ids(stream)
+        return private_stream_user_ids(stream.id)
 
-def private_stream_user_ids(stream):
-    # type: (Stream) -> Set[int]
+def private_stream_user_ids(stream_id):
+    # type: (int) -> Set[int]
 
     # TODO: Find similar queries elsewhere and de-duplicate this code.
     subscriptions = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
-        recipient__type_id=stream.id,
+        recipient__type_id=stream_id,
         active=True)
 
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
