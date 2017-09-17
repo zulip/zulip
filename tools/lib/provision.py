@@ -276,6 +276,9 @@ def main(options):
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
+    # copy over static files from the zulip_bots package
+    run(["tools/setup/generate_zulip_bots_static_files.py"])
+
     run(["tools/setup/build_pygments_data.py"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
