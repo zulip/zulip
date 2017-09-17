@@ -2500,18 +2500,8 @@ def do_rename_stream(stream, new_name, log=True):
     recipient = get_recipient(Recipient.STREAM, stream.id)
     messages = Message.objects.filter(recipient=recipient).only("id")
 
-    # Update the display recipient and stream, which are easy single
-    # items to set.
     old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
-    new_cache_key = get_stream_cache_key(stream.name, stream.realm_id)
-    if old_cache_key != new_cache_key:
-        cache_delete(old_cache_key)
-        cache_set(new_cache_key, stream)
-    cache_set(display_recipient_cache_key(recipient.id), stream.name)
-
-    # Delete cache entries for everything else, which is cheaper and
-    # clearer than trying to set them. display_recipient is the out of
-    # date field in all cases.
+    cache_delete(old_cache_key)
     cache_delete_many(
         to_dict_cache_key_id(message.id, True) for message in messages)
     cache_delete_many(
