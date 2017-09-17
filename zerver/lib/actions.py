@@ -3534,11 +3534,9 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
 
-        # We save twice because you cannot associate a ManyToMany field
-        # on an unsaved object.
         prereg_user.save()
-        prereg_user.streams = streams
-        prereg_user.save()
+        stream_ids = [stream.id for stream in streams]
+        prereg_user.streams.set(stream_ids)
 
         event = {"email": prereg_user.email, "referrer_id": user_profile.id, "email_body": body}
         queue_json_publish("invites", event,
