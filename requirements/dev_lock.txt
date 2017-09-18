@@ -142,7 +142,7 @@ sourcemap==0.2.1
 sphinx-rtd-theme==0.2.4
 sphinx==1.6.2
 sphinxcontrib-websupport==1.0.1  # via sphinx
-sqlalchemy==1.1.13
+sqlalchemy==1.1.14
 statsd==2.1.2             # via django-statsd-mozilla
 tblib==1.3.2
 tornado==4.5.1
