@@ -3,6 +3,16 @@ var exports = {};
 
 exports.view = {}; // function namespace
 
+exports.open_reactions_popover = function () {
+    var message = current_msg_list.selected_message();
+    var target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
+    if (!message.sent_by_me) {
+        target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
+    }
+    emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
+    return true;
+};
+
 function send_reaction_ajax(message_id, emoji_name, operation) {
     if (!emoji.emojis_by_name[emoji_name] && !emoji.active_realm_emojis[emoji_name]) {
         // Emoji doesn't exist

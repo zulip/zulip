@@ -7,16 +7,6 @@ function do_narrow_action(action) {
     return true;
 }
 
-function open_reactions() {
-    var message = current_msg_list.selected_message();
-    var target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
-    if (!message.sent_by_me) {
-        target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
-    }
-    emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
-    return true;
-}
-
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -680,7 +670,7 @@ exports.process_hotkey = function (e, hotkey) {
             popovers.show_sender_info();
             return true;
         case 'open_reactions': // ':': open reactions to message
-            open_reactions();
+            reactions.open_reactions_popover();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
             reactions.toggle_emoji_reaction(msg.id, '+1');
