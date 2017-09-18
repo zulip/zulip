@@ -18,6 +18,13 @@ exports.composing = function () {
     return !!message_type;
 };
 
+exports.focus_in_empty_compose = function () {
+    return (
+        exports.composing() &&
+        exports.message_content() === "" &&
+        $('#new_message_content').is(':focus'));
+};
+
 function get_or_set(fieldname, keep_leading_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set

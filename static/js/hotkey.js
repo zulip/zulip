@@ -7,14 +7,6 @@ function do_narrow_action(action) {
     return true;
 }
 
-
-function focus_in_empty_compose() {
-    return (
-        compose_state.composing() &&
-        compose_state.message_content() === "" &&
-        $('#new_message_content').is(':focus'));
-}
-
 function open_reactions() {
     var message = current_msg_list.selected_message();
     var target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
@@ -522,12 +514,12 @@ exports.process_hotkey = function (e, hotkey) {
         // Note that there is special handling for enter/escape too, but
         // we handle this in other functions.
 
-        if (event_name === 'left_arrow' && focus_in_empty_compose()) {
+        if (event_name === 'left_arrow' && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
             return true;
         }
 
-        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose()) {
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && compose_state.focus_in_empty_compose()) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else if (event_name === "page_up") {
