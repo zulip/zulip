@@ -78,7 +78,7 @@ pyasn1==0.3.2
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
 pygments==2.2.0           # via ipython
-pyjwt==1.5.3              # via apns2, social-auth-core
+pyjwt==1.5.3
 pyldap==2.4.37
 pylibmc==1.5.2
 pyopenssl==17.2.0         # via ndg-httpsclient
