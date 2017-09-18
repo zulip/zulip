@@ -142,7 +142,7 @@ sockjs-tornado==1.0.3
 sourcemap==0.2.1
 
 # Tornado used for server->client push system
-tornado==4.5.1
+tornado==4.5.2
 
 # Needed for Python static typing
 typing==3.6.2
