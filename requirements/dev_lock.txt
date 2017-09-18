@@ -22,7 +22,7 @@ arrow==0.10.0             # via gitlint
 asn1crypto==0.22.0        # via cryptography
 attrs==17.2.0             # via automat, service-identity
 automat==0.6.0            # via twisted
-babel==2.5.0
+babel==2.5.1
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
