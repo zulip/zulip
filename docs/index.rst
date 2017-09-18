@@ -128,6 +128,7 @@ Contents:
    :maxdepth: 2
    :caption: Subsystem documentation
 
+   dependencies
    settings
    events-system
    queuing
