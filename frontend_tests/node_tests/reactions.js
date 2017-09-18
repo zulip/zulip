@@ -83,6 +83,45 @@ set_global('message_store', {
     },
 });
 
+set_global('current_msg_list', {
+    selected_message: function () {
+        return { sent_by_me: true };
+    },
+    selected_row: function () {
+        return $('.selected-row');
+    },
+    selected_id: function () {
+        return 42;
+    },
+});
+
+(function test_open_reactions_popover() {
+    $('.selected-row').set_find_results('.actions_hover', $('.target-action'));
+    $('.selected-row').set_find_results('.reaction_button', $('.target-reaction'));
+
+    var called = false;
+    emoji_picker.toggle_emoji_popover = function (target, id) {
+        called = true;
+        assert.equal(id, 42);
+        assert.equal(target, $('.target-reaction')[0]);
+    };
+
+    assert(reactions.open_reactions_popover());
+    assert(called);
+
+    current_msg_list.selected_message = function () { return { sent_by_me: false }; };
+
+    called = false;
+    emoji_picker.toggle_emoji_popover = function (target, id) {
+        called = true;
+        assert.equal(id, 42);
+        assert.equal(target, $('.target-action')[0]);
+    };
+
+    assert(reactions.open_reactions_popover());
+    assert(called);
+}());
+
 (function test_basics() {
     var result = reactions.get_message_reactions(message);
 
