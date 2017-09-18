@@ -1,5 +1,6 @@
 var noop = function () {};
 var return_false = function () { return false; };
+var return_true = function () { return true; };
 
 set_global('document', {
     location: {
@@ -214,4 +215,25 @@ function assert_hidden(sel) {
                                            subject: 'more',
                                            trigger: 'new topic button'}),
                  'subject');
+}());
+
+(function test_focus_in_empty_compose() {
+    $('#new_message_content').is = function (attr) {
+        assert.equal(attr, ':focus');
+        return $('#new_message_content').is_focused;
+    };
+
+    compose_state.composing = return_true;
+    $('#new_message_content').val('');
+    $('#new_message_content').focus();
+    assert(compose_state.focus_in_empty_compose());
+
+    compose_state.composing = return_false;
+    assert(!compose_state.focus_in_empty_compose());
+
+    $('#new_message_content').val('foo');
+    assert(!compose_state.focus_in_empty_compose());
+
+    $('#new_message_content').blur();
+    assert(!compose_state.focus_in_empty_compose());
 }());
