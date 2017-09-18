@@ -99,7 +99,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_press(47).name, 'search'); // slash
     assert.equal(map_press(106).name, 'vim_down'); // j
 
-    assert.equal(map_down(219, false, true).name, 'esc_ctrl');
+    assert.equal(map_down(219, false, true).name, 'escape');
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
