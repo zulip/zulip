@@ -96,7 +96,7 @@ pip-tools==1.9.0
 polib==1.0.8
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.3
+psycopg2==2.7.3.1
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyaml==17.8.0             # via moto
