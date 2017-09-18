@@ -49,7 +49,7 @@ hyperframe==3.2.0         # via h2, hyper
 idna==2.6
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.1.0
+ipython==6.2.0
 jedi==0.10.2              # via ipython
 jinja2==2.9.6
 lxml==3.8.0               # via premailer
