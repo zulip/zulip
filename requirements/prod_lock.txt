@@ -39,7 +39,7 @@ django==1.11.4
 docopt==0.6.2
 fonttools==3.15.1
 gitdb==0.6.4
-google-api-python-client==1.6.2
+google-api-python-client==1.6.3
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2016.9.19
