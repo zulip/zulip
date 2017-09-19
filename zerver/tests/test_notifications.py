@@ -337,7 +337,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message with a realm emoji :green_tick:!')
-        body = '<img alt=":green_tick:" height="20px" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
+        body = '<img alt=":green_tick:" height="20px" style="position: relative;top: 6px;" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
