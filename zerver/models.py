@@ -931,14 +931,19 @@ class Stream(ModelReprMixin, models.Model):
     class Meta(object):
         unique_together = ("name", "realm")
 
-    def num_subscribers(self):
-        # type: () -> int
+    @staticmethod
+    def num_subscribers_for_stream_id(stream_id):
+        # type: (int) -> int
         return Subscription.objects.filter(
             recipient__type=Recipient.STREAM,
-            recipient__type_id=self.id,
+            recipient__type_id=stream_id,
             user_profile__is_active=True,
             active=True
         ).count()
+
+    def num_subscribers(self):
+        # type: () -> int
+        return Stream.num_subscribers_for_stream_id(self.id)
 
     # This is stream information that is sent to clients
     def to_dict(self):
