@@ -17,7 +17,7 @@
         While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
     </p>
 
-    <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
+    <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: auto;">
         {% for recipient_block in messages %}
         <div class='recipient_block' style="{% if not recipient_block.header.stream_message %}background-color: #f0f4f5;{% endif %}border: 1px solid black;margin-bottom: 4px;">
             <div class='recipient_header' style="{% if recipient_block.header.stream_message %}background-color: #9ecaff;{% else %}color: #ffffff;background-color: #444444;{% endif %}border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
