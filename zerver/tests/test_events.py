@@ -15,7 +15,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream,
+    Realm, Subscription, Stream, StreamLite
 )
 
 from zerver.lib.actions import (
@@ -1655,7 +1655,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     def test_unread_msgs(self):
         # type: () -> None
         def mute_stream(user_profile, stream):
-            # type: (UserProfile, Stream) -> None
+            # type: (UserProfile, StreamLite) -> None
             recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
             subscription = Subscription.objects.get(
                 user_profile=user_profile,

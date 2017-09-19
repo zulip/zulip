@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream
+from zerver.models import UserProfile, Recipient, Subscription, Realm, StreamLite
 import base64
 import ujson
 import os
@@ -57,15 +57,17 @@ def create_user(email, password, realm, full_name, short_name,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):
-    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, bool, Optional[StreamLite], Optional[StreamLite], Optional[bool], Optional[int]) -> UserProfile
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
     user_profile.is_realm_admin = is_realm_admin
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
-    user_profile.default_sending_stream = default_sending_stream
-    user_profile.default_events_register_stream = default_events_register_stream
+    if default_sending_stream:
+        user_profile.default_sending_stream_id = default_sending_stream.id
+    if default_events_register_stream is not None:
+        user_profile.default_events_register_stream_id = default_events_register_stream.id
     # Allow the ORM default to be used if not provided
     if default_all_public_streams is not None:
         user_profile.default_all_public_streams = default_all_public_streams

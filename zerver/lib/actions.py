@@ -43,7 +43,7 @@ from zerver.lib.topic_mutes import (
     remove_topic_mute,
 )
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, \
+    RealmDomain, StreamLite, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, \
     Client, DefaultStream, UserPresence, PushDeviceToken, ScheduledEmail, \
@@ -148,11 +148,12 @@ def log_event(event):
             log.write(force_str(ujson.dumps(event) + u'\n'))
 
 def can_access_stream_user_ids(stream):
-    # type: (Stream) -> Set[int]
+    # type: (StreamLite) -> Set[int]
 
     # return user ids of users who can access the attributes of
     # a stream, such as its name/description
-    if stream.is_public():
+    realm = Realm.objects.get(id=stream.realm_id)
+    if stream.is_public(realm):
         return set(active_user_ids(stream.realm_id))
     else:
         return private_stream_user_ids(stream.id)
@@ -424,7 +425,7 @@ def do_create_user(email, password, realm, full_name, short_name,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
                    newsletter_data=None):
-    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[StreamLite], Optional[StreamLite], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                active=active, is_realm_admin=is_realm_admin,
@@ -503,10 +504,12 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
     )
     send_event(event, active_user_ids(realm.id))
 
-def do_set_realm_notifications_stream(realm, stream, stream_id):
-    # type: (Realm, Stream, int) -> None
-    realm.notifications_stream = stream
+def do_set_realm_notifications_stream(realm, new_stream, stream_id):
+    # type: (Realm, StreamLite, int) -> None
+    new_stream_id = new_stream.id if new_stream else None
+    realm.notifications_stream_id = new_stream_id
     realm.save(update_fields=['notifications_stream'])
+    realm.refresh_from_db()
     event = dict(
         type="realm",
         op="update",
@@ -579,7 +582,7 @@ def do_deactivate_user(user_profile, acting_user=None, _cascade=True):
             do_deactivate_user(profile, acting_user=acting_user, _cascade=False)
 
 def do_deactivate_stream(stream, log=True):
-    # type: (Stream, bool) -> None
+    # type: (StreamLite, bool) -> None
 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
@@ -1268,7 +1271,7 @@ def prep_stream_welcome_message(stream):
     return message
 
 def send_stream_creation_event(stream, user_ids):
-    # type: (Stream, List[int]) -> None
+    # type: (StreamLite, List[int]) -> None
     event = dict(type="stream", op="create",
                  streams=[stream.to_dict()])
     send_event(event, user_ids)
@@ -1449,7 +1452,7 @@ def check_stream_name(stream_name):
             raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
 
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
-    # type: (UserProfile, Optional[Stream], Text, Realm) -> None
+    # type: (UserProfile, Optional[StreamLite], Text, Realm) -> None
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
     cross-realm bot) so that the owner can correct the issue."""
@@ -1718,7 +1721,7 @@ def pick_color_helper(user_profile, subs):
         return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
 
 def validate_user_access_to_subscribers(user_profile, stream):
-    # type: (Optional[UserProfile], Stream) -> None
+    # type: (Optional[UserProfile], StreamLite) -> None
     """ Validates whether the user can view the subscribers of a stream.  Raises a JsonableError if:
         * The user and the stream are in different realms
         * The realm is MIT and the stream is not invite only.
@@ -1818,7 +1821,7 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict, stream_re
     return result
 
 def get_subscribers_query(stream, requesting_user):
-    # type: (Stream, Optional[UserProfile]) -> QuerySet
+    # type: (StreamLite, Optional[UserProfile]) -> QuerySet
     # TODO: Make a generic stub for QuerySet
     """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
@@ -1839,12 +1842,12 @@ def get_subscribers_query(stream, requesting_user):
     return subscriptions
 
 def get_subscribers(stream, requesting_user=None):
-    # type: (Stream, Optional[UserProfile]) -> List[UserProfile]
+    # type: (StreamLite, Optional[UserProfile]) -> List[UserProfile]
     subscriptions = get_subscribers_query(stream, requesting_user).select_related()
     return [subscription.user_profile for subscription in subscriptions]
 
 def get_subscriber_emails(stream, requesting_user=None):
-    # type: (Stream, Optional[UserProfile]) -> List[Text]
+    # type: (StreamLite, Optional[UserProfile]) -> List[Text]
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
@@ -1861,7 +1864,7 @@ def maybe_get_subscriber_emails(stream, user_profile):
     return subscribers
 
 def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
-    # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[Text]], bool) -> None
+    # type: (UserProfile, Iterable[Tuple[Subscription, StreamLite]], Callable[[StreamLite], List[Text]], bool) -> None
     if not no_log:
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
@@ -1887,7 +1890,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
     send_event(event, [user_profile.id])
 
 def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users):
-    # type: (Stream, Iterable[UserProfile], Iterable[UserProfile]) -> Set[int]
+    # type: (StreamLite, Iterable[UserProfile], Iterable[UserProfile]) -> Set[int]
     '''
     altered_users is a list of users that we are adding/removing
     subscribed_users is the list of already subscribed users
@@ -1911,7 +1914,7 @@ def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users)
         return set(active_user_ids(stream.realm_id)) - set(altered_user_ids)
 
 def query_all_subs_by_stream(streams):
-    # type: (Iterable[Stream]) -> Dict[int, List[UserProfile]]
+    # type: (Iterable[StreamLite]) -> Dict[int, List[UserProfile]]
     all_subs = Subscription.objects.filter(recipient__type=Recipient.STREAM,
                                            recipient__type_id__in=[stream.id for stream in streams],
                                            user_profile__is_active=True,
@@ -1923,11 +1926,11 @@ def query_all_subs_by_stream(streams):
     return all_subs_by_stream
 
 def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_user=None):
-    # type: (Iterable[Stream], Iterable[UserProfile], bool, Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+    # type: (Iterable[StreamLite], Iterable[UserProfile], bool, Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, StreamLite]], List[Tuple[UserProfile, StreamLite]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])  # type: Mapping[int, Recipient]
     recipients = [recipient.id for recipient in recipients_map.values()]  # type: List[int]
 
-    stream_map = {}  # type: Dict[int, Stream]
+    stream_map = {}  # type: Dict[int, StreamLite]
     for stream in streams:
         stream_map[recipients_map[stream.id].id] = stream
 
@@ -1937,9 +1940,9 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
                                      recipient__type=Recipient.STREAM):
         subs_by_user[sub.user_profile_id].append(sub)
 
-    already_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
-    subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
-    new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
+    already_subscribed = []  # type: List[Tuple[UserProfile, StreamLite]]
+    subs_to_activate = []  # type: List[Tuple[Subscription, StreamLite]]
+    new_subs = []  # type: List[Tuple[UserProfile, int, StreamLite]]
     for user_profile in users:
         needs_new_sub = set(recipients)  # type: Set[int]
         for sub in subs_by_user[user_profile.id]:
@@ -1956,7 +1959,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         for recipient_id in needs_new_sub:
             new_subs.append((user_profile, recipient_id, stream_map[recipient_id]))
 
-    subs_to_add = []  # type: List[Tuple[Subscription, Stream]]
+    subs_to_add = []  # type: List[Tuple[Subscription, StreamLite]]
     for (user_profile, recipient_id, stream) in new_subs:
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
         sub_to_add = Subscription(user_profile=user_profile, active=True,
@@ -1988,7 +1991,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
-                                                   modified_stream=stream,
+                                                   modified_stream_id=stream.id,
                                                    event_last_message_id=event_last_message_id,
                                                    event_type='subscription_created',
                                                    event_time=event_time))
@@ -1996,7 +1999,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
-                                                   modified_stream=stream,
+                                                   modified_stream_id=stream.id,
                                                    event_last_message_id=event_last_message_id,
                                                    event_type='subscription_activated',
                                                    event_time=event_time))
@@ -2020,13 +2023,13 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
     def fetch_stream_subscriber_emails(stream):
-        # type: (Stream) -> List[Text]
+        # type: (StreamLite) -> List[Text]
         if is_zephyr_realm and not stream.invite_only:
             return []
         users = all_subs_by_stream[stream.id]
         return [u.email for u in users]
 
-    sub_tuples_by_user = defaultdict(list)  # type: Dict[int, List[Tuple[Subscription, Stream]]]
+    sub_tuples_by_user = defaultdict(list)  # type: Dict[int, List[Tuple[Subscription, StreamLite]]]
     new_streams = set()  # type: Set[Tuple[int, int]]
     for (sub, stream) in subs_to_add + subs_to_activate:
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
@@ -2079,7 +2082,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
             already_subscribed)
 
 def notify_subscriptions_removed(user_profile, streams, no_log=False):
-    # type: (UserProfile, Iterable[Stream], bool) -> None
+    # type: (UserProfile, Iterable[StreamLite], bool) -> None
     if not no_log:
         log_event({'type': 'subscription_removed',
                    'user': user_profile.email,
@@ -2092,11 +2095,11 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
     send_event(event, [user_profile.id])
 
 def bulk_remove_subscriptions(users, streams, acting_user=None):
-    # type: (Iterable[UserProfile], Iterable[Stream], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+    # type: (Iterable[UserProfile], Iterable[StreamLite], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, StreamLite]], List[Tuple[UserProfile, StreamLite]]]
 
     recipients_map = bulk_get_recipients(Recipient.STREAM,
                                          [stream.id for stream in streams])  # type: Mapping[int, Recipient]
-    stream_map = {}  # type: Dict[int, Stream]
+    stream_map = {}  # type: Dict[int, StreamLite]
     for stream in streams:
         stream_map[recipients_map[stream.id].id] = stream
 
@@ -2106,8 +2109,8 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
                                                                           active=True):
         subs_by_user[sub.user_profile_id].append(sub)
 
-    subs_to_deactivate = []  # type: List[Tuple[Subscription, Stream]]
-    not_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
+    subs_to_deactivate = []  # type: List[Tuple[Subscription, StreamLite]]
+    not_subscribed = []  # type: List[Tuple[UserProfile, StreamLite]]
     for user_profile in users:
         recipients_to_unsub = set([recipient.id for recipient in recipients_map.values()])
         for sub in subs_by_user[user_profile.id]:
@@ -2135,7 +2138,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
     for (sub, stream) in subs_to_deactivate:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
                                                    modified_user=sub.user_profile,
-                                                   modified_stream=stream,
+                                                   modified_stream_id=stream.id,
                                                    event_last_message_id=event_last_message_id,
                                                    event_type='subscription_deactivated',
                                                    event_time=event_time))
@@ -2159,7 +2162,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
             do_deactivate_stream(stream)
 
     altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
-    streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
+    streams_by_user = defaultdict(list)  # type: Dict[int, List[StreamLite]]
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
         altered_user_dict[stream.id].append(sub.user_profile)
@@ -2205,7 +2208,7 @@ def log_subscription_property_change(user_email, stream_name, property, value):
 
 def do_change_subscription_property(user_profile, sub, stream,
                                     property_name, value):
-    # type: (UserProfile, Subscription, Stream, Text, Any) -> None
+    # type: (UserProfile, Subscription, StreamLite, Text, Any) -> None
     setattr(sub, property_name, value)
     sub.save(update_fields=[property_name])
     log_subscription_property_change(user_profile.email, stream.name,
@@ -2385,7 +2388,7 @@ def do_change_icon_source(realm, icon_source, log=True):
                active_user_ids(realm.id))
 
 def _default_stream_permision_check(user_profile, stream):
-    # type: (UserProfile, Optional[Stream]) -> None
+    # type: (UserProfile, Optional[StreamLite]) -> None
     # Any user can have a None default stream
     if stream is not None:
         if user_profile.is_bot:
@@ -2396,10 +2399,12 @@ def _default_stream_permision_check(user_profile, stream):
             raise JsonableError(_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
-    # type: (UserProfile, Optional[Stream], bool) -> None
+    # type: (UserProfile, Optional[StreamLite], bool) -> None
     _default_stream_permision_check(user_profile, stream)
 
-    user_profile.default_sending_stream = stream
+    stream_id = stream.id if stream else None
+    user_profile.default_sending_stream_id = stream_id
+
     user_profile.save(update_fields=['default_sending_stream'])
     if log:
         log_event({'type': 'user_change_default_sending_stream',
@@ -2419,10 +2424,11 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                    bot_owner_userids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
-    # type: (UserProfile, Optional[Stream], bool) -> None
+    # type: (UserProfile, Optional[StreamLite], bool) -> None
     _default_stream_permision_check(user_profile, stream)
 
-    user_profile.default_events_register_stream = stream
+    stream_id = stream.id if stream else None
+    user_profile.default_events_register_stream_id = stream_id
     user_profile.save(update_fields=['default_events_register_stream'])
     if log:
         log_event({'type': 'user_change_default_events_register_stream',
@@ -2482,19 +2488,19 @@ def do_change_bot_type(user_profile, value):
     user_profile.save(update_fields=["bot_type"])
 
 def do_change_stream_invite_only(stream, invite_only):
-    # type: (Stream, bool) -> None
+    # type: (StreamLite, bool) -> None
     stream.invite_only = invite_only
     stream.save(update_fields=['invite_only'])
 
 def do_rename_stream(stream, new_name, log=True):
-    # type: (Stream, Text, bool) -> Dict[str, Text]
+    # type: (StreamLite, Text, bool) -> Dict[str, Text]
     old_name = stream.name
     stream.name = new_name
     stream.save(update_fields=["name"])
 
     if log:
         log_event({'type': 'stream_name_change',
-                   'realm': stream.realm.string_id,
+                   'realm': stream.realm_string_id(),
                    'new_name': new_name})
 
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -2536,7 +2542,7 @@ def do_rename_stream(stream, new_name, log=True):
     return {"email_address": new_email}
 
 def do_change_stream_description(stream, new_description):
-    # type: (Stream, Text) -> None
+    # type: (StreamLite, Text) -> None
     stream.description = new_description
     stream.save(update_fields=['description'])
 
@@ -2682,7 +2688,7 @@ def notify_default_streams(realm_id):
     send_event(event, active_user_ids(realm_id))
 
 def do_add_default_stream(stream):
-    # type: (Stream) -> None
+    # type: (StreamLite) -> None
     realm_id = stream.realm_id
     stream_id = stream.id
     if not DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).exists():
@@ -2690,7 +2696,7 @@ def do_add_default_stream(stream):
         notify_default_streams(realm_id)
 
 def do_remove_default_stream(stream):
-    # type: (Stream) -> None
+    # type: (StreamLite) -> None
     realm_id = stream.realm_id
     stream_id = stream.id
     DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).delete()
@@ -2885,7 +2891,7 @@ def do_mark_all_as_read(user_profile):
     return count
 
 def do_mark_stream_messages_as_read(user_profile, stream, topic_name=None):
-    # type: (UserProfile, Optional[Stream], Optional[Text]) -> int
+    # type: (UserProfile, Optional[StreamLite], Optional[Text]) -> int
     log_statsd_event('mark_stream_as_read')
 
     msgs = UserMessage.objects.filter(
@@ -3201,7 +3207,7 @@ def do_delete_message(user_profile, message):
 
 
 def encode_email_address(stream):
-    # type: (Stream) -> Text
+    # type: (StreamLite) -> Text
     return encode_email_address_helper(stream.name, stream.email_token)
 
 def encode_email_address_helper(name, email_token):
@@ -3505,7 +3511,7 @@ class InvitationError(JsonableError):
         self.sent_invitations = sent_invitations  # type: bool
 
 def do_invite_users(user_profile, invitee_emails, streams, body=None):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> None
+    # type: (UserProfile, SizedTextIterable, Iterable[StreamLite], Optional[str]) -> None
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
@@ -3594,13 +3600,13 @@ def do_set_alert_words(user_profile, alert_words):
     notify_alert_words(user_profile, alert_words)
 
 def do_mute_topic(user_profile, stream, recipient, topic):
-    # type: (UserProfile, Stream, Recipient, str) -> None
+    # type: (UserProfile, StreamLite, Recipient, str) -> None
     add_topic_mute(user_profile, stream.id, recipient.id, topic)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(event, [user_profile.id])
 
 def do_unmute_topic(user_profile, stream, topic):
-    # type: (UserProfile, Stream, str) -> None
+    # type: (UserProfile, StreamLite, str) -> None
     remove_topic_mute(user_profile, stream.id, topic)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(event, [user_profile.id])

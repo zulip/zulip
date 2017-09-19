@@ -329,13 +329,13 @@ class Command(BaseCommand):
                 }  # type: Dict[Text, Dict[Text, Any]]
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
                 # Now that we've created the notifications stream, configure it properly.
-                zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
+                zulip_realm.notifications_stream_id = get_stream("announce", zulip_realm).id
                 zulip_realm.save(update_fields=['notifications_stream'])
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
                     DefaultStream.objects.create(realm=zulip_realm,
-                                                 stream=get_stream(default_stream_name, zulip_realm))
+                                                 stream_id=get_stream(default_stream_name, zulip_realm).id)
 
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []

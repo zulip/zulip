@@ -37,6 +37,7 @@ from zerver.lib.test_runner import (
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_user_ids,
+    StreamLite
 )
 
 from zerver.lib.actions import (
@@ -453,7 +454,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def set_up_stream_for_deletion(self, stream_name, invite_only=False,
                                    subscribed=True):
-        # type: (str, bool, bool) -> Stream
+        # type: (str, bool, bool) -> StreamLite
         """
         Create a stream for deletion by an administrator.
         """
@@ -471,12 +472,12 @@ class StreamAdminTest(ZulipTestCase):
         return stream
 
     def delete_stream(self, stream):
-        # type: (Stream) -> None
+        # type: (StreamLite) -> None
         """
         Delete the stream and assess the result.
         """
         active_name = stream.name
-        realm = stream.realm
+        realm = Realm.objects.get(id=stream.realm_id)
         stream_id = stream.id
 
         events = []  # type: List[Mapping[str, Any]]

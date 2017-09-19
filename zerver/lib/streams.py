@@ -9,7 +9,7 @@ from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_recipient, get_stream, \
-    bulk_get_streams
+    bulk_get_streams, StreamLite
 
 def access_stream_for_delete(user_profile, stream_id):
     # type: (UserProfile, int) -> Stream
@@ -32,7 +32,7 @@ def access_stream_for_delete(user_profile, stream_id):
     return stream
 
 def access_stream_common(user_profile, stream, error):
-    # type: (UserProfile, Stream, Text) -> Tuple[Recipient, Subscription]
+    # type: (UserProfile, StreamLite, Text) -> Tuple[Recipient, Subscription]
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -65,10 +65,10 @@ def access_stream_common(user_profile, stream, error):
     raise JsonableError(error)
 
 def access_stream_by_id(user_profile, stream_id):
-    # type: (UserProfile, int) -> Tuple[Stream, Recipient, Subscription]
+    # type: (UserProfile, int) -> Tuple[StreamLite, Recipient, Subscription]
     error = _("Invalid stream id")
     try:
-        stream = Stream.objects.get(id=stream_id)
+        stream = StreamLite.for_stream_id(stream_id)
     except Stream.DoesNotExist:
         raise JsonableError(error)
 
@@ -85,7 +85,7 @@ def check_stream_name_available(realm, name):
         pass
 
 def access_stream_by_name(user_profile, stream_name):
-    # type: (UserProfile, Text) -> Tuple[Stream, Recipient, Subscription]
+    # type: (UserProfile, Text) -> Tuple[StreamLite, Recipient, Subscription]
     error = _("Invalid stream name '%s'" % (stream_name,))
     try:
         stream = get_stream(stream_name, user_profile.realm)
@@ -96,7 +96,7 @@ def access_stream_by_name(user_profile, stream_name):
     return (stream, recipient, sub)
 
 def access_stream_for_unmute_topic(user_profile, stream_name, error):
-    # type: (UserProfile, Text, Text) -> Stream
+    # type: (UserProfile, Text, Text) -> StreamLite
     """
     It may seem a little silly to have this helper function for unmuting
     topics, but it gets around a linter warning, and it helps to be able

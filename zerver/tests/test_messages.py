@@ -45,7 +45,7 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
-    get_stream, get_recipient, get_system_bot, get_user, Reaction,
+    get_stream, get_recipient, get_system_bot, get_user, Reaction, StreamLite,
     sew_messages_and_reactions, flush_per_request_caches
 )
 
@@ -2328,7 +2328,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         subject = 'foo'
 
         def send_fake_message(message_content, stream):
-            # type: (str, Stream) -> Message
+            # type: (str, StreamLite) -> Message
             recipient = get_recipient(Recipient.STREAM, stream.id)
             return Message.objects.create(sender = sender,
                                           recipient = recipient,

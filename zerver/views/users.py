@@ -27,7 +27,8 @@ from zerver.lib.users import check_valid_bot_type, check_change_full_name, \
     check_full_name, check_short_name, check_valid_interface_type
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
-    get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
+    get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
+    StreamLite
 from zerver.lib.create_user import random_api_key
 
 
@@ -177,7 +178,7 @@ def patch_bot_backend(request, user_profile, email,
         do_change_bot_owner(bot, owner, user_profile)
     if default_sending_stream is not None:
         if default_sending_stream == "":
-            stream = None  # type: Optional[Stream]
+            stream = None  # type: Optional[StreamLite]
         else:
             (stream, recipient, sub) = access_stream_by_name(
                 user_profile, default_sending_stream)

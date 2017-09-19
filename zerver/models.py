@@ -1033,12 +1033,8 @@ def get_client_remote_cache(name):
 
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_stream_backend(stream_name, realm_id):
-    # type: (Text, int) -> Stream
-    stream = Stream.objects.get(
-        name__iexact=stream_name.strip(),
-        realm_id=realm_id
-    )
-    return stream
+    # type: (Text, int) -> Dict[str, Any]
+    return StreamLite.row_for_name(stream_name, realm_id)
 
 def stream_name_in_use(stream_name, realm_id):
     # type: (Text, int) -> bool
@@ -1054,9 +1050,96 @@ def get_active_streams(realm):
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
 
+class StreamLite(object):
+    '''
+    We use this class for stream objects we pull out of cache.  This
+    class prevents expensive unintentional foreign key traversals and
+    makes it explicit which fields we can use.
+    '''
+    def __init__(self, row):
+        # type: (Dict[str, Any]) -> None
+        self.id = row['id']
+        self.name = row['name']
+        self.realm_id = row['realm_id']
+        self.invite_only = row['invite_only']
+        self.email_token = row['email_token']
+        self.description = row['description']
+        self.deactivated = row['deactivated']
+
+    def num_subscribers(self):
+        # type: () -> int
+        return Stream.num_subscribers_for_stream_id(self.id)
+
+    def save(self, update_fields=None):
+        # type: (List[str]) -> None
+        assert(update_fields)
+        stream = Stream.objects.get(id=self.id)
+        for k in update_fields:
+            setattr(stream, k, getattr(self, k))
+        stream.save(update_fields=update_fields)
+
+    def to_dict(self):
+        # type: () -> Dict[str, Any]
+        return dict(name=self.name,
+                    stream_id=self.id,
+                    description=self.description,
+                    invite_only=self.invite_only)
+
+    def realm_string_id(self):
+        # type: () -> Text
+        '''
+        This is one of the few places we need realm info, and it
+        is only for logging.
+        '''
+        return Realm.objects.get(id=self.realm_id).string_id
+
+    def is_public(self, realm):
+        # type: (Realm) -> bool
+        # All streams are private in Zephyr mirroring realms.
+        # We allow the caller to supply the realm to avoid DB hops.
+        return not self.invite_only and not realm.is_zephyr_mirror_realm
+
+    @staticmethod
+    def row_for_name(stream_name, realm_id):
+        # type: (Text, int) -> Dict[str, Any]
+        rows = Stream.objects.filter(
+            name__iexact=stream_name.strip(),
+            realm_id=realm_id
+        ).values(
+            'id',
+            'name',
+            'realm_id',
+            'invite_only',
+            'email_token',
+            'description',
+            'deactivated',
+        )
+        if not rows:
+            raise Stream.DoesNotExist
+        return rows[0]
+
+    @staticmethod
+    def for_stream_id(stream_id):
+        # type: (int) -> StreamLite
+        rows = Stream.objects.filter(
+            id=stream_id,
+        ).values(
+            'id',
+            'name',
+            'realm_id',
+            'invite_only',
+            'email_token',
+            'description',
+            'deactivated',
+        )
+        if not rows:
+            raise Stream.DoesNotExist
+        return StreamLite(rows[0])
+
 def get_stream(stream_name, realm):
-    # type: (Text, Realm) -> Stream
-    return get_stream_backend(stream_name, realm.id)
+    # type: (Text, Realm) -> StreamLite
+    row = StreamLite.row_for_name(stream_name, realm.id)
+    return StreamLite(row)
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[Text, Any]

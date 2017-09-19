@@ -12,7 +12,7 @@ from zerver.models import (
     get_stream,
     MutedTopic,
     Recipient,
-    Stream,
+    StreamLite,
     UserProfile
 )
 from sqlalchemy.sql import (
@@ -81,7 +81,7 @@ def remove_topic_mute(user_profile, stream_id, topic_name):
     row.delete()
 
 def topic_is_muted(user_profile, stream, topic_name):
-    # type: (UserProfile, Stream, Text) -> bool
+    # type: (UserProfile, StreamLite, Text) -> bool
     is_muted = MutedTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream.id,

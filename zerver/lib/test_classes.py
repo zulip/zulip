@@ -42,6 +42,7 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    StreamLite,
     Subscription,
     UserMessage,
     UserProfile,
@@ -484,7 +485,7 @@ class ZulipTestCase(TestCase):
                                             "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type))).read())
 
     def make_stream(self, stream_name, realm=None, invite_only=False):
-        # type: (Text, Optional[Realm], Optional[bool]) -> Stream
+        # type: (Text, Optional[Realm], Optional[bool]) -> StreamLite
         if realm is None:
             realm = self.DEFAULT_REALM
 
@@ -502,11 +503,11 @@ class ZulipTestCase(TestCase):
                 that is not already in use.''' % (stream_name,))
 
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-        return stream
+        return StreamLite.for_stream_id(stream.id)
 
     # Subscribe to a stream directly
     def subscribe(self, user_profile, stream_name):
-        # type: (UserProfile, Text) -> Stream
+        # type: (UserProfile, Text) -> StreamLite
         try:
             stream = get_stream(stream_name, user_profile.realm)
             from_stream_creation = False

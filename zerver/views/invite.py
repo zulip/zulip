@@ -13,7 +13,7 @@ from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.validator import check_string, check_list
-from zerver.models import PreregistrationUser, Stream, UserProfile
+from zerver.models import PreregistrationUser, Stream, UserProfile, StreamLite
 
 import re
 
@@ -41,7 +41,7 @@ def invite_users_backend(request, user_profile,
     if notifications_stream and not notifications_stream.invite_only:
         stream_names.append(notifications_stream.name)
 
-    streams = []  # type: List[Stream]
+    streams = []  # type: List[StreamLite]
     for stream_name in stream_names:
         try:
             (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
