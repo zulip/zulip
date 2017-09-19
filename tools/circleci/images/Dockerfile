@@ -1,0 +1,85 @@
+# Dockerfile for a generic Ubuntu 14.04 image with just the basics we need
+# to make it suitable for CI.  In particular:
+#  * a non-root user to run as (a pain to try to do in setup,
+#    because by then we've already cloned the repo);
+#  * Git and other basic utilities.
+#
+# Based on CircleCI's provided images, but those are on Debian Jessie
+# and we want Ubuntu, to match our supported environments in production.
+# See these templates and code:
+#   https://github.com/circleci/circleci-images/blob/1949c44df/shared/images/
+# which we've borrowed from, chiefly Dockerfile-basic.template.
+#
+# The CircleCI `python` images are based on upstream's `python` (i.e.,
+# https://hub.docker.com/_/python/), which also come only for Debian
+# (and various obscure distros, and Windows) and not Ubuntu.  Those
+# are in turn based on upstream's `buildpack-deps`, which do come in
+# Ubuntu flavors.
+#
+# So this image starts from `buildpack-deps`, does the job of `python`
+# (but much simpler, with a couple of packages from the distro), and
+# then borrows from the CircleCI Dockerfile.
+
+# TODO add xenial
+FROM buildpack-deps:trusty
+
+RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci \
+  && echo 'DPkg::Options "--force-confnew";' >> /etc/apt/apt.conf.d/90circleci
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+  && apt-get install -y \
+    git mercurial xvfb \
+    locales sudo openssh-client ca-certificates tar gzip parallel \
+    net-tools netcat unzip zip bzip2 \
+    python3 python3-pip
+
+RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+
+RUN locale-gen C.UTF-8 || true
+ENV LANG=C.UTF-8
+
+RUN JQ_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/jq-latest" \
+  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/jq $JQ_URL \
+  && chmod +x /usr/bin/jq \
+  && jq --version
+
+
+# Install Docker.  This logic comes from Circle's Dockerfile; it's probably
+# faster than the upstream-recommended approach of using their apt repo,
+# and fine for an image that will be rebuilt rather than upgraded.
+
+# Docker core...
+RUN set -ex \
+  && export DOCKER_VERSION=$(curl --silent --fail --retry 3 https://download.docker.com/linux/static/stable/x86_64/ | grep -o -e 'docker-[.0-9]*-ce\.tgz' | sort -r | head -n 1) \
+  && DOCKER_URL="https://download.docker.com/linux/static/stable/x86_64/${DOCKER_VERSION}" \
+  && echo Docker URL: $DOCKER_URL \
+  && curl --silent --show-error --location --fail --retry 3 --output /tmp/docker.tgz "${DOCKER_URL}" \
+  && ls -lha /tmp/docker.tgz \
+  && tar -xz -C /tmp -f /tmp/docker.tgz \
+  && mv /tmp/docker/* /usr/bin \
+  && rm -rf /tmp/docker /tmp/docker.tgz \
+  && which docker \
+  && (docker version || true)
+
+# ...docker-compose...
+RUN COMPOSE_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/docker-compose-latest" \
+  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/docker-compose $COMPOSE_URL \
+  && chmod +x /usr/bin/docker-compose \
+  && docker-compose version
+
+# ... and dockerize.
+RUN DOCKERIZE_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/dockerize-latest.tar.gz" \
+  && curl --silent --show-error --location --fail --retry 3 --output /tmp/dockerize-linux-amd64.tar.gz $DOCKERIZE_URL \
+  && tar -C /usr/local/bin -xzvf /tmp/dockerize-linux-amd64.tar.gz \
+  && rm -rf /tmp/dockerize-linux-amd64.tar.gz \
+  && dockerize --version
+
+RUN groupadd --gid 3434 circleci \
+  && useradd --uid 3434 --gid circleci --shell /bin/bash --create-home circleci \
+  && echo 'circleci ALL=NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci \
+  && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
+
+USER circleci
+
+CMD ["/bin/sh"]
