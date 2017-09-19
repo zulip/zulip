@@ -31,7 +31,8 @@ EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
-EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource')
+NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
+EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH, 'emoji-datasource')
 
 EMOJI_CODES_FILE_TEMPLATE = """\
 var emoji_codes = (function () {
@@ -190,6 +191,18 @@ def get_success_stamp():
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
+def setup_emoji_farm(cache_path):
+    # type: (Text) -> None
+    # Copy individual emoji images from npm package.
+    src_emoji_farm = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-google', 'img', 'google', '64', '*')
+    target_emoji_farm = os.path.join(cache_path, 'images-google-64')
+    run(['mkdir', '-p', target_emoji_farm])
+    run(['cp', '-RPp', src_emoji_farm, target_emoji_farm], shell=True)
+
+    # Copy zulip.png to the emoji farm.
+    zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
+    run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
+
 def dump_emojis(cache_path):
     # type: (str) -> None
     subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
@@ -260,6 +273,8 @@ def dump_emojis(cache_path):
             os.path.join(cache_emoji_unicode, fn),
             os.path.join(cache_emoji, fn)
         )
+
+    setup_emoji_farm(cache_path)
 
     # Spritesheet CSS generation code.
     emoji_positions = ""
