@@ -26,6 +26,14 @@ class AttachmentsTests(ZulipTestCase):
         attachments = user_attachments(user_profile)
         self.assertEqual(result.json()['attachments'], attachments)
 
+    def test_remove_attachment_exception(self):
+        # type: (Any) -> None
+        user_profile = self.example_user('cordelia')
+        self.login(user_profile.email)
+        with mock.patch('zerver.lib.attachments.delete_message_image', side_effect=Exception()):
+            result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
+        self.assert_json_error(result, "An error occured while deleting the attachment. Please try again later.")
+
     @mock.patch('zerver.lib.attachments.delete_message_image')
     def test_remove_attachment(self, ignored):
         # type: (Any) -> None

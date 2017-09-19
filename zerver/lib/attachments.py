@@ -24,5 +24,8 @@ def access_attachment_by_id(user_profile, attachment_id, needs_owner=False):
 
 def remove_attachment(user_profile, attachment):
     # type: (UserProfile, Attachment) -> None
-    delete_message_image(attachment.path_id)
+    try:
+        delete_message_image(attachment.path_id)
+    except Exception:
+        raise JsonableError(_("An error occured while deleting the attachment. Please try again later."))
     attachment.delete()

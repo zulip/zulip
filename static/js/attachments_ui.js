@@ -3,7 +3,17 @@ var attachments_ui = (function () {
 var exports = {};
 
 function delete_attachments(attachment) {
-    channel.del({url: '/json/attachments/' + attachment, idempotent: true});
+    var status = $('#delete-upload-status');
+    channel.del({
+        url: '/json/attachments/' + attachment,
+        idempotent: true,
+        error: function (xhr) {
+            ui_report.error(i18n.t("Failed"), xhr, status);
+        },
+        success: function () {
+            ui_report.success(i18n.t("Attachment deleted"), status);
+        },
+    });
 }
 
 exports.bytes_to_size = function (bytes) {
