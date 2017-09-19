@@ -165,7 +165,7 @@ Say you have a method `greet(name_key)` defined as follows:
         # but doesn't do any database lookup. We "fill" the shell with a return value; This value will be returned on every
         # call to `fetch_database()`.
         fetch_database = MagicMock(return_value="Mr. Mario Mario")
-        greet("Mario")
+        greeting = greet("Mario")
         assert greeting == "Hello Mr. Mario Mario"
 
 That's all. Note that **this mock is suitable for testing `greet()`, but not for testing `fetch_database()`**.
