@@ -18,7 +18,8 @@ from zerver.lib.test_helpers import (
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
 from zerver.models import (
-    get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient
+    get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient,
+    flush_per_request_caches
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
@@ -172,7 +173,12 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        result = self._get_home_page(stream='Denmark')
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            result = self._get_home_page(stream='Denmark')
+
+        self.assert_length(queries, 39)
+
         html = result.content.decode('utf-8')
 
         for html_bit in html_bits:
