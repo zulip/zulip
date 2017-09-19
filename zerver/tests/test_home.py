@@ -19,7 +19,7 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient,
-    flush_per_request_caches
+    flush_per_request_caches, DefaultStream
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
@@ -209,6 +209,42 @@ class HomeTest(ZulipTestCase):
 
         realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+
+    def test_num_queries_with_streams(self):
+        # type: () -> None
+        main_user = self.example_user('hamlet')
+        other_user = self.example_user('cordelia')
+
+        realm_id = main_user.realm_id
+
+        self.login(main_user.email)
+
+        # Try to make page-load do extra work for various subscribed
+        # streams.
+        for i in range(10):
+            stream_name = 'test_stream_' + str(i)
+            stream = self.make_stream(stream_name)
+            DefaultStream.objects.create(
+                realm_id=realm_id,
+                stream_id=stream.id
+            )
+            for user in [main_user, other_user]:
+                self.subscribe(user, stream_name)
+
+        # Simulate hitting the page the first time to avoid some noise
+        # related to initial logins.
+        self._get_home_page()
+
+        # Then for the second page load, measure the number of queries.
+        flush_per_request_caches()
+        with queries_captured() as queries2:
+            result = self._get_home_page()
+
+        self.assert_length(queries2, 32)
+
+        # Do a sanity check that our new streams were in the payload.
+        html = result.content.decode('utf-8')
+        self.assertIn('test_stream_7', html)
 
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse
