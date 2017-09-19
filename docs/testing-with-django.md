@@ -133,7 +133,7 @@ and replace them with fake instances that only implement a limited
 interface. On top of that, these fake instances can be easily
 analyzed.
 
-Say you have a method `foo(input_str)`:
+Say you have a method `greet(name_key)` defined as follows:
 
     def greet(name_key):
         name = fetch_database(name_key)
