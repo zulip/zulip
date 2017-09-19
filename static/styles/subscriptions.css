@@ -651,6 +651,15 @@ form#add_new_subscription {
     fill: hsl(0, 0%, 86%);
 }
 
+.stream-row .check:not(.checked):hover svg,
+.stream-row.active .check:not(.checked):hover svg {
+    fill: hsl(0, 0%, 72%);
+}
+
+.stream-row .check.checked:hover svg {
+    opacity: 0.5;
+}
+
 .stream-row .checked svg {
     fill: hsl(170, 47%, 54%);
 }
