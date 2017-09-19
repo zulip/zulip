@@ -31,19 +31,11 @@ RUN apt-get update \
   && apt-get install -y \
     git mercurial xvfb \
     locales sudo openssh-client ca-certificates tar gzip parallel \
-    net-tools netcat unzip zip bzip2 \
-    python3 python3-pip
-
-RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
-
-RUN locale-gen C.UTF-8 || true
+    net-tools netcat unzip zip bzip2 jq \
+    python3 python3-pip \
+  && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
+  && { locale-gen C.UTF-8 || true; }
 ENV LANG=C.UTF-8
-
-RUN JQ_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/jq-latest" \
-  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/jq $JQ_URL \
-  && chmod +x /usr/bin/jq \
-  && jq --version
-
 
 # Install Docker.  This logic comes from Circle's Dockerfile; it's probably
 # faster than the upstream-recommended approach of using their apt repo,
