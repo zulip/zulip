@@ -21,7 +21,7 @@
 # then borrows from the CircleCI Dockerfile.
 
 # TODO add xenial
-FROM buildpack-deps:trusty
+FROM buildpack-deps:trusty-scm
 
 RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci \
   && echo 'DPkg::Options "--force-confnew";' >> /etc/apt/apt.conf.d/90circleci
@@ -29,8 +29,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y \
-    git mercurial xvfb \
-    locales sudo openssh-client ca-certificates tar gzip parallel \
+    xvfb \
+    locales sudo tar gzip parallel \
     net-tools netcat unzip zip bzip2 jq \
     python3 python3-pip \
   && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
