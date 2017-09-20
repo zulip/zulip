@@ -1359,7 +1359,13 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(params['upper_1'], 'golf')
 
         mute_stream(realm, user_profile, 'Verona')
-        narrow = []
+
+        # Using a bogus stream name should be similar to using no narrow at
+        # all, and we'll exclude all mutes.
+        narrow = [
+            dict(operator='stream', operand='bogus-stream-name'),
+        ]
+
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         query = select([column("id")], None, table("zerver_message"))
         query = query.where(and_(*muting_conditions))
