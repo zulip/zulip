@@ -47,7 +47,7 @@ function update_message_in_all_views(message_id, callback) {
 }
 
 exports.show_error_for_unsupported_platform = function () {
-    if (/ZulipDesktop/.test(navigator.userAgent)) {
+    if (/Zulip Desktop/.test(navigator.userAgent)) {
         // We don't internationalize this string because it is long,
         // and few users will have both the old desktop app and an
         // internationalized version of Zulip anyway.
