@@ -290,8 +290,6 @@ def build_custom_checkers(by_lang):
         {'pattern': 'get_stream[(]',
          'include_only': set(["zerver/views/", "zerver/lib/actions.py"]),
          'exclude_line': set([
-             # This is a check for whether a stream rename is invalid because it already exists
-             ('zerver/lib/actions.py', 'get_stream(new_name, stream.realm)'),
              # This one in check_message is kinda terrible, since it's
              # how most instances are written, but better to exclude something than nothing
              ('zerver/lib/actions.py', 'stream = get_stream(stream_name, realm)'),
