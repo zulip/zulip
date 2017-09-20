@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import os
 import random
 import re
+import ujson
 
 from django.conf import settings
 from django.core import mail
@@ -13,7 +15,8 @@ from mock import patch, MagicMock
 from six.moves import range
 from typing import Any, Dict, List, Text
 
-from zerver.lib.notifications import handle_missedmessage_emails
+from zerver.lib.notifications import handle_missedmessage_emails, \
+    relative_to_full_url
 from zerver.lib.actions import do_update_message
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
@@ -380,3 +383,39 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         subject = 'Othello, the Moor of Venice sent you a message'
         self.assertEqual(mail.outbox[1].subject, subject)
+
+    def test_relative_to_full_url(self):
+        # type: () -> None
+        # Run `relative_to_full_url()` function over test fixtures present in
+        # 'markdown_test_cases.json' and check that it converts all the relative
+        # URLs to absolute URLs.
+        fixtures_file = os.path.join(os.path.dirname(
+            os.path.dirname(__file__)), "fixtures", "markdown_test_cases.json")
+        fixtures = ujson.load(open(fixtures_file))
+        test_fixtures = {}
+        for test in fixtures['regular_tests']:
+            test_fixtures[test['name']] = test
+        for test_name in test_fixtures:
+            test_data = test_fixtures[test_name]["expected_output"]
+            output_data = relative_to_full_url("http://example.com", test_data)
+            if re.search("(?<=\=['\"])/(?=[^<]+>)", output_data) is not None:
+                raise AssertionError("Relative URL present in email: " + output_data +
+                                     "\nFailed test case's name is: " + test_name +
+                                     "\nIt is present in markdown_test_cases.json")
+
+        # Specific test cases.
+        test_data = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
+        self.assertEqual(actual_output, expected_output)
+
+        test_data = '<a href="/user_uploads/2/1f/some_random_value">/user_uploads/2/1f/some_random_value</a>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<a href="http://example.com/user_uploads/2/1f/some_random_value">' + \
+            '/user_uploads/2/1f/some_random_value</a>'
+        self.assertEqual(actual_output, expected_output)
+
+        test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
+        self.assertEqual(actual_output, expected_output)
