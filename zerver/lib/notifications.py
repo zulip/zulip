@@ -129,9 +129,9 @@ def build_message_list(user_profile, messages):
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
-    def fix_emoji_sizes(html):
+    def fix_emojis(html):
         # type: (Text) -> Text
-        return html.replace(' class="emoji"', ' height="20px"')
+        return html.replace(' class="emoji"', ' height="20px" style="position: relative;top: 6px;"')
 
     def build_message_payload(message):
         # type: (Message) -> Dict[str, Text]
@@ -142,7 +142,7 @@ def build_message_list(user_profile, messages):
         assert message.rendered_content is not None
         html = message.rendered_content
         html = relative_to_full_url(html)
-        html = fix_emoji_sizes(html)
+        html = fix_emojis(html)
 
         return {'plain': plain, 'html': html}
 
