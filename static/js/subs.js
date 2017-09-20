@@ -255,6 +255,7 @@ exports.filter_table = function (query) {
     var others = [];
     var stream_id_to_stream_name = {};
     var widgets = {};
+    var streams_list_scrolltop = $(".streams-list").scrollTop();
 
     function sort_by_stream_name(a, b) {
         var stream_a_name = stream_id_to_stream_name[a].toLocaleLowerCase();
@@ -306,6 +307,9 @@ exports.filter_table = function (query) {
         $(".nothing-selected").show();
         $(".stream-row.active").removeClass("active");
     }
+
+    // this puts the scrollTop back to what it was before the list was updated again.
+    $(".streams-list").scrollTop(streams_list_scrolltop);
 };
 
 function actually_filter_streams() {
