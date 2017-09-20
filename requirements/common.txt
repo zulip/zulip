@@ -17,13 +17,13 @@ MarkupSafe==1.0
 Pygments==2.2.0
 
 # Needed for manage.py
-ipython==6.1.0
+ipython==6.2.0
 
 # Needed for Image Processing
 Pillow==4.2.1
 
 # Needed for building complex DB queries
-SQLAlchemy==1.1.13
+SQLAlchemy==1.1.14
 
 # Needed for password hashing
 argon2-cffi==16.3.0
@@ -40,7 +40,7 @@ boto==2.48.0
 certifi==2017.7.27.1
 
 # Used for scrapy as well as argon2
-cffi==1.10.0
+cffi==1.11.0
 
 chardet==3.0.4
 
@@ -61,10 +61,10 @@ django-auth-ldap==1.2.12
 django-bitfield==1.9.3
 
 # Django extension for sending data to statsd
-django-statsd-mozilla==0.3.16
+django-statsd-mozilla==0.4.0
 
 docopt==0.6.2
-fonttools==3.15.0
+fonttools==3.15.1
 
 # Needed for Android push notifications
 python-gcm==0.4
@@ -72,7 +72,7 @@ python-gcm==0.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.6.2
+google-api-python-client==1.6.3
 
 # Needed for the email mirror
 html2text==2016.9.19
@@ -83,7 +83,7 @@ httplib2==0.10.3
 premailer==3.1.1
 
 # Needed for JWT-based auth
-PyJWT==1.5.2
+PyJWT==1.5.3
 
 # Needed for including other markdown files for user docs
 markdown-include==0.5.1
@@ -92,17 +92,17 @@ markdown-include==0.5.1
 mock==2.0.0
 
 oauth2client==4.1.2
-oauthlib==2.0.2
+oauthlib==2.0.4
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
 # Needed by requests to send https request to some sites.
-ndg-httpsclient==0.4.2
+ndg-httpsclient==0.4.3
 
 # Needed to access rabbitmq
-pika==0.10.0
+pika==0.11.0
 
 # Needed to access our database
-psycopg2==2.7.3
+psycopg2==2.7.3.1
 
 pyasn1==0.3.2
 pyasn1-modules==0.0.11
@@ -142,7 +142,7 @@ sockjs-tornado==1.0.3
 sourcemap==0.2.1
 
 # Tornado used for server->client push system
-tornado==4.5.1
+tornado==4.5.2
 
 # Needed for Python static typing
 typing==3.6.2

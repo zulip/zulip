@@ -22,7 +22,7 @@ beautifulsoup4==4.6.0
 boto==2.48.0
 cchardet==2.1.1
 certifi==2017.7.27.1
-cffi==1.10.0
+cffi==1.11.0
 chardet==3.0.4
 cryptography==2.0.3
 cssselect==1.0.1          # via premailer
@@ -33,13 +33,13 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.12
 django-bitfield==1.9.3
 django-pipeline==1.6.13
-django-statsd-mozilla==0.3.16
+django-statsd-mozilla==0.4.0
 django-webpack-loader==0.5.0
 django==1.11.4
 docopt==0.6.2
-fonttools==3.15.0
+fonttools==3.15.1
 gitdb==0.6.4
-google-api-python-client==1.6.2
+google-api-python-client==1.6.3
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2016.9.19
@@ -49,7 +49,7 @@ hyperframe==3.2.0         # via h2, hyper
 idna==2.6
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.1.0
+ipython==6.2.0
 jedi==0.10.2              # via ipython
 jinja2==2.9.6
 lxml==3.8.0               # via premailer
@@ -58,19 +58,19 @@ markdown==2.6.9           # via markdown-include
 markupsafe==1.0
 mock==2.0.0
 mypy_extensions==0.3.0
-ndg-httpsclient==0.4.2
+ndg-httpsclient==0.4.3
 oauth2client==4.1.2
-oauthlib==2.0.2
+oauthlib==2.0.4
 olefile==0.44             # via pillow
 pbr==3.1.1                # via mock
 pexpect==4.2.1            # via ipython
 pickleshare==0.7.4        # via ipython
-pika==0.10.0
+pika==0.11.0
 pillow==4.2.1
 polib==1.0.8
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.3
+psycopg2==2.7.3.1
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyasn1-modules==0.0.11
@@ -78,7 +78,7 @@ pyasn1==0.3.2
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
 pygments==2.2.0           # via ipython
-pyjwt==1.5.2
+pyjwt==1.5.3
 pyldap==2.4.37
 pylibmc==1.5.2
 pyopenssl==17.2.0         # via ndg-httpsclient
@@ -100,9 +100,9 @@ social-auth-app-django==1.2.0
 social-auth-core==1.4.0   # via social-auth-app-django
 sockjs-tornado==1.0.3
 sourcemap==0.2.1
-sqlalchemy==1.1.13
+sqlalchemy==1.1.14
 statsd==2.1.2             # via django-statsd-mozilla
-tornado==4.5.1
+tornado==4.5.2
 traitlets==4.3.2          # via ipython
 typing==3.6.2
 uritemplate==3.0.0
