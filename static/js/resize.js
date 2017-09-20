@@ -56,7 +56,7 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height - top_navbar_height - 40;
+    res.bottom_sidebar_height = viewport_height - top_navbar_height;
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
