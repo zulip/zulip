@@ -70,8 +70,9 @@ def topic_narrow_url(realm, stream, topic):
 
 def relative_to_full_url(base_url, content):
     # type: (Text, Text) -> Text
-    # URLs for uploaded content are of the form:
+    # URLs for uploaded content and avatars are of the form:
     # "/user_uploads/abc.png".
+    # "/avatar/username@example.com?s=30".
     # Make them full paths. Explanation for all the regexes below:
     # (\=['\"]) matches anything that starts with `=` followed by `"` or `'`.
     # ([^\r\n\t\f <]) matches any character which is not a whitespace or `<`.
@@ -79,8 +80,8 @@ def relative_to_full_url(base_url, content):
     # and ends in `>`.
     # The last positive lookahead ensures that we replace URLs only within a tag.
     content = re.sub(
-        r"(?<=\=['\"])/user_uploads/([^\r\n\t\f <]*)(?=[^<]+>)",
-        base_url + r"/user_uploads/\1", content)
+        r"(?<=\=['\"])/(user_uploads|avatar)/([^\r\n\t\f <]*)(?=[^<]+>)",
+        base_url + r"/\1/\2", content)
 
     # Inline images can't be displayed in the emails as the request
     # from the mail server can't be authenticated because it has no
