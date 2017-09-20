@@ -67,6 +67,16 @@ RUN DOCKERIZE_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cac
   && rm -rf /tmp/dockerize-linux-amd64.tar.gz \
   && dockerize --version
 
+# Extra packages used by Zulip.
+RUN apt-get update \
+  && apt-get install --no-install-recommends \
+    closure-compiler memcached rabbitmq-server redis-server \
+    hunspell-en-us supervisor libssl-dev yui-compressor puppet \
+    gettext libffi-dev libfreetype6-dev libz-dev libjpeg-dev \
+    libldap2-dev libmemcached-dev python-dev python-pip \
+    python-virtualenv python-six libxml2-dev libxslt1-dev libpq-dev \
+    postgresql-9.3
+
 RUN groupadd --gid 3434 circleci \
   && useradd --uid 3434 --gid circleci --shell /bin/bash --create-home circleci \
   && echo 'circleci ALL=NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci \
