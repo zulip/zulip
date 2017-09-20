@@ -70,37 +70,41 @@ def topic_narrow_url(realm, stream, topic):
 
 def relative_to_full_url(base_url, content):
     # type: (Text, Text) -> Text
-    # URLs for uploaded content are of the form
-    # "/user_uploads/abc.png". Make them full paths.
-    #
-    # There's a small chance of colliding with non-Zulip URLs containing
-    # "/user_uploads/", but we don't have much information about the
-    # structure of the URL to leverage.
+    # URLs for uploaded content are of the form:
+    # "/user_uploads/abc.png".
+    # Make them full paths. Explanation for all the regexes below:
+    # (\=['\"]) matches anything that starts with `=` followed by `"` or `'`.
+    # ([^\r\n\t\f <]) matches any character which is not a whitespace or `<`.
+    # ([^<]+>) matches any sequence of characters which does not contain `<`
+    # and ends in `>`.
+    # The last positive lookahead ensures that we replace URLs only within a tag.
     content = re.sub(
-        r"/user_uploads/(\S*)",
+        r"(?<=\=['\"])/user_uploads/([^\r\n\t\f <]*)(?=[^<]+>)",
         base_url + r"/user_uploads/\1", content)
 
-    # Our proxying user-uploaded images seems to break inline images in HTML
-    # emails, so scrub the image but leave the link.
+    # Inline images can't be displayed in the emails as the request
+    # from the mail server can't be authenticated because it has no
+    # user_profile object linked to it. So we scrub the image but
+    # leave the link.
     content = re.sub(
         r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
 
     # URLs for emoji are of the form
     # "static/generated/emoji/images/emoji/snowflake.png".
     content = re.sub(
-        r"/static/generated/emoji/images/emoji/",
+        r"(?<=\=['\"])/static/generated/emoji/images/emoji/(?=[^<]+>)",
         base_url + r"/static/generated/emoji/images/emoji/",
         content)
 
     # Realm emoji should use absolute URLs when referenced in missed-message emails.
     content = re.sub(
-        r"/user_avatars/(\d+)/emoji/",
+        r"(?<=\=['\"])/user_avatars/(\d+)/emoji/(?=[^<]+>)",
         base_url + r"/user_avatars/\1/emoji/", content)
 
     # Stream links need to be converted from relative to absolute. They
     # have href values in the form of "/#narrow/stream/...".
     content = re.sub(
-        r"/#narrow/stream/",
+        r"(?<=\=['\"])/#narrow/stream/(?=[^<]+>)",
         base_url + r"/#narrow/stream/",
         content)
 
@@ -137,7 +141,14 @@ def build_message_list(user_profile, messages):
         # type: (Message) -> Dict[str, Text]
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
-        plain = relative_to_full_url(user_profile.realm.uri, plain)
+        # There's a small chance of colliding with non-Zulip URLs containing
+        # "/user_uploads/", but we don't have much information about the
+        # structure of the URL to leverage. We can't use `relative_to_full_url()`
+        # function here because it uses a stricter regex which will not work for
+        # plain text.
+        plain = re.sub(
+            r"/user_uploads/(\S*)",
+            user_profile.realm.uri + r"/user_uploads/\1", plain)
 
         assert message.rendered_content is not None
         html = message.rendered_content
