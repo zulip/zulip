@@ -1592,7 +1592,7 @@ blockquote p {
 }
 
 #tab_list li.active.root {
-    padding-left: 10px;
+    padding: 0px 10px;
 }
 
 #tab_list li.private_message {
