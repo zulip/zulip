@@ -301,6 +301,7 @@ def main(options):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
+        run(["sudo", "service", "postgresql", "restart"])
     elif options.is_docker:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
