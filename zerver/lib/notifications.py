@@ -68,6 +68,44 @@ def topic_narrow_url(realm, stream, topic):
     return u"%s%s/topic/%s" % (base_url, hash_util_encode(stream),
                                hash_util_encode(topic))
 
+def relative_to_full_url(base_url, content):
+    # type: (Text, Text) -> Text
+    # URLs for uploaded content are of the form
+    # "/user_uploads/abc.png". Make them full paths.
+    #
+    # There's a small chance of colliding with non-Zulip URLs containing
+    # "/user_uploads/", but we don't have much information about the
+    # structure of the URL to leverage.
+    content = re.sub(
+        r"/user_uploads/(\S*)",
+        base_url + r"/user_uploads/\1", content)
+
+    # Our proxying user-uploaded images seems to break inline images in HTML
+    # emails, so scrub the image but leave the link.
+    content = re.sub(
+        r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
+
+    # URLs for emoji are of the form
+    # "static/generated/emoji/images/emoji/snowflake.png".
+    content = re.sub(
+        r"/static/generated/emoji/images/emoji/",
+        base_url + r"/static/generated/emoji/images/emoji/",
+        content)
+
+    # Realm emoji should use absolute URLs when referenced in missed-message emails.
+    content = re.sub(
+        r"/user_avatars/(\d+)/emoji/",
+        base_url + r"/user_avatars/\1/emoji/", content)
+
+    # Stream links need to be converted from relative to absolute. They
+    # have href values in the form of "/#narrow/stream/...".
+    content = re.sub(
+        r"/#narrow/stream/",
+        base_url + r"/#narrow/stream/",
+        content)
+
+    return content
+
 def build_message_list(user_profile, messages):
     # type: (UserProfile, List[Message]) -> List[Dict[str, Any]]
     """
@@ -84,44 +122,6 @@ def build_message_list(user_profile, messages):
         else:
             return ''
 
-    def relative_to_full_url(content):
-        # type: (Text) -> Text
-        # URLs for uploaded content are of the form
-        # "/user_uploads/abc.png". Make them full paths.
-        #
-        # There's a small chance of colliding with non-Zulip URLs containing
-        # "/user_uploads/", but we don't have much information about the
-        # structure of the URL to leverage.
-        content = re.sub(
-            r"/user_uploads/(\S*)",
-            user_profile.realm.uri + r"/user_uploads/\1", content)
-
-        # Our proxying user-uploaded images seems to break inline images in HTML
-        # emails, so scrub the image but leave the link.
-        content = re.sub(
-            r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
-
-        # URLs for emoji are of the form
-        # "static/generated/emoji/images/emoji/snowflake.png".
-        content = re.sub(
-            r"/static/generated/emoji/images/emoji/",
-            user_profile.realm.uri + r"/static/generated/emoji/images/emoji/",
-            content)
-
-        # Realm emoji should use absolute URLs when referenced in missed-message emails.
-        content = re.sub(
-            r"/user_avatars/(\d+)/emoji/",
-            user_profile.realm.uri + r"/user_avatars/\1/emoji/", content)
-
-        # Stream links need to be converted from relative to absolute. They
-        # have href values in the form of "/#narrow/stream/...".
-        content = re.sub(
-            r"/#narrow/stream/",
-            user_profile.realm.uri + r"/#narrow/stream/",
-            content)
-
-        return content
-
     def fix_plaintext_image_urls(content):
         # type: (Text) -> Text
         # Replace image URLs in plaintext content of the form
@@ -137,11 +137,11 @@ def build_message_list(user_profile, messages):
         # type: (Message) -> Dict[str, Text]
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
-        plain = relative_to_full_url(plain)
+        plain = relative_to_full_url(user_profile.realm.uri, plain)
 
         assert message.rendered_content is not None
         html = message.rendered_content
-        html = relative_to_full_url(html)
+        html = relative_to_full_url(user_profile.realm.uri, html)
         html = fix_emojis(html)
 
         return {'plain': plain, 'html': html}
