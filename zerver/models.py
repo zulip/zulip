@@ -1859,6 +1859,11 @@ class ScheduledEmail(AbstractScheduledJob):
     INVITATION_REMINDER = 3
     type = models.PositiveSmallIntegerField()  # type: int
 
+    def __str__(self):
+        # type: () -> Text
+        return u"<ScheduledEmail: %s %s %s>" % (self.type, self.user or self.address,
+                                                self.scheduled_timestamp)
+
 EMAIL_TYPES = {
     'followup_day1': ScheduledEmail.WELCOME,
     'followup_day2': ScheduledEmail.WELCOME,
