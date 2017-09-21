@@ -625,10 +625,13 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
 
     message_ids_to_notify = []  # type: List[Dict[str, Any]]
     for event in queue.event_queue.contents():
-        if not event['type'] == 'message' or not event['flags']:
+        if event['type'] != 'message':
             continue
+        assert 'flags' in event
 
-        if 'mentioned' in event['flags'] and 'read' not in event['flags']:
+        flags = event['flags']
+        mentioned = 'mentioned' in flags and 'read' not in flags
+        if mentioned:
             notify_info = dict(message_id=event['message']['id'])
 
             if not event.get('push_notified', False):
@@ -720,7 +723,7 @@ def process_message_event(event_template, users):
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
         private_message = message_type == "private" and user_profile_id != sender_id
-        mentioned = 'mentioned' in flags
+        mentioned = 'mentioned' in flags and 'read' not in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
 
         # We first check if a message is potentially mentionable,
