@@ -144,6 +144,13 @@ exports.widget = function (parent_elem, my_stream_id) {
         }
     };
 
+    self.show_spinner = function () {
+        // The spinner will go away once we get results and redraw
+        // the whole list.
+        var spinner = self.dom.find('.searching-for-more-topics');
+        spinner.show();
+    };
+
     self.build = function (active_topic) {
         if (active_topic) {
             active_topic = active_topic.toLowerCase();
@@ -209,6 +216,7 @@ exports.zoom_in = function () {
         $('#stream-filters-container').perfectScrollbar('update');
     }
 
+    active_widget.show_spinner();
     topic_data.get_server_history(stream_id, on_success);
 };
 
