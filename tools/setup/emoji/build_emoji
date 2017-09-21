@@ -220,8 +220,8 @@ def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
                                                           })
         sprite_css_file.close()
 
-def setup_emoji_farm(cache_path):
-    # type: (Text) -> None
+def setup_emoji_farm(cache_path, emoji_map, emoji_data):
+    # type: (Text, Dict[Text, Text], List[Dict[Text, Any]]) -> None
     # Copy individual emoji images from npm package.
     src_emoji_farm = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-google', 'img', 'google', '64', '*')
     target_emoji_farm = os.path.join(cache_path, 'images-google-64')
@@ -231,6 +231,14 @@ def setup_emoji_farm(cache_path):
     # Copy zulip.png to the emoji farm.
     zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
     run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
+
+    # Copy spritesheets.
+    for emojiset in EMOJISETS:
+        input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
+        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
+        run(['cp', input_sprite_sheet, output_sprite_sheet])
+
+    generate_sprite_css_files(cache_path, emoji_map, emoji_data)
 
 def dump_emojis(cache_path):
     # type: (str) -> None
@@ -303,37 +311,7 @@ def dump_emojis(cache_path):
             os.path.join(cache_emoji, fn)
         )
 
-    setup_emoji_farm(cache_path)
-
-    # Spritesheet CSS generation code.
-    emoji_positions = ""
-    for emoji in emoji_data:
-        if emoji["has_img_google"]:
-            emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
-                'codepoint': emoji['unified'].lower(),
-                'pos_x': (emoji["sheet_x"] * 100) / 48,
-                'pos_y': (emoji["sheet_y"] * 100) / 48,
-            }
-            # Remove the code below once the migration to iamcal's dataset is complete.
-            emoji_name = emoji['short_name']
-            codepoint = emoji['unified'].lower()
-            if emoji_name in emoji_map and codepoint != emoji_map[emoji_name]:
-                emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
-                    'codepoint': emoji_map[emoji_name],
-                    'pos_x': (emoji["sheet_x"] * 100) / 48,
-                    'pos_y': (emoji["sheet_y"] * 100) / 48,
-                }
-
-    for emojiset in EMOJISETS:
-        input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
-        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
-        run(['cp', input_sprite_sheet, output_sprite_sheet], shell=True)
-        SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
-        sprite_css_file = open(SPRITE_CSS_PATH, 'w')
-        sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
-                                                          'emoji_positions': emoji_positions,
-                                                          })
-        sprite_css_file.close()
+    setup_emoji_farm(cache_path, emoji_map, emoji_data)
 
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
