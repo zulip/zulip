@@ -266,6 +266,8 @@ def setup_old_emoji_farm(cache_path, emoji_map):
     emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
     unicode_emoji_cache_path = os.path.join(cache_path, 'images', 'emoji', 'unicode')
     google_emoji_cache_path = os.path.join(cache_path, 'images-google-64')
+    run(['mkdir', '-p', emoji_cache_path])
+    run(['mkdir', '-p', unicode_emoji_cache_path])
 
     # Symlink zulip.png image file.
     image_file_path = os.path.join(google_emoji_cache_path, 'zulip.png')
@@ -290,12 +292,8 @@ def setup_old_emoji_farm(cache_path, emoji_map):
 
 def dump_emojis(cache_path):
     # type: (str) -> None
-    subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
-
     with open('emoji_map.json') as emoji_map_file:
         emoji_map = ujson.load(emoji_map_file)
-
-    code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
 
     EMOJI_DATA_FILE_PATH = os.path.join(EMOJI_DATA_PATH, 'emoji.json')
     with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
@@ -306,60 +304,10 @@ def dump_emojis(cache_path):
     with open(UNIFIED_REACTIONS_PATH) as unified_reactions_file:
         unified_reactions_data = ujson.load(unified_reactions_file)
 
-    os.chdir(EMOJI_DUMP_DIR_PATH)
-
-    try:
-        shutil.rmtree('out')
-    except OSError:
-        pass
-
-    os.mkdir('out')
-    os.mkdir('out/unicode')
-
-    failed = False
-    for name, code_point in emoji_map.items():
-        try:
-            color_font(name, code_point, code_point_to_fname_map)
-        except MissingGlyphError:
-            print("Warning: Missing color glyph for %s; using black/white." % (name,))
-            try:
-                bw_font(name, code_point)
-            except Exception as e:
-                print(e)
-                print('Missing {}, {}'.format(name, code_point))
-                failed = True
-                continue
-
-        try:
-            os.symlink(
-                'unicode/{}.png'.format(code_point),
-                'out/{}.png'.format(name)
-            )
-        except OSError:
-            print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
-            failed = True
-            # probably should not try to create additional links
-            break
-
-    if failed:
-        print("Errors dumping emoji!")
-        sys.exit(1)
-
-    cache_emoji = os.path.join(cache_path, 'images', 'emoji')
-    cache_emoji_unicode = os.path.join(cache_path, 'images', 'emoji', 'unicode')
+    # Setup emoji farms.
     run(['rm', '-rf', cache_path])
-    run(['mkdir', '-p', cache_emoji])
-    run(['mv', 'out/*', cache_emoji], shell=True)
-    assets = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
-    run(['cp', '-RPp', assets, cache_emoji_unicode], shell=True)
-
-    for fn in [os.path.basename(file_name) for file_name in glob.glob(assets)]:
-        os.symlink(
-            os.path.join(cache_emoji_unicode, fn),
-            os.path.join(cache_emoji, fn)
-        )
-
     setup_emoji_farm(cache_path, emoji_map, emoji_data)
+    setup_old_emoji_farm(cache_path, emoji_map)
 
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
