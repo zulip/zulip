@@ -15,8 +15,6 @@ exports.clicking_notification_causes_narrow = true;
 exports.collapsible = false;
 exports.dropbox_integration = false;
 
-exports.use_server_topic_history = true;
-
 return exports;
 
 }());

@@ -7,9 +7,6 @@ set_global('unread', {});
 set_global('muting', {});
 set_global('stream_popover', {});
 set_global('templates', {});
-set_global('feature_flags', {
-    use_server_topic_history: true,
-});
 
 zrequire('hash_util');
 zrequire('narrow');

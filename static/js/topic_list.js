@@ -69,8 +69,6 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
             active_topic = active_topic.toLowerCase();
         }
 
-        var hiding_topics = false;
-
         var ul = $('<ul class="topic-list">');
         ul.attr('data-stream', my_stream_name);
 
@@ -83,7 +81,6 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
                                  (active_topic === topic_name.toLowerCase());
 
                 if (!show_topic) {
-                    hiding_topics = true;
                     return;
                 }
             }
@@ -100,9 +97,9 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
             ul.append(li);
         });
 
-        // When we inline use_server_topic_history to true (i.e. we are confident
-        // with the new feature), we can remove logic around hiding_topics.
-        var show_more_topics_link = hiding_topics || feature_flags.use_server_topic_history;
+        // We should actually only show more topics when we're zoomed out, although
+        // CSS makes this fine for now.
+        var show_more_topics_link = true;
 
         if (show_more_topics_link) {
             var show_more = $('<li class="show-more-topics">');
@@ -203,11 +200,7 @@ exports.zoom_in = function () {
         $('#stream-filters-container').perfectScrollbar('update');
     }
 
-    if (feature_flags.use_server_topic_history) {
-        topic_data.get_server_history(stream_id, on_success);
-    } else {
-        on_success();
-    }
+    topic_data.get_server_history(stream_id, on_success);
 };
 
 exports.set_click_handlers = function (callbacks) {
