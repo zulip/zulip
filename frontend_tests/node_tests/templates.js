@@ -828,6 +828,13 @@ function render(template_name, args) {
     assert($(html).find(".message_reaction").has(".emoji .emoji-smile"));
 }());
 
+(function more_topics() {
+    var html = render('more_topics');
+    global.write_handlebars_output("more_topics", html);
+
+    assert($(html).hasClass('show-more-topics'));
+}());
+
 (function new_stream_users() {
     var args = {
         users: [

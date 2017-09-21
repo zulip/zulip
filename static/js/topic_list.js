@@ -94,20 +94,15 @@ exports.widget = function (parent_elem, my_stream_id) {
             ul.append(li);
         });
 
-        // We should actually only show more topics when we're zoomed out, although
-        // CSS makes this fine for now.
-        var show_more_topics_link = true;
-
-        if (show_more_topics_link) {
-            var show_more = $('<li class="show-more-topics">');
-            show_more.attr('data-stream', my_stream_name);
-            var link = $('<a href="#">');
-            link.html(i18n.t('more topics'));
-            show_more.html(link);
-            ul.append(show_more);
-        }
+        var show_more = self.build_more_topics_section();
+        ul.append(show_more);
 
         return ul;
+    };
+
+    self.build_more_topics_section = function () {
+        var show_more_html = templates.render('more_topics');
+        return $(show_more_html);
     };
 
     self.get_parent = function () {
@@ -180,8 +175,6 @@ exports.rebuild = function (stream_li, stream_id) {
     exports.remove_expanded_topics();
     active_widget = exports.widget(stream_li, stream_id);
     active_widget.build(active_topic);
-
-    return active_widget; // used for testing
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
