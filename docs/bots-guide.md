@@ -108,7 +108,7 @@ You need:
   public servers such as chat.zulip.org.**
 
 
-<<<<<<< HEAD
+
 1. [Install all requirements](#installing-the-zulip-bots-package).
 
 2. Register a new bot user on the Zulip server's web interface.
