@@ -636,6 +636,61 @@ nav ul li.active::after {
     opacity: 0.6;
 }
 
+/* -- overlay -- */
+.overlay {
+    pointer-events: none;
+    opacity: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+
+    background: rgba(44, 45, 62, 0.8);
+
+    transition: all 0.3s ease;
+    z-index: 4;
+}
+
+.overlay.show {
+    pointer-events: all;
+    opacity: 1;
+}
+
+.overlay.beta::after {
+    content: "\00D7";
+
+    position: absolute;
+    top: 0px;
+    right: 20px;
+
+    font-size: 3em;
+    color: #fff;
+}
+
+.overlay.beta > * {
+    padding: 20px;
+    background: #fff;
+}
+
+.overlay.beta #registration {
+    margin-bottom: 0px;
+}
+
+.overlay.beta #registration .error.help-inline {
+    padding: 0;
+    margin: 0;
+    max-width: 220px;
+
+    font-size: 0.8em;
+}
+
+.overlay .get-started h1 {
+    font-size: 1em;
+}
+
 /* -- hello page -- */
 .portico-landing.hello {
     background-color: transparent;

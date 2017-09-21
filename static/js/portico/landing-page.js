@@ -39,6 +39,54 @@ var hello_events = function () {
     $(".footer").addClass("hello");
 };
 
+var plans_events = function () {
+    $.get("/create_realm/", function (res) {
+        const $form_html = $(res).find(".register-form");
+        $(".overlay.beta").html($form_html.addClass("new-style"));
+    });
+
+    $(".sign-up").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".overlay.beta").addClass("show");
+    });
+
+    $("body").on("click", ".overlay.beta button[type='submit']", function (e) {
+        e.preventDefault();
+
+        var $form = $("#send_confirm");
+        var form_data = $form.serializeArray();
+
+        $.ajax({
+            method: $form.attr("method"),
+            url: $form.attr("action"),
+            data: form_data,
+            success: function (res) {
+                const _$form = $(res).find("#send_confirm");
+
+                if (_$form.length) {
+                    $("form").append($("<div class='alert alert-error'>Error! The provided email is invalid.</div>"));
+                } else {
+                    $(".register-form").replaceWith($(res).find(".account-creation .inline-block").addClass("new-style"));
+                }
+            },
+        });
+    });
+
+    $(".overlay").click(function (e) {
+        if ($(e.target).is(".overlay")) {
+            $(this).removeClass("show");
+        }
+    });
+
+    $(".hero .download-button").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(".overlay.beta").addClass("show");
+    });
+};
+
 var apps_events = function () {
     var info = {
         windows: {
@@ -192,6 +240,10 @@ var events = function () {
 
     if (path_parts().includes('hello')) {
         hello_events();
+    }
+
+    if (path_parts().includes("plans")) {
+        plans_events();
     }
 };
 
