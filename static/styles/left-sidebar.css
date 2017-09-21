@@ -439,6 +439,17 @@ li.show-more-private-messages a {
     font-size: 90%;
 }
 
+.searching-for-more-topics {
+    display: none;
+}
+
+.searching-for-more-topics span {
+    font-size: 90%;
+    font-weight: bold;
+    display: inline-block;
+    padding: 10px;
+}
+
 .zoom-in .show-more-topics {
     display: none;
 }
