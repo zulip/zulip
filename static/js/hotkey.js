@@ -647,7 +647,7 @@ exports.process_hotkey = function (e, hotkey) {
             navigate.page_up();
             return true;
         case 'shift_d':
-            drafts.restore_draft_on_shiftd();
+            drafts.restore_draft_for_hotkey();
             return true;
         case 'page_down':
         case 'vim_page_down':

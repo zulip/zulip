@@ -140,7 +140,7 @@ exports.restore_draft = function (draft_id, is_overlay_closed) {
                              {select_first_unread: true, trigger: "restore draft"});
         }
     }
-    if(!is_overlay_closed) {
+    if (!is_overlay_closed) {
         overlays.close_overlay("drafts");
     }
     compose_fade.clear_compose();
@@ -366,7 +366,7 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 };
 
-exports.restore_draft_on_shiftd = function() {
+exports.restore_draft_for_hotkey = function() {
    var draft_arrow = draft_model.get();
    var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
    var first_draft = draft_id_arrow[draft_id_arrow.length-1];
