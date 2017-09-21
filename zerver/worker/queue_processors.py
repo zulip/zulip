@@ -108,11 +108,11 @@ class QueueProcessingWorker(object):
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
     def consume(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         raise WorkerDeclarationException("No consumer defined!")
 
     def consume_wrapper(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         try:
             self.consume(data)
         except Exception:
@@ -246,7 +246,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 @assign_queue('missedmessage_email_senders')
 class MissedMessageSendingWorker(QueueProcessingWorker):
     def consume(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         try:
             send_email_from_dict(data)
         except EmailNotDeliveredException:
