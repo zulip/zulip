@@ -728,12 +728,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         referrer_user = 'hamlet'
         current_user_email = self.example_email(referrer_user)
         self.login(current_user_email)
-        invitee = self.nonreg_email('alice')
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee])
+        invitee_email = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee_email, ["Denmark"]))
+        self.assertTrue(find_key_by_email(invitee_email))
+        self.check_sent_emails([invitee_email])
 
-        data = {"email": invitee, "referrer_email": current_user_email}
+        data = {"email": invitee_email, "referrer_email": current_user_email}
         invitee = get_prereg_user_by_email(data["email"])
         referrer = self.example_user(referrer_user)
         link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
@@ -756,6 +756,16 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             send_email(**ujson.loads(job.data))
         self.assertEqual(len(outbox), email_count + 1)
         self.assertIn(FromAddress.NOREPLY, outbox[-1].from_email)
+
+        # Now verify that signing up clears invite_reminder emails
+        email_jobs_to_deliver = ScheduledEmail.objects.filter(
+            scheduled_timestamp__lte=timezone_now())
+        self.assertEqual(len(email_jobs_to_deliver), 1)
+
+        self.register(invitee_email, "test")
+        email_jobs_to_deliver = ScheduledEmail.objects.filter(
+            scheduled_timestamp__lte=timezone_now())
+        self.assertEqual(len(email_jobs_to_deliver), 0)
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
