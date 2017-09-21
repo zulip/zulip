@@ -112,7 +112,7 @@ exports.delete_draft_after_send = function () {
     $("#new_message_content").removeData("draft-id");
 };
 
-exports.restore_draft = function (draft_id) {
+exports.restore_draft = function (draft_id, is_overlay_closed) {
     var draft = draft_model.getDraft(draft_id);
     if (!draft) {
         return;
@@ -140,8 +140,9 @@ exports.restore_draft = function (draft_id) {
                              {select_first_unread: true, trigger: "restore draft"});
         }
     }
-
-    overlays.close_overlay("drafts");
+    if(!is_overlay_closed) {
+        overlays.close_overlay("drafts");
+    }
     compose_fade.clear_compose();
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
@@ -363,6 +364,13 @@ exports.drafts_handle_events = function (e, event_key) {
             exports.restore_draft(first_draft);
         }
     }
+};
+
+exports.restore_draft_on_shiftd = function() {
+   var draft_arrow = draft_model.get();
+   var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+   var first_draft = draft_id_arrow[draft_id_arrow.length-1];
+   exports.restore_draft(first_draft, true);
 };
 
 exports.toggle = function () {

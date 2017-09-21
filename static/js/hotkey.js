@@ -41,6 +41,7 @@ var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
+    68: {name: 'shift_d', message_view_only: false},
 };
 
 var keydown_unshift_mappings = {
@@ -644,6 +645,9 @@ exports.process_hotkey = function (e, hotkey) {
         case 'vim_page_up':
         case 'shift_spacebar':
             navigate.page_up();
+            return true;
+        case 'shift_d':
+            drafts.restore_draft_on_shiftd();
             return true;
         case 'page_down':
         case 'vim_page_down':
