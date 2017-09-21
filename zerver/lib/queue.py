@@ -136,7 +136,7 @@ class SimpleQueueClient(object):
                                                              consumer_tag=self._generate_ctag(queue_name)))
 
     def register_json_consumer(self, queue_name, callback):
-        # type: (str, Callable[[Mapping[str, Any]], None]) -> None
+        # type: (str, Callable[[Dict[str, Any]], None]) -> None
         def wrapped_callback(ch, method, properties, body):
             # type: (BlockingChannel, Basic.Deliver, pika.BasicProperties, str) -> None
             callback(ujson.loads(body))
