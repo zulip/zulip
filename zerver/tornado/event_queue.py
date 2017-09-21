@@ -623,7 +623,6 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
     if not last_for_client:
         return
 
-    message_ids_to_notify = []  # type: List[Dict[str, Any]]
     for event in queue.event_queue.contents():
         if event['type'] != 'message':
             continue
@@ -631,22 +630,22 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
 
         flags = event['flags']
         mentioned = 'mentioned' in flags and 'read' not in flags
-        if mentioned:
-            notify_info = dict(message_id=event['message']['id'])
+        # TODO: These next variables should be extracted from the
+        # event, but to match the historical effect of this function
+        # in only supporting mentions, we've just hardcoded them to
+        # False.  Fixing this will correct currently buggy behavior in
+        # our handling of private message and users who've requested
+        # stream push notifications.
+        private_message = False
+        stream_push_notify = False
+        stream_name = None
+        always_push_notify = False
+        # Since we just GC'd the last event queue, the user is definitely idle.
+        idle = True
 
-            if not event.get('push_notified', False):
-                notify_info['send_push'] = True
-            if not event.get('email_notified', False):
-                notify_info['send_email'] = True
-            message_ids_to_notify.append(notify_info)
-
-    for notify_info in message_ids_to_notify:
-        msg_id = notify_info['message_id']
-        notice = build_offline_notification(user_profile_id, msg_id)
-        if notify_info.get('send_push', False):
-            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-        if notify_info.get('send_email', False):
-            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+        message_id = event['message']['id']
+        maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
+                                    stream_push_notify, stream_name, always_push_notify, idle)
 
 def receiver_is_off_zulip(user_profile_id):
     # type: (int) -> bool
