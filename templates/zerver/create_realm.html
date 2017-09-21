@@ -6,7 +6,32 @@
 {% block portico_content %}
 <script type="text/javascript">
 $(function () {
+    var timer;
+
     common.autofocus('#email');
+
+    $('#email').on("keydown", function () {
+        clearTimeout(timer);
+    });
+    $('#email').on("keyup", function () {
+        clearTimeout(timer);
+        timer = setTimeout(checkRealm, 1000, $('#email').val());
+    });
+
+    function checkRealm (email_value) {
+        $.ajax({
+          url: "/json/check_realm/" + email_value,
+          dataType: "json",
+        }).done(function (data) {
+            if (data.message === "OK") {
+                $("#message_error").removeClass("alert-error").addClass("alert-info");
+                $("#message_error").html("The organization name is valid.");
+            } else {
+                $("#message_error").removeClass("alert-info").addClass("alert-error");
+                $("#message_error").html(data['message']);
+            }
+        });
+    }
 });
 </script>
 
@@ -30,12 +55,7 @@ $(function () {
                     <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
                 </div>
             </form>
-            <div class="alert alert-error"></div>
-            {% if form.email.errors %}
-                {% for error in form.email.errors %}
-                <div class="alert alert-error">{{ error }}</div>
-                {% endfor %}
-            {% endif %}
+            <div class="alert alert-error" id="message_error"></div>
         </div>
     </div>
 </div>
