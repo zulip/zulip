@@ -392,6 +392,14 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             message_count_by_recipient_subject[recipient_subject],
         )
 
+def clear_scheduled_invitation_emails(email):
+    # type: (str) -> None
+    """Unlike most scheduled emails, invitation emails don't have an
+    existing user object to key off of, so we filter by address here."""
+    items = ScheduledEmail.objects.filter(address__iexact=email,
+                                          type=ScheduledEmail.INVITATION_REMINDER)
+    items.delete()
+
 def clear_scheduled_emails(user_id, email_type=None):
     # type: (int, Optional[int]) -> None
     items = ScheduledEmail.objects.filter(user_id=user_id)

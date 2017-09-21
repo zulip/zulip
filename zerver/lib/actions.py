@@ -93,7 +93,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import clear_scheduled_emails
+from zerver.lib.notifications import clear_scheduled_emails, clear_scheduled_invitation_emails
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.sessions import delete_user_sessions
@@ -274,6 +274,10 @@ def notify_new_user(user_profile, internal=False):
     if settings.NEW_USER_BOT is not None:
         send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.string_id), 1, delta=True)
+
+    # We also clear any scheduled invitation emails to prevent them
+    # from being sent after the user is created.
+    clear_scheduled_invitation_emails(user_profile.email)
 
 def add_new_user_history(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> None

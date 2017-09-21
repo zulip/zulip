@@ -19,8 +19,7 @@ from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
-    clear_scheduled_emails
+from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails
 from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
@@ -154,7 +153,6 @@ class QueueProcessingWorker(object):
 class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        clear_scheduled_emails(data['user_id'], ScheduledEmail.INVITATION_REMINDER)
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                        (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)
