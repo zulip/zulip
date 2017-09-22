@@ -93,7 +93,8 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import clear_scheduled_emails, clear_scheduled_invitation_emails
+from zerver.lib.notifications import clear_scheduled_emails, \
+    clear_scheduled_invitation_emails, enqueue_welcome_emails
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.sessions import delete_user_sessions
@@ -355,6 +356,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
 
     notify_new_user(user_profile)
+    enqueue_welcome_emails(user_profile.id)
 
     if newsletter_data is not None:
         # If the user was created automatically via the API, we may
