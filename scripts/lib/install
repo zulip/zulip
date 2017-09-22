@@ -140,6 +140,13 @@ if [ "$has_appserver" = 0 ]; then
     mkdir -p "$deploy_path"/prod-static/serve
     cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
     chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
+
+    if ! [ -e "/home/zulip/deployments/current/prod-static" ]; then
+        # If we're installing from a git checkout, we need to run
+        # `tools/update-prod-static` in order to build the static
+        # assets.
+        su zulip -c "/home/zulip/deployments/current/tools/update-prod-static --authors-not-required"
+    fi
 fi
 
 if [ -e "/var/run/supervisor.sock" ]; then
