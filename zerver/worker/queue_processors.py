@@ -315,6 +315,9 @@ class SlowQueryWorker(QueueProcessingWorker):
         # type: () -> None
         slow_queries = self.q.drain_queue("slow_queries", json=True)
 
+        for query in slow_queries:
+            logging.info("Slow query: %s" % (query))
+
         if settings.ERROR_BOT is None:
             return
 
