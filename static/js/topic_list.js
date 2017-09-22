@@ -125,6 +125,10 @@ exports.widget = function (parent_elem, my_stream_id) {
         self.dom.remove();
     };
 
+    self.num_items = function () {
+        return self.topic_items.num_items();
+    };
+
     self.set_count = function (topic, count) {
         if (!self.topic_items.has(topic)) {
             // This can happen for truncated topic lists.  No need
@@ -151,7 +155,15 @@ exports.widget = function (parent_elem, my_stream_id) {
         spinner.show();
     };
 
-    self.build = function (active_topic) {
+    self.show_no_more_topics = function () {
+        var elem = self.dom.find('.no-more-topics-found');
+        elem.show();
+        self.no_more_topics = true;
+    };
+
+    self.build = function (active_topic, no_more_topics) {
+        self.no_more_topics = false; // for now
+
         if (active_topic) {
             active_topic = active_topic.toLowerCase();
         }
@@ -160,6 +172,14 @@ exports.widget = function (parent_elem, my_stream_id) {
         self.dom = self.build_list();
 
         parent_elem.append(self.dom);
+
+        // We often rebuild an entire topic list, and the
+        // caller will pass us in no_more_topics as true
+        // if we were showing "No more topics found" from
+        // the initial zooming.
+        if (no_more_topics) {
+            self.show_no_more_topics();
+        }
 
         if (active_topic) {
             self.activate_topic();
@@ -177,11 +197,29 @@ exports.active_stream_id = function () {
     return active_widget.get_stream_id();
 };
 
+exports.need_to_show_no_more_topics = function (stream_id) {
+    // This function is important, and the use case here is kind of
+    // subtle.  We do complete redraws of the topic list when new
+    // messages come in, and we don't want to overwrite the
+    // "no more topics" error message.
+    if (!zoomed) {
+        return false;
+    }
+
+    if (stream_id !== active_widget.get_stream_id()) {
+        return false;
+    }
+
+    return active_widget.no_more_topics;
+};
+
 exports.rebuild = function (stream_li, stream_id) {
     var active_topic = narrow_state.topic();
+    var no_more_topics = exports.need_to_show_no_more_topics(stream_id);
+
     exports.remove_expanded_topics();
     active_widget = exports.widget(stream_li, stream_id);
-    active_widget.build(active_topic);
+    active_widget.build(active_topic, no_more_topics);
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
@@ -195,6 +233,7 @@ exports.zoom_in = function () {
     }
 
     var stream_id = active_widget.get_stream_id();
+    var before_count = active_widget.num_items();
 
     function on_success() {
         if ((!active_widget) || (stream_id !== active_widget.get_stream_id())) {
@@ -212,6 +251,13 @@ exports.zoom_in = function () {
         }
 
         exports.rebuild(active_widget.get_parent(), stream_id);
+
+        var after_count = active_widget.num_items();
+
+        if (after_count === before_count) {
+            active_widget.show_no_more_topics();
+        }
+
         $('#stream-filters-container').scrollTop(0);
         $('#stream-filters-container').perfectScrollbar('update');
     }
