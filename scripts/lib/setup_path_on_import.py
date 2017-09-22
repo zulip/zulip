@@ -3,11 +3,10 @@ Use libraries from a virtualenv (by modifying sys.path) in production.
 Also add Zulip's root directory to sys.path
 """
 
-import os
-from os.path import dirname, abspath
+import os.path
 import sys
 
-BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 activate_this = os.path.join(
     BASE_DIR,
     "zulip-py3-venv",

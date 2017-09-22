@@ -323,6 +323,9 @@ def build_custom_checkers(by_lang):
         {'pattern': 'render_to_response\(',
          'description': "Use render() instead of render_to_response().",
          },
+        {'pattern': 'from os.path',
+         'description': "Don't use from when importing from the standard library",
+         },
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
