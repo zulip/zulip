@@ -314,7 +314,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 68)
+        self.assert_length(queries, 67)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -841,7 +841,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         """
         user_profile = self.example_user('hamlet')
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
-        enqueue_welcome_emails(user_profile.id)
+        enqueue_welcome_emails(user_profile)
         self.assertEqual(2, ScheduledEmail.objects.filter(user=user_profile).count())
 
         # Simulate unsubscribing from the welcome e-mails.

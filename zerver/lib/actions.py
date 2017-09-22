@@ -356,7 +356,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
 
     notify_new_user(user_profile)
-    enqueue_welcome_emails(user_profile.id)
+    enqueue_welcome_emails(user_profile)
 
     if newsletter_data is not None:
         # If the user was created automatically via the API, we may

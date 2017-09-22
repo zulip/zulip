@@ -413,8 +413,8 @@ def log_digest_event(msg):
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
-def enqueue_welcome_emails(user_id):
-    # type: (int) -> None
+def enqueue_welcome_emails(user):
+    # type: (UserProfile) -> None
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
         # line break to avoid triggering lint rule
@@ -424,20 +424,19 @@ def enqueue_welcome_emails(user_id):
         from_name = None
         from_address = FromAddress.SUPPORT
 
-    user_profile = get_user_profile_by_id(user_id)
-    unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-    context = common_context(user_profile)
+    unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
+    context = common_context(user)
     context.update({
         'unsubscribe_link': unsubscribe_link,
         'organization_setup_advice_link':
-        user_profile.realm.uri + '%s/help/getting-your-organization-started-with-zulip',
-        'is_realm_admin': user_profile.is_realm_admin,
+        user.realm.uri + '%s/help/getting-your-organization-started-with-zulip',
+        'is_realm_admin': user.is_realm_admin,
     })
     send_future_email(
-        "zerver/emails/followup_day1", to_user_id=user_id, from_name=from_name,
+        "zerver/emails/followup_day1", to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(hours=1))
     send_future_email(
-        "zerver/emails/followup_day2", to_user_id=user_id, from_name=from_name,
+        "zerver/emails/followup_day2", to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html):
