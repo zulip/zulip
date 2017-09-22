@@ -153,6 +153,9 @@ class QueueProcessingWorker(object):
 class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
+        user_profile = get_user_profile_by_id(data['user_id'])
+        logging.info("Processing signup for user %s in realm %s" % (
+            user_profile.email, user_profile.realm.string_id))
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                        (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)
