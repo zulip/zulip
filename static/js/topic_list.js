@@ -195,6 +195,20 @@ exports.zoom_in = function () {
     var stream_id = active_widget.get_stream_id();
 
     function on_success() {
+        if ((!active_widget) || (stream_id !== active_widget.get_stream_id())) {
+            blueslip.warn('User re-narrowed before topic history was returned.');
+            return;
+        }
+
+        if (!zoomed) {
+            blueslip.warn('User zoomed out before topic history was returned.');
+            // Note that we could attempt to re-draw the zoomed out topic list
+            // here, given that we have more history, but that might be more
+            // confusing than helpful to a user who is likely trying to browse
+            // other streams.
+            return;
+        }
+
         exports.rebuild(active_widget.get_parent(), stream_id);
         $('#stream-filters-container').scrollTop(0);
         $('#stream-filters-container').perfectScrollbar('update');
