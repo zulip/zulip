@@ -182,7 +182,7 @@ reasoning here.
   dependencies in the `yarn.lock` file; `yarn upgrade` updates the
   `yarn.lock` files.
 * `tools/update-prod-static`.  This process is discussed in detail in
-  the [static asset pipeline](/front-end-build-process.html) article,
+  the [static asset pipeline](front-end-build-process.html) article,
   but we don't use the `node_modules` directories directly in
   production.  Instead, static assets are compiled using our static
   asset pipeline and it is the compiled assets that are served
