@@ -290,25 +290,9 @@ def setup_old_emoji_farm(cache_path, emoji_map):
         except FileExistsError:
             pass
 
-def dump_emojis(cache_path):
-    # type: (str) -> None
-    with open('emoji_map.json') as emoji_map_file:
-        emoji_map = ujson.load(emoji_map_file)
-
-    EMOJI_DATA_FILE_PATH = os.path.join(EMOJI_DATA_PATH, 'emoji.json')
-    with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
-        emoji_data = ujson.load(emoji_data_file)
-    emoji_catalog = generate_emoji_catalog(emoji_data)
-
-    UNIFIED_REACTIONS_PATH = os.path.join(ZULIP_PATH, 'zerver', 'management', 'data', 'unified_reactions.json')
-    with open(UNIFIED_REACTIONS_PATH) as unified_reactions_file:
-        unified_reactions_data = ujson.load(unified_reactions_file)
-
-    # Setup emoji farms.
-    run(['rm', '-rf', cache_path])
-    setup_emoji_farm(cache_path, emoji_map, emoji_data)
-    setup_old_emoji_farm(cache_path, emoji_map)
-
+def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data):
+    # type: (Text, Dict[Text, Text], List[Dict[Text, Any]], Dict[Text, List[Text]], Dict[Text, Text]) -> None
+    # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
 
@@ -349,6 +333,28 @@ def dump_emojis(cache_path):
 
     codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
     codepoint_to_name_file.close()
+
+def dump_emojis(cache_path):
+    # type: (str) -> None
+    with open('emoji_map.json') as emoji_map_file:
+        emoji_map = ujson.load(emoji_map_file)
+
+    EMOJI_DATA_FILE_PATH = os.path.join(EMOJI_DATA_PATH, 'emoji.json')
+    with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
+        emoji_data = ujson.load(emoji_data_file)
+    emoji_catalog = generate_emoji_catalog(emoji_data)
+
+    UNIFIED_REACTIONS_PATH = os.path.join(ZULIP_PATH, 'zerver', 'management', 'data', 'unified_reactions.json')
+    with open(UNIFIED_REACTIONS_PATH) as unified_reactions_file:
+        unified_reactions_data = ujson.load(unified_reactions_file)
+
+    # Setup emoji farms.
+    run(['rm', '-rf', cache_path])
+    setup_emoji_farm(cache_path, emoji_map, emoji_data)
+    setup_old_emoji_farm(cache_path, emoji_map)
+
+    # Generate various map files.
+    generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data)
 
 if __name__ == "__main__":
     main()
