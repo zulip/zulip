@@ -94,22 +94,6 @@ class MissingGlyphError(Exception):
     pass
 
 
-def bw_font(name, code_point):
-    # type: (str, str) -> None
-    char = unichr(int(code_point, 16))
-
-    # AndroidEmoji.ttf is from
-    # https://android.googlesource.com/platform/frameworks/base.git/+/master/data/fonts/AndroidEmoji.ttf
-    # commit 07912f876c8639f811b06831465c14c4a3b17663
-    font = ImageFont.truetype('AndroidEmoji.ttf', 65 * AA_SCALE)
-    image = Image.new('RGBA', BIG_SIZE)
-    draw = ImageDraw.Draw(image)
-    draw.text((0, 0), char, font=font, fill='black')
-    image.resize(SIZE, Image.ANTIALIAS).save(
-        'out/unicode/{}.png'.format(code_point), 'PNG'
-    )
-
-
 def main():
     # type: () -> None
     # ttx is in the fonttools pacakge, the -z option is only on master
