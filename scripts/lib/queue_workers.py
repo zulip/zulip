@@ -4,9 +4,8 @@ from __future__ import print_function
 import argparse
 import os
 import sys
-from os.path import dirname, abspath
 
-BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 

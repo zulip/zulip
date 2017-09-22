@@ -3,7 +3,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
-from os.path import abspath
 import sys
 import subprocess
 import re
@@ -84,7 +83,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
         ext = os.path.splitext(fpath)[1]
         if extless_only and ext:
             continue
-        absfpath = abspath(fpath)
+        absfpath = os.path.abspath(fpath)
         if any(absfpath == expath or absfpath.startswith(expath + '/')
                for expath in exclude_abspaths):
             continue

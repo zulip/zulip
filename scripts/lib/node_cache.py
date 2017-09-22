@@ -2,14 +2,13 @@ from __future__ import print_function
 
 import os
 import hashlib
-from os.path import dirname, abspath
 
 if False:
     from typing import Optional, List, IO, Text, Tuple, Any
 
 from scripts.lib.zulip_tools import subprocess_text_output, run
 
-ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"
 
 if 'TRAVIS' in os.environ:
