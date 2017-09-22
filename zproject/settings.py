@@ -287,62 +287,6 @@ DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, 'var', 'log')
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
 
-# List of callables that know how to import templates from various sources.
-LOADERS = [
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-]
-if PRODUCTION:
-    # Template caching is a significant performance win in production.
-    LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
-
-base_template_engine_settings = {
-    'BACKEND': 'django.template.backends.jinja2.Jinja2',
-    'OPTIONS': {
-        'environment': 'zproject.jinja2.environment',
-        'extensions': [
-            'jinja2.ext.i18n',
-            'jinja2.ext.autoescape',
-            'pipeline.jinja2.PipelineExtension',
-            'webpack_loader.contrib.jinja2ext.WebpackExtension',
-        ],
-        'context_processors': [
-            'zerver.context_processors.zulip_default_context',
-            'zerver.context_processors.add_metrics',
-            'django.template.context_processors.i18n',
-        ],
-    },
-}
-
-default_template_engine_settings = deepcopy(base_template_engine_settings)
-default_template_engine_settings.update({
-    'NAME': 'Jinja2',
-    'DIRS': [
-        os.path.join(DEPLOY_ROOT, 'templates'),
-        os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
-    ],
-    'APP_DIRS': True,
-})
-
-non_html_template_engine_settings = deepcopy(base_template_engine_settings)
-non_html_template_engine_settings.update({
-    'NAME': 'Jinja2_plaintext',
-    'DIRS': [os.path.join(DEPLOY_ROOT, 'templates')],
-    'APP_DIRS': False,
-})
-non_html_template_engine_settings['OPTIONS'].update({
-    'autoescape': False,
-    'trim_blocks': True,
-    'lstrip_blocks': True,
-})
-
-# The order here is important; get_template and related/parent functions try
-# the template engines in order until one succeeds.
-TEMPLATES = [
-    default_template_engine_settings,
-    non_html_template_engine_settings,
-]
-
 MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
@@ -985,6 +929,66 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
     }
 }
+
+########################################################################
+# TEMPLATES SETTINGS
+########################################################################
+
+# List of callables that know how to import templates from various sources.
+LOADERS = [
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+]
+if PRODUCTION:
+    # Template caching is a significant performance win in production.
+    LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
+
+base_template_engine_settings = {
+    'BACKEND': 'django.template.backends.jinja2.Jinja2',
+    'OPTIONS': {
+        'environment': 'zproject.jinja2.environment',
+        'extensions': [
+            'jinja2.ext.i18n',
+            'jinja2.ext.autoescape',
+            'pipeline.jinja2.PipelineExtension',
+            'webpack_loader.contrib.jinja2ext.WebpackExtension',
+        ],
+        'context_processors': [
+            'zerver.context_processors.zulip_default_context',
+            'zerver.context_processors.add_metrics',
+            'django.template.context_processors.i18n',
+        ],
+    },
+}
+
+default_template_engine_settings = deepcopy(base_template_engine_settings)
+default_template_engine_settings.update({
+    'NAME': 'Jinja2',
+    'DIRS': [
+        os.path.join(DEPLOY_ROOT, 'templates'),
+        os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
+    ],
+    'APP_DIRS': True,
+})
+
+non_html_template_engine_settings = deepcopy(base_template_engine_settings)
+non_html_template_engine_settings.update({
+    'NAME': 'Jinja2_plaintext',
+    'DIRS': [os.path.join(DEPLOY_ROOT, 'templates')],
+    'APP_DIRS': False,
+})
+non_html_template_engine_settings['OPTIONS'].update({
+    'autoescape': False,
+    'trim_blocks': True,
+    'lstrip_blocks': True,
+})
+
+# The order here is important; get_template and related/parent functions try
+# the template engines in order until one succeeds.
+TEMPLATES = [
+    default_template_engine_settings,
+    non_html_template_engine_settings,
+]
 
 ########################################################################
 # LOGGING SETTINGS
