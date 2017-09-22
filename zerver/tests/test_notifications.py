@@ -404,17 +404,27 @@ class TestMissedMessages(ZulipTestCase):
                                      "\nIt is present in markdown_test_cases.json")
 
         # Specific test cases.
+
+        # A path to an emoji image
+        test_data = '<a href="/static/generated/emoji/images/emoji/">emoji</a>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<a href="http://example.com/static/generated/emoji/images/emoji/">emoji</a>'
+        self.assertEqual(actual_output, expected_output)
+
+        # A path similar to our emoji path, but not in a link:
         test_data = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
         self.assertEqual(actual_output, expected_output)
 
+        # An uploaded file
         test_data = '<a href="/user_uploads/2/1f/some_random_value">/user_uploads/2/1f/some_random_value</a>'
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = '<a href="http://example.com/user_uploads/2/1f/some_random_value">' + \
             '/user_uploads/2/1f/some_random_value</a>'
         self.assertEqual(actual_output, expected_output)
 
+        # A user avatar like syntax, but not actually in an HTML tag
         test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
