@@ -23,7 +23,7 @@
 
 from __future__ import print_function
 import sys
-import os.path
+import os
 import optparse
 import time
 import json
