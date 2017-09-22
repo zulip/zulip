@@ -167,8 +167,6 @@ class SignupWorker(QueueProcessingWorker):
             else:
                 r.raise_for_status()
 
-        enqueue_welcome_emails(data['user_id'])
-
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data):
