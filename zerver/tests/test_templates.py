@@ -122,10 +122,16 @@ class TemplateTestCase(ZulipTestCase):
 
         integrations_regexp = re.compile('zerver/integrations/.*.html')
 
+        # Since static/generated/bots/ is searched by Jinja2 for templates,
+        # it mistakes logo files under that directory for templates.
+        bot_logos_regexp = re.compile('\w+\/logo\.(svg|png)$')
+
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html',
                                                                      'zerver/terms.html',
                                                                      'zerver/privacy.html']
-        templates = [t for t in get_all_templates() if not (t in skip or integrations_regexp.match(t))]
+
+        templates = [t for t in get_all_templates() if not (
+            t in skip or integrations_regexp.match(t) or bot_logos_regexp.match(t))]
         self.render_templates(templates, self.get_context())
 
         # Test the deferred templates with updated context.

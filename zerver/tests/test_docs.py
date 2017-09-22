@@ -71,6 +71,7 @@ class DocPageTest(ZulipTestCase):
                        'IFTTT'
                    ])
         self._test('/integrations/doc-html/travis', 'Your Travis CI notifications may look like:')
+        self._test('/integrations/doc-html/googlesearch', 'This bot allows users to do Google search queries')
         self._test('/devlogin/', 'Normal users', landing_page=False)
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')

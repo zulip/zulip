@@ -85,7 +85,7 @@ def render_markdown_path(markdown_file_path, context=None):
     if context.get('integrations_dict') is not None:
         integration_dir = None
         if markdown_file_path.endswith('doc.md'):
-            integration_dir = markdown_file_path.split('/')[0]
+            integration_dir = os.path.basename(os.path.dirname(markdown_file_path))
         elif 'integrations' in markdown_file_path.split('/'):
             integration_dir = os.path.splitext(os.path.basename(markdown_file_path))[0]
 
@@ -93,7 +93,8 @@ def render_markdown_path(markdown_file_path, context=None):
 
         context['integration_name'] = integration.name
         context['integration_display_name'] = integration.display_name
-        context['recommended_stream_name'] = integration.stream_name
+        if hasattr(integration, 'stream_name'):
+            context['recommended_stream_name'] = integration.stream_name
         if hasattr(integration, 'url'):
             context['integration_url'] = integration.url[3:]
 
