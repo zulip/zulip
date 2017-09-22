@@ -174,6 +174,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         invitee = get_prereg_user_by_email(data["email"])
         referrer = get_user_profile_by_id(data["referrer_id"])
         body = data["email_body"]
+        logging.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
         do_send_confirmation_email(invitee, referrer, body)
 
         # queue invitation reminder for two days from now.
