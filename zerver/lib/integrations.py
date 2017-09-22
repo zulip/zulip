@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import os.path
+import os
 
 from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings

@@ -3,7 +3,7 @@ from django.conf.urls import url, include
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
-import os.path
+import os
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls

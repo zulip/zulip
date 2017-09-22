@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from django.conf import settings
 from django.views.generic import TemplateView
-import os.path
+import os
 from django.views.static import serve
 import zerver.views.registration
 import zerver.views.auth

@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Any, List
-import os.path
+import os
 
 from django.conf import settings
 from django.template import Library, loader, engines

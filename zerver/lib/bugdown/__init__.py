@@ -11,7 +11,7 @@ import logging
 import traceback
 from six.moves import urllib
 import re
-import os.path
+import os
 import glob
 import html
 import twitter
