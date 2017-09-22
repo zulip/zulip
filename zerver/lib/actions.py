@@ -2232,8 +2232,8 @@ def do_activate_user(user_profile):
 
     notify_created_user(user_profile)
 
-def do_reactivate_user(user_profile):
-    # type: (UserProfile) -> None
+def do_reactivate_user(user_profile, acting_user=None):
+    # type: (UserProfile, Optional[UserProfile]) -> None
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
     user_profile.is_active = True
@@ -2241,7 +2241,8 @@ def do_reactivate_user(user_profile):
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_reactivated', event_time=event_time)
+                                 event_type='user_reactivated', event_time=event_time,
+                                 acting_user=acting_user)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
 

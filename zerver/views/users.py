@@ -84,7 +84,7 @@ def reactivate_user_backend(request, user_profile, email):
     if not user_profile.can_admin_user(target):
         return json_error(_('Insufficient permission'))
 
-    do_reactivate_user(target)
+    do_reactivate_user(target, acting_user=user_profile)
     return json_success()
 
 @has_request_variables
