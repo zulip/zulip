@@ -10,6 +10,14 @@
                 <div class="errorcontent">
                     <h1 class="lead">Configuration error</h1>
                     <br/>
+                    {% if ldap_error_realm_is_none %}
+                        {% trans %}
+                        You are trying to login using LDAP without creating an
+                        organization first. Please use EmailAuthBackend to create
+                        your organization and then try again.
+                        {% endtrans %}
+                    {% endif %}
+
                     {% if smtp_error %}
                     <p>
                         It appears there are problems with the
