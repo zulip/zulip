@@ -1885,6 +1885,7 @@ class RealmAuditLog(ModelReprMixin, models.Model):
     extra_data = models.TextField(null=True)  # type: Optional[Text]
 
     def __unicode__(self):
+        # type: () -> str
         if self.modified_user is not None:
             return u"<RealmAuditLog: %s %s %s>" % (self.modified_user, self.event_type, self.event_time)
         if self.modified_stream is not None:
