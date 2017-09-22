@@ -51,7 +51,7 @@ def resolve_conflicts(conflicts, files_list):
     order = list(map(int, order_input.split()))
     validate_order(order, len(conflicts))
 
-    last_correct_migration = conflicts[order[0]]
+    last_correct_migration = conflicts[order[0] - 1]
 
     last_correct_migration = last_correct_migration.replace('.py', '')
     renumber_migration(conflicts, order, last_correct_migration)
