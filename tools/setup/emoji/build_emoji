@@ -90,10 +90,6 @@ if 'TRAVIS' in os.environ:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
-class MissingGlyphError(Exception):
-    pass
-
-
 def main():
     # type: () -> None
     # ttx is in the fonttools pacakge, the -z option is only on master
