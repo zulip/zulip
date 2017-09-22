@@ -22,6 +22,21 @@ some really nice properties:
 The purpose of this document is to detail all of Zulip's third-party
 dependencies and how we manage their versions.
 
+## Provisioning
+
+We refer to "provisioning" as the process of installing and
+configuring the dependencies of a Zulip development environment.  It's
+done using `tools/provision`, and the output is conveniently logged by
+`var/log/provision.log` to help with debugging.  Provisioning makes
+use of a lot of caching.  Some of those caches are not immune to being
+corrupted if you mess around with files in your repository a lot.  We
+have `tools/provision --force` to (still fairly quickly) rerun most
+steps that would otherwise have been skipped due to caching.
+
+In the Vagrant development environment, `vagrant provision` will run
+the provision script; `vagrant up` will boot the machine, and will
+also run an initial provision the first time only.
+
 ## Philosophy on adding third-party dependencies
 
 In the Zulip project, we take a pragmatic approach to third-party

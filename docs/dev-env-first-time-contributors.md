@@ -318,7 +318,8 @@ does the following:
 - runs the `tools/provision` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test
-  database.  We call this process "provisioning".
+  database.  We call this process "provisioning", and it is documented
+  in some detail in our [dependencies documentation](dependencies.html).
 
 You will need an active internet connection during the entire
 process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
