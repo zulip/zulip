@@ -2,17 +2,11 @@
 #
 # See docs/emoji.md for a high-level explanation of how this system
 # works.
-from __future__ import division, print_function
 import os
-import glob
-import shutil
-import subprocess
-import ujson
 import sys
-import xml.etree.ElementTree as ET
-from six import unichr
+import ujson
+
 from typing import Any, Dict, List, Text, Union
-from PIL import Image, ImageDraw, ImageFont
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     emoji_names_for_picker, EMOJISETS
@@ -22,12 +16,6 @@ sys.path.append(ZULIP_PATH)
 
 from scripts.lib.zulip_tools import generate_sha1sum_emoji, run
 
-AA_SCALE = 8
-SIZE = (136, 136)
-BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
-
-EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
-EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
@@ -92,20 +80,6 @@ if 'TRAVIS' in os.environ:
 
 def main():
     # type: () -> None
-    # ttx is in the fonttools pacakge, the -z option is only on master
-    # https://github.com/behdad/fonttools/
-
-    # NotoColorEmoji.tff is from
-    # https://android.googlesource.com/platform/external/noto-fonts/+/master/other/NotoColorEmoji.ttf
-    # Commit ID: 1e75a5582b3fb386725aaa944f32fba71f155588
-
-    # this is so we don't accidently leave ttx files from previous
-    # runs of this script lying around
-    for fname in glob.glob(EMOJI_DUMP_PATH("*ttx*")):
-        os.remove(fname)
-
-    # check if directory `var/emoji_dump` exists
-    subprocess.check_call(['mkdir', '-p', EMOJI_DUMP_DIR_PATH])
     success_stamp = get_success_stamp()
     source_emoji_dump = os.path.dirname(success_stamp)
 
