@@ -59,8 +59,9 @@
             </tr>
         </tbody>
     </table>
-    <p>Useful management commands include
+    <p>Development-specific management commands live in <code>zilencer/management/commands</code>.  Highlights include:
         <ul>
+            <li><code>./manage.py populate_db</code>: Rebuilds database.  Has options to e.g. create 3K users for testing.</li>
             <li><code>./manage.py mark_all_messages_unread</code>: Useful for testing reading messages.</li>
             <li><code>./manage.py add_new_realm</code>: Add a new realm. Useful for testing onboarding.</li>
             <li><code>./manage.py add_new_user</code>: Add a new user. Useful for testing onboarding.</li>
