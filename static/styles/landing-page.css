@@ -2378,16 +2378,6 @@ nav ul li.active::after {
     line-height: 0.8;
 }
 
-.pricing-model .pricing-container .text-content .price .cents {
-    display: inline-block;
-    vertical-align: top;
-    height: 18px;
-
-    font-size: 1.3rem;
-    font-weight: 300;
-    border-bottom: 1px solid #666;
-}
-
 .pricing-model .pricing-container .bottom .details {
     display: inline-block;
     vertical-align: top;
