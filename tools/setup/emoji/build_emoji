@@ -93,33 +93,6 @@ if 'TRAVIS' in os.environ:
 class MissingGlyphError(Exception):
     pass
 
-def color_font(name, code_point, code_point_to_fname_map):
-    # type: (str, str, Dict[int, Union[Text, bytes]]) -> None
-    glyph_name = code_point_to_fname_map[int(code_point, 16)]
-
-    in_name = 'bitmaps/strike0/{}.png'.format(glyph_name)
-    out_name = 'out/unicode/{}.png'.format(code_point)
-
-    # These emojis are colored white and need to be recolored
-    white_emojis = ['eight', 'five', 'four', 'hash', 'nine', 'one',
-                    'seven', 'six', 'three', 'two', 'zero']
-
-    try:
-        if name in white_emojis:
-            white_emoji_image = Image.open(in_name).convert('RGBA')
-            # Reduced image size for having a 4-pixel dark yellow background
-            # on right and bottom of the image.
-            light_yellow_background = Image.new('RGBA', (124, 124), '#FCC21B')
-            dark_yellow_background = Image.new('RGBA', SIZE, '#F79329')
-            # Paste the image on a light yellow background and the resulting
-            # image on a dark yellow background.
-            light_yellow_background.paste(white_emoji_image, mask=white_emoji_image)
-            dark_yellow_background.paste(light_yellow_background, mask=light_yellow_background)
-            dark_yellow_background.save(in_name)
-        shutil.copyfile(in_name, out_name)
-    except IOError:
-        raise MissingGlyphError('code_point: %r' % (code_point))
-
 
 def bw_font(name, code_point):
     # type: (str, str) -> None
