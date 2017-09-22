@@ -450,6 +450,17 @@ li.show-more-private-messages a {
     padding: 10px;
 }
 
+.no-more-topics-found {
+    display: none;
+}
+
+.no-more-topics-found span {
+    display: inline-block;
+    font-size: 90%;
+    font-weight: 600;
+    padding: 12px;
+}
+
 .zoom-in .show-more-topics {
     display: none;
 }
