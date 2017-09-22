@@ -123,9 +123,8 @@ def home_real(request):
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
 
-    # Brand new users get the tutorial
-    needs_tutorial = settings.TUTORIAL_ENABLED and \
-        user_profile.tutorial_status != UserProfile.TUTORIAL_FINISHED
+    # Brand new users get narrowed to PM with welcome-bot
+    needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
 
     first_in_realm = realm_user_count(user_profile.realm) == 1
     # If you are the only person in the realm and you didn't invite
