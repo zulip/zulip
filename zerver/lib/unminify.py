@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import re
-import os.path
+import os
 import sourcemap
 from six.moves import map
 

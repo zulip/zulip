@@ -3,7 +3,7 @@ Use libraries from a virtualenv (by modifying sys.path) in production.
 Also add Zulip's root directory to sys.path
 """
 
-import os.path
+import os
 import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

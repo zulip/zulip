@@ -326,6 +326,9 @@ def build_custom_checkers(by_lang):
         {'pattern': 'from os.path',
          'description': "Don't use from when importing from the standard library",
          },
+        {'pattern': 'import os.path',
+         'description': "Use import os instead of import os.path",
+         },
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',

@@ -18,7 +18,6 @@ import base64
 import random
 import sys
 import os
-import os.path
 import hashlib
 import six
 
