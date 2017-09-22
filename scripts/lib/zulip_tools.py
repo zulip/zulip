@@ -246,7 +246,7 @@ def generate_sha1sum_emoji(zulip_path):
     ZULIP_EMOJI_DIR = os.path.join(zulip_path, 'tools', 'setup', 'emoji')
     sha = hashlib.sha1()
 
-    filenames = ['NotoColorEmoji.ttf', 'emoji_map.json', 'AndroidEmoji.ttf',
+    filenames = ['NotoColorEmoji.ttf', 'emoji_map.json',
                  'build_emoji', 'emoji_setup_utils.py']
 
     for filename in filenames:
