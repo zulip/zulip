@@ -52,7 +52,6 @@ import ujson
 import mock
 import os
 import sys
-from os.path import dirname, abspath
 from six.moves import cStringIO as StringIO
 from django.conf import settings
 
@@ -450,7 +449,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertEqual(message.content, 'Reply')
 
-MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email")
+MAILS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fixtures", "email")
 
 
 class TestScriptMTA(ZulipTestCase):

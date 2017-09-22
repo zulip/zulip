@@ -4,12 +4,10 @@
 from __future__ import print_function
 import sys
 import os
-import os.path
-from os.path import dirname, abspath
 if False:
     from typing import Dict, List, Optional, Text
 
-BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 

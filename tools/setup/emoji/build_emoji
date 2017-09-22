@@ -12,7 +12,6 @@ import sys
 import xml.etree.ElementTree as ET
 from six import unichr
 from typing import Dict, Text, Union
-from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
@@ -169,7 +168,7 @@ def main():
     # check if directory `var/emoji_dump` exists
     subprocess.check_call(['mkdir', '-p', EMOJI_DUMP_DIR_PATH])
     success_stamp = get_success_stamp()
-    source_emoji_dump = dirname(success_stamp)
+    source_emoji_dump = os.path.dirname(success_stamp)
 
     if not os.path.exists(success_stamp):
         print("Dumping emojis ...")

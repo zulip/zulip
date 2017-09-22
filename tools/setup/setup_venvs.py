@@ -2,9 +2,8 @@
 
 import os
 import sys
-from os.path import dirname, abspath
 
-ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
