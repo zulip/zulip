@@ -153,15 +153,17 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
         }
     };
 
-    self.dom = self.build_list(active_topic);
+    self.build = function () {
+        self.dom = self.build_list(active_topic);
 
-    parent_elem.append(self.dom);
+        parent_elem.append(self.dom);
 
-    if (active_topic) {
-        self.activate_topic(active_topic);
-    }
+        if (active_topic) {
+            self.activate_topic(active_topic);
+        }
+    };
 
-
+    self.build();
     return self;
 };
 
