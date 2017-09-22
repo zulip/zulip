@@ -79,7 +79,7 @@ RUN apt-get update \
 
 RUN groupadd --gid 3434 circleci \
   && useradd --uid 3434 --gid circleci --shell /bin/bash --create-home circleci \
-  && echo 'circleci ALL=NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci \
+  && echo 'circleci ALL = (ALL) NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci \
   && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
 
 USER circleci
