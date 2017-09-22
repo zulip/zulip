@@ -56,12 +56,13 @@ exports.set_count = function (stream_id, topic, count) {
     }
 };
 
-exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_topics) {
+exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
     var self = {};
 
-    self.build_list = function (active_topic, max_topics) {
+    self.build_list = function (active_topic) {
         self.topic_items = new Dict({fold_case: true});
 
+        var max_topics = 5;
         var topic_names = topic_data.get_recent_names(my_stream_id);
         var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
 
@@ -152,7 +153,7 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
         }
     };
 
-    self.dom = self.build_list(active_topic, max_topics);
+    self.dom = self.build_list(active_topic);
 
     parent_elem.append(self.dom);
 
@@ -173,11 +174,9 @@ exports.active_stream_id = function () {
 };
 
 exports.rebuild = function (stream_li, stream_id) {
-    var max_topics = 5;
-
     var active_topic = narrow_state.topic();
     exports.remove_expanded_topics();
-    active_widget = exports.build_widget(stream_li, stream_id, active_topic, max_topics);
+    active_widget = exports.build_widget(stream_li, stream_id, active_topic);
 
     return active_widget; // used for testing
 };
