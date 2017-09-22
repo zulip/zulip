@@ -5,6 +5,9 @@ developing new features for Zulip that require front-end changes,
 especially those that involve adding new files. For a more general
 overview, see the [new feature tutorial](new-feature-tutorial.html).
 
+Our [dependencies documentation](dependencies.html) has useful
+relevant background as well.
+
 ## Primary build process
 
 Most of the existing JS in Zulip is written
@@ -15,7 +18,10 @@ eval with sourcemaps. In production mode (and when creating a release tarball
 using `tools/build-release-tarball`), JavaScript files are concatenated and
 minified. We use the
 [django pipeline extension](https://django-pipeline.readthedocs.io/en/latest/)
-to manage our static assets, webpack, and typescript.
+to manage our static assets, webpack, and typescript.  The main
+internal tool that does all of this work is
+`tools/update-prod-static`, which is called by both
+`tools/build-release-tarball` and `tools/upgrade-zulip-from-git`.
 
 ## Adding static files
 
