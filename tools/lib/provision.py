@@ -122,6 +122,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
+    "moreutils",            # Used for sponge command
 ] + VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
