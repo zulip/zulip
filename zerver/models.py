@@ -1871,7 +1871,7 @@ EMAIL_TYPES = {
     'invitation_reminder': ScheduledEmail.INVITATION_REMINDER,
 }
 
-class RealmAuditLog(models.Model):
+class RealmAuditLog(ModelReprMixin, models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     acting_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
     modified_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
@@ -1883,6 +1883,13 @@ class RealmAuditLog(models.Model):
     # by migrations when introducing a new event_type.
     backfilled = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[Text]
+
+    def __unicode__(self):
+        if self.modified_user is not None:
+            return u"<RealmAuditLog: %s %s %s>" % (self.modified_user, self.event_type, self.event_time)
+        if self.modified_stream is not None:
+            return u"<RealmAuditLog: %s %s %s>" % (self.modified_stream, self.event_type, self.event_time)
+        return "<RealmAuditLog: %s %s %s>" % (self.realm, self.event_type, self.event_time)
 
 class UserHotspot(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
