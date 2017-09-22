@@ -19,6 +19,7 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                 from_address=None, reply_to_email=None, context=None):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Dict[str, Any]]) -> EmailMultiAlternatives
     # Callers should pass exactly one of to_user_id and to_email.
+    context = context or {}
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
         to_user = get_user_profile_by_id(to_user_id)

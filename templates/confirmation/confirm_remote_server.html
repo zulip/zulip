@@ -1,0 +1,28 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+            <div class="bg-image"></div>
+
+            <div class="white-box">
+                <p>Your remote server, {{ hostname }}, has successfully registered
+                    with us. You can now start sending push notifications.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<script type="text/javascript">
+$(function() {
+    $("#resend_email_link").click(function () {
+        $('#resend_confirm').submit();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "zerver/portico_signup.html" %}
+{# Displayed after a user attempts to register remote server. #}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+            <div class="bg-image"></div>
+
+            <div class="get-started">
+                <h1>{{ _("Almost there!") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>{{ _("Check your email for a verification link.") }}</p>
+
+                {% if development_environment %}
+                <div class="alert alert-info" style="display:inline-block;">{{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}</div>
+                {% endif %}
+
+                <p>{% trans %}Still no email? We can <a href="#" id="remotes_resend_email_link">resend it</a>.{% endtrans %}<br/>
+                <small>({{ _("Just in case, take a look at your Spam folder.") }})</small></p>
+                <form id="remote_resend_confirm" action="/accounts/home/" method="post" style="position: absolute;">
+                    {{ csrf_input }}
+                    <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<script type="text/javascript">
+$(function() {
+    $("#remotes_resend_email_link").click(function () {
+        $('#remote_resend_confirm').submit();
+    });
+});
+</script>
+{% endblock %}

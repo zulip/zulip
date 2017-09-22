@@ -1,0 +1,53 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<script type="text/javascript">
+$(function () {
+    autofocus('#email');
+});
+</script>
+<div class="bg-image"></div>
+
+<div class="app register-page split-view flex full-page new-style">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Register remote server") }}</h1>
+        </div>
+        <div class="app-main register-page-container white-box">
+            <div class="register-form new-style">
+                <div class="left-side">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
+                        magna nunc, vehicula in elementum sed, volutpat at nisi. Sed id
+                        semper ex. Sed ullamcorper eros turpis, et mollis mi aliquam at.
+                        Etiam mattis, augue eu dignissim tempus, quam lectus blandit eros,
+                        sit amet ornare sapien lectus id dolor.
+                    </p>
+                </div>
+                <div class="right-side">
+                    <form class="form-inline" id="send_confirm" name="email_form"
+                        action="{{ current_url() }}" method="post">
+                        {{ csrf_input }}
+
+                        <div class="input-box no-validation">
+                            <input id="email" type="email" class="email required" name="email"
+                                   value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                                   placeholder={{ "wile@acme.com" }}
+                                   required />
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                <div class="help-inline text-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                            <label for="email">{{ _('Email') }}</label>
+                        </div>
+
+                        <button class="full-width" type="submit" name="">{{ _('Register') }}</button>
+                    </form>
+                    <div id="errors"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

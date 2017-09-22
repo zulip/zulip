@@ -1,10 +1,21 @@
 from __future__ import absolute_import
 
+from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.utils import timezone
-from django.http import HttpResponse, HttpRequest
+from django.urls import reverse
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
+from django.shortcuts import render
+from django.db import transaction
 
-from zilencer.models import Deployment, RemotePushDeviceToken, RemoteZulipServer
+from confirmation.models import get_object_from_key, \
+    render_confirmation_key_error, ConfirmationKeyException, \
+    create_confirmation_link, Confirmation
+
+from zilencer.models import Deployment, RemotePushDeviceToken, \
+    RemoteZulipServer, RemoteServerRegistrationStatus
+from zilencer.forms import RemoteServerRegistrationForm, \
+    StartRemoteServerRegistrationForm
 
 from zerver.decorator import has_request_variables, REQ
 from zerver.lib.error_notify import do_report_error
@@ -13,6 +24,7 @@ from zerver.lib.push_notifications import send_android_push_notification, \
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict, check_int
+from zerver.lib.send_email import send_email
 from zerver.models import UserProfile, PushDeviceToken, Realm
 from zerver.views.push_notifications import validate_token
 
@@ -106,3 +118,62 @@ def remote_server_notify_push(request,  # type: HttpRequest
         send_apple_push_notification(user_id, apple_devices, apns_payload)
 
     return json_success()
+
+def register_remote_server(request):
+    # type: (HttpRequest) -> HttpResponse
+    if request.method == 'POST':
+        form = StartRemoteServerRegistrationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            with transaction.atomic():
+                status_obj = RemoteServerRegistrationStatus.objects.create(email=email)
+                activation_url = create_confirmation_link(status_obj,
+                                                          request.get_host(),
+                                                          Confirmation.SERVER_REGISTRATION)
+
+            send_email(
+                'zilencer/emails/confirm_remoteserver',
+                to_email=email,
+                from_address=settings.DEFAULT_FROM_EMAIL,
+                context={'activate_url': activation_url},
+            )
+
+            return HttpResponseRedirect(
+                reverse('remotes_send_confirm', kwargs={'email': email}))
+    else:
+        form = StartRemoteServerRegistrationForm()
+
+    return render(
+        request,
+        'zilencer/start_register_remote_server.html',
+        context={'form': form, 'current_url': request.get_full_path})
+
+def confirm(request, confirmation_key):
+    # type: (HttpRequest, str) -> HttpResponse
+    confirmation_key = confirmation_key.lower()
+    try:
+        status_obj = get_object_from_key(confirmation_key)
+    except ConfirmationKeyException as exception:
+        return render_confirmation_key_error(request, exception)
+
+    if request.method == 'POST':
+        assert isinstance(status_obj, RemoteServerRegistrationStatus)
+        form = RemoteServerRegistrationForm(request.POST)
+        if form.is_valid():
+            api_key = form.cleaned_data['zulip_org_key']
+            uuid = form.cleaned_data['zulip_org_id']
+            hostname = form.cleaned_data['hostname']
+            RemoteZulipServer.objects.create(
+                uuid=uuid,
+                api_key=api_key,
+                hostname=hostname,
+                contact_email=status_obj.email,
+            )
+            return render(request, 'confirmation/confirm_remote_server.html',
+                          {'hostname': hostname})
+    else:
+        form = RemoteServerRegistrationForm()
+
+    context = {'form': form, 'current_url': request.get_full_path}
+    return render(request, 'zilencer/register_remote_server.html',
+                  context=context)
