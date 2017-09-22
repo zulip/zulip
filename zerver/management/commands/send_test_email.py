@@ -14,7 +14,9 @@ class Command(sendtestemail.Command):
         subject = "Zulip Test email"
         message = ("Success!  If you receive this message, you've "
                    "successfully configured sending email from your "
-                   "Zulip server.")
+                   "Zulip server.  Remember that you need to restart "
+                   "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
+                   "after changing the settings in /etc/zulip before your changes will take effect.")
         sender = FromAddress.SUPPORT
         send_mail(subject, message, sender, kwargs['email'])
 
