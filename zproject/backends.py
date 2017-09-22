@@ -379,6 +379,9 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass
 
+class ZulipLDAPConfigurationError(Exception):
+    pass
+
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     # Don't use Django LDAP's permissions functions
     def has_perm(self, user, perm, obj=None):
@@ -418,6 +421,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return username
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
+    REALM_IS_NONE_ERROR = 1
+
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
         # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
@@ -458,7 +463,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return user_profile, False
         except UserProfile.DoesNotExist:
             if self._realm is None:
-                raise ZulipLDAPException("Realm is None")
+                raise ZulipLDAPConfigurationError("Realm is None", self.REALM_IS_NONE_ERROR)
             # No need to check for an inactive user since they don't exist yet
             if self._realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")

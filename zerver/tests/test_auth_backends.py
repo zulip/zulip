@@ -44,7 +44,8 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
-    require_email_format_usernames, SocialAuthMixin, AUTH_BACKEND_NAME_MAP
+    require_email_format_usernames, SocialAuthMixin, AUTH_BACKEND_NAME_MAP, \
+    ZulipLDAPConfigurationError
 
 from zerver.views.auth import (maybe_send_to_registration,
                                login_or_register_remote_user)
@@ -2382,3 +2383,22 @@ class LoginOrRegisterRemoteUserTestCase(ZulipTestCase):
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
         self.assertIn('/accounts/login/?subdomain=1', response.url)
+
+class LDAPBackendTest(ZulipTestCase):
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_non_existing_realm(self):
+        # type: () -> None
+        email = self.example_email('hamlet')
+        data = {'username': email, 'password': initial_password(email)}
+        error_type = ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR
+        error = ZulipLDAPConfigurationError('Realm is None', error_type)
+        with mock.patch('zproject.backends.ZulipLDAPAuthBackend.get_or_create_user',
+                        side_effect=error), \
+                mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'):
+            response = self.client_post('/login/', data)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, reverse('ldap_error_realm_is_none'))
+            response = self.client_get(response.url)
+            self.assert_in_response('You are trying to login using LDAP '
+                                    'without creating an',
+                                    response)
