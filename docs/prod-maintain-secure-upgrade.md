@@ -23,10 +23,9 @@ To upgrade to a new version of the zulip server, download the appropriate
 release tarball from <https://www.zulip.org/dist/releases/>.
 
 You also have the option of creating your own release tarballs from a
-copy of the zulip.git repository using
-`tools/build-release-tarball`. And, starting with Zulip version 1.4,
-you can upgrade Zulip [to a version in a Git repository
-directly](#upgrading-from-a-git-repository).
+copy of the [zulip.git repository](https://github.com/zulip/zulip)
+using `tools/build-release-tarball` or upgrade Zulip
+[to a version in a Git repository directly](#upgrading-from-a-git-repository).
 
 Next, run as root:
 
@@ -128,20 +127,10 @@ precise configuration.
 
 ## Upgrading from a git repository
 
-Starting with version 1.4, the Zulip server supports doing deployments
-from a Git repository.  To configure this, you will need to add
-`zulip::static_asset_compiler` to your `/etc/zulip/zulip.conf` file's
-`puppet_classes` entry, like this:
-
-```
-puppet_classes = zulip::voyager, zulip::static_asset_compiler
-```
-
-Then, run `scripts/zulip-puppet-apply` to install the dependencies for
-building Zulip's static assets.  You can configure the `git`
-repository that you'd like to use by adding a section like this to
-`/etc/zulip/zulip.conf`; by default it uses the main `zulip`
-repository (shown below).
+Starting with version 1.4, the Zulip server supports upgrading to a
+commit in Git.  You can configure the `git` repository that you'd like
+to use by adding a section like this to `/etc/zulip/zulip.conf`; by
+default it uses the main `zulip` repository (shown below).
 
 ```
 [deployment]
@@ -149,17 +138,32 @@ git_repo_url = https://github.com/zulip/zulip.git
 ```
 
 Once that is done (and assuming the currently installed version of
-Zulip is new enough that this script exists), you can do deployments
-by running as root:
+Zulip is 1.7 or newer), you can do deployments by running as root:
 
 ```
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git <branch>
 ```
 
 and Zulip will automatically fetch the relevant branch from the
-specified repository, build the static assets, and deploy that
-version.  Currently, the upgrade process is slow, but it doesn't need
-to be; there is ongoing work on optimizing it.
+specified repository to a directory under `/home/zulip/deployments`
+(where release tarball are unpacked), build the compiled static assets
+from source, and switches to the new version.
+
+### Upgrading from Zulip 1.6 and older
+
+If you're currently using Zulip older than 1.7, you will need to
+add `zulip::static_asset_compiler` to your `/etc/zulip/zulip.conf`
+file's `puppet_classes` entry, like this:
+
+```
+puppet_classes = zulip::voyager, zulip::static_asset_compiler
+```
+
+Then, run `scripts/zulip-puppet-apply` to install the dependencies for
+building Zulip's static assets.  Once you've upgraded to Zulip 1.7 or
+above, you can safely remove `zulip::static_asset_compiler` from
+`puppet_classes` to clean it up; in Zulip 1.7 and above, it is a
+dependency of `zulip::voyager`.
 
 ## Backups
 
