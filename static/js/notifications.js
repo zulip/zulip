@@ -480,6 +480,17 @@ function should_send_audible_notification(message) {
     return false;
 }
 
+exports.granted_desktop_notifications_permission = function () {
+    return browser_desktop_notifications_on();
+};
+
+
+exports.request_desktop_notifications_permission = function () {
+    if (notifications_api) {
+        return notifications_api.requestPermission;
+    }
+};
+
 exports.received_messages = function (messages) {
     _.each(messages, function (message) {
         if (!message_is_notifiable(message)) {
