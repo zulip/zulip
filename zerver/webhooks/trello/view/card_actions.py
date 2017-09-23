@@ -1,7 +1,6 @@
 from typing import Dict, Tuple, Any, Optional, MutableMapping, Mapping, Text
 from datetime import datetime
 from .exceptions import UnknownUpdateCardAction
-from .templates import TRELLO_SUBJECT_TEMPLATE, TRELLO_MESSAGE_TEMPLATE
 
 SUPPORTED_CARD_ACTIONS = [
     u'updateCard',
@@ -37,23 +36,23 @@ COMMENT = u'commentCard'
 TRELLO_CARD_URL_TEMPLATE = u'[{card_name}]({card_url})'
 
 ACTIONS_TO_MESSAGE_MAPPER = {
-    CREATE: u'created {card_url_template}',
-    CHANGE_LIST: u'moved {card_url_template} from {old_list} to {new_list}',
-    CHANGE_NAME: u'renamed the card from "{old_name}" to {card_url_template}',
+    CREATE: u'created {card_url_template}.',
+    CHANGE_LIST: u'moved {card_url_template} from {old_list} to {new_list}.',
+    CHANGE_NAME: u'renamed the card from "{old_name}" to {card_url_template}.',
     SET_DESC: u'set description for {card_url_template} to\n~~~ quote\n{desc}\n~~~\n',
     CHANGE_DESC: u'changed description for {card_url_template} from\n~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n',
-    REMOVE_DESC: u'removed description from {card_url_template}',
-    ARCHIVE: u'archived {card_url_template}',
-    REOPEN: u'reopened {card_url_template}',
-    SET_DUE_DATE: u'set due date for {card_url_template} to {due_date}',
-    CHANGE_DUE_DATE: u'changed due date for {card_url_template} from {old_due_date} to {due_date}',
-    REMOVE_DUE_DATE: u'removed the due date from {card_url_template}',
-    ADD_LABEL: u'added a {color} label with \"{text}\" to {card_url_template}',
-    REMOVE_LABEL: u'removed a {color} label with \"{text}\" from {card_url_template}',
-    ADD_MEMBER: u'added {member_name} to {card_url_template}',
-    REMOVE_MEMBER: u'removed {member_name} from {card_url_template}',
-    ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}',
-    ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}',
+    REMOVE_DESC: u'removed description from {card_url_template}.',
+    ARCHIVE: u'archived {card_url_template}.',
+    REOPEN: u'reopened {card_url_template}.',
+    SET_DUE_DATE: u'set due date for {card_url_template} to {due_date}.',
+    CHANGE_DUE_DATE: u'changed due date for {card_url_template} from {old_due_date} to {due_date}.',
+    REMOVE_DUE_DATE: u'removed the due date from {card_url_template}.',
+    ADD_LABEL: u'added a {color} label with \"{text}\" to {card_url_template}.',
+    REMOVE_LABEL: u'removed a {color} label with \"{text}\" from {card_url_template}.',
+    ADD_MEMBER: u'added {member_name} to {card_url_template}.',
+    REMOVE_MEMBER: u'removed {member_name} from {card_url_template}.',
+    ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}.',
+    ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}.',
     COMMENT: u'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n'
 }
 
@@ -106,16 +105,13 @@ def get_proper_action(payload, action_type):
 
 def get_subject(payload):
     # type: (Mapping[str, Any]) -> Text
-    data = {
-        'board_name': get_action_data(payload)['board'].get('name')
-    }
-    return TRELLO_SUBJECT_TEMPLATE.format(**data)
+    return get_action_data(payload)['board'].get('name')
 
 def get_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
     creator = payload['action']['memberCreator'].get('fullName')
-    return TRELLO_MESSAGE_TEMPLATE.format(full_name=creator, rest=message_body)
+    return u'{full_name} {rest}'.format(full_name=creator, rest=message_body)
 
 def get_added_checklist_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
