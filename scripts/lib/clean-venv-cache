@@ -9,21 +9,14 @@ if False:
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.hash_reqs import expand_reqs, hash_deps
-from scripts.lib.zulip_tools import GENERIC_CACHE_SCRIPT_PARSER, \
-    get_caches_to_be_purged, get_environment, get_recent_deployments, \
+from scripts.lib.zulip_tools import get_caches_to_be_purged, \
+    get_environment, get_recent_deployments, parse_cache_script_args, \
     purge_unused_caches
 
 ENV = get_environment()
 VENV_CACHE_DIR = '/srv/zulip-venv-cache'
 if ENV == "travis":
     VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
-
-def parse_args():
-    # type: () -> argparse.Namespace
-    parser = argparse.ArgumentParser(description="This script cleans unused zulip venv caches.",
-                                     parents=[GENERIC_CACHE_SCRIPT_PARSER, ])
-    args = parser.parse_args()
-    return args
 
 def get_caches_in_use(threshold_days):
     # type: (int) -> Set[Text]
@@ -48,7 +41,7 @@ def get_caches_in_use(threshold_days):
 
 def main():
     # type: () -> None
-    args = parse_args()
+    args = parse_cache_script_args("This script cleans unused zulip venv caches.")
     caches_in_use = get_caches_in_use(args.threshold_days)
     purge_unused_caches(
         VENV_CACHE_DIR, caches_in_use, args, "venv cache")
