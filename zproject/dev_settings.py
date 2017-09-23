@@ -6,6 +6,7 @@ import os
 from typing import Set
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
+EMAIL_LOG_DIR = "/var/log/zulip/email.log"
 # Default to subdomains disabled in development until we can update
 # the development documentation to make sense with subdomains.
 REALMS_HAVE_SUBDOMAINS = False
