@@ -221,13 +221,13 @@ def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
             caches_to_purge.add(cache_dir)
     return caches_to_purge
 
-def purge_unused_caches(caches_dir, caches_in_use, threshold_days, dry_run, cache_type):
-    # type: (Text, Set[Text], int, bool, Text) -> None
+def purge_unused_caches(caches_dir, caches_in_use, args, cache_type):
+    # type: (Text, Set[Text], argparse.Namespace, Text) -> None
     all_caches = set([os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)])
-    caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days)
+    caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
-    may_be_perform_purging(caches_to_purge, caches_to_keep, cache_type, dry_run)
+    may_be_perform_purging(caches_to_purge, caches_to_keep, cache_type, args.dry_run)
     print("Done!\n")
 
 def generate_sha1sum_emoji(zulip_path):
