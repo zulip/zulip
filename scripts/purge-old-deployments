@@ -27,7 +27,13 @@ def parse_args():
         "--dry-run", dest="dry_run", action="store_true",
         help="If specified then script will only print the deployments and "
         "caches that it will delete/keep back. It will not delete anything.")
+    parser.add_argument(
+        "--verbose", dest="verbose", action="store_true",
+        help="If specified then script will print a detailed report "
+        "of what is going on.")
+
     args = parser.parse_args()
+    args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
     return args
 
 def get_deployments_to_be_purged(recent_deployments):
