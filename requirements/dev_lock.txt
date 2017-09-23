@@ -65,7 +65,7 @@ httplib2==0.10.3
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==17.3.1         # via twisted
-idna==2.6
+idna==2.6                 # via cryptography, requests
 ijson==2.3
 imagesize==0.7.1
 incremental==17.5.0       # via twisted
@@ -123,7 +123,7 @@ recommonmark==0.4.0
 redis==2.10.6
 regex==2017.7.28
 requests-oauthlib==0.8.0
-requests==2.18.4
+requests==2.18.4          # via moto, premailer, python-gcm, python-twitter, requests-oauthlib, social-auth-core, sphinx
 rsa==3.4.2
 s3transfer==0.1.10        # via boto3
 scrapy==1.4.0
@@ -152,7 +152,7 @@ twisted==17.5.0
 typed-ast==1.1.0
 typing==3.6.2
 uritemplate==3.0.0
-urllib3==1.22
+urllib3==1.22             # via requests, transifex-client
 w3lib==1.18.0             # via parsel, scrapy
 wcwidth==0.1.7            # via prompt-toolkit
 werkzeug==0.12.2          # via moto

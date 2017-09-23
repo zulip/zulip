@@ -46,7 +46,7 @@ html2text==2016.9.19
 httplib2==0.10.3
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
-idna==2.6
+idna==2.6                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.2.0
@@ -90,7 +90,7 @@ pytz==2017.2
 redis==2.10.6
 regex==2017.7.28
 requests-oauthlib==0.8.0
-requests==2.18.4
+requests==2.18.4          # via premailer, python-gcm, python-twitter, requests-oauthlib, social-auth-core
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 simplejson==3.11.1
@@ -106,6 +106,6 @@ tornado==4.5.2
 traitlets==4.3.2          # via ipython
 typing==3.6.2
 uritemplate==3.0.0
-urllib3==1.22
+urllib3==1.22             # via requests
 uwsgi==2.0.14
 wcwidth==0.1.7            # via prompt-toolkit
