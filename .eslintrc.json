@@ -154,7 +154,8 @@
         "emoji_picker": false,
         "hotspots": false,
         "compose_ui": false,
-        "common": false
+        "common": false,
+        "desktop_notifications_panel": false
     },
     "rules": {
         "array-callback-return": "error",
