@@ -11,7 +11,7 @@ import ujson
 import sys
 import xml.etree.ElementTree as ET
 from six import unichr
-from typing import Dict, Text, Union
+from typing import Any, Dict, List, Text, Union
 from PIL import Image, ImageDraw, ImageFont
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
@@ -190,6 +190,35 @@ def get_success_stamp():
     # type: () -> str
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
+
+def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
+    # type: (Text, Dict[Text, Text], List[Dict[Text, Any]]) -> None
+    # Spritesheet CSS generation code.
+    emoji_positions = ""
+    for emoji in emoji_data:
+        if emoji["has_img_google"]:
+            emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
+                'codepoint': emoji['unified'].lower(),
+                'pos_x': (emoji["sheet_x"] * 100) / 48,
+                'pos_y': (emoji["sheet_y"] * 100) / 48,
+            }
+            # Remove the code below once the migration to iamcal's dataset is complete.
+            emoji_name = emoji['short_name']
+            codepoint = emoji['unified'].lower()
+            if emoji_name in emoji_map and codepoint != emoji_map[emoji_name]:
+                emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
+                    'codepoint': emoji_map[emoji_name],
+                    'pos_x': (emoji["sheet_x"] * 100) / 48,
+                    'pos_y': (emoji["sheet_y"] * 100) / 48,
+                }
+
+    for emojiset in EMOJISETS:
+        SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
+        sprite_css_file = open(SPRITE_CSS_PATH, 'w')
+        sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
+                                                          'emoji_positions': emoji_positions,
+                                                          })
+        sprite_css_file.close()
 
 def setup_emoji_farm(cache_path):
     # type: (Text) -> None
