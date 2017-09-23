@@ -6,19 +6,11 @@ import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import GENERIC_CACHE_SCRIPT_PARSER, \
-    get_environment
-
-def parse_args():
-    # type: () -> argparse.Namespace
-    parser = argparse.ArgumentParser(description="This script cleans unused zulip caches.",
-                                     parents=[GENERIC_CACHE_SCRIPT_PARSER, ])
-    args = parser.parse_args()
-    return args
+from scripts.lib.zulip_tools import get_environment, parse_cache_script_args
 
 def main():
     # type: () -> None
-    parse_args()
+    parse_cache_script_args("This script cleans unused zulip caches.")
     os.chdir(ZULIP_PATH)
     print("Starting cache cleaning scripts...")
     subprocess.check_call(["./scripts/lib/clean-venv-cache"] + sys.argv[1:])
