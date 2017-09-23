@@ -50,6 +50,29 @@ GENERIC_CACHE_SCRIPT_PARSER.add_argument(
     help="If specified then script will only print the caches "
     "that it will delete/keep back. It will not delete any cache.")
 
+def parse_cache_script_args(description):
+    # type: (Text) -> argparse.Namespace
+    parser = argparse.ArgumentParser(description=description)
+
+    parser.add_argument(
+        "--threshold", dest="threshold_days", type=int, default=14,
+        nargs="?", metavar="<days>", help="Any cache which is not in "
+        "use by a deployment not older than threshold days(current "
+        "installation in dev) and older than threshold days will be "
+        "deleted. (defaults to 14)")
+    parser.add_argument(
+        "--dry-run", dest="dry_run", action="store_true",
+        help="If specified then script will only print the caches "
+        "that it will delete/keep back. It will not delete any cache.")
+    parser.add_argument(
+        "--verbose", dest="verbose", action="store_true",
+        help="If specified then script will print a detailed report "
+        "of what is being will deleted/kept back.")
+
+    args = parser.parse_args()
+    args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
+    return args
+
 def get_deployment_version(extract_path):
     # type: (str) -> str
     version = '0.0.0'
