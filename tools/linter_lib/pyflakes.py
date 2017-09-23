@@ -5,7 +5,7 @@ import subprocess
 
 from .printer import print_err, colors
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List  # noqa: F401
 
 def check_pyflakes(options, by_lang):
     # type: (Any, Dict[str, List[str]]) -> bool

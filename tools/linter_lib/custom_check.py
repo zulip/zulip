@@ -9,7 +9,7 @@ import traceback
 
 from .printer import print_err, colors
 
-from typing import cast, Any, Callable, Dict, List, Optional, Tuple
+from typing import cast, Any, Callable, Dict, List, Optional, Tuple  # noqa: F401
 
 RuleList = List[Dict[str, Any]]  # mypy currently requires Aliases at global scope
 # https://github.com/python/mypy/issues/3145

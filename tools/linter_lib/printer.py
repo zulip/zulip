@@ -7,7 +7,7 @@ from itertools import cycle
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from scripts.lib.zulip_tools import ENDC, BOLDRED, GREEN, YELLOW, BLUE, MAGENTA, CYAN
 
-from typing import Union, Text
+from typing import Union, Text  # noqa: F401
 
 colors = cycle([GREEN, YELLOW, BLUE, MAGENTA, CYAN])
 
