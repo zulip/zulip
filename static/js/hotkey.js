@@ -41,7 +41,7 @@ var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
-    /*68: {name: 'shift_d', message_view_only: false},*/
+    68: {name: 'shift_d', message_view_only: false},
 };
 
 var keydown_unshift_mappings = {
