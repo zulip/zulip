@@ -181,6 +181,42 @@ p.n-margin {
     height: 40px;
 }
 
+#panels {
+    -webkit-font-smoothing: antialiased;
+
+    font-size: 1rem;
+}
+
+#panels .alert {
+    margin: 0;
+    padding-top: 12px;
+    padding-bottom: 12px;
+
+    border: none;
+    border-radius: 0;
+
+    text-align: center;
+    text-shadow: none;
+    color: #fff;
+}
+
+#panels .alert.alert-info {
+    background: #54c0ae;
+}
+
+#panels .alert .close {
+    line-height: 24px;
+}
+
+#panels .alert .alert-link {
+    color: #c6fff5;
+    font-weight: 600;
+}
+
+#panels .alert .buttons .alert-link {
+    margin: 0px 5px;
+}
+
 .app {
     width: 100%;
     height: 100%;
