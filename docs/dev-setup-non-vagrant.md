@@ -390,7 +390,7 @@ Then you should create the Docker image based on Ubuntu Linux, first
 go to the directory with the Zulip source code:
 
 ```
-docker build -t user/zulipdev .
+docker build -t user/zulipdev -f Dockerfile-dev .
 ```
 
 
