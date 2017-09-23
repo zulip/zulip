@@ -61,8 +61,7 @@ def main():
     args = parse_args()
     caches_in_use = get_caches_in_use(args.threshold_days)
     purge_unused_caches(
-        NODE_MODULES_CACHE_PATH, caches_in_use, args.threshold_days,
-        args.dry_run, "node modules cache")
+        NODE_MODULES_CACHE_PATH, caches_in_use, args, "node modules cache")
 
 if __name__ == "__main__":
     main()
