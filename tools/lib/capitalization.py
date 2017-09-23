@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import List, Tuple, Set, Pattern, Match
+from typing import List, Tuple, Set, Pattern, Match  # noqa: F401
 import re
 
 from bs4 import BeautifulSoup

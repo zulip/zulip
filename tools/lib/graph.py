@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from collections import defaultdict
 
-from typing import Callable, DefaultDict, Iterator, List, Optional, Set, Tuple
+from typing import Callable, DefaultDict, Iterator, List, Optional, Set, Tuple  # noqa: F401
 
 Edge = Tuple[str, str]
 EdgeSet = Set[Edge]

@@ -20,7 +20,7 @@ from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
 if False:
-    from typing import Any
+    from typing import Any  # noqa: F401
 
 
 SUPPORTED_PLATFORMS = {

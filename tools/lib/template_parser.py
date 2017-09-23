@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional  # noqa: F401
 from six.moves import range
 import re
 

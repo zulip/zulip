@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from six.moves import range
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Tuple, Union  # noqa: F401
 
 ####### Helpers
 

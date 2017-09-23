@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set  # noqa: F401
 
 import re
 from collections import defaultdict
