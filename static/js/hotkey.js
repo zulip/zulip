@@ -671,7 +671,13 @@ exports.process_hotkey = function (e, hotkey) {
             reactions.open_reactions_popover();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-            reactions.toggle_emoji_reaction(msg.id, '+1');
+            var thumbs_up_codepoint = '1f44d';
+            // If the user has reacted to the message before with thumbs up then
+            // use the alias used by the user otherwise use the canonical name
+            // given by the `codepoint_to_name`.
+            var canonical_name = emoji_codes.codepoint_to_name[thumbs_up_codepoint];
+            var alias_used = emoji_picker.get_alias_to_be_used(msg.id, canonical_name);
+            reactions.toggle_emoji_reaction(msg.id, alias_used);
             return true;
         case 'toggle_mute':
             muting_ui.toggle_mute(msg);
