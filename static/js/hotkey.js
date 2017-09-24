@@ -41,7 +41,6 @@ var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
-    68: {name: 'shift_d', message_view_only: false},
 };
 
 var keydown_unshift_mappings = {
@@ -90,6 +89,7 @@ var keypress_mappings = {
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
+    68: {name: 'restore_latest_draft', message_view_only: false}, // 'D'
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
@@ -593,6 +593,9 @@ exports.process_hotkey = function (e, hotkey) {
         case 'stream_cycle_forward':
             narrow.stream_cycle_forward();
             return true;
+        case 'restore_latest_draft':
+            drafts.restore_draft_for_hotkey();
+            return true;
         case 'view_selected_stream':
             if (overlays.streams_open()) {
                 subs.view_stream();
@@ -645,9 +648,6 @@ exports.process_hotkey = function (e, hotkey) {
         case 'vim_page_up':
         case 'shift_spacebar':
             navigate.page_up();
-            return true;
-        case 'shift_d':
-            drafts.restore_draft_for_hotkey();
             return true;
         case 'page_down':
         case 'vim_page_down':
