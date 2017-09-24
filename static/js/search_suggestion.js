@@ -497,7 +497,7 @@ function get_operator_suggestions(last) {
             last.operand = last.operand.slice(1);
         }
 
-        var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from'];
+        var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from', 'group-pm-with'];
         choices = _.filter(choices, function (choice) {
             return phrase_match(choice, last.operand);
         });

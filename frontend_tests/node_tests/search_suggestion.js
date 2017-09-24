@@ -851,6 +851,14 @@ init();
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = 'group-';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'group-',
+        'group-pm-with:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = '-s';
     suggestions = search.get_suggestions(query);
     expected = [
