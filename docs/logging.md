@@ -153,6 +153,31 @@ Blueslip supports several error levels:
 * `blueslip.debug`: Similar to `blueslip.log`, but are not printed to
   the JS console in development.
 
+## Frontend performance reporting
+
+In order to make it easier to debug potential performance problems in
+the critically latency-sensitive message sending code pathway, we log
+and report to the server the following whenever a message is sent:
+
+* The time the user triggered the message (aka the start time).
+* The time the `send_message` response returned from the server.
+* The time the message was received by the browser from the
+  `get_events` protocol (these last two race with each other).
+* Whether the message was locally echoed.
+* If so, whether there was a disparity between the echoed content and
+  the server-rendered content, which can be used for statistics on how
+  effective our [local echo system](markdown.html) is.
+
+The code is all in `zerver/lib/report.py` and `static/js/sent_messages.js`.
+
+We have similar reporting for the time it takes to narrow / switch to
+a new view:
+
+* The time the action was initiated
+* The time when the updated message feed was visible to the user
+* The time when the browser was idle again after switching views
+  (intended to catch issues where we generate a lot of deferred work).
+
 [django-errors]: https://docs.djangoproject.com/en/1.11/howto/error-reporting/
 [python-logging]: https://docs.python.org/3/library/logging.html
 [django-logging]: https://docs.djangoproject.com/en/1.11/topics/logging/
