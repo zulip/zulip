@@ -1,3 +1,5 @@
+// System documented in https://zulip.readthedocs.io/en/latest/logging.html
+
 // This must be included before the first call to $(document).ready
 // in order to be able to report exceptions that occur during their
 // execution.

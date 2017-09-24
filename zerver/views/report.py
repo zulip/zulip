@@ -1,3 +1,5 @@
+# System documented in https://zulip.readthedocs.io/en/latest/logging.html
+
 from typing import Any, Dict, Optional, Text
 
 from django.conf import settings

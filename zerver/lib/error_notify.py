@@ -1,3 +1,4 @@
+# System documented in https://zulip.readthedocs.io/en/latest/logging.html
 
 import logging
 
