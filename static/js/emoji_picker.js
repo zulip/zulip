@@ -270,7 +270,7 @@ function filter_emojis() {
     }
 }
 
-function get_alias_to_be_used(message_id, emoji_name) {
+exports.get_alias_to_be_used = function (message_id, emoji_name) {
     // If the user has reacted to this message, then this function
     // returns the alias of this emoji he used, otherwise, returns
     // the passed name as it is.
@@ -293,7 +293,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
         return reaction.emoji_name;
     }
     return emoji_name;
-}
+};
 
 function toggle_reaction(emoji_name) {
     var message_id = current_msg_list.selected_id();
@@ -303,7 +303,7 @@ function toggle_reaction(emoji_name) {
         return;
     }
 
-    var alias = get_alias_to_be_used(message_id, emoji_name);
+    var alias = exports.get_alias_to_be_used(message_id, emoji_name);
     reactions.toggle_emoji_reaction(message_id, alias);
 }
 
