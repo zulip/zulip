@@ -572,6 +572,7 @@ initialize();
         assert.equal(msg, 'Empty recipient list in message');
     };
     people.pm_with_user_ids(message);
+    people.group_pm_with_user_ids(message);
 
     var charles = {
         email: 'charles@example.com',

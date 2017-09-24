@@ -328,6 +328,27 @@ function make_sub(name, stream_id) {
         type: 'private',
         display_recipient: [{id: joe.user_id}],
     }));
+
+    predicate = get_predicate([['group-pm-with', 'nobody@example.com']]);
+    assert(!predicate({
+        type: 'private',
+        display_recipient: [{id: joe.user_id}],
+    }));
+
+    predicate = get_predicate([['group-pm-with', 'Joe@example.com']]);
+    assert(predicate({
+        type: 'private',
+        display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
+    }));
+    assert(!predicate({ // you must be a part of the group pm
+        type: 'private',
+        display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
+    }));
+    assert(!predicate({
+        type: 'private',
+        display_recipient: [{id: steve.user_id}, {id: me.user_id}],
+    }));
+    assert(!predicate({type: 'stream'}));
 }());
 
 (function test_negated_predicates() {
