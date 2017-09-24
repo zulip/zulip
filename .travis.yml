@@ -54,8 +54,6 @@ matrix:
     - python: "3.5"
       env: TEST_SUITE=backend
 sudo: required
-services:
-- docker
 addons:
   artifacts:
     paths:
