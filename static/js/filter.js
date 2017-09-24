@@ -113,15 +113,15 @@ function message_matches_search_term(message, operator, operand) {
         return people.id_matches_email_operand(message.sender_id, operand);
 
     case 'group-pm-with':
-        var operand_id = people.get_user_id(operand);
-        if (!operand_id) {
+        var operand_ids = people.pm_with_operand_ids(operand);
+        if (!operand_ids) {
             return false;
         }
         var user_ids = people.group_pm_with_user_ids(message);
         if (!user_ids) {
             return false;
         }
-        return (user_ids.includes(operand_id));
+        return (user_ids.includes(operand_ids[0]));
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
 
@@ -130,7 +130,7 @@ function message_matches_search_term(message, operator, operand) {
         if (message.type !== 'private') {
             return false;
         }
-        var operand_ids = people.pm_with_operand_ids(operand);
+        operand_ids = people.pm_with_operand_ids(operand);
         if (!operand_ids) {
             return false;
         }
