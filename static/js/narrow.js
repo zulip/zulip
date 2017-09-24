@@ -554,6 +554,8 @@ function pick_empty_narrow_banner() {
             return $("#silent_user");
         }
         return $("#non_existing_user");
+    } else if (first_operator === "group-pm-with") {
+        return $("#empty_narrow_group_private_message");
     }
     return default_banner;
 }

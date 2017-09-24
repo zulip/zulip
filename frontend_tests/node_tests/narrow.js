@@ -135,6 +135,11 @@ function set_filter(operators) {
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_narrow_private_message');
 
+    set_filter([['group-pm-with', 'alice@example.com']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_narrow_group_private_message');
+
     set_filter([['sender', 'ray@example.com']]);
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
