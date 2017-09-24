@@ -189,7 +189,7 @@ def get_recent_deployments(threshold_days):
     recent = set()
     threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
-        if not os.path.isdir(dir_name):
+        if not os.path.isdir(os.path.join(DEPLOYMENTS_DIR, dir_name)):
             # Skip things like uwsgi sockets.
             continue
         try:
