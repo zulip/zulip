@@ -1,3 +1,4 @@
+# System documented in https://zulip.readthedocs.io/en/latest/logging.html
 from __future__ import absolute_import
 
 from django.utils.timezone import now as timezone_now
