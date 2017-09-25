@@ -995,7 +995,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("User not authorized for this query"))
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user_profile, message_to)
-        if not valid_input:
+        if not valid_input or mirror_sender is None:  # FIXME: Amend to use exceptions?
             return json_error(_("Invalid mirrored message"))
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
             return json_error(_("Invalid mirrored realm"))
