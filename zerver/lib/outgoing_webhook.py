@@ -240,13 +240,9 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
                             % {'message_url': get_message_url(event, request_data),
                                'status_code': response.status_code,
                                'response': response.content})
-            # On 50x errors, try retry
-            if str(response.status_code).startswith('5'):
-                request_retry(event, request_data, "Internal Server error at third party.")
-            else:
-                failure_message = "Third party responded with %d" % (response.status_code)
-                fail_with_message(event, failure_message)
-                notify_bot_owner(event, request_data, response.status_code, response.content)
+            failure_message = "Third party responded with %d" % (response.status_code)
+            fail_with_message(event, failure_message)
+            notify_bot_owner(event, request_data, response.status_code, response.content)
 
     except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
