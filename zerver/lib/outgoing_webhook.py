@@ -140,13 +140,13 @@ def send_response_message(bot_id, message, response_message_content):
     if recipient_type_name == 'stream':
         recipients = [message['display_recipient']]
         check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
-                           message['subject'], response_message_content, realm, forwarder_user_profile=bot_user)
-    else:
-        # Private message; only send if the bot is there in the recipients
+                           message['subject'], response_message_content, realm)
+    elif recipient_type_name == 'private':
         recipients = [recipient['email'] for recipient in message['display_recipient']]
-        if bot_user.email in recipients:
-            check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
-                               message['subject'], response_message_content, realm, forwarder_user_profile=bot_user)
+        check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
+                           None, response_message_content, realm)
+    else:
+        raise JsonableError(_("Invalid message type"))
 
 def succeed_with_message(event, success_message):
     # type: (Dict[str, Any], Text) -> None
