@@ -39,7 +39,7 @@ class AlertWordTests(ZulipTestCase):
         params = {
             'alert_words': ujson.dumps(['milk', 'cookies'])
         }
-        result = self.client_post('/json/users/me/alert_words', params)
+        result = self.client_put('/json/users/me/alert_words', params)
         self.assert_json_success(result)
         user = self.example_user(user_name)
         words = user_alert_words(user)
@@ -139,20 +139,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         self.assertEqual(result.json()['alert_words'], ['two', 'three'])
-
-    def test_json_list_set(self):
-        # type: () -> None
-        self.login(self.example_email("hamlet"))
-
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
-        self.assert_json_success(result)
-
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
-        self.assert_json_success(result)
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['a', 'b', 'c'])
 
     def message_does_alert(self, user_profile, message):
         # type: (UserProfile, Text) -> bool
