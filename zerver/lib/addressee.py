@@ -101,7 +101,7 @@ class Addressee(object):
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
             emails = message_to
-            return Addressee.for_private(emails=emails, sender=sender)
+            return Addressee.for_private(emails, sender.realm)
         else:
             raise JsonableError(_("Invalid message type"))
 
@@ -115,9 +115,9 @@ class Addressee(object):
         )
 
     @staticmethod
-    def for_private(emails, sender):
-        # type: (Sequence[Text], UserProfile) -> Addressee
-        user_profiles = get_user_profiles(emails, sender.realm)
+    def for_private(emails, realm):
+        # type: (Sequence[Text], Realm) -> Addressee
+        user_profiles = get_user_profiles(emails, realm)
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,
