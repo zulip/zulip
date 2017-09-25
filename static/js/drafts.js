@@ -366,7 +366,7 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 };
 
-exports.restore_draft_for_hotkey = function() {
+exports.restore_draft_for_hotkey = function () {
     var draft_arrow = draft_model.get();
     var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
     var first_draft = draft_id_arrow[draft_id_arrow.length-1];
