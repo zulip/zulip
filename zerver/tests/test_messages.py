@@ -1213,14 +1213,15 @@ class MessagePOSTTest(ZulipTestCase):
         create_mirrored_message_users_mock.return_value = (True, True)
         user = self.mit_user("starnine")
         email = user.email
-        user.realm.string_id = 'not_zephyr'
+        user.realm.string_id = 'notzephyr'
         user.realm.save()
         self.login(email)
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
-                                                     "to": email}, name='gownooo')
+                                                     "to": email},
+                                  subdomain="notzephyr")
         self.assert_json_error(result, "Invalid mirrored realm")
 
     @override_settings(REALMS_HAVE_SUBDOMAINS=True)
