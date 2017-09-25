@@ -1741,7 +1741,7 @@ blockquote p {
     width: 0px;
     height: 0px;
     top: -7px;
-    right: 10px;
+    right: 20px;
     display: inline-block;
     border-right: 7px solid transparent;
     border-bottom: 7px solid hsl(0, 0%, 66%);
@@ -2291,12 +2291,6 @@ button.topic_edit_cancel {
     font-weight: 700;
     text-align: center;
     text-transform: uppercase;
-}
-
-.settings-dropdown-caret {
-    margin-left: 8px;
-    margin-right: 8px;
-    font-size: 14px;
 }
 
 #notifications-area {
