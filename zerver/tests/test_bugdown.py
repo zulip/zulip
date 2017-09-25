@@ -12,11 +12,12 @@ from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.mention import possible_mentions
+from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
+from zerver.lib.user_groups import create_user_group
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -36,6 +37,7 @@ from zerver.models import (
     RealmFilter,
     Recipient,
     UserProfile,
+    UserGroup,
 )
 
 import copy
@@ -850,6 +852,86 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
+
+    def create_user_group_for_test(self, user_group_name):
+        # type: (Text) -> UserGroup
+        othello = self.example_user('othello')
+        return create_user_group(user_group_name, [othello], get_realm('zulip'))
+
+    def test_user_group_mention_single(self):
+        # type: () -> None
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test('support')
+
+        content = "@**King Hamlet** @*support*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-email="%s" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span> '
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@support</span></p>' % (self.example_email("hamlet"),
+                                                  user_id,
+                                                  user_group.id))
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
+
+    def test_possible_user_group_mentions(self):
+        # type: () -> None
+        def assert_mentions(content, names):
+            # type: (Text, Set[Text]) -> None
+            self.assertEqual(possible_user_group_mentions(content), names)
+
+        assert_mentions('', set())
+        assert_mentions('boring', set())
+        assert_mentions('@all', set())
+        assert_mentions('smush@*steve*smush', set())
+
+        assert_mentions(
+            '@*support* Hello @**King Hamlet** and @**Cordelia Lear**\n'
+            '@**Foo van Barson** @**all**', {'support'}
+        )
+
+        assert_mentions(
+            'Attention @*support*, @*frontend* and @*backend*\ngroups.',
+            {'support', 'frontend', 'backend'}
+        )
+
+    def test_user_group_mention_multiple(self):
+        # type: () -> None
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        support = self.create_user_group_for_test('support')
+        backend = self.create_user_group_for_test('backend')
+
+        content = "@*support* and @*backend*, check this out"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>'
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@support</span> '
+                         'and '
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@backend</span>, '
+                         'check this out'
+                         '</p>' % (support.id, backend.id))
+
+        self.assertEqual(msg.mentions_user_group_ids, set([support.id, backend.id]))
+
+    def test_user_group_mention_invalid(self):
+        # type: () -> None
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "Hey @*Nonexistent group*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>Hey @<em>Nonexistent group</em></p>')
+        self.assertEqual(msg.mentions_user_group_ids, set())
 
     def test_stream_single(self):
         # type: () -> None

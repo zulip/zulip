@@ -757,6 +757,21 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         else:
             return -1
 
+class UserGroup(models.Model):
+    name = models.CharField(max_length=100)
+    members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
+    realm = models.ForeignKey(Realm)
+
+    class Meta:
+        unique_together = (('realm', 'name'),)
+
+class UserGroupMembership(models.Model):
+    user_group = models.ForeignKey(UserGroup)
+    user_profile = models.ForeignKey(UserProfile)
+
+    class Meta:
+        unique_together = (('user_group', 'user_profile'),)
+
 def receives_offline_notifications(user_profile):
     # type: (UserProfile) -> bool
     return ((user_profile.enable_offline_email_notifications or

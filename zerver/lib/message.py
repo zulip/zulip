@@ -467,9 +467,9 @@ def access_message(user_profile, message_id):
 def render_markdown(message, content, realm=None, realm_alert_words=None, user_ids=None, mention_data=None):
     # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[int]], Optional[bugdown.MentionData]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
-    message object such as `mentions_user_ids` and `mentions_wildcard`.
-    These are only on this Django object and are not saved in the
-    database.
+    message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
+    `mentions_wildcard`.  These are only on this Django object and are not
+    saved in the database.
     """
 
     if user_ids is None:
@@ -480,6 +480,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, user_i
     if message is not None:
         message.mentions_wildcard = False
         message.mentions_user_ids = set()
+        message.mentions_user_group_ids = set()
         message.alert_words = set()
         message.links_for_preview = set()
 
