@@ -46,6 +46,9 @@ def get_deployments_to_be_purged(recent_deployments):
         if not os.path.isdir(deployment):
             # Skip things like uwsgi sockets.
             continue
+        if not os.path.exists(os.path.join(deployment, "zerver")):
+            # Skip things like "lock" that aren't actually a deployment directory
+            continue
         if deployment not in recent_deployments:
             deployments_to_purge.add(deployment)
     return deployments_to_purge

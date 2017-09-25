@@ -190,7 +190,10 @@ def get_recent_deployments(threshold_days):
     threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
         if not os.path.isdir(os.path.join(DEPLOYMENTS_DIR, dir_name)):
-            # Skip things like uwsgi sockets.
+            # Skip things like uwsgi sockets, symlinks, etc.
+            continue
+        if not os.path.exists(os.path.join(DEPLOYMENTS_DIR, dir_name, "zerver")):
+            # Skip things like "lock" that aren't actually a deployment directory
             continue
         try:
             date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)
