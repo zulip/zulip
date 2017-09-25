@@ -23,11 +23,11 @@ Zulip keyboard shortcuts are divided into four categories:
 bar at the top of the window to allow them to begin searching for messages with
 specific criteria in the organization.
 
-* **Search people**: `q` — Moves the user's cursor to the user search bar in
+* **Search people**: `w` — Moves the user's cursor to the user search bar in
 the right sidebar to to allow them to begin searching for a particular user in
 the organization. d * *
 
-* **Search streams**: `w` — Moves the user's cursor to the
+* **Search streams**: `q` — Moves the user's cursor to the
 stream search bar in the left sidebar to to allow them to begin searching for a
 particular stream in the organization.
 
