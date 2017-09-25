@@ -469,14 +469,9 @@ $(function () {
         compose_actions.cancel();
     });
 
-    $("#join_unsub_stream").click(function (e) {
-        e.stopPropagation();
-        window.location.hash = "streams/all";
-    });
-
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-        window.location.hash = "streams";
+        window.location.hash = "streams/all";
     });
 
     $("#streams_filter_icon").click(function (e) {
