@@ -253,7 +253,11 @@ class MessageDict(object):
             obj['content'] = content
             obj['content_type'] = 'text/x-markdown'
 
-        obj['is_me_message'] = Message.is_status_message(content, rendered_content)
+        if rendered_content is not None:
+            obj['is_me_message'] = Message.is_status_message(content, rendered_content)
+        else:
+            obj['is_me_message'] = False
+
         obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
                             for reaction in reactions]
         return obj
