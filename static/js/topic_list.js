@@ -59,16 +59,12 @@ exports.set_count = function (stream_id, topic, count) {
 exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
     var self = {};
 
-    self.build_list = function (active_topic) {
+    self.build_list = function () {
         self.topic_items = new Dict({fold_case: true});
 
         var max_topics = 5;
         var topic_names = topic_data.get_recent_names(my_stream_id);
         var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
-
-        if (active_topic) {
-            active_topic = active_topic.toLowerCase();
-        }
 
         var ul = $('<ul class="topic-list">');
         ul.attr('data-stream', my_stream_name);
@@ -79,7 +75,7 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
             if (!zoomed) {
                 // Show the most recent topics, as well as any with unread messages
                 var show_topic = (idx < max_topics) || (num_unread > 0) ||
-                                 (active_topic === topic_name.toLowerCase());
+                                 (self.active_topic === topic_name.toLowerCase());
 
                 if (!show_topic) {
                     return;
@@ -146,24 +142,29 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
         update_unread_count(unread_count_elem, count);
     };
 
-    self.activate_topic = function (active_topic) {
-        var li = self.topic_items.get(active_topic);
+    self.activate_topic = function () {
+        var li = self.topic_items.get(self.active_topic);
         if (li) {
             li.addClass('active-sub-filter');
         }
     };
 
-    self.build = function () {
-        self.dom = self.build_list(active_topic);
+    self.build = function (active_topic) {
+        if (active_topic) {
+            active_topic = active_topic.toLowerCase();
+        }
+        self.active_topic = active_topic;
+
+        self.dom = self.build_list();
 
         parent_elem.append(self.dom);
 
         if (active_topic) {
-            self.activate_topic(active_topic);
+            self.activate_topic();
         }
     };
 
-    self.build();
+    self.build(active_topic);
     return self;
 };
 
