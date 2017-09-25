@@ -271,6 +271,7 @@ $(function () {
     drafts.initialize();
     sent_messages.initialize();
     compose.initialize();
+    hotspots.initialize();
     ui.initialize();
 });
 
