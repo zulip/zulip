@@ -210,8 +210,8 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('?', 'ui.maybe_show_keyboard_shortcuts');
     assert_mapping('/', 'search.initiate_search');
-    assert_mapping('q', 'activity.initiate_search');
-    assert_mapping('w', 'stream_list.initiate_search');
+    assert_mapping('w', 'activity.initiate_search');
+    assert_mapping('q', 'stream_list.initiate_search');
 
     assert_mapping('A', 'narrow.stream_cycle_backward');
     assert_mapping('D', 'narrow.stream_cycle_forward');

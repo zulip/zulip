@@ -86,12 +86,12 @@ var keypress_mappings = {
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
     110: {name: 'n_key', message_view_only: false}, // 'n'
-    113: {name: 'query_users', message_view_only: false}, // 'q'
+    113: {name: 'query_streams', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
     117: {name: 'show_sender_info', message_view_only: true}, // 'u'
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
-    119: {name: 'query_streams', message_view_only: false}, // 'w'
+    119: {name: 'query_users', message_view_only: false}, // 'w'
 };
 
 exports.get_keydown_hotkey = function (e) {
