@@ -1,0 +1,16 @@
+{% if failed %}
+    <p>{{template}} failed to render: {{ reason }}</p>
+{% else %}
+    <h4>From: {{ from_email }}</h4>
+    <h4>To:
+        {% for recipient in recipients %}
+        {{ recipient }}&nbsp;
+        {% endfor %}
+    </h4>
+    <h4>Subject: {{subject}}</h4>
+    {% autoescape off %}
+    {{ html_message }}
+    {% endautoescape %}
+    <pre>{{ body }}</pre>
+{% endif %}
+<hr/>

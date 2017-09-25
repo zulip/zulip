@@ -76,7 +76,15 @@ class DocPageTest(ZulipTestCase):
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
-        self._test('/emails/', 'Road Runner invited you to join Acme Corporation')
+
+        # For reaching full coverage for clear_emails function
+        os.remove(settings.EMAIL_CONTENT_LOG_PATH)
+        result = self.client_get('/emails/clear/')
+        self.assertEqual(result.status_code, 302)
+        self.assertIn('emails', result['Location'])
+
+        self._test('/emails/', 'manually generate most of the emails by clicking')
+        self._test('/emails/generate/', 'Emails generated successfully')
         self._test('/register/', 'Sign up for Zulip')
 
         result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)

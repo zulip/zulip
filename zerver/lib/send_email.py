@@ -15,6 +15,28 @@ class FromAddress(object):
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
+def log_email(email, template_prefix):
+    # type: (EmailMultiAlternatives, str) -> None
+    context = {
+        'template': template_prefix + ".html",
+        'subject': email.subject,
+        'from_email': email.from_email,
+        'recipients': email.to,
+        'body': email.body,
+        'html_message': email.alternatives[0][0] if len(email.alternatives) > 0 else 'Missing HTML message'}
+
+    new_email = loader.render_to_string('zerver/email.html', context)
+
+    try:
+        with open(settings.EMAIL_CONTENT_LOG_PATH, "r") as f:
+            previous_emails = f.read()
+
+    except FileNotFoundError:
+        previous_emails = ""
+
+    with open(settings.EMAIL_CONTENT_LOG_PATH, "w+") as f:
+        f.write(new_email + previous_emails)
+
 def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                 from_address=None, reply_to_email=None, context=None):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Dict[str, Any]]) -> EmailMultiAlternatives
@@ -71,6 +93,10 @@ def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any]) -> None
     mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
                        from_address=from_address, reply_to_email=reply_to_email, context=context)
+
+    if settings.DEVELOPMENT:
+        log_email(mail, template_prefix)
+
     if mail.send() == 0:
         raise EmailNotDeliveredException
 
@@ -84,6 +110,11 @@ def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name
     template_name = template_prefix.split('/')[-1]
     email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
+
+    if settings.DEVELOPMENT:
+        mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
+                           from_address=from_address, context=context)
+        log_email(mail, template_prefix)
 
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
