@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+import difflib
+import filecmp
+import os
+import subprocess
+import sys
+
+from typing import Text
+
+TOOLS_DIR = os.path.dirname(__file__)
+ZULIP_PATH = os.path.dirname(TOOLS_DIR)
+sys.path.append(ZULIP_PATH)
+from scripts.lib.zulip_tools import run
+
+PROD_LOCK_FILE = os.path.join(ZULIP_PATH, 'requirements', 'prod_lock.txt')
+DEV_LOCK_FILE = os.path.join(ZULIP_PATH, 'requirements', 'dev_lock.txt')
+TEST_PROD_LOCK_FILE = '/var/tmp/test_prod_lock.txt'
+TEST_DEV_LOCK_FILE = '/var/tmp/test_dev_lock.txt'
+
+def print_diff(path_file1, path_file2):
+    # type: (Text, Text) -> None
+    with open(path_file1) as file1:
+        with open(path_file2) as file2:
+            diff = difflib.unified_diff(
+                file1.readlines(),
+                file2.readlines(),
+                fromfile=path_file1,
+                tofile=path_file2,
+            )
+    for line in diff:
+        print(line)
+
+def main():
+    # type: () -> None
+    # `pip-compile` tries to avoid unnecessarily updating recursive dependencies
+    # if lock files are present already. If we don't copy these files to the tmp
+    # dir then recursive dependencies will get updated to their latest version
+    # without any change in the input requirements file and the test will not pass.
+    run(['cp', PROD_LOCK_FILE, TEST_PROD_LOCK_FILE])
+    run(['cp', DEV_LOCK_FILE, TEST_DEV_LOCK_FILE])
+    subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'),
+                           '--prod', TEST_PROD_LOCK_FILE, '--dev', TEST_DEV_LOCK_FILE,
+                           ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    same = filecmp.cmp(TEST_PROD_LOCK_FILE, PROD_LOCK_FILE, shallow=False)
+    same = same or filecmp.cmp(TEST_DEV_LOCK_FILE, DEV_LOCK_FILE, shallow=False)
+
+    if not same:
+        print_diff(TEST_PROD_LOCK_FILE, PROD_LOCK_FILE)
+        print_diff(TEST_DEV_LOCK_FILE, DEV_LOCK_FILE)
+        # Flush the output to ensure we print the error at the end.
+        sys.stdout.flush()
+        raise Exception("Seems like you have updated some python dependencies but haven't "
+                        "run updated requirements lock files. Please update them by running "
+                        "`tools/update-locked-requirements`. For more information please refer "
+                        "to `requirements/README.md`.")
+
+if __name__ == '__main__':
+    main()
