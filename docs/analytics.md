@@ -161,9 +161,15 @@ statistics, etc.). There is currently a reference implementation of a
 ### Setup and Testing
 
 The main testing approach for the /stats page UI is manual testing.  For UI
-testing, you want a comprehensive initial data set; you can use `manage.py
-populate_analytics_db` to set up, login as the shylock user, and then go to
-/stats.
+testing, you want a comprehensive initial data set.  You can create
+one by using the `./manage.py populate_analytics_db` command from the
+main `zulip` directory inside your development environment.
+
+Then, in the development server web UI, (logout if needed) and then
+login as the "shylock@analytics.ds" user; note that user's Zulip UI
+will be a bit broken, since it doesn't have other data populated
+properly.  Finally, go to /stats to see the graphs with the
+prepopulated data.
 
 ### Adding or editing /stats graphs
 
