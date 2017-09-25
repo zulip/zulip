@@ -67,7 +67,7 @@ def main():
         print("Cleaning orphaned/unused caches...")
 
     # Call 'clean-unused-caches' script to clean any orphaned/unused caches.
-    subprocess.check_call([os.path.join(ZULIP_PATH, "scripts/clean-unused-caches")] + sys.argv[1:])
+    subprocess.check_call([os.path.join(ZULIP_PATH, "scripts/lib/clean-unused-caches")] + sys.argv[1:])
     print("Done!\n")
 
 if __name__ == "__main__":

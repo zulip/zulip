@@ -17,7 +17,7 @@ install:
 
   # Clean any caches that are not in use to avoid our cache
   # becoming huge.
-  - mispipe "scripts/clean-unused-caches --verbose --threshold 0" ts
+  - mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
 
 script:
   # We unset GEM_PATH here as a hack to work around Travis CI having
