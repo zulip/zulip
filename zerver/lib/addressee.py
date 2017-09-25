@@ -80,12 +80,15 @@ class Addressee(object):
         return self._topic
 
     @staticmethod
-    def legacy_build(sender, message_type_name, message_to, topic_name):
-        # type: (UserProfile, Text, Sequence[Text], Text) -> Addressee
+    def legacy_build(sender, message_type_name, message_to, topic_name, realm=None):
+        # type: (UserProfile, Text, Sequence[Text], Text, Optional[Realm]) -> Addressee
 
         # For legacy reason message_to used to be either a list of
         # emails or a list of streams.  We haven't fixed all of our
         # callers yet.
+        if realm is None:
+            realm = sender.realm
+
         if message_type_name == 'stream':
             if len(message_to) > 1:
                 raise JsonableError(_("Cannot send to multiple streams"))
@@ -101,7 +104,7 @@ class Addressee(object):
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
             emails = message_to
-            return Addressee.for_private(emails, sender.realm)
+            return Addressee.for_private(emails, realm)
         else:
             raise JsonableError(_("Invalid message type"))
 

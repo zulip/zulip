@@ -1643,7 +1643,8 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
         sender,
         recipient_type_name,
         parsed_recipients,
-        subject)
+        subject,
+        realm=realm)
 
     return _internal_prep_message(
         realm=realm,
