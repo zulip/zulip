@@ -13,21 +13,21 @@ from zerver.models import (
 )
 import six
 
-def user_profiles_from_unvalidated_emails(emails, sender):
-    # type: (Iterable[Text], UserProfile) -> List[UserProfile]
+def user_profiles_from_unvalidated_emails(emails, realm):
+    # type: (Iterable[Text], Realm) -> List[UserProfile]
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
-            user_profile = get_user_including_cross_realm(email, sender.realm)
+            user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
     return user_profiles
 
-def get_user_profiles(emails, sender):
-    # type: (Iterable[Text], UserProfile) -> List[UserProfile]
+def get_user_profiles(emails, realm):
+    # type: (Iterable[Text], Realm) -> List[UserProfile]
     try:
-        return user_profiles_from_unvalidated_emails(emails, sender)
+        return user_profiles_from_unvalidated_emails(emails, realm)
     except ValidationError as e:
         assert isinstance(e.messages[0], six.string_types)
         raise JsonableError(e.messages[0])
@@ -117,7 +117,7 @@ class Addressee(object):
     @staticmethod
     def for_private(emails, sender):
         # type: (Sequence[Text], UserProfile) -> Addressee
-        user_profiles = get_user_profiles(emails, sender)
+        user_profiles = get_user_profiles(emails, sender.realm)
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,

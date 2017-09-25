@@ -1356,7 +1356,7 @@ def recipient_for_emails(emails, not_forged_mirror_message,
                          forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
 
-    user_profiles = user_profiles_from_unvalidated_emails(emails, sender)
+    user_profiles = user_profiles_from_unvalidated_emails(emails, sender.realm)
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,
