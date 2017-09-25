@@ -161,6 +161,11 @@ exports.widget = function (parent_elem, my_stream_id) {
         self.no_more_topics = true;
     };
 
+    self.show_help_link = function () {
+        var elem = self.dom.find('.sidebar-topics-help');
+        elem.show();
+    };
+
     self.build = function (active_topic, no_more_topics) {
         self.no_more_topics = false; // for now
 
@@ -179,6 +184,10 @@ exports.widget = function (parent_elem, my_stream_id) {
         // the initial zooming.
         if (no_more_topics) {
             self.show_no_more_topics();
+        }
+
+        if (zoomed) {
+            self.show_help_link();
         }
 
         if (active_topic) {
