@@ -380,7 +380,7 @@ def finish_google_oauth2(request):
 
     try:
         realm = Realm.objects.get(string_id=subdomain)
-    except Realm.DoesNotExist:
+    except Realm.DoesNotExist:  # nocoverage
         return redirect_to_subdomain_login_url()
 
     return redirect_and_log_into_subdomain(
