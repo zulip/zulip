@@ -226,7 +226,7 @@ def main(options):
             install_apt_deps()
         hash_file.write(new_apt_dependencies_hash)
     else:
-        print("No need to apt operations.")
+        print("No changes to apt dependencies, so skipping apt operations.")
 
     # Here we install node.
     run(["sudo", "scripts/lib/install-node"])
