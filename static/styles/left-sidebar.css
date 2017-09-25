@@ -461,6 +461,16 @@ li.show-more-private-messages a {
     padding: 12px;
 }
 
+.sidebar-topics-help {
+    display: none;
+}
+
+.sidebar-topics-help span {
+    display: inline-block;
+    font-size: 90%;
+    padding-top: 10px;
+}
+
 .zoom-in .show-more-topics {
     display: none;
 }
