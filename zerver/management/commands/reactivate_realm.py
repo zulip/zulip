@@ -18,6 +18,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         if not realm.deactivated:
             print("Realm", options["realm_id"], "is already active.")
             exit(0)

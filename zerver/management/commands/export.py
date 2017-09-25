@@ -108,6 +108,8 @@ class Command(ZulipBaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
+
         output_dir = options["output_dir"]
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")

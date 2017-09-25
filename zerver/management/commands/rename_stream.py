@@ -26,6 +26,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         old_name = options['old_name']
         new_name = options['new_name']
         encoding = sys.getfilesystemencoding()

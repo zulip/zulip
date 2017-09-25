@@ -27,6 +27,7 @@ class Command(ZulipBaseCommand):
         # type: (*Any, **Any) -> None
         duplicates = False
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
 
         if not options['emails']:
             self.print_help("./manage.py", "generate_invite_links")

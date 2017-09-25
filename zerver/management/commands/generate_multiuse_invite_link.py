@@ -33,6 +33,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
 
         streams = []
         if options["streams"]:

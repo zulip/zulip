@@ -47,6 +47,7 @@ For example:
 with `--streams=`).", file=sys.stderr)
             exit(1)
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
 
         stream_dict = {
             stream.strip(): {"description": stream.strip(), "invite_only": False}

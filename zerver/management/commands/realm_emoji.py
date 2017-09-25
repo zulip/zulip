@@ -43,6 +43,7 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
             for name, url in six.iteritems(realm.get_emoji()):
                 print(name, url)

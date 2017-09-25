@@ -33,6 +33,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
             print("Domains for %s:" % (realm.string_id,))
             for realm_domain in get_realm_domains(realm):

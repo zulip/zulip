@@ -27,6 +27,8 @@ class Command(ZulipBaseCommand):
     def handle(self, **options):
         # type: (**Any) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
+
         user_profiles = self.get_users(options, realm)
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])
 

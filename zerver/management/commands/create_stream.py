@@ -25,6 +25,8 @@ the command."""
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
+
         encoding = sys.getfilesystemencoding()
         stream_name = options['stream_name']
         create_stream_if_needed(realm, force_text(stream_name, encoding))
