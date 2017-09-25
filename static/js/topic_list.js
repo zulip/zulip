@@ -56,7 +56,7 @@ exports.set_count = function (stream_id, topic, count) {
     }
 };
 
-exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
+exports.widget = function (parent_elem, my_stream_id) {
     var self = {};
 
     self.build_list = function () {
@@ -164,7 +164,6 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic) {
         }
     };
 
-    self.build(active_topic);
     return self;
 };
 
@@ -179,7 +178,8 @@ exports.active_stream_id = function () {
 exports.rebuild = function (stream_li, stream_id) {
     var active_topic = narrow_state.topic();
     exports.remove_expanded_topics();
-    active_widget = exports.build_widget(stream_li, stream_id, active_topic);
+    active_widget = exports.widget(stream_li, stream_id);
+    active_widget.build(active_topic);
 
     return active_widget; // used for testing
 };
