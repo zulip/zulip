@@ -242,7 +242,8 @@ def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
 
     may_be_perform_purging(
         caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose)
-    print("Done!\n")
+    if args.verbose:
+        print("Done!")
 
 def generate_sha1sum_emoji(zulip_path):
     # type: (Text) -> Text

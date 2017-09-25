@@ -12,7 +12,6 @@ def main():
     # type: () -> None
     parse_cache_script_args("This script cleans unused zulip caches.")
     os.chdir(ZULIP_PATH)
-    print("Starting cache cleaning scripts...")
     subprocess.check_call(["./scripts/lib/clean-venv-cache"] + sys.argv[1:])
     subprocess.check_call(["./scripts/lib/clean-npm-cache"] + sys.argv[1:])
     subprocess.check_call(["./scripts/lib/clean-emoji-cache"] + sys.argv[1:])
