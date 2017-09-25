@@ -13,7 +13,6 @@ from requests import Response
 
 from django.utils.translation import ugettext as _
 
-from zerver.context_processors import zulip_default_context
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
@@ -186,6 +185,8 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
     if error:
         raise JsonableError(error)
 
+    bot_user = get_user_profile_by_id(event['user_profile_id'])
+
     http_method = rest_operation['method']
     final_url = urllib.parse.urljoin(rest_operation['base_url'], rest_operation['relative_url_path'])
     request_kwargs = rest_operation['request_kwargs']
@@ -198,9 +199,8 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
             if response_message is not None:
                 succeed_with_message(event, response_message)
         else:
-            context = zulip_default_context(request_data)
             message_url = ("%(server)s/#narrow/stream/%(stream)s/subject/%(subject)s/near/%(id)s"
-                           % {'server': context['realm_uri'],
+                           % {'server': bot_user.realm.uri,
                               'stream': event['message']['display_recipient'],
                               'subject': event['message']['subject'],
                               'id': str(event['message']['id'])})

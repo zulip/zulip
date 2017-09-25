@@ -9,18 +9,8 @@ from requests import Response
 
 from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInterface
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import get_realm, get_user
 from builtins import object
-
-mock_event = {'message': {'display_recipient': '',
-                          'subject': '',
-                          'id': ''},
-              'command': '',
-              'service_name': ''}
-
-rest_operation = {'method': "POST",
-                  'relative_url_path': "",
-                  'request_kwargs': {},
-                  'base_url': ""}
 
 class ResponseMock(object):
     def __init__(self, status_code, data, content):
@@ -45,12 +35,28 @@ class MockServiceHandler(OutgoingWebhookServiceInterface):
 service_handler = MockServiceHandler(None, None, None, None)
 
 class DoRestCallTests(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+        user_profile = get_user("outgoing-webhook@zulip.com", realm)
+        self.mock_event = {'message': {'display_recipient': '',
+                                       'subject': '',
+                                       'id': ''},
+                           'user_profile_id': user_profile.id,
+                           'command': '',
+                           'service_name': ''}
+
+        self.rest_operation = {'method': "POST",
+                               'relative_url_path': "",
+                               'request_kwargs': {},
+                               'base_url': ""}
+
     @mock.patch('zerver.lib.outgoing_webhook.succeed_with_message')
     def test_successful_request(self, mock_succeed_with_message):
         # type: (mock.Mock) -> None
         response = ResponseMock(200, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, None, service_handler, None)
+            do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             self.assertTrue(mock_succeed_with_message.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.request_retry')
@@ -58,7 +64,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(500, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, mock_event, service_handler, None)
+            do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             self.assertTrue(mock_request_retry.called)
 
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
@@ -66,7 +72,7 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock) -> None
         response = ResponseMock(400, {"message": "testing"}, '')
         with mock.patch('requests.request', return_value=response):
-            do_rest_call(rest_operation, None, mock_event, service_handler, None)
+            do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             self.assertTrue(mock_fail_with_message.called)
 
     @mock.patch('logging.info')
@@ -74,7 +80,7 @@ class DoRestCallTests(ZulipTestCase):
     @mock.patch('zerver.lib.outgoing_webhook.request_retry')
     def test_timeout_request(self, mock_request_retry, mock_requests_request, mock_logger):
         # type: (mock.Mock, mock.Mock, mock.Mock) -> None
-        do_rest_call(rest_operation, None, mock_event, service_handler, None)
+        do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
         self.assertTrue(mock_request_retry.called)
 
     @mock.patch('logging.exception')
@@ -82,5 +88,5 @@ class DoRestCallTests(ZulipTestCase):
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_request_exception(self, mock_fail_with_message, mock_requests_request, mock_logger):
         # type: (mock.Mock, mock.Mock, mock.Mock) -> None
-        do_rest_call(rest_operation, None, mock_event, service_handler, None)
+        do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
         self.assertTrue(mock_fail_with_message.called)
