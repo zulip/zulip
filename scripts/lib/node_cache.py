@@ -37,7 +37,9 @@ def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION)
     YARN_LOCK_FILE_PATH = os.path.join(setup_dir, 'yarn.lock')
     sha1sum = hashlib.sha1()
     sha1sum.update(subprocess_text_output(['cat', PACKAGE_JSON_FILE_PATH]).encode('utf8'))
-    sha1sum.update(subprocess_text_output(['cat', YARN_LOCK_FILE_PATH]).encode('utf8'))
+    if os.path.exists(YARN_LOCK_FILE_PATH):
+        # For backwards compatibility, we can't assume yarn.lock exists
+        sha1sum.update(subprocess_text_output(['cat', YARN_LOCK_FILE_PATH]).encode('utf8'))
     sha1sum.update(subprocess_text_output([YARN_BIN, '--version']).encode('utf8'))
     sha1sum.update(subprocess_text_output(['node', '--version']).encode('utf8'))
     yarn_args = get_yarn_args(production=production)
