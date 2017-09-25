@@ -1048,7 +1048,7 @@ DEFAULT_ZULIP_HANDLERS = (
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'default': {
             'format': '%(asctime)s %(levelname)-8s %(message)s'
