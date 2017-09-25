@@ -48,8 +48,9 @@ class Command(ZulipBaseCommand):
 
         if options['realm_id']:
             realm = self.get_realm(options)
+
         filter_kwargs = {}  # type: Dict[str, Realm]
-        if options['realm_id']:
+        if realm is not None:
             filter_kwargs = dict(realm=realm)
 
         user_emails = options['users']
@@ -91,7 +92,7 @@ class Command(ZulipBaseCommand):
                             raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
                 print('Soft deactivating forcefully...')
             else:
-                if options['realm_id']:
+                if realm is not None:
                     filter_kwargs = dict(user_profile__realm=realm)
                 users_to_deactivate = get_users_for_soft_deactivation(int(options['inactive_for']), filter_kwargs)
 
