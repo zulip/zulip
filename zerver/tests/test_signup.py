@@ -546,6 +546,21 @@ class InviteUserTest(ZulipTestCase):
         self.assertTrue(public_msg_id in invitee_msg_ids)
         self.assertFalse(secret_msg_id in invitee_msg_ids)
 
+        # Test that exactly 2 new Zulip messages were sent, both notifications.
+        last_3_messages = list(reversed(list(Message.objects.all().order_by("-id")[0:3])))
+        first_msg = last_3_messages[0]
+        self.assertEqual(first_msg.id, secret_msg_id)
+
+        # The first, from notification-bot to the user who invited the new user.
+        second_msg = last_3_messages[1]
+        self.assertEqual(second_msg.sender.email, "notification-bot@zulip.com")
+        self.assertTrue(second_msg.content.startswith("alice_zulip.com <`alice@zulip.com`> accepted your"))
+
+        # The second, from welcome-bot to the user who was invited.
+        third_msg = last_3_messages[2]
+        self.assertEqual(third_msg.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(third_msg.content.startswith("Hello, and welcome to Zulip!"))
+
     def test_multi_user_invite(self):
         # type: () -> None
         """
