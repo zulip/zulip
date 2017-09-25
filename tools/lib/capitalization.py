@@ -27,6 +27,7 @@ IGNORED_PHRASES = [
     r"JIRA",
     r"JSON",
     r"Kerberos",
+    r"LDAP",
     r"Mac",
     r"macOS",
     r"MiB",
