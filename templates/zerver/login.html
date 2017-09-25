@@ -17,6 +17,10 @@ common.autofocus('#id_password');
 {% else %}
 common.autofocus('#id_username');
 {% endif %}
+$('#login_form').submit(function() {
+  var $this = $(this);
+  $this.button('loading');
+});
 </script>
 {% endif %}
 
@@ -113,7 +117,7 @@ common.autofocus('#id_username');
                     </div>
                     {% endif %}
 
-                    <button type="submit" name="button" class="full-width">{{ _("Sign in") }}</button>
+                    <button type="submit" name="button" class="full-width" data-loading-text="<i class='fa fa-spinner fa-spin '></i> Signing in...">{{ _("Sign in") }}</button>
                 </form>
 
                 {% if any_oauth_backend_enabled %}
