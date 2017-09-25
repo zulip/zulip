@@ -335,12 +335,10 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None \
             and settings.NOTIFICATION_BOT is not None:
         # This is a cross-realm private message.
-        internal_send_message(
+        internal_send_private_message(
             user_profile.realm,
-            settings.NOTIFICATION_BOT,
-            "private",
-            prereg_user.referred_by.email,
-            user_profile.realm.string_id,
+            get_system_bot(settings.NOTIFICATION_BOT),
+            prereg_user.referred_by,
             "%s <`%s`> accepted your invitation to join Zulip!" % (
                 user_profile.full_name,
                 user_profile.email,
