@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import JsonableError
 from zerver.models import (
+    Realm,
     UserProfile,
     get_user_including_cross_realm,
 )
