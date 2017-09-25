@@ -96,13 +96,23 @@ server is using the latest configuration.
 
 #### Advanced troubleshooting
 
-Zulip's email sending configuration is based on the standard Django
-[SMTP backend](https://docs.djangoproject.com/en/1.10/topics/email/#smtp-backend)
-configuration.  The one thing we've changed from the defaults is
-reading `EMAIL_HOST_PASSWORD` from the `email_password` entry in the
-Zulip secrets file, so that secrets don't live in the
-`/etc/zulip/settings.py` file.
+Here are a few final notes on what to look at when debugging why you
+aren't receiving emails from Zulip:
 
-So if you're having trouble getting your email provider working, you
-may want to search for documentation related to using your email
-provider with Django.
+* Most transactional email services have an "outgoing email" log where
+  you can inspect the emails that reached the service, whether it was
+  flagged as spam, etc.
+* Starting with Zulip 1.7, Zulip logs an entry in
+  `/var/log/zulip/send_email.log` whenever it attempts to send an
+  email, including whether the request succeeded or failed.
+* If attempting to send an email throws an exception, a traceback
+  should be in `/var/log/zulip/errors.log`, along with any other
+  exceptions Zulip encounters.
+* Zulip's email sending configuration is based on the standard Django
+  [SMTP backend](https://docs.djangoproject.com/en/1.10/topics/email/#smtp-backend)
+  configuration.  The one thing we've changed from the defaults is
+  reading `EMAIL_HOST_PASSWORD` from the `email_password` entry in the
+  Zulip secrets file, so that secrets don't live in the
+  `/etc/zulip/settings.py` file.  So if you're having trouble getting
+  your email provider working, you may want to search for
+  documentation related to using your email provider with Django.
