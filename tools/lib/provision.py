@@ -209,13 +209,13 @@ def main(options):
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
-
+    apt_hash_file_path = 'var/apt_dependencies_hash'
     try:
-        hash_file = open('var/apt_dependenices_hash', 'r+')
+        hash_file = open(apt_hash_file_path, 'r+')
         last_apt_dependencies_hash = hash_file.read()
     except IOError:
-        run(['touch', 'var/apt_dependenices_hash'])
-        hash_file = open('var/apt_dependenices_hash', 'r+')
+        run(['touch', apt_hash_file_path])
+        hash_file = open(apt_hash_file_path, 'r+')
 
     if (new_apt_dependencies_hash != last_apt_dependencies_hash):
         try:
