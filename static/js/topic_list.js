@@ -287,9 +287,7 @@ exports.zoom_in = function () {
     $('#stream-filters-container').scrollTop(0);
     $('#stream-filters-container').perfectScrollbar('update');
     active_widget.show_spinner();
-    setTimeout(function () {
     topic_data.get_server_history(stream_id, on_success);
-    }, 2000);
 };
 
 exports.set_click_handlers = function (callbacks) {
