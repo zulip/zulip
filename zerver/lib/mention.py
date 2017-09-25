@@ -28,6 +28,6 @@ def extract_name(s):
 def possible_mentions(content):
     # type: (Text) -> Set[Text]
     matches = re.findall(find_mentions, content)
-    names_with_none = {extract_name(match) for match in matches}
+    names_with_none = (extract_name(match) for match in matches)
     names = {name for name in names_with_none if name}
     return names
