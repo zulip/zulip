@@ -50,7 +50,7 @@ subprocess.check_call(['./tools/setup/generate_zulip_bots_static_files'],
                       stdout=fp, stderr=fp)
 
 # Build pygment data
-subprocess.check_call(['./tools/setup/build_pygments_data.py'],
+subprocess.check_call(['./tools/setup/build_pygments_data'],
                       stdout=fp, stderr=fp)
 
 # Compile Handlebars templates and minify JavaScript.

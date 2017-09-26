@@ -364,7 +364,7 @@ INTEGRATIONS = {
         display_name='Google Calendar',
         doc='zerver/integrations/google-calendar.md'
     ),
-    'hubot': Integration('hubot', 'hubot', ['meta-integration'], doc='zerver/integrations/hubot.md'),
+    'hubot': Integration('hubot', 'hubot', ['meta-integration', 'bots'], doc='zerver/integrations/hubot.md'),
     'jenkins': Integration(
         'jenkins',
         'jenkins',
