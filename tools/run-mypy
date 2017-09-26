@@ -26,6 +26,8 @@ zproject/test_settings.py
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
 parser.add_argument('targets', nargs='*',
                     help="files and directories to check (default: .)")
+parser.add_argument('--version', action='store_true',
+                    help="just run mypy --version")
 parser.add_argument('--quick', action='store_true',
                     help="pass --quick to mypy")
 parser.add_argument('-m', '--modified', action='store_true',
@@ -57,6 +59,18 @@ if not args.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
+# Use zulip-py3-venv's mypy if it's available.
+VENV_DIR = "/srv/zulip-py3-venv"
+MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
+if os.path.exists(MYPY_VENV_PATH):
+    mypy_command = MYPY_VENV_PATH
+    print("Using mypy from", mypy_command)
+else:
+    mypy_command = "mypy"
+
+if args.version:
+    sys.exit(subprocess.call([mypy_command, "--version"]))
+
 if args.all:
     exclude = []
 
@@ -69,15 +83,6 @@ files_dict = cast(Dict[str, List[str]],
 pyi_files = set(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
-
-# Use zulip-py3-venv's mypy if it's available.
-VENV_DIR = "/srv/zulip-py3-venv"
-MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
-if os.path.exists(MYPY_VENV_PATH):
-    mypy_command = MYPY_VENV_PATH
-    print("Using mypy from", mypy_command)
-else:
-    mypy_command = "mypy"
 
 extra_args = ["--check-untyped-defs",
               "--follow-imports=silent",
