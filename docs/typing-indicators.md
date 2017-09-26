@@ -121,7 +121,7 @@ code in `static/js/typing_data.js`.  The API here has functions
 like the following:
 
 * `add_typist`
-* `remove_typist` 
+* `remove_typist`
 * `get_group_typists`
 * `get_all_typists`
 
