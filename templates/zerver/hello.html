@@ -604,14 +604,12 @@
         <h1>Experience Zulip today!</h1>
         {% if register_link_disabled %}
         {% elif only_sso %}
-        <a href="{{ url('login-sso') }}">
-           <button href="" type="button"
-                   name="button">{{ _('Log in now!') }}</button>
+        <a href="{{ url('login-sso') }}" class="button no-style">{{
+          _('Log in now!') }}
         </a>
         {% else %}
-        <a href="{{ url('register') }}">
-          <button href="" type="button"
-                  name="button">{{ _('Register now!') }}</button>
+        <a href="{{ url('register') }}" class="button no-style">{{
+          _('Register now!') }}
         </a>
         {% endif %}
         <div class="zulip-octopus"></div>
