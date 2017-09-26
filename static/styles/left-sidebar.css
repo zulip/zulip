@@ -439,6 +439,38 @@ li.show-more-private-messages a {
     font-size: 90%;
 }
 
+.searching-for-more-topics {
+    display: none;
+}
+
+.searching-for-more-topics span {
+    font-size: 90%;
+    font-weight: bold;
+    display: inline-block;
+    padding: 10px;
+}
+
+.no-more-topics-found {
+    display: none;
+}
+
+.no-more-topics-found span {
+    display: inline-block;
+    font-size: 90%;
+    font-weight: 600;
+    padding: 12px;
+}
+
+.sidebar-topics-help {
+    display: none;
+}
+
+.sidebar-topics-help span {
+    display: inline-block;
+    font-size: 90%;
+    padding-top: 10px;
+}
+
 .zoom-in .show-more-topics {
     display: none;
 }

@@ -7,9 +7,6 @@ set_global('unread', {});
 set_global('muting', {});
 set_global('stream_popover', {});
 set_global('templates', {});
-set_global('feature_flags', {
-    use_server_topic_history: true,
-});
 
 zrequire('hash_util');
 zrequire('narrow');
@@ -85,7 +82,13 @@ zrequire('topic_list');
 
     assert.equal(topic_list.active_stream_id(), undefined);
 
-    var widget = topic_list.rebuild(parent_elem, stream_id);
+    var widget = topic_list.widget(parent_elem, stream_id);
+
+    widget.build_more_topics_section = function () {
+        return $('<more topics>');
+    };
+
+    widget.build();
 
     assert(widget.is_for_stream(stream_id));
     assert.equal(widget.get_parent(), parent_elem);
@@ -93,8 +96,7 @@ zrequire('topic_list');
     assert(checked_mutes);
     assert(rendered);
     assert.equal(list_items[0].html(), '<topic list item>');
-    assert.equal(list_items[1], $('<li class="show-more-topics">'));
+    assert.equal(list_items[1].html(), '<more topics>');
     assert(attached_to_parent);
 
-    assert.equal(topic_list.active_stream_id(), stream_id);
 }());

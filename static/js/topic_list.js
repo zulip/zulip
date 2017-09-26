@@ -2,6 +2,11 @@ var topic_list = (function () {
 
 var exports = {};
 
+// Once we are ready to clean up CSS for some of the features
+// hidden by this flag, we should just revert the whole commit
+// here (do `git blame` on this line).
+waiting_on_css_polish_for_more_topics = true;
+
 // We can only ever have one active widget.
 var active_widget;
 
@@ -56,20 +61,15 @@ exports.set_count = function (stream_id, topic, count) {
     }
 };
 
-exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_topics) {
+exports.widget = function (parent_elem, my_stream_id) {
     var self = {};
-    self.topic_items = new Dict({fold_case: true});
 
-    var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
+    self.build_list = function () {
+        self.topic_items = new Dict({fold_case: true});
 
-    function build_list(active_topic, max_topics) {
+        var max_topics = 5;
         var topic_names = topic_data.get_recent_names(my_stream_id);
-
-        if (active_topic) {
-            active_topic = active_topic.toLowerCase();
-        }
-
-        var hiding_topics = false;
+        var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
 
         var ul = $('<ul class="topic-list">');
         ul.attr('data-stream', my_stream_name);
@@ -80,10 +80,9 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
             if (!zoomed) {
                 // Show the most recent topics, as well as any with unread messages
                 var show_topic = (idx < max_topics) || (num_unread > 0) ||
-                                 (active_topic === topic_name.toLowerCase());
+                                 (self.active_topic === topic_name.toLowerCase());
 
                 if (!show_topic) {
-                    hiding_topics = true;
                     return;
                 }
             }
@@ -100,21 +99,16 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
             ul.append(li);
         });
 
-        // When we inline use_server_topic_history to true (i.e. we are confident
-        // with the new feature), we can remove logic around hiding_topics.
-        var show_more_topics_link = hiding_topics || feature_flags.use_server_topic_history;
-
-        if (show_more_topics_link) {
-            var show_more = $('<li class="show-more-topics">');
-            show_more.attr('data-stream', my_stream_name);
-            var link = $('<a href="#">');
-            link.html(i18n.t('more topics'));
-            show_more.html(link);
-            ul.append(show_more);
-        }
+        var show_more = self.build_more_topics_section();
+        ul.append(show_more);
 
         return ul;
-    }
+    };
+
+    self.build_more_topics_section = function () {
+        var show_more_html = templates.render('more_topics');
+        return $(show_more_html);
+    };
 
     self.get_parent = function () {
         return parent_elem;
@@ -136,6 +130,10 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
         self.dom.remove();
     };
 
+    self.num_items = function () {
+        return self.topic_items.num_items();
+    };
+
     self.set_count = function (topic, count) {
         if (!self.topic_items.has(topic)) {
             // This can happen for truncated topic lists.  No need
@@ -148,21 +146,68 @@ exports.build_widget = function (parent_elem, my_stream_id, active_topic, max_to
         update_unread_count(unread_count_elem, count);
     };
 
-    self.activate_topic = function (active_topic) {
-        var li = self.topic_items.get(active_topic);
+    self.activate_topic = function () {
+        var li = self.topic_items.get(self.active_topic);
         if (li) {
             li.addClass('active-sub-filter');
         }
     };
 
-    self.dom = build_list(active_topic, max_topics);
+    self.show_spinner = function () {
+        // The spinner will go away once we get results and redraw
+        // the whole list.
+        if (waiting_on_css_polish_for_more_topics) {
+            return;
+        }
+        var spinner = self.dom.find('.searching-for-more-topics');
+        spinner.show();
+    };
 
-    parent_elem.append(self.dom);
+    self.show_no_more_topics = function () {
+        if (waiting_on_css_polish_for_more_topics) {
+            return;
+        }
+        var elem = self.dom.find('.no-more-topics-found');
+        elem.show();
+        self.no_more_topics = true;
+    };
 
-    if (active_topic) {
-        self.activate_topic(active_topic);
-    }
+    self.show_help_link = function () {
+        if (waiting_on_css_polish_for_more_topics) {
+            return;
+        }
+        var elem = self.dom.find('.sidebar-topics-help');
+        elem.show();
+    };
 
+    self.build = function (active_topic, no_more_topics) {
+        self.no_more_topics = false; // for now
+
+        if (active_topic) {
+            active_topic = active_topic.toLowerCase();
+        }
+        self.active_topic = active_topic;
+
+        self.dom = self.build_list();
+
+        parent_elem.append(self.dom);
+
+        // We often rebuild an entire topic list, and the
+        // caller will pass us in no_more_topics as true
+        // if we were showing "No more topics found" from
+        // the initial zooming.
+        if (no_more_topics) {
+            self.show_no_more_topics();
+        }
+
+        if (zoomed) {
+            self.show_help_link();
+        }
+
+        if (active_topic) {
+            self.activate_topic();
+        }
+    };
 
     return self;
 };
@@ -175,14 +220,29 @@ exports.active_stream_id = function () {
     return active_widget.get_stream_id();
 };
 
+exports.need_to_show_no_more_topics = function (stream_id) {
+    // This function is important, and the use case here is kind of
+    // subtle.  We do complete redraws of the topic list when new
+    // messages come in, and we don't want to overwrite the
+    // "no more topics" error message.
+    if (!zoomed) {
+        return false;
+    }
+
+    if (stream_id !== active_widget.get_stream_id()) {
+        return false;
+    }
+
+    return active_widget.no_more_topics;
+};
+
 exports.rebuild = function (stream_li, stream_id) {
-    var max_topics = 5;
-
     var active_topic = narrow_state.topic();
-    exports.remove_expanded_topics();
-    active_widget = exports.build_widget(stream_li, stream_id, active_topic, max_topics);
+    var no_more_topics = exports.need_to_show_no_more_topics(stream_id);
 
-    return active_widget; // used for testing
+    exports.remove_expanded_topics();
+    active_widget = exports.widget(stream_li, stream_id);
+    active_widget.build(active_topic, no_more_topics);
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
@@ -196,18 +256,38 @@ exports.zoom_in = function () {
     }
 
     var stream_id = active_widget.get_stream_id();
+    var before_count = active_widget.num_items();
 
     function on_success() {
+        if ((!active_widget) || (stream_id !== active_widget.get_stream_id())) {
+            blueslip.warn('User re-narrowed before topic history was returned.');
+            return;
+        }
+
+        if (!zoomed) {
+            blueslip.warn('User zoomed out before topic history was returned.');
+            // Note that we could attempt to re-draw the zoomed out topic list
+            // here, given that we have more history, but that might be more
+            // confusing than helpful to a user who is likely trying to browse
+            // other streams.
+            return;
+        }
+
         exports.rebuild(active_widget.get_parent(), stream_id);
-        $('#stream-filters-container').scrollTop(0);
+
+        var after_count = active_widget.num_items();
+
+        if (after_count === before_count) {
+            active_widget.show_no_more_topics();
+        }
+
         $('#stream-filters-container').perfectScrollbar('update');
     }
 
-    if (feature_flags.use_server_topic_history) {
-        topic_data.get_server_history(stream_id, on_success);
-    } else {
-        on_success();
-    }
+    $('#stream-filters-container').scrollTop(0);
+    $('#stream-filters-container').perfectScrollbar('update');
+    active_widget.show_spinner();
+    topic_data.get_server_history(stream_id, on_success);
 };
 
 exports.set_click_handlers = function (callbacks) {
