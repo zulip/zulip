@@ -127,6 +127,42 @@ ul.actions_popover i {
         background-color: #fff;
         pointer-events: all;
     }
+
+    .popover-flex {
+        position: absolute;
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100vw;
+        height: 100vh;
+
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        background-color: rgba(0, 0, 0, 0.7);
+
+        z-index: 103;
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition: all 0.3s ease;
+    }
+
+    .popover-flex.fade.in {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .popover-flex .popover {
+        display: inline-block;
+    }
+
+    .emoji-info-popover {
+        position: static;
+        margin-right: 0;
+    }
 }
 
 .popover_user_presence {
