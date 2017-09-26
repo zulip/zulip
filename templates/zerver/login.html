@@ -17,9 +17,11 @@ common.autofocus('#id_password');
 {% else %}
 common.autofocus('#id_username');
 {% endif %}
-$('#login_form').submit(function() {
-  var $this = $(this);
-  $this.button('loading');
+$('#login_form').submit(function(event) {
+    event.preventDefault();
+    var b = document.querySelector("#sign-in-loader");
+    b.setAttribute("data-loading-text","<i class='fa fa-spinner fa-spin '></i> Signing in...");
+    console.log("abc");
 });
 </script>
 {% endif %}
@@ -117,7 +119,7 @@ $('#login_form').submit(function() {
                     </div>
                     {% endif %}
 
-                    <button type="submit" name="button" class="full-width" data-loading-text="<i class='fa fa-spinner fa-spin '></i> Signing in...">{{ _("Sign in") }}</button>
+                    <button type="submit" name="button" class="full-width" id="sign-in-loader">{{ _("Sign in") }}</button>
                 </form>
 
                 {% if any_oauth_backend_enabled %}
