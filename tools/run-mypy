@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(description="Run mypy on files tracked by git."
 parser.add_argument('targets', nargs='*',
                     help="files and directories to check (default: .)")
 parser.add_argument('--version', action='store_true',
-                    help="just run mypy --version")
+                    help="show mypy version information and exit")
 parser.add_argument('--quick', action='store_true',
                     help="pass --quick to mypy")
 parser.add_argument('-m', '--modified', action='store_true',
@@ -64,11 +64,11 @@ VENV_DIR = "/srv/zulip-py3-venv"
 MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
 if os.path.exists(MYPY_VENV_PATH):
     mypy_command = MYPY_VENV_PATH
-    print("Using mypy from", mypy_command)
 else:
     mypy_command = "mypy"
 
 if args.version:
+    print("mypy command:", mypy_command)
     sys.exit(subprocess.call([mypy_command, "--version"]))
 
 if args.all:
