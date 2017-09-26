@@ -376,7 +376,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return None
         return user_profile
 
-class ZulipLDAPException(Exception):
+class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass
 
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
