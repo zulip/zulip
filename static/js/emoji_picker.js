@@ -566,10 +566,19 @@ exports.render_emoji_popover = function (elt, id) {
         categories: get_rendered_emoji_categories(),
     };
     var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
+
+    var template = templates.render('emoji_popover', template_args);
+
+    // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
+    // popover so that it will be wrapped in flex and centered in the screen.
+    if (window.innerWidth <= 768) {
+        template = "<div class='popover-flex'>" + template + "</div>";
+    }
+
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
         placement: placement === 'viewport_center' ? 'left' : placement,
-        template:  templates.render('emoji_popover', template_args),
+        template:  template,
         title:     "",
         content:   generate_emoji_picker_content(id),
         trigger:   "manual",
