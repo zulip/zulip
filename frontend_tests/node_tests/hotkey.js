@@ -237,6 +237,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('-', 'condense.toggle_collapse');
     assert_mapping('r', 'compose_actions.respond_to_message');
     assert_mapping('R', 'compose_actions.respond_to_message', true);
+    assert_mapping('D', 'drafts.restore_draft_for_hotkey');
     assert_mapping('j', 'navigate.down');
     assert_mapping('J', 'navigate.page_down');
     assert_mapping('k', 'navigate.up');
