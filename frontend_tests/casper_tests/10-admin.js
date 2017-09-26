@@ -26,7 +26,7 @@ casper.then(function () {
 // Test changing notifications stream
 casper.then(function () {
     casper.test.info('Changing notifications stream to Verona by filtering with "verona"');
-    casper.click("#id_realm_notifications_stream > a.dropdown-toggle");
+    casper.click("#id_realm_notifications_stream > button.dropdown-toggle");
 
     casper.waitUntilVisible('ul.dropdown-menu', function () {
         casper.sendKeys('.dropdown-search > input[type=text]', 'verona');
