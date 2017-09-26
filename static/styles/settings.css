@@ -600,12 +600,12 @@ input[type=checkbox].inline-block {
 
 .progressive-table-wrapper {
     position: relative;
-    max-height: calc(95vh - 200px);
+    max-height: calc(95vh - 220px);
     overflow: auto;
 }
 
 #admin-default-streams-list .progressive-table-wrapper {
-    max-height: calc(95vh - 270px);
+    max-height: calc(95vh - 280px);
 }
 
 .bots_list {
