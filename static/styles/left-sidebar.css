@@ -381,11 +381,6 @@ li.expanded_private_message a {
     color: hsl(0, 0%, 20%);
 }
 
-.all-streams-padding {
-    padding-top: 5px;
-    margin-bottom: -5px;
-}
-
 .pm-box,
 .topic-box {
     display: block;
@@ -412,9 +407,20 @@ li.expanded_private_message a {
 }
 
 #topics_header {
-    border-top: 1px solid hsl(0, 0%, 88%);
-    margin-top: 5px;
     margin-right: 10px;
+    color: hsl(0, 0%, 43%);
+}
+
+#topics_header a {
+    color: inherit;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+#topics_header a i {
+    margin-right: 5px;
+    position: relative;
+    top: 1px;
 }
 
 #streams_header {
