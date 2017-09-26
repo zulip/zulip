@@ -227,6 +227,17 @@ html {
     margin: 0px 30px 10px 32px;
 }
 
+.register-account .terms-of-service .text-error {
+    position: relative;
+    display: block;
+    top: -5px;
+    padding: 0;
+    height: 0;
+
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
 .account-creation {
     font-weight: 400;
 }

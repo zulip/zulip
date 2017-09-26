@@ -152,7 +152,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
+                        <p class="help-inline text-error">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
                 </div>
