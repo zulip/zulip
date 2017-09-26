@@ -230,6 +230,11 @@ exports.process_from_server = function process_from_server(messages) {
             sent_messages.mark_disparity(message.local_id);
         }
 
+        // Previously, the message had the "local echo" timestamp set
+        // by the browser; if there was some round-trip delay to the
+        // server, the actual server-side timestamp could be slightly
+        // different.  This corrects the frontend timestamp to match
+        // the backend.
         client_message.timestamp = message.timestamp;
 
         msgs_to_rerender.push(client_message);
@@ -237,6 +242,10 @@ exports.process_from_server = function process_from_server(messages) {
     });
 
     if (msgs_to_rerender.length > 0) {
+        // In theory, we could just rerender messages where there were
+        // changes in either the rounded timestamp we display or the
+        // message content, but in practice, there's no harm to just
+        // doing it unconditionally.
         home_msg_list.view.rerender_messages(msgs_to_rerender);
         if (current_msg_list === message_list.narrowed) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
