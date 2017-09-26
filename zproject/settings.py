@@ -1118,39 +1118,18 @@ LOGGING = {
         },
     },
     'loggers': {
+        # root logger
         '': {
             'handlers': DEFAULT_ZULIP_HANDLERS,
             'filters': ['require_logging_enabled'],
             'level': 'INFO',
             'propagate': False,
         },
+
+        # Django, alphabetized
         'django': {
             'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'INFO',
-            'propagate': False,
-        },
-        'zulip.requests': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'zulip.queue': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'zulip.management': {
-            'handlers': ['file', 'errors_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'requests': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'django.security.DisallowedHost': {
-            'handlers': ['file'],
             'propagate': False,
         },
         'django.request': {
@@ -1158,6 +1137,10 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
             'filters': ['skip_boring_404s'],
+        },
+        'django.security.DisallowedHost': {
+            'handlers': ['file'],
+            'propagate': False,
         },
         'django.server': {
             'handlers': ['console', 'file'],
@@ -1170,8 +1153,34 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-        'zulip.zerver.webhooks': {
+
+        ## Uncomment the following to get all database queries logged to the console
+        # 'django.db': {
+        #     'handlers': ['console'],
+        #     'level': 'DEBUG',
+        #     'propagate': False,
+        # },
+
+        # other libraries, alphabetized
+        'requests': {
+            'handlers': DEFAULT_ZULIP_HANDLERS,
+            'level': 'WARNING',
+            'propagate': False,
+        },
+
+        # our own loggers, alphabetized
+        'zulip.management': {
             'handlers': ['file', 'errors_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'zulip.queue': {
+            'handlers': DEFAULT_ZULIP_HANDLERS,
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'zulip.requests': {
+            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'INFO',
             'propagate': False,
         },
@@ -1179,13 +1188,12 @@ LOGGING = {
             'handlers': ['file', 'errors_file'],
             'level': 'INFO',
             'propagate': False,
-        }
-        ## Uncomment the following to get all database queries logged to the console
-        # 'django.db': {
-        #     'handlers': ['console'],
-        #     'level': 'DEBUG',
-        #     'propagate': False,
-        # },
+        },
+        'zulip.zerver.webhooks': {
+            'handlers': ['file', 'errors_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     }
 }
 
