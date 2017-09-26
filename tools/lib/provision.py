@@ -280,7 +280,7 @@ def main(options):
     # copy over static files from the zulip_bots package
     run(["tools/setup/generate_zulip_bots_static_files"])
 
-    run(["tools/setup/build_pygments_data.py"])
+    run(["tools/setup/build_pygments_data"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
     run(["tools/inline-email-css"])
