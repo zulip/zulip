@@ -26,17 +26,21 @@ zproject/test_settings.py
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
 parser.add_argument('targets', nargs='*',
                     help="files and directories to check (default: .)")
+parser.add_argument('--quick', action='store_true',
+                    help="pass --quick to mypy")
 parser.add_argument('-m', '--modified', action='store_true',
                     help="check only modified files")
+parser.add_argument('--scripts-only', action='store_true',
+                    help="only check extensionless python scripts")
 parser.add_argument('-a', '--all', action='store_true',
                     help="check all files, bypassing the default exclude list")
+parser.add_argument('--force', action="store_true",
+                    help="run tests despite possible provisioning problems")
 parser.add_argument('--linecoverage-report', action='store_true',
                     help="emit a coverage report under var/")
 parser.add_argument('--no-disallow-untyped-defs',
                     dest='disallow_untyped_defs', action='store_false',
                     help="don't pass --disallow-untyped-defs to mypy")
-parser.add_argument('--scripts-only', action='store_true',
-                    help="only check extensionless python scripts")
 parser.add_argument('--strict-optional', action='store_true',
                     help="pass --strict-optional to mypy")
 parser.add_argument('--warn-unused-ignores', action='store_true',
@@ -44,10 +48,6 @@ parser.add_argument('--warn-unused-ignores', action='store_true',
 parser.add_argument('--no-ignore-missing-imports',
                     dest='ignore_missing_imports', action='store_false',
                     help="don't pass --ignore-missing-imports to mypy")
-parser.add_argument('--quick', action='store_true',
-                    help="pass --quick to mypy")
-parser.add_argument('--force', action="store_true",
-                    help="run tests despite possible provisioning problems")
 args = parser.parse_args()
 
 if not args.force:
