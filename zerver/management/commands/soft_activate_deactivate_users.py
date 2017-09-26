@@ -46,16 +46,14 @@ class Command(ZulipBaseCommand):
             print('This is a Staging server. Suppressing management command.')
             sys.exit(0)
 
-        if options['realm_id']:
-            realm = self.get_realm(options)
+        realm = self.get_realm(options)
+        user_emails = options['users']
+        activate = options['activate']
+        deactivate = options['deactivate']
 
         filter_kwargs = {}  # type: Dict[str, Realm]
         if realm is not None:
             filter_kwargs = dict(realm=realm)
-
-        user_emails = options['users']
-        activate = options['activate']
-        deactivate = options['deactivate']
 
         if activate:
             if not user_emails:
