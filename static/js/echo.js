@@ -207,40 +207,43 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
 };
 
 exports.process_from_server = function process_from_server(messages) {
-    var updated = false;
-    var locally_processed_ids = [];
     var msgs_to_rerender = [];
-    messages = _.filter(messages, function (message) {
+    var non_echo_messages = [];
+
+    _.each(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
 
         var client_message = waiting_for_ack[message.local_id];
-        if (client_message !== undefined) {
-            exports.reify_message_id(message.local_id, message.id);
 
-            if (client_message.content !== message.content) {
-                client_message.content = message.content;
-                updated = true;
-                sent_messages.mark_disparity(message.local_id);
-            }
-            msgs_to_rerender.push(client_message);
-            locally_processed_ids.push(client_message.id);
-            delete waiting_for_ack[client_message.id];
-            return false;
+        if (client_message === undefined) {
+            // For messages that weren't locally echoed, we go through
+            // the "main" codepath that doesn't have to id reconciliation.
+            // We simply return non-echo messages to our caller.
+            non_echo_messages.push(message);
+            return;
         }
-        return true;
+
+        exports.reify_message_id(message.local_id, message.id);
+
+        if (client_message.content !== message.content) {
+            client_message.content = message.content;
+            sent_messages.mark_disparity(message.local_id);
+        }
+
+        client_message.timestamp = message.timestamp;
+
+        msgs_to_rerender.push(client_message);
+        delete waiting_for_ack[client_message.id];
     });
 
-    if (updated) {
+    if (msgs_to_rerender.length > 0) {
         home_msg_list.view.rerender_messages(msgs_to_rerender);
         if (current_msg_list === message_list.narrowed) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
-    } else {
-        _.each(locally_processed_ids, function (id) {
-            ui.show_local_message_arrived(id);
-        });
     }
-    return messages;
+
+    return non_echo_messages;
 };
 
 exports.message_send_error = function message_send_error(local_id, error_response) {
