@@ -25,8 +25,13 @@ function populate_streams() {
             callback: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
+            onupdate: function () {
+                ui.update_scrollbar(streams_table.closest(".progressive-table-wrapper"));
+            },
         },
     }).init();
+
+    ui.set_up_scrollbar(streams_table.closest(".progressive-table-wrapper"));
 
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
