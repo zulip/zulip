@@ -807,28 +807,28 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .hero header button {
+    width: 170px;
     margin-top: 0px;
-    padding: 8px 15px;
+    padding: 12px 20px;
 
-    background-color: transparent;
+    background: #fff;
     border: 2px solid #fff;
 
-    font-size: 1em;
-    font-weight: 600;
-    color: #fff;
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #679f81;
 
-    box-shadow: 0px 1px 50px rgba(0,0,0,0.1);
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.2);
 
     transition: all 0.2s ease;
 }
 
 .portico-landing.hello .hero header button:hover {
-    box-shadow: 0px 0px 0px #fff;
+    box-shadow: 0px 3px 10px rgba(255,255,255,0.2);
 }
 
 .portico-landing.hello .hero header button:active {
-    box-shadow: 0px 1px 20px rgba(255,255,255,0.5);
+    box-shadow: 0px 3px 20px rgba(255,255,255,0.5);
 }
 
 .portico-landing.hello .hero header .download-button {
