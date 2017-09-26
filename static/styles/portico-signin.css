@@ -493,7 +493,7 @@ html {
 .split-view .org-header .info-box {
     display: inline-block;
     position: relative;
-    margin: 15px 0px 0px 20px;
+    margin: 20px 0px 0px 20px;
     width: calc(100% - 125px);
 
     /* full width minus the avatar + padding + borders */
@@ -511,13 +511,13 @@ html {
 .split-view .info-box .organization-name {
     font-size: 1.5em;
     font-weight: 300;
-    line-height: 1;
+    line-height: 1.2;
 }
 
 .split-view .info-box .organization-path {
     font-weight: 400;
     color: hsl(0, 0%, 46%);
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .new-style .lead {
