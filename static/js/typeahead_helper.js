@@ -87,6 +87,7 @@ exports.render_person = function (person) {
         html = exports.render_typeahead_item({
             primary: person.full_name,
             secondary: person.email,
+            img_src : person.avatar_url,
         });
         rendered.persons.set(person.user_id, html);
     }
