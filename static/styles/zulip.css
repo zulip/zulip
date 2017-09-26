@@ -461,6 +461,13 @@ a:hover code {
     white-space: pre-wrap;
 }
 
+.sp-input {
+    width: calc(100% - 14px);
+    box-sizing: initial !important;
+    -webkit-box-sizing: initial !important;
+    -moz-box-sizing: initial !important;
+}
+
 .sidebar-nav {
     padding: 0px 10px 20px 0px;
     margin-top: 1em;
