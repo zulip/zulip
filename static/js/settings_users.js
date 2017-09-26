@@ -110,6 +110,12 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
+    var update_scrollbar = function ($sel) {
+        return function () {
+            ui.update_scrollbar($sel);
+        };
+    };
+
     var $bots_table = $("#admin_bots_table");
     list_render($bots_table, bots, {
         name: "admin_bot_list",
@@ -124,6 +130,7 @@ function populate_users(realm_people_data) {
                     item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
+            onupdate: update_scrollbar($bots_table),
         },
     }).init();
 
@@ -158,6 +165,7 @@ function populate_users(realm_people_data) {
                     item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
+            onupdate: update_scrollbar($users_table),
         },
     }).init();
 
@@ -175,8 +183,14 @@ function populate_users(realm_people_data) {
                     item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
+            onupdate: update_scrollbar($deactivated_users_table),
         },
     }).init();
+
+    [$bots_table, $users_table, $deactivated_users_table].forEach(function ($o) {
+        ui.set_up_scrollbar($o.closest(".progressive-table-wrapper"));
+    });
+
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
