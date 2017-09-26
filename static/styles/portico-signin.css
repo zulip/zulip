@@ -308,11 +308,13 @@ html {
 .new-style .input-box input[type=text],
 .new-style .input-box input[type=email],
 .new-style .input-box input[type=password] {
-    padding: 13px 32px 11px 12px;
+    padding: 9px 32px 11px 12px;
     margin: 25px 0 4px;
 
     font-family: "Source Sans Pro";
     font-size: 1.2rem;
+    line-height: normal;
+    height: auto;
 
     width: 280px;
 
