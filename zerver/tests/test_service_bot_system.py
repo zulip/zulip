@@ -5,7 +5,10 @@ from __future__ import print_function
 import mock
 from typing import Any, Union, Mapping, Callable
 
-from zerver.lib.actions import do_create_user
+from zerver.lib.actions import (
+    do_create_user,
+    get_service_bot_events,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,
@@ -17,6 +20,69 @@ BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: 'outgoing_webhooks',
     UserProfile.EMBEDDED_BOT: 'embedded_bots',
 }
+
+class TestServiceBotBasics(ZulipTestCase):
+    def _get_outgoing_bot(self):
+        # type: () -> UserProfile
+        outgoing_bot = do_create_user(
+            email="bar-bot@zulip.com",
+            password="test",
+            realm=get_realm("zulip"),
+            full_name="BarBot",
+            short_name='bb',
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            bot_owner=self.example_user('cordelia'),
+        )
+
+        return outgoing_bot
+
+    def test_service_events_for_pms(self):
+        # type: () -> None
+        sender = self.example_user('hamlet')
+        assert(not sender.is_bot)
+
+        outgoing_bot = self._get_outgoing_bot()
+
+        event_dict = get_service_bot_events(
+            sender=sender,
+            service_bot_tuples=[
+                (outgoing_bot.id, outgoing_bot.bot_type),
+            ],
+            mentioned_user_ids=set(),
+            recipient_type=Recipient.PERSONAL,
+        )
+
+        expected = dict(
+            outgoing_webhooks=[
+                dict(trigger='private_message', user_profile_id=outgoing_bot.id),
+            ],
+        )
+
+        self.assertEqual(event_dict, expected)
+
+    def test_service_events_for_stream_mentions(self):
+        # type: () -> None
+        sender = self.example_user('hamlet')
+        assert(not sender.is_bot)
+
+        outgoing_bot = self._get_outgoing_bot()
+
+        event_dict = get_service_bot_events(
+            sender=sender,
+            service_bot_tuples=[
+                (outgoing_bot.id, outgoing_bot.bot_type),
+            ],
+            mentioned_user_ids={outgoing_bot.id},
+            recipient_type=Recipient.STREAM,
+        )
+
+        expected = dict(
+            outgoing_webhooks=[
+                dict(trigger='mention', user_profile_id=outgoing_bot.id),
+            ],
+        )
+
+        self.assertEqual(event_dict, expected)
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 

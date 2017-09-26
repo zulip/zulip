@@ -863,6 +863,46 @@ def get_recipient_info(recipient, sender_id):
     )  # type: RecipientInfoResult
     return info
 
+def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, recipient_type):
+    # type: (UserProfile, List[Tuple[int, int]], Set[int], int) -> Dict[str, List[Dict[str, Any]]]
+    # TODO: Right now, service bots need to be subscribed to a stream in order to
+    # receive messages when mentioned; we will want to change that structure.
+    # Prepare to collect service queue events triggered by the message.
+
+    event_dict = defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
+
+    # Avoid infinite loops by preventing messages sent by bots from generating
+    # Service events.
+    if sender.is_bot:
+        return event_dict
+
+    for user_profile_id, bot_type in service_bot_tuples:
+        if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+            queue_name = 'outgoing_webhooks'
+        elif bot_type == UserProfile.EMBEDDED_BOT:
+            queue_name = 'embedded_bots'
+        else:
+            logging.error(
+                'Unexpected bot_type for Service bot id=%s: %s' %
+                (user_profile_id, bot_type))
+            continue
+
+        # Mention triggers, primarily for stream messages
+        if user_profile_id in mentioned_user_ids:
+            trigger = 'mention'
+        # PM triggers for personal and huddle messsages
+        elif recipient_type != Recipient.STREAM:
+            trigger = 'private_message'
+        else:
+            continue
+
+        event_dict[queue_name].append({
+            'trigger': trigger,
+            'user_profile_id': user_profile_id,
+        })
+
+    return event_dict
+
 def do_send_messages(messages_maybe_none):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
@@ -935,41 +975,12 @@ def do_send_messages(messages_maybe_none):
 
             ums.extend(user_messages)
 
-            # Prepare to collect service queue events triggered by the message.
-            message['message'].service_queue_events = defaultdict(list)
-
-            # Avoid infinite loops by preventing messages sent by bots from generating
-            # Service events.
-            sender = message['message'].sender
-            if sender.is_bot:
-                continue
-
-            # TODO: Right now, service bots need to be subscribed to a stream in order to
-            # receive messages when mentioned; we will want to change that structure.
-            for user_profile_id, bot_type in message['service_bot_tuples']:
-                if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-                    queue_name = 'outgoing_webhooks'
-                elif bot_type == UserProfile.EMBEDDED_BOT:
-                    queue_name = 'embedded_bots'
-                else:
-                    logging.error(
-                        'Unexpected bot_type for Service bot id=%s: %s' %
-                        (user_profile_id, bot_type))
-                    continue
-
-                # Mention triggers, primarily for stream messages
-                if user_profile_id in mentioned_user_ids:
-                    trigger = 'mention'
-                # PM triggers for personal and huddle messsages
-                elif message['message'].recipient.type != Recipient.STREAM:
-                    trigger = 'private_message'
-                else:
-                    continue
-
-                message['message'].service_queue_events[queue_name].append({
-                    'trigger': trigger,
-                    'user_profile_id': user_profile_id,
-                })
+            message['message'].service_queue_events = get_service_bot_events(
+                sender=message['message'].sender,
+                service_bot_tuples=message['service_bot_tuples'],
+                mentioned_user_ids=mentioned_user_ids,
+                recipient_type=message['message'].recipient.type,
+            )
 
         bulk_insert_ums(ums)
 
