@@ -25,7 +25,7 @@ import os
 import ujson
 import itertools
 from six.moves import range
-from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
+from typing import Any, Callable, Dict, List, Iterable, Mapping, Optional, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -35,14 +35,14 @@ settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
 
-def create_users(realm, name_list, bot_type=None):
-    # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
+def create_users(realm, name_list, bot_type=None, bot_owner=None):
+    # type: (Realm, Iterable[Tuple[Text, Text]], Optional[int], Optional[UserProfile]) -> None
     user_set = set()  # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
-    bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
+    bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -294,8 +294,9 @@ class Command(BaseCommand):
             zulip_outgoing_bots = [
                 ("Outgoing Webhook", "outgoing-webhook@zulip.com")
             ]
+            aaron = get_user("AARON@zulip.com", zulip_realm)
             create_users(zulip_realm, zulip_outgoing_bots,
-                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
             # TODO: Clean up this initial bot creation code
             Service.objects.create(
                 name="test",
