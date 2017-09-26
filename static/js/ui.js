@@ -102,21 +102,6 @@ exports.update_starred = function (message_id, starred) {
     });
 };
 
-var local_messages_to_show = [];
-var show_message_timestamps = _.throttle(function () {
-    _.each(local_messages_to_show, function (message_id) {
-        update_message_in_all_views(message_id, function update_row(row) {
-            row.find('.message_time').toggleClass('notvisible', false);
-        });
-    });
-    local_messages_to_show = [];
-}, 100);
-
-exports.show_local_message_arrived = function (message_id) {
-    local_messages_to_show.push(message_id);
-    show_message_timestamps();
-};
-
 exports.show_message_failed = function (message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     update_message_in_all_views(message_id, function update_row(row) {
