@@ -66,7 +66,7 @@ if args.all:
 files_dict = cast(Dict[str, List[str]],
                   lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
                                     use_shebang=True, modified_only=args.modified,
-                                    exclude = exclude + ['stubs'], group_by_ftype=True,
+                                    exclude=exclude, group_by_ftype=True,
                                     extless_only=args.scripts_only))
 pyi_files = set(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
