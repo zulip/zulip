@@ -42,7 +42,6 @@ function reset_error_messages() {
 }
 
 function prepare_form_to_be_shown() {
-    $("#invitee_emails").val("");
     update_subscription_checkboxes();
     reset_error_messages();
 }
