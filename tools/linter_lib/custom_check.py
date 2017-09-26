@@ -191,9 +191,9 @@ def build_custom_checkers(by_lang):
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required'},
-        {'pattern': '".*"%\([a-z_].*\)?$',
+        {'pattern': '".*"%\(.*\)?$',
          'description': 'Missing space around "%"'},
-        {'pattern': "'.*'%\([a-z_].*\)?$",
+        {'pattern': "'.*'%\(.*\)?$",
          'exclude': set(['analytics/lib/counts.py',
                          'analytics/tests/test_counts.py',
                          ]),
