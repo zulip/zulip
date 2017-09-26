@@ -449,32 +449,20 @@ li.show-more-private-messages a {
     display: none;
 }
 
-.searching-for-more-topics span {
-    font-size: 90%;
-    font-weight: bold;
-    display: inline-block;
-    padding: 10px;
+.searching-for-more-topics img {
+    height: 16px;
+    margin-left: 6px;
+}
+
+.no-more-topics-found {
+    opacity: 0.7;
+    font-style: italic;
+    margin: 2px 0px 0px 6px;
+    font-size: 0.9em;
 }
 
 .no-more-topics-found {
     display: none;
-}
-
-.no-more-topics-found span {
-    display: inline-block;
-    font-size: 90%;
-    font-weight: 600;
-    padding: 12px;
-}
-
-.sidebar-topics-help {
-    display: none;
-}
-
-.sidebar-topics-help span {
-    display: inline-block;
-    font-size: 90%;
-    padding-top: 10px;
 }
 
 .zoom-in .show-more-topics {
