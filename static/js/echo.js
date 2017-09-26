@@ -229,6 +229,9 @@ exports.process_from_server = function process_from_server(messages) {
             client_message.content = message.content;
             sent_messages.mark_disparity(message.local_id);
         }
+
+        client_message.timestamp = message.timestamp;
+
         msgs_to_rerender.push(client_message);
         delete waiting_for_ack[client_message.id];
     });
