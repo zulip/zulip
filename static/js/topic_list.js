@@ -5,7 +5,7 @@ var exports = {};
 // Once we are ready to clean up CSS for some of the features
 // hidden by this flag, we should just revert the whole commit
 // here (do `git blame` on this line).
-waiting_on_css_polish_for_more_topics = true;
+var waiting_on_css_polish_for_more_topics = true;
 
 // We can only ever have one active widget.
 var active_widget;
