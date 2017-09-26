@@ -210,24 +210,31 @@ exports.process_from_server = function process_from_server(messages) {
     var updated = false;
     var locally_processed_ids = [];
     var msgs_to_rerender = [];
-    messages = _.filter(messages, function (message) {
+    var non_echo_messages = [];
+
+    _.each(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
 
         var client_message = waiting_for_ack[message.local_id];
-        if (client_message !== undefined) {
-            exports.reify_message_id(message.local_id, message.id);
 
-            if (client_message.content !== message.content) {
-                client_message.content = message.content;
-                updated = true;
-                sent_messages.mark_disparity(message.local_id);
-            }
-            msgs_to_rerender.push(client_message);
-            locally_processed_ids.push(client_message.id);
-            delete waiting_for_ack[client_message.id];
-            return false;
+        if (client_message === undefined) {
+            // For messages that weren't locally echoed, we go through
+            // the "main" codepath that doesn't have to id reconciliation.
+            // We simply return non-echo messages to our caller.
+            non_echo_messages.push(message);
+            return;
         }
-        return true;
+
+        exports.reify_message_id(message.local_id, message.id);
+
+        if (client_message.content !== message.content) {
+            client_message.content = message.content;
+            updated = true;
+            sent_messages.mark_disparity(message.local_id);
+        }
+        msgs_to_rerender.push(client_message);
+        locally_processed_ids.push(client_message.id);
+        delete waiting_for_ack[client_message.id];
     });
 
     if (updated) {
@@ -240,7 +247,7 @@ exports.process_from_server = function process_from_server(messages) {
             ui.show_local_message_arrived(id);
         });
     }
-    return messages;
+    return non_echo_messages;
 };
 
 exports.message_send_error = function message_send_error(local_id, error_response) {
