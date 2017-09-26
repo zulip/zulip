@@ -125,11 +125,18 @@ def skip_site_packages_logs(record):
         return False
     return True
 
+def find_log_origin(record):
+    # type: (logging.LogRecord) -> str
+    if record.name == 'root':
+        return ''
+    else:
+        return record.name
+
 class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
     default_msec_format = '%s.%03d'
 
-    _fmt = '%(asctime)s %(levelname)-8s %(message)s'
+    _fmt = '%(asctime)s %(levelname)-8s [%(zulip_origin)s] %(message)s'
 
     def __init__(self):
         # type: () -> None
@@ -137,6 +144,11 @@ class ZulipFormatter(logging.Formatter):
 
     def format(self, record):
         # type: (logging.LogRecord) -> str
+        if not getattr(record, 'zulip_decorated', False):
+            # The `setattr` calls put this logic explicitly outside the bounds of the
+            # type system; otherwise mypy would complain LogRecord lacks these attributes.
+            setattr(record, 'zulip_origin', find_log_origin(record))
+            setattr(record, 'zulip_decorated', True)
         return super().format(record)
 
 def create_logger(name, log_file, log_level, log_format="%(asctime)s %(levelname)-8s %(message)s"):
