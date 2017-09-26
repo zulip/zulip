@@ -143,6 +143,20 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_in_response("Email address changes are disabled in this organization.",
                                 result)
 
+    def test_email_change_already_taken(self):
+        # type: () -> None
+        data = {'email': 'cordelia@zulip.com'}
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+
+        url = '/json/settings'
+        result = self.client_patch(url, data)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Already has an account",
+                                result)
+
     def test_unauthorized_email_change_from_email_confirmation_link(self):
         # type: () -> None
         data = {'email': 'hamlet-new@zulip.com'}
