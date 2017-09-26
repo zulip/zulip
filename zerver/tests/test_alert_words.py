@@ -119,7 +119,7 @@ class AlertWordTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
 
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
+        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client_get('/json/users/me/alert_words')
@@ -130,7 +130,7 @@ class AlertWordTests(ZulipTestCase):
         # type: () -> None
         self.login(self.example_email("hamlet"))
 
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
@@ -139,20 +139,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         self.assertEqual(result.json()['alert_words'], ['two', 'three'])
-
-    def test_json_list_set(self):
-        # type: () -> None
-        self.login(self.example_email("hamlet"))
-
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
-        self.assert_json_success(result)
-
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
-        self.assert_json_success(result)
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['a', 'b', 'c'])
 
     def message_does_alert(self, user_profile, message):
         # type: (UserProfile, Text) -> bool
@@ -166,7 +152,7 @@ class AlertWordTests(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         user_profile_hamlet = self.example_user('hamlet')
 
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client_get('/json/users/me/alert_words')
@@ -198,7 +184,7 @@ class AlertWordTests(ZulipTestCase):
         me_email = user_profile.email
 
         self.login(me_email)
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})
+        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})
 
         content = 'this is an ALERT for you'
         self.send_message(me_email, "Denmark", Recipient.STREAM, content)
