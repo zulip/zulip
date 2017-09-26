@@ -151,6 +151,7 @@ Contents:
    html-templates
    client
    logging
+   typing-indicators
    release-checklist
    api-release-checklist
    swagger-api-docs
