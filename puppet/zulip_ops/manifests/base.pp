@@ -20,7 +20,7 @@ class zulip_ops::base {
                         "python3-six",
                         "python-six",
                         # "python3-boto", # missing on trusty
-                        "python-boto", # needed for postgres_common too
+                        "python-boto",
                         "python3-netifaces",
                         "python-netifaces",
                         # Popular editors
