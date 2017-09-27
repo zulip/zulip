@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 from typing import Any, List, Dict, Mapping, Optional, Text
 
 from django.utils.translation import ugettext as _

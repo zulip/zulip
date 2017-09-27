@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, Text
 
 from django.utils.translation import ugettext as _

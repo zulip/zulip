@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence, Text
 
 from django.conf import settings
