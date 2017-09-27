@@ -43,7 +43,6 @@ from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
 
 import os
 import sys
-import six
 import ujson
 from collections import defaultdict
 import email
