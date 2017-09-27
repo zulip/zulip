@@ -159,11 +159,25 @@ def find_log_origin(record):
     else:
         return logger_name
 
+log_level_abbrevs = {
+    'DEBUG':    'DEBG',
+    'INFO':     'INFO',
+    'WARNING':  'WARN',
+    'ERROR':    'ERR',
+    'CRITICAL': 'CRIT',
+}
+
+def abbrev_log_levelname(levelname):
+    # type: (str) -> str
+    # It's unlikely someone will set a custom log level with a custom name,
+    # but it's an option, so we shouldn't crash if someone does.
+    return log_level_abbrevs.get(levelname, levelname[:4])
+
 class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
     default_msec_format = '%s.%03d'
 
-    _fmt = '%(asctime)s %(levelname)-8s [%(zulip_origin)s] %(message)s'
+    _fmt = '%(asctime)s %(zulip_level_abbrev)-4s [%(zulip_origin)s] %(message)s'
 
     def __init__(self):
         # type: () -> None
@@ -174,6 +188,7 @@ class ZulipFormatter(logging.Formatter):
         if not getattr(record, 'zulip_decorated', False):
             # The `setattr` calls put this logic explicitly outside the bounds of the
             # type system; otherwise mypy would complain LogRecord lacks these attributes.
+            setattr(record, 'zulip_level_abbrev', abbrev_log_levelname(record.levelname))
             setattr(record, 'zulip_origin', find_log_origin(record))
             setattr(record, 'zulip_decorated', True)
         return super().format(record)
