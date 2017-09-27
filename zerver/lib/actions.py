@@ -3003,6 +3003,7 @@ def truncate_topic(topic):
 
 MessageUpdateUserInfoResult = TypedDict('MessageUpdateUserInfoResult', {
     'message_user_ids': Set[int],
+    'mention_user_ids': Set[int],
 })
 
 def get_user_info_for_message_updates(message_id):
@@ -3016,12 +3017,25 @@ def get_user_info_for_message_updates(message_id):
     query = UserMessage.objects.filter(
         message=message_id,
         flags=~UserMessage.flags.historical
-    )
+    ).values('user_profile_id', 'flags')
+    rows = list(query)
 
-    message_user_ids = set(query.values_list('user_profile_id', flat=True))
+    message_user_ids = {
+        row['user_profile_id']
+        for row in rows
+    }
+
+    mask = UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned
+
+    mention_user_ids = {
+        row['user_profile_id']
+        for row in rows
+        if int(row['flags']) & mask
+    }
 
     return dict(
         message_user_ids=message_user_ids,
+        mention_user_ids=mention_user_ids,
     )
 
 def update_user_message_flags(message, ums):

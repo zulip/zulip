@@ -1510,12 +1510,15 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(cordelia, 'Scotland')
 
         msg_id = self.send_message(hamlet.email, 'Scotland', Recipient.STREAM,
-                                   subject='subject 1', content='content 1')
+                                   content='@**Cordelia Lear**')
 
         user_info = get_user_info_for_message_updates(msg_id)
         message_user_ids = user_info['message_user_ids']
         self.assertIn(hamlet.id, message_user_ids)
         self.assertIn(cordelia.id, message_user_ids)
+
+        mention_user_ids = user_info['mention_user_ids']
+        self.assertEqual(mention_user_ids, {cordelia.id})
 
     def test_edit_cases(self):
         # type: () -> None
