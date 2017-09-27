@@ -1633,6 +1633,11 @@ nav ul li.active::after {
     overflow: hidden;
 }
 
+.portico-landing.apps .hero .inner-content {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
 .portico-landing.apps .hero h1 {
     font-size: 3em;
     margin-bottom: 0px;
@@ -1682,8 +1687,10 @@ nav ul li.active::after {
     height: 100%;
 }
 
-.portico-landing.apps .hero .info .flex {
-    height: 100%;
+.portico-landing.apps .hero .info .flex,
+.portico-landing.apps .hero .image .flex {
+    height: 500px;
+    min-height: 0px;
 }
 
 .portico-landing.apps .hero .info button {
@@ -2999,6 +3006,13 @@ nav ul li.active::after {
         font-size: 1.9em;
         font-weight: 400;
     }
+
+    .portico-landing.apps .hero .info .flex,
+    .portico-landing.apps .hero .image .flex {
+        height: 300px;
+        min-height: 0px;
+    }
+
 
     .portico-landing.apps .other-apps {
         padding: 50px 5px 120px 5px;
