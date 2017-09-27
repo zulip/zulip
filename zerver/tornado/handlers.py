@@ -3,7 +3,6 @@ from __future__ import print_function
 import sys
 import tornado.web
 import logging
-import six
 from django import http
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
@@ -130,7 +129,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 mw_instance = mw_class()
             except MiddlewareNotUsed as exc:
                 if settings.DEBUG:
-                    if six.text_type(exc):
+                    if str(exc):
                         base.logger.debug('MiddlewareNotUsed(%r): %s', middleware_path, exc)
                     else:
                         base.logger.debug('MiddlewareNotUsed: %r', middleware_path)
