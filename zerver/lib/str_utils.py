@@ -11,8 +11,7 @@ Currently we have strings of 3 semantic types:
     typing.Text (which is `str` in python 3 and `unicode` in python 2).
 
 2.  binary strings: These strings are used to represent binary data.
-    This should be of type six.binary_type (which is `bytes` in python 3
-    and `str` in python 2).
+    This should be of type `bytes`
 
 3.  native strings: These strings are for internal use only.  Strings of
     this type are not meant to be stored in database, displayed to end
@@ -30,27 +29,25 @@ force_text and force_bytes.
 It is recommended to use the utility functions for other string conversions.
 """
 
-import six
-from six import binary_type
 from typing import Any, Dict, Mapping, Union, TypeVar, Text
 
 NonBinaryStr = TypeVar('NonBinaryStr', str, Text)
 # This is used to represent text or native strings
 
 def force_text(s, encoding='utf-8'):
-    # type: (Union[Text, binary_type], str) -> Text
+    # type: (Union[Text, bytes], str) -> Text
     """converts a string to a text string"""
     if isinstance(s, Text):
         return s
-    elif isinstance(s, binary_type):
+    elif isinstance(s, bytes):
         return s.decode(encoding)
     else:
         raise TypeError("force_text expects a string type")
 
 def force_bytes(s, encoding='utf-8'):
-    # type: (Union[Text, binary_type], str) -> binary_type
+    # type: (Union[Text, bytes], str) -> bytes
     """converts a string to binary string"""
-    if isinstance(s, binary_type):
+    if isinstance(s, bytes):
         return s
     elif isinstance(s, Text):
         return s.encode(encoding)
@@ -58,13 +55,13 @@ def force_bytes(s, encoding='utf-8'):
         raise TypeError("force_bytes expects a string type")
 
 def force_str(s, encoding='utf-8'):
-    # type: (Union[Text, binary_type], str) -> str
+    # type: (Union[Text, bytes], str) -> str
     """converts a string to a native string"""
     if isinstance(s, str):
         return s
     elif isinstance(s, Text):
         return s.encode(encoding)
-    elif isinstance(s, binary_type):
+    elif isinstance(s, bytes):
         return s.decode(encoding)
     else:
         raise TypeError("force_str expects a string type")
@@ -72,7 +69,7 @@ def force_str(s, encoding='utf-8'):
 def dict_with_str_keys(dct, encoding='utf-8'):
     # type: (Mapping[NonBinaryStr, Any], str) -> Dict[str, Any]
     """applies force_str on the keys of a dict (non-recursively)"""
-    return {force_str(key, encoding): value for key, value in six.iteritems(dct)}
+    return {force_str(key, encoding): value for key, value in dct.items()}
 
 class ModelReprMixin(object):
     """

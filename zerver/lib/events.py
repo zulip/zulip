@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 import copy
-import six
 import ujson
 
 from django.utils.translation import ugettext as _

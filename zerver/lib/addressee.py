@@ -11,7 +11,6 @@ from zerver.models import (
     UserProfile,
     get_user_including_cross_realm,
 )
-import six
 
 def user_profiles_from_unvalidated_emails(emails, realm):
     # type: (Iterable[Text], Realm) -> List[UserProfile]
@@ -29,7 +28,7 @@ def get_user_profiles(emails, realm):
     try:
         return user_profiles_from_unvalidated_emails(emails, realm)
     except ValidationError as e:
-        assert isinstance(e.messages[0], six.string_types)
+        assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
 
 class Addressee(object):

@@ -79,7 +79,6 @@ Dependencies:
 import re
 import subprocess
 import markdown
-import six
 from django.utils.html import escape
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
 from zerver.lib.str_utils import force_bytes

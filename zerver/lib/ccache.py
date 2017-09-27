@@ -29,7 +29,6 @@ from typing import Any, Dict, List, Optional, Text
 from zerver.lib.str_utils import force_bytes
 import base64
 import struct
-import six
 
 # Some DER encoding stuff. Bleh. This is because the ccache contains a
 # DER-encoded krb5 Ticket structure, whereas Webathena deserializes
@@ -54,7 +53,7 @@ def der_encode_tlv(tag, value):
 
 def der_encode_integer_value(val):
     # type: (int) -> bytes
-    if not isinstance(val, six.integer_types):
+    if not isinstance(val, int):
         raise TypeError("int")
     # base 256, MSB first, two's complement, minimum number of octets
     # necessary. This has a number of annoying edge cases:
