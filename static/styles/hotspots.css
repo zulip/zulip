@@ -48,13 +48,15 @@
 .hotspot.overlay {
     z-index: 104;
     background-color: hsla(191, 7%, 20%, 0.15);
+
+    -webkit-font-smoothing: antialiased;
 }
 
 .hotspot.overlay .hotspot-popover {
     position: fixed;
     width: 250px;
     text-align: left;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(133, 136, 144, 0.2);
     border: 1px solid hsl(0, 0%, 80%);
     border-radius: 4px;
 }
@@ -93,17 +95,19 @@
 }
 
 .hotspot.overlay .hotspot-confirm {
-    border: none;
-    background-color: hsl(164, 44%, 47%);
-    color: white;
-    font-size: 1.05em;
-    font-weight: 400;
-    width: 70px;
-    height: 28px;
-    border-radius: 4px;
     position: absolute;
     bottom: 15px;
     right: 15px;
+    width: 80px;
+    height: 35px;
+
+    border: none;
+
+    font-size: 1.15em;
+    font-weight: 600;
+    color: white;
+    background-color: hsl(164, 44%, 47%);
+    border-radius: 4px;
 }
 
 /* arrows */
