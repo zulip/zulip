@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import print_function
 from lib.css_parser import parse, CssParserException
 from typing import Iterable, Text
 import sys

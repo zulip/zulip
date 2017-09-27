@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import unittest
 
 from tools.lib.pretty_print import pretty_print_html
