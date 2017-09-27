@@ -8,7 +8,6 @@ from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.management import ZulipBaseCommand
 import sys
-import six
 
 class Command(ZulipBaseCommand):
     help = """Manage emoji for the specified realm
@@ -44,7 +43,7 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
-            for name, url in six.iteritems(realm.get_emoji()):
+            for name, url in realm.get_emoji().items():
                 print(name, url)
             sys.exit(0)
 

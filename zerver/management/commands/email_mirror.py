@@ -25,7 +25,6 @@ recipient address and retrieve, forward, and archive the message.
 
 from __future__ import print_function
 
-import six
 from typing import Any, List, Generator
 
 import logging
@@ -65,10 +64,7 @@ def get_imap_messages():
             for msgid in num_ids_data[0].split():
                 status, msg_data = mbox.fetch(msgid, '(RFC822)')
                 msg_as_bytes = msg_data[0][1]
-                if six.PY2:
-                    message = email.message_from_string(msg_as_bytes)
-                else:
-                    message = email.message_from_bytes(msg_as_bytes)
+                message = email.message_from_bytes(msg_as_bytes)
                 yield message
                 mbox.store(msgid, '+FLAGS', '\\Deleted')
             mbox.expunge()
