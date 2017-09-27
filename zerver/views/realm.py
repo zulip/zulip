@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from typing import Any, Dict, Optional, List, Text
 from django.http import HttpRequest, HttpResponse

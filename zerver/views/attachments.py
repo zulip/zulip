@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import REQ

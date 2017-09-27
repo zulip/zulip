@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Optional, Any, Dict, Text
 
 from django.utils.translation import ugettext as _

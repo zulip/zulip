@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Optional, Any, Dict
 from collections import OrderedDict
 from django.views.generic import TemplateView

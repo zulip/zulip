@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Callable, Text, Union, Optional, Dict, Any, List, Tuple
 
 import os
