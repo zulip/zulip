@@ -422,7 +422,7 @@ def log_into_subdomain(request):
 
     data = ujson.loads(state)
     if data['subdomain'] != get_subdomain(request):
-        logging.warning('Login attemp on invalid subdomain')
+        logging.warning('Login attempt on invalid subdomain')
         return HttpResponse(status=400)
 
     email_address = data['email']
