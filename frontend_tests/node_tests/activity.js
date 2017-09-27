@@ -22,6 +22,11 @@ set_global('blueslip', function () {});
 set_global('channel', {});
 set_global('compose_actions', {});
 
+set_global('ui', {
+    set_up_scrollbar: function () {},
+    update_scrollbar: function () {},
+});
+
 zrequire('compose_fade');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');

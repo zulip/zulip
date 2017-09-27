@@ -259,6 +259,9 @@ exports.resize_page_components = function () {
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
     $('#stream-filters-container').perfectScrollbar('update');
+
+    activity.update_scrollbar.users();
+    activity.update_scrollbar.group_pms();
 };
 
 var _old_width = $(window).width();
