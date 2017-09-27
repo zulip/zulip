@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, Text, \
     Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable, Iterable
 from typing.re import Match
