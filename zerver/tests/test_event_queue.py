@@ -143,7 +143,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, None, False, True))
+            self.assertEqual(args_list, (user_profile.id, msg_id, True, False, False, None, False, True))
 
         # Clear the event queue, now repeat with a mention
         client_descriptor.event_queue.pop()

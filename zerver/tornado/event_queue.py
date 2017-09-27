@@ -630,13 +630,13 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
 
         flags = event['flags']
         mentioned = 'mentioned' in flags and 'read' not in flags
+        private_message = event['message']['type'] == 'private'
         # TODO: These next variables should be extracted from the
-        # event, but to match the historical effect of this function
-        # in only supporting mentions, we've just hardcoded them to
-        # False.  Fixing this will correct currently buggy behavior in
-        # our handling of private message and users who've requested
-        # stream push notifications.
-        private_message = False
+        # event and client descriptor, but to match the historical
+        # effect of this function in only supporting mentions, we've
+        # just hardcoded them to False.  Fixing this will correct
+        # currently buggy behavior in our handling of users who've
+        # requested stream push notifications.
         stream_push_notify = False
         stream_name = None
         always_push_notify = False
