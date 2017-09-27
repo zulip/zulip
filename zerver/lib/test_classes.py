@@ -377,8 +377,10 @@ class ZulipTestCase(TestCase):
         sender = get_user_profile_by_email(sender_name)
         if message_type in [Recipient.PERSONAL, Recipient.HUDDLE]:
             message_type_name = "private"
-        else:
+        elif message_type == Recipient.STREAM:
             message_type_name = "stream"
+        else:
+            raise AssertionError("Recipient type should be an Recipient.STREAM type enum")
         if isinstance(raw_recipients, six.string_types):
             recipient_list = [raw_recipients]
         else:
