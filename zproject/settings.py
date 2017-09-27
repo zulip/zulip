@@ -1162,6 +1162,9 @@ LOGGING = {
         # },
 
         # other libraries, alphabetized
+        'pika.adapters': {  # This library is super chatty on INFO.
+            'level': 'WARNING',
+        },
         'requests': {
             'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'WARNING',
