@@ -10,7 +10,7 @@ There are two versions available -
 - **stable:** these releases are more thoroughly tested; they receive
     new features later, but there's a lower chance that things will go wrong.
 
-## MAC
+## Mac
 
 **DMG or zip**:
 
