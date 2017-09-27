@@ -418,7 +418,7 @@ li.expanded_private_message a {
 }
 
 #topics_header a i {
-    margin-right: 5px;
+    margin: 0 5px 0 10px;
     position: relative;
     top: 1px;
 }
