@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import print_function
 from lib.template_parser import validate
 from lib.html_branches import build_id_dict
 from lib.pretty_print import validate_indent_html

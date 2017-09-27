@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import print_function
 
 from typing import List, Text
 # check for the venv

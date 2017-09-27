@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from typing import Optional, Any
 
 import sys
