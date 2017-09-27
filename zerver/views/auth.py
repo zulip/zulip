@@ -47,7 +47,19 @@ import ujson
 
 def maybe_send_to_registration(request, email, full_name='', password_required=True):
     # type: (HttpRequest, Text, Text, bool) -> HttpResponse
-    form = HomepageForm({'email': email}, realm=get_realm_from_request(request))
+
+    realm = get_realm_from_request(request)
+    from_multiuse_invite = False
+    multiuse_obj = None
+    streams_to_subscribe = None
+    multiuse_object_key = request.session.get("multiuse_object_key", None)
+    if multiuse_object_key is not None:
+        from_multiuse_invite = True
+        multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
+        realm = multiuse_obj.realm
+        streams_to_subscribe = multiuse_obj.streams.all()
+
+    form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     request.verified_email = None
     if form.is_valid():
         # Construct a PreregistrationUser object and send the user over to
@@ -63,6 +75,13 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
             prereg_user = create_preregistration_user(email, request,
                                                       password_required=password_required)
 
+        if multiuse_object_key is not None:
+            del request.session["multiuse_object_key"]
+            request.session.modified = True
+            if streams_to_subscribe is not None:
+                prereg_user.streams = streams_to_subscribe
+            prereg_user.save()
+
         return redirect("".join((
             create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
             '?full_name=',
@@ -73,7 +92,8 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
         url = reverse('register')
         return render(request,
                       'zerver/accounts_home.html',
-                      context={'form': form, 'current_url': lambda: url},
+                      context={'form': form, 'current_url': lambda: url,
+                               'from_multiuse_invite': from_multiuse_invite},
                       )
 
 def redirect_to_subdomain_login_url():
