@@ -1,7 +1,11 @@
-{{#if has_image}}
-<img class="emoji" src="{{ img_src }}" />
-&nbsp;&nbsp;
-{{/if~}}
+{{#if is_emoji}}
+    {{#if has_image}}
+    <img class="emoji" src="{{ img_src }}" />
+    {{else}}
+    <span class='emoji emoji-{{ codepoint }}' />
+    {{/if}}
+    &nbsp;&nbsp;
+{{/if}}
 <strong>
     {{~ primary ~}}
 </strong>

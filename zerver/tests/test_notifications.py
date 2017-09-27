@@ -13,8 +13,8 @@ from mock import patch, MagicMock
 from six.moves import range
 from typing import Any, Dict, List, Text
 
-from zerver.lib.notifications import handle_missedmessage_emails, \
-    relative_to_full_url
+from zerver.lib.notifications import fix_emojis, \
+    handle_missedmessage_emails, relative_to_full_url
 from zerver.lib.actions import do_update_message
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
@@ -338,7 +338,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message with a realm emoji :green_tick:!')
-        body = '<img alt=":green_tick:" height="20px" style="position: relative;top: 6px;" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
+        body = '<img alt=":green_tick:" style="height: 20px;" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
@@ -403,12 +403,6 @@ class TestMissedMessages(ZulipTestCase):
 
         # Specific test cases.
 
-        # A path to an emoji image
-        test_data = '<a href="/static/generated/emoji/images/emoji/">emoji</a>'
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = '<a href="http://example.com/static/generated/emoji/images/emoji/">emoji</a>'
-        self.assertEqual(actual_output, expected_output)
-
         # A path similar to our emoji path, but not in a link:
         test_data = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
         actual_output = relative_to_full_url("http://example.com", test_data)
@@ -426,4 +420,15 @@ class TestMissedMessages(ZulipTestCase):
         test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
+        self.assertEqual(actual_output, expected_output)
+
+    def test_fix_emoji(self):
+        # type: () -> None
+        # An emoji.
+        test_data = '<p>See <span class="emoji emoji-26c8" title="cloud with lightning and rain">' + \
+                    ':cloud_with_lightning_and_rain:</span>.</p>'
+        actual_output = fix_emojis(test_data, "http://example.com")
+        expected_output = '<p>See <img src="http://example.com/static/generated/emoji/images-google-64/26c8.png" ' + \
+                          'title="cloud with lightning and rain" alt=":cloud_with_lightning_and_rain:" ' + \
+                          'style="height: 20px;">.</p>'
         self.assertEqual(actual_output, expected_output)

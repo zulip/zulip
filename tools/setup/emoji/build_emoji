@@ -216,12 +216,13 @@ def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified
                 if name in emoji_map:
                     patched_css_classes[str(name)] = str(emoji['unified'].lower())
 
+    name_to_codepoint = {name: unified_reactions_data[name] for name in names}
     codepoint_to_name = generate_codepoint_to_name_map(names, unified_reactions_data)
 
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
-        'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map},
+        'name_to_codepoint': name_to_codepoint,
         'codepoint_to_name': codepoint_to_name,
         'emoji_catalog': emoji_catalog,
         'patched_css_classes': patched_css_classes
@@ -231,7 +232,7 @@ def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified
     NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
     name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
 
-    name_to_codepoint_file.write(ujson.dumps(emoji_map))
+    name_to_codepoint_file.write(ujson.dumps(name_to_codepoint))
     name_to_codepoint_file.close()
 
     CODEPOINT_TO_NAME_PATH = os.path.join(cache_path, 'codepoint_to_name.json')

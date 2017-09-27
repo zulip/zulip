@@ -392,7 +392,7 @@ class BugdownTest(ZulipTestCase):
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
-        emoji_in_tweet_html = """Zulip is <img alt=":hundred_points:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4af.png" title="hundred points">% open-source!"""
+        emoji_in_tweet_html = """Zulip is <span class="emoji emoji-1f4af" title="hundred points">:hundred_points:</span>% open-source!"""
 
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
             # type: (Text, Text, Text) -> Text
@@ -541,11 +541,11 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="coffee"></p>')
+        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
 
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="coffee"><img alt=":coffee:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="coffee"></p>')
+        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
 
     def test_same_markup(self):
         # type: () -> None
