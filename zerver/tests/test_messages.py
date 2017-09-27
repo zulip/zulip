@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 from django.db.models import Q, Max
 from django.conf import settings
 from django.http import HttpResponse

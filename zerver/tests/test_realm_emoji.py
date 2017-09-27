@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 from zerver.lib.actions import get_realm, check_add_realm_emoji
 from zerver.lib.test_classes import ZulipTestCase

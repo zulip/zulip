@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from django.utils.timezone import utc as timezone_utc
 

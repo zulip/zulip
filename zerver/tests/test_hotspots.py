@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 from zerver.lib.actions import do_mark_hotspot_as_read, do_create_user
 from zerver.lib.hotspots import ALL_HOTSPOTS, get_next_hotspots
