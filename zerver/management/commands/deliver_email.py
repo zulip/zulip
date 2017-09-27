@@ -10,7 +10,6 @@ condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
 on all but one machine to make the command have no effect.)
 """
 
-from __future__ import absolute_import
 
 from django.conf import settings
 from django.core.management.base import BaseCommand

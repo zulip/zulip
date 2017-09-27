@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from types import FrameType
 from typing import Any, List

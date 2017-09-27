@@ -28,7 +28,6 @@ Credit for the approach goes to:
 http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja2-templates-integrated-with-django-1-x
 
 """
-from __future__ import absolute_import
 
 from typing import Any, Dict, Iterable, Mapping, Text
 
