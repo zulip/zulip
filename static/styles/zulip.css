@@ -721,6 +721,8 @@ td.pointer {
 
 .floating_recipient .recipient_row {
     border-top: 1px solid hsl(0, 0%, 88%);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
 }
 
 .stream_label {
@@ -733,6 +735,8 @@ td.pointer {
     border-width: 0px;
     position: relative;
     text-decoration: none;
+
+    border-radius: 6px 6px 6px 0px;
 }
 
 .stream_label .invite-stream-icon {
@@ -1920,6 +1924,11 @@ div.floating_recipient {
 .sticky .message-header-wrapper {
     max-width: 1400px;
     margin: auto;
+}
+
+.message-header-wrapper .message-header-contents {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
 }
 
 .sticky .message-header-contents {
