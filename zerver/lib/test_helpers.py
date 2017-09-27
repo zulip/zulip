@@ -459,6 +459,7 @@ def get_all_templates():
                and not n.startswith('.') \
                and not n.startswith('__init__') \
                and not n.endswith('.md') \
+               and not n.endswith('.source.html') \
                and isfile(p)
 
     def process(template_dir, dirname, fnames):

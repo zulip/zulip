@@ -1,0 +1,16 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png"/>
+{% endblock %}
+
+{% block content %}
+<p>Hi,</p>
+<p>
+    We just wanted to let you know that the email associated with your Zulip account was recently changed to <a href="{{ new_email }}">{{ new_email }}</a>. If you did not request this change, please contact us immediately at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+</p>
+<p>
+    Best,<br />
+    Team Zulip
+</p>
+{% endblock %}

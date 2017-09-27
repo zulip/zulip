@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
+from django.template.exceptions import TemplateDoesNotExist
 from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
     EMAIL_TYPES
 
@@ -9,6 +10,7 @@ import datetime
 from email.utils import parseaddr, formataddr
 import ujson
 
+import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
 from zerver.lib.logging_util import create_logger
@@ -68,14 +70,21 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
-        'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails/',
+        'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails',
     })
     subject = loader.render_to_string(template_prefix + '.subject',
                                       context=context,
                                       using='Jinja2_plaintext').strip().replace('\n', '')
     message = loader.render_to_string(template_prefix + '.txt',
                                       context=context, using='Jinja2_plaintext')
-    html_message = loader.render_to_string(template_prefix + '.html', context)
+
+    try:
+        html_message = loader.render_to_string(template_prefix + '.html', context)
+    except TemplateDoesNotExist:
+        emails_dir = os.path.dirname(template_prefix)
+        template = os.path.basename(template_prefix)
+        compiled_template_prefix = os.path.join(emails_dir, "compiled", template)
+        html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
 
     if from_name is None:
         from_name = "Zulip"
