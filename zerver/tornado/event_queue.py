@@ -34,7 +34,6 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 import copy
-import six
 
 requests_client = requests.Session()
 for host in ['127.0.0.1', 'localhost']:
@@ -400,7 +399,7 @@ def gc_event_queues():
     to_remove = set()  # type: Set[str]
     affected_users = set()  # type: Set[int]
     affected_realms = set()  # type: Set[int]
-    for (id, client) in six.iteritems(clients):
+    for (id, client) in clients.items():
         if client.idle(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
@@ -424,7 +423,7 @@ def dump_event_queues():
     start = time.time()
 
     with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
-        ujson.dump([(qid, client.to_dict()) for (qid, client) in six.iteritems(clients)],
+        ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.items()],
                    stored_queues)
 
     logging.info('Tornado dumped %d event queues in %.3fs'
@@ -449,7 +448,7 @@ def load_event_queues():
     except (IOError, EOFError):
         pass
 
-    for client in six.itervalues(clients):
+    for client in clients.values():
         # Put code for migrations due to event queue data format changes here
 
         add_to_client_dicts(client)
@@ -462,7 +461,7 @@ def send_restart_events(immediate=False):
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)  # type: Dict[str, Any]
     if immediate:
         event['immediate'] = True
-    for client in six.itervalues(clients):
+    for client in clients.values():
         if client.accepts_event(event):
             client.add_event(event.copy())
 
@@ -738,7 +737,7 @@ def process_message_event(event_template, users):
             result['stream_push_notify'] = stream_push_notify
             extra_user_data[user_profile_id] = result
 
-    for client_data in six.itervalues(send_to_clients):
+    for client_data in send_to_clients.values():
         client = client_data['client']
         flags = client_data['flags']
         is_sender = client_data.get('is_sender', False)  # type: bool
