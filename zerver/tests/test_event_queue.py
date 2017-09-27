@@ -130,7 +130,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, None, False, True))
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, "Denmark", False, True))
 
         # Clear the event queue, before repeating with a private message
         client_descriptor.event_queue.pop()
@@ -154,4 +154,26 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(args_list, (user_profile.id, msg_id, False, True, False, None, False, True))
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, True, False, "Denmark", False, True))
+
+        # Clear the event queue, now repeat with stream message with stream_push_notify
+        stream = get_stream("Denmark", user_profile.realm)
+        sub = Subscription.objects.get(user_profile=user_profile, recipient__type=Recipient.STREAM,
+                                       recipient__type_id=stream.id)
+        sub.push_notifications = True
+        sub.save()
+        client_descriptor.event_queue.pop()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
+                                   content="what's up everyone?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            # Clear the event queue, before repeating with a private message
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, True, "Denmark", False, True))
+
+        # Clean up the state
+        sub.push_notifications = True
+        sub.save()
