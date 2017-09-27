@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error

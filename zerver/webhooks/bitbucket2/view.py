@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 import re
 from functools import partial
 from six.moves import zip

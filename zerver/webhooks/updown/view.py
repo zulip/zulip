@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 import re
 from datetime import datetime
 from typing import Any, Dict, List

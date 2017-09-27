@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from zerver.models import UserProfile

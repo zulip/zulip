@@ -1,6 +1,5 @@
 # Webhooks for external integrations.
 
-from __future__ import absolute_import
 from django.http import HttpRequest, HttpResponse
 from zerver.models import get_client, UserProfile
 from zerver.lib.actions import check_send_message

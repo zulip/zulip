@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 import ujson
 from typing import Mapping, Any, Tuple, Text, Optional
 from django.utils.translation import ugettext as _

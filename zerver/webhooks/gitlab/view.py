@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from functools import partial
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success

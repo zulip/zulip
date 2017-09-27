@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .github_webhook.view import api_github_webhook
