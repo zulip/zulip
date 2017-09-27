@@ -6,8 +6,6 @@ class zulip_ops::postgres_common {
                                  "pv",
                                  "python3-pip",
                                  "python-pip",
-                                 # "python3-gevent", # missing on trusty
-                                 "python-gevent",
                                  # Postgres Nagios check plugin
                                  "check-postgres",
                                  ]
@@ -16,10 +14,9 @@ class zulip_ops::postgres_common {
   exec {"pip_wal-e":
     # On trusty, there is no python3-boto or python3-gevent package,
     # so we keep our `wal-e` explicitly on Python 2 for now.
-    command  => "/usr/bin/pip2 install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
+    command  => "/usr/bin/pip2 install 'boto==2.4.0' 'gevent==1.2.2' git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
     creates  => "/usr/local/bin/wal-e",
-    require  => Package['python-pip', 'python-boto', 'python-gevent',
-                        'lzop', 'pv'],
+    require  => Package['python-pip', 'lzop', 'pv'],
   }
 
   cron { "pg_backup_and_purge":
