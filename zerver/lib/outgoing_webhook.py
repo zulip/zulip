@@ -176,7 +176,7 @@ def get_message_url(event, request_data):
     return message_url
 
 def notify_bot_owner(event, request_data, status_code=None, response_content=None, exception=None):
-    # type: (Dict[str, Any], Dict[str, Any], Optional[int], Optional[AnyStr], Optional[Any]) -> None
+    # type: (Dict[str, Any], Dict[str, Any], Optional[int], Optional[AnyStr], Optional[Exception]) -> None
     message_url = get_message_url(event, request_data)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
