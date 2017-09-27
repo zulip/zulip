@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any, Dict, Text

@@ -23,8 +23,6 @@ recipient address and retrieve, forward, and archive the message.
 """
 
 
-from __future__ import print_function
-
 from typing import Any, List, Generator
 
 import logging
