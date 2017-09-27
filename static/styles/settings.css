@@ -1064,6 +1064,7 @@ input[type=checkbox].inline-block {
 }
 
 #id_realm_notifications_stream .dropdown-list-body {
+    position: relative;
     height: auto;
     max-height: 200px;
     overflow-y: auto;
