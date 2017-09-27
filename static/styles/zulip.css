@@ -715,12 +715,8 @@ td.pointer {
 
 .message_list .recipient_row {
     background: hsl(0, 0%, 94%);
-    border-bottom: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid hsl(0, 0%, 95%);
     margin-bottom: 10px;
-}
-
-.floating_recipient .recipient_row {
-    border-top: 1px solid hsl(0, 0%, 88%);
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
 }
@@ -731,7 +727,7 @@ td.pointer {
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    background-color: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 95%);
     border-width: 0px;
     position: relative;
     text-decoration: none;
@@ -1007,11 +1003,12 @@ td.pointer {
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
     background-color: hsl(192, 19%, 95%);
-    box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
+    box-shadow: inset 1px 1px 0px hsl(0, 0%, 95%);
 }
 
 .message-header-contents {
-    border-right: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 95%);
+    background: hsl(0, 0% , 95%);
 }
 
 .mention .messagebox {
@@ -1279,8 +1276,8 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsl(0, 0%, 95%);
+    border-right: 1px solid hsl(0, 0%, 95%);
 }
 
 .message_row.selected_message {
@@ -1903,10 +1900,6 @@ div.floating_recipient {
 
 #floating_recipient_bar {
     top: 50px;
-}
-
-.message-header-contents {
-    background: hsl(0, 0%, 88%);
 }
 
 .recipient_row.sticky {
