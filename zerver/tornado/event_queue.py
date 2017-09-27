@@ -616,14 +616,14 @@ def build_offline_notification(user_profile_id, message_id):
             "message_id": message_id,
             "timestamp": time.time()}
 
-def missedmessage_hook(user_profile_id, queue, last_for_client):
+def missedmessage_hook(user_profile_id, client, last_for_client):
     # type: (int, ClientDescriptor, bool) -> None
     # Only process missedmessage hook when the last queue for a
     # client has been garbage collected
     if not last_for_client:
         return
 
-    for event in queue.event_queue.contents():
+    for event in client.event_queue.contents():
         if event['type'] != 'message':
             continue
         assert 'flags' in event
