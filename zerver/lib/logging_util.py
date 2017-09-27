@@ -125,12 +125,14 @@ def skip_site_packages_logs(record):
         return False
     return True
 
+logger_nicknames = {
+    'root': '',  # This one is more like undoing a nickname.
+    'zulip.requests': 'zr',  # Super common.
+}
+
 def find_log_origin(record):
     # type: (logging.LogRecord) -> str
-    if record.name == 'root':
-        return ''
-    else:
-        return record.name
+    return logger_nicknames.get(record.name, record.name)
 
 class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
