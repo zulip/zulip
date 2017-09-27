@@ -660,6 +660,9 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                 mentioned, stream_push_notify, stream_name,
                                 always_push_notify, idle):
     # type: (int, int, bool, bool, bool, Optional[str], bool, bool) -> Optional[Dict[str, bool]]
+    """This function has a complete unit test suite in
+    `test_enqueue_notifications` that should be expanded as we add
+    more features here."""
     notified = dict()  # type: Dict[str, bool]
 
     if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
