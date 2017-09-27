@@ -869,9 +869,6 @@ def get_recipient_info(recipient, sender_id):
 
 def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, recipient_type):
     # type: (UserProfile, List[Tuple[int, int]], Set[int], int) -> Dict[str, List[Dict[str, Any]]]
-    # TODO: Right now, service bots need to be subscribed to a stream in order to
-    # receive messages when mentioned; we will want to change that structure.
-    # Prepare to collect service queue events triggered by the message.
 
     event_dict = defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
 
@@ -879,6 +876,27 @@ def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, recip
     # Service events.
     if sender.is_bot:
         return event_dict
+
+    if recipient_type == Recipient.STREAM:
+        known_ids = {user_profile_id for user_profile_id, bot_type in service_bot_tuples}
+        unknown_ids = mentioned_user_ids - known_ids
+        if unknown_ids:
+            '''
+            If we mention a service bot in a stream message, we should notify
+            them.  If the bot also happens to be subscribed to the stream, then
+            they would have already been in `service_bot_tuples`, but if
+            they are not subscribed to the stream, we need to go find them
+            in the follow up query below.  Also, it's important to filter
+            for service bots only.
+            '''
+            query = UserProfile.objects.filter(
+                id__in=unknown_ids,
+                is_active=True,
+                is_bot=True,
+                bot_type__in=UserProfile.SERVICE_BOT_TYPES,
+            ).values('id', 'bot_type')
+            tups = [(row['id'], row['bot_type']) for row in query]
+            service_bot_tuples += tups
 
     for user_profile_id, bot_type in service_bot_tuples:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
