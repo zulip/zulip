@@ -686,9 +686,7 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
         queue_json_publish("missedmessage_emails", notice, lambda notice: None)
         notified['email_notified'] = True
 
-    if len(notified) > 0:
-        return notified
-    return None
+    return notified
 
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
@@ -737,8 +735,7 @@ def process_message_event(event_template, users):
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                                  mentioned, stream_push_notify, stream_name,
                                                  always_push_notify, idle)
-            if result is not None:
-                extra_user_data[user_profile_id] = result
+            extra_user_data[user_profile_id] = result
 
     for client_data in six.itervalues(send_to_clients):
         client = client_data['client']
