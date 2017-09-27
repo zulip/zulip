@@ -126,6 +126,9 @@ def skip_site_packages_logs(record):
     return True
 
 class ZulipFormatter(logging.Formatter):
+    # Used in the base implementation.  Default uses `,`.
+    default_msec_format = '%s.%03d'
+
     _fmt = '%(asctime)s %(levelname)-8s %(message)s'
 
     def __init__(self):
