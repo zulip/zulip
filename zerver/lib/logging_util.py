@@ -125,6 +125,17 @@ def skip_site_packages_logs(record):
         return False
     return True
 
+class ZulipFormatter(logging.Formatter):
+    _fmt = '%(asctime)s %(levelname)-8s %(message)s'
+
+    def __init__(self):
+        # type: () -> None
+        super().__init__(fmt=self._fmt)
+
+    def format(self, record):
+        # type: (logging.LogRecord) -> str
+        return super().format(record)
+
 def create_logger(name, log_file, log_level, log_format="%(asctime)s %(levelname)-8s %(message)s"):
     # type: (str, str, str, str) -> Logger
     """Creates a named logger for use in logging content to a certain

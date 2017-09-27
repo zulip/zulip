@@ -1051,7 +1051,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'default': {
-            'format': '%(asctime)s %(levelname)-8s %(message)s'
+            '()': 'zerver.lib.logging_util.ZulipFormatter',
         }
     },
     'filters': {
