@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from __future__ import print_function
 import datetime
 from boto.s3.key import Key

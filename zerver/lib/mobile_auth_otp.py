@@ -7,7 +7,6 @@
 #
 # The decryption logic here isn't actually used by the flow; we just
 # have it here as part of testing the overall library.
-from __future__ import absolute_import
 
 import binascii
 from six.moves import zip

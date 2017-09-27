@@ -25,7 +25,6 @@ A simple example of composition is this:
 To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 '''
-from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator

@@ -5,7 +5,6 @@
 #
 # Because request.pyi exists, the type annotations in this file are
 # mostly not processed by mypy.
-from __future__ import absolute_import
 from functools import wraps
 import ujson
 from six.moves import zip

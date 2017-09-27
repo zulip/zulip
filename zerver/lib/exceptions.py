@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from enum import Enum
 from typing import Any, Dict, List, Optional, Text, Type
 

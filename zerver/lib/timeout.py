@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from types import TracebackType
 from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 

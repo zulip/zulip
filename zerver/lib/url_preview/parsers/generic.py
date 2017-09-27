@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, Dict
 from zerver.lib.url_preview.parsers.base import BaseParser
 

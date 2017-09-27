@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from zerver.models import UserProfile
 
 from typing import Any, Callable, Dict, List, Optional, Text

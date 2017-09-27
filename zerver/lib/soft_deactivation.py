@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from zerver.lib.logging_util import create_logger
 from collections import defaultdict
