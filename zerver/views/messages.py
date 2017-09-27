@@ -54,7 +54,6 @@ import ujson
 import datetime
 
 from six.moves import map
-import six
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 

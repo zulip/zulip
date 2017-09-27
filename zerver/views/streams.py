@@ -32,8 +32,6 @@ from collections import defaultdict
 import ujson
 from six.moves import urllib
 
-import six
-
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL
     data_fields = ['principal']
@@ -282,7 +280,7 @@ def add_subscriptions_backend(request, user_profile,
     # or if a new stream was created with the "announce" option.
     notifications = []
     if len(principals) > 0 and result["subscribed"]:
-        for email, subscribed_stream_names in six.iteritems(result["subscribed"]):
+        for email, subscribed_stream_names in result["subscribed"].items():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
                 continue
