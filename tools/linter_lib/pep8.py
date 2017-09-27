@@ -40,6 +40,11 @@ def check_pep8(files):
         # these may make the code less readable.
         'E226',
 
+        # "multiple spaces after ':'"
+        # This is the `{}` analogue of E221, and these are similarly being used
+        # for alignment.
+        'E241',
+
         # "unexpected spaces around keyword / parameter equals"
         # Many of these should be fixed, but many are also being used for
         # alignment/making the code easier to read.
