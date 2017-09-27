@@ -1,7 +1,7 @@
 Hi!
 
 We received a request to change the email address for the Zulip account on
-{{ realm.uri }} from {{ old_email }} to {{ new_email }}. If you would like
+{{ realm_uri }} from {{ old_email }} to {{ new_email }}. If you would like
 to confirm this change, please click this link:
 
 {{ activate_url }}

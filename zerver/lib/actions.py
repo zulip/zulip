@@ -649,8 +649,13 @@ def do_start_email_change_process(user_profile, new_email):
                                            user_profile=user_profile, realm=user_profile.realm)
 
     activation_url = create_confirmation_link(obj, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
-    context = {'realm': user_profile.realm, 'old_email': old_email, 'new_email': new_email,
-               'activate_url': activation_url}
+    from zerver.context_processors import common_context
+    context = common_context(user_profile)
+    context.update({
+        'old_email': old_email,
+        'new_email': new_email,
+        'activate_url': activation_url
+    })
     send_email('zerver/emails/confirm_new_email', to_email=new_email,
                from_name='Zulip Account Security', from_address=FromAddress.NOREPLY,
                context=context)
