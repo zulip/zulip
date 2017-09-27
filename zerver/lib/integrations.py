@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 
 from typing import Dict, List, Optional, TypeVar, Any, Text

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import subprocess
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.

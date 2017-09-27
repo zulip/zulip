@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, Dict, List, Optional, Text
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in

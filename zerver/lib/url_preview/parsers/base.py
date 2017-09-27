@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, Text
 from bs4 import BeautifulSoup
 
