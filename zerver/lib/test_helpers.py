@@ -58,7 +58,6 @@ from six import binary_type
 from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
-import six
 import fakeldap
 import ldap
 

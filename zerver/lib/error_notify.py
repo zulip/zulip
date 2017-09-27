@@ -1,6 +1,5 @@
 
 import logging
-import six
 
 from collections import defaultdict
 from django.conf import settings
@@ -52,7 +51,7 @@ def email_browser_error(report):
     more_info = report['more_info']
     if more_info is not None:
         body += "\nAdditional information:"
-        for (key, value) in six.iteritems(more_info):
+        for (key, value) in more_info.items():
             body += "\n  %s: %s" % (key, value)
 
     body += "\n\nLog:\n%s" % (report['log'],)

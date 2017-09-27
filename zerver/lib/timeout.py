@@ -1,11 +1,11 @@
 from types import TracebackType
 from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
+import six
 import sys
 import time
 import ctypes
 import threading
-import six
 from six.moves import range
 
 # Based on http://code.activestate.com/recipes/483752/

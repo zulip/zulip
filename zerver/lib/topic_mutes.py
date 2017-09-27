@@ -23,7 +23,6 @@ from sqlalchemy.sql import (
     Selectable
 )
 
-import six
 import ujson
 
 def get_topic_mutes(user_profile):

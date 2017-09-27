@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Text
 from collections import defaultdict
 import datetime
 import pytz
-import six
 
 from django.db.models import Q, QuerySet
 from django.template import loader

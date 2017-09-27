@@ -61,7 +61,6 @@ from six import binary_type
 from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
-import six
 
 API_KEYS = {}  # type: Dict[Text, Text]
 
@@ -380,7 +379,7 @@ class ZulipTestCase(TestCase):
             message_type_name = "stream"
         else:
             raise AssertionError("Recipient type should be an Recipient.STREAM type enum")
-        if isinstance(raw_recipients, six.string_types):
+        if isinstance(raw_recipients, str):
             recipient_list = [raw_recipients]
         else:
             recipient_list = raw_recipients

@@ -17,7 +17,6 @@ import random
 import sys
 import os
 import hashlib
-import six
 
 if False:
     from zerver.models import UserProfile, Realm, Message
