@@ -3422,6 +3422,10 @@ def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_
         if mentioned or private_message:
             user_ids.add(user_id)
 
+    return get_idle_userids(user_ids)
+
+def get_idle_userids(user_ids):
+    # type: (Set[int]) -> List[int]
     if not user_ids:
         return []
 
