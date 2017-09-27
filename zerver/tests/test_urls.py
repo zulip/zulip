@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import importlib
 import os
-import six
 import ujson
 
 import django.core.urlresolvers
@@ -80,13 +79,13 @@ class PublicURLTest(ZulipTestCase):
         }
         put_urls = {401: ["/json/users/me/pointer"],
                     }
-        for status_code, url_set in six.iteritems(get_urls):
+        for status_code, url_set in get_urls.items():
             self.fetch("client_get", url_set, status_code)
-        for status_code, url_set in six.iteritems(post_urls):
+        for status_code, url_set in post_urls.items():
             self.fetch("client_post", url_set, status_code)
-        for status_code, url_set in six.iteritems(patch_urls):
+        for status_code, url_set in patch_urls.items():
             self.fetch("client_patch", url_set, status_code)
-        for status_code, url_set in six.iteritems(put_urls):
+        for status_code, url_set in put_urls.items():
             self.fetch("client_put", url_set, status_code)
 
     def test_get_gcid_when_not_configured(self):

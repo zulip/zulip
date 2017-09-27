@@ -57,7 +57,6 @@ from django.http import HttpResponse
 import mock
 import random
 import ujson
-import six
 from six.moves import range, urllib, zip
 
 class TestCreateStreams(ZulipTestCase):
@@ -1319,8 +1318,8 @@ class SubscriptionAPITest(ZulipTestCase):
         json = result.json()
         self.assertIn("subscriptions", json)
         for stream in json['subscriptions']:
-            self.assertIsInstance(stream['name'], six.string_types)
-            self.assertIsInstance(stream['color'], six.string_types)
+            self.assertIsInstance(stream['name'], str)
+            self.assertIsInstance(stream['color'], str)
             self.assertIsInstance(stream['invite_only'], bool)
             # check that the stream name corresponds to an actual
             # stream; will throw Stream.DoesNotExist if it doesn't
@@ -1971,7 +1970,7 @@ class SubscriptionAPITest(ZulipTestCase):
                                     {"subscriptions": ujson.dumps(subscriptions)})
         self.assert_json_success(result)
         json = result.json()
-        for key, val in six.iteritems(json_dict):
+        for key, val in json_dict.items():
             self.assertEqual(sorted(val), sorted(json[key]))  # we don't care about the order of the items
         new_streams = self.get_streams(email, realm)
         self.assertEqual(sorted(new_streams), sorted(new_subs))
@@ -2646,7 +2645,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertIsInstance(result_dict['subscribers'], list)
         subscribers = []  # type: List[Text]
         for subscriber in result_dict['subscribers']:
-            self.assertIsInstance(subscriber, six.string_types)
+            self.assertIsInstance(subscriber, str)
             subscribers.append(subscriber)
         self.assertEqual(set(subscribers), set(expected_subscribers))
 

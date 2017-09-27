@@ -40,7 +40,6 @@ import copy
 import mock
 import os
 import ujson
-import six
 
 from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
@@ -182,7 +181,7 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
 
-        for name, test in six.iteritems(format_tests):
+        for name, test in format_tests.items():
             converted = bugdown_convert(test['input'])
 
             print("Running Bugdown test %s" % (name,))
