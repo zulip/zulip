@@ -261,6 +261,9 @@ exports.resize_page_components = function () {
         .css('max-height', h.stream_filters_max_height)
         // the `.css` method returns `$this`, so we can chain `perfectScrollbar`.
         .perfectScrollbar('update');
+
+    activity.update_scrollbar.users();
+    activity.update_scrollbar.group_pms();
 };
 
 var _old_width = $(window).width();

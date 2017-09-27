@@ -31,6 +31,20 @@ exports.new_user_input = true;
 
 var huddle_timestamps = new Dict();
 
+exports.update_scrollbar = (function () {
+    var $user_presences = $("#user_presences");
+    var $group_pms = $("#group-pms");
+
+    return {
+        users: function () {
+            ui.update_scrollbar($user_presences);
+        },
+        group_pms: function () {
+            ui.update_scrollbar($group_pms);
+        },
+    };
+}());
+
 function update_pm_count_in_dom(count_span, value_span, count) {
     var li = count_span.parent();
 
@@ -315,6 +329,7 @@ exports.insert_user_into_list = function (user_id) {
     }
 
     insert();
+    exports.update_scrollbar.users();
 
     var elt = get_pm_list_item(user_id);
     compose_fade.update_one_user_row(elt);
@@ -385,6 +400,8 @@ exports.update_huddles = function () {
     });
 
     show_huddles();
+    exports.update_scrollbar.users();
+    exports.update_scrollbar.group_pms();
 };
 
 
@@ -462,6 +479,9 @@ exports.initialize = function () {
     }
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
+
+    ui.set_up_scrollbar($("#user_presences"));
+    ui.set_up_scrollbar($("#group-pms"));
 };
 
 exports.set_user_status = function (email, info, server_time) {
