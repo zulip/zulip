@@ -20,7 +20,6 @@ import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
-import six
 
 ########################################################################
 # INITIAL SETTINGS
@@ -219,7 +218,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'PUSH_NOTIFICATION_BOUNCER_URL': None,
                     }
 
-for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
+for setting_name, setting_val in DEFAULT_SETTINGS.items():
     if setting_name not in vars():
         vars()[setting_name] = setting_val
 

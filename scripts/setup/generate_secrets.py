@@ -14,9 +14,9 @@ import scripts.lib.setup_path_on_import
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
 from django.utils.crypto import get_random_string
-import six
 import argparse
 import uuid
+import configparser
 from zerver.lib.str_utils import force_str
 from zerver.lib.utils import generate_random_token
 
@@ -56,7 +56,7 @@ def get_old_conf(output_filename):
     if not os.path.exists(output_filename):
         return {}
 
-    secrets_file = six.moves.configparser.RawConfigParser()
+    secrets_file = configparser.RawConfigParser()
     secrets_file.read(output_filename)
 
     return dict(secrets_file.items("secrets"))

@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-import six
+import io
 import sys
 import tarfile
 
@@ -29,6 +29,6 @@ with tarfile.open(fileobj=stdin, mode='r|*') as in_tar, \
                 assert info.size == len(data)
                 data = new_shebang_bytes + data[len(old_shebang_bytes):]
                 info.size = len(data)
-            out_tar.addfile(info, six.BytesIO(data))
+            out_tar.addfile(info, io.BytesIO(data))
         else:
             out_tar.addfile(info)
