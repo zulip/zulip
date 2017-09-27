@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from typing import Iterable, List, Optional, Sequence, Text
 

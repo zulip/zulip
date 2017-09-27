@@ -1,4 +1,3 @@
-from __future__ import print_function
 from typing import Any, Callable, Dict, List, Tuple, Text
 from django.db.models.query import QuerySet
 import re

@@ -1,4 +1,3 @@
-from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, List, Mapping, MutableMapping,
     Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast

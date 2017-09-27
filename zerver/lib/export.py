@@ -1,4 +1,3 @@
-from __future__ import print_function
 import datetime
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import itertools
 import ujson
 import random
