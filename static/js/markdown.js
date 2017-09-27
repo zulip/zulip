@@ -117,35 +117,33 @@ function escape(html, encode) {
 }
 
 function handleUnicodeEmoji(unicode_emoji) {
-    var hex_value = unicode_emoji.codePointAt(0).toString(16);
-    if (emoji.emojis_by_unicode.hasOwnProperty(hex_value)) {
-        var emoji_url = emoji.emojis_by_unicode[hex_value];
-        var emoji_name = emoji_codes.codepoint_to_name[hex_value];
+    var codepoint = unicode_emoji.codePointAt(0).toString(16);
+    if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
+        var emoji_name = emoji_codes.codepoint_to_name[codepoint];
         var alt_text = ':' + emoji_name + ':';
         var title = emoji_name.split("_").join(" ");
-        return '<img alt="' + alt_text + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + title + '">';
+        return '<span class="emoji emoji-' + codepoint + '"' +
+               ' title="' + title + '">' + alt_text +
+               '</span>';
     }
     return unicode_emoji;
 }
 
 function handleEmoji(emoji_name) {
-    var input_emoji = ':' + emoji_name + ':';
+    var alt_text = ':' + emoji_name + ':';
     var title = emoji_name.split("_").join(" ");
-    var emoji_url;
     if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
-        emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
-        return '<img alt="' + input_emoji + '"' +
+        var emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
+        return '<img alt="' + alt_text + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + title + '">';
-    } else if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
-        emoji_url = emoji.emojis_by_name[emoji_name];
-        return '<img alt="' + input_emoji + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + title + '">';
+    } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+        var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+        return '<span class="emoji emoji-' + codepoint + '"' +
+               ' title="' + title + '">' + alt_text +
+               '</span>';
     }
-    return input_emoji;
+    return alt_text;
 }
 
 function handleAvatar(email) {

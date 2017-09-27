@@ -314,10 +314,7 @@ exports.compose_content_begins_typeahead = function (query) {
 
 exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
-        return typeahead_helper.render_typeahead_item({
-            primary: item.emoji_name.split("_").join(" "),
-            img_src: item.emoji_url,
-        });
+        return typeahead_helper.render_emoji(item);
     } else if (this.completing === 'mention') {
         return typeahead_helper.render_person(item);
     } else if (this.completing === 'stream') {

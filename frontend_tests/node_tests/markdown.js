@@ -229,9 +229,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'mmm...:burrito:s',
          expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>'},
         {input: 'This is an :poop: message',
-         expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="poop"> message</p>'},
+         expected: '<p>This is an <span class="emoji emoji-1f4a9" title="poop">:poop:</span> message</p>'},
         {input: "\ud83d\udca9",
-         expected: '<p><img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="poop"></p>'},
+         expected: '<p><span class="emoji emoji-1f4a9" title="poop">:poop:</span></p>'},
         {input: '\u{1f937}',
          expected: '<p>\u{1f937}</p>' },
         // Test only those realm filters which don't return True for

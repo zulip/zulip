@@ -1176,6 +1176,7 @@ function render(template_name, args) {
         primary: 'primary-text',
         secondary: 'secondary-text',
         img_src: 'https://zulip.org',
+        is_emoji: true,
         has_image: true,
         has_secondary: true,
     };

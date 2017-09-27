@@ -44,7 +44,10 @@ set_global('$', global.make_zjquery());
 set_global('page_params', {});
 set_global('channel', {});
 
-set_global('emoji', {emojis: emoji_list});
+set_global('emoji', {
+    active_realm_emojis: {},
+    emojis: emoji_list,
+});
 set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
 });
@@ -832,14 +835,13 @@ global.people.add(deactivated_user);
 
 (function test_content_highlighter() {
     var fake_this = { completing: 'emoji' };
-    var item = { emoji_name: 'person shrugging', emoji_url: '¯\_(ツ)_/¯' };
+    var emoji = { emoji_name: 'person shrugging', emoji_url: '¯\_(ツ)_/¯' };
     var th_render_typeahead_item_called = false;
-    typeahead_helper.render_typeahead_item = function (item) {
-        assert.equal(item.primary, 'person shrugging');
-        assert.equal(item.img_src, '¯\_(ツ)_/¯');
+    typeahead_helper.render_emoji = function (item) {
+        assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     };
-    ct.content_highlighter.call(fake_this, item);
+    ct.content_highlighter.call(fake_this, emoji);
 
     fake_this = { completing: 'mention' };
     var th_render_person_called = false;

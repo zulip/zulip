@@ -802,16 +802,13 @@ unicode_emoji_regex = u'(?P<syntax>['\
 
 def make_emoji(codepoint, display_string):
     # type: (Text, Text) -> Element
-    src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (codepoint,)
     # Replace underscore in emoji's title with space
     title = display_string[1:-1].replace("_", " ")
-
-    elt = markdown.util.etree.Element('img')
-    elt.set('src', src)
-    elt.set('class', 'emoji')
-    elt.set("alt", display_string)
-    elt.set("title", title)
-    return elt
+    span = markdown.util.etree.Element('span')
+    span.set('class', 'emoji emoji-%s' % (codepoint,))
+    span.set('title', title)
+    span.text = display_string
+    return span
 
 def make_realm_emoji(src, display_string):
     # type: (Text, Text) -> Element

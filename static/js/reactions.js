@@ -14,7 +14,7 @@ exports.open_reactions_popover = function () {
 };
 
 function send_reaction_ajax(message_id, emoji_name, operation) {
-    if (!emoji.emojis_by_name[emoji_name] && !emoji.active_realm_emojis[emoji_name]) {
+    if (!emoji_codes.name_to_codepoint[emoji_name] && !emoji.active_realm_emojis[emoji_name]) {
         // Emoji doesn't exist
         return;
     }

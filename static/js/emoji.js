@@ -71,8 +71,7 @@ exports.initialize = function initialize() {
     _.each(emoji_codes.names, function (value) {
         var base_name = emoji_codes.name_to_codepoint[value];
         default_emojis.push({emoji_name: value,
-                             codepoint: emoji_codes.name_to_codepoint[value],
-                             emoji_url: "/static/generated/emoji/images/emoji/unicode/" + base_name + ".png"});
+                             codepoint: emoji_codes.name_to_codepoint[value]});
 
         if (exports.default_emoji_aliases.hasOwnProperty(base_name)) {
             exports.default_emoji_aliases[base_name].push(value);
@@ -82,8 +81,7 @@ exports.initialize = function initialize() {
     });
     _.each(emoji_codes.codepoints, function (value) {
         default_unicode_emojis.push({emoji_name: value,
-                                     codepoint: value,
-                                     emoji_url: "/static/generated/emoji/images/emoji/unicode/" + value + ".png"});
+                                     codepoint: value});
     });
 
     exports.update_emojis(page_params.realm_emoji);
