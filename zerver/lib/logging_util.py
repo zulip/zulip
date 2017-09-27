@@ -7,6 +7,7 @@ import hashlib
 import logging
 import re
 import traceback
+from typing import Optional
 from datetime import datetime, timedelta
 from django.conf import settings
 from zerver.lib.str_utils import force_bytes
@@ -125,6 +126,20 @@ def skip_site_packages_logs(record):
         return False
     return True
 
+def find_log_caller_module(record):
+    # type: (logging.LogRecord) -> Optional[str]
+    '''Find the module name corresponding to where this record was logged.'''
+    # Repeat a search similar to that in logging.Logger.findCaller.
+    # The logging call should still be on the stack somewhere; search until
+    # we find something in the same source file, and that should give the
+    # right module name.
+    f = logging.currentframe()  # type: ignore  # Not in typeshed, and arguably shouldn't be
+    while f is not None:
+        if f.f_code.co_filename == record.pathname:
+            return f.f_globals.get('__name__')
+        f = f.f_back
+    return None
+
 logger_nicknames = {
     'root': '',  # This one is more like undoing a nickname.
     'zulip.requests': 'zr',  # Super common.
@@ -132,7 +147,17 @@ logger_nicknames = {
 
 def find_log_origin(record):
     # type: (logging.LogRecord) -> str
-    return logger_nicknames.get(record.name, record.name)
+    logger_name = logger_nicknames.get(record.name, record.name)
+
+    if settings.LOGGING_SHOW_MODULE:
+        module_name = find_log_caller_module(record)
+        if module_name == logger_name or module_name == record.name:
+            # Abbreviate a bit.
+            return logger_name
+        else:
+            return '{}/{}'.format(logger_name, module_name or '?')
+    else:
+        return logger_name
 
 class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
