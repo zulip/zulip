@@ -19,7 +19,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
-    do_mark_all_as_read, do_mark_stream_messages_as_read
+    do_mark_all_as_read, do_mark_stream_messages_as_read, get_user_info_for_message_updates
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import (
     generic_bulk_cached_fetch,
@@ -1094,17 +1094,7 @@ def update_message_backend(request, user_profile,
             content = "(deleted)"
         content = truncate_body(content)
 
-        # We exclude UserMessage.flags.historical rows since those
-        # users did not receive the message originally, and thus
-        # probably are not relevant for reprocessed alert_words,
-        # mentions and similar rendering features.  This may be a
-        # decision we change in the future.
-        query = UserMessage.objects.filter(
-            message=message.id,
-            flags=~UserMessage.flags.historical
-        )
-
-        message_user_ids = set(query.values_list('user_profile_id', flat=True))
+        user_info = get_user_info_for_message_updates(message.id)
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
@@ -1112,7 +1102,7 @@ def update_message_backend(request, user_profile,
         # Note: If rendering fails, the called code will raise a JsonableError.
         rendered_content = render_incoming_message(message,
                                                    content,
-                                                   message_user_ids,
+                                                   user_info['message_user_ids'],
                                                    user_profile.realm)
         links_for_embed |= message.links_for_preview
 

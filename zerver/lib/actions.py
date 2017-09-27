@@ -3001,6 +3001,28 @@ def truncate_topic(topic):
     # type: (Text) -> Text
     return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
 
+MessageUpdateUserInfoResult = TypedDict('MessageUpdateUserInfoResult', {
+    'message_user_ids': Set[int],
+})
+
+def get_user_info_for_message_updates(message_id):
+    # type: (int) -> MessageUpdateUserInfoResult
+
+    # We exclude UserMessage.flags.historical rows since those
+    # users did not receive the message originally, and thus
+    # probably are not relevant for reprocessed alert_words,
+    # mentions and similar rendering features.  This may be a
+    # decision we change in the future.
+    query = UserMessage.objects.filter(
+        message=message_id,
+        flags=~UserMessage.flags.historical
+    )
+
+    message_user_ids = set(query.values_list('user_profile_id', flat=True))
+
+    return dict(
+        message_user_ids=message_user_ids,
+    )
 
 def update_user_message_flags(message, ums):
     # type: (Message, Iterable[UserMessage]) -> None

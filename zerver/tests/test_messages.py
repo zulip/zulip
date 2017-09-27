@@ -16,6 +16,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.actions import (
     do_send_messages,
     get_userids_for_missed_messages,
+    get_user_info_for_message_updates,
     internal_send_private_message,
 )
 
@@ -1498,6 +1499,23 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(message_history_2[1]['prev_rendered_content'],
                          ('<p>content before edit, line 1</p>\n'
                           '<p>content before edit, line 3</p>'))
+
+    def test_user_info_for_updates(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        self.login(hamlet.email)
+        self.subscribe(hamlet, 'Scotland')
+        self.subscribe(cordelia, 'Scotland')
+
+        msg_id = self.send_message(hamlet.email, 'Scotland', Recipient.STREAM,
+                                   subject='subject 1', content='content 1')
+
+        user_info = get_user_info_for_message_updates(msg_id)
+        message_user_ids = user_info['message_user_ids']
+        self.assertIn(hamlet.id, message_user_ids)
+        self.assertIn(cordelia.id, message_user_ids)
 
     def test_edit_cases(self):
         # type: () -> None
