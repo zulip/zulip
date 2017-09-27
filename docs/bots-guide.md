@@ -504,7 +504,6 @@ refactor them.
  bot (the actual test is written slightly more compact).
 
     from __future__ import absolute_import
-    from __future__ import print_function
 
     from zulip_bots.test_lib import BotTestCase  # The test system library
 
