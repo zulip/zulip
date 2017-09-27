@@ -138,21 +138,19 @@
             <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block"
                 title="{{t 'The stream to which new stream notifications go to.' }}">
                 {{t "Notifications stream:" }}
-                <button type="button" class="button small rounded">
-                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
-                        name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
-                        <a class="dropdown-toggle no-underline" data-toggle="dropdown">
-                            <span id="realm_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body"></span>
-                        </ul>
-                    </span>
-                </button>
+                <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
+                    name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
+                    <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                        <span id="realm_notifications_stream_name"></span>
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li class="dropdown-search" role="presentation">
+                            <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                        </li>
+                        <span class="dropdown-list-body"></span>
+                    </ul>
+                </span>
             </label>
             {{#if is_admin }}
             <a class="notifications-stream-disable">{{t "[Disable]" }}</a>
