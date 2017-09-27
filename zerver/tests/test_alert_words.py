@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 
 from zerver.lib.alert_words import (
     add_user_alert_words,

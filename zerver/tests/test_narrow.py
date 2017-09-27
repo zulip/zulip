@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-from __future__ import print_function
 from django.db import connection
 from django.test import override_settings
 from sqlalchemy.sql import (

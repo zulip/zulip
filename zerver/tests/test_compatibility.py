@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from zerver.lib.test_classes import ZulipTestCase
 

@@ -5,7 +5,6 @@ and Django test systems. It require to use decorator '@gen.coroutine'
 for each test case method( see documentation: http://www.tornadoweb.org/en/stable/testing.html).
 It requires implementation of 'get_app' method to initialize tornado application and launch it.
 """
-from __future__ import print_function
 
 
 import time

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
