@@ -111,6 +111,10 @@ a:hover {
     font-weight: 600;
 }
 
+.silver.bold {
+    font-weight: 600;
+}
+
 .padded-content {
     padding: 50px;
 }
@@ -211,6 +215,16 @@ nav .brand.logo {
 
 nav.white {
     background-color: #fff;
+}
+
+.silver {
+    color: #fff;
+    opacity: 0.8;
+}
+
+.silver:hover {
+    color: #fff;
+    opacity: 1;
 }
 
 nav.white li a,
