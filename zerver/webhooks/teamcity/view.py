@@ -1,5 +1,4 @@
 # Webhooks for teamcity integration
-from __future__ import absolute_import
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse

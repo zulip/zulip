@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 from typing import Any, Dict, Text
 
 from django.utils.translation import ugettext as _

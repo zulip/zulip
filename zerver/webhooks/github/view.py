@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.conf import settings
 from zerver.models import get_client, UserProfile
 from zerver.lib.response import json_success

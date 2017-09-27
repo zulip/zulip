@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Callable, Tuple, Text

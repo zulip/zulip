@@ -18,7 +18,6 @@ etc. If no there's no meaningful emoji for certain event, the defaults are used:
 subject of US/task should be in bold.
 """
 
-from __future__ import absolute_import
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
 
 from django.utils.translation import ugettext as _
