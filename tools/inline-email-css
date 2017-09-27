@@ -50,5 +50,17 @@ if __name__ == "__main__":
         for escaped, original in escaped_jinja2_characters:
             output = output.replace(escaped, original)
 
+        # Premailer.transform will try to complete the DOM tree,
+        # adding html, head, and body tags if they aren't there.
+        # While this is correct for the email_base_default template,
+        # it is wrong for the other templates that extend this
+        # template, since we'll end up with 2 copipes of those tags.
+        # Thus, we strip this stuff out if the template extends
+        # another template.
+        start = output.find('{% extends')
+        end = output.find('{% endblock %}</body>\n</html>')
+        if start != -1 and end != -1:
+            output = output[start:end+len('{% endblock %}')]
+
         with open(compiled_template_path, 'w') as final_template_file:
             final_template_file.write(output)
