@@ -20,8 +20,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         mobile_notice = None
         with mock.patch("zerver.tornado.event_queue.queue_json_publish") as mock_queue_publish:
             notified = maybe_enqueue_notifications(*args, **kwargs)
-            if notified is None:
-                notified = {}
             for entry in mock_queue_publish.call_args_list:
                 args = entry[0]
                 if args[0] == "missedmessage_mobile_notifications":
