@@ -53,7 +53,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
         If ftypes is [], all files are included.
     use_shebang - Determine file type of extensionless files from their shebang.
     modified_only - Only include files which have been modified.
-    exclude - List of paths to be excluded, relative to repository root.
+    exclude - List of files or directories to be excluded, relative to repository root.
     group_by_ftype - If True, returns a dict of lists keyed by file type.
         If False, returns a flat list of files.
     extless_only - Only include extensionless files in output.
@@ -65,7 +65,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     # sys.argv as str, so that battle is already lost.  Settle for hoping
     # everything is UTF-8.
     repository_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).strip().decode('utf-8')
-    exclude_abspaths = [os.path.normpath(os.path.join(repository_root, fpath)) for fpath in exclude]
+    exclude_abspaths = [os.path.abspath(os.path.join(repository_root, fpath)) for fpath in exclude]
 
     cmdline = ['git', 'ls-files'] + targets
     if modified_only:
@@ -84,7 +84,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
         if extless_only and ext:
             continue
         absfpath = os.path.abspath(fpath)
-        if any(absfpath == expath or absfpath.startswith(expath + '/')
+        if any(absfpath == expath or absfpath.startswith(os.path.abspath(expath) + os.sep)
                for expath in exclude_abspaths):
             continue
 
