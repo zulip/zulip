@@ -434,8 +434,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return user_profile
         except Realm.DoesNotExist:
             return None
-        except ZulipLDAPException:
-            return None
+        # ZulipLDAPException subclasses _LDAPUser.AuthenticationFailed
+        # and thus will automatically be caught and return None via
+        # django-auth-ldap's existing code, so we don't need to catch
+        # them here.
 
     def get_or_create_user(self, username, ldap_user):
         # type: (str, _LDAPUser) -> Tuple[UserProfile, bool]
