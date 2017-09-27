@@ -148,8 +148,13 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
             callback: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
+            onupdate: function () {
+                ui.update_scrollbar(dropdown_list_body);
+            },
         },
     }).init();
+
+    ui.set_up_scrollbar(dropdown_list_body);
 
     $("#id_realm_notifications_stream .dropdown-search").click(function (e) {
         e.stopPropagation();
