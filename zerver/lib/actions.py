@@ -702,6 +702,17 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
         except IntegrityError:
             return get_user(email, realm)
 
+def send_welcome_bot_response(message):
+    # type: (MutableMapping[str, Any]) -> None
+    welcome_bot = get_system_bot(settings.WELCOME_BOT)
+    human_recipient = get_recipient(Recipient.PERSONAL, message['message'].sender.id)
+    if Message.objects.filter(sender=welcome_bot, recipient=human_recipient).count() < 2:
+        internal_send_private_message(
+            message['realm'], welcome_bot, message['message'].sender,
+            "Congratulations on your first reply! :tada:\n\n"
+            "Feel free to continue using this space to practice your new messaging "
+            "skills. Or, try clicking on some of the stream names to your left!")
+
 def render_incoming_message(message, content, user_ids, realm):
     # type: (Message, Text, Set[int], Realm) -> Text
     realm_alert_words = alert_words_in_realm(realm)
@@ -1083,6 +1094,12 @@ def do_send_messages(messages_maybe_none):
                     message_to_dict(message['message'], apply_markdown=False),
                     lambda x: None
                 )
+
+        if message['message'].recipient.type == Recipient.PERSONAL:
+            welcome_bot_id = get_user_profile_by_email(settings.WELCOME_BOT).id
+            if (welcome_bot_id in message['active_user_ids'] and
+                    welcome_bot_id != message['message'].sender_id):
+                send_welcome_bot_response(message)
 
         for queue_name, events in message['message'].service_queue_events.items():
             for event in events:
