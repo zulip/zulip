@@ -535,6 +535,10 @@ html {
     margin: 0px;
 }
 
+.confirm-email-change-page .white-box {
+    max-width: 500px;
+}
+
 .portico-page .or {
     width: 328px;
     display: block;
