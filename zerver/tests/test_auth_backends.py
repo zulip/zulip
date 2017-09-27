@@ -2175,6 +2175,13 @@ class TestLDAP(ZulipTestCase):
                 backend.django_to_ldap_username(email)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_failure_when_domain_does_not_match(self):
+        # type: () -> None
+        with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
+            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'pass')
+            self.assertIs(user_profile, None)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_subdomain(self):
         # type: () -> None
         self.mock_ldap.directory = {
