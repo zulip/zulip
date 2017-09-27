@@ -631,14 +631,14 @@ def missedmessage_hook(user_profile_id, client, last_for_client):
         flags = event['flags']
         mentioned = 'mentioned' in flags and 'read' not in flags
         private_message = event['message']['type'] == 'private'
-        # TODO: These next variables should be extracted from the
-        # event and client descriptor, but to match the historical
-        # effect of this function in only supporting mentions, we've
-        # just hardcoded them to False.  Fixing this will correct
-        # currently buggy behavior in our handling of users who've
-        # requested stream push notifications.
-        stream_push_notify = False
+        # stream_push_notify is set in process_message_event.
+        stream_push_notify = event.get('stream_push_notify', False)
+
         stream_name = None
+        if not private_message:
+            stream_name = event['message']['display_recipient']
+
+        # Since one is by definition idle, we don't need to check always_push_notify
         always_push_notify = False
         # Since we just GC'd the last event queue, the user is definitely idle.
         idle = True
@@ -659,7 +659,7 @@ def receiver_is_off_zulip(user_profile_id):
 def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                 mentioned, stream_push_notify, stream_name,
                                 always_push_notify, idle):
-    # type: (int, int, bool, bool, bool, Optional[str], bool, bool) -> Optional[Dict[str, bool]]
+    # type: (int, int, bool, bool, bool, Optional[str], bool, bool) -> Dict[str, bool]
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -735,6 +735,7 @@ def process_message_event(event_template, users):
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                                  mentioned, stream_push_notify, stream_name,
                                                  always_push_notify, idle)
+            result['stream_push_notify'] = stream_push_notify
             extra_user_data[user_profile_id] = result
 
     for client_data in six.itervalues(send_to_clients):
