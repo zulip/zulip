@@ -2,7 +2,6 @@
 
 # Updates static files for production.
 
-from __future__ import absolute_import
 
 import os
 import subprocess

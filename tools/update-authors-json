@@ -4,7 +4,6 @@ Fetch contributors data from Github using their API, convert it to structured
 JSON data for the /about page authors section.
 """
 
-from __future__ import absolute_import, print_function
 
 # check for the venv
 from lib import sanity_check
