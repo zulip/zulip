@@ -47,9 +47,13 @@ exports.set_up_attachments = function () {
             callback: function (item, value) {
                 return item.name.toLocaleLowerCase().indexOf(value) >= 0;
             },
+            onupdate: function () {
+                ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+            },
         },
     }).init();
 
+    ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 
     uploaded_files_table.empty();
     _.each(attachments, function (attachment) {
