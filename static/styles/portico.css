@@ -593,6 +593,80 @@ input.text-error {
     padding: 6px 0px 6px 0px;
 }
 
+.portico-header .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.portico-header .dropdown ul {
+    display: none;
+
+    position: absolute;
+    right: 0px;
+    margin: 10px 0 0 0;
+    list-style-type: none;
+    width: 200px;
+
+    background: #fff;
+    padding: 5px 0px;
+
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.portico-header .dropdown.show ul {
+    display: block;
+}
+
+.portico-header .dropdown ul::before {
+    content: "\25B2";
+
+    position: absolute;
+    top: -4px;
+    right: 9px;
+
+    font-size: 0.5em;
+    color: #ddd;
+
+    line-height: 0;
+
+    -webkit-transform: scale(1.8, 1);
+}
+
+.portico-header .dropdown ul li {
+    display: list-item;
+    margin: 0;
+    padding: 3px 10px;
+    text-align: left;
+
+    opacity: 1;
+
+    cursor: pointer;
+}
+
+.portico-header .dropdown ul li:hover {
+    background: linear-gradient(to bottom,#08c,#0077b3);
+    transition: none;
+}
+
+.portico-header .dropdown ul li a {
+    transition: none;
+    font-size: 0.9em;
+    font-weight: 400;
+
+    color: #444;
+}
+
+.portico-header .dropdown ul li:hover a {
+    background: transparent;
+    color: #fff;
+}
+
+.portico-header .dropdown ul li a i {
+    margin-right: 5px;
+}
+
 .app {
     width: 100%;
     z-index: 99;
