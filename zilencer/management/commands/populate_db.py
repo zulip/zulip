@@ -136,6 +136,12 @@ class Command(BaseCommand):
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
+            # Create welcome bot as the first required bot
+            zulip_welcome_bot = [
+                ("Welcome Bot", "welcome-bot@zulip.com"),
+            ]
+            create_users(zulip_realm, zulip_welcome_bot, bot_type=UserProfile.DEFAULT_BOT)
+
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
             names = [

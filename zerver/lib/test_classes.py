@@ -224,6 +224,7 @@ class ZulipTestCase(TestCase):
         aaron=u'aaron@zulip.com',
         ZOE=u'ZOE@zulip.com',
         webhook_bot=u'webhook-bot@zulip.com',
+        welcome_bot=u'welcome-bot@zulip.com',
         outgoing_webhook_bot=u'outgoing-webhook@zulip.com'
     )
 
