@@ -216,7 +216,7 @@ class UserActivityIntervalWorker(QueueProcessingWorker):
 class UserPresenceWorker(QueueProcessingWorker):
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
-        logging.info("Received event: %s" % (event),)
+        logging.debug("Received presence event: %s" % (event),)
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
