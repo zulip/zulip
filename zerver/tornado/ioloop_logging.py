@@ -1,4 +1,3 @@
-from __future__ import division
 from typing import Any, List, Tuple
 
 import logging
