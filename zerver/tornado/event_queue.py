@@ -788,12 +788,49 @@ def process_event(event, users):
 
 def process_userdata_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
+    prior_mention_user_ids = set(event_template.get('prior_mention_user_ids', []))
+    mention_user_ids = set(event_template.get('mention_user_ids', []))
+    presence_idle_user_ids = set(event_template.get('presence_idle_userids', []))
+
+    stream_name = event_template.get('stream_name')
+    message_id = event_template['message_id']
+
     for user_data in users:
         user_profile_id = user_data['id']
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
+
+        if (stream_name is not None) and (user_profile_id not in prior_mention_user_ids):
+            # We don't notify users of updates to PMs, since they
+            # will likely have already gotten notifications for the
+            # original messages.
+            private_message = False
+
+            if user_profile_id in mention_user_ids:
+                # We can have newly mentioned people in an updated message.
+                mentioned = (user_profile_id in mention_user_ids)
+
+                idle = (user_profile_id in presence_idle_user_ids) or \
+                    receiver_is_off_zulip(user_profile_id)
+
+                # We may want to do more aggressive pushes for message
+                # updates, but now we only do them for mentions, hence setting
+                # some flags below to False.
+                always_push_notify = False
+                stream_push_notify = False
+
+                maybe_enqueue_notifications(
+                    user_profile_id=user_profile_id,
+                    message_id=message_id,
+                    private_message=private_message,
+                    mentioned=mentioned,
+                    stream_push_notify=stream_push_notify,
+                    stream_name=stream_name,
+                    always_push_notify=always_push_notify,
+                    idle=idle,
+                )
 
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(user_event):
