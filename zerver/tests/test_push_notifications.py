@@ -579,6 +579,20 @@ class TestAPNs(PushNotificationTest):
                     "APNs: Success sending for user %d to device %s",
                     self.user_profile.id, device.token)
 
+    def test_modernize_apns_payload(self):
+        # type: () -> None
+        payload = {'alert': 'Message from Hamlet',
+                   'badge': 1,
+                   'custom': {'zulip': {'message_ids': [3]}}}
+        self.assertEqual(
+            apn.modernize_apns_payload(
+                {'alert': 'Message from Hamlet',
+                 'message_ids': [3]}),
+            payload)
+        self.assertEqual(
+            apn.modernize_apns_payload(payload),
+            payload)
+
 class TestGetAlertFromMessage(PushNotificationTest):
     def test_get_alert_from_private_group_message(self):
         # type: () -> None
