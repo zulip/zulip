@@ -268,7 +268,6 @@ class POSTRequestMock(object):
         self._tornado_handler = DummyHandler()
         self._log_data = {}  # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
-        self.path = ''
 
 class HostRequestMock(object):
     """A mock request object where get_host() works.  Useful for testing
@@ -280,7 +279,6 @@ class HostRequestMock(object):
         self.GET = {}  # type: Dict[str, Any]
         self.POST = {}  # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
-        self.path = ''
         self.user = user_profile
         self.method = ''
         self.body = ''

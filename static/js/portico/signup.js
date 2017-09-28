@@ -60,4 +60,9 @@ $(function () {
         errorClass: "text-error",
         wrapper: "div",
     });
+
+    $('#top_navbar a .logout').on('click', function () {
+        $('#logout_form').submit();
+        return false;
+    });
 });

@@ -198,6 +198,11 @@ var events = function () {
         $("nav ul").addClass("show");
     });
 
+    $('nav a .logout').on('click', function () {
+        $('#logout_form').submit();
+        return false;
+    });
+
     if (path_parts().includes("apps")) {
         apps_events();
     }
