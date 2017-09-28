@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # Django settings for zulip project.
 ########################################################################
 # Here's how settings for the Zulip project work:

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 # test_settings.py works differently from
 # dev_settings.py/prod_settings.py; it actually is directly referenced

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 import logging
 from typing import Any, Dict, List, Set, Tuple, Optional, Text

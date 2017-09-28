@@ -1,4 +1,3 @@
-from __future__ import absolute_import  # Python 2 only
 
 from typing import Any
 
