@@ -127,7 +127,7 @@ def skip_site_packages_logs(record):
 
 def create_logger(name, **kwargs):
     # type: (str, **Any) -> Logger
-    """Creates a named logger for use in logging content
+    """Creates a named logger for use in logging content.
 
     A few notes:
 
@@ -136,20 +136,24 @@ def create_logger(name, **kwargs):
     -- that's the root logger.
 
     Keyword arguements in use:
-    logger_level -- a string that sets the what logging events the logger will pick up
+    logger_level -- a string that sets what logging events the logger will pick up
     log_file -- file that log records are written to. It should be declared in zproject/settings.py in ZULIP_PATHS.
     log_format -- a special string that controls the display and content of records written to the log file.
     """
-
     # Set up the logger
     logger = logging.getLogger(name)
     logger.setLevel(kwargs.get("logger_level" or "INFO"))
 
     # Set up the logger's handlers
     if "log_file" in kwargs:
-        formatter = logging.Formatter(kwargs.get("log_format") or '%(asctime)s %(levelname)-8s %(message)s')
-        file_handler = logging.FileHandler(kwargs.get("log_file"))
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        set_log_file(logger, kwargs.get("log_file"), log_format=kwargs.get("log_format"))
 
     return logger
+
+
+def set_log_file(logger, log_file, **kwargs):
+    # type: (Logger, str, **Any) -> None
+    file_handler = logging.FileHandler(log_file)
+    formatter = logging.Formatter(kwargs.get("log_format") or '%(asctime)s %(levelname)-8s %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
