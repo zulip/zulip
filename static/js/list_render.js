@@ -197,7 +197,7 @@ var list_render = (function () {
 
                         // clear and re-initialize the list with the newly filtered subset
                         // of items.
-                        prototype.clear().init();
+                        prototype.init();
 
                         if (opts.filter.onupdate) {
                             opts.filter.onupdate();
