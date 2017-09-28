@@ -35,6 +35,7 @@ exports.set_up_attachments = function () {
     });
 
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
+    var $search_input = $("#upload_file_search");
 
     list_render(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
