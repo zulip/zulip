@@ -72,7 +72,6 @@ from django.core.mail import EmailMessage
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
-import six
 from six.moves import filter
 from six.moves import map
 from six.moves import range
@@ -1267,7 +1266,7 @@ def check_typing_notification(sender, notification_to, operator):
             recipient = recipient_for_emails(notification_to, False,
                                              sender, sender)
         except ValidationError as e:
-            assert isinstance(e.messages[0], six.string_types)
+            assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
     if recipient.type == Recipient.STREAM:
         raise ValueError('Forbidden recipient type')
@@ -1438,7 +1437,7 @@ def extract_recipients(s):
     except ValueError:
         data = s
 
-    if isinstance(data, six.string_types):
+    if isinstance(data, str):
         data = data.split(',')
 
     if not isinstance(data, list):
@@ -1608,7 +1607,7 @@ def check_message(sender, client, addressee,
             recipient = recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
                                                     forwarder_user_profile, sender)
         except ValidationError as e:
-            assert isinstance(e.messages[0], six.string_types)
+            assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
     else:
         raise JsonableError(_("Invalid message type"))

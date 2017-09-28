@@ -2,7 +2,6 @@
 # high-level documentation on how this system works.
 
 import copy
-import six
 import ujson
 
 from django.utils.translation import ugettext as _

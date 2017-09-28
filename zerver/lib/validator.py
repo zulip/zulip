@@ -28,7 +28,6 @@ for any particular type of object.
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-import six
 from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar, Text
 
 from zerver.lib.request import JsonableError
@@ -37,7 +36,7 @@ Validator = Callable[[str, Any], Optional[str]]
 
 def check_string(var_name, val):
     # type: (str, Any) -> Optional[str]
-    if not isinstance(val, six.string_types):
+    if not isinstance(val, str):
         return _('%s is not a string') % (var_name,)
     return None
 

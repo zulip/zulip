@@ -21,7 +21,6 @@ from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_recipient, \
     Message, Realm, UserProfile, get_system_bot
 from six import binary_type
-import six
 import talon
 from talon import quotations
 
@@ -162,7 +161,7 @@ def send_to_missed_message_address(address, message):
 
     # Testing with basestring so we don't depend on the list return type from
     # get_display_recipient
-    if not isinstance(display_recipient, six.string_types):
+    if not isinstance(display_recipient, str):
         recipient_str = u','.join([user['email'] for user in display_recipient])
     else:
         recipient_str = display_recipient

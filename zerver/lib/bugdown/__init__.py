@@ -55,7 +55,6 @@ import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
-import six
 from six.moves import range, html_parser
 
 FullNameInfo = TypedDict('FullNameInfo', {
@@ -1247,7 +1246,7 @@ class AtomicLinkPattern(LinkPattern):
         ret = LinkPattern.handleMatch(self, m)
         if ret is None:
             return None
-        if not isinstance(ret, six.string_types):
+        if not isinstance(ret, str):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
@@ -1459,7 +1458,7 @@ def maybe_update_realm_filters(realm_filters_key):
     if realm_filters_key is None:
         all_filters = all_realm_filters()
         all_filters[DEFAULT_BUGDOWN_KEY] = []
-        for realm_filters_key, filters in six.iteritems(all_filters):
+        for realm_filters_key, filters in all_filters.items():
             make_realm_filters(realm_filters_key, filters)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
         make_realm_filters(ZEPHYR_MIRROR_BUGDOWN_KEY, [])
