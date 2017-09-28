@@ -28,8 +28,6 @@ var exports = {};
 
 exports.names = %(names)s;
 
-exports.codepoints = %(codepoints)s;
-
 exports.name_to_codepoint = %(name_to_codepoint)s;
 
 exports.codepoint_to_name = %(codepoint_to_name)s;
@@ -202,7 +200,6 @@ def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified
 
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
-        'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
         'name_to_codepoint': name_to_codepoint,
         'codepoint_to_name': codepoint_to_name,
         'emoji_catalog': emoji_catalog,
