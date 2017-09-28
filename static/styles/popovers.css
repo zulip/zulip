@@ -2,6 +2,10 @@
     width: auto;
 }
 
+.popover-content {
+    padding: 5px 0px;
+}
+
 .popover-title {
     overflow-x: hidden;
     text-overflow: ellipsis;
