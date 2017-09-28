@@ -318,7 +318,7 @@ var list_render = (function () {
             return true;
         }
 
-        blueslip.warn("The progressive list render instance with the name '" +
+        blueslip.error("The progressive list render instance with the name '" +
                       name + "' does not exist.");
         return false;
     };
@@ -329,3 +329,40 @@ var list_render = (function () {
 if (typeof module !== 'undefined') {
     module.exports = list_render;
 }
+
+$(function () {
+    /*
+    one would specify sort parameters like this:
+        - name => sort alphabetic.
+        - age  => sort numeric.
+
+    you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
+    otherwise it will not know what `list_render` instance to look up.
+
+    <div class="progressive-table-wrapper" data-list-render="some-list">
+        <table>
+            <tr>
+                <td data-sort="alphabetic" data-sort-prop="name">
+                <td data-sort="numeric" data-sort-prop="age">
+            </tr>
+        </table>
+    </div>
+    */
+    $("body").on("click", "[data-sort]", function () {
+        var $this = $(this);
+        var sort_type = $this.data("sort");
+        var prop_name = $this.data("sort-prop");
+        var list_name = $this.closest(".progressive-table-wrapper").data("list-render");
+
+        var list = list_render.get(list_name);
+
+        if (!list) {
+            blueslip.error("Error. This `.progressive-table-wrapper` has no `data-list-render` attribute.");
+            return;
+        }
+
+        // if `prop_name` is defined, it will trigger the generic codepath,
+        // and not if it is undefined.
+        list.sort(sort_type, prop_name);
+    });
+});
