@@ -83,6 +83,42 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assertEqual(event_dict, expected)
 
+    def test_service_events_for_unsubscribed_stream_mentions(self):
+        # type: () -> None
+        sender = self.example_user('hamlet')
+        assert(not sender.is_bot)
+
+        outgoing_bot = self._get_outgoing_bot()
+
+        '''
+        If an outgoing bot is mentioned on a stream message, we will
+        create an event for it even if it is not subscribed to the
+        stream and not part of our original `service_bot_tuples`.
+
+        Note that we add Cordelia as a red herring value that the
+        code should ignore, since she is not a bot.
+        '''
+
+        cordelia = self.example_user('cordelia')
+
+        event_dict = get_service_bot_events(
+            sender=sender,
+            service_bot_tuples=[],
+            mentioned_user_ids={
+                outgoing_bot.id,
+                cordelia.id,  # should be excluded, not a service bot
+            },
+            recipient_type=Recipient.STREAM,
+        )
+
+        expected = dict(
+            outgoing_webhooks=[
+                dict(trigger='mention', user_profile_id=outgoing_bot.id),
+            ],
+        )
+
+        self.assertEqual(event_dict, expected)
+
 class TestServiceBotEventTriggers(ZulipTestCase):
 
     def setUp(self):
