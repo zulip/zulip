@@ -54,12 +54,6 @@ exports.update_emojis = function update_emojis(realm_emojis) {
         exports.emojis_name_to_css_class[emoji.emoji_name] = css_class;
         exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
     });
-    // Code for patching CSS classes for flag emojis so that they render
-    // properly in emoji picker. Remove after migration to iamcal dataset
-    // is complete.
-    _.each(emoji_codes.patched_css_classes, function (css_class, name) {
-        exports.emojis_name_to_css_class[name] = css_class;
-    });
     exports.emojis_by_unicode = {};
     _.each(default_unicode_emojis, function (emoji) {
         exports.emojis_by_unicode[emoji.emoji_name] = emoji.emoji_url;
