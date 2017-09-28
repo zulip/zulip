@@ -46,8 +46,9 @@ FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 ## logger setup
-webhook_logger = create_logger(
-    "zulip.zerver.webhooks", settings.API_KEY_ONLY_WEBHOOK_LOG_PATH, 'DEBUG')
+webhook_logger = create_logger(name=__name__,
+                               log_file=settings.API_KEY_ONLY_WEBHOOK_LOG_PATH,
+                               logger_level='DEBUG')
 
 class _RespondAsynchronously(object):
     pass
