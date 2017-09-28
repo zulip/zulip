@@ -7,11 +7,9 @@ exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
 exports.emojis_by_name = {};
 exports.emojis_name_to_css_class = {};
-exports.emojis_by_unicode = {};
 exports.default_emoji_aliases = {};
 
 var default_emojis = [];
-var default_unicode_emojis = [];
 
 var zulip_emoji = {
     emoji_name: 'zulip',
@@ -54,10 +52,6 @@ exports.update_emojis = function update_emojis(realm_emojis) {
         exports.emojis_name_to_css_class[emoji.emoji_name] = css_class;
         exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
     });
-    exports.emojis_by_unicode = {};
-    _.each(default_unicode_emojis, function (emoji) {
-        exports.emojis_by_unicode[emoji.emoji_name] = emoji.emoji_url;
-    });
 };
 
 exports.initialize = function initialize() {
@@ -72,10 +66,6 @@ exports.initialize = function initialize() {
         } else {
             exports.default_emoji_aliases[base_name] = [value];
         }
-    });
-    _.each(emoji_codes.codepoints, function (value) {
-        default_unicode_emojis.push({emoji_name: value,
-                                     codepoint: value});
     });
 
     exports.update_emojis(page_params.realm_emoji);

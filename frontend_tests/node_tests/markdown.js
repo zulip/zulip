@@ -232,8 +232,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p>This is an <span class="emoji emoji-1f4a9" title="poop">:poop:</span> message</p>'},
         {input: "\ud83d\udca9",
          expected: '<p><span class="emoji emoji-1f4a9" title="poop">:poop:</span></p>'},
-        {input: '\u{1f937}',
-         expected: '<p>\u{1f937}</p>' },
+        {input: '\u{1f6b2}',
+         expected: '<p>\u{1f6b2}</p>' },
         // Test only those realm filters which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
@@ -260,9 +260,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
-    // cases (U+1F937), to verify that we display the emoji as it was input if it
-    // isn't present in emoji.emojis_by_unicode.
-    delete emoji.emojis_by_unicode['1f937'];
+    // cases (U+1F6B2), to verify that we display the emoji as it was input if it
+    // isn't present in emoji_codes.codepoint_to_name.
+    delete emoji_codes.codepoint_to_name['1f6b2'];
 
     test_cases.forEach(function (test_case) {
         var input = test_case.input;
