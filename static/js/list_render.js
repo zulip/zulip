@@ -27,6 +27,10 @@ var list_render = (function () {
         }
 
         var meta = {
+            sorting_function: null,
+            prop: null,
+            sorting_functions: {},
+            generic_sorting_functions: {},
             offset: 0,
             listRenders: {},
             list: list,
@@ -163,6 +167,58 @@ var list_render = (function () {
                 return this;
             },
 
+            // the sorting function is either the function or string that calls the
+            // function to sort the list by. The prop is used for generic functions
+            // that can be called to sort with a particular prop.
+
+            // the `map` will normalize the values with a function you provide to make
+            // it easier to sort with.
+
+            // `do_not_display` will signal to not update the DOM, likely because in
+            // the next function it will be updated in the DOM.
+            sort: function (sorting_function, prop, map, do_not_display) {
+                meta.prop = prop;
+
+                if (typeof sorting_function === "function") {
+                    meta.sorting_function = sorting_function;
+                } else if (typeof sorting_function === "string") {
+                    if (typeof prop === "string") {
+                        /* eslint-disable max-len */
+                        meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
+                    } else {
+                        meta.sorting_function = meta.sorting_functions[sorting_function];
+                    }
+                }
+
+                if (meta.sorting_function) {
+                    meta.filtered_list = meta.filtered_list.sort(meta.sorting_function);
+
+                    if (!do_not_display) {
+                        // clear and re-initialize the list with the newly filtered subset
+                        // of items.
+                        prototype.init();
+
+                        if (opts.filter.onupdate) {
+                            opts.filter.onupdate();
+                        }
+                    }
+                }
+            },
+
+            add_sort_function: function (name, sorting_function) {
+                meta.sorting_functions[name] = sorting_function;
+            },
+
+            // generic sorting functions are ones that will use a specified prop
+            // and perform a sort on it with the given sorting function.
+            add_generic_sort_function: function (name, sorting_function) {
+                meta.generic_sorting_functions[name] = sorting_function;
+            },
+
+            remove_sort: function () {
+                meta.sorting_function = false;
+            },
+
             // this sets the events given the particular arguments assigned in
             // the container and opts.
             __set_events: function () {
@@ -193,6 +249,13 @@ var list_render = (function () {
                         var self = this;
                         var value = self.value.toLocaleLowerCase();
 
+                        // run the sort algorithm that was used last, which is done
+                        // by passing `undefined` -- which will make it use the params
+                        // from the last sort.
+                        // it will then also not run an update in the DOM (because we
+                        // pass `true`), because it will update regardless below at
+                        // `prototype.init()`.
+                        prototype.sort(undefined, meta.prop, undefined, true);
                         meta.filter_list(value, opts.filter.callback);
 
                         // clear and re-initialize the list with the newly filtered subset
