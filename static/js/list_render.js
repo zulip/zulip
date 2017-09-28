@@ -274,6 +274,31 @@ var list_render = (function () {
 
         prototype.__set_events();
 
+        // add built-in generic sort functions.
+        prototype.add_generic_sort_function("alphabetic", function (prop) {
+            return function (a, b) {
+                if (a[prop] > b[prop]) {
+                    return 1;
+                } else if (a[prop] === b[prop]) {
+                    return 0;
+                }
+
+                return -1;
+            };
+        });
+
+        prototype.add_generic_sort_function("numeric", function (prop) {
+            return function (a, b) {
+                if (parseFloat(a[prop]) > parseFloat(b[prop])) {
+                    return 1;
+                } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
+                    return 0;
+                }
+
+                return -1;
+            };
+        });
+
         // Save the instance for potential future retrieval if a name is provided.
         if (opts.name) {
             DEFAULTS.instances[opts.name] = prototype;
