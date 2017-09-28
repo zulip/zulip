@@ -36,6 +36,20 @@ exports.set_up_attachments = function () {
 
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
 
+    list_render(uploaded_files_table, attachments, {
+        name: "uploaded-files-list",
+        modifier: function (attachment) {
+            return templates.render("uploaded_files_list", { attachment: attachment });
+        },
+        filter: {
+            element: $search_input,
+            callback: function (item, value) {
+                return item.name.toLocaleLowerCase().indexOf(value) >= 0;
+            },
+        },
+    }).init();
+
+
     uploaded_files_table.empty();
     _.each(attachments, function (attachment) {
         var row = templates.render('uploaded_files_list', { attachment: attachment });
