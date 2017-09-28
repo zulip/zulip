@@ -217,13 +217,16 @@ nav.white {
     background-color: #fff;
 }
 
+a.silver {
+    text-decoration: underline;
+}
+
 .silver {
-    color: #fff;
+    color: #fff !important;
     opacity: 0.8;
 }
 
 .silver:hover {
-    color: #fff;
     opacity: 1;
 }
 
