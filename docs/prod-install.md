@@ -123,23 +123,11 @@ in your Zulip installation.
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
 
+
   ```
-  su zulip # If you weren't already the zulip user
-  /home/zulip/deployments/current/manage.py generate_realm_creation_link
+  # Assuming you have already accepted the TOS
+  ZULIP_USER_DOMAIN=domain_name ZULIP_USER_PASS=pw ZULIP_USER_EMAIL=email ZULIP_USER_FULLNAME=fullname /home/zulip/deployments/current/scripts/lib/create-zulip-admin
   ```
-
-  This will print out a secure one-time-use link that allows creation of a
-  new Zulip organization on your server.
-
-* Open the generated link with your web browser. You'll see the "Create
-organization" page ([screenshot here](_static/zulip-create-realm.png)).
-Enter your email address and click *Create organization*.
-
-* Check your email to find the confirmation email and click the
-link. You'll be prompted to finish setting up your organization and
-initial administrator user ([screenshot
-here](_static/zulip-create-user-and-org.png)).  Complete this form and
-log in!
 
 **Congratulations!** You are logged in as an organization
 administrator for your new Zulip organization.
