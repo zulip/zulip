@@ -5,7 +5,7 @@
             {{ name }}
         </a>
     </td>
-    <td>{{ create_time }}</td>
+    <td>{{ create_time_str }}</td>
     <td>
         {{#if messages }}
         <div class="attachment-messages">
@@ -17,7 +17,7 @@
         </div>
         {{/if}}
     </td>
-    <td>{{ size }}</td>
+    <td>{{ size_str }}</td>
     <td>
         <span class="edit-attachment-buttons">
             <button type="submit"

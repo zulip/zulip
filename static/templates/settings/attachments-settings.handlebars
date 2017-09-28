@@ -2,13 +2,13 @@
     <div class='tip'>{{#tr this}}You are currently using __total_uploads_size__ of __upload_quota__ upload space.{{/tr}}</div>
     <input id="upload_file_search" type="search" name="" value="" placeholder="{{t 'Search uploads...' }}" />
     <div class="alert" id="delete-upload-status"></div>
-    <div class="progressive-table-wrapper">
+    <div class="progressive-table-wrapper" data-list-render="uploaded-files-list">
         <table class="table table-condensed table-striped">
             <thead>
-                <th>{{t "File" }}</th>
-                <th>{{t "Date uploaded" }}</th>
-                <th>{{t "Mentioned in" }}</th>
-                <th>{{t "Size" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="name">{{t "File" }}</th>
+                <th data-sort="numeric" data-sort-prop="create_time">{{t "Date uploaded" }}</th>
+                <th data-sort="mentioned-in">{{t "Mentioned in" }}</th>
+                <th data-sort="numeric" data-sort-prop="size">{{t "Size" }}</th>
                 <th>{{t "Actions" }}</th>
             </thead>
             <tbody class="required-text" data-empty="{{t 'You have not uploaded any files.' }}"
