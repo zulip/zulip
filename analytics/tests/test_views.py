@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from django.utils.timezone import get_fixed_timezone, utc
 from zerver.lib.test_classes import ZulipTestCase

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from argparse import ArgumentParser
 import datetime
 import pytz
