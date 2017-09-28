@@ -10,6 +10,10 @@
 {% stylesheet 'portico' %}
 {% endblock %}
 
+{% block porticocustomhead %}
+{{ render_bundle('portico') }}
+{% endblock %}
+
 {% block content %}
 <div class="portico-container help">
     <div class="portico-wrap">
