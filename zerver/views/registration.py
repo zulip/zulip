@@ -402,6 +402,8 @@ def accounts_home_from_multiuse_invite(request, confirmation_key):
     multiuse_object = None
     try:
         multiuse_object = get_object_from_key(confirmation_key)
+        # Required for oAuth2
+        request.session["multiuse_object_key"] = confirmation_key
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)
         if realm is None or realm.invite_required:
