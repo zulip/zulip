@@ -667,6 +667,15 @@ input.text-error {
     margin-right: 5px;
 }
 
+.header-realm-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);
+
+    cursor: pointer;
+}
+
 .app {
     width: 100%;
     z-index: 99;
