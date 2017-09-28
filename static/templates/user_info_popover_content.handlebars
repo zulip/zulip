@@ -1,18 +1,5 @@
 {{! Contents of the "message info" popup }}
 <ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{user_id}}">
-    <div class="popover_info">
-        <li class="user_{{presence_status}}">
-            <b>{{user_full_name}}</b>
-            <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
-        </li>
-
-        <li class='my_email'>{{user_email}}</li>
-
-        {{#if user_time}}
-        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
-        {{/if}}
-    </div>
-    <hr />
     <li>
         <a href="#" class="{{ private_message_class }}">
             <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} (R)

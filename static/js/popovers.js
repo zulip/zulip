@@ -94,11 +94,8 @@ function show_message_info_popover(element, id) {
         }
 
         var args = {
-            user_full_name: message.sender_full_name,
-            user_email: sender_email,
             user_id: message.sender_id,
             user_time: people.get_user_time(message.sender_id),
-            presence_status: presence.get_status(message.sender_id),
             user_last_seen_time_status: user_last_seen_time_status(message.sender_id),
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
@@ -122,12 +119,20 @@ function show_message_info_popover(element, id) {
 
         elt.popover({
             placement: placement,
-            template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + sender_email}),
+            template:  templates.render('user_info_popover', { class: "message-info-popover profile-popover" }),
+            title:     templates.render('user_info_popover_title', {
+                user_avatar: "avatar/" + sender_email,
+                user_full_name: message.sender_full_name,
+                user_email: sender_email,
+                presence_status: presence.get_status(message.sender_id),
+            }),
             content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
         });
         elt.popover("show");
+
+        var el = $(".message-info-popover [data-dynamic-text]").last()[0];
+        DynamicText(el);
 
         load_medium_avatar(sender_email);
 
@@ -438,11 +443,8 @@ exports.register_click_handlers = function () {
         var user_email = people.get_person_from_user_id(user_id).email;
 
         var args = {
-            user_email: user_email,
-            user_full_name: name,
             user_id: user_id,
             user_time: people.get_user_time(user_id),
-            presence_status: presence.get_status(user_id),
             user_last_seen_time_status: user_last_seen_time_status(user_id),
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
@@ -450,14 +452,23 @@ exports.register_click_handlers = function () {
         };
 
         target.popover({
-            template:  templates.render('user_info_popover',   {class: "user_popover"}),
-            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
+            template: templates.render('user_info_popover',   {class: "user_popover profile-popover"}),
+            title: templates.render('user_info_popover_title', {
+                user_avatar: "avatar/" + user_email,
+                user_full_name: name,
+                user_email: user_email,
+                presence_status: presence.get_status(user_id),
+            }),
             content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
             fixed: true,
             placement: userlist_placement === "left" ? "right" : "left",
         });
         target.popover("show");
+        var el = $(".user_popover [data-dynamic-text]").last()[0];
+        DynamicText(el);
+
+        new Clipboard($(".user_popover .copy-email")[0]);
 
         load_medium_avatar(user_email);
 

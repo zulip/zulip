@@ -1,2 +1,17 @@
-<div class="popover-avatar" style="background-image: url('{{user_avatar}}');" >
+<div class="popover-avatar" style="background-image: url('{{user_avatar}}');" ></div>
+<div class="popover-gradient"></div>
+{{! Contents of the "message info" popup }}
+<div class="popover_info">
+    <div class="user-full-name" data-dynamic-text>{{user_full_name}}</div>
+    <div class='my_email'>
+        <span class="user_{{presence_status}}">
+            <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+        </span>
+        <span class="email">{{user_email}}</span>
+        <i class="fa fa-clipboard copy-email" data-clipboard-target=".user_popover .my_email .email"></i>
+    </div>
+
+    {{#if user_time}}
+    <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+    {{/if}}
 </div>

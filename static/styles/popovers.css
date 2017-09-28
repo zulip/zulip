@@ -57,18 +57,21 @@
     float: none;
 }
 
-ul.sender_info_popover i {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
+.profile-popover {
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
 }
 
-ul.actions_popover i {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
+.profile-popover .popover_info {
+    padding: 5px 10px;
+    width: calc(100% - 20px);
+    position: absolute;
+    bottom: 0;
+
+    color: #fff;
+    text-align: left;
 }
 
 .user_popover {
@@ -87,28 +90,100 @@ ul.actions_popover i {
     word-wrap: break-word;
 }
 
-.popover-avatar .popover-inner {
+.profile-popover .popover_info .user-full-name {
+    font-size: 2em;
+    font-weight: 300;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 5px black, 1px 1px 10px black;
+}
+
+.profile-popover .popover_info .my_email {
+    position: relative;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    padding-right: 15px;
+}
+
+.profile-popover .popover_info .my_email .copy-email {
+    position: absolute;
+    top: 2px;
+    right: 0;
+
+    opacity: 0.5;
+
+    cursor: pointer;
+}
+
+.profile-popover .popover_info .my_email .copy-email:hover {
+    opacity: 1;
+}
+
+.profile-popover .popover-title {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    padding: 0;
+}
+
+.profile-popover .popover-title .popover-gradient {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+
+    background: linear-gradient(90deg, #000, rgba(0,0,0,0.2) 25%, transparent 40%);
+    background: -webkit-linear-gradient(90deg, #000, rgba(0,0,0,0.2) 25%, transparent 40%);
+    background: -moz-linear-gradient(90deg, #000, rgba(0,0,0,0.2) 25%, transparent 40%);
+}
+
+.profile-popover .popover-content {
+    padding: 0px;
+}
+
+.profile-popover .popover-avatar .popover-inner {
     width: 240px;
 }
 
-.popover-avatar {
-    height: 240px;
-    width: 240px;
+.profile-popover .popover-avatar {
+    height: 100%;
+    width: 100%;
     background-size: cover;
     background-position: center;
     position: relative;
 }
 
-.message-info-popover {
-    padding: 0;
+.profile-popover li {
+    margin: 0;
 }
 
-.message-info-popover .popover-title {
-    padding: 0;
+.profile-popover li a {
+    padding: 7px 10px;
+}
+
+ul.sender_info_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+ul.actions_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+.user_popover {
+    top: 100px!important;
+    margin: -15px;
 }
 
 @media (max-width: 768px) {
-    .message-info-popover {
+    .profile-popover {
         display: flex !important;
         justify-content: center;
         align-items: center;
@@ -127,7 +202,7 @@ ul.actions_popover i {
         pointer-events: none;
     }
 
-    .message-info-popover .popover-inner {
+    .profile-popover .popover-inner {
         background-color: #fff;
         pointer-events: all;
     }
