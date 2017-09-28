@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from __future__ import division
 
 from django.core.management.base import BaseCommand, CommandParser

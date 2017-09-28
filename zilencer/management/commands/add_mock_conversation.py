@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, print_function
 
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import create_stream_if_needed, \
