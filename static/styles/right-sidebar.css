@@ -11,6 +11,7 @@
 
 #user_presences,
 #group-pms {
+    position: relative;
     list-style-position: inside; /* Draw the bullets inside our box */
     margin-left: 0;
     overflow: auto;
