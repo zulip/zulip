@@ -175,7 +175,7 @@
         "curly": 2,
         "dot-notation": [ "error", { "allowKeywords": true } ],
         "eol-last": [ "error", "always" ],
-        "eqeqeq": [ "error", "allow-null" ],
+        "eqeqeq": 2,
         "func-style": [ "off", "expression" ],
         "guard-for-in": 2,
         "keyword-spacing": [ "error",
