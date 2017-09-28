@@ -97,7 +97,11 @@ class Addressee(object):
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
                 # callpath).
-                stream_name = None
+                if sender.default_sending_stream:
+                    # Use the users default stream
+                    stream_name = sender.default_sending_stream.name
+                else:
+                    raise JsonableError(_('Missing stream'))
 
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
