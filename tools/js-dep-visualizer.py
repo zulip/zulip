@@ -4,7 +4,6 @@ $ ./tools/js-dep-visualizer.py
 $ dot -Tpng var/zulip-deps.dot -o var/zulip-deps.png
 """
 
-from __future__ import absolute_import
 from __future__ import print_function
 
 import os
