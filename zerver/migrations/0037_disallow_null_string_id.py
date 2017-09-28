@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from six.moves import range
 
 from django.db.utils import IntegrityError
