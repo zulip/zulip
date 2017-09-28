@@ -64,6 +64,30 @@ def get_apns_client():
                                   use_sandbox=settings.APNS_SANDBOX)
     return _apns_client
 
+def modernize_apns_payload(data):
+    # type: (Dict[str, Any]) -> Dict[str, Any]
+    '''Take a payload in an unknown Zulip version's format, and return in current format.'''
+    # TODO this isn't super robust as is -- if a buggy remote server
+    # sends a malformed payload, we are likely to raise an exception.
+    if 'message_ids' in data:
+        # The format sent by 1.6.0, from the earliest pre-1.6.0
+        # version with bouncer support up until 613d093d7 pre-1.7.0:
+        #   'alert': str,              # just sender, and text about PM/group-PM/mention
+        #   'message_ids': List[int],  # always just one
+        return {
+            'alert': data['alert'],
+            'badge': 1,
+            'custom': {
+                'zulip': {
+                    'message_ids': data['message_ids'],
+                },
+            },
+        }
+    else:
+        # The current format.  (`alert` may be a string, or a dict with
+        # `title` and `body`.)
+        return data
+
 APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
@@ -73,7 +97,7 @@ def send_apple_push_notification(user_id, devices, payload_data):
         return
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
-    payload = APNsPayload(**payload_data)
+    payload = APNsPayload(**modernize_apns_payload(payload_data))
     expiration = int(time.time() + 24 * 3600)
     client = get_apns_client()
     retries_left = APNS_MAX_RETRIES
