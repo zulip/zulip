@@ -30,14 +30,15 @@ exports.set_up_attachments = function () {
 
     var attachments = page_params.attachments;
     _.each(attachments, function (attachment) {
-        attachment.create_time = timerender.absolute_time(attachment.create_time);
-        attachment.size = exports.bytes_to_size(attachment.size);
+
+        attachment.create_time_str = timerender.absolute_time(attachment.create_time);
+        attachment.size_str = exports.bytes_to_size(attachment.size);
     });
 
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
     var $search_input = $("#upload_file_search");
 
-    list_render(uploaded_files_table, attachments, {
+    var list = list_render(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier: function (attachment) {
             return templates.render("uploaded_files_list", { attachment: attachment });
@@ -52,6 +53,24 @@ exports.set_up_attachments = function () {
             },
         },
     }).init();
+
+    list.add_sort_function("mentioned-in", function (a, b) {
+        var a_m = a.messages[0];
+        var b_m = b.messages[0];
+
+        if (!a_m) { return 1; }
+        if (!b_m) { return -1; }
+
+        if (a_m.id > b_m.id) {
+            return 1;
+        } else if (a_m.id === b_m.id) {
+            return 0;
+        }
+
+        return -1;
+    });
+
+
 
     ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 
