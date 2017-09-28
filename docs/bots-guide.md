@@ -593,7 +593,7 @@ to see examples of bot tests.
 ## Common problems
 
 * I modified my bot's code, yet the changes don't seem to have an effect.
-    * Ensure that you restarted the `run.py` script.
+    * Ensure that you restarted the `zulip-run-bot` script.
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
