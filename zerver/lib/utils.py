@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
 
 from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple, Text
 from six import binary_type

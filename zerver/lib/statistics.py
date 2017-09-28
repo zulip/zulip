@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
 
 from zerver.models import UserProfile, UserActivity, UserActivityInterval, Message
 
