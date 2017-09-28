@@ -123,15 +123,7 @@ You need:
       explained [here](#configuration-file)).
     * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`.
 
-4. Subscribe the bot to the streams that the bot needs to interact with.
-
-    * To subscribe your bot to streams, navigate to *Manage
-      Streams*. Select a stream and add your bot by its email address
-      (the address you assigned in step 2).
-    * Now, the bot can do its job on the streams you subscribed it to.
-    * (In future versions of the API, this step may not be required).
-
-5. Run the bot.
+4. Run the bot.
 
     * Run
       ```
@@ -147,17 +139,15 @@ You need:
       INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
       ```
 
-    * Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
+    * Congrats! Now, your bot should be ready to test.
 
 ### Testing the helloworld bot
 
 * The `helloworld` bot is a simple bot that responds with a 'beep boop'
   when queried. It can be used as a template to build more complex
   bots.
-* Go to a stream your bot is subscribed to. Talk to the bot by
-  typing `@<your bot name>` followed by some commands. If the bot is
-  the `helloworld` bot, you should expect the bot to respond with
-  "beep boop".
+* In a stream and topic of your choice, type `@<your bot name>`.
+  The `helloworld` bot should respond with "beep boop".
 
 ### Testing a bot's output
 
@@ -241,10 +231,6 @@ pip install zulip_botserver
 
 5.  Congrats, everything is set up! Test your botserver like you would
     test a normal bot.
-
-    *Please note that in order to @-mention trigger a bot on a stream,
-    the bot **and** the outgoing webhook bot need to be subscribed to
-    it.*
 
 ### Running Zulip Botserver with `supervisord`
 
@@ -616,9 +602,6 @@ to see examples of bot tests.
       the Vagrant environment.
     * Some bots require Python 3. Try switching to a Python 3 environment before running
       your bot.
-
-* My bot works only on some streams.
-    * Subscribe your bot to other streams, as described [here](#how-to-run-a-bot).
 
 ## Future direction
 
