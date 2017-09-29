@@ -927,6 +927,9 @@ MessageListView.prototype = {
             this.render(slice_to_render, 'top', false);
             this._render_win_start -= slice_to_render.length;
         }
+
+        // See comment for maybe_rerender call in the append code path
+        this.maybe_rerender();
     },
 
     rerender_the_whole_thing: function MessageListView__rerender_the_whole_thing() {
