@@ -223,6 +223,8 @@ def main(options):
         except subprocess.CalledProcessError:
             # Might be a failure due to network connection issues. Retrying...
             print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+            # Running apt-get update to fix broken apt cache
+            run(['sudo', 'apt-get', 'update'])
             install_apt_deps()
         hash_file.write(new_apt_dependencies_hash)
     else:
