@@ -19,10 +19,6 @@ class zulip_ops::base {
                         # Needed for zulip-ec2-configure-network-interfaces
                         "python3-six",
                         "python-six",
-                        # "python3-boto", # missing on trusty
-                        "python-boto", # needed for postgres_common too
-                        "python3-netifaces",
-                        "python-netifaces",
                         # Popular editors
                         "vim",
                         "emacs-nox",
@@ -37,6 +33,12 @@ class zulip_ops::base {
                         "nagios-plugins-contrib",
                          ]
   package { $org_base_packages: ensure => "installed" }
+
+  exec {"pip_ec2_wal-e":
+    # pip dependencies to run ec2-configure-interfaces and wal-e
+    command  => "/usr/bin/pip2 install 'boto==2.4.0' 'netifaces==0.10.6'",
+    require  => Package['python-pip'],
+  }
 
   # Add system users here
   $users = []
