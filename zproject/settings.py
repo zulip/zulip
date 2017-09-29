@@ -100,6 +100,7 @@ else:
 
 # For any settings that are not defined in prod_settings.py,
 # we want to initialize them to sane default
+
 DEFAULT_SETTINGS = {'EMAIL_GATEWAY_PATTERN': '',
                     'EMAIL_GATEWAY_EXAMPLE': '',
                     'EMAIL_GATEWAY_BOT': None,
