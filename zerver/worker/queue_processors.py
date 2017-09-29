@@ -216,7 +216,7 @@ class UserActivityIntervalWorker(QueueProcessingWorker):
 class UserPresenceWorker(QueueProcessingWorker):
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
-        logging.info("Received event: %s" % (event),)
+        logging.debug("Received presence event: %s" % (event),)
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
@@ -232,7 +232,7 @@ class MissedMessageWorker(QueueProcessingWorker):
             by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
 
             for event in missed_events:
-                logging.info("Received event: %s" % (event,))
+                logging.debug("Received missedmessage_emails event: %s" % (event,))
                 by_recipient[event['user_profile_id']].append(event)
 
             for user_profile_id, events in by_recipient.items():

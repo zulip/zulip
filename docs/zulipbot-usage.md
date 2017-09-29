@@ -42,7 +42,7 @@ followed by the desired labels enclosed within double quotes (`""`).
     `@zulipbot remove` followed by the desired labels enclosed with double quotes
     (`""`).
 
-* **Find unclaimed issues** - Use the [GitHub search
+* **Find unclaimed issues** — Use the [GitHub search
 feature](https://help.github.com/articles/using-search-to-filter-issues-and-pull-requests/)
 to find unclaimed issues by adding one of the following filters to your search:
 
@@ -53,15 +53,20 @@ to find unclaimed issues by adding one of the following filters to your search:
     Issues labeled with the **in progress** label and/or assigned to other users have
     already been claimed.
 
-* **Collaborate in area label teams** - Receive notifications on issues and
-pull requests within your fields of expertise on the
-[Zulip server repository](https://github.com/zulip/zulip) by joining the Zulip server
-[area label teams](https://github.com/orgs/zulip/teams?utf8=✓&query=Server). These teams
-correspond to the repository's [area labels](https://github.com/zulip/zulip/labels),
-although some teams are associated with multiple labels; for example, the **area:
-message-editing** and **area: message view** labels are both related to the
-[Server message view](https://github.com/orgs/zulip/teams/server-message-view) team.
-Feel free to join as many area label teams as as you'd like!
+* **Collaborate in area label teams** — Receive notifications on
+issues and pull requests within your fields of expertise on the
+[Zulip server repository](https://github.com/zulip/zulip) by joining
+the Zulip server
+[area label teams](https://github.com/orgs/zulip/teams?utf8=✓&query=Server)
+(Note: this link only works for members of the Zulip organization;
+we'll happily add you if you're interested).  These teams correspond
+to the repository's
+[area labels](https://github.com/zulip/zulip/labels), although some
+teams are associated with multiple labels; for example, the **area:
+message-editing** and **area: message view** labels are both related
+to the
+[Server message view](https://github.com/orgs/zulip/teams/server-message-view)
+team.  Feel free to join as many area label teams as as you'd like!
 
     After your request to join an area label team is approved, you'll receive
     notifications for any issues labeled with the team's corresponding area

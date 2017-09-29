@@ -7,6 +7,7 @@ import hashlib
 import logging
 import re
 import traceback
+from typing import Optional
 from datetime import datetime, timedelta
 from django.conf import settings
 from zerver.lib.str_utils import force_bytes
@@ -124,6 +125,73 @@ def skip_site_packages_logs(record):
     if 'site-packages' in record.pathname:
         return False
     return True
+
+def find_log_caller_module(record):
+    # type: (logging.LogRecord) -> Optional[str]
+    '''Find the module name corresponding to where this record was logged.'''
+    # Repeat a search similar to that in logging.Logger.findCaller.
+    # The logging call should still be on the stack somewhere; search until
+    # we find something in the same source file, and that should give the
+    # right module name.
+    f = logging.currentframe()  # type: ignore  # Not in typeshed, and arguably shouldn't be
+    while f is not None:
+        if f.f_code.co_filename == record.pathname:
+            return f.f_globals.get('__name__')
+        f = f.f_back
+    return None
+
+logger_nicknames = {
+    'root': '',  # This one is more like undoing a nickname.
+    'zulip.requests': 'zr',  # Super common.
+}
+
+def find_log_origin(record):
+    # type: (logging.LogRecord) -> str
+    logger_name = logger_nicknames.get(record.name, record.name)
+
+    if settings.LOGGING_SHOW_MODULE:
+        module_name = find_log_caller_module(record)
+        if module_name == logger_name or module_name == record.name:
+            # Abbreviate a bit.
+            return logger_name
+        else:
+            return '{}/{}'.format(logger_name, module_name or '?')
+    else:
+        return logger_name
+
+log_level_abbrevs = {
+    'DEBUG':    'DEBG',
+    'INFO':     'INFO',
+    'WARNING':  'WARN',
+    'ERROR':    'ERR',
+    'CRITICAL': 'CRIT',
+}
+
+def abbrev_log_levelname(levelname):
+    # type: (str) -> str
+    # It's unlikely someone will set a custom log level with a custom name,
+    # but it's an option, so we shouldn't crash if someone does.
+    return log_level_abbrevs.get(levelname, levelname[:4])
+
+class ZulipFormatter(logging.Formatter):
+    # Used in the base implementation.  Default uses `,`.
+    default_msec_format = '%s.%03d'
+
+    _fmt = '%(asctime)s %(zulip_level_abbrev)-4s [%(zulip_origin)s] %(message)s'
+
+    def __init__(self):
+        # type: () -> None
+        super().__init__(fmt=self._fmt)
+
+    def format(self, record):
+        # type: (logging.LogRecord) -> str
+        if not getattr(record, 'zulip_decorated', False):
+            # The `setattr` calls put this logic explicitly outside the bounds of the
+            # type system; otherwise mypy would complain LogRecord lacks these attributes.
+            setattr(record, 'zulip_level_abbrev', abbrev_log_levelname(record.levelname))
+            setattr(record, 'zulip_origin', find_log_origin(record))
+            setattr(record, 'zulip_decorated', True)
+        return super().format(record)
 
 def create_logger(name, log_file, log_level, log_format="%(asctime)s %(levelname)-8s %(message)s"):
     # type: (str, str, str, str) -> Logger

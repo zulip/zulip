@@ -131,6 +131,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'STAGING_ERROR_NOTIFICATIONS': False,
                     'EVENT_LOGS_ENABLED': False,
                     'SAVE_FRONTEND_STACKTRACES': False,
+                    'LOGGING_SHOW_MODULE': False,
                     'JWT_AUTH_KEYS': {},
                     'NAME_CHANGES_DISABLED': False,
                     'DEPLOYMENT_ROLE_NAME': "",
@@ -1051,7 +1052,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'default': {
-            'format': '%(asctime)s %(levelname)-8s %(message)s'
+            '()': 'zerver.lib.logging_util.ZulipFormatter',
         }
     },
     'filters': {
@@ -1116,24 +1117,39 @@ LOGGING = {
         },
     },
     'loggers': {
+        # The Python logging module uses a hierarchy of logger names for config:
+        # "foo.bar" has parent "foo" has parent "", the root.  But the semantics
+        # are subtle: it walks this hierarchy once to find the log level to
+        # decide whether to log the record at all, then a separate time to find
+        # handlers to emit the record.
+        #
+        # For `level`, the most specific ancestor that has a `level` counts.
+        # For `handlers`, the most specific ancestor that has a `handlers`
+        # counts (assuming we set `propagate=False`, which we always do.)
+        # These are independent -- they might come at the same layer, or
+        # either one could come before the other.
+        #
+        # For `filters`, no ancestors count at all -- only the exact logger name
+        # the record was logged at.
+        #
+        # Upstream docs: https://docs.python.org/3/library/logging
+        #
+        # Style rules:
+        #  * Always set `propagate=False` if setting `handlers`.
+        #  * Setting `level` equal to the parent is redundant; don't.
+        #  * Setting `handlers` equal to the parent is redundant; don't.
+        #  * Always write in order: level, filters, handlers, propagate.
+
         # root logger
         '': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
-            'filters': ['require_logging_enabled'],
             'level': 'INFO',
-            'propagate': False,
+            'filters': ['require_logging_enabled'],
+            'handlers': DEFAULT_ZULIP_HANDLERS,
         },
 
         # Django, alphabetized
-        'django': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
-            'level': 'INFO',
-            'propagate': False,
-        },
         'django.request': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'WARNING',
-            'propagate': False,
             'filters': ['skip_boring_404s'],
         },
         'django.security.DisallowedHost': {
@@ -1141,21 +1157,21 @@ LOGGING = {
             'propagate': False,
         },
         'django.server': {
+            'filters': ['skip_200_and_304'],
             'handlers': ['console', 'file'],
             'propagate': False,
-            'filters': ['skip_200_and_304'],
         },
         'django.template': {
-            'handlers': ['console'],
-            'filters': ['require_debug_true', 'skip_site_packages_logs'],
             'level': 'DEBUG',
+            'filters': ['require_debug_true', 'skip_site_packages_logs'],
+            'handlers': ['console'],
             'propagate': False,
         },
 
         ## Uncomment the following to get all database queries logged to the console
         # 'django.db': {
-        #     'handlers': ['console'],
         #     'level': 'DEBUG',
+        #     'handlers': ['console'],
         #     'propagate': False,
         # },
 
@@ -1164,35 +1180,23 @@ LOGGING = {
             'level': 'WARNING',
         },
         'requests': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'WARNING',
-            'propagate': False,
         },
 
         # our own loggers, alphabetized
         'zulip.management': {
             'handlers': ['file', 'errors_file'],
-            'level': 'INFO',
             'propagate': False,
         },
         'zulip.queue': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'WARNING',
-            'propagate': False,
-        },
-        'zulip.requests': {
-            'handlers': DEFAULT_ZULIP_HANDLERS,
-            'level': 'INFO',
-            'propagate': False,
         },
         'zulip.soft_deactivation': {
             'handlers': ['file', 'errors_file'],
-            'level': 'INFO',
             'propagate': False,
         },
         'zulip.zerver.webhooks': {
             'handlers': ['file', 'errors_file'],
-            'level': 'INFO',
             'propagate': False,
         },
     }

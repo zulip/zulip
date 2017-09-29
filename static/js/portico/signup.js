@@ -60,4 +60,12 @@ $(function () {
         errorClass: "text-error",
         wrapper: "div",
     });
+
+    $(".register-page #email, .login-page-container #id_username").on('focusout keydown', function (e) {
+        // check if it is the "focusout" or if it is a keydown, then check if
+        // the keycode was the one for "enter" (13).
+        if (e.type === "focusout" || e.which === 13) {
+            $(this).val($.trim($(this).val()));
+        }
+    });
 });

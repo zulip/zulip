@@ -165,6 +165,11 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 # For frontend (JavaScript) tracebacks
 #BROWSER_ERROR_REPORTING = False
 
+# If True, each log message in the server logs will identify the
+# Python module where it came from.  Useful for tracking down a
+# mysterious log message, but a little verbose.
+#LOGGING_SHOW_MODULE = False
+
 # Controls whether or not Zulip will provide inline image preview when
 # a link to an image is referenced in a message.  Note: this feature
 # can also be disabled in a realm's organization settings.
