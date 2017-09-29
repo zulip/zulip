@@ -37,13 +37,14 @@ exports.password_quality = function (password, bar, password_field) {
 
     // Compute a quality score in [0,1].
     var result  = zxcvbn(password);
-    var quality = Math.min(1,Math.log(1 + result.crack_times_seconds.
+    var bar_progress = Math.min(1,Math.log(1 + result.crack_times_seconds.
                                           offline_slow_hashing_1e4_per_second) / 22);
+    var quality = result.guesses_log10 * Math.log(10, 2);
 
     // Even if zxcvbn loves your short password, the bar should be filled
     // at most 1/3 of the way, because we won't accept it.
     if (!acceptable) {
-        quality = Math.min(quality, 0.33);
+        bar_progress = Math.min(bar_progress, 0.33);
 
     // In case the quality is below the minimum, we should not accept the password
     } else if (quality < min_quality) {
@@ -54,7 +55,7 @@ exports.password_quality = function (password, bar, password_field) {
         // Display the password quality score on a progress bar
         // which bottoms out at 10% so there's always something
         // for the user to see.
-        bar.width(((90 * quality) + 10) + '%')
+        bar.width(((90 * bar_progress) + 10) + '%')
            .removeClass('bar-success bar-danger')
            .addClass(acceptable ? 'bar-success' : 'bar-danger');
     }
