@@ -142,7 +142,7 @@ DEFAULT_SETTINGS = {
     'RATE_LIMITING': True,
     'REDIS_HOST': '127.0.0.1',
     'REDIS_PORT': 6379,
-    # The following bots only exist in non-VOYAGER installs
+    # The following bots are optional system bots.
     'ERROR_BOT': None,
     'NEW_USER_BOT': None,
     'NAGIOS_STAGING_SEND_BOT': None,
@@ -238,13 +238,6 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
 if ADMINS == "":
     ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 MANAGERS = ADMINS
-
-# Voyager is a production zulip server that is not zulip.com or
-# staging.zulip.com VOYAGER is the standalone all-on-one-server
-# production deployment model for based on the original Zulip
-# ENTERPRISE implementation.  We expect most users of the open source
-# project will be using VOYAGER=True in production.
-VOYAGER = PRODUCTION
 
 ########################################################################
 # STANDARD DJANGO SETTINGS
