@@ -128,7 +128,7 @@ var apps_events = function () {
         $(".info .description").text(version_info.description);
         $(".info .link").attr("href", version_info.link);
         $(".image img").attr("src", version_info.image);
-        $download_instructions.find("a").attr("href", "/help/desktop-app-install-guide#" + version);
+        $download_instructions.find("a").attr("href", "/help/desktop-app-install-guide#installing-on-" + version);
 
         if (version_info.show_instructions) {
             $download_instructions.show();
