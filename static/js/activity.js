@@ -395,7 +395,6 @@ exports.update_huddles = function () {
     });
 
     show_huddles();
-    exports.update_scrollbar.users();
     exports.update_scrollbar.group_pms();
 };
 
