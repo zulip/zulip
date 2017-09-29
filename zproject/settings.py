@@ -171,7 +171,6 @@ DEFAULT_SETTINGS = {
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
     'EXTERNAL_URI_SCHEME': "https://",
-    'ZULIP_COM': False,
     'SHOW_OSS_ANNOUNCEMENT': False,
     'REGISTER_LINK_DISABLED': False,
     'LOGIN_LINK_DISABLED': False,
@@ -245,7 +244,7 @@ MANAGERS = ADMINS
 # production deployment model for based on the original Zulip
 # ENTERPRISE implementation.  We expect most users of the open source
 # project will be using VOYAGER=True in production.
-VOYAGER = PRODUCTION and not ZULIP_COM
+VOYAGER = PRODUCTION
 
 ########################################################################
 # STANDARD DJANGO SETTINGS
