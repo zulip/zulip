@@ -261,3 +261,7 @@
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
     background: #cecece;
 }
+
+.typeahead .emoji {
+    top: 2px;
+}
