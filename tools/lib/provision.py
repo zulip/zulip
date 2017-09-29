@@ -223,6 +223,12 @@ def main(options):
         except subprocess.CalledProcessError:
             # Might be a failure due to network connection issues. Retrying...
             print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+            # Since a common failure mode is for the caching in
+            # `setup-apt-repo` to optimize the fast code path to skip
+            # running `apt-get update` when the target apt repository
+            # is out of date, we run it explicitly here so that we
+            # recover automatically.
+            run(['sudo', 'apt-get', 'update'])
             install_apt_deps()
         hash_file.write(new_apt_dependencies_hash)
     else:
