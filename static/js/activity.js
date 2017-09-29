@@ -37,9 +37,15 @@ exports.update_scrollbar = (function () {
 
     return {
         users: function () {
+            if (!$user_presences.length) {
+                $user_presences = $("#user_presences");
+            }
             ui.update_scrollbar($user_presences);
         },
         group_pms: function () {
+            if (!$group_pms.length) {
+                $group_pms = $("#group-pms");
+            }
             ui.update_scrollbar($group_pms);
         },
     };
