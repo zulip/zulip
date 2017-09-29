@@ -193,8 +193,6 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'GOOGLE_OAUTH2_CLIENT_ID': None,
     'SOCIAL_AUTH_FIELDS_STORED_IN_SESSION': ['subdomain', 'is_signup'],
-    'DBX_APNS_CERT_FILE': None,
-    'DBX_APNS_KEY_FILE': None,
     'PERSONAL_ZMIRROR_SERVER': None,
     # Structurally, we will probably eventually merge
     # analytics into part of the main server, rather
