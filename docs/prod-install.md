@@ -25,7 +25,35 @@ documentation](ssl-certificates.html).  If you already have an SSL
 certificate, just install (or symlink) it into place at the above
 paths, and move on to the next step.
 
-## Step 2: Download and install latest release
+## Step 2: Configure Zulip
+
+Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
+providing values for the mandatory settings, which are all found under the
+heading `### MANDATORY SETTINGS`.  These settings include:
+
+- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
+  Zulip installation (i.e., what users will type in their web
+  browser). This should of course match the DNS name you configured to
+  point to your server and for which you configured SSL certificates.
+  If you plan to use multiple domains, add the others to
+  `ALLOWED_HOSTS`.
+
+- `ZULIP_ADMINISTRATOR`: the email address of the person or team
+  maintaining this installation and who will get support and error
+  emails.
+
+- `EMAIL_HOST`, `EMAIL_HOST_USER`: credentials for an outgoing email
+  (aka "SMTP") server that Zulip can use to send emails.  See
+  [our guide for outgoing email](prod-email.html) for help configuring
+  this.
+
+- If desired, you can also configure additional
+  [authentication backends](prod-authentication-methods.html) while
+  you're editing /etc/zulip/settings.py.  Note, however, that the
+  default (email) backend must be enabled when you complete Step 6
+  (creating an organization) below.
+
+## Step 3: Download and install latest release
 
 If you haven't already, download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
@@ -63,34 +91,7 @@ symbolic link to it.
 * Installs Zulip's various dependencies.
 * Cconfigures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
-
-## Step 3: Configure Zulip
-
-Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
-providing values for the mandatory settings, which are all found under the
-heading `### MANDATORY SETTINGS`.  These settings include:
-
-- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
-  Zulip installation (i.e., what users will type in their web
-  browser). This should of course match the DNS name you configured to
-  point to your server and for which you configured SSL certificates.
-  If you plan to use multiple domains, add the others to
-  `ALLOWED_HOSTS`.
-
-- `ZULIP_ADMINISTRATOR`: the email address of the person or team
-  maintaining this installation and who will get support and error
-  emails.
-
-- `EMAIL_HOST`, `EMAIL_HOST_USER`: credentials for an outgoing email
-  (aka "SMTP") server that Zulip can use to send emails.  See
-  [our guide for outgoing email](prod-email.html) for help configuring
-  this.
-
-- If desired, you can also configure additional
-  [authentication backends](prod-authentication-methods.html) while
-  you're editing /etc/zulip/settings.py.  Note, however, that the
-  default (email) backend must be enabled when you complete Step 6
-  (creating an organization) below.
+* Initialize Zulip database
 
 ## Step 4: Test email configuration
 
@@ -100,25 +101,7 @@ This is important to test now, because email configuration errors are
 common, and your outgoing email configuration needs to be working in
 order for you to complete the installation.
 
-## Step 5: Initialize Zulip database
-
-At this point, you are done doing things as root. The remaining
-commands are run as the `zulip` user using `su zulip`. To initialize
-the Zulip database for your production install, run:
-
-```
-su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
-```
-
-The `initialize-database` script will report an error if you did not
-fill in all the mandatory settings from `/etc/zulip/settings.py`.  It
-is safe to rerun it after correcting the problem if that happens.
-
-This completes the process of installing Zulip on your server.
-However, in order to use Zulip, you'll need to create an organization
-in your Zulip installation.
-
-## Step 6: Create a Zulip organization and login
+## Step 5: Create a Zulip organization and login
 
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
@@ -144,7 +127,7 @@ log in!
 **Congratulations!** You are logged in as an organization
 administrator for your new Zulip organization.
 
-## Step 7: Next steps
+## Step 6: Next steps
 
 * Subscribe to the extremely low-traffic
 [Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
