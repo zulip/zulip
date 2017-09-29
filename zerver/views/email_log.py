@@ -17,20 +17,14 @@ import datetime
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 client = Client()
 
-def email_page(request, message=None):
-    # type: (HttpRequest, Optional[str]) -> HttpResponse
-    if message is None:
-        message = '''
-All the emails sent in the Zulip development environment are logged here. You can also
-manually generate most of the emails by clicking <a href="/emails/generate">here</a>.
-To clear this log click <a href="/emails/clear">here</a>.
-'''
+def email_page(request):
+    # type: (HttpRequest) -> HttpResponse
     try:
         with open(settings.EMAIL_CONTENT_LOG_PATH, "r+") as f:
             content = f.read()
     except FileNotFoundError:
         content = ""
-    return render(request, 'zerver/email_log.html', {'log': content, 'message': message})
+    return render(request, 'zerver/email_log.html', {'log': content})
 
 def clear_emails(request):
     # type: (HttpRequest) -> HttpResponse
@@ -79,8 +73,4 @@ def generate_all_emails(request):
 
     # Follow up day1 day2 emails
     enqueue_welcome_emails(user_profile)
-    message = '''
-Emails generated successfully. Reload this page to generate them again.
-To clear this log click <a href="/emails/clear">here</a>.
-'''
-    return email_page(request, message)
+    return redirect(email_page)

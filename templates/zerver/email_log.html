@@ -2,7 +2,9 @@
 {% block content %}
 <div class="container">
     <div class="alert">
-        {{ message |safe }}
+        All the emails sent in the Zulip development environment are logged here. You can also
+        manually generate most of the emails by clicking <a href="/emails/generate">here</a>.
+        To clear this log click <a href="/emails/clear">here</a>
     </div>
     {{ log |safe }}
 </div>
