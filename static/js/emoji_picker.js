@@ -330,10 +330,8 @@ function update_emoji_showcase($focused_emoji) {
     // Don't use jQuery's data() function here. It has the side-effect
     // of converting emoji names like :100:, :1234: etc to number.
     var focused_emoji_name = $focused_emoji.attr("data-emoji-name");
-    var focused_emoji_dict = exports.emoji_collection[focused_emoji_name];
-    if (search_is_active) {
-        focused_emoji_dict = search_results[current_index];
-    }
+    var canonical_name = emoji.get_canonical_name(focused_emoji_name);
+    var focused_emoji_dict = exports.emoji_collection[canonical_name];
 
     var emoji_dict = _.extend({}, focused_emoji_dict, {
         name: focused_emoji_name.replace(/_/g, ' '),
@@ -697,6 +695,11 @@ exports.register_click_handlers = function () {
 
     $("body").on("click", ".emoji-popover-filter", function () {
         reset_emoji_showcase();
+    });
+
+    $("body").on("mouseenter", ".emoji-popover-emoji .emoji", function () {
+        var hovered_emoji = $(this).parent();
+        update_emoji_showcase(hovered_emoji);
     });
 };
 

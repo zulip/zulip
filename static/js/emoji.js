@@ -96,6 +96,19 @@ exports.build_emoji_upload_widget = function () {
     );
 };
 
+exports.get_canonical_name = function (emoji_name) {
+    if (exports.active_realm_emojis.hasOwnProperty(emoji_name)) {
+        return emoji_name;
+    }
+    if (!emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+        blueslip.error("Invalid emoji name: " + emoji_name);
+        return;
+    }
+    var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+
+    return emoji_codes.codepoint_to_name[codepoint];
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
