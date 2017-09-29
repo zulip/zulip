@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 if False:
-    from typing import Any
+    from typing import Any  # noqa: F401
     from api.zulip import Client
 
 def add_subscriptions(client):

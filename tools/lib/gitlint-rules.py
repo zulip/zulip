@@ -1,4 +1,4 @@
-from typing import Text, List
+from typing import Text, List  # noqa: F401
 
 import gitlint
 from gitlint.rules import LineRule, RuleViolation, CommitMessageTitle

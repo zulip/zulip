@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple  # noqa: F401
 
 import os
 import re

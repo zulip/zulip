@@ -5,7 +5,7 @@ import subprocess
 
 from .printer import print_err, colors
 
-from typing import List
+from typing import List  # noqa: F401
 
 def check_pep8(files):
     # type: (List[str]) -> bool

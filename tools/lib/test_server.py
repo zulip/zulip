@@ -8,7 +8,7 @@ import time
 from contextlib import contextmanager
 
 if False:
-    from typing import (Any, Iterator, Optional)
+    from typing import (Any, Iterator, Optional)  # noqa: F401
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check
