@@ -1366,7 +1366,7 @@ else:
 # SOCIAL AUTHENTICATION SETTINGS
 ########################################################################
 
-SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup']
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup', 'mobile_flow_otp']
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')

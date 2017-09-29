@@ -229,10 +229,12 @@ class SocialAuthMixin(ZulipAuthMixin):
         is_signup = strategy.session_get('is_signup') == '1'
 
         subdomain = strategy.session_get('subdomain')
-        if not subdomain:
+        mobile_flow_otp = strategy.session_get('mobile_flow_otp')
+        if not subdomain or mobile_flow_otp is not None:
             return login_or_register_remote_user(request, email_address,
                                                  user_profile, full_name,
                                                  invalid_subdomain=bool(invalid_subdomain),
+                                                 mobile_flow_otp=mobile_flow_otp,
                                                  is_signup=is_signup)
         try:
             realm = Realm.objects.get(string_id=subdomain)
