@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # This tool contains all of the rules that we use to decide which of
 # the various emoji names in emoji-map.json we should actually use in
 # autocomplete and emoji pickers.  You can't do all of them, because
