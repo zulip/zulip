@@ -47,7 +47,7 @@ var common = require("js/common.js");
     }
 
     password = 'z!X4@S_&';
-    accepted = common.password_quality(password, bar, password_field(10, 0.10));
+    accepted = common.password_quality(password, bar, password_field(10, 10));
     assert(!accepted);
     assert.equal(bar.w, '39.7%');
     assert.equal(bar.added_class, 'bar-danger');
@@ -55,7 +55,7 @@ var common = require("js/common.js");
     assert.equal(warning, 'translated: Password should be at least 10 characters long');
 
     password = 'foo';
-    accepted = common.password_quality(password, bar, password_field(2, 0.001));
+    accepted = common.password_quality(password, bar, password_field(2, 1));
     assert(accepted);
     assert.equal(bar.w, '10.390277164940581%');
     assert.equal(bar.added_class, 'bar-success');
