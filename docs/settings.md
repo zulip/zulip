@@ -2,12 +2,15 @@
 
 The page documents the Zulip settings system, and hopefully should
 help you decide how to correctly implement new settings you're adding
-to Zulip.  We have two types of administrative settings in Zulip:
-server settings (which are set via configuration files are apply to
-the whole Zulip installation), and realm settings (which are usually
-set via the /#organization page in the Zulip web application) and
-apply to a single Zulip realm/organization (which for most Zulip
-servers is the only realm on the server).
+to Zulip.
+
+We have two types of administrative settings in Zulip:
+* **Server settings** are set via configuration files, and apply to
+  the whole Zulip installation.
+* **Realm settings** (or **organization settings**) are usually
+  set via the /#organization page in the Zulip web application, and
+  apply to a single Zulip realm/organization. (Which, for most Zulip
+  servers, is the only realm on the server).
 
 Philosophically, the goals of the settings system are to make it
 convenient for:
@@ -72,8 +75,8 @@ In a production environment, we have:
   user would set in `/etc/zulip/settings.py` (you can look at the
   `DEFAULT_SETTINGS` dictionary to easily review the settings
   available).  `zproject/settings.py` has a line `from prod_settings
-  import *`, which has the effect of importing
-  `/etc/zulip/settings.py` in a prod environment (via a symlink).
+  import *`, which in a prod environment has the effect of importing
+  `/etc/zulip/settings.py` (via a symlink).
 
 In a development environment, we have `zproject/settings.py`, and
 additionally:
@@ -96,12 +99,13 @@ in two or three places:
   user will add the value when they configure the feature).
 
 * In an appropriate section of `zproject/prod_settings_template.py`,
-  with documentation in the comments explaining the settings's
+  with documentation in the comments explaining the setting's
   purpose and effect.
 
-* Possibly also `zproject/dev_settings.py`, if the desired value of
-  the setting for Zulip development environments is different from the
-  default for production (and similarly for `zproject/test_settings.py`).
+* Possibly also `zproject/dev_settings.py` and/or
+  `zproject/test_settings.py`, if the desired value of the setting for
+  Zulip development and/or test environments is different from the
+  default for production.
 
 Most settings should be enabled in the development environment, to
 maximize convenience of testing all of Zulip's features; they should
