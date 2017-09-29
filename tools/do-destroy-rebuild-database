@@ -15,6 +15,7 @@ EOF
 
 sh "$(dirname "$0")/../scripts/setup/flush-memcached"
 
+./manage.py purge_queue --all
 ./manage.py migrate --noinput
 migration_status "var/migration_status_dev"
 ./manage.py createcachetable third_party_api_results
