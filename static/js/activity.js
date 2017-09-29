@@ -37,9 +37,15 @@ exports.update_scrollbar = (function () {
 
     return {
         users: function () {
+            if (!$user_presences.length) {
+                $user_presences = $("#user_presences");
+            }
             ui.update_scrollbar($user_presences);
         },
         group_pms: function () {
+            if (!$group_pms.length) {
+                $group_pms = $("#group-pms");
+            }
             ui.update_scrollbar($group_pms);
         },
     };
@@ -354,12 +360,7 @@ exports.build_user_sidebar = function () {
     return user_info; // for testing
 };
 
-function actually_update_users_for_search() {
-    exports.build_user_sidebar();
-    resize.resize_page_components();
-}
-
-var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
+var update_users_for_search = _.throttle(exports.build_user_sidebar, 50);
 
 function show_huddles() {
     $('#group-pm-list').addClass("show");
@@ -400,7 +401,6 @@ exports.update_huddles = function () {
     });
 
     show_huddles();
-    exports.update_scrollbar.users();
     exports.update_scrollbar.group_pms();
 };
 
