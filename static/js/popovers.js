@@ -33,9 +33,9 @@ var list_of_popovers = [];
     }
 }($.fn.popover));
 
-function load_medium_avatar(user_email) {
+function load_medium_avatar(user_avatar_url) {
     var sender_avatar_medium = new Image();
-    sender_avatar_medium.src= "avatar/" + user_email + "/medium";
+    sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
         $(".popover-avatar").css("background-image","url("+$(this).attr("src")+")");
     });
@@ -84,6 +84,7 @@ function show_message_info_popover(element, id) {
 
         var message = current_msg_list.get(id);
         var sender = people.get_person_from_user_id(message.sender_id);
+        var sender_avatar_url = sender.avatar_url;
         var sender_email;
 
         if (sender) {
@@ -129,7 +130,7 @@ function show_message_info_popover(element, id) {
         });
         elt.popover("show");
 
-        load_medium_avatar(sender_email);
+        load_medium_avatar(sender_avatar_url);
 
         current_message_info_popover_elem = elt;
     }
@@ -435,7 +436,9 @@ exports.register_click_handlers = function () {
             popovers.show_userlist_sidebar();
         }
 
-        var user_email = people.get_person_from_user_id(user_id).email;
+        var user = people.get_person_from_user_id(user_id);
+        var user_email = user.email;
+        var user_avatar_url = user.avatar_url;
 
         var args = {
             user_email: user_email,
@@ -459,7 +462,7 @@ exports.register_click_handlers = function () {
         });
         target.popover("show");
 
-        load_medium_avatar(user_email);
+        load_medium_avatar(user_avatar_url);
 
         current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');

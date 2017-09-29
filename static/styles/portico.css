@@ -1343,13 +1343,14 @@ input.new-organization-button {
         padding-right: 80px;
         transform: translateX(0);
         transition: all 0.3s ease;
-
+        overflow: hidden;
         height: 100vh;
     }
 
     .app.help .sidebar.show {
         padding-right: 20px;
         transform: translateX(280px);
+        overflow: auto !important;
     }
 
     .app.help .sidebar.show + .hamburger {

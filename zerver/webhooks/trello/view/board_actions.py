@@ -1,6 +1,5 @@
 from typing import Any, Dict, Optional, Mapping, MutableMapping, Text, Tuple
 from .exceptions import UnknownUpdateBoardAction
-from .templates import TRELLO_SUBJECT_TEMPLATE, TRELLO_MESSAGE_TEMPLATE
 
 SUPPORTED_BOARD_ACTIONS = [
     u'removeMemberFromBoard',
@@ -17,10 +16,10 @@ CHANGE_NAME = u'changeName'
 TRELLO_BOARD_URL_TEMPLATE = u'[{board_name}]({board_url})'
 
 ACTIONS_TO_MESSAGE_MAPPER = {
-    REMOVE_MEMBER: u'removed {member_name} from {board_url_template}',
-    ADD_MEMBER: u'added {member_name} to {board_url_template}',
-    CREATE_LIST: u'added {list_name} list to {board_url_template}',
-    CHANGE_NAME: u'renamed the board from {old_name} to {board_url_template}'
+    REMOVE_MEMBER: u'removed {member_name} from {board_url_template}.',
+    ADD_MEMBER: u'added {member_name} to {board_url_template}.',
+    CREATE_LIST: u'added {list_name} list to {board_url_template}.',
+    CHANGE_NAME: u'renamed the board from {old_name} to {board_url_template}.'
 }
 
 def process_board_action(payload, action_type):
@@ -45,16 +44,13 @@ def get_proper_action(payload, action_type):
 
 def get_subject(payload):
     # type: (Mapping[str, Any]) -> Text
-    data = {
-        'board_name': get_action_data(payload)['board']['name']
-    }
-    return TRELLO_SUBJECT_TEMPLATE.format(**data)
+    return get_action_data(payload)['board']['name']
 
 def get_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
     creator = payload['action']['memberCreator']['fullName']
-    return TRELLO_MESSAGE_TEMPLATE.format(full_name=creator, rest=message_body)
+    return u'{full_name} {rest}'.format(full_name=creator, rest=message_body)
 
 def get_managed_member_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text

@@ -59,7 +59,7 @@ var apps_events = function () {
             image: "/static/images/app-screenshots/zulip-android.png",
             alt: "Android",
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
-            link: "https://play.google.com/store/apps/details?id=com.zulip.android",
+            link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
         },
         ios: {
             image: "/static/images/app-screenshots/zulip-iphone-rough.png",

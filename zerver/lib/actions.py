@@ -1546,12 +1546,6 @@ def check_message(sender, client, addressee,
 
     if addressee.is_stream():
         stream_name = addressee.stream_name()
-        if stream_name is None:
-            if sender.default_sending_stream:
-                # Use the users default stream
-                stream_name = sender.default_sending_stream.name
-            else:
-                raise JsonableError(_('Missing stream'))
 
         stream_name = stream_name.strip()
         check_stream_name(stream_name)
