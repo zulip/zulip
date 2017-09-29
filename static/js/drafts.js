@@ -148,6 +148,12 @@ exports.restore_draft = function (draft_id) {
     }
     compose_actions.start(draft_copy.type, draft_copy);
     compose_ui.autosize_textarea();
+    if ($("#preview_message_area").is(":visible") && $("#undo_markdown_preview").is(":visible")) {
+        $("#markdown_preview").show();
+        $("#undo_markdown_preview").hide();
+        $("#preview_message_area").hide();
+        $("#new_message_content").show();
+    }
     $("#new_message_content").data("draft-id", draft_id);
 };
 
