@@ -237,7 +237,7 @@ form#add_new_subscription {
     margin: 0;
 }
 
-#create_stream_button {
+.create_stream_button {
     margin: 0px 0px 0px 5px;
 
     border: none;
@@ -255,7 +255,7 @@ form#add_new_subscription {
     padding-top: 0px;
 }
 
-#create_stream_button:hover {
+.create_stream_button:hover {
     color: hsl(0, 0%, 27%);
 }
 
@@ -500,12 +500,20 @@ form#add_new_subscription {
 
 .subscriptions-container .right .nothing-selected {
     display: block;
-    margin-top: calc(45vh - 30px - 1em);
+    margin-top: calc(45vh - 75px);
     text-align: center;
     font-size: 1em;
-    color: hsl(0, 0%, 66%);
-    pointer-events: none;
     -webkit-font-smoothing: antialiased;
+}
+
+.subscriptions-container .right .nothing-selected span {
+    color: hsl(0, 0%, 66%);
+}
+
+.subscriptions-container .right .nothing-selected button {
+    padding: 6px 10px 8px 10px;
+    display: block;
+    margin: 10px auto 0 auto;
 }
 
 .subscriptions-container .left {

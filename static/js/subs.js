@@ -398,7 +398,7 @@ exports.setup_page = function (callback) {
     populate_and_fill();
 
     if (!should_list_all_streams()) {
-        $('#create_stream_button').val(i18n.t("Subscribe"));
+        $('.create_stream_button').val(i18n.t("Subscribe"));
     }
 };
 
@@ -651,7 +651,7 @@ $(function () {
     // when new messages come in, but it's fairly quick.
     stream_list.build_stream_list();
 
-    $("#subscriptions_table").on("click", "#create_stream_button", function (e) {
+    $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
         exports.new_stream_clicked();
     });
@@ -695,7 +695,7 @@ $(function () {
         $('#empty_narrow_message').show();
     });
 
-    $("#subscriptions_table").on("click", ".stream-row, #create_stream_button", function () {
+    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", function () {
         $(".right").addClass("show");
         $(".subscriptions-header").addClass("slide-left");
     });
