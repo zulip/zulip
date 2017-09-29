@@ -77,8 +77,9 @@ exports.initialize = function () {
 
             if (page_params.development_environment) {
                 // line-wrapped to avoid the i18n linter, since we don't want to translate this.
-                $('#dev_env_msg').text(
-                    'In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
+                $('#dev_env_msg').html(
+                    'In the Zulip development environment, outgoing emails can be accessed by opening ' +
+                    '<a href="/emails">/emails</a>. They are also printed to the run-dev.py console.')
                     .addClass('alert-info')
                     .show();
             }
