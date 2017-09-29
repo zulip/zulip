@@ -600,8 +600,8 @@ function render(template_name, args) {
     html += render('emoji_popover_content', args);
     html += "</div>";
     // test to make sure the first emoji is present in the popover
-    var emoji_key = $(html).find(".emoji-100").attr('title');
-    assert.equal(emoji_key, '100');
+    var first_emoji = $(html).find(".emoji-100");
+    assert.equal(first_emoji.length, 1);
 
     var categories = $(html).find(".emoji-popover-tab-item");
     assert.equal(categories.length, 2);
