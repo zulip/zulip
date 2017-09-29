@@ -59,21 +59,17 @@ class AdminZulipHandlerTest(ZulipTestCase):
         # type: () -> None
         settings.LOGGING_NOT_DISABLED = True
 
-    def get_admin_zulip_handler(self, logger):
-        # type: (logging.Logger) -> Any
-
-        # Ensure that AdminEmailHandler does not get filtered out
-        # even with DEBUG=True.
-        admin_email_handler = [
-            h for h in logger.handlers
+    def get_admin_zulip_handler(self):
+        # type: () -> Any
+        return [
+            h for h in logging.getLogger('').handlers
             if h.__class__.__name__ == "AdminZulipHandler"
         ][0]
-        return admin_email_handler
 
     def test_basic(self):
         # type: () -> None
         """A random exception passes happily through AdminZulipHandler"""
-        handler = self.get_admin_zulip_handler(self.logger)
+        handler = self.get_admin_zulip_handler()
         try:
             raise Exception("Testing Error!")
         except Exception:
