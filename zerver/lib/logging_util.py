@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from zerver.lib.str_utils import force_bytes
 from logging import Logger
-
+from typing import Any
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
 class _RateLimitFilter(object):
@@ -125,25 +125,35 @@ def skip_site_packages_logs(record):
         return False
     return True
 
-def create_logger(name, log_file, log_level, log_format="%(asctime)s %(levelname)-8s %(message)s"):
-    # type: (str, str, str, str) -> Logger
-    """Creates a named logger for use in logging content to a certain
-    file.  A few notes:
+def create_logger(name, **kwargs):
+    # type: (str, **Any) -> Logger
+    """Creates a named logger for use in logging content.
+
+    A few notes:
 
     * "name" is used in determining what gets logged to which files;
     see "loggers" in zproject/settings.py for details.  Don't use `""`
     -- that's the root logger.
-    * "log_file" should be declared in zproject/settings.py in ZULIP_PATHS.
 
+    Keyword arguements in use:
+    logger_level -- a string that sets what logging events the logger will pick up
+    log_file -- file that log records are written to. It should be declared in zproject/settings.py in ZULIP_PATHS.
+    log_format -- a special string that controls the display and content of records written to the log file.
     """
-    logging.basicConfig(format=log_format)
+    # Set up the logger
     logger = logging.getLogger(name)
-    logger.setLevel(getattr(logging, log_level))
+    logger.setLevel(kwargs.get("logger_level" or "INFO"))
 
-    if log_file:
-        formatter = logging.Formatter(log_format)
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+    # Set up the logger's handlers
+    if "log_file" in kwargs:
+        set_log_file(logger, kwargs.get("log_file"), log_format=kwargs.get("log_format"))
 
     return logger
+
+
+def set_log_file(logger, log_file, **kwargs):
+    # type: (Logger, str, **Any) -> None
+    file_handler = logging.FileHandler(log_file)
+    formatter = logging.Formatter(kwargs.get("log_format") or '%(asctime)s %(levelname)-8s %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)

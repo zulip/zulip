@@ -10,7 +10,7 @@ from zerver.models import UserProfile
 from zerver.lib.logging_util import create_logger
 
 ## Setup ##
-logger = create_logger(__name__, settings.LDAP_SYNC_LOG_PATH, 'INFO')
+logger = create_logger(__name__, log_file=settings.LDAP_SYNC_LOG_PATH, logger_level='INFO')
 
 # Run this on a cronjob to pick up on name changes.
 def sync_ldap_user_data():

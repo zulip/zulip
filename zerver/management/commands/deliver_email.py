@@ -26,7 +26,7 @@ from ujson import loads
 from typing import Any
 
 ## Setup ##
-logger = create_logger(__name__, settings.EMAIL_DELIVERER_LOG_PATH, 'DEBUG')
+logger = create_logger(__name__, log_file=settings.EMAIL_DELIVERER_LOG_PATH, logger_level='DEBUG')
 
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip
