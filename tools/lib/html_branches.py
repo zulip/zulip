@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from typing import Dict, List, Optional, Set
 
 import re

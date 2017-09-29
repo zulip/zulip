@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # This tools generates /etc/zulip/zulip-secrets.conf
 
-from __future__ import print_function
 import sys
 import os
 if False:
