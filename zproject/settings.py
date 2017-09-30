@@ -160,9 +160,27 @@ DEFAULT_SETTINGS = {
 #    like zulipchat.com.
 DEFAULT_SETTINGS.update({
 
-    # The following bots are optional system bots.
+    # The following bots are optional system bots not enabled by
+    # default.  The default ones are defined in INTERNAL_BOTS, below.
+
+    # ERROR_BOT sends Django exceptions to an "errors" stream in the
+    # system realm.
     'ERROR_BOT': None,
+    # NEW_USER_BOT sends notifications about new user signups to a
+    # "signups" stream in the system realm.
     'NEW_USER_BOT': None,
+    # These are extra bot users for our end-to-end Nagios message
+    # sending tests.
+    'NAGIOS_STAGING_SEND_BOT': None,
+    'NAGIOS_STAGING_RECEIVE_BOT': None,
+    # Feedback bot, messages sent to it are by default emailed to
+    # FEEDBACK_EMAIL (see above), but can be sent to a stream,
+    # depending on configuration.
+    'FEEDBACK_BOT': 'feedback@zulip.com',
+    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
+    'FEEDBACK_STREAM': None,
+    # The bot user for the email gateway.
+    'EMAIL_GATEWAY_BOT': None,
 
     # Structurally, we will probably eventually merge
     # analytics into part of the main server, rather
@@ -175,7 +193,6 @@ DEFAULT_SETTINGS.update({
     # These are undocumented, but we do set them in dev_settings.py or
     # test_settings.py .
     # TODO: document them.
-    'EMAIL_GATEWAY_BOT': None,
     'EMAIL_BACKEND': None,
     'EVENT_LOGS_ENABLED': False,
     'SAVE_FRONTEND_STACKTRACES': False,
@@ -200,18 +217,13 @@ DEFAULT_SETTINGS.update({
     'STAGING_ERROR_NOTIFICATIONS': False,
     'JWT_AUTH_KEYS': {},
     'DEPLOYMENT_ROLE_NAME': "",
-    'NAGIOS_STAGING_SEND_BOT': None,
-    'NAGIOS_STAGING_RECEIVE_BOT': None,
     'APNS_CERT_FILE': None,
     'APNS_KEY_FILE': None,
     'APNS_SANDBOX': True,
     'INITIAL_PASSWORD_SALT': None,
-    'FEEDBACK_BOT': 'feedback@zulip.com',
-    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
     'ADMINS': '',
     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
     'SERVER_EMAIL': None,
-    'FEEDBACK_STREAM': None,
     'WELCOME_EMAIL_SENDER': None,
     'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': False,
