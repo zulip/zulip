@@ -121,7 +121,7 @@ exports.load_old_messages = function load_old_messages(opts) {
 
 
 exports.load_more_messages = function load_more_messages(msg_list) {
-    var batch_size = 100;
+    var batch_size = 250;
     var oldest_message_id;
     if (!load_more_enabled) {
         return;
