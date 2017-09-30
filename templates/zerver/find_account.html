@@ -23,12 +23,7 @@
                     {% endfor %}
                 </ul>
 
-                {% if development_environment %}
-                <div class="alert alert-info" style="display:inline-block;">
-                    In the Zulip development environment, outgoing emails can be accessed by opening
-                    <a href="/emails">/emails</a>. They are also printed to the run-dev.py console.
-                </div>
-                {% endif %}
+                {% include 'zerver/dev_env_email_access_details.html' %}
 
             </div>
             {% else %}
