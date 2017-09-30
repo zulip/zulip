@@ -178,19 +178,6 @@ exports.initialize = function () {
         }
 
         server_events.home_view_loaded();
-
-        // backfill more messages after the user is idle
-        var backfill_batch_size = 1000;
-        $(document).idle({idle: 1000*10,
-                          onIdle: function () {
-                              var first_id = message_list.all.first().id;
-                              exports.load_old_messages({
-                                  anchor: first_id,
-                                  num_before: backfill_batch_size,
-                                  num_after: 0,
-                                  msg_list: home_msg_list,
-                              });
-                          }});
     }
 
     if (page_params.have_initial_messages) {
