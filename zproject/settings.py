@@ -1115,7 +1115,6 @@ ZULIP_PATHS = [
     ("EMAIL_CONTENT_LOG_PATH", "/var/log/zulip/email_content.log"),
     ("LDAP_SYNC_LOG_PATH", "/var/log/zulip/sync_ldap_user_data.log"),
     ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
-    ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
     ("ANALYTICS_LOCK_DIR", "/home/zulip/deployments/analytics-lock-dir"),
