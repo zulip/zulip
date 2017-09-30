@@ -67,7 +67,10 @@ function user_last_seen_time_status(user_id) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
-function show_message_info_popover(element, id) {
+// element is the target element to pop off of
+// user is the user whose profile to show
+// message is the message containing it, which should be selected
+function show_message_info_popover(element, user, message) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
     if (last_popover_elem !== undefined
@@ -76,11 +79,9 @@ function show_message_info_popover(element, id) {
         // by clicking on the same element that caused the popover.
         return;
     }
-    current_msg_list.select_id(id);
+    current_msg_list.select_id(message.id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
-        var message = current_msg_list.get(id);
-        var user = people.get_person_from_user_id(message.sender_id);
         if (user === undefined) {
             // This case should not happen, because
             // people.extract_people_from_message should have added
@@ -327,7 +328,9 @@ exports.show_sender_info = function () {
         }
         $sender = $prev_message.find(".sender_info_hover");
     }
-    show_message_info_popover($sender[0], rows.id($message));
+    var message = current_msg_list.get(rows.id($message));
+    var user = people.get_person_from_user_id(message.sender_id);
+    show_message_info_popover($sender[0], user, message);
 };
 
 exports.register_click_handlers = function () {
@@ -340,7 +343,9 @@ exports.register_click_handlers = function () {
     $("#main_div").on("click", ".sender_info_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        show_message_info_popover(this, rows.id(row));
+        var message = current_msg_list.get(rows.id(row));
+        var user = people.get_person_from_user_id(message.sender_id);
+        show_message_info_popover(this, user, message);
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
