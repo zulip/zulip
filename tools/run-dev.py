@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import optparse
+import argparse
 import os
 import pwd
 import signal
@@ -28,7 +28,7 @@ if False:
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
 
-parser = optparse.OptionParser(r"""
+parser = argparse.ArgumentParser(description=r"""
 
 Starts the app listening on localhost, for local development.
 
@@ -40,8 +40,8 @@ which serves to both of them.  After it's all up and running, browse to
 Note that, while runserver and runtornado have the usual auto-restarting
 behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
-""")
-
+""",
+                                 formatter_class=argparse.RawTextHelpFormatter)
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -49,31 +49,25 @@ from tools.lib.test_script import (
     get_provisioning_status,
 )
 
-parser.add_option('--test',
-                  action='store_true', dest='test',
-                  help='Use the testing database and ports')
-
-parser.add_option('--minify',
-                  action='store_true', dest='minify',
-                  help='Minifies assets for testing in dev')
-
-parser.add_option('--interface',
-                  action='store', dest='interface',
-                  default=None, help='Set the IP or hostname for the proxy to listen on')
-
-parser.add_option('--no-clear-memcached',
-                  action='store_false', dest='clear_memcached',
-                  default=True, help='Do not clear memcached')
-
-parser.add_option('--force', dest='force',
-                  action="store_true",
-                  default=False, help='Run command despite possible problems.')
-
-parser.add_option('--enable-tornado-logging', dest='enable_tornado_logging',
-                  action="store_true",
-                  default=False, help='Enable access logs from tornado proxy server.')
-
-(options, arguments) = parser.parse_args()
+parser.add_argument('--test',
+                    action='store_true',
+                    help='Use the testing database and ports')
+parser.add_argument('--minify',
+                    action='store_true',
+                    help='Minifies assets for testing in dev')
+parser.add_argument('--interface',
+                    action='store',
+                    default=None, help='Set the IP or hostname for the proxy to listen on')
+parser.add_argument('--no-clear-memcached',
+                    action='store_false', dest='clear_memcached',
+                    default=True, help='Do not clear memcached')
+parser.add_argument('--force',
+                    action="store_true",
+                    default=False, help='Run command despite possible problems.')
+parser.add_argument('--enable-tornado-logging',
+                    action="store_true",
+                    default=False, help='Enable access logs from tornado proxy server.')
+options = parser.parse_args()
 
 if not options.force:
     ok, msg = get_provisioning_status()
