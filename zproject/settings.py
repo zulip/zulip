@@ -111,6 +111,8 @@ DEFAULT_SETTINGS = {
     'EMAIL_GATEWAY_IMAP_SERVER': None,
     'EMAIL_GATEWAY_IMAP_PORT': None,
     'EMAIL_GATEWAY_IMAP_FOLDER': None,
+    # Not documented for in /etc/zulip/settings.py, since it's rarely needed.
+    'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
     'EMAIL_HOST': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
     'S3_AVATAR_BUCKET': '',
@@ -157,7 +159,7 @@ DEFAULT_SETTINGS = {
 #    for dev and test environments; or
 #  * don't make sense to change on a typical production server with
 #    one or a handful of realms, though they might on an installation
-#    like zulipchat.com.
+#    like zulipchat.com or to work around a problem on another server.
 DEFAULT_SETTINGS.update({
 
     # The following bots are optional system bots not enabled by
@@ -236,48 +238,105 @@ DEFAULT_SETTINGS.update({
     # DEFAULT_SETTINGS and put somewhere else in settings.py.
     'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
 
-    # These are undocumented, and we don't set them in dev_settings.py
-    # or test_settings.py , either.
-    # TODO: document them.
-    'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
-    'STAGING': False,
+    # Settings for APNS.  Only needed on push.zulipchat.com.
+    'APNS_CERT_FILE': None,
+    'APNS_KEY_FILE': None,
+    'APNS_SANDBOX': True,
+
+    # Limits related to the size of file uploads; last few in MB.
     'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
     'MAX_AVATAR_FILE_SIZE': 5,
     'MAX_ICON_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
-    'STAGING_ERROR_NOTIFICATIONS': False,
-    'JWT_AUTH_KEYS': {},
-    'DEPLOYMENT_ROLE_NAME': "",
-    'APNS_CERT_FILE': None,
-    'APNS_KEY_FILE': None,
-    'APNS_SANDBOX': True,
-    'INITIAL_PASSWORD_SALT': None,
-    'ADMINS': '',
-    'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
-    'SERVER_EMAIL': None,
-    'WELCOME_EMAIL_SENDER': None,
+
+    # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': False,
     'LOGIN_LINK_DISABLED': False,
     'ABOUT_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
-    'CUSTOM_LOGO_URL': None,
-    'VERBOSE_SUPPORT_OFFERS': False,
-    'STATSD_HOST': '',
-    'ROOT_DOMAIN_LANDING_PAGE': False,
+
+    # What domains to treat like the root domain
     'ROOT_SUBDOMAIN_ALIASES': ["www"],
-    'SOCIAL_AUTH_FIELDS_STORED_IN_SESSION': ['subdomain', 'is_signup'],
+    # Whether the root domain is a landing page or can host a realm.
+    'ROOT_DOMAIN_LANDING_PAGE': False,
+
+    # If using the Zephyr mirroring supervisord configuration, the
+    # hostname to connect to in order to transfer credentials from webathena.
     'PERSONAL_ZMIRROR_SERVER': None,
+
+    # When security-relevant links in emails expire.
     'CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS': 1,
     'INVITATION_LINK_VALIDITY_DAYS': 10,
     'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
-    'PRIVACY_POLICY': None,
-    'TOS_VERSION': None,
-    'FIRST_TIME_TOS_TEMPLATE': None,
+
+    # By default, Zulip uses websockets to send messages.  In some
+    # networks, websockets don't work.  One can configure Zulip to
+    # not use websockets here.
     'USE_WEBSOCKETS': True,
+
+    # Path to markdown privacy policy
+    # TODO: Document alongside TERMS_OF_SERVICE (listed above).
+    'PRIVACY_POLICY': None,
+    # Version number for ToS.  Change this if you want to force every
+    # user to click through to re-accept terms of service before using
+    # Zulip again on the web.
+    'TOS_VERSION': None,
+    # Template to use when bumping TOS_VERSION to explain situation.
+    'FIRST_TIME_TOS_TEMPLATE': None,
+
+    # Hostname used for Zulip's statsd logging integration.
+    'STATSD_HOST': '',
+
+    # Configuration for JWT auth.
+    'JWT_AUTH_KEYS': {},
+
+    # TODO: Remove the remains of the legacy "deployment" system.
+    'DEPLOYMENT_ROLE_NAME': "",
+
+    # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
+    # Django setting for what from address to use in error emails.  We
+    # set this to ZULIP_ADMINISTRATOR by default.
+    'SERVER_EMAIL': None,
+    # Django setting for who receives error emails.  We set to
+    # ZULIP_ADMINISTRATOR by default.
+    'ADMINS': '',
+
+    # TODO: Remove this.  Used to control whether Zulip's emails
+    # offered friendly support.
+    'VERBOSE_SUPPORT_OFFERS': False,
+    # From address for welcome emails.
+    'WELCOME_EMAIL_SENDER': None,
+    # Whether we should use users' own email addresses as the from
+    # address when sending missed-message emails.  Off by default
+    # because some transactional email providers reject sending such
+    # emails since they can look like spam.
+    'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
+
+    # Used to change the Zulip logo in portico pages.
+    'CUSTOM_LOGO_URL': None,
+
+    # Random salt used when deterministically generating passwords in
+    # development.
+    'INITIAL_PASSWORD_SALT': None,
+
+    # Used to control whether certain management commands are run on
+    # the server.
+    # TODO: Replace this with a smarter "run on only one server" system.
+    'STAGING': False,
+    # Configuration option for our email/Zulip error reporting.
+    'STAGING_ERROR_NOTIFICATIONS': False,
+
+    # Social auth configuration for session.
+    # TODO: Move this with the other fixed social auth settings.  This
+    # doesn't need to be configurable.
+    'SOCIAL_AUTH_FIELDS_STORED_IN_SESSION': ['subdomain', 'is_signup'],
+
+    # How long to wait before presence should treat a user as offline.
+    # TODO: Figure out why this is different from the corresponding
+    # value in static/js/presence.js.  Also, probably move it out of
+    # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
-    # (Don't put new settings here -- document them, and put them
-    # next to the other documented settings above.)
 })
 
 
