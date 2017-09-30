@@ -1397,8 +1397,7 @@ else:
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
-if vars().get("AUTH_LDAP_BIND_PASSWORD") is None:
-    AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
+AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
 
 # Set the sender email address for Django traceback error reporting
 if SERVER_EMAIL is None:
