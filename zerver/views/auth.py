@@ -45,8 +45,8 @@ import requests
 import time
 import ujson
 
-def maybe_send_to_registration(request, email, full_name='', password_required=True):
-    # type: (HttpRequest, Text, Text, bool) -> HttpResponse
+def maybe_send_to_registration(request: HttpRequest, email: Text,
+                               full_name: Text='', password_required: bool=True) -> HttpResponse:
 
     realm = get_realm_from_request(request)
     from_multiuse_invite = False
@@ -96,20 +96,19 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
                                'from_multiuse_invite': from_multiuse_invite},
                       )
 
-def redirect_to_subdomain_login_url():
-    # type: () -> HttpResponseRedirect
+def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
     redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
 
-def redirect_to_config_error(error_type):
-    # type: (str) -> HttpResponseRedirect
+def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
     return HttpResponseRedirect("/config-error/%s" % (error_type,))
 
-def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
-                                  invalid_subdomain=False, mobile_flow_otp=None,
-                                  is_signup=False):
-    # type: (HttpRequest, Optional[Text], Optional[UserProfile], Text, bool, Optional[str], bool) -> HttpResponse
+def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[Text],
+                                  user_profile: Optional[UserProfile], full_name: Text='',
+                                  invalid_subdomain: bool=False,
+                                  mobile_flow_otp: Optional[str]=None,
+                                  is_signup: bool=False) -> HttpResponse:
     if invalid_subdomain:
         # Show login page with an error message
         return redirect_to_subdomain_login_url()
@@ -169,8 +168,7 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
 
-def remote_user_sso(request):
-    # type: (HttpRequest) -> HttpResponse
+def remote_user_sso(request: HttpRequest) -> HttpResponse:
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
@@ -186,8 +184,7 @@ def remote_user_sso(request):
     return login_or_register_remote_user(request, remote_user, user_profile)
 
 @csrf_exempt
-def remote_user_jwt(request):
-    # type: (HttpRequest) -> HttpResponse
+def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
         auth_key = settings.JWT_AUTH_KEYS[subdomain]
@@ -229,16 +226,14 @@ def remote_user_jwt(request):
 
     return login_or_register_remote_user(request, email, user_profile, remote_user)
 
-def google_oauth2_csrf(request, value):
-    # type: (HttpRequest, str) -> str
+def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
     # In Django 1.10, get_token returns a salted token which changes
     # everytime get_token is called.
     from django.middleware.csrf import _unsalt_cipher_token
     token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
-def start_google_oauth2(request):
-    # type: (HttpRequest) -> HttpResponse
+def start_google_oauth2(request: HttpRequest) -> HttpResponse:
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
 
     if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
@@ -247,8 +242,8 @@ def start_google_oauth2(request):
     is_signup = bool(request.GET.get('is_signup'))
     return redirect_to_main_site(request, url, is_signup=is_signup)
 
-def redirect_to_main_site(request, url, is_signup=False):
-    # type: (HttpRequest, Text, bool) -> HttpResponse
+def redirect_to_main_site(request: HttpRequest, url: Text,
+                          is_signup: bool=False) -> HttpResponse:
     main_site_uri = ''.join((
         settings.EXTERNAL_URI_SCHEME,
         settings.EXTERNAL_HOST,
@@ -269,21 +264,18 @@ def redirect_to_main_site(request, url, is_signup=False):
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
-def start_social_login(request, backend):
-    # type: (HttpRequest, Text) -> HttpResponse
+def start_social_login(request: HttpRequest, backend: Text) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
 
     return redirect_to_main_site(request, backend_url)
 
-def start_social_signup(request, backend):
-    # type: (HttpRequest, Text) -> HttpResponse
+def start_social_signup(request: HttpRequest, backend: Text) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     return redirect_to_main_site(request, backend_url, is_signup=True)
 
-def send_oauth_request_to_google(request):
-    # type: (HttpRequest) -> HttpResponse
+def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
     subdomain = request.GET.get('subdomain', '')
     is_signup = request.GET.get('is_signup', '')
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
@@ -313,8 +305,7 @@ def send_oauth_request_to_google(request):
     }
     return redirect(google_uri + urllib.parse.urlencode(params))
 
-def finish_google_oauth2(request):
-    # type: (HttpRequest) -> HttpResponse
+def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
     error = request.GET.get('error')
     if error == 'access_denied':
         return redirect('/')
@@ -405,8 +396,8 @@ def finish_google_oauth2(request):
     return redirect_and_log_into_subdomain(
         realm, full_name, email_address, is_signup=is_signup)
 
-def authenticate_remote_user(request, email_address, subdomain=None):
-    # type: (HttpRequest, str, Optional[Text]) -> Tuple[UserProfile, Dict[str, Any]]
+def authenticate_remote_user(request: HttpRequest, email_address: str,
+                             subdomain: Optional[Text]=None) -> Tuple[UserProfile, Dict[str, Any]]:
     return_data = {}  # type: Dict[str, bool]
     if email_address is None:
         # No need to authenticate if email address is None. We already
@@ -425,8 +416,7 @@ def authenticate_remote_user(request, email_address, subdomain=None):
                                 return_data=return_data)
     return user_profile, return_data
 
-def log_into_subdomain(request):
-    # type: (HttpRequest) -> HttpResponse
+def log_into_subdomain(request: HttpRequest) -> HttpResponse:
     try:
         # Discard state if older than 15 seconds
         state = request.get_signed_cookie('subdomain.signature',
@@ -459,8 +449,7 @@ def log_into_subdomain(request):
                                          full_name, invalid_subdomain=invalid_subdomain,
                                          is_signup=is_signup)
 
-def get_dev_users(realm=None, extra_users_count=10):
-    # type: (Optional[Realm], int) -> List[UserProfile]
+def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> List[UserProfile]:
     # Development environments usually have only a few users, but
     # it still makes sense to limit how many extra users we render to
     # support performance testing with DevAuthBackend.
@@ -476,8 +465,7 @@ def get_dev_users(realm=None, extra_users_count=10):
     users = list(shakespearian_users) + list(extra_users)
     return users
 
-def login_page(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
+def login_page(request: HttpRequest, **kwargs: **Any) -> HttpResponse:
     if request.user.is_authenticated:
         return HttpResponseRedirect("/")
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
@@ -528,8 +516,7 @@ def login_page(request, **kwargs):
 
     return template_response
 
-def dev_direct_login(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
+def dev_direct_login(request: HttpRequest, **kwargs: **Any) -> HttpResponse:
     # This function allows logging in without a password and should only be called in development environments.
     # It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
     if (not dev_auth_enabled()) or settings.PRODUCTION:
@@ -548,8 +535,7 @@ def dev_direct_login(request, **kwargs):
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_dev_fetch_api_key(request, username=REQ()):
-    # type: (HttpRequest, str) -> HttpResponse
+def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResponse:
     """This function allows logging in without a password on the Zulip
     mobile apps when connecting to a Zulip development environment.  It
     requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
@@ -580,8 +566,7 @@ def api_dev_fetch_api_key(request, username=REQ()):
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @csrf_exempt
-def api_dev_get_emails(request):
-    # type: (HttpRequest) -> HttpResponse
+def api_dev_get_emails(request: HttpRequest) -> HttpResponse:
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
     users = get_dev_users()
@@ -591,8 +576,8 @@ def api_dev_get_emails(request):
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_fetch_api_key(request, username=REQ(), password=REQ()):
-    # type: (HttpRequest, str, str) -> HttpResponse
+def api_fetch_api_key(request: HttpRequest, username: str=REQ(),
+                      password: str=REQ()) -> HttpResponse:
     return_data = {}  # type: Dict[str, bool]
     if username == "google-oauth2-token":
         user_profile = authenticate(google_oauth2_token=password,
@@ -638,8 +623,7 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
-def get_auth_backends_data(request):
-    # type: (HttpRequest) -> Dict[str, Any]
+def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
     if settings.REALMS_HAVE_SUBDOMAINS:
         subdomain = get_subdomain(request)
@@ -667,8 +651,7 @@ def get_auth_backends_data(request):
             "google": google_auth_enabled(realm)}
 
 @csrf_exempt
-def api_get_auth_backends(request):
-    # type: (HttpRequest) -> HttpResponse
+def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
     """Deprecated route; this is to be replaced by api_get_server_settings"""
     auth_backends = get_auth_backends_data(request)
     auth_backends['zulip_version'] = ZULIP_VERSION
@@ -676,8 +659,7 @@ def api_get_auth_backends(request):
 
 @require_GET
 @csrf_exempt
-def api_get_server_settings(request):
-    # type: (HttpRequest) -> HttpResponse
+def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
@@ -701,8 +683,8 @@ def api_get_server_settings(request):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_fetch_api_key(request, user_profile, password=REQ(default='')):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
+                       password: str=REQ(default='')) -> HttpResponse:
     if password_auth_enabled(user_profile.realm):
         if not authenticate(username=user_profile.email, password=password,
                             realm_subdomain=get_subdomain(request)):
@@ -710,13 +692,11 @@ def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     return json_success({"api_key": user_profile.api_key})
 
 @csrf_exempt
-def api_fetch_google_client_id(request):
-    # type: (HttpRequest) -> HttpResponse
+def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
     if not settings.GOOGLE_CLIENT_ID:
         return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
     return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
 
 @require_post
-def logout_then_login(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
+def logout_then_login(request: HttpRequest, **kwargs: **Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
