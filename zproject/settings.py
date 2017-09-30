@@ -297,9 +297,6 @@ DEFAULT_SETTINGS.update({
     # ZULIP_ADMINISTRATOR by default.
     'ADMINS': '',
 
-    # TODO: Remove this.  Used to control whether Zulip's emails
-    # offered friendly support.
-    'VERBOSE_SUPPORT_OFFERS': False,
     # From address for welcome emails.
     'WELCOME_EMAIL_SENDER': None,
     # Whether we should use users' own email addresses as the from
