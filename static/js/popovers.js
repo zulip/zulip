@@ -321,17 +321,17 @@ exports.hide_user_sidebar_popover = function () {
 };
 
 exports.show_sender_info = function () {
-    var message = $(".selected_message");
-    var sender = message.find(".sender_info_hover");
-    var prev_message = message.prev();
-    while (!sender[0]) {
-        prev_message = prev_message.prev();
-        if (!prev_message) {
+    var $message = $(".selected_message");
+    var $sender = $message.find(".sender_info_hover");
+    var $prev_message = $message.prev();
+    while (!$sender[0]) {
+        $prev_message = $prev_message.prev();
+        if (!$prev_message) {
             break;
         }
-        sender = prev_message.find(".sender_info_hover");
+        $sender = $prev_message.find(".sender_info_hover");
     }
-    show_message_info_popover(sender[0], rows.id(message));
+    show_message_info_popover($sender[0], rows.id($message));
 };
 
 exports.register_click_handlers = function () {
