@@ -17,6 +17,7 @@ from django.contrib.auth.views import (login, password_reset,
 
 import zerver.tornado.views
 import zerver.views
+import zerver.views.realm
 import zerver.views.auth
 import zerver.views.compatibility
 import zerver.views.home
@@ -416,6 +417,10 @@ v1_api_and_json_patterns = [
     url(r'^events$', rest_dispatch,
         {'GET': 'zerver.tornado.views.get_events_backend',
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
+]
+
+v1_api_and_json_patterns += [
+    url(r'^check_realm/(?P<realm_str>.*)$', zerver.views.realm.check_realm, name='zerver.views.check_realm'),
 ]
 
 # Include the dual-use patterns twice
