@@ -56,7 +56,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                            value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
                            maxlength={{ MAX_PASSWORD_LENGTH }}
                            data-min-length="{{password_min_length}}"
-                           data-min-quality="{{password_min_quality}}" required />
+                           data-min-entropy-bits="{{password_min_entropy_bits}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
                     {% if full_name %}
                     <span class="help-inline">

@@ -213,7 +213,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'USE_WEBSOCKETS': True,
                     'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
                     'PASSWORD_MIN_LENGTH': 6,
-                    'PASSWORD_MIN_ENTROPY_BITS': 16,
+                    'PASSWORD_MIN_ENTROPY_BITS': 26,
                     'OFFLINE_THRESHOLD_SECS': 5 * 60,
                     'PUSH_NOTIFICATION_BOUNCER_URL': None,
                     }

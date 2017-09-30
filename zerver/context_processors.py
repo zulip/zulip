@@ -136,7 +136,7 @@ def zulip_default_context(request):
         'support_email': FromAddress.SUPPORT,
         'find_team_link_disabled': find_team_link_disabled,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
-        'password_min_quality': settings.PASSWORD_MIN_ENTROPY_BITS,
+        'password_min_entropy_bits': settings.PASSWORD_MIN_ENTROPY_BITS,
         'zulip_version': ZULIP_VERSION,
         'user_is_authenticated': user_is_authenticated,
         'settings_path': settings_path,

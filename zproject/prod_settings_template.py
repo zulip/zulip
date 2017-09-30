@@ -151,7 +151,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # Password strength requirements; learn about configuration at
 # http://zulip.readthedocs.io/en/latest/security-model.html.
 # PASSWORD_MIN_LENGTH = 6
-# PASSWORD_MIN_ZXCVBN_QUALITY = 0.5
+# PASSWORD_MIN_ENTROPY_BITS = 26
 
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False

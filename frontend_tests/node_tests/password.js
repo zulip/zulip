@@ -32,14 +32,14 @@ var common = require("js/common.js");
         return self;
     }());
 
-    function password_field(min_length, min_quality) {
+    function password_field(min_length, min_entropy_bits) {
         var self = {};
 
         self.data = function (field) {
             if (field === 'minLength') {
                 return min_length;
-            } else if (field === 'minQuality') {
-                return min_quality;
+            } else if (field === 'minEntropyBits') {
+                return min_entropy_bits;
             }
         };
 

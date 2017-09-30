@@ -30,16 +30,15 @@ exports.password_quality = function (password, bar, password_field) {
     }
 
     var min_length = password_field.data('minLength');
-    var min_quality = password_field.data('minQuality');
+    var min_entropy_bits = password_field.data('minEntropyBits');
 
     // Consider the password acceptable if it's at least 6 characters.
     var acceptable = password.length >= min_length;
 
-    // Compute a quality score in [0,1].
     var result  = zxcvbn(password);
     var bar_progress = Math.min(1,Math.log(1 + result.crack_times_seconds.
                                           offline_slow_hashing_1e4_per_second) / 22);
-    var quality = result.guesses_log10 * Math.log(10, 2);
+    var entropy_bits = result.guesses_log10 * Math.log(10, 2);
 
     // Even if zxcvbn loves your short password, the bar should be filled
     // at most 1/3 of the way, because we won't accept it.
@@ -47,7 +46,7 @@ exports.password_quality = function (password, bar, password_field) {
         bar_progress = Math.min(bar_progress, 0.33);
 
     // In case the quality is below the minimum, we should not accept the password
-    } else if (quality < min_quality) {
+    } else if (entropy_bits < min_entropy_bits) {
         acceptable = false;
     }
 
