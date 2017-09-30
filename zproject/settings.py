@@ -207,7 +207,6 @@ DEFAULT_SETTINGS.update({
     'APNS_CERT_FILE': None,
     'APNS_KEY_FILE': None,
     'APNS_SANDBOX': True,
-    'ANDROID_GCM_API_KEY': None,
     'INITIAL_PASSWORD_SALT': None,
     'FEEDBACK_BOT': 'feedback@zulip.com',
     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
