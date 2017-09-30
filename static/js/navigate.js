@@ -38,10 +38,9 @@ exports.down = function (with_centering) {
 
 exports.to_home = function () {
     message_viewport.last_movement_direction = -1;
-    var next_row = rows.first_visible(current_msg_list.selected_row());
-    if (next_row.length !== 0) {
-        go_to_row(next_row);
-    }
+    var first_id = current_msg_list.first().id;
+    current_msg_list.select_id(first_id, {then_scroll: true,
+                                          from_scroll: true});
 };
 
 exports.to_end = function () {
