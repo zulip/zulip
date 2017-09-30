@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
 from subprocess import check_call
 from typing import List, Dict, Union
 

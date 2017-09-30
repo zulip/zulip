@@ -4,15 +4,11 @@ import os
 import sys
 import subprocess
 
-import time
-
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
-
-import requests
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--force', default=False,

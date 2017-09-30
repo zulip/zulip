@@ -108,7 +108,6 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from scripts.lib.zulip_tools import WARNING, ENDC
-from django.conf import settings
 
 proxy_port = base_port
 django_port = base_port + 1
