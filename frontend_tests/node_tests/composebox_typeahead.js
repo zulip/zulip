@@ -603,6 +603,20 @@ global.people.add(deactivated_user);
     event.target.id = 'some_non_existing_id';
     $('form#send_message_form').keydown(event);
 
+
+    // Setup jquery functions used in new_message_content enter
+    // handler.
+    var range_length = 0;
+    $('#new_message_content').range = function () {
+        return {
+            length: range_length,
+            range: noop,
+            start: 0,
+            end: 0 + range_length,
+        };
+    };
+    $('#new_message_content').caret = noop;
+
     event.keyCode = 13;
     event.target.id = 'subject';
     $('form#send_message_form').keydown(event);
@@ -624,6 +638,12 @@ global.people.add(deactivated_user);
     event.ctrlKey = false;
     event.altKey = true;
     $('form#send_message_form').keydown(event);
+
+    // Cover case where there's a least one character there.
+    range_length = 2;
+    $('form#send_message_form').keydown(event);
+
+    event.altKey = false;
     event.metaKey = true;
     $('form#send_message_form').keydown(event);
     event.target.id = 'private_message_recipient';
