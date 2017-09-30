@@ -1132,9 +1132,9 @@ else:
 for (var, path) in ZULIP_PATHS:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
-        path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
-        # Some things we just want to store in var/
-        if var in ['JSON_PERSISTENT_QUEUE_FILENAME', 'ANALYTICS_LOCK_DIR']:
+        if path.startswith("/var/log"):
+            path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
+        else:
             path = os.path.join(os.path.join(DEPLOY_ROOT, 'var'), os.path.basename(path))
     vars()[var] = path
 
