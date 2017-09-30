@@ -3,7 +3,7 @@ import logging
 from functools import partial
 from typing import Any, Callable, Text, Dict, Optional
 from django.http import HttpRequest, HttpResponse
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile
@@ -406,7 +406,7 @@ def api_github_webhook(
     if event is not None:
         subject = get_subject_based_on_type(payload, event)
         body = get_body_function_based_on_type(event)(payload)
-        check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
+        check_send_stream_message(user_profile, request.client, stream, subject, body)
     return json_success()
 
 def get_event(request, payload, branches):

@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 from django.http import HttpRequest, HttpResponse
 from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
 
@@ -18,6 +18,6 @@ def api_deskdotcom_webhook(request, user_profile, data=REQ(),
                            topic=REQ(default="Desk.com notification"),
                            stream=REQ(default="desk.com")):
     # type: (HttpRequest, UserProfile, Text, Text, Text) -> HttpResponse
-    check_send_message(user_profile, get_client("ZulipDeskWebhook"), "stream",
-                       [stream], topic, data)
+    check_send_stream_message(user_profile, get_client("ZulipDeskWebhook"),
+                              stream, topic, data)
     return json_success()

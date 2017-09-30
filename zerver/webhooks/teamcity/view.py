@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict, List, Optional
 
 from zerver.models import UserProfile, Realm
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_message, check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 
@@ -96,5 +96,5 @@ def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'
         check_send_message(user_profile, request.client, 'private', [teamcity_user.email], topic, body)
         return json_success()
 
-    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
+    check_send_stream_message(user_profile, request.client, stream, topic, body)
     return json_success()

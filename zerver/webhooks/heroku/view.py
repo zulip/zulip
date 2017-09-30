@@ -3,7 +3,7 @@ from typing import Text
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
@@ -17,5 +17,5 @@ def api_heroku_webhook(request, user_profile, stream=REQ(default="heroku"),
     template = "{} deployed version {} of [{}]({})\n> {}"
     content = template.format(user, head, app, url, git_log)
 
-    check_send_message(user_profile, request.client, "stream", [stream], app, content)
+    check_send_stream_message(user_profile, request.client, stream, app, content)
     return json_success()

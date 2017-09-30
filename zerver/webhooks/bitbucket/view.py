@@ -1,10 +1,9 @@
-
 from typing import Any, Mapping, Text, Optional
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
@@ -45,6 +44,6 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
         content = get_push_commits_event_message(payload['user'], None, branch, commits)
         subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=repository['name'], branch=branch)
 
-    check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",
-                       [stream], subject, content)
+    check_send_stream_message(user_profile, get_client("ZulipBitBucketWebhook"),
+                              stream, subject, content)
     return json_success()

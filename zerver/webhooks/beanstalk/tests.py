@@ -103,47 +103,47 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    @patch('zerver.webhooks.beanstalk.view.check_send_message')
-    def test_git_single_filtered_by_branches_ignore(self, check_send_message_mock):
+    @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
+    def test_git_single_filtered_by_branches_ignore(self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_singlecommit')
         result = self.client_post(self.url, payload,
                                   **self.api_auth(self.TEST_USER_EMAIL))
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.beanstalk.view.check_send_message')
+    @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
     def test_git_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_multiple_committers')
         result = self.client_post(self.url, payload,
                                   **self.api_auth(self.TEST_USER_EMAIL))
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.beanstalk.view.check_send_message')
+    @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
     def test_git_multiple_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_multiple')
         result = self.client_post(self.url, payload,
                                   **self.api_auth(self.TEST_USER_EMAIL))
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.beanstalk.view.check_send_message')
+    @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
     def test_git_more_than_limit_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_morethanlimitcommits')
         result = self.client_post(self.url, payload,
                                   **self.api_auth(self.TEST_USER_EMAIL))
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
     def test_svn_addremove(self):

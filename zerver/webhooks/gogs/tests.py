@@ -91,34 +91,34 @@ from `feature` to `master`"""
 from `feature` to `master`"""
         self.send_and_test_stream_message('pull_request_merged', expected_subject, expected_message, HTTP_X_GOGS_EVENT='pull_request')
 
-    @patch('zerver.webhooks.gogs.view.check_send_message')
-    def test_push_filtered_by_branches_ignore(self, check_send_message_mock):
+    @patch('zerver.webhooks.gogs.view.check_send_stream_message')
+    def test_push_filtered_by_branches_ignore(self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
                                   content_type="application/json")
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gogs.view.check_send_message')
+    @patch('zerver.webhooks.gogs.view.check_send_stream_message')
     def test_push_commits_more_than_limits_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push_commits_more_than_limits')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
                                   content_type="application/json")
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gogs.view.check_send_message')
+    @patch('zerver.webhooks.gogs.view.check_send_stream_message')
     def test_push_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push_commits_multiple_committers')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
                                   content_type="application/json")
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
