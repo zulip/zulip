@@ -221,7 +221,16 @@ class UserPresenceWorker(QueueProcessingWorker):
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
         status = event["status"]
-        do_update_user_presence(user_profile, client, log_time, status)
+
+        do_update_user_presence(
+            realm_id=user_profile.realm_id,
+            user_profile_id=user_profile.id,
+            email=user_profile.email,
+            is_zephyr_mirror_realm=user_profile.realm.is_zephyr_mirror_realm,
+            client=client,
+            log_time=log_time,
+            status=status,
+        )
 
 @assign_queue('missedmessage_emails', queue_type="loop")
 class MissedMessageWorker(QueueProcessingWorker):

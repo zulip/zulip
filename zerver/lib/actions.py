@@ -2799,12 +2799,12 @@ def consolidate_client(client):
         return client
 
 @statsd_increment('user_presence')
-def do_update_user_presence(user_profile, client, log_time, status):
-    # type: (UserProfile, Client, datetime.datetime, int) -> None
+def do_update_user_presence(realm_id, user_profile_id, email, is_zephyr_mirror_realm, client, log_time, status):
+    # type: (int, int, Text, bool, Client, datetime.datetime, int) -> None
     client = consolidate_client(client)
     (presence, created) = UserPresence.objects.get_or_create(
-        user_profile = user_profile,
-        client = client,
+        user_profile_id = user_profile_id,
+        client_id = client.id,
         defaults = {'timestamp': log_time,
                     'status': status})
 
@@ -2831,7 +2831,7 @@ def do_update_user_presence(user_profile, client, log_time, status):
             update_fields.append("status")
         presence.save(update_fields=update_fields)
 
-    if not user_profile.realm.is_zephyr_mirror_realm and (created or became_online):
+    if not is_zephyr_mirror_realm and (created or became_online):
         # Push event to all users in the realm so they see the new user
         # appear in the presence list immediately, or the newly online
         # user without delay.  Note that we won't send an update here for a
@@ -2845,13 +2845,13 @@ def do_update_user_presence(user_profile, client, log_time, status):
         presence_dict = presence.to_dict()
         event = dict(
             type="presence",
-            email=user_profile.email,
+            email=email,
             server_timestamp=time.time(),
             presence={
                 presence_dict['client']: presence_dict
             }
         )
-        send_event(event, active_user_ids(user_profile.realm_id))
+        send_event(event, active_user_ids(realm_id))
 
 def update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
@@ -2868,9 +2868,24 @@ def update_user_presence(user_profile, client, log_time, status,
              'time': datetime_to_timestamp(log_time),
              'client': client.name}
 
-    queue_json_publish("user_presence", event,
-                       lambda e: do_update_user_presence(user_profile, client,
-                                                         log_time, status))
+    realm_id = user_profile.realm_id
+    user_profile_id = user_profile.id
+    email = user_profile.email
+    is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm
+
+    def process(e):
+        # type: (Dict[str, Any]) -> None
+        do_update_user_presence(
+            realm_id=realm_id,
+            user_profile_id=user_profile_id,
+            email=email,
+            is_zephyr_mirror_realm=is_zephyr_mirror_realm,
+            client=client,
+            log_time=log_time,
+            status=status,
+        )
+
+    queue_json_publish("user_presence", event, process)
 
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)

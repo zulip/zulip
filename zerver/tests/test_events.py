@@ -764,7 +764,14 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         events = self.do_test(lambda: do_update_user_presence(
-            self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
+            self.user_profile.realm_id,
+            self.user_profile.id,
+            self.user_profile.email,
+            self.user_profile.realm.is_zephyr_mirror_realm,
+            get_client("website"),
+            timezone_now(),
+            UserPresence.ACTIVE)
+        )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -787,9 +794,23 @@ class EventsRegisterTest(ZulipTestCase):
                          HTTP_USER_AGENT="ZulipAndroid/1.0",
                          **self.api_auth(self.user_profile.email))
         self.do_test(lambda: do_update_user_presence(
-            self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
+            self.user_profile.realm_id,
+            self.user_profile.id,
+            self.user_profile.email,
+            self.user_profile.realm.is_zephyr_mirror_realm,
+            get_client("website"),
+            timezone_now(),
+            UserPresence.ACTIVE)
+        )
         events = self.do_test(lambda: do_update_user_presence(
-            self.user_profile, get_client("ZulipAndroid/1.0"), timezone_now(), UserPresence.IDLE))
+            self.user_profile.realm_id,
+            self.user_profile.id,
+            self.user_profile.email,
+            self.user_profile.realm.is_zephyr_mirror_realm,
+            get_client("ZulipAndroid/1.0"),
+            timezone_now(),
+            UserPresence.IDLE)
+        )
         error = schema_checker_android('events[0]', events[0])
         self.assert_on_error(error)
 
