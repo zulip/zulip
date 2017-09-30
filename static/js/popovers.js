@@ -423,7 +423,6 @@ exports.register_click_handlers = function () {
         // as the presence list may be redrawn with new elements.
         var target = $(this).closest('li');
         var user_id = target.find('a').attr('data-user-id');
-        var name = target.find('a').attr('data-name');
 
         if (current_user_sidebar_user_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
@@ -442,7 +441,7 @@ exports.register_click_handlers = function () {
 
         var args = {
             user_email: user_email,
-            user_full_name: name,
+            user_full_name: user.full_name,
             user_id: user_id,
             user_time: people.get_user_time(user_id),
             presence_status: presence.get_status(user_id),
