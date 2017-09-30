@@ -191,7 +191,6 @@ DEFAULT_SETTINGS.update({
     # These are undocumented, and we don't set them in dev_settings.py
     # or test_settings.py , either.
     # TODO: document them.
-    'EMAIL_GATEWAY_EXAMPLE': '',
     'EMAIL_GATEWAY_PASSWORD': None,
     'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
     'STAGING': False,
@@ -562,6 +561,8 @@ for bot in INTERNAL_BOTS:
 
 if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
+else:
+    EMAIL_GATEWAY_EXAMPLE = ""
 
 DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
