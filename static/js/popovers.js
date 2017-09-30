@@ -83,26 +83,24 @@ function show_message_info_popover(element, id) {
                                      elt.closest(".message_row").find(".message_time"));
 
         var message = current_msg_list.get(id);
-        var sender = people.get_person_from_user_id(message.sender_id);
-        var sender_avatar_url = sender.avatar_url;
-        var sender_email;
-
-        if (sender) {
-            sender_email = sender.email;
-        } else {
-            blueslip.debug('Bad sender in message' + message.sender_id);
-            sender_email = message.sender_email;
+        var user = people.get_person_from_user_id(message.sender_id);
+        if (user === undefined) {
+            // This case should not happen, because
+            // people.extract_people_from_message should have added
+            // the message sender to the people.js data set.
+            blueslip.error('Bad sender in message' + message.sender_id);
+            return;
         }
 
         var args = {
-            user_full_name: message.sender_full_name,
-            user_email: sender_email,
-            user_id: message.sender_id,
-            user_time: people.get_user_time(message.sender_id),
-            presence_status: presence.get_status(message.sender_id),
-            user_last_seen_time_status: user_last_seen_time_status(message.sender_id),
-            pm_with_uri: narrow.pm_with_uri(sender_email),
-            sent_by_uri: narrow.by_sender_uri(sender_email),
+            user_full_name: user.full_name,
+            user_email: user.email,
+            user_id: user.user_id,
+            user_time: people.get_user_time(user.user_id),
+            presence_status: presence.get_status(user.user_id),
+            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+            pm_with_uri: narrow.pm_with_uri(user.email),
+            sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
         };
@@ -123,13 +121,14 @@ function show_message_info_popover(element, id) {
         elt.popover({
             placement: placement,
             template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + sender_email}),
+            title:     templates.render('user_info_popover_title',
+                                        {user_avatar: "avatar/" + user.email}),
             content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
         });
         elt.popover("show");
 
-        load_medium_avatar(sender_avatar_url);
+        load_medium_avatar(user.avatar_url);
 
         current_message_info_popover_elem = elt;
     }
