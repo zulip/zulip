@@ -34,7 +34,8 @@ from zerver.views.registration import create_preregistration_user, get_realm_fro
     redirect_and_log_into_subdomain, redirect_to_deactivation_notice
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    github_auth_enabled, google_auth_enabled, ldap_auth_enabled
+    github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
+    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend
 from version import ZULIP_VERSION
 
 import hashlib
@@ -476,6 +477,14 @@ def get_dev_users(realm=None, extra_users_count=10):
     users = list(shakespearian_users) + list(extra_users)
     return users
 
+def redirect_to_misconfigured_ldap_notice(error_type):
+    # type: (int) -> HttpResponse
+    if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
+        url = reverse('ldap_error_realm_is_none')
+
+    assert url, "url should always exist"
+    return HttpResponseRedirect(url)
+
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     if request.user.is_authenticated:
@@ -506,9 +515,14 @@ def login_page(request, **kwargs):
             # If we're switching realms, redirect to that realm
             return HttpResponseRedirect(realm.uri)
 
-    template_response = django_login_page(
-        request, authentication_form=OurAuthenticationForm,
-        extra_context=extra_context, **kwargs)
+    try:
+        template_response = django_login_page(
+            request, authentication_form=OurAuthenticationForm,
+            extra_context=extra_context, **kwargs)
+    except ZulipLDAPConfigurationError as e:
+        assert len(e.args) > 1
+        return redirect_to_misconfigured_ldap_notice(e.args[1])
+
     try:
         template_response.context_data['email'] = request.GET['email']
     except KeyError:
