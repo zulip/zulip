@@ -1108,7 +1108,6 @@ ZULIP_PATHS = [
     ("ERROR_FILE_LOG_PATH", "/var/log/zulip/errors.log"),
     ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
     ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
-    ("PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.pickle"),
     ("JSON_PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.json"),
     ("EMAIL_LOG_PATH", "/var/log/zulip/send_email.log"),
     ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email_mirror.log"),
