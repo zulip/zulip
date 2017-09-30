@@ -153,6 +153,9 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # PASSWORD_MIN_LENGTH = 6
 # PASSWORD_MIN_ZXCVBN_QUALITY = 0.5
 
+# Controls whether Zulip sends "new login" email notifications.
+#SEND_LOGIN_EMAILS = True
+
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
 

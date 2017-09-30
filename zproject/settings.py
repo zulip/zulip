@@ -146,6 +146,7 @@ DEFAULT_SETTINGS = {
     'PRIVACY_POLICY': None,
     'TERMS_OF_SERVICE': None,
     'ENABLE_FILE_LINKS': False,
+    'SEND_LOGIN_EMAILS': True,
     'PASSWORD_MIN_LENGTH': 6,
     'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
     'PUSH_NOTIFICATION_BOUNCER_URL': None,
@@ -215,11 +216,6 @@ DEFAULT_SETTINGS.update({
     # backend.  Plan is to turn this on for everyone after further
     # testing.
     'USING_PGROONGA': False,
-
-    # Whether to send notifications for new logins on the server.
-    # TODO: While also useful for tests, this should be documented for
-    # sysadmins, since it's important if IT logs everyone out daily.
-    'SEND_LOGIN_EMAILS': True,
 
     # How Django should send emails.  Set for most contexts below, but
     # available for sysadmin override in unusual cases.
