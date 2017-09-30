@@ -2785,14 +2785,6 @@ def do_update_user_activity(user_profile, client, query, log_time):
     activity.last_visit = log_time
     activity.save(update_fields=["last_visit", "count"])
 
-def send_presence_changed(user_profile, presence):
-    # type: (UserProfile, UserPresence) -> None
-    presence_dict = presence.to_dict()
-    event = dict(type="presence", email=user_profile.email,
-                 server_timestamp=time.time(),
-                 presence={presence_dict['client']: presence_dict})
-    send_event(event, active_user_ids(user_profile.realm_id))
-
 def consolidate_client(client):
     # type: (Client) -> Client
     # The web app reports a client as 'website'
@@ -2850,7 +2842,16 @@ def do_update_user_presence(user_profile, client, log_time, status):
         # sending timestamp updates, we could eliminate the ping responses, but
         # that's not a high priority for now, considering that most of our non-MIT
         # realms are pretty small.
-        send_presence_changed(user_profile, presence)
+        presence_dict = presence.to_dict()
+        event = dict(
+            type="presence",
+            email=user_profile.email,
+            server_timestamp=time.time(),
+            presence={
+                presence_dict['client']: presence_dict
+            }
+        )
+        send_event(event, active_user_ids(user_profile.realm_id))
 
 def update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
