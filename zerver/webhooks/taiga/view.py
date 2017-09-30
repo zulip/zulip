@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
@@ -44,7 +44,7 @@ def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
         content_lines.append(generate_content(event) + '\n')
     content = "".join(sorted(content_lines))
 
-    check_send_message(user_profile, request.client, 'stream', [stream], topic, content)
+    check_send_stream_message(user_profile, request.client, stream, topic, content)
 
     return json_success()
 

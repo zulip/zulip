@@ -3,7 +3,7 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 from zerver.models import UserProfile
@@ -173,6 +173,5 @@ def api_pivotal_webhook(request, user_profile, stream=REQ()):
     if subject is None or content is None:
         return json_error(_("Unable to handle Pivotal payload"))
 
-    check_send_message(user_profile, request.client, "stream",
-                       [stream], subject, content)
+    check_send_stream_message(user_profile, request.client, stream, subject, content)
     return json_success()

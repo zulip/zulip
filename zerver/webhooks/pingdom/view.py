@@ -1,10 +1,10 @@
-# Webhooks for external integrations.
+# Webhooks pfor external integrations.
 from typing import Any, Dict, Text
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
@@ -44,7 +44,7 @@ def api_pingdom_webhook(request, user_profile, payload=REQ(argument_type='body')
     else:
         return json_error(_('Unsupported check_type: {check_type}').format(check_type=check_type))
 
-    check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
+    check_send_stream_message(user_profile, request.client, stream, subject, body)
     return json_success()
 
 

@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -18,7 +18,7 @@ def send_message_for_event(event, user_profile, client, stream):
     event_type = get_event_type(event)
     subject = SUBJECT_TEMPLATE.format(service_url=event['check']['url'])
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
-    check_send_message(user_profile, client, 'stream', [stream], subject, body)
+    check_send_stream_message(user_profile, client, stream, subject, body)
 
 def get_body_for_up_event(event):
     # type: (Dict[str, Any]) -> str

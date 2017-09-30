@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Text
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_dict
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -32,6 +32,5 @@ def api_newrelic_webhook(request, user_profile, stream=REQ(default='newrelic'),
     else:
         return json_error(_("Unknown webhook request"))
 
-    check_send_message(user_profile, request.client, "stream",
-                       [stream], subject, content)
+    check_send_stream_message(user_profile, request.client, stream, subject, content)
     return json_success()

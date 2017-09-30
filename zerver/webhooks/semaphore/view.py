@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.models import get_client
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
@@ -52,6 +52,5 @@ def api_semaphore_webhook(request, user_profile,
                                                commit_url, message)
     subject = u"%s/%s" % (project_name, branch_name)
 
-    check_send_message(user_profile, request.client, "stream",
-                       [stream], subject, content)
+    check_send_stream_message(user_profile, request.client, stream, subject, content)
     return json_success()

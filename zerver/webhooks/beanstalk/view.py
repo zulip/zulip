@@ -2,7 +2,7 @@
 
 from django.http import HttpRequest, HttpResponse
 from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
@@ -72,6 +72,6 @@ def api_beanstalk_webhook(request, user_profile,
         subject = "svn r%s" % (revision,)
         content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
 
-    check_send_message(user_profile, get_client("ZulipBeanstalkWebhook"), "stream",
-                       ["commits"], subject, content)
+    check_send_stream_message(user_profile, get_client("ZulipBeanstalkWebhook"),
+                              "commits", subject, content)
     return json_success()

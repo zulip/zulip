@@ -52,8 +52,8 @@ class BitbucketHookTests(WebhookTestCase):
         expected_message = u"kolaszek [force pushed](https://bitbucket.org/kolaszek/repository-name)"
         self.send_and_test_stream_message(fixture_name, self.EXPECTED_SUBJECT, expected_message, **self.api_auth(self.TEST_USER_EMAIL))
 
-    @patch('zerver.webhooks.bitbucket.view.check_send_message')
-    def test_bitbucket_on_push_event_filtered_by_branches_ignore(self, check_send_message_mock):
+    @patch('zerver.webhooks.bitbucket.view.check_send_stream_message')
+    def test_bitbucket_on_push_event_filtered_by_branches_ignore(self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         fixture_name = 'push'
         payload = self.get_body(fixture_name)
@@ -62,12 +62,12 @@ class BitbucketHookTests(WebhookTestCase):
         result = self.client_post(self.url, payload,
                                   content_type="application/json,",
                                   **self.api_auth(self.TEST_USER_EMAIL))
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket.view.check_send_message')
+    @patch('zerver.webhooks.bitbucket.view.check_send_stream_message')
     def test_bitbucket_push_commits_above_limit_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         fixture_name = 'push_commits_above_limit'
         payload = self.get_body(fixture_name)
@@ -76,7 +76,7 @@ class BitbucketHookTests(WebhookTestCase):
         result = self.client_post(self.url, payload,
                                   content_type="application/json,",
                                   **self.api_auth(self.TEST_USER_EMAIL))
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
     def get_body(self, fixture_name):
