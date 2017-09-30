@@ -98,47 +98,110 @@ else:
 # DEFAULT VALUES FOR SETTINGS
 ########################################################################
 
-# For any settings that are not defined in prod_settings.py,
-# we want to initialize them to sane default
+# For any settings that are not set in the site-specific configuration file
+# (/etc/zulip/settings.py in production, or dev_settings.py or test_settings.py
+# in dev and test), we want to initialize them to sane defaults.
+
+# These settings are intended for the server admin to set.  We document them in
+# prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
+# install of the Zulip server.
 DEFAULT_SETTINGS = {
     'EMAIL_GATEWAY_PATTERN': '',
-    'EMAIL_GATEWAY_EXAMPLE': '',
-    'EMAIL_GATEWAY_BOT': None,
     'EMAIL_GATEWAY_LOGIN': None,
-    'EMAIL_GATEWAY_PASSWORD': None,
     'EMAIL_GATEWAY_IMAP_SERVER': None,
     'EMAIL_GATEWAY_IMAP_PORT': None,
     'EMAIL_GATEWAY_IMAP_FOLDER': None,
-    'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
     'EMAIL_HOST': None,
-    'EMAIL_BACKEND': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
-    'STAGING': False,
     'S3_AVATAR_BUCKET': '',
     'LOCAL_UPLOADS_DIR': None,
-    'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
     'MAX_FILE_UPLOAD_SIZE': 25,
-    'MAX_AVATAR_FILE_SIZE': 5,
-    'MAX_ICON_FILE_SIZE': 5,
-    'MAX_EMOJI_FILE_SIZE': 5,
     'ERROR_REPORTING': True,
     'BROWSER_ERROR_REPORTING': False,
-    'STAGING_ERROR_NOTIFICATIONS': False,
-    'EVENT_LOGS_ENABLED': False,
-    'SAVE_FRONTEND_STACKTRACES': False,
     'LOGGING_SHOW_MODULE': False,
-    'JWT_AUTH_KEYS': {},
     'NAME_CHANGES_DISABLED': False,
-    'DEPLOYMENT_ROLE_NAME': "",
     'RABBITMQ_HOST': 'localhost',
     'RABBITMQ_USERNAME': 'zulip',
     'MEMCACHED_LOCATION': '127.0.0.1:11211',
     'RATE_LIMITING': True,
     'REDIS_HOST': '127.0.0.1',
     'REDIS_PORT': 6379,
+    'INLINE_IMAGE_PREVIEW': True,
+    'INLINE_URL_EMBED_PREVIEW': False,
+    'CAMO_URI': '',
+    'ENABLE_FEEDBACK': PRODUCTION,
+    'FEEDBACK_EMAIL': None,
+    'ENABLE_GRAVATAR': True,
+    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+    'AUTH_LDAP_SERVER_URI': "",
+    'LDAP_EMAIL_ATTR': None,
+    'REMOTE_POSTGRES_HOST': '',
+    'REMOTE_POSTGRES_SSLMODE': '',
+    'SOCIAL_AUTH_GITHUB_KEY': None,
+    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
+    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
+    'GOOGLE_OAUTH2_CLIENT_ID': None,
+    'TERMS_OF_SERVICE': None,
+    'ENABLE_FILE_LINKS': False,
+    'PASSWORD_MIN_LENGTH': 6,
+    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
+    'PUSH_NOTIFICATION_BOUNCER_URL': None,
+}
+
+# These settings are not documented in prod_settings_template.py.
+# They should either be documented here, or documented there.
+#
+# Settings that it makes sense to document here instead of in
+# prod_settings_template.py are those that
+#  * don't make sense to change in production, but rather are intended
+#    for dev and test environments; or
+#  * don't make sense to change on a typical production server with
+#    one or a handful of realms, though they might on an installation
+#    like zulipchat.com.
+DEFAULT_SETTINGS.update({
+
     # The following bots are optional system bots.
     'ERROR_BOT': None,
     'NEW_USER_BOT': None,
+
+    # Structurally, we will probably eventually merge
+    # analytics into part of the main server, rather
+    # than a separate app.
+    'EXTRA_INSTALLED_APPS': ['analytics'],
+
+    # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
+    'GOOGLE_CLIENT_ID': '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com',
+
+    # These are undocumented, but we do set them in dev_settings.py or
+    # test_settings.py .
+    # TODO: document them.
+    'EMAIL_GATEWAY_BOT': None,
+    'EMAIL_BACKEND': None,
+    'EVENT_LOGS_ENABLED': False,
+    'SAVE_FRONTEND_STACKTRACES': False,
+    'SEND_LOGIN_EMAILS': True,
+    'EXTERNAL_URI_SCHEME': "https://",
+    'OPEN_REALM_CREATION': False,
+    'REALMS_HAVE_SUBDOMAINS': True,
+    'SYSTEM_ONLY_REALMS': {"zulip"},
+    'USING_PGROONGA': False,
+    'POST_MIGRATION_CACHE_FLUSHING': False,
+    'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
+
+    # These are undocumented, and we don't set them in dev_settings.py
+    # or test_settings.py , either.
+    # TODO: document them.
+    'EMAIL_GATEWAY_EXAMPLE': '',
+    'EMAIL_GATEWAY_PASSWORD': None,
+    'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
+    'STAGING': False,
+    'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
+    'MAX_AVATAR_FILE_SIZE': 5,
+    'MAX_ICON_FILE_SIZE': 5,
+    'MAX_EMOJI_FILE_SIZE': 5,
+    'STAGING_ERROR_NOTIFICATIONS': False,
+    'JWT_AUTH_KEYS': {},
+    'DEPLOYMENT_ROLE_NAME': "",
     'NAGIOS_STAGING_SEND_BOT': None,
     'NAGIOS_STAGING_RECEIVE_BOT': None,
     'APNS_CERT_FILE': None,
@@ -149,22 +212,11 @@ DEFAULT_SETTINGS = {
     'FEEDBACK_BOT': 'feedback@zulip.com',
     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
     'ADMINS': '',
-    'INLINE_IMAGE_PREVIEW': True,
-    'INLINE_URL_EMBED_PREVIEW': False,
-    'CAMO_URI': '',
-    'ENABLE_FEEDBACK': PRODUCTION,
     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
-    'SEND_LOGIN_EMAILS': True,
     'SERVER_EMAIL': None,
-    'FEEDBACK_EMAIL': None,
     'FEEDBACK_STREAM': None,
     'WELCOME_EMAIL_SENDER': None,
     'EMAIL_DELIVERER_DISABLED': False,
-    'ENABLE_GRAVATAR': True,
-    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
-    'AUTH_LDAP_SERVER_URI': "",
-    'LDAP_EMAIL_ATTR': None,
-    'EXTERNAL_URI_SCHEME': "https://",
     'REGISTER_LINK_DISABLED': False,
     'LOGIN_LINK_DISABLED': False,
     'ABOUT_LINK_DISABLED': False,
@@ -172,42 +224,22 @@ DEFAULT_SETTINGS = {
     'CUSTOM_LOGO_URL': None,
     'VERBOSE_SUPPORT_OFFERS': False,
     'STATSD_HOST': '',
-    'OPEN_REALM_CREATION': False,
-    'REALMS_HAVE_SUBDOMAINS': True,
     'ROOT_DOMAIN_LANDING_PAGE': False,
     'ROOT_SUBDOMAIN_ALIASES': ["www"],
-    'REMOTE_POSTGRES_HOST': '',
-    'REMOTE_POSTGRES_SSLMODE': '',
-    # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-    'GOOGLE_CLIENT_ID': '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com',
-    'SOCIAL_AUTH_GITHUB_KEY': None,
-    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
-    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
-    'GOOGLE_OAUTH2_CLIENT_ID': None,
     'SOCIAL_AUTH_FIELDS_STORED_IN_SESSION': ['subdomain', 'is_signup'],
     'PERSONAL_ZMIRROR_SERVER': None,
-    # Structurally, we will probably eventually merge
-    # analytics into part of the main server, rather
-    # than a separate app.
-    'EXTRA_INSTALLED_APPS': ['analytics'],
     'CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS': 1,
     'INVITATION_LINK_VALIDITY_DAYS': 10,
     'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
-    'TERMS_OF_SERVICE': None,
     'PRIVACY_POLICY': None,
     'TOS_VERSION': None,
-    'SYSTEM_ONLY_REALMS': {"zulip"},
     'FIRST_TIME_TOS_TEMPLATE': None,
-    'USING_PGROONGA': False,
-    'POST_MIGRATION_CACHE_FLUSHING': False,
-    'ENABLE_FILE_LINKS': False,
     'USE_WEBSOCKETS': True,
-    'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
-    'PASSWORD_MIN_LENGTH': 6,
-    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
-    'PUSH_NOTIFICATION_BOUNCER_URL': None,
-}
+    # (Don't put new settings here -- document them, and put them
+    # next to the other documented settings above.)
+})
+
 
 for setting_name, setting_val in DEFAULT_SETTINGS.items():
     if setting_name not in vars():
