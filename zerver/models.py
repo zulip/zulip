@@ -164,6 +164,7 @@ class Realm(models.Model):
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)  # type: int
     message_retention_days = models.IntegerField(null=True)  # type: Optional[int]
     allow_edit_history = models.BooleanField(default=True)  # type: bool
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
     allow_community_topic_editing = models.BooleanField(default=True)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}

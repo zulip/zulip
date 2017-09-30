@@ -1991,22 +1991,30 @@ class EditMessageTest(ZulipTestCase):
         message.save()
 
         # any user can edit the topic of a message
-        set_message_editing_params(True, 0, False)
+        set_message_editing_params(True, 0, True)
         # log in as a new user
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_success(id_, 'A')
 
         # only admins can edit the topics of messages
         self.login(self.example_email("iago"))
-        set_message_editing_params(True, 0, True)
+        set_message_editing_params(True, 0, False)
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_error(id_, 'B', "You don't have permission to edit this message")
 
-        # users cannot edit topics of allow_message_editing is False
+        # users cannot edit topics if allow_message_editing is False
         self.login(self.example_email("iago"))
-        set_message_editing_params(False, 0, False)
+        set_message_editing_params(False, 0, True)
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_error(id_, 'C', "Your organization has turned off message editing")
+
+        # users cannot edit topics sent > 24 hrs ago
+        message.pub_date = message.pub_date - datetime.timedelta(seconds=90000)
+        message.save()
+        self.login(self.example_email("iago"))
+        set_message_editing_params(True, 0, True)
+        self.login(self.example_email("cordelia"))
+        do_edit_message_assert_error(id_, 'B', "The time limit for editing this message has past")
 
     def test_propagate_topic_forward(self) -> None:
         self.login(self.example_email("hamlet"))

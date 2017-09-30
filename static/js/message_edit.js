@@ -49,6 +49,12 @@ function get_editability(message, edit_limit_seconds_buffer) {
         now.diffSeconds(message.timestamp * 1000) > 0) && message.sent_by_me) {
         return editability_types.FULL;
     }
+
+    // TODO: Change hardcoded value (24 hrs) to be realm setting
+    if (!message.sent_by_me && (
+        86400 + edit_limit_seconds_buffer + now.diffSeconds(message.timestamp * 1000) <= 0)) {
+        return editability_types.NO;
+    }
     // time's up!
     if (message.type === 'stream') {
         return editability_types.TOPIC_ONLY;
