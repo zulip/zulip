@@ -11,12 +11,7 @@
 
             <div class="white-box">
                 <p>{{ _('Check your email to finish the process.') }} <i class="grey">{{ _("(Or don't, but then why did you fill out this form?)") }}</i></p>
-                {% if development_environment %}
-                <div class="alert alert-info" style="display:inline-block;">
-                    In the Zulip development environment, outgoing emails can be accessed by opening
-                    <a href="/emails">/emails</a>. They are also printed to the run-dev.py console.
-                </div>
-                {% endif %}
+                {% include 'zerver/dev_env_email_access_details.html' %}
             </div>
         </div>
     </div>
