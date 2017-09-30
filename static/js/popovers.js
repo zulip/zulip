@@ -104,7 +104,6 @@ function show_message_info_popover(element, id) {
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow_state.active(),
-            historical: message.historical,
             private_message_class: "respond_personal_button",
         };
 
