@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
-from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
+from scripts.lib.setup_venv import VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION

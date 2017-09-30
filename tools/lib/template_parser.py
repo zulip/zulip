@@ -1,6 +1,5 @@
 from typing import Callable, List, Optional
 from six.moves import range
-import re
 
 class TemplateParserException(Exception):
     def __init__(self, message):
