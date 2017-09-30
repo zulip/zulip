@@ -70,7 +70,7 @@ function user_last_seen_time_status(user_id) {
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
-function show_message_info_popover(element, user, message) {
+function show_user_info_popover(element, user, message) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
     if (last_popover_elem !== undefined
@@ -330,7 +330,7 @@ exports.show_sender_info = function () {
     }
     var message = current_msg_list.get(rows.id($message));
     var user = people.get_person_from_user_id(message.sender_id);
-    show_message_info_popover($sender[0], user, message);
+    show_user_info_popover($sender[0], user, message);
 };
 
 exports.register_click_handlers = function () {
@@ -345,7 +345,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         var message = current_msg_list.get(rows.id(row));
         var user = people.get_person_from_user_id(message.sender_id);
-        show_message_info_popover(this, user, message);
+        show_user_info_popover(this, user, message);
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
