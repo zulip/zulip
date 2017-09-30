@@ -48,7 +48,6 @@ POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
 
 # Enable inline open graph preview in development for now
 INLINE_URL_EMBED_PREVIEW = True
-ANALYTICS_LOCK_DIR = "var/analytics-lock-dir"
 
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0

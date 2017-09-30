@@ -233,11 +233,6 @@ DEFAULT_SETTINGS.update({
     # this is disabled in production, but we need it in development.
     'POST_MIGRATION_CACHE_FLUSHING': False,
 
-    # Lock directory for analytics.
-    # TODO: This should almost certainly be removed from
-    # DEFAULT_SETTINGS and put somewhere else in settings.py.
-    'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
-
     # Settings for APNS.  Only needed on push.zulipchat.com.
     'APNS_CERT_FILE': None,
     'APNS_KEY_FILE': None,
@@ -1124,6 +1119,7 @@ ZULIP_PATHS = [
     ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
+    ("ANALYTICS_LOCK_DIR", "/home/zulip/deployments/analytics-lock-dir"),
     ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
     ("SOFT_DEACTIVATION_LOG_PATH", "/var/log/zulip/soft_deactivation.log"),
 ]
@@ -1139,8 +1135,8 @@ for (var, path) in ZULIP_PATHS:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
         path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
-        # only `JSON_PERSISTENT_QUEUE_FILENAME` will be stored in `var`
-        if var == 'JSON_PERSISTENT_QUEUE_FILENAME':
+        # Some things we just want to store in var/
+        if var in ['JSON_PERSISTENT_QUEUE_FILENAME', 'ANALYTICS_LOCK_DIR']:
             path = os.path.join(os.path.join(DEPLOY_ROOT, 'var'), os.path.basename(path))
     vars()[var] = path
 
