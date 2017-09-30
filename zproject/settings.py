@@ -106,6 +106,23 @@ else:
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 DEFAULT_SETTINGS = {
+    # Basic Django email settings
+    'EMAIL_HOST': None,
+    'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+
+    # Google auth
+    'GOOGLE_OAUTH2_CLIENT_ID': None,
+
+    # LDAP auth
+    'AUTH_LDAP_SERVER_URI': "",
+    'LDAP_EMAIL_ATTR': None,
+
+    # Social auth
+    'SOCIAL_AUTH_GITHUB_KEY': None,
+    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
+    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
+
+    # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
     'EMAIL_GATEWAY_LOGIN': None,
     'EMAIL_GATEWAY_IMAP_SERVER': None,
@@ -113,43 +130,47 @@ DEFAULT_SETTINGS = {
     'EMAIL_GATEWAY_IMAP_FOLDER': None,
     # Not documented for in /etc/zulip/settings.py, since it's rarely needed.
     'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
-    'EMAIL_HOST': None,
-    'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
-    'S3_AVATAR_BUCKET': '',
-    'LOCAL_UPLOADS_DIR': None,
-    'MAX_FILE_UPLOAD_SIZE': 25,
+
+    # Error reporting
     'ERROR_REPORTING': True,
     'BROWSER_ERROR_REPORTING': False,
     'LOGGING_SHOW_MODULE': False,
-    'NAME_CHANGES_DISABLED': False,
-    'RABBITMQ_HOST': 'localhost',
-    'RABBITMQ_USERNAME': 'zulip',
-    'MEMCACHED_LOCATION': '127.0.0.1:11211',
-    'RATE_LIMITING': True,
-    'REDIS_HOST': '127.0.0.1',
-    'REDIS_PORT': 6379,
-    'INLINE_IMAGE_PREVIEW': True,
-    'INLINE_URL_EMBED_PREVIEW': False,
-    'CAMO_URI': '',
+
+    # File uploads and avatars
+    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+    'S3_AVATAR_BUCKET': '',
+    'LOCAL_UPLOADS_DIR': None,
+    'MAX_FILE_UPLOAD_SIZE': 25,
+
+    # Feedback bot settings
     'ENABLE_FEEDBACK': PRODUCTION,
     'FEEDBACK_EMAIL': None,
-    'ENABLE_GRAVATAR': True,
-    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
-    'AUTH_LDAP_SERVER_URI': "",
-    'LDAP_EMAIL_ATTR': None,
+
+    # External service configuration
+    'CAMO_URI': '',
+    'MEMCACHED_LOCATION': '127.0.0.1:11211',
+    'RABBITMQ_HOST': 'localhost',
+    'RABBITMQ_USERNAME': 'zulip',
+    'REDIS_HOST': '127.0.0.1',
+    'REDIS_PORT': 6379,
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
-    'SOCIAL_AUTH_GITHUB_KEY': None,
-    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
-    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
-    'GOOGLE_OAUTH2_CLIENT_ID': None,
+
+    # ToS/Privacy templates
     'PRIVACY_POLICY': None,
     'TERMS_OF_SERVICE': None,
+
+    # Security
     'ENABLE_FILE_LINKS': False,
-    'SEND_LOGIN_EMAILS': True,
+    'ENABLE_GRAVATAR': True,
+    'INLINE_IMAGE_PREVIEW': True,
+    'INLINE_URL_EMBED_PREVIEW': False,
+    'NAME_CHANGES_DISABLED': False,
     'PASSWORD_MIN_LENGTH': 6,
     'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
     'PUSH_NOTIFICATION_BOUNCER_URL': None,
+    'RATE_LIMITING': True,
+    'SEND_LOGIN_EMAILS': True,
 }
 
 # These settings are not documented in prod_settings_template.py.
