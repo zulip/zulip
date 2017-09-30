@@ -179,8 +179,6 @@ DEFAULT_SETTINGS.update({
     'FEEDBACK_BOT': 'feedback@zulip.com',
     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
     'FEEDBACK_STREAM': None,
-    # The bot user for the email gateway.
-    'EMAIL_GATEWAY_BOT': None,
 
     # Structurally, we will probably eventually merge
     # analytics into part of the main server, rather
