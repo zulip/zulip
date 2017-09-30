@@ -349,6 +349,15 @@ exports.register_click_handlers = function () {
         show_user_info_popover(this, user, message);
     });
 
+    $("#main_div").on("click", ".user-mention", function (e) {
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        var message = current_msg_list.get(rows.id(row));
+        var id = $(this).attr('data-user-id');
+        var user = people.get_person_from_user_id(id);
+        show_user_info_popover(this, user, message);
+    });
+
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
