@@ -327,11 +327,6 @@ DEFAULT_SETTINGS.update({
     # Configuration option for our email/Zulip error reporting.
     'STAGING_ERROR_NOTIFICATIONS': False,
 
-    # Social auth configuration for session.
-    # TODO: Move this with the other fixed social auth settings.  This
-    # doesn't need to be configurable.
-    'SOCIAL_AUTH_FIELDS_STORED_IN_SESSION': ['subdomain', 'is_signup'],
-
     # How long to wait before presence should treat a user as offline.
     # TODO: Figure out why this is different from the corresponding
     # value in static/js/presence.js.  Also, probably move it out of
@@ -1362,12 +1357,13 @@ else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
 
 ########################################################################
-# GITHUB AUTHENTICATION SETTINGS
+# SOCIAL AUTHENTICATION SETTINGS
 ########################################################################
 
-# SOCIAL_AUTH_GITHUB_KEY is set in /etc/zulip/settings.py
-SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup']
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
+
+SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
