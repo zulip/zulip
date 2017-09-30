@@ -38,6 +38,12 @@ set_global('page_params', {user_id: 5});
 
 set_global('channel', {});
 set_global('templates', {});
+set_global('emoji_codes', {
+    name_to_codepoint: {
+        alien: '1f47d',
+        smile: '1f604',
+    },
+});
 set_global('emoji_picker', {
     hide_emoji_popover: function () {},
 });

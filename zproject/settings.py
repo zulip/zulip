@@ -98,122 +98,249 @@ else:
 # DEFAULT VALUES FOR SETTINGS
 ########################################################################
 
-# For any settings that are not defined in prod_settings.py,
-# we want to initialize them to sane default
+# For any settings that are not set in the site-specific configuration file
+# (/etc/zulip/settings.py in production, or dev_settings.py or test_settings.py
+# in dev and test), we want to initialize them to sane defaults.
 
-DEFAULT_SETTINGS = {'EMAIL_GATEWAY_PATTERN': '',
-                    'EMAIL_GATEWAY_EXAMPLE': '',
-                    'EMAIL_GATEWAY_BOT': None,
-                    'EMAIL_GATEWAY_LOGIN': None,
-                    'EMAIL_GATEWAY_PASSWORD': None,
-                    'EMAIL_GATEWAY_IMAP_SERVER': None,
-                    'EMAIL_GATEWAY_IMAP_PORT': None,
-                    'EMAIL_GATEWAY_IMAP_FOLDER': None,
-                    'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
-                    'EMAIL_HOST': None,
-                    'EMAIL_BACKEND': None,
-                    'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
-                    'STAGING': False,
-                    'S3_KEY': '',
-                    'S3_SECRET_KEY': '',
-                    'S3_AVATAR_BUCKET': '',
-                    'LOCAL_UPLOADS_DIR': None,
-                    'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
-                    'MAX_FILE_UPLOAD_SIZE': 25,
-                    'MAX_AVATAR_FILE_SIZE': 5,
-                    'MAX_ICON_FILE_SIZE': 5,
-                    'MAX_EMOJI_FILE_SIZE': 5,
-                    'ERROR_REPORTING': True,
-                    'BROWSER_ERROR_REPORTING': False,
-                    'STAGING_ERROR_NOTIFICATIONS': False,
-                    'EVENT_LOGS_ENABLED': False,
-                    'SAVE_FRONTEND_STACKTRACES': False,
-                    'LOGGING_SHOW_MODULE': False,
-                    'JWT_AUTH_KEYS': {},
-                    'NAME_CHANGES_DISABLED': False,
-                    'DEPLOYMENT_ROLE_NAME': "",
-                    'RABBITMQ_HOST': 'localhost',
-                    'RABBITMQ_USERNAME': 'zulip',
-                    'MEMCACHED_LOCATION': '127.0.0.1:11211',
-                    'RATE_LIMITING': True,
-                    'REDIS_HOST': '127.0.0.1',
-                    'REDIS_PORT': 6379,
-                    # The following bots only exist in non-VOYAGER installs
-                    'ERROR_BOT': None,
-                    'NEW_USER_BOT': None,
-                    'NAGIOS_STAGING_SEND_BOT': None,
-                    'NAGIOS_STAGING_RECEIVE_BOT': None,
-                    'APNS_CERT_FILE': None,
-                    'APNS_KEY_FILE': None,
-                    'APNS_SANDBOX': True,
-                    'ANDROID_GCM_API_KEY': None,
-                    'INITIAL_PASSWORD_SALT': None,
-                    'FEEDBACK_BOT': 'feedback@zulip.com',
-                    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
-                    'ADMINS': '',
-                    'INLINE_IMAGE_PREVIEW': True,
-                    'INLINE_URL_EMBED_PREVIEW': False,
-                    'CAMO_URI': '',
-                    'ENABLE_FEEDBACK': PRODUCTION,
-                    'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
-                    'SEND_LOGIN_EMAILS': True,
-                    'SERVER_EMAIL': None,
-                    'FEEDBACK_EMAIL': None,
-                    'FEEDBACK_STREAM': None,
-                    'WELCOME_EMAIL_SENDER': None,
-                    'EMAIL_DELIVERER_DISABLED': False,
-                    'ENABLE_GRAVATAR': True,
-                    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
-                    'AUTH_LDAP_SERVER_URI': "",
-                    'LDAP_EMAIL_ATTR': None,
-                    'EXTERNAL_URI_SCHEME': "https://",
-                    'ZULIP_COM': False,
-                    'SHOW_OSS_ANNOUNCEMENT': False,
-                    'REGISTER_LINK_DISABLED': False,
-                    'LOGIN_LINK_DISABLED': False,
-                    'ABOUT_LINK_DISABLED': False,
-                    'FIND_TEAM_LINK_DISABLED': True,
-                    'CUSTOM_LOGO_URL': None,
-                    'VERBOSE_SUPPORT_OFFERS': False,
-                    'STATSD_HOST': '',
-                    'OPEN_REALM_CREATION': False,
-                    'REALMS_HAVE_SUBDOMAINS': True,
-                    'ROOT_DOMAIN_LANDING_PAGE': False,
-                    'ROOT_SUBDOMAIN_ALIASES': ["www"],
-                    'REMOTE_POSTGRES_HOST': '',
-                    'REMOTE_POSTGRES_SSLMODE': '',
-                    # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-                    'GOOGLE_CLIENT_ID': '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com',
-                    'SOCIAL_AUTH_GITHUB_KEY': None,
-                    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
-                    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
-                    'GOOGLE_OAUTH2_CLIENT_ID': None,
-                    'SOCIAL_AUTH_FIELDS_STORED_IN_SESSION': ['subdomain', 'is_signup'],
-                    'DBX_APNS_CERT_FILE': None,
-                    'DBX_APNS_KEY_FILE': None,
-                    'PERSONAL_ZMIRROR_SERVER': None,
-                    # Structurally, we will probably eventually merge
-                    # analytics into part of the main server, rather
-                    # than a separate app.
-                    'EXTRA_INSTALLED_APPS': ['analytics'],
-                    'CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS': 1,
-                    'INVITATION_LINK_VALIDITY_DAYS': 10,
-                    'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
-                    'TERMS_OF_SERVICE': None,
-                    'PRIVACY_POLICY': None,
-                    'TOS_VERSION': None,
-                    'SYSTEM_ONLY_REALMS': {"zulip"},
-                    'FIRST_TIME_TOS_TEMPLATE': None,
-                    'USING_PGROONGA': False,
-                    'POST_MIGRATION_CACHE_FLUSHING': False,
-                    'ENABLE_FILE_LINKS': False,
-                    'USE_WEBSOCKETS': True,
-                    'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
-                    'PASSWORD_MIN_LENGTH': 6,
-                    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
-                    'OFFLINE_THRESHOLD_SECS': 5 * 60,
-                    'PUSH_NOTIFICATION_BOUNCER_URL': None,
-                    }
+# These settings are intended for the server admin to set.  We document them in
+# prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
+# install of the Zulip server.
+DEFAULT_SETTINGS = {
+    # Basic Django email settings
+    'EMAIL_HOST': None,
+    'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+
+    # Google auth
+    'GOOGLE_OAUTH2_CLIENT_ID': None,
+
+    # LDAP auth
+    'AUTH_LDAP_SERVER_URI': "",
+    'LDAP_EMAIL_ATTR': None,
+
+    # Social auth
+    'SOCIAL_AUTH_GITHUB_KEY': None,
+    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
+    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
+
+    # Email gateway
+    'EMAIL_GATEWAY_PATTERN': '',
+    'EMAIL_GATEWAY_LOGIN': None,
+    'EMAIL_GATEWAY_IMAP_SERVER': None,
+    'EMAIL_GATEWAY_IMAP_PORT': None,
+    'EMAIL_GATEWAY_IMAP_FOLDER': None,
+    # Not documented for in /etc/zulip/settings.py, since it's rarely needed.
+    'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
+
+    # Error reporting
+    'ERROR_REPORTING': True,
+    'BROWSER_ERROR_REPORTING': False,
+    'LOGGING_SHOW_MODULE': False,
+
+    # File uploads and avatars
+    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+    'S3_AVATAR_BUCKET': '',
+    'LOCAL_UPLOADS_DIR': None,
+    'MAX_FILE_UPLOAD_SIZE': 25,
+
+    # Feedback bot settings
+    'ENABLE_FEEDBACK': PRODUCTION,
+    'FEEDBACK_EMAIL': None,
+
+    # External service configuration
+    'CAMO_URI': '',
+    'MEMCACHED_LOCATION': '127.0.0.1:11211',
+    'RABBITMQ_HOST': 'localhost',
+    'RABBITMQ_USERNAME': 'zulip',
+    'REDIS_HOST': '127.0.0.1',
+    'REDIS_PORT': 6379,
+    'REMOTE_POSTGRES_HOST': '',
+    'REMOTE_POSTGRES_SSLMODE': '',
+
+    # ToS/Privacy templates
+    'PRIVACY_POLICY': None,
+    'TERMS_OF_SERVICE': None,
+
+    # Security
+    'ENABLE_FILE_LINKS': False,
+    'ENABLE_GRAVATAR': True,
+    'INLINE_IMAGE_PREVIEW': True,
+    'INLINE_URL_EMBED_PREVIEW': False,
+    'NAME_CHANGES_DISABLED': False,
+    'PASSWORD_MIN_LENGTH': 6,
+    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
+    'PUSH_NOTIFICATION_BOUNCER_URL': None,
+    'RATE_LIMITING': True,
+    'SEND_LOGIN_EMAILS': True,
+}
+
+# These settings are not documented in prod_settings_template.py.
+# They should either be documented here, or documented there.
+#
+# Settings that it makes sense to document here instead of in
+# prod_settings_template.py are those that
+#  * don't make sense to change in production, but rather are intended
+#    for dev and test environments; or
+#  * don't make sense to change on a typical production server with
+#    one or a handful of realms, though they might on an installation
+#    like zulipchat.com or to work around a problem on another server.
+DEFAULT_SETTINGS.update({
+
+    # The following bots are optional system bots not enabled by
+    # default.  The default ones are defined in INTERNAL_BOTS, below.
+
+    # ERROR_BOT sends Django exceptions to an "errors" stream in the
+    # system realm.
+    'ERROR_BOT': None,
+    # NEW_USER_BOT sends notifications about new user signups to a
+    # "signups" stream in the system realm.
+    'NEW_USER_BOT': None,
+    # These are extra bot users for our end-to-end Nagios message
+    # sending tests.
+    'NAGIOS_STAGING_SEND_BOT': None,
+    'NAGIOS_STAGING_RECEIVE_BOT': None,
+    # Feedback bot, messages sent to it are by default emailed to
+    # FEEDBACK_EMAIL (see above), but can be sent to a stream,
+    # depending on configuration.
+    'FEEDBACK_BOT': 'feedback@zulip.com',
+    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
+    'FEEDBACK_STREAM': None,
+
+    # Structurally, we will probably eventually merge
+    # analytics into part of the main server, rather
+    # than a separate app.
+    'EXTRA_INSTALLED_APPS': ['analytics'],
+
+    # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
+    'GOOGLE_CLIENT_ID': '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com',
+
+    # Legacy event logs configuration.  Our plans include removing
+    # log_event entirely in favor of RealmAuditLog, at which point we
+    # can remove this setting.
+    'EVENT_LOGS_ENABLED': False,
+
+    # Used to construct URLs to point to the Zulip server.  Since we
+    # only support HTTPS in production, this is just for development.
+    'EXTERNAL_URI_SCHEME': "https://",
+
+    # Whether anyone can create a new organization on the Zulip server.
+    'OPEN_REALM_CREATION': False,
+
+    # Whether every realm has its own subdomain.  Soon to be set to
+    # True always and removed..
+    'REALMS_HAVE_SUBDOMAINS': True,
+
+    # Setting for where the system bot users are.  Likely will have no
+    # purpose after the REALMS_HAVE_SUBDOMAINS migration finishes.
+    'SYSTEM_ONLY_REALMS': {"zulip"},
+
+    # Whether the server is using the Pgroonga full-text search
+    # backend.  Plan is to turn this on for everyone after further
+    # testing.
+    'USING_PGROONGA': False,
+
+    # How Django should send emails.  Set for most contexts below, but
+    # available for sysadmin override in unusual cases.
+    'EMAIL_BACKEND': None,
+
+    # Whether to keep extra frontend stack trace data.
+    # TODO: Investigate whether this should be removed and set one way or other.
+    'SAVE_FRONTEND_STACKTRACES': False,
+
+    # Whether to flush memcached after data migrations.  Because of
+    # how we do deployments in a way that avoids reusing memcached,
+    # this is disabled in production, but we need it in development.
+    'POST_MIGRATION_CACHE_FLUSHING': False,
+
+    # Settings for APNS.  Only needed on push.zulipchat.com.
+    'APNS_CERT_FILE': None,
+    'APNS_KEY_FILE': None,
+    'APNS_SANDBOX': True,
+
+    # Limits related to the size of file uploads; last few in MB.
+    'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
+    'MAX_AVATAR_FILE_SIZE': 5,
+    'MAX_ICON_FILE_SIZE': 5,
+    'MAX_EMOJI_FILE_SIZE': 5,
+
+    # Controls for which links are published in portico footers/headers/etc.
+    'EMAIL_DELIVERER_DISABLED': False,
+    'REGISTER_LINK_DISABLED': False,
+    'LOGIN_LINK_DISABLED': False,
+    'ABOUT_LINK_DISABLED': False,
+    'FIND_TEAM_LINK_DISABLED': True,
+
+    # What domains to treat like the root domain
+    'ROOT_SUBDOMAIN_ALIASES': ["www"],
+    # Whether the root domain is a landing page or can host a realm.
+    'ROOT_DOMAIN_LANDING_PAGE': False,
+
+    # If using the Zephyr mirroring supervisord configuration, the
+    # hostname to connect to in order to transfer credentials from webathena.
+    'PERSONAL_ZMIRROR_SERVER': None,
+
+    # When security-relevant links in emails expire.
+    'CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS': 1,
+    'INVITATION_LINK_VALIDITY_DAYS': 10,
+    'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
+
+    # By default, Zulip uses websockets to send messages.  In some
+    # networks, websockets don't work.  One can configure Zulip to
+    # not use websockets here.
+    'USE_WEBSOCKETS': True,
+
+    # Version number for ToS.  Change this if you want to force every
+    # user to click through to re-accept terms of service before using
+    # Zulip again on the web.
+    'TOS_VERSION': None,
+    # Template to use when bumping TOS_VERSION to explain situation.
+    'FIRST_TIME_TOS_TEMPLATE': None,
+
+    # Hostname used for Zulip's statsd logging integration.
+    'STATSD_HOST': '',
+
+    # Configuration for JWT auth.
+    'JWT_AUTH_KEYS': {},
+
+    # TODO: Remove the remains of the legacy "deployment" system.
+    'DEPLOYMENT_ROLE_NAME': "",
+
+    # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
+    # Django setting for what from address to use in error emails.  We
+    # set this to ZULIP_ADMINISTRATOR by default.
+    'SERVER_EMAIL': None,
+    # Django setting for who receives error emails.  We set to
+    # ZULIP_ADMINISTRATOR by default.
+    'ADMINS': '',
+
+    # From address for welcome emails.
+    'WELCOME_EMAIL_SENDER': None,
+    # Whether we should use users' own email addresses as the from
+    # address when sending missed-message emails.  Off by default
+    # because some transactional email providers reject sending such
+    # emails since they can look like spam.
+    'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
+
+    # Used to change the Zulip logo in portico pages.
+    'CUSTOM_LOGO_URL': None,
+
+    # Random salt used when deterministically generating passwords in
+    # development.
+    'INITIAL_PASSWORD_SALT': None,
+
+    # Used to control whether certain management commands are run on
+    # the server.
+    # TODO: Replace this with a smarter "run on only one server" system.
+    'STAGING': False,
+    # Configuration option for our email/Zulip error reporting.
+    'STAGING_ERROR_NOTIFICATIONS': False,
+
+    # How long to wait before presence should treat a user as offline.
+    # TODO: Figure out why this is different from the corresponding
+    # value in static/js/presence.js.  Also, probably move it out of
+    # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
+    'OFFLINE_THRESHOLD_SECS': 5 * 60,
+})
+
 
 for setting_name, setting_val in DEFAULT_SETTINGS.items():
     if setting_name not in vars():
@@ -537,6 +664,8 @@ for bot in INTERNAL_BOTS:
 
 if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
+else:
+    EMAIL_GATEWAY_EXAMPLE = ""
 
 DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
@@ -991,7 +1120,6 @@ ZULIP_PATHS = [
     ("ERROR_FILE_LOG_PATH", "/var/log/zulip/errors.log"),
     ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
     ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
-    ("PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.pickle"),
     ("JSON_PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.json"),
     ("EMAIL_LOG_PATH", "/var/log/zulip/send_email.log"),
     ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email_mirror.log"),
@@ -999,9 +1127,9 @@ ZULIP_PATHS = [
     ("EMAIL_CONTENT_LOG_PATH", "/var/log/zulip/email_content.log"),
     ("LDAP_SYNC_LOG_PATH", "/var/log/zulip/sync_ldap_user_data.log"),
     ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
-    ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
+    ("ANALYTICS_LOCK_DIR", "/home/zulip/deployments/analytics-lock-dir"),
     ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
     ("SOFT_DEACTIVATION_LOG_PATH", "/var/log/zulip/soft_deactivation.log"),
 ]
@@ -1016,9 +1144,9 @@ else:
 for (var, path) in ZULIP_PATHS:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
-        path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
-        # only `JSON_PERSISTENT_QUEUE_FILENAME` will be stored in `var`
-        if var == 'JSON_PERSISTENT_QUEUE_FILENAME':
+        if path.startswith("/var/log"):
+            path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
+        else:
             path = os.path.join(os.path.join(DEPLOY_ROOT, 'var'), os.path.basename(path))
     vars()[var] = path
 
@@ -1235,12 +1363,13 @@ else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
 
 ########################################################################
-# GITHUB AUTHENTICATION SETTINGS
+# SOCIAL AUTHENTICATION SETTINGS
 ########################################################################
 
-# SOCIAL_AUTH_GITHUB_KEY is set in /etc/zulip/settings.py
-SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup']
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
+
+SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
@@ -1267,10 +1396,8 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
-if EMAIL_GATEWAY_PASSWORD is None:
-    EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
-if vars().get("AUTH_LDAP_BIND_PASSWORD") is None:
-    AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
+EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
+AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
 
 # Set the sender email address for Django traceback error reporting
 if SERVER_EMAIL is None:

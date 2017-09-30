@@ -114,6 +114,19 @@ exports.render_stream = function (stream) {
     return html;
 };
 
+exports.render_emoji = function (item) {
+    var args = {
+        is_emoji: true,
+        primary: item.emoji_name.split("_").join(" "),
+    };
+    if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
+        args.img_src = item.emoji_url;
+    } else {
+        args.codepoint = item.codepoint;
+    }
+    return exports.render_typeahead_item(args);
+};
+
 exports.sorter = function (query, objs, get_item) {
    var results = util.prefix_sort(query, objs, get_item);
    return results.matches.concat(results.rest);

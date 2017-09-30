@@ -40,3 +40,38 @@ var emoji = require('js/emoji.js');
     emoji.initialize();
     assert(image_stub);
 }());
+
+(function test_get_canonical_name() {
+    emoji.active_realm_emojis = {
+        realm_emoji: 'TBD',
+    };
+    var canonical_name = emoji.get_canonical_name('realm_emoji');
+    assert.equal(canonical_name, 'realm_emoji');
+
+    global.emoji_codes = {
+        name_to_codepoint: {
+            '+1': '1f44d',
+        },
+        codepoint_to_name: {
+            '1f44d': 'thumbs_up',
+        },
+    };
+    canonical_name = emoji.get_canonical_name('+1');
+    assert.equal(canonical_name, 'thumbs_up');
+
+    emoji.active_realm_emojis = {
+        '+1': 'TBD',
+    };
+    canonical_name = emoji.get_canonical_name('+1');
+    assert.equal(canonical_name, '+1');
+
+    var errored = false;
+    set_global('blueslip', {
+        error: function (error) {
+            assert.equal(error, "Invalid emoji name: non_existent");
+            errored = true;
+        },
+    });
+    emoji.get_canonical_name('non_existent');
+    assert(errored);
+}());

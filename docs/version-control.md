@@ -78,7 +78,7 @@ their own commits.
 It can take some practice to get used to writing your commits with a
 clean history so that you don't spend much time doing interactive
 rebases. For example, often you'll start adding a feature, and discover
-you need to a refactoring partway through writing the feature. When that
+you need to do a refactoring partway through writing the feature. When that
 happens, we recommend you stash your partial feature, do the refactoring,
 commit it, and then unstash and finish implementing your feature.
 

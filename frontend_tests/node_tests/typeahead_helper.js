@@ -441,6 +441,57 @@ _.each(matches, function (person) {
     assert(rendered);
 }());
 
+(function test_render_emoji() {
+    // Test render_emoji with normal emoji.
+    var rendered = false;
+    var emoji = {
+        emoji_name: 'thumbs_up',
+        codepoint: '1f44d',
+    };
+    set_global('emoji', {
+        active_realm_emojis: {
+            realm_emoji: 'TBD',
+        },
+    });
+
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.deepEqual(args, {
+            primary: 'thumbs up',
+            codepoint: '1f44d',
+            is_emoji: true,
+            has_image: false,
+            has_secondary: false,
+        });
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert(rendered);
+
+    // Test render_emoji with normal emoji.
+    rendered = false;
+    emoji = {
+        emoji_name: 'realm_emoji',
+        emoji_url: 'TBD',
+    };
+
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.deepEqual(args, {
+            primary: 'realm emoji',
+            img_src: 'TBD',
+            is_emoji: true,
+            has_image: true,
+            has_secondary: false,
+        });
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert(rendered);
+}());
+
 (function test_sort_emojis() {
     var emoji_list = [
         { emoji_name: '+1' },
