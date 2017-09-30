@@ -191,7 +191,6 @@ DEFAULT_SETTINGS.update({
     # These are undocumented, and we don't set them in dev_settings.py
     # or test_settings.py , either.
     # TODO: document them.
-    'EMAIL_GATEWAY_PASSWORD': None,
     'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
     'STAGING': False,
     'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
@@ -1293,8 +1292,7 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
-if EMAIL_GATEWAY_PASSWORD is None:
-    EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
+EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
 if vars().get("AUTH_LDAP_BIND_PASSWORD") is None:
     AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
 
