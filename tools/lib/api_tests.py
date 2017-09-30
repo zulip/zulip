@@ -1,7 +1,7 @@
 
 if False:
     from typing import Any
-    from api.zulip import Client
+    from api.zulip import Client  # mypy
 
 def add_subscriptions(client):
     # type: (Client) -> None
