@@ -114,8 +114,6 @@ DEFAULT_SETTINGS = {
     'EMAIL_BACKEND': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
     'STAGING': False,
-    'S3_KEY': '',
-    'S3_SECRET_KEY': '',
     'S3_AVATAR_BUCKET': '',
     'LOCAL_UPLOADS_DIR': None,
     'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
