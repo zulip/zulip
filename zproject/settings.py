@@ -143,6 +143,7 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'GOOGLE_OAUTH2_CLIENT_ID': None,
+    'PRIVACY_POLICY': None,
     'TERMS_OF_SERVICE': None,
     'ENABLE_FILE_LINKS': False,
     'PASSWORD_MIN_LENGTH': 6,
@@ -270,9 +271,6 @@ DEFAULT_SETTINGS.update({
     # not use websockets here.
     'USE_WEBSOCKETS': True,
 
-    # Path to markdown privacy policy
-    # TODO: Document alongside TERMS_OF_SERVICE (listed above).
-    'PRIVACY_POLICY': None,
     # Version number for ToS.  Change this if you want to force every
     # user to click through to re-accept terms of service before using
     # Zulip again on the web.

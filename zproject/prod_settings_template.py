@@ -237,9 +237,12 @@ ENABLE_GRAVATAR = True
 #REMOTE_POSTGRES_HOST = 'dbserver.example.com'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
-# If you want to set custom TOS, set the path to your markdown file, and uncomment
-# the following line.
-# TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+# If you want to set a Terms of Service for your server, set the path
+# to your markdown file, and uncomment the following line.
+#TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+
+# Similarly if you want to set a Privacy Policy.
+#PRIVACY_POLICY = '/etc/zulip/privacy.md'
 
 ### TWITTER INTEGRATION
 
