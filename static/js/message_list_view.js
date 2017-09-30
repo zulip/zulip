@@ -920,10 +920,14 @@ MessageListView.prototype = {
         this._render_win_start += messages.length;
         this._render_win_end += messages.length;
 
+        console.info('prepend min id', messages[0].id);
         var cur_window_size = this._render_win_end - this._render_win_start;
+        console.info('prepend cur_window_size = ', cur_window_size);
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             var msgs_to_render_count = this._RENDER_WINDOW_SIZE - cur_window_size;
             var slice_to_render = messages.slice(messages.length - msgs_to_render_count);
+            console.info('prepend slice size =', slice_to_render.length);
+
             this.render(slice_to_render, 'top', false);
             this._render_win_start -= slice_to_render.length;
         }

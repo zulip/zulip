@@ -86,12 +86,14 @@ exports.load_old_messages = function load_old_messages(opts) {
     if (opts.use_first_unread_anchor) {
         data.use_first_unread_anchor = true;
     }
+    console.info('load_old_messages: FETCHING...');
 
     channel.get({
         url:      '/json/messages',
         data:     data,
         idempotent: true,
         success: function (data) {
+            console.info('load_old_messages: num fetched =', data.messages.length);
             get_old_messages_success(data, opts);
         },
         error: function (xhr) {
