@@ -79,9 +79,6 @@ function show_message_info_popover(element, id) {
     current_msg_list.select_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
-        timerender.set_full_datetime(current_msg_list.get(id),
-                                     elt.closest(".message_row").find(".message_time"));
-
         var message = current_msg_list.get(id);
         var user = people.get_person_from_user_id(message.sender_id);
         if (user === undefined) {
