@@ -188,19 +188,52 @@ DEFAULT_SETTINGS.update({
     # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
     'GOOGLE_CLIENT_ID': '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com',
 
-    # These are undocumented, but we do set them in dev_settings.py or
-    # test_settings.py .
-    # TODO: document them.
-    'EMAIL_BACKEND': None,
+    # Legacy event logs configuration.  Our plans include removing
+    # log_event entirely in favor of RealmAuditLog, at which point we
+    # can remove this setting.
     'EVENT_LOGS_ENABLED': False,
-    'SAVE_FRONTEND_STACKTRACES': False,
-    'SEND_LOGIN_EMAILS': True,
+
+    # Used to construct URLs to point to the Zulip server.  Since we
+    # only support HTTPS in production, this is just for development.
     'EXTERNAL_URI_SCHEME': "https://",
+
+    # Whether anyone can create a new organization on the Zulip server.
     'OPEN_REALM_CREATION': False,
+
+    # Whether every realm has its own subdomain.  Soon to be set to
+    # True always and removed..
     'REALMS_HAVE_SUBDOMAINS': True,
+
+    # Setting for where the system bot users are.  Likely will have no
+    # purpose after the REALMS_HAVE_SUBDOMAINS migration finishes.
     'SYSTEM_ONLY_REALMS': {"zulip"},
+
+    # Whether the server is using the Pgroonga full-text search
+    # backend.  Plan is to turn this on for everyone after further
+    # testing.
     'USING_PGROONGA': False,
+
+    # Whether to send notifications for new logins on the server.
+    # TODO: While also useful for tests, this should be documented for
+    # sysadmins, since it's important if IT logs everyone out daily.
+    'SEND_LOGIN_EMAILS': True,
+
+    # How Django should send emails.  Set for most contexts below, but
+    # available for sysadmin override in unusual cases.
+    'EMAIL_BACKEND': None,
+
+    # Whether to keep extra frontend stack trace data.
+    # TODO: Investigate whether this should be removed and set one way or other.
+    'SAVE_FRONTEND_STACKTRACES': False,
+
+    # Whether to flush memcached after data migrations.  Because of
+    # how we do deployments in a way that avoids reusing memcached,
+    # this is disabled in production, but we need it in development.
     'POST_MIGRATION_CACHE_FLUSHING': False,
+
+    # Lock directory for analytics.
+    # TODO: This should almost certainly be removed from
+    # DEFAULT_SETTINGS and put somewhere else in settings.py.
     'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
 
     # These are undocumented, and we don't set them in dev_settings.py
