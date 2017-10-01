@@ -8,10 +8,18 @@ usage() {
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,certbot,hostname:,email: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
+        --certbot)
+            USE_CERTBOT=1
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
         --hostname)
             EXTERNAL_HOST="$2"
             shift
@@ -20,10 +28,6 @@ while true; do
         --email)
             ZULIP_ADMINISTRATOR="$2"
             shift
-            shift
-            ;;
-        --help)
-            show_help=1
             shift
             ;;
         --)
@@ -72,6 +76,10 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
+
+if [ -n "$USE_CERTBOT" ]; then
+    "$ZULIP_PATH"/scripts/setup/setup-certbot --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+fi
 
 # Check for missing SSL certificates early as well
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
