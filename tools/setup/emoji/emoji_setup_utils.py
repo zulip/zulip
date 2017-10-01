@@ -266,3 +266,15 @@ def generate_codepoint_to_name_map(names, unified_reactions_data):
     for name in names:
         codepoint_to_name[str(unified_reactions_data[name])] = str(name)
     return codepoint_to_name
+
+def emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
+    # type: (Dict[Text, Any], List[Text]) -> bool
+    # This function returns True if an emoji in new(not included in old emoji dataset) and is
+    # safe to be included. Currently emojis which are represented by a sequence of codepoints
+    # or emojis with ZWJ are not to be included until we implement a mechanism for dealing with
+    # their unicode versions.
+    codepoint = emoji_dict["unified"].lower()
+    if '-' not in codepoint and emoji_dict["category"] != "Skin Tones" and \
+            emoji_is_universal(emoji_dict) and codepoint not in unified_reactions_codepoints:
+        return True
+    return False
