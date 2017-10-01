@@ -621,12 +621,24 @@ button.login-google-button {
     transform: translateX(15px) translateY(13px);
 }
 
-.login-page-container .right-side .actions {
+.login-page-container .right-side .actions,
+.forgot-password-container .actions {
     margin: 20px 0px 0px;
     text-align: left;
 }
 
-.split-view .actions a {
+.forgot-password-container .actions {
+    line-height: 0;
+}
+.forgot-password-container .actions .back-to-login i {
+    position: relative;
+    top: 5px;
+
+    font-size: 0.8em;
+}
+
+.split-view .actions a,
+.back-to-login {
     color: hsl(164, 100%, 23%);
     text-decoration: none;
     font-weight: 600;
@@ -637,7 +649,9 @@ button.login-google-button {
     transition: color 0.2s ease;
 }
 
-.split-view .actions a:hover {
+.split-view .actions a:hover,
+.back-to-login:hover {
+    text-decoration: none;
     color: hsl(156, 62%, 61%);
 }
 
