@@ -278,3 +278,12 @@ def emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
             emoji_is_universal(emoji_dict) and codepoint not in unified_reactions_codepoints:
         return True
     return False
+
+def get_new_emoji_dicts(unified_reactions_data, emoji_data):
+    # type: (Dict[Text, Text], List[Dict[Text, Any]]) -> List[Dict[Text, Any]]
+    unified_reactions_codepoints = [unified_reactions_data[name] for name in unified_reactions_data]
+    new_emoji_dicts = []
+    for emoji_dict in emoji_data:
+        if emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
+            new_emoji_dicts.append(emoji_dict)
+    return new_emoji_dicts
