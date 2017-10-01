@@ -294,3 +294,12 @@ def get_extended_names_list(names, new_emoji_dicts):
     for emoji_dict in new_emoji_dicts:
         extended_names_list.append(emoji_dict["short_name"])
     return extended_names_list
+
+def get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts):
+    # type: (Dict[Text, Text], List[Dict[Text, Any]]) -> Dict[Text, Text]
+    extended_name_to_codepoint = name_to_codepoint.copy()
+    for emoji_dict in new_emoji_dicts:
+        emoji_name = emoji_dict["short_name"]
+        codepoint = emoji_dict["unified"].lower()
+        extended_name_to_codepoint[emoji_name] = codepoint
+    return extended_name_to_codepoint
