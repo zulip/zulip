@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
@@ -144,6 +144,6 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
         # Not an event we know handle; do nothing.
         return json_success()
 
-    check_send_message(user_profile, get_client("ZulipFreshdeskWebhook"), "stream",
-                       [stream], subject, content)
+    check_send_stream_message(user_profile, get_client("ZulipFreshdeskWebhook"),
+                              stream, subject, content)
     return json_success()

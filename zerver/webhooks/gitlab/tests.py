@@ -379,22 +379,22 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Pipeline Hook"
         )
 
-    @patch('zerver.webhooks.gitlab.view.check_send_message')
+    @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_event_message_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gitlab.view.check_send_message')
+    @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_commits_more_than_limit_message_filtered_by_branches_ignore(
-            self, check_send_message_mock):
+            self, check_send_stream_message_mock):
         # type: (MagicMock) -> None
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push_commits_more_than_limit')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
-        self.assertFalse(check_send_message_mock.called)
+        self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)

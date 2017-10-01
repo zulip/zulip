@@ -1,7 +1,7 @@
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from zerver.lib.actions import check_send_message, create_stream_if_needed
+from zerver.lib.actions import check_send_stream_message, create_stream_if_needed
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_int
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -30,5 +30,5 @@ def api_slack_webhook(request, user_profile,
         subject = _("Message from Slack")
 
     content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
-    check_send_message(user_profile, request.client, "stream", [stream], subject, content)
+    check_send_stream_message(user_profile, request.client, stream, subject, content)
     return json_success()

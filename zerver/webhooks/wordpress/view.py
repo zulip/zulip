@@ -2,7 +2,7 @@
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 
@@ -41,6 +41,6 @@ def api_wordpress_webhook(request, user_profile,
     else:
         return json_error(_("Unknown WordPress webhook action: " + hook))
 
-    check_send_message(user_profile, get_client("ZulipWordPressWebhook"), "stream",
-                       [stream], topic, data)
+    check_send_stream_message(user_profile, get_client("ZulipWordPressWebhook"),
+                              stream, topic, data)
     return json_success()

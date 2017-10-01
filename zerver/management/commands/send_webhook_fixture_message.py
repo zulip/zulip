@@ -3,7 +3,6 @@ from typing import Any
 
 import os
 import ujson
-from optparse import make_option
 
 from django.test import Client
 from django.conf import settings

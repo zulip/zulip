@@ -2,7 +2,7 @@
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from zerver.models import UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from typing import Optional
@@ -22,5 +22,5 @@ def api_transifex_webhook(request, user_profile,
         body = "Resource {} fully reviewed.".format(resource)
     else:
         return json_error(_("Transifex wrong request"))
-    check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
+    check_send_stream_message(user_profile, request.client, stream, subject, body)
     return json_success()

@@ -4,7 +4,7 @@ import re
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
@@ -19,7 +19,8 @@ def api_appfollow_webhook(request, user_profile, stream=REQ(default="appfollow")
     message = payload["text"]
     app_name = re.search('\A(.+)', message).group(0)
 
-    check_send_message(user_profile, request.client, "stream", [stream], app_name, convert_markdown(message))
+    check_send_stream_message(user_profile, request.client, stream,
+                              app_name, convert_markdown(message))
     return json_success()
 
 def convert_markdown(text):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import optparse
+import argparse
 import subprocess
 import sys
 import os
@@ -20,25 +20,27 @@ os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin
 os.environ["http_proxy"] = ""
 os.environ["https_proxy"] = ""
 
-usage = """%prog [options]
+usage = """test-js-with-casper [options]
     test-js-with-casper # Run all test files
     test-js-with-casper 09-navigation.js # Run a single test file
     test-js-with-casper 09 # Run a single test file 09-navigation.js
     test-js-with-casper 01-login.js 03-narrow.js # Run a few test files
     test-js-with-casper 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
-parser = optparse.OptionParser(usage)
+parser = argparse.ArgumentParser(usage)
 
-parser.add_option('--skip-flaky-tests', dest='skip_flaky',
-                  action="store_true",
-                  default=False, help='Skip flaky tests')
-parser.add_option('--force', dest='force',
-                  action="store_true",
-                  default=False, help='Run tests despite possible problems.')
-parser.add_option('--remote-debug',
-                  help='Whether or not to enable remote debugging on port 7777',
-                  action="store_true",
-                  default=False)
-(options, args) = parser.parse_args()
+parser.add_argument('--skip-flaky-tests', dest='skip_flaky',
+                    action="store_true",
+                    default=False, help='Skip flaky tests')
+parser.add_argument('--force', dest='force',
+                    action="store_true",
+                    default=False, help='Run tests despite possible problems.')
+parser.add_argument('--remote-debug',
+                    help='Whether or not to enable remote debugging on port 7777',
+                    action="store_true",
+                    default=False)
+parser.add_argument('tests', nargs=argparse.REMAINDER,
+                    help='Specific tests to run; by default, runs all tests')
+options = parser.parse_args()
 
 sys.path.insert(0, ZULIP_PATH)
 
@@ -111,5 +113,5 @@ Oops, the frontend tests failed. Tips for debugging:
         sys.exit(ret)
 
 external_host = "zulipdev.com:9981"
-run_tests(args, external_host)
+run_tests(options.tests, external_host)
 sys.exit(0)

@@ -33,11 +33,12 @@ var list_of_popovers = [];
     }
 }($.fn.popover));
 
-function load_medium_avatar(user_avatar_url) {
+function load_medium_avatar(user, elt) {
+    var user_avatar_url = "avatar/" + user.user_id + "/medium";
     var sender_avatar_medium = new Image();
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
-        $(".popover-avatar").css("background-image","url("+$(this).attr("src")+")");
+        elt.css("background-image", "url(" + $(this).attr("src") + ")");
     });
 }
 
@@ -67,7 +68,10 @@ function user_last_seen_time_status(user_id) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
-function show_message_info_popover(element, id) {
+// element is the target element to pop off of
+// user is the user whose profile to show
+// message is the message containing it, which should be selected
+function show_user_info_popover(element, user, message) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
     if (last_popover_elem !== undefined
@@ -76,35 +80,27 @@ function show_message_info_popover(element, id) {
         // by clicking on the same element that caused the popover.
         return;
     }
-    current_msg_list.select_id(id);
+    current_msg_list.select_id(message.id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
-        timerender.set_full_datetime(current_msg_list.get(id),
-                                     elt.closest(".message_row").find(".message_time"));
-
-        var message = current_msg_list.get(id);
-        var sender = people.get_person_from_user_id(message.sender_id);
-        var sender_avatar_url = sender.avatar_url;
-        var sender_email;
-
-        if (sender) {
-            sender_email = sender.email;
-        } else {
-            blueslip.debug('Bad sender in message' + message.sender_id);
-            sender_email = message.sender_email;
+        if (user === undefined) {
+            // This case should not happen, because
+            // people.extract_people_from_message should have added
+            // the message sender to the people.js data set.
+            blueslip.error('Bad sender in message' + message.sender_id);
+            return;
         }
 
         var args = {
-            user_full_name: message.sender_full_name,
-            user_email: sender_email,
-            user_id: message.sender_id,
-            user_time: people.get_user_time(message.sender_id),
-            presence_status: presence.get_status(message.sender_id),
-            user_last_seen_time_status: user_last_seen_time_status(message.sender_id),
-            pm_with_uri: narrow.pm_with_uri(sender_email),
-            sent_by_uri: narrow.by_sender_uri(sender_email),
+            user_full_name: user.full_name,
+            user_email: user.email,
+            user_id: user.user_id,
+            user_time: people.get_user_time(user.user_id),
+            presence_status: presence.get_status(user.user_id),
+            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+            pm_with_uri: narrow.pm_with_uri(user.email),
+            sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
-            historical: message.historical,
             private_message_class: "respond_personal_button",
         };
 
@@ -124,13 +120,14 @@ function show_message_info_popover(element, id) {
         elt.popover({
             placement: placement,
             template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + sender_email}),
+            title:     templates.render('user_info_popover_title',
+                                        {user_avatar: "avatar/" + user.email}),
             content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
         });
         elt.popover("show");
 
-        load_medium_avatar(sender_avatar_url);
+        load_medium_avatar(user, $(".popover-avatar"));
 
         current_message_info_popover_elem = elt;
     }
@@ -322,17 +319,19 @@ exports.hide_user_sidebar_popover = function () {
 };
 
 exports.show_sender_info = function () {
-    var message = $(".selected_message");
-    var sender = message.find(".sender_info_hover");
-    var prev_message = message.prev();
-    while (!sender[0]) {
-        prev_message = prev_message.prev();
-        if (!prev_message) {
+    var $message = $(".selected_message");
+    var $sender = $message.find(".sender_info_hover");
+    var $prev_message = $message.prev();
+    while (!$sender[0]) {
+        $prev_message = $prev_message.prev();
+        if (!$prev_message) {
             break;
         }
-        sender = prev_message.find(".sender_info_hover");
+        $sender = $prev_message.find(".sender_info_hover");
     }
-    show_message_info_popover(sender[0], rows.id(message));
+    var message = current_msg_list.get(rows.id($message));
+    var user = people.get_person_from_user_id(message.sender_id);
+    show_user_info_popover($sender[0], user, message);
 };
 
 exports.register_click_handlers = function () {
@@ -345,7 +344,9 @@ exports.register_click_handlers = function () {
     $("#main_div").on("click", ".sender_info_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        show_message_info_popover(this, rows.id(row));
+        var message = current_msg_list.get(rows.id(row));
+        var user = people.get_person_from_user_id(message.sender_id);
+        show_user_info_popover(this, user, message);
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
@@ -423,7 +424,6 @@ exports.register_click_handlers = function () {
         // as the presence list may be redrawn with new elements.
         var target = $(this).closest('li');
         var user_id = target.find('a').attr('data-user-id');
-        var name = target.find('a').attr('data-name');
 
         if (current_user_sidebar_user_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
@@ -438,11 +438,10 @@ exports.register_click_handlers = function () {
 
         var user = people.get_person_from_user_id(user_id);
         var user_email = user.email;
-        var user_avatar_url = user.avatar_url;
 
         var args = {
             user_email: user_email,
-            user_full_name: name,
+            user_full_name: user.full_name,
             user_id: user_id,
             user_time: people.get_user_time(user_id),
             presence_status: presence.get_status(user_id),
@@ -462,7 +461,7 @@ exports.register_click_handlers = function () {
         });
         target.popover("show");
 
-        load_medium_avatar(user_avatar_url);
+        load_medium_avatar(user, $(".popover-avatar"));
 
         current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');

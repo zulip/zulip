@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
@@ -76,8 +76,7 @@ def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
         u'```\n'
         u'%s\n'
         u'```') % (ujson.dumps(message, indent=2),)
-    check_send_message(user_profile, client, 'stream',
-                       [stream], subject, body)
+    check_send_stream_message(user_profile, client, stream, subject, body)
 
 
 def send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic):
@@ -102,8 +101,7 @@ def send_formated_pagerduty(user_profile, client, stream, message_type, format_d
     subject = topic or u'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
 
-    check_send_message(user_profile, client, 'stream',
-                       [stream], subject, body)
+    check_send_stream_message(user_profile, client, stream, subject, body)
 
 
 @api_key_only_webhook_view('PagerDuty')

@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from zerver.lib.statistics import seconds_usage_between
 
-from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import UserProfile
 import datetime

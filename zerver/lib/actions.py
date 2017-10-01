@@ -1450,6 +1450,13 @@ def extract_recipients(s):
     recipients = [recipient.strip() for recipient in recipients]
     return list(set(recipient for recipient in recipients if recipient))
 
+def check_send_stream_message(sender, client, stream_name, topic, body):
+    # type: (UserProfile, Client, Text, Text, Text) -> int
+    addressee = Addressee.for_stream(stream_name, topic)
+    message = check_message(sender, client, addressee, body)
+
+    return do_send_messages([message])[0]
+
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender, client, message_type_name, message_to,

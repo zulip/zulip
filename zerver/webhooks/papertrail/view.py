@@ -1,5 +1,5 @@
 from django.utils.translation import ugettext as _
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.validator import check_dict, check_string
@@ -36,7 +36,7 @@ def api_papertrail_webhook(request, user_profile,
     post = '\n'.join(message)
 
     # send the message
-    check_send_message(user_profile, request.client, 'stream', [stream], topic, post)
+    check_send_stream_message(user_profile, request.client, stream, topic, post)
 
     # return json result
     return json_success()

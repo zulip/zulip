@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import Recipient, Message
 from zerver.lib.timestamp import timestamp_to_datetime
