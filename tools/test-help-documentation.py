@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import optparse
+import argparse
 import os
 import sys
 import subprocess
@@ -14,11 +14,11 @@ sanity_check.check_venv(__file__)
 
 import requests
 
-parser = optparse.OptionParser()
-parser.add_option('--force', default=False,
-                  action="store_true",
-                  help='Run tests despite possible problems.')
-(options, args) = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument('--force', default=False,
+                    action="store_true",
+                    help='Run tests despite possible problems.')
+options = parser.parse_args()
 
 os.chdir(ZULIP_PATH)
 sys.path.insert(0, ZULIP_PATH)
