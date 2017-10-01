@@ -343,6 +343,30 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "new_emoji_test",
+      "input": ":avocado:, :kiwifruit:, :selfie:, :gear:, :comet:, :first_place_medal:",
+      "expected_output": "<p><span class=\"emoji emoji-1f951\" title=\"avocado\">:avocado:</span>, <span class=\"emoji emoji-1f95d\" title=\"kiwifruit\">:kiwifruit:</span>, <span class=\"emoji emoji-1f933\" title=\"selfie\">:selfie:</span>, <span class=\"emoji emoji-2699\" title=\"gear\">:gear:</span>, <span class=\"emoji emoji-2604\" title=\"comet\">:comet:</span>, <span class=\"emoji emoji-1f947\" title=\"first place medal\">:first_place_medal:</span></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "skin_tones_are_banned",
+      "input": ":skin-tone-2: :skin-tone-3:",
+      "expected_output": "<p>:skin-tone-2: :skin-tone-3:</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "fried_egg",
+      "input": "new :fried_egg: emoji is banned for now.",
+      "expected_output": "<p>new :fried_egg: emoji is banned for now.</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "emojis_with_zwj_are_banned",
+      "input": "Emojis like :man-girl-girl: which have ZWJ are banned for now.",
+      "expected_output": "<p>Emojis like :man-girl-girl: which have ZWJ are banned for now.</p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "safe_html",
       "input": "<h1>stay normal</h1> thanks",
       "expected_output": "<p>&lt;h1&gt;stay normal&lt;/h1&gt; thanks</p>",

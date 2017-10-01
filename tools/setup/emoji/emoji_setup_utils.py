@@ -273,6 +273,10 @@ def emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
     # safe to be included. Currently emojis which are represented by a sequence of codepoints
     # or emojis with ZWJ are not to be included until we implement a mechanism for dealing with
     # their unicode versions.
+    # `:fried_egg:` emoji is banned for now, due to a name collision with `:egg:` emoji in
+    # `unified_reactions.json` dataset, until we completely switch to iamcal dataset.
+    if emoji_dict["short_name"] == "fried_egg":
+        return False
     codepoint = emoji_dict["unified"].lower()
     if '-' not in codepoint and emoji_dict["category"] != "Skin Tones" and \
             emoji_is_universal(emoji_dict) and codepoint not in unified_reactions_codepoints:
