@@ -557,16 +557,12 @@ function render(template_name, args) {
 (function emoji_popover() {
     var args = {
         class: "emoji-info-popover",
-        categories: [
-            { name: "Test category 1", icon: "test-icon-1" },
-            { name: "Test category 2", icon: "test-icon-2" },
-        ],
     };
-    var html = render('emoji_popover', args);
-    var categories = $(html).find(".emoji-popover-tab-item");
-    assert.equal(categories.length, 2);
-    var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test category 1']");
-    assert(category_1.hasClass("active"));
+    var html = "<div>";
+    html += render('emoji_popover', args);
+    html += "</div>";
+    var popover = $(html).find(".popover");
+    assert(popover.hasClass("emoji-info-popover"));
     global.write_handlebars_output("emoji_popover", html);
 }());
 
@@ -586,6 +582,17 @@ function render(template_name, args) {
                     },
                 ],
             },
+            {
+                name: 'Test1',
+                emojis: [
+                    {
+                        has_reacted: false,
+                        is_realm_emoji: true,
+                        name: 'zulip',
+                        url: 'zulip',
+                    },
+                ],
+            },
         ],
     };
 
@@ -593,8 +600,15 @@ function render(template_name, args) {
     html += render('emoji_popover_content', args);
     html += "</div>";
     // test to make sure the first emoji is present in the popover
-    var emoji_key = $(html).find(".emoji-100").attr('title');
-    assert.equal(emoji_key, '100');
+    var first_emoji = $(html).find(".emoji-100");
+    assert.equal(first_emoji.length, 1);
+
+    var categories = $(html).find(".emoji-popover-tab-item");
+    assert.equal(categories.length, 2);
+
+    var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test']");
+    assert(category_1.hasClass("active"));
+
     global.write_handlebars_output("emoji_popover_content", html);
 }());
 
@@ -623,6 +637,26 @@ function render(template_name, args) {
     var used_emoji = $(html).find(".emoji-test-2").parent();
     assert(used_emoji.hasClass("reaction"));
     assert(used_emoji.hasClass("reacted"));
+}());
+
+(function emoji_showcase() {
+    var args = {
+        emoji_dict: {
+            name: "thumbs_up",
+            is_realm_emoji: false,
+            css_class: "1f44d",
+            has_reacted: false,
+        },
+    };
+    var html = render("emoji_showcase", args);
+    var emoji_div = $(html).find(".emoji");
+    var canonical_name = $(html).find(".emoji-canonical-name");
+
+    assert.equal(emoji_div.length, 1);
+    assert(emoji_div.hasClass("emoji-1f44d"));
+    assert.equal(canonical_name.text(), "thumbs_up");
+    assert.equal(canonical_name.attr("title"), "thumbs_up");
+    global.write_handlebars_output("emoji_showcase", html);
 }());
 
 (function group_pms() {
@@ -1176,6 +1210,7 @@ function render(template_name, args) {
         primary: 'primary-text',
         secondary: 'secondary-text',
         img_src: 'https://zulip.org',
+        is_emoji: true,
         has_image: true,
         has_secondary: true,
     };

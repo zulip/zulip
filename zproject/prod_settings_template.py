@@ -153,6 +153,9 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # PASSWORD_MIN_LENGTH = 6
 # PASSWORD_MIN_ZXCVBN_QUALITY = 0.5
 
+# Controls whether Zulip sends "new login" email notifications.
+#SEND_LOGIN_EMAILS = True
+
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
 
@@ -237,9 +240,12 @@ ENABLE_GRAVATAR = True
 #REMOTE_POSTGRES_HOST = 'dbserver.example.com'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
-# If you want to set custom TOS, set the path to your markdown file, and uncomment
-# the following line.
-# TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+# If you want to set a Terms of Service for your server, set the path
+# to your markdown file, and uncomment the following line.
+#TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+
+# Similarly if you want to set a Privacy Policy.
+#PRIVACY_POLICY = '/etc/zulip/privacy.md'
 
 ### TWITTER INTEGRATION
 

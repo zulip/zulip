@@ -243,13 +243,13 @@
     {
       "name": "many_emoji",
       "input":  "test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
-      "expected_output": "<p>test <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\"smile\"> again <img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f4a9.png\" title=\"poop\"><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
+      "expected_output": "<p>test <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span> again <span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "random_emoji_1",
       "input": ":airplane:",
-      "expected_output": "<p><img alt=\":airplane:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/2708.png\" title=\"airplane\"></p>",
+      "expected_output": "<p><span class=\"emoji emoji-2708\" title=\"airplane\">:airplane:</span></p>",
       "bugdown_matches_marked": true
     },
     {
@@ -261,19 +261,19 @@
     {
       "name": "random_emoji_2",
       "input": ":poop:",
-      "expected_output": "<p><img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f4a9.png\" title=\"poop\"></p>",
+      "expected_output": "<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "emojis_without_space",
       "input": ":cat:hello:dog::rabbit:",
-      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f408.png\" title=\"cat\">hello<img alt=\":dog:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f415.png\" title=\"dog\"><img alt=\":rabbit:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f407.png\" title=\"rabbit\"></p>",
+      "expected_output": "<p><span class=\"emoji emoji-1f431\" title=\"cat\">:cat:</span>hello<span class=\"emoji emoji-1f436\" title=\"dog\">:dog:</span><span class=\"emoji emoji-1f430\" title=\"rabbit\">:rabbit:</span></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "emojis_newline",
       "input": ":cat:\n:dog:",
-      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f408.png\" title=\"cat\"><br>\n<img alt=\":dog:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f415.png\" title=\"dog\"></p>",
+      "expected_output": "<p><span class=\"emoji emoji-1f431\" title=\"cat\">:cat:</span><br>\n<span class=\"emoji emoji-1f436\" title=\"dog\">:dog:</span></p>",
       "bugdown_matches_marked": true
     },
     {
@@ -285,61 +285,61 @@
     {
       "name": "unicode_emoji",
       "input": "\ud83d\udca9",
-      "expected_output":"<p><img alt=\":poop:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f4a9.png\" title=\"poop\"><\/p>",
+      "expected_output":"<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "two_unicode_emoji",
       "input": "\ud83d\udca9\ud83d\udca9",
-      "expected_output":"<p><img alt=\":poop:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f4a9.png\" title=\"poop\"><img alt=\":poop:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f4a9.png\" title=\"poop\"><\/p>",
+      "expected_output":"<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "two_unicode_emoji_separated_by_text",
       "input": "\ud83d\udca9 word \ud83d\udca9",
-      "expected_output":"<p><img alt=\":poop:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f4a9.png\" title=\"poop\"> word <img alt=\":poop:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f4a9.png\" title=\"poop\"><\/p>",
+      "expected_output":"<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span> word <span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "miscellaneous_symbols_and_pictographs",
       "input": "Merry Christmas!!\ud83c\udf84",
-      "expected_output":"<p>Merry Christmas!!<img alt=\":christmas_tree:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f384.png\" title=\"christmas tree\"><\/p>",
+      "expected_output":"<p>Merry Christmas!!<span class=\"emoji emoji-1f384\" title=\"christmas tree\">:christmas_tree:</span><\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "miscellaneous_and_dingbats_emoji",
       "input": "\u2693\u2797",
-      "expected_output":"<p><img alt=\":anchor:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/2693.png\" title=\"anchor\"><img alt=\":heavy_division_sign:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/2797.png\" title=\"heavy division sign\"><\/p>",
+      "expected_output":"<p><span class=\"emoji emoji-2693\" title=\"anchor\">:anchor:</span><span class=\"emoji emoji-2797\" title=\"heavy division sign\">:heavy_division_sign:</span><\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "supplemental_symbols_and_pictographs",
       "input": "I am a robot \ud83e\udd16.",
-      "expected_output":"<p>I am a robot <img alt=\":robot_face:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f916.png\" title=\"robot face\">.<\/p>",
+      "expected_output":"<p>I am a robot <span class=\"emoji emoji-1f916\" title=\"robot face\">:robot_face:</span>.<\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "miscellaneous_symbols_and_arrows",
       "input": "Black upward arrow \u2b06",
-      "expected_output":"<p>Black upward arrow <img alt=\":arrow_up:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/2b06.png\" title=\"arrow up\"><\/p>",
+      "expected_output":"<p>Black upward arrow <span class=\"emoji emoji-2b06\" title=\"arrow up\">:arrow_up:</span><\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "unicode_emoji_without_space",
       "input": "Extra\ud83d\udc7dTerrestrial",
-      "expected_output":"<p>Extra<img alt=\":alien:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f47d.png\" title=\"alien\">Terrestrial<\/p>",
+      "expected_output":"<p>Extra<span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span>Terrestrial<\/p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "unicode_emojis_new_line",
       "input": "\ud83d\udc7d\n\ud83d\udc7d",
-      "expected_output":"<p><img alt=\":alien:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f47d.png\" title=\"alien\"><br>\n<img alt=\":alien:\" class=\"emoji\" src=\"\/static\/generated\/emoji\/images\/emoji\/unicode\/1f47d.png\" title=\"alien\"><\/p>",
+      "expected_output":"<p><span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span><br>\n<span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
-      "expected_output": "<p><img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\"smile\">, <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\"smile\">; <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\"smile\"></p>",
+      "expected_output": "<p><span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>, <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>; <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span></p>",
       "bugdown_matches_marked": true
     },
     {

@@ -4,7 +4,7 @@ var exports = {};
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.
-var APPROX_HEIGHT = 330;
+var APPROX_HEIGHT = 375;
 var APPROX_WIDTH = 255;
 
 // The functionalities for reacting to a message with an emoji
@@ -22,22 +22,6 @@ var current_index = 0;
 var search_is_active = false;
 var search_results = [];
 var section_head_offsets = [];
-
-function get_rendered_emoji_categories() {
-    if (exports.complete_emoji_catalog.length === 0) {
-        blueslip.error('emoji_picker: Emoji catalog empty');
-        return;
-    }
-
-    var current_emoji_categories = [];
-    _.each(exports.complete_emoji_catalog, function (category) {
-        current_emoji_categories.push({
-            name: category.name,
-            icon: category.icon,
-        });
-    });
-    return current_emoji_categories;
-}
 
 function get_all_emoji_categories() {
     return [
@@ -338,12 +322,34 @@ function round_off_to_previous_multiple(number_to_round, multiple) {
     return (number_to_round - (number_to_round % multiple));
 }
 
+function reset_emoji_showcase() {
+    $(".emoji-showcase-container").html("");
+}
+
+function update_emoji_showcase($focused_emoji) {
+    // Don't use jQuery's data() function here. It has the side-effect
+    // of converting emoji names like :100:, :1234: etc to number.
+    var focused_emoji_name = $focused_emoji.attr("data-emoji-name");
+    var canonical_name = emoji.get_canonical_name(focused_emoji_name);
+    var focused_emoji_dict = exports.emoji_collection[canonical_name];
+
+    var emoji_dict = _.extend({}, focused_emoji_dict, {
+        name: focused_emoji_name.replace(/_/g, ' '),
+    });
+    var rendered_showcase = templates.render("emoji_showcase", {
+        emoji_dict: emoji_dict,
+    });
+
+    $(".emoji-showcase-container").html(rendered_showcase);
+}
+
 function may_be_change_focused_emoji(next_section, next_index) {
     var next_emoji = get_rendered_emoji(next_section, next_index);
     if (next_emoji) {
         current_section = next_section;
         current_index = next_index;
         next_emoji.focus();
+        update_emoji_showcase(next_emoji);
         return true;
     }
     return false;
@@ -403,6 +409,7 @@ function change_focus_to_filter() {
         current_section = 0;
         current_index = 0;
     }
+    reset_emoji_showcase();
 }
 
 exports.navigate = function (event_name) {
@@ -425,10 +432,12 @@ exports.navigate = function (event_name) {
             if (current_section === 0 && current_index < 6) {
                 $(".emoji-popover-emoji-map").scrollTop(0);
             }
+            update_emoji_showcase(selected_emoji);
             return true;
         }
         if (event_name === "tab") {
             selected_emoji.focus();
+            update_emoji_showcase(selected_emoji);
             return true;
         }
         return false;
@@ -447,6 +456,7 @@ exports.navigate = function (event_name) {
             $(".emoji-search-results-container").scrollTop(0);
             current_section = 0;
             current_index = 0;
+            reset_emoji_showcase();
             return true;
         }
     } else if (event_name === 'tab') {
@@ -563,7 +573,6 @@ function register_popover_events(popover) {
 exports.render_emoji_popover = function (elt, id) {
     var template_args = {
         class: "emoji-info-popover",
-        categories: get_rendered_emoji_categories(),
     };
     var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 
@@ -622,6 +631,7 @@ exports.toggle_emoji_popover = function (element, id) {
         elt.addClass("reaction_button_visible");
         emoji_picker.render_emoji_popover(elt, id);
     }
+    reset_emoji_showcase();
 };
 
 exports.register_click_handlers = function () {
@@ -681,6 +691,15 @@ exports.register_click_handlers = function () {
         if (offset) {
             $(".emoji-popover-emoji-map").scrollTop(offset.position_y);
         }
+    });
+
+    $("body").on("click", ".emoji-popover-filter", function () {
+        reset_emoji_showcase();
+    });
+
+    $("body").on("mouseenter", ".emoji-popover-emoji .emoji", function () {
+        var hovered_emoji = $(this).parent();
+        update_emoji_showcase(hovered_emoji);
     });
 };
 

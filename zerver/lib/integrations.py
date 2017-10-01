@@ -133,7 +133,7 @@ class BotIntegration(Integration):
 class EmailIntegration(Integration):
     def is_enabled(self):
         # type: () -> bool
-        return settings.EMAIL_GATEWAY_BOT != ""
+        return settings.EMAIL_GATEWAY_PATTERN != ""
 
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'

@@ -89,11 +89,10 @@ def relative_to_full_url(base_url, content):
     content = re.sub(
         r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
 
-    # URLs for emoji are of the form
-    # "static/generated/emoji/images/emoji/snowflake.png".
+    # Convert the zulip emoji's relative url to absolute one.
     content = re.sub(
-        r"(?<=\=['\"])/static/generated/emoji/images/emoji/(?=[^<]+>)",
-        base_url + r"/static/generated/emoji/images/emoji/",
+        r"(?<=\=['\"])/static/generated/emoji/images/emoji/unicode/zulip.png(?=[^<]+>)",
+        base_url + r"/static/generated/emoji/images/emoji/unicode/zulip.png",
         content)
 
     # Realm emoji should use absolute URLs when referenced in missed-message emails.
@@ -107,6 +106,18 @@ def relative_to_full_url(base_url, content):
         r"(?<=\=['\"])/#narrow/stream/(?=[^<]+>)",
         base_url + r"/#narrow/stream/",
         content)
+
+    return content
+
+def fix_emojis(content, base_url):
+    # type: (Text, Text) -> Text
+    # Convert the emoji spans to img tags.
+    content = re.sub(
+        r'<span class=\"emoji emoji-(\S+)\" title=\"([^\"]+)\">(\S+)</span>',
+        r'<img src="' + base_url + r'/static/generated/emoji/images-google-64/\1.png" ' +
+        r'title="\2" alt="\3" style="height: 20px;">',
+        content)
+    content = content.replace(' class="emoji"', ' style="height: 20px;"')
 
     return content
 
@@ -133,10 +144,6 @@ def build_message_list(user_profile, messages):
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
-    def fix_emojis(html):
-        # type: (Text) -> Text
-        return html.replace(' class="emoji"', ' height="20px" style="position: relative;top: 6px;"')
-
     def build_message_payload(message):
         # type: (Message) -> Dict[str, Text]
         plain = message.content
@@ -153,7 +160,7 @@ def build_message_list(user_profile, messages):
         assert message.rendered_content is not None
         html = message.rendered_content
         html = relative_to_full_url(user_profile.realm.uri, html)
-        html = fix_emojis(html)
+        html = fix_emojis(html, user_profile.realm.uri)
 
         return {'plain': plain, 'html': html}
 

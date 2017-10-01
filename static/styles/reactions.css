@@ -132,7 +132,7 @@
 
 .emoji-info-popover {
     padding: 0;
-    height: 326px;
+    height: 370px;
 }
 
 .emoji-info-popover .popover-content {
@@ -240,8 +240,6 @@
 
 .emoji-popover-category-tabs {
     background-color: #eee;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
@@ -260,4 +258,35 @@
 
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
     background: #cecece;
+}
+
+.typeahead .emoji {
+    top: 2px;
+}
+
+.emoji-showcase-container {
+    position: relative;
+    background-color: #eee;
+    min-height: 44px;
+    width: 250px;
+}
+
+.emoji-preview {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    left: 5px;
+    top: 6px;
+    margin-top: 0px;
+}
+
+.emoji-canonical-name {
+    position: relative;
+    top: 12px;
+    margin-left: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
