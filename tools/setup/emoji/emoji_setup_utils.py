@@ -287,3 +287,10 @@ def get_new_emoji_dicts(unified_reactions_data, emoji_data):
         if emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
             new_emoji_dicts.append(emoji_dict)
     return new_emoji_dicts
+
+def get_extended_names_list(names, new_emoji_dicts):
+    # type: (List[Text], List[Dict[Text, Any]]) -> List[Text]
+    extended_names_list = names[:]
+    for emoji_dict in new_emoji_dicts:
+        extended_names_list.append(emoji_dict["short_name"])
+    return extended_names_list
