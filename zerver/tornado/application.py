@@ -10,16 +10,14 @@ from zerver.lib.queue import get_queue_client
 import tornado.autoreload
 import tornado.web
 
-def setup_tornado_rabbitmq():
-    # type: () -> None
+def setup_tornado_rabbitmq() -> None:
     # When tornado is shut down, disconnect cleanly from rabbitmq
     if settings.USING_RABBITMQ:
         queue_client = get_queue_client()
         atexit.register(lambda: queue_client.close())
         tornado.autoreload.add_reload_hook(lambda: queue_client.close())
 
-def create_tornado_application():
-    # type: () -> tornado.web.Application
+def create_tornado_application() -> tornado.web.Application:
     urls = (r"/notify_tornado",
             r"/json/events",
             r"/api/v1/events",
