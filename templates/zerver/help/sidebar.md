@@ -100,7 +100,7 @@
 ## Desktop Application
 * [Installation guides](/help/desktop-app-install-guide)
 
-## Misc
+## Miscellaneous
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
 <!-- Zulip on macOS -->
