@@ -1,7 +1,43 @@
 #!/usr/bin/env bash
-set -xe
+set -e
 
-# Assumes we've already been untarred
+usage() {
+    echo "Usage: install [--hostname=zulip.example.com] [--email=admin@example.com] [--help]"
+    exit 0
+};
+
+# Shell option parsing.  Over time, we'll want to move some of the
+# environment variables below into this self-documenting system.
+args="$(getopt -o '' --long help,hostname:,email: -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --hostname)
+            EXTERNAL_HOST="$2"
+            shift
+            shift
+            ;;
+        --email)
+            ZULIP_ADMINISTRATOR="$2"
+            shift
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
+        --)
+            break
+            ;;
+    esac
+done
+
+if [ -n "$show_help" ]; then
+    usage
+fi
+
+# Do set -x after option parsing is complete
+set -x
 
 # Specify options for apt.
 APT_OPTIONS="${APT_OPTIONS:-}"
@@ -28,6 +64,7 @@ if ! [ -e /usr/bin/realpath ]; then
     # realpath is in coreutils on Xenial, but not in Trusty
     apt-get install -y realpath
 fi
+
 ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 
 # setup-apt-repo does an `apt-get update`
@@ -103,6 +140,12 @@ fi
 if [ "$has_appserver" = 0 ]; then
     "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
     cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+    if [ -n "$EXTERNAL_HOST" ]; then
+        sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
+    fi
+    if [ -n "ZULIP_ADMINISTRATOR" ]; then
+        sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
+    fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
 fi
 
