@@ -3161,10 +3161,6 @@ def do_update_message(user_profile, message, subject, propagate_mode,
     }  # type: Dict[str, Any]
     changed_messages = [message]
 
-    event['prior_mention_user_ids'] = list(prior_mention_user_ids)
-    event['mention_user_ids'] = list(mention_user_ids)
-    event['presence_idle_userids'] = filter_presence_idle_userids(mention_user_ids)
-
     if message.recipient.type == Recipient.STREAM:
         stream_id = message.recipient.type_id
         event['stream_name'] = Stream.objects.get(id=stream_id).name
@@ -3214,6 +3210,14 @@ def do_update_message(user_profile, message, subject, propagate_mode,
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
             check_attachment_reference_change(prev_content, message)
+
+        # TODO: We may want a slightly leaner of this function for updates.
+        info = get_recipient_info(message.recipient,
+                                  message.sender_id)
+        event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
+        event['prior_mention_user_ids'] = list(prior_mention_user_ids)
+        event['mention_user_ids'] = list(mention_user_ids)
+        event['presence_idle_userids'] = filter_presence_idle_userids(info['active_user_ids'])
 
     if subject is not None:
         orig_subject = message.topic_name()

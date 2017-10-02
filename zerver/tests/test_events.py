@@ -547,6 +547,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('prior_mention_user_ids', check_list(check_int)),
             ('mention_user_ids', check_list(check_int)),
             ('presence_idle_userids', check_list(check_int)),
+            ('stream_push_user_ids', check_list(check_int)),
             ('orig_content', check_string),
             ('orig_rendered_content', check_string),
             ('orig_subject', check_string),

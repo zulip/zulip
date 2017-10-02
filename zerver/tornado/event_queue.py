@@ -791,6 +791,7 @@ def process_userdata_event(event_template, users):
     prior_mention_user_ids = set(event_template.get('prior_mention_user_ids', []))
     mention_user_ids = set(event_template.get('mention_user_ids', []))
     presence_idle_user_ids = set(event_template.get('presence_idle_userids', []))
+    stream_push_user_ids = set(event_template.get('stream_push_user_ids', []))
 
     stream_name = event_template.get('stream_name')
     message_id = event_template['message_id']
@@ -808,18 +809,20 @@ def process_userdata_event(event_template, users):
             # original messages.
             private_message = False
 
-            if user_profile_id in mention_user_ids:
-                # We can have newly mentioned people in an updated message.
-                mentioned = (user_profile_id in mention_user_ids)
+            # We can have newly mentioned people in an updated message.
+            mentioned = (user_profile_id in mention_user_ids)
+
+            stream_push_notify = user_profile_id in stream_push_user_ids
+
+            if mentioned or stream_push_notify:
 
                 idle = (user_profile_id in presence_idle_user_ids) or \
                     receiver_is_off_zulip(user_profile_id)
 
                 # We may want to do more aggressive pushes for message
                 # updates, but now we only do them for mentions, hence setting
-                # some flags below to False.
+                # the flag below to False.
                 always_push_notify = False
-                stream_push_notify = False
 
                 maybe_enqueue_notifications(
                     user_profile_id=user_profile_id,
