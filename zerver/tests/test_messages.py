@@ -2124,7 +2124,7 @@ class AttachmentTest(ZulipTestCase):
             self.assertTrue(attachment.is_claimed())
 
 class MissedMessageTest(ZulipTestCase):
-    def test_missed_message_userids(self):
+    def test_presence_idle_userids(self):
         # type: () -> None
         UserPresence.objects.all().delete()
 
@@ -2138,14 +2138,14 @@ class MissedMessageTest(ZulipTestCase):
 
         def assert_missing(user_ids):
             # type: (List[int]) -> None
-            missed_message_userids = get_userids_for_missed_messages(
+            presence_idle_userids = get_userids_for_missed_messages(
                 realm=realm,
                 sender_id=sender.id,
                 message_type=message_type,
                 active_user_ids=recipient_ids,
                 user_flags=user_flags,
             )
-            self.assertEqual(sorted(user_ids), sorted(missed_message_userids))
+            self.assertEqual(sorted(user_ids), sorted(presence_idle_userids))
 
         def set_presence(user_id, client_name, ago):
             # type: (int, Text, int) -> None

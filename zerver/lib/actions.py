@@ -1019,7 +1019,7 @@ def do_send_messages(messages_maybe_none):
         sender = message['message'].sender
         message_type = message_dict_no_markdown['type']
 
-        missed_message_userids = get_userids_for_missed_messages(
+        presence_idle_userids = get_userids_for_missed_messages(
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
@@ -1032,7 +1032,7 @@ def do_send_messages(messages_maybe_none):
             message=message['message'].id,
             message_dict_markdown=message_dict_markdown,
             message_dict_no_markdown=message_dict_no_markdown,
-            missed_message_userids=missed_message_userids,
+            presence_idle_userids=presence_idle_userids,
         )
 
         users = [
