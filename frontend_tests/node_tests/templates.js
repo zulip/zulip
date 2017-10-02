@@ -504,6 +504,11 @@ function render(template_name, args) {
     assert.equal(a.text(), "Narrow to here");
 }());
 
+(function dev_env_email_access() {
+    var html = render('dev_env_email_access');
+    global.write_handlebars_output("dev_env_email_access", html);
+}());
+
 (function draft_table_body() {
     var args = {
         drafts: [
