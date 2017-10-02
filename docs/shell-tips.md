@@ -79,8 +79,8 @@ Or, if you're the user `john`: `cd ~/notes`.
 You can now access to all the files inside `/home/john/notes` directly, without
 needing to type the whole path.
 
-[Relative paths](http://www.linuxnix.com/abslute-path-vs-relative-path-in-linuxunix/)
-make it much easier to move through files and directories, too.
+Relative paths make it much easier to move through files and
+directories, too.
 
 ## Running commands as root (`sudo`)
 
