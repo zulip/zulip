@@ -586,8 +586,6 @@ function ajaxSubscribe(stream) {
         success: function (resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
-
-                actually_filter_streams();
             }
 
             var res = JSON.parse(xhr.responseText);
