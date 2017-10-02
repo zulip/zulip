@@ -1175,6 +1175,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_post('/create_realm/', {'email': "hi@mailinator.com"})
         self.assert_in_response('Please use your real email address.', result)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions(self):
         # type: () -> None
@@ -1187,7 +1188,7 @@ class RealmCreationTest(ZulipTestCase):
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.client_get(confirmation_url)
 
-        errors = {'id': "at least 3 characters",
+        errors = {'id': "length 3 or greater",
                   '-id': "cannot start or end with a",
                   'string-ID': "lowercase letters",
                   'string_id': "lowercase letters",
