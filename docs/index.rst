@@ -80,6 +80,8 @@ Contents:
 
    integration-guide
    integration-docs-guide
+   writing-bots-guide
+   running-bots-guide
    webhook-walkthrough
    new-feature-tutorial
    writing-views
@@ -132,7 +134,6 @@ Contents:
    settings
    events-system
    queuing
-   bots-guide
    custom-apps
    pointer
    markdown

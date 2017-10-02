@@ -519,7 +519,7 @@ def build_custom_checkers(by_lang):
         color = next(colors)
         markdown_docs_length_exclude = {
             "api/bots/converter/readme.md",
-            "docs/bots-guide.md",
+            "docs/running-bots-guide.md",
             "docs/dev-env-first-time-contributors.md",
             "docs/webhook-walkthrough.md",
             "docs/life-of-a-request.md",
