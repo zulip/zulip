@@ -105,6 +105,7 @@ body {
     -webkit-overflow-scrolling: touch;
 }
 
+.help .sidebar h1,
 .help .sidebar h2 {
     font-size: 1.2em;
     font-weight: 400;
@@ -125,6 +126,10 @@ body {
 
     content: "\f107";
     margin-right: 5px;
+}
+
+.help .sidebar h1 {
+    font-size: 1.5em;
 }
 
 .help .sidebar h3 {
@@ -151,7 +156,8 @@ body {
     cursor: pointer;
 }
 
-.help .sidebar li a {
+.help .sidebar li a,
+.help .sidebar h1 a {
     color: inherit;
     display: block;
 }
