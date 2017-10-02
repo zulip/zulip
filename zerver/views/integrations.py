@@ -17,22 +17,18 @@ from zerver.templatetags.app_filters import render_markdown_path
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain = get_subdomain(request)
-        if subdomain or not settings.ROOT_DOMAIN_LANDING_PAGE:
-            display_subdomain = subdomain
-            html_settings_links = True
-        else:
-            display_subdomain = 'yourZulipDomain'
-            html_settings_links = False
-        if display_subdomain != "":
-            external_api_path_subdomain = '%s.%s' % (display_subdomain,
-                                                     settings.EXTERNAL_API_PATH)
-        else:
-            external_api_path_subdomain = settings.EXTERNAL_API_PATH
+    subdomain = get_subdomain(request)
+    if subdomain or not settings.ROOT_DOMAIN_LANDING_PAGE:
+        display_subdomain = subdomain
+        html_settings_links = True
+    else:
+        display_subdomain = 'yourZulipDomain'
+        html_settings_links = False
+    if display_subdomain != "":
+        external_api_path_subdomain = '%s.%s' % (display_subdomain,
+                                                 settings.EXTERNAL_API_PATH)
     else:
         external_api_path_subdomain = settings.EXTERNAL_API_PATH
-        html_settings_links = True
 
     external_api_uri_subdomain = '%s%s' % (settings.EXTERNAL_URI_SCHEME,
                                            external_api_path_subdomain)

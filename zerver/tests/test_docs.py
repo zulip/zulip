@@ -108,16 +108,6 @@ class IntegrationTest(TestCase):
         for integration in HUBOT_LOZENGES.values():
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=False)
-    def test_api_url_view_base(self):
-        # type: () -> None
-        context = dict()  # type: Dict[str, Any]
-        add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://testserver/api")
-        self.assertTrue(context["html_settings_links"])
-
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_api_url_view_subdomains_base(self):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
@@ -126,7 +116,6 @@ class IntegrationTest(TestCase):
         self.assertEqual(context["external_api_uri_subdomain"], "http://testserver/api")
         self.assertTrue(context["html_settings_links"])
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_api_url_view_subdomains_homepage_base(self):
         # type: () -> None
@@ -136,7 +125,6 @@ class IntegrationTest(TestCase):
         self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_api_url_view_subdomains_full(self):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
