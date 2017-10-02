@@ -109,7 +109,7 @@ test.py:200: error: Incompatible types in assignment (expression has type "str",
 
 If you need help interpreting or debugging mypy errors, please feel
 free to mention @sharmaeklavya2 or @timabbott on your pull request (or
-email zulip-devel@googlegroups.com) to get help; we'd love to both
+ask in [chat.zulip.org](https://chat.zulip.org)) to get help; we'd love to both
 build a great troubleshooting guide in this doc and also help
 contribute improvements to error messages upstream.
 

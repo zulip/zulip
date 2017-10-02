@@ -6,8 +6,7 @@ Look at the surrounding code, or a similar part of the project, and try
 to do the same thing. If you think the other code has actively bad
 style, fix it (in a separate commit).
 
-When in doubt, send an email to <zulip-devel@googlegroups.com> with your
-question.
+When in doubt, ask in [chat.zulip.org](https://chat.zulip.org).
 
 ## Lint tools
 
