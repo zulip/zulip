@@ -38,22 +38,13 @@ function rerender_subscribers_list(sub) {
 }
 
 exports.collapse = function (sub) {
-    // I am not sure whether this code is really correct; it was extracted
-    // from subs.update_settings_for_unsubscribed() and possibly pre-dates
-    // our big streams re-design in late 2016.
-    var stream_settings = settings_for_sub(sub);
-    if (stream_settings.hasClass('in')) {
-        stream_settings.collapse('hide');
-    }
-
-    var sub_row = stream_settings.closest('.stream-row');
-    sub_row.find(".regular_subscription_settings").removeClass('in');
+    var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    $settings.find(".regular_subscription_settings").removeClass('in');
 };
 
 exports.show_sub = function (sub) {
-    var stream_settings = settings_for_sub(sub);
-    var sub_row = stream_settings.closest('.stream-row');
-    sub_row.find(".regular_subscription_settings").addClass('in');
+    var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    $settings.find(".regular_subscription_settings").addClass('in');
 };
 
 exports.add_me_to_member_list = function (sub) {
