@@ -245,8 +245,8 @@ class DecoratorTestCase(TestCase):
                     api_result = my_webhook(request)
 
                 mock_warning.assert_called_with(
-                    "User {} attempted to access API on wrong "
-                    "subdomain {}".format(webhook_bot_email, ''))
+                    "User {} ({}) attempted to access API on wrong "
+                    "subdomain ({})".format(webhook_bot_email, 'zulip', ''))
 
             with mock.patch('logging.warning') as mock_warning:
                 with self.assertRaisesRegex(JsonableError,
@@ -255,8 +255,8 @@ class DecoratorTestCase(TestCase):
                     api_result = my_webhook(request)
 
                 mock_warning.assert_called_with(
-                    "User {} attempted to access API on wrong "
-                    "subdomain {}".format(webhook_bot_email, 'acme'))
+                    "User {} ({}) attempted to access API on wrong "
+                    "subdomain ({})".format(webhook_bot_email, 'zulip', 'acme'))
 
         request.host = "zulip.testserver"
         # Test when content_type is application/json and request.body
@@ -931,8 +931,8 @@ class TestValidateApiKey(ZulipTestCase):
                                          self.default_bot.api_key)
 
                     mock_warning.assert_called_with(
-                        "User {} attempted to access API on wrong "
-                        "subdomain {}".format(self.default_bot.email, ''))
+                        "User {} ({}) attempted to access API on wrong "
+                        "subdomain ({})".format(self.default_bot.email, 'zulip', ''))
 
                 with mock.patch('logging.warning') as mock_warning:
                     with self.assertRaisesRegex(JsonableError,
@@ -942,8 +942,8 @@ class TestValidateApiKey(ZulipTestCase):
                                          self.default_bot.api_key)
 
                     mock_warning.assert_called_with(
-                        "User {} attempted to access API on wrong "
-                        "subdomain {}".format(self.default_bot.email, 'acme'))
+                        "User {} ({}) attempted to access API on wrong "
+                        "subdomain ({})".format(self.default_bot.email, 'zulip', 'acme'))
 
     def _change_is_active_field(self, profile, value):
         # type: (UserProfile, bool) -> None
@@ -1073,8 +1073,8 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access API on wrong "
-                    "subdomain {}".format(user_email, ''))
+                    "User {} ({}) attempted to access API on wrong "
+                    "subdomain ({})".format(user_email, 'zulip', ''))
 
             with mock.patch('logging.warning') as mock_warning, \
                     mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
@@ -1082,8 +1082,8 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access API on wrong "
-                    "subdomain {}".format(user_email, 'acme'))
+                    "User {} ({}) attempted to access API on wrong "
+                    "subdomain ({})".format(user_email, 'zulip', 'acme'))
 
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self):
         # type: () -> None
@@ -1142,8 +1142,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access API on wrong "
-                    "subdomain {}".format(user_email, ''))
+                    "User {} ({}) attempted to access API on wrong "
+                    "subdomain ({})".format(user_email, 'zulip', ''))
 
             with mock.patch('logging.warning') as mock_warning, \
                     mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
@@ -1151,8 +1151,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
                                                 "Account is not associated with this "
                                                 "subdomain")
                 mock_warning.assert_called_with(
-                    "User {} attempted to access API on wrong "
-                    "subdomain {}".format(user_email, 'acme'))
+                    "User {} ({}) attempted to access API on wrong "
+                    "subdomain ({})".format(user_email, 'zulip', 'acme'))
 
     def _do_test(self, user_email):
         # type: (str) -> HttpResponse
