@@ -21,11 +21,11 @@ django.setup()
 from zerver.models import get_user, get_realm
 
 
-with test_server_running():
+with test_server_running(external_host='zulipdev.com:9981'):
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm("zulip")
     api_key = get_user(email, realm).api_key
-    site = 'http://127.0.0.1:9981'
+    site = 'http://zulip.zulipdev.com:9981'
 
     client = Client(
         email=email,
