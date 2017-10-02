@@ -36,9 +36,13 @@ exports.lightbox_open = function () {
     return open_overlay_name === 'lightbox';
 };
 
+exports.drafts_open = function () {
+    return open_overlay_name === 'drafts';
+};
+
 exports.active_modal = function () {
     if (!exports.is_modal_open()) {
-        blueslip.error("Programming error — Called open_modal when there is no modal open");
+        blueslip.error("Programming error — Called active_modal when there is no modal open");
         return;
     }
     return $(".modal.in").attr("id");
