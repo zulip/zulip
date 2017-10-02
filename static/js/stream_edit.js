@@ -2,11 +2,11 @@ var stream_edit = (function () {
 
 var exports = {};
 
-function setup_subscriptions_stream_hash(sub, stream_id) {
+function setup_subscriptions_stream_hash(sub) {
+    var id = sub.stream_id;
     subs.change_state.prevent_once();
-    window.location.hash = "#streams" + "/" +
-        stream_id + "/" +
-        hash_util.encodeHashComponent(sub.name);
+
+    window.location.hash = "#streams" + "/" + id + "/" + hash_util.encodeHashComponent(sub.name);
 }
 
 function settings_for_sub(sub) {
@@ -568,7 +568,6 @@ $(function () {
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var sub = get_sub_for_target(e.target);
         var stream_row = $(this).parent();
-        var stream_id = stream_row.attr("data-stream-id");
         subs.sub_or_unsub(sub);
         var sub_settings = settings_for_sub(sub);
         var regular_sub_settings = sub_settings.find(".regular_subscription_settings");
@@ -579,7 +578,7 @@ $(function () {
             regular_sub_settings.removeClass("in");
         }
 
-        setup_subscriptions_stream_hash(sub, stream_id);
+        setup_subscriptions_stream_hash(sub);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -589,7 +588,7 @@ $(function () {
             exports.show_stream_row(this, true);
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
-            setup_subscriptions_stream_hash(sub, stream_id);
+            setup_subscriptions_stream_hash(sub);
         }
     });
 
