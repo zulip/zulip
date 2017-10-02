@@ -1553,6 +1553,9 @@ def check_message(sender, client, addressee,
     message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
+    if '\x00' in message_content:
+        raise JsonableError(_("Message must not contain null bytes"))
+
     message_content = truncate_body(message_content)
 
     if realm is None:
@@ -1652,6 +1655,7 @@ def _internal_prep_message(realm, sender, addressee, content):
     messages together as one database query.
     Call do_send_messages with a list of the return values of this method.
     """
+    # Remove any null bytes from the content
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 

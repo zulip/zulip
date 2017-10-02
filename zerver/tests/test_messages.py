@@ -1085,11 +1085,21 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
 
+    def test_message_with_null_bytes(self):
+        # type: () -> None
+        """
+        A message with null bytes in it is handled.
+        """
+        self.login(self.example_email("hamlet"))
+        post_data = {"type": "stream", "to": "Verona", "client": "test suite",
+                     "content": u"  I like null bytes \x00 in my content", "subject": "Test subject"}
+        result = self.client_post("/json/messages", post_data)
+        self.assert_json_error(result, "Message must not contain null bytes")
+
     def test_strip_message(self):
         # type: () -> None
         """
-        Sending a message longer than the maximum message length succeeds but is
-        truncated.
+        A message with mixed whitespace at the end is cleaned up.
         """
         self.login(self.example_email("hamlet"))
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
