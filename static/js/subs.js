@@ -312,7 +312,7 @@ exports.filter_table = function (query) {
     $(".streams-list").scrollTop(streams_list_scrolltop);
 };
 
-function actually_filter_streams() {
+exports.actually_filter_streams = function () {
     var search_box = $("#add_new_subscription input[type='text']");
     var query = search_box.expectOne().val().trim();
     var subscribed_only;
@@ -322,9 +322,9 @@ function actually_filter_streams() {
         subscribed_only = false;
     }
     exports.filter_table({ input: query, subscribed_only: subscribed_only });
-}
+};
 
-var filter_streams = _.throttle(actually_filter_streams, 50);
+var filter_streams = _.throttle(exports.actually_filter_streams, 50);
 
 exports.setup_page = function (callback) {
     function initialize_components() {
@@ -343,7 +343,7 @@ exports.setup_page = function (callback) {
                     window.location.hash = "streams/subscribed";
                 }
 
-                actually_filter_streams();
+                exports.actually_filter_streams();
                 remove_temporarily_miscategorized_streams();
             },
         }).get();
@@ -369,7 +369,7 @@ exports.setup_page = function (callback) {
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
         initialize_components();
-        actually_filter_streams();
+        exports.actually_filter_streams();
         var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
         _.each(sub_rows, function (row) {
             add_email_hint(row, email_address_hint_content);
