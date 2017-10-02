@@ -7,7 +7,6 @@ from django.test import Client
 from django.views.decorators.http import require_GET
 
 from zerver.models import get_realm, get_user
-from zerver.lib.initial_password import initial_password
 from zerver.lib.notifications import enqueue_welcome_emails
 from six.moves import urllib
 from confirmation.models import Confirmation, confirmation_url
@@ -50,25 +49,30 @@ def generate_all_emails(request):
     unregistered_email_1 = "new-person@zulip.com"
     unregistered_email_2 = "new-person-2@zulip.com"
     realm = get_realm("zulip")
+    host_kwargs = {'HTTP_HOST': realm.host}
 
     # Password reset email
-    client.post('/accounts/password/reset/', {'email': registered_email})
+    client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
 
     # Confirm account email
-    client.post('/accounts/home/', {'email': unregistered_email_1})
+    client.post('/accounts/home/', {'email': unregistered_email_1}, **host_kwargs)
 
     # Find account email
-    client.post('/accounts/find/', {'emails': registered_email})
+    client.post('/accounts/find/', {'emails': registered_email}, **host_kwargs)
 
     # New login email
-    password = initial_password(registered_email)
-    client.login(username=registered_email, password=password)
+    client.login(username=registered_email)
 
     # New user invite and reminder emails
-    client.post("/json/invites", {"invitee_emails": unregistered_email_2, "stream": ["Denmark"], "custom_body": ""})
+    client.post("/json/invites",
+                {"invitee_emails": unregistered_email_2,
+                 "stream": ["Denmark"], "custom_body": ""},
+                **host_kwargs)
 
     # Verification for new email
-    client.patch('/json/settings', urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}))
+    client.patch('/json/settings',
+                 urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}),
+                 **host_kwargs)
 
     # Email change successful
     key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest('id').confirmation_key
