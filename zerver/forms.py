@@ -18,8 +18,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    get_realm_by_email_domain, get_realm, \
-    get_unique_open_realm, email_to_domain, email_allowed_for_realm
+    get_realm_by_email_domain, get_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
 import logging
@@ -125,9 +124,6 @@ class HomepageForm(forms.Form):
         """Returns the email if and only if the user's email address is
         allowed to join the realm they are trying to join."""
         email = self.cleaned_data['email']
-
-        if get_unique_open_realm():
-            return email
 
         # Otherwise, the user is trying to join a specific realm.
         realm = self.realm

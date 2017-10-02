@@ -23,7 +23,6 @@ from zerver.views.registration import confirmation_key, \
 
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user,
-    get_unique_open_realm, get_unique_non_system_realm,
     completely_open, get_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     ScheduledEmail, UserProfile, UserMessage,
@@ -312,7 +311,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 69)
+        self.assert_length(queries, 67)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1815,26 +1814,6 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertIn('login', result['Location'])
-
-class TestOpenRealms(ZulipTestCase):
-    def test_open_realm_logic(self):
-        # type: () -> None
-        realm = get_realm('simple')
-        do_deactivate_realm(realm)
-
-        mit_realm = get_realm("zephyr")
-        self.assertEqual(get_unique_open_realm(), None)
-        mit_realm.restricted_to_domain = False
-        mit_realm.save()
-        self.assertTrue(completely_open(mit_realm))
-        self.assertEqual(get_unique_open_realm(), None)
-        with self.settings(SYSTEM_ONLY_REALMS={"zulip"}):
-            self.assertEqual(get_unique_open_realm(), mit_realm)
-        mit_realm.restricted_to_domain = True
-        mit_realm.save()
-        with self.settings(SYSTEM_ONLY_REALMS={"zulip"}):
-            self.assertEqual(get_unique_open_realm(), None)
-            self.assertEqual(get_unique_non_system_realm(), mit_realm)
 
 class DeactivateUserTest(ZulipTestCase):
 

@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from zerver.models import UserProfile, Realm, Stream, PreregistrationUser, MultiuseInvite, \
     name_changes_disabled, email_to_username, \
-    completely_open, get_unique_open_realm, email_allowed_for_realm, \
+    completely_open, email_allowed_for_realm, \
     get_realm, get_realm_by_email_domain, get_user_profile_by_email
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
@@ -77,15 +77,10 @@ def accounts_register(request):
     password_required = prereg_user.password_required
 
     validators.validate_email(email)
-    # If OPEN_REALM_CREATION is enabled all user sign ups should go through the
-    # special URL with domain name so that REALM can be identified if multiple realms exist
-    unique_open_realm = get_unique_open_realm()
-    if unique_open_realm is not None:
-        realm = unique_open_realm  # type: Optional[Realm]
-    elif prereg_user.referred_by:
+    if prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
-        realm = prereg_user.referred_by.realm
+        realm = prereg_user.referred_by.realm  # type: Optional[Realm]
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None

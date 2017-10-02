@@ -324,19 +324,6 @@ def get_unique_non_system_realm():
         return None
     return realms[0]
 
-def get_unique_open_realm():
-    # type: () -> Optional[Realm]
-    """We only return a realm if there is a unique non-system-only realm,
-    it is completely open, and there are no subdomains."""
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        return None
-    realm = get_unique_non_system_realm()
-    if realm is None:
-        return None
-    if realm.invite_required or realm.restricted_to_domain:
-        return None
-    return realm
-
 def name_changes_disabled(realm):
     # type: (Optional[Realm]) -> bool
     if realm is None:
