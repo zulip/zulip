@@ -47,7 +47,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent"],
+                    404: ["/help/nonexistent", "/help/include/admin"],
                     }
 
         # Add all files in 'templates/zerver/help' directory (except for 'main.html' and

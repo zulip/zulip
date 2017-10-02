@@ -56,6 +56,8 @@ class HelpView(ApiURLView):
         # type: (str) -> str
         if article == "":
             article = "index"
+        elif "/" in article:
+            article = "missing"
         return self.path_template % (article,)
 
     def get_context_data(self, **kwargs):
@@ -82,6 +84,8 @@ class HelpView(ApiURLView):
             loader.get_template(path)
         except loader.TemplateDoesNotExist:
             # Ensure a 404 response code if no such document
+            result.status_code = 404
+        if "/" in article:
             result.status_code = 404
         return result
 
