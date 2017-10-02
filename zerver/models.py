@@ -313,17 +313,6 @@ def completely_open(realm):
         return False
     return not realm.invite_required and not realm.restricted_to_domain
 
-def get_unique_non_system_realm():
-    # type: () -> Optional[Realm]
-    realms = Realm.objects.filter(deactivated=False)
-    # On production installations, the (usually "zulip.com") system
-    # realm is an empty realm just used for system bots, so don't
-    # include it in this accounting.
-    realms = realms.exclude(string_id__in=settings.SYSTEM_ONLY_REALMS)
-    if len(realms) != 1:
-        return None
-    return realms[0]
-
 def name_changes_disabled(realm):
     # type: (Optional[Realm]) -> bool
     if realm is None:
