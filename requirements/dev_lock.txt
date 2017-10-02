@@ -8,7 +8,7 @@
 # For details, see requirements/README.md .
 #
 git+https://github.com/umairwaheed/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd7f84e1ac#egg=fakeldap==0.5.1.0zulip1
-git+https://github.com/python/mypy.git@d96b2cf22216a4ad6aa55a5726ee35a3fa38c637#egg=mypy==0.530-dev
+git+https://github.com/python/mypy.git@5ca89e5cc77bbaeffbb5d6310301139cbaaae48f#egg=mypy==0.530-dev
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
 git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
@@ -54,7 +54,6 @@ django==1.11.4
 docopt==0.6.2
 docutils==0.14
 first==2.0.1              # via pip-tools
-fonttools==3.15.1
 gitdb==0.6.4
 gitlint==0.8.2
 google-api-python-client==1.6.3
