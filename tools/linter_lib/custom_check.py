@@ -349,6 +349,10 @@ def build_custom_checkers(by_lang):
         {'pattern': 'import os.path',
          'description': "Use import os instead of import os.path",
          },
+        {'pattern': '(logging|logger)\.warn\W',
+         'description': "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
+         'good_lines': ["logging.warning('I am a warning.')", "logger.warning('warning')"],
+         'bad_lines': ["logging.warn('I am a warning.')", "logger.warn('warning')"]},
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
