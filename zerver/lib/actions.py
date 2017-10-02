@@ -1457,6 +1457,13 @@ def check_send_stream_message(sender, client, stream_name, topic, body):
 
     return do_send_messages([message])[0]
 
+def check_send_private_message(sender, client, receiving_user, body):
+    # type: (UserProfile, Client, UserProfile, Text) -> int
+    addressee = Addressee.for_user_profile(receiving_user)
+    message = check_message(sender, client, addressee, body)
+
+    return do_send_messages([message])[0]
+
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender, client, message_type_name, message_to,
