@@ -413,6 +413,12 @@ function change_focus_to_filter() {
 }
 
 exports.navigate = function (event_name) {
+    if (event_name === 'toggle_reactions_popover' && exports.reactions_popped() &&
+        (search_is_active === false || search_results.length === 0)) {
+        exports.hide_emoji_popover();
+        return true;
+    }
+
     // If search is active and results are empty then return immediately.
     if (search_is_active === true && search_results.length === 0) {
         return;
@@ -498,9 +504,9 @@ exports.navigate = function (event_name) {
 
 function process_keypress(e) {
     var is_filter_focused = $('.emoji-popover-filter').is(':focus');
-    if (!is_filter_focused) {
-        var pressed_key = e.which;
-
+    var pressed_key = e.which;
+    if (!is_filter_focused && pressed_key !== 58) {
+        // ':' => 58, is a hotkey for toggling reactions popover.
         if (pressed_key >= 32 && pressed_key <= 126 || pressed_key === 8) {
             // Handle only printable characters or backspace.
             e.preventDefault();

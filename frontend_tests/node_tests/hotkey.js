@@ -262,6 +262,11 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'reactions.open_reactions_popover', true);
+
+    global.emoji_picker.reactions_popped = return_true;
+    assert_mapping(':', 'emoji_picker.navigate', true);
+    global.emoji_picker.reactions_popped = return_false;
+
     assert_mapping('G', 'navigate.to_end');
     assert_mapping('M', 'muting_ui.toggle_mute');
 
