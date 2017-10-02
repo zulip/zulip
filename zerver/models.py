@@ -319,14 +319,6 @@ class RealmDomain(models.Model):
     class Meta(object):
         unique_together = ("realm", "domain")
 
-def can_add_realm_domain(domain):
-    # type: (Text) -> bool
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        return True
-    if RealmDomain.objects.filter(domain=domain).exists():
-        return False
-    return True
-
 # These functions should only be used on email addresses that have
 # been validated via django.core.validators.validate_email
 #

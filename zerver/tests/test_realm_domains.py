@@ -62,12 +62,10 @@ class RealmDomainTest(ZulipTestCase):
         self.login(mit_user_profile.email)
 
         do_change_is_admin(mit_user_profile, True)
-        result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'The domain acme.com belongs to another organization.')
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            result = self.client_post("/json/realm/domains", info=data,
-                                      HTTP_HOST=mit_user_profile.realm.host)
-            self.assert_json_success(result)
+
+        result = self.client_post("/json/realm/domains", info=data,
+                                  HTTP_HOST=mit_user_profile.realm.host)
+        self.assert_json_success(result)
 
     def test_patch_realm_domain(self):
         # type: () -> None

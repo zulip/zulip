@@ -4,7 +4,7 @@ from typing import Any
 from argparse import ArgumentParser
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from zerver.models import can_add_realm_domain, RealmDomain, get_realm_domains
+from zerver.models import RealmDomain, get_realm_domains
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.domains import validate_domain
 import sys
@@ -49,9 +49,6 @@ class Command(ZulipBaseCommand):
             sys.exit(1)
         if options["op"] == "add":
             try:
-                if not can_add_realm_domain(domain):
-                    print("The domain %(domain)s belongs to another organization." % {'domain': domain})
-                    sys.exit(1)
                 RealmDomain.objects.create(realm=realm, domain=domain,
                                            allow_subdomains=options["allow_subdomains"])
                 sys.exit(0)
