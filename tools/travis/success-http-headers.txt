@@ -1,4 +1,3 @@
-  Self-signed certificate encountered.
 WARNING: no certificate subject alternative name matches
 	requested host name ‘localhost’.
   HTTP/1.1 302 Found
