@@ -1019,7 +1019,7 @@ def do_send_messages(messages_maybe_none):
         sender = message['message'].sender
         message_type = message_dict_no_markdown['type']
 
-        presence_idle_userids = get_userids_for_missed_messages(
+        presence_idle_userids = get_active_presence_idle_userids(
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
@@ -3465,8 +3465,18 @@ def gather_subscriptions(user_profile):
 
     return (subscribed, unsubscribed)
 
-def get_userids_for_missed_messages(realm, sender_id, message_type, active_user_ids, user_flags):
+def get_active_presence_idle_userids(realm, sender_id, message_type, active_user_ids, user_flags):
     # type: (Realm, int, str, Set[int], Dict[int, List[str]]) -> List[int]
+    '''
+    Given a list of active_user_ids, we build up a subset
+    of those users who fit these criteria:
+
+        * They are likely to need notifications (either due
+          to mentions or being PM'ed).
+        * They are no longer "present" according to the
+          UserPresence table.
+    '''
+
     if realm.presence_disabled:
         return []
 

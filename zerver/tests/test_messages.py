@@ -15,7 +15,7 @@ from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
     do_send_messages,
-    get_userids_for_missed_messages,
+    get_active_presence_idle_userids,
     get_user_info_for_message_updates,
     internal_send_private_message,
 )
@@ -2138,7 +2138,7 @@ class MissedMessageTest(ZulipTestCase):
 
         def assert_missing(user_ids):
             # type: (List[int]) -> None
-            presence_idle_userids = get_userids_for_missed_messages(
+            presence_idle_userids = get_active_presence_idle_userids(
                 realm=realm,
                 sender_id=sender.id,
                 message_type=message_type,
