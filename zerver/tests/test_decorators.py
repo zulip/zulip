@@ -662,17 +662,6 @@ class DeactivatedRealmTest(ZulipTestCase):
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
-    def test_login_deactivated_realm(self):
-        # type: () -> None
-        """
-        logging in fails in a deactivated realm
-
-        """
-        do_deactivate_realm(get_realm("zulip"))
-        result = self.login_with_return(self.example_email("hamlet"),
-                                        subdomain="zulip")
-        self.assert_in_response("has been deactivated", result)
-
     def test_webhook_deactivated_realm(self):
         # type: () -> None
         """
