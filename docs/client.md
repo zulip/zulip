@@ -33,6 +33,6 @@ it to generate a client name that it adds to the `request` (Django
 object as `request.client`.
 
 In most integrations, `request.client` is then passed to
-`check_send_message`, where it is used to keep track of which client
+`check_send_stream_message`, where it is used to keep track of which client
 sent the message (which in turn is used by analytics). For more
 information, see [the webhook walkthrough](webhook-walkthrough.html).
