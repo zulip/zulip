@@ -366,5 +366,5 @@ def api_pagerduty_webhook(request, user_profile,
                           topic=REQ(default=None)):
 ```
 `request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
-in this example and it will be passed to `check_send_message`. For more
-information, see [Clients in Zulip](client.html).
+in this example and it will be passed to `check_send_stream_message`. For
+more information, see [Clients in Zulip](client.html).
