@@ -1076,7 +1076,7 @@ def do_send_messages(messages_maybe_none):
         if (settings.ENABLE_FEEDBACK and settings.FEEDBACK_BOT and
                 message['message'].recipient.type == Recipient.PERSONAL):
 
-            feedback_bot_id = get_user_profile_by_email(email=settings.FEEDBACK_BOT).id
+            feedback_bot_id = get_system_bot(email=settings.FEEDBACK_BOT).id
             if feedback_bot_id in message['active_user_ids']:
                 queue_json_publish(
                     'feedback_messages',
