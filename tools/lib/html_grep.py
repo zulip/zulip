@@ -1,8 +1,7 @@
 from collections import defaultdict
 from six.moves import range
 from typing import Dict, List, Set
-
-from .html_branches import html_branches, HtmlTreeBranch
+from .html_branches import html_branches, HtmlTreeBranch  # mypy
 
 def show_all_branches(fns):
     # type: (List[str]) -> None
