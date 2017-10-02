@@ -35,32 +35,31 @@ enabled by setting `OPEN_REALM_CREATION = True` in settings.py.
 
 ## Subdomains
 
-A reasonable way to deploy a multi-realm Zulip server in production is
-to give each realm a unique subdomain. For example if the Zulip
-instance is hosted at zulip.example.com and the subdomain of your
-organization is acme you can use acme.zulip.example.com for accessing
-the organization.  This subdomain feature is not enabled by default,
-since it requires additional DNS configuration. You can enable
-subdomains by setting the value of `REALMS_HAVE_SUBDOMAINS` to True in
-settings.py. For subdomains to work properly, you also have to change
-your DNS records so that the subdomains point to your Zulip
-installation IP. An `A` record with host name value `*` pointing to
-your IP should do the job.
+One can host multiple realms in a Zulip server by giving each realm a
+unique subdomain of the main Zulip server's domain. For example, if
+the Zulip instance is hosted at zulip.example.com, and the subdomain
+of your organization is acme you can would acme.zulip.example.com for
+accessing the organization.
 
-Converting a production Zulip server from not using subdomains to
-using subdomains requires some setup work; contact the Zulip
-development community for help with this.
+For subdomains to work properly, you also have to change your DNS
+records so that the subdomains point to your Zulip installation IP. An
+`A` record with host name value `*` pointing to your IP should do the
+job.
+
+We also recommend upgrading to at least Zulip 1.7, since older Zulip
+releases had much less nice handling for subdomains.  See our
+[docs on using subdomains](prod-multiple-organizations.html) for
+user-facing documentation on this.
 
 ### Working With Subdomains In Development Environment
 
 By default, Linux does not provide a convenient way to use subdomains
 in your local development environment.  To solve this problem, we use
 the **zulipdev.com** domain, which has a wildcard A record pointing to
-127.0.0.1. When `REALMS_HAVE_SUBDOMAINS = True` in
-`zproject/dev_settings.py`, you should use zulipdev.com to connect to
-your Zulip development server instead of localhost. The default realm
-with the Shakespeare users has the subdomain `zulip` and can be
-accessed by visiting **zulip.zulipdev.com**.
+127.0.0.1.  You can use zulipdev.com to connect to your Zulip
+development server instead of localhost. The default realm with the
+Shakespeare users has the subdomain `zulip` and can be accessed by
+visiting **zulip.zulipdev.com**.
 
 If you are behind a **proxy server**, this method won't work. When you
 make a request to load zulipdev.com in your browser, the proxy server
