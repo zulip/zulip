@@ -27,9 +27,8 @@ issue, or submit a pull request to share your ideas!
 
 The `zulip_bots` package comes with all you need to run a bot.
 
-### Installing a stable version
+To install it, run `pip install zulip_bots`.
 
-Run `pip install zulip_bots`.
 
 ## How to run a bot
 
