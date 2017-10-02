@@ -29,6 +29,8 @@ The `zulip_bots` package comes with all you need to run a bot.
 
 To install it, run `pip install zulip_bots`.
 
+*Hint: Do you want to install the latest version? Check out [this](
+ writing-bots-guide.html#installing-a-development-version-of-the-zulip-bots-package) guide.*
 
 ## How to run a bot
 
@@ -36,8 +38,8 @@ This guide will show you how to run a bot on a running Zulip
 server.  It assumes you want to use one of the existing `zulip_bots/bots`
 bots in your Zulip organization.
 
-*Looking for an easy way to test a bot's output? Check out [this](
- #testing-a-bot-s-output) section.*
+*Hint: Looking for an easy way to test a bot's output? Check out [this](
+ writing-bots-guide.html#testing-a-bot-s-output) guide.*
 
 You need:
 
@@ -64,7 +66,7 @@ You need:
 
     * In the *Active bots* panel, click on the little green download icon
       to download its configuration file *.zuliprc* (the structure of this file is
-      explained [here](#configuration-file)).
+      explained [here](writing-bots-guide.html#configuration-file)).
     * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`.
 
 4. Run the bot.
