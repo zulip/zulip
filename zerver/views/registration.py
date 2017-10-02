@@ -12,8 +12,7 @@ from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
 from zerver.models import UserProfile, Realm, Stream, PreregistrationUser, MultiuseInvite, \
-    name_changes_disabled, email_to_username, \
-    completely_open, email_allowed_for_realm, \
+    name_changes_disabled, email_to_username, email_allowed_for_realm, \
     get_realm, get_realm_by_email_domain, get_user_profile_by_email
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register

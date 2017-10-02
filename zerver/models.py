@@ -304,15 +304,6 @@ def get_realm(string_id):
     # type: (Text) -> Realm
     return Realm.objects.filter(string_id=string_id).first()
 
-def completely_open(realm):
-    # type: (Optional[Realm]) -> bool
-    # This realm is completely open to everyone on the internet to
-    # join. E-mail addresses do not need to match a realmdomain and
-    # an invite from an existing user is not required.
-    if realm is None:
-        return False
-    return not realm.invite_required and not realm.restricted_to_domain
-
 def name_changes_disabled(realm):
     # type: (Optional[Realm]) -> bool
     if realm is None:

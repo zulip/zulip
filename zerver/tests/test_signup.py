@@ -22,8 +22,7 @@ from zerver.views.registration import confirmation_key, \
     redirect_and_log_into_subdomain, send_registration_completion_email
 
 from zerver.models import (
-    get_realm, get_prereg_user_by_email, get_user,
-    completely_open, get_recipient,
+    get_realm, get_prereg_user_by_email, get_user, get_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
@@ -1467,50 +1466,6 @@ class UserSignUpTest(ZulipTestCase):
                      'terms': True})
         mock_error.assert_called_once()
         self.assertEqual(result.status_code, 302)
-
-    def test_unique_completely_open_domain(self):
-        # type: () -> None
-        password = "test"
-        email = "user1@acme.com"
-        subdomain = "zulip"
-
-        realm = get_realm('zulip')
-        realm.restricted_to_domain = False
-        realm.invite_required = False
-        realm.save()
-
-        for string_id in ('simple', 'zephyr'):
-            realm = get_realm(string_id)
-            do_deactivate_realm(realm)
-            realm.save()
-
-        result = self.client_post('/register/', {'email': email})
-
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-        # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise AssertionError("Couldn't find a confirmation email.")
-
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.submit_reg_form_for_user(email,
-                                               password,
-                                               from_confirmation="1",
-                                               # Pass HTTP_HOST for the target subdomain
-                                               HTTP_HOST=subdomain + ".testserver")
-        self.assert_in_success_response(["You're almost there."], result)
 
     @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_failed_signup_due_to_restricted_domain(self):
