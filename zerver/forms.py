@@ -11,7 +11,7 @@ from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, user_email_is_unique, \
-    validate_email_for_realm
+    validate_email_for_realm, check_email_exists
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
@@ -127,6 +127,7 @@ class HomepageForm(forms.Form):
         email = self.cleaned_data['email']
 
         if get_unique_open_realm():
+            check_email_exists(email)
             return email
 
         # Otherwise, the user is trying to join a specific realm.

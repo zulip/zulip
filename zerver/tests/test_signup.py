@@ -1310,6 +1310,20 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result.url)
         self.assert_in_response("You've already registered", result)
 
+    def test_signup_already_active_under_open_realm(self):
+        # type: () -> None
+        """
+        Check if signing up with an active email redirects to a login page.
+        """
+        email = self.example_email("hamlet")
+        with patch('zerver.forms.get_unique_open_realm',
+                   return_value=get_realm("zulip")):
+            result = self.client_post('/accounts/home/', {'email': email})
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result['Location'])
+            result = self.client_get(result.url)
+            self.assert_in_response("You've already registered", result)
+
     def test_signup_invalid_name(self):
         # type: () -> None
         """
