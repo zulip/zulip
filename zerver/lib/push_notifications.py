@@ -112,8 +112,8 @@ def send_apple_push_notification(user_id, devices, payload_data):
             try:
                 return client.get_notification_result(stream_id)
             except HTTP20Error as e:
-                logging.warn("APNs: HTTP error sending for user %d to device %s: %s",
-                             user_id, device.token, e.__class__.__name__)
+                logging.warning("APNs: HTTP error sending for user %d to device %s: %s",
+                                user_id, device.token, e.__class__.__name__)
                 return None
 
         result = attempt_send()
@@ -127,8 +127,8 @@ def send_apple_push_notification(user_id, devices, payload_data):
             logging.info("APNs: Success sending for user %d to device %s",
                          user_id, device.token)
         else:
-            logging.warn("APNs: Failed to send for user %d to device %s: %s",
-                         user_id, device.token, result)
+            logging.warning("APNs: Failed to send for user %d to device %s: %s",
+                            user_id, device.token, result)
             # TODO delete token if status 410 (and timestamp isn't before
             #      the token we have)
 

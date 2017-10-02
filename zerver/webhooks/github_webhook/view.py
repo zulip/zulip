@@ -420,7 +420,7 @@ def get_event(request, payload, branches):
             return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
-        logging.warn(u'Event pull_request with {} action is unsupported'.format(action))
+        logging.warning(u'Event pull_request with {} action is unsupported'.format(action))
         return None
     if event == 'push':
         if is_commit_push_event(payload):
@@ -433,7 +433,7 @@ def get_event(request, payload, branches):
             return "push_tags"
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
-    logging.warn(u'Event {} is unknown and cannot be handled'.format(event))
+    logging.warning(u'Event {} is unknown and cannot be handled'.format(event))
     return None
 
 def get_body_function_based_on_type(type):

@@ -349,7 +349,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
                 mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
                 mock.patch('logging.info') as mock_info, \
-                mock.patch('logging.warn'):
+                mock.patch('logging.warning'):
             apns_devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
@@ -556,7 +556,7 @@ class TestAPNs(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.return_value = 'Success'
             self.send()
-            mock_logging.warn.assert_not_called()
+            mock_logging.warning.assert_not_called()
             for device in self.devices():
                 mock_logging.info.assert_any_call(
                     "APNs: Success sending for user %d to device %s",
@@ -571,7 +571,7 @@ class TestAPNs(PushNotificationTest):
                 [hyper.http20.exceptions.StreamResetError()],
                 itertools.repeat('Success'))
             self.send()
-            mock_logging.warn.assert_called_once_with(
+            mock_logging.warning.assert_called_once_with(
                 "APNs: HTTP error sending for user %d to device %s: %s",
                 self.user_profile.id, self.devices()[0].token, "StreamResetError")
             for device in self.devices():
