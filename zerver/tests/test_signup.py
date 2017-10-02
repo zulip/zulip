@@ -1182,32 +1182,31 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        with self.settings(REALMS_HAVE_SUBDOMAINS=False):
-            result = self.client_post('/create_realm/', {'email': email})
-            self.client_get(result["Location"])
-            confirmation_url = self.get_confirmation_url_from_outbox(email)
-            self.client_get(confirmation_url)
+        result = self.client_post('/create_realm/', {'email': email})
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
 
-            errors = {'id': "at least 3 characters",
-                      '-id': "cannot start or end with a",
-                      'string-ID': "lowercase letters",
-                      'string_id': "lowercase letters",
-                      'stream': "unavailable",
-                      'streams': "unavailable",
-                      'about': "unavailable",
-                      'abouts': "unavailable",
-                      'zephyr': "unavailable"}
-            for string_id, error_msg in errors.items():
-                result = self.submit_reg_form_for_user(email, password,
-                                                       realm_subdomain = string_id,
-                                                       realm_name = realm_name)
-                self.assert_in_response(error_msg, result)
-
-            # test valid subdomain
+        errors = {'id': "at least 3 characters",
+                  '-id': "cannot start or end with a",
+                  'string-ID': "lowercase letters",
+                  'string_id': "lowercase letters",
+                  'stream': "unavailable",
+                  'streams': "unavailable",
+                  'about': "unavailable",
+                  'abouts': "unavailable",
+                  'zephyr': "unavailable"}
+        for string_id, error_msg in errors.items():
             result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = 'a-0',
+                                                   realm_subdomain = string_id,
                                                    realm_name = realm_name)
-            self.assertEqual(result.status_code, 302)
+            self.assert_in_response(error_msg, result)
+
+        # test valid subdomain
+        result = self.submit_reg_form_for_user(email, password,
+                                               realm_subdomain = 'a-0',
+                                               realm_name = realm_name)
+        self.assertEqual(result.status_code, 302)
 
 class UserSignUpTest(ZulipTestCase):
 
