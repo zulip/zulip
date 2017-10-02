@@ -581,7 +581,7 @@ class TestAPNs(PushNotificationTest):
     def test_modernize_apns_payload(self):
         # type: () -> None
         payload = {'alert': 'Message from Hamlet',
-                   'badge': 1,
+                   'badge': 0,
                    'custom': {'zulip': {'message_ids': [3]}}}
         self.assertEqual(
             apn.modernize_apns_payload(
@@ -667,7 +667,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'title': "New private group message from King Hamlet",
                 'body': message.content,
             },
-            'badge': 1,
+            'badge': 0,
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
