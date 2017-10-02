@@ -39,7 +39,7 @@ class Command(BaseCommand):
             This process is watched by Django's autoreload, so exiting
             with status code 3 will cause this process to restart.
             """
-            logger.warn("SIGUSR1 received. Restarting this queue processor.")
+            logger.warning("SIGUSR1 received. Restarting this queue processor.")
             sys.exit(3)
 
         if not settings.USING_RABBITMQ:

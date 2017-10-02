@@ -53,7 +53,7 @@ Usage: ./manage.py deliver_email
                             send_email(**loads(job.data))
                             job.delete()
                         except EmailNotDeliveredException:
-                            logger.warn("%r not delivered" % (job,))
+                            logger.warning("%r not delivered" % (job,))
                     time.sleep(10)
                 else:
                     # Less load on the db during times of activity, and more responsiveness when the load is low

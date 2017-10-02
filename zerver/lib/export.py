@@ -137,7 +137,7 @@ def sanity_check_output(data):
 
     for table in tables:
         if table not in data:
-            logging.warn('??? NO DATA EXPORTED FOR TABLE %s!!!' % (table,))
+            logging.warning('??? NO DATA EXPORTED FOR TABLE %s!!!' % (table,))
 
 def write_data_to_file(output_file, data):
     # type: (Path, Any) -> None
