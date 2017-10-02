@@ -76,7 +76,7 @@ def modernize_apns_payload(data):
         #   'message_ids': List[int],  # always just one
         return {
             'alert': data['alert'],
-            'badge': 1,
+            'badge': 0,
             'custom': {
                 'zulip': {
                     'message_ids': data['message_ids'],
@@ -372,7 +372,7 @@ def get_apns_payload(message):
             'body': message.content[:200],
         },
         # TODO: set badge count in a better way
-        'badge': 1,
+        'badge': 0,
         'custom': {
             'zulip': {
                 'message_ids': [message.id],
