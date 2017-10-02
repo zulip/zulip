@@ -107,6 +107,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
 
     subs.update_settings_for_subscribed(sub);
+    subs.actually_filter_streams();
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
