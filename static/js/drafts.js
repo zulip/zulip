@@ -244,10 +244,6 @@ exports.setup_page = function (callback) {
     populate_and_fill();
 };
 
-exports.drafts_overlay_open = function () {
-    return $("#draft_overlay").hasClass("show");
-};
-
 function drafts_initialize_focus(event_name) {
     // If a draft is not focused in draft modal, then focus the last draft
     // if up_arrow is clicked or the first draft if down_arrow is clicked.
@@ -366,7 +362,7 @@ exports.drafts_handle_events = function (e, event_key) {
 };
 
 exports.toggle = function () {
-    if (exports.drafts_overlay_open()) {
+    if (overlays.drafts_open()) {
         overlays.close_overlay("drafts");
     } else {
         exports.launch();
@@ -383,7 +379,6 @@ exports.launch = function () {
             },
         });
 
-        $("#draft_overlay").addClass("show");
         var draft_list = drafts.draft_model.get();
         var draft_id_list = Object.getOwnPropertyNames(draft_list);
         if (draft_id_list.length > 0) {
