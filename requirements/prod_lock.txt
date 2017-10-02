@@ -30,7 +30,7 @@ cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 diff-match-patch==20121119
-django-auth-ldap==1.2.12
+django-auth-ldap==1.2.15
 django-bitfield==1.9.3
 django-pipeline==1.6.13
 django-statsd-mozilla==0.4.0

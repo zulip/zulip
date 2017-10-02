@@ -432,7 +432,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             elif settings.LDAP_EMAIL_ATTR is not None:
                 self._realm = get_realm_by_email_domain(username)
             username = self.django_to_ldap_username(username)
-            user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
+            user_profile = ZulipLDAPAuthBackendBase.authenticate(self,
+                                                                 username=username,
+                                                                 password=password)
             if user_profile is None:
                 return None
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
