@@ -76,12 +76,8 @@ exports.initialize = function () {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                // line-wrapped to avoid the i18n linter, since we don't want to translate this.
-                $('#dev_env_msg').html(
-                    'In the Zulip development environment, outgoing emails can be accessed by opening ' +
-                    '<a href="/emails">/emails</a>. They are also printed to the run-dev.py console.')
-                    .addClass('alert-info')
-                    .show();
+                var email_msg = templates.render('dev_env_email_access');
+                $('#dev_env_msg').html(email_msg).addClass('alert-info').show();
             }
 
         },
