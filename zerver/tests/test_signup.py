@@ -317,6 +317,7 @@ class LoginTest(ZulipTestCase):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_register_deactivated(self):
         # type: () -> None
         """
@@ -327,13 +328,40 @@ class LoginTest(ZulipTestCase):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        result = self.register(self.nonreg_email('test'), "test")
+        result = self.client_post('/accounts/home/', {'email': self.nonreg_email('test')},
+                                  subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertIn('deactivated', result.url)
+        self.assertEqual('/accounts/deactivated/', result.url)
 
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user('test')
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
+    def test_register_deactivated_partway_through(self):
+        # type: () -> None
+        """
+        If you try to register for a deactivated realm, you get a clear error
+        page.
+        """
+        email = self.nonreg_email('test')
+        result = self.client_post('/accounts/home/', {'email': email},
+                                  subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        print(result.url)
+        self.assertNotIn('deactivated', result.url)
+
+        realm = get_realm("zulip")
+        realm.deactivated = True
+        realm.save(update_fields=["deactivated"])
+
+        result = self.submit_reg_form_for_user(email, "abcd1234", subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual('/accounts/deactivated/', result.url)
+
+        with self.assertRaises(UserProfile.DoesNotExist):
+            self.nonreg_user('test')
+
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_login_deactivated(self):
         # type: () -> None
         """
@@ -343,8 +371,9 @@ class LoginTest(ZulipTestCase):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        result = self.login_with_return(self.example_email("hamlet"))
-        self.assert_in_response("has been deactivated", result)
+        result = self.login_with_return(self.example_email("hamlet"), subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual('/accounts/deactivated/', result.url)
 
     def test_logout(self):
         # type: () -> None
