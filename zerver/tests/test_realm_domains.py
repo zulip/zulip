@@ -10,7 +10,6 @@ from zerver.lib.actions import do_change_is_admin, \
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
-    get_realm_by_email_domain, \
     GetRealmByDomainException, RealmDomain
 
 import ujson
@@ -116,46 +115,6 @@ class RealmDomainTest(ZulipTestCase):
         # would not be updated.
         self.assertFalse(get_realm('zulip').restricted_to_domain)
 
-    def test_get_realm_by_email_domain(self):
-        # type: () -> None
-        realm1 = do_create_realm('testrealm1', 'Test Realm 1')
-        realm2 = do_create_realm('testrealm2', 'Test Realm 2')
-        realm3 = do_create_realm('testrealm3', 'Test Realm 3')
-
-        realm_domain_1 = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=True)
-        realm_domain_2 = RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
-        RealmDomain.objects.create(realm=realm3, domain='test3.test2.test1.com', allow_subdomains=True)
-
-        def assert_and_check(email, realm_string_id):
-            # type: (Text, Optional[Text]) -> None
-            realm = get_realm_by_email_domain(email)
-            if realm_string_id is None:
-                self.assertIsNone(realm)
-            else:
-                assert(realm is not None)
-                self.assertEqual(realm.string_id, realm_string_id)
-
-        assert_and_check('user@zulip.com', 'zulip')
-        assert_and_check('user@fakedomain.com', None)
-        assert_and_check('user@test1.com', 'testrealm1')
-        assert_and_check('user@test2.test1.com', 'testrealm2')
-        assert_and_check('user@test3.test2.test1.com', 'testrealm3')
-        assert_and_check('user@test2.test1.com', 'testrealm2')
-        assert_and_check('user@test2.test2.test1.com', 'testrealm1')
-        assert_and_check('user@test1.test3.test2.test1.com', 'testrealm3')
-
-        do_change_realm_domain(realm_domain_1, False)
-        assert_and_check('user@test1.test1.com', None)
-        assert_and_check('user@test1.com', 'testrealm1')
-
-        do_change_realm_domain(realm_domain_2, True)
-        assert_and_check('user@test2.test1.com', 'testrealm2')
-        assert_and_check('user@test2.test2.test1.com', 'testrealm2')
-
-        with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
-                self.assertRaises(GetRealmByDomainException)):
-            get_realm_by_email_domain('user@zulip.com')
-
     def test_email_allowed_for_realm(self):
         # type: () -> None
         realm1 = do_create_realm('testrealm1', 'Test Realm 1', restricted_to_domain=True)
@@ -178,7 +137,7 @@ class RealmDomainTest(ZulipTestCase):
     def test_realm_realm_domains_uniqueness(self):
         # type: () -> None
         realm = get_realm('zulip')
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.assertRaises(IntegrityError):
+        with self.assertRaises(IntegrityError):
             RealmDomain.objects.create(realm=realm, domain='zulip.com', allow_subdomains=True)
 
     def test_validate_domain(self):

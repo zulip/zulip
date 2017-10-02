@@ -11,9 +11,10 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
+from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, PreregistrationUser, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain, get_user_profile_by_email
+    get_realm, get_user_profile_by_email
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -79,14 +80,12 @@ def accounts_register(request):
     if prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
-        realm = prereg_user.referred_by.realm  # type: Optional[Realm]
+        realm = prereg_user.referred_by.realm
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None
-    elif settings.REALMS_HAVE_SUBDOMAINS:
-        realm = get_realm(get_subdomain(request))
     else:
-        realm = get_realm_by_email_domain(email)
+        realm = get_realm(get_subdomain(request))
 
     if realm and not email_allowed_for_realm(email, realm):
         return render(request, "zerver/closed_realm.html",
@@ -210,7 +209,7 @@ def accounts_register(request):
             setup_initial_private_stream(user_profile)
             send_initial_realm_messages(realm)
 
-        if realm_creation and settings.REALMS_HAVE_SUBDOMAINS:
+        if realm_creation:
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new realm.
@@ -246,7 +245,6 @@ def accounts_register(request):
                  # but for the registration form, there is no logged in user yet, so
                  # we have to set it here.
                  'creating_new_team': realm_creation,
-                 'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
                  'password_required': password_auth_enabled(realm) and password_required,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
@@ -331,13 +329,6 @@ def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
 
-def get_realm_from_request(request):
-    # type: (HttpRequest) -> Realm
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        realm_str = get_subdomain(request)
-    else:
-        realm_str = None
-    return get_realm(realm_str)
 
 def show_deactivation_notice(request):
     # type: (HttpRequest) -> HttpResponse
@@ -354,7 +345,7 @@ def redirect_to_deactivation_notice():
 
 def accounts_home(request, multiuse_object=None):
     # type: (HttpRequest, Optional[MultiuseInvite]) -> HttpResponse
-    realm = get_realm_from_request(request)
+    realm = get_realm(get_subdomain(request))
     if realm and realm.deactivated:
         return redirect_to_deactivation_notice()
 

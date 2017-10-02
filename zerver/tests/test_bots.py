@@ -48,10 +48,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # the wrong subdomain, and because 'testserver.example.com' is not a valid domain for the bot's email.
         # So we just test the Raelm.get_bot_domain function.
         realm = get_realm('zulip')
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            self.assertEqual(realm.get_bot_domain(), 'zulip.testserver')
-        Realm.objects.exclude(string_id='zulip').update(deactivated=True)
-        self.assertEqual(realm.get_bot_domain(), 'testserver')
+        self.assertEqual(realm.get_bot_domain(), 'zulip.testserver')
 
     def deactivate_bot(self):
         # type: () -> None

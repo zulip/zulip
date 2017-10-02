@@ -165,10 +165,7 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         return response
 
     do_login(request, user_profile)
-    if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
-        return HttpResponseRedirect(user_profile.realm.uri)
-    return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                          request.get_host()))
+    return HttpResponseRedirect(user_profile.realm.uri)
 
 def remote_user_sso(request):
     # type: (HttpRequest) -> HttpResponse
@@ -289,10 +286,9 @@ def send_oauth_request_to_google(request):
     is_signup = request.GET.get('is_signup', '')
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
 
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        if ((settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == '') or
-                not Realm.objects.filter(string_id=subdomain).exists()):
-            return redirect_to_subdomain_login_url()
+    if ((settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == '') or
+            not Realm.objects.filter(string_id=subdomain).exists()):
+        return redirect_to_subdomain_login_url()
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
@@ -512,7 +508,7 @@ def login_page(request, **kwargs):
         extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
         extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
 
-        if settings.REALMS_HAVE_SUBDOMAINS and 'new_realm' in request.POST:
+        if 'new_realm' in request.POST:
             # If we're switching realms, redirect to that realm
             return HttpResponseRedirect(realm.uri)
 
@@ -555,10 +551,7 @@ def dev_direct_login(request, **kwargs):
     if user_profile is None:
         raise Exception("User cannot login")
     do_login(request, user_profile)
-    if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
-        return HttpResponseRedirect(user_profile.realm.uri)
-    return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                          request.get_host()))
+    return HttpResponseRedirect(user_profile.realm.uri)
 
 @csrf_exempt
 @require_post
@@ -656,26 +649,21 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 def get_auth_backends_data(request):
     # type: (HttpRequest) -> Dict[str, Any]
     """Returns which authentication methods are enabled on the server"""
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain = get_subdomain(request)
-        try:
-            realm = Realm.objects.get(string_id=subdomain)
-        except Realm.DoesNotExist:
-            # If not the root subdomain, this is an error
-            if subdomain != "":
-                raise JsonableError(_("Invalid subdomain"))
-            # With the root subdomain, it's an error or not depending
-            # whether ROOT_DOMAIN_LANDING_PAGE (which indicates whether
-            # there are some realms without subdomains on this server)
-            # is set.
-            if settings.ROOT_DOMAIN_LANDING_PAGE:
-                raise JsonableError(_("Subdomain required"))
-            else:
-                realm = None
-    else:
-        # Without subdomains, we just have to report what the server
-        # supports, since we don't know the realm.
-        realm = None
+    subdomain = get_subdomain(request)
+    try:
+        realm = Realm.objects.get(string_id=subdomain)
+    except Realm.DoesNotExist:
+        # If not the root subdomain, this is an error
+        if subdomain != "":
+            raise JsonableError(_("Invalid subdomain"))
+        # With the root subdomain, it's an error or not depending
+        # whether ROOT_DOMAIN_LANDING_PAGE (which indicates whether
+        # there are some realms without subdomains on this server)
+        # is set.
+        if settings.ROOT_DOMAIN_LANDING_PAGE:
+            raise JsonableError(_("Subdomain required"))
+        else:
+            realm = None
     return {"password": password_auth_enabled(realm),
             "dev": dev_auth_enabled(realm),
             "github": github_auth_enabled(realm),

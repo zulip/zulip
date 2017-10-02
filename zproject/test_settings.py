@@ -103,7 +103,6 @@ WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE
 if CASPER_TESTS:
     # Don't auto-restart Tornado server during casper tests
     AUTORELOAD = False
-    REALMS_HAVE_SUBDOMAINS = True
 else:
     # Use local memory cache for backend tests.
     CACHES['default'] = {

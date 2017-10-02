@@ -374,17 +374,16 @@ class SessionHostDomainMiddleware(SessionMiddleware):
             # just return here.
             return response
 
-        if settings.REALMS_HAVE_SUBDOMAINS:
-            if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
-                    not request.path.startswith("/json/")):
-                subdomain = get_subdomain(request)
-                if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
-                    return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                              settings.EXTERNAL_HOST))
-                if subdomain != "":
-                    realm = get_realm(subdomain)
-                    if (realm is None):
-                        return render(request, "zerver/invalid_realm.html")
+        if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
+                not request.path.startswith("/json/")):
+            subdomain = get_subdomain(request)
+            if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
+                return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
+                                          settings.EXTERNAL_HOST))
+            if subdomain != "":
+                realm = get_realm(subdomain)
+                if (realm is None):
+                    return render(request, "zerver/invalid_realm.html")
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie.
@@ -411,14 +410,12 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     request.session.save()
                     host = request.get_host().split(':')[0]
 
-                    session_cookie_domain = settings.SESSION_COOKIE_DOMAIN
                     # The subdomains feature overrides the
                     # SESSION_COOKIE_DOMAIN setting, since the setting
                     # is a fixed value and with subdomains enabled,
                     # the session cookie domain has to vary with the
                     # subdomain.
-                    if settings.REALMS_HAVE_SUBDOMAINS:
-                        session_cookie_domain = host
+                    session_cookie_domain = host
                     response.set_cookie(settings.SESSION_COOKIE_NAME,
                                         request.session.session_key, max_age=max_age,
                                         expires=expires, domain=session_cookie_domain,

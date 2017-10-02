@@ -225,10 +225,6 @@ DEFAULT_SETTINGS.update({
     # Whether anyone can create a new organization on the Zulip server.
     'OPEN_REALM_CREATION': False,
 
-    # Whether every realm has its own subdomain.  Soon to be set to
-    # True always and removed..
-    'REALMS_HAVE_SUBDOMAINS': True,
-
     # Setting for where the system bot users are.  Likely will have no
     # purpose after the REALMS_HAVE_SUBDOMAINS migration finishes.
     'SYSTEM_ONLY_REALMS': {"zulip"},
@@ -565,7 +561,6 @@ if PRODUCTION:
 try:
     # For get_updates hostname sharding.
     domain = config_file.get('django', 'cookie_domain')
-    SESSION_COOKIE_DOMAIN = '.' + domain
     CSRF_COOKIE_DOMAIN = '.' + domain
 except six.moves.configparser.Error:
     # Failing here is OK

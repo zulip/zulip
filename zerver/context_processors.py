@@ -48,9 +48,8 @@ def zulip_default_context(request):
     bottom of this function in a wide range of situations: logged-in
     or logged-out, subdomains or not, etc.
 
-    The main variable in the below is whether we know the realm, which
-    is the case if there is only one realm, or we're on a
-    REALMS_HAVE_SUBDOMAINS subdomain, or the user is logged in.
+    The main variable in the below is whether we know what realm the
+    user is trying to interact with.
     """
     realm = get_realm_from_request(request)
 
@@ -97,7 +96,6 @@ def zulip_default_context(request):
         settings_comments_path = "/etc/zulip/settings.py"
 
     return {
-        'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
         'register_link_disabled': register_link_disabled,

@@ -258,9 +258,7 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def subdomain(self):
         # type: () -> Optional[Text]
-        if settings.REALMS_HAVE_SUBDOMAINS:
-            return self.string_id
-        return None
+        return self.string_id
 
     @property
     def uri(self):
@@ -336,31 +334,6 @@ def email_to_domain(email):
 
 class GetRealmByDomainException(Exception):
     pass
-
-def get_realm_by_email_domain(email):
-    # type: (Text) -> Optional[Realm]
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        raise GetRealmByDomainException(
-            "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
-    domain = email_to_domain(email)
-    query = RealmDomain.objects.select_related('realm')
-    # Search for the longest match. If found return immediately. Since in case of
-    # settings.REALMS_HAVE_SUBDOMAINS=True, we have a unique mapping between the
-    # realm and domain so don't worry about `allow_subdomains` being True or False.
-    realm_domain = query.filter(domain=domain).first()
-    if realm_domain is not None:
-        return realm_domain.realm
-    else:
-        # Since we have not found any match. We will now try matching the parent domain.
-        # Filter out the realm domains with `allow_subdomains=False` so that we don't end
-        # up matching 'test.zulip.com' wrongly to (realm, 'zulip.com', False).
-        query = query.filter(allow_subdomains=True)
-        while len(domain) > 0:
-            subdomain, sep, domain = domain.partition('.')
-            realm_domain = query.filter(domain=domain).first()
-            if realm_domain is not None:
-                return realm_domain.realm
-    return None
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.

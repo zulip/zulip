@@ -18,7 +18,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    get_realm_by_email_domain, get_realm, email_to_domain, email_allowed_for_realm
+    get_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
 import logging
@@ -81,18 +81,12 @@ class RegistrationForm(forms.Form):
 
     def clean_realm_subdomain(self):
         # type: () -> str
-        if settings.REALMS_HAVE_SUBDOMAINS:
-            error_strings = {
-                'too short': _("Subdomain needs to have length 3 or greater."),
-                'extremal dash': _("Subdomain cannot start or end with a '-'."),
-                'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
-                'unavailable': _("Subdomain unavailable. Please choose a different one.")}
-        else:
-            error_strings = {
-                'too short': _("Short name needs at least 3 characters."),
-                'extremal dash': _("Short name cannot start or end with a '-'."),
-                'bad character': _("Short name can only have lowercase letters, numbers, and '-'s."),
-                'unavailable': _("Short name unavailable. Please choose a different one.")}
+        error_strings = {
+            'too short': _("Subdomain needs to have length 3 or greater."),
+            'extremal dash': _("Subdomain cannot start or end with a '-'."),
+            'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
+            'unavailable': _("Subdomain unavailable. Please choose a different one.")}
+
         subdomain = self.cleaned_data['realm_subdomain']
         if not subdomain:
             return ''
@@ -128,18 +122,11 @@ class HomepageForm(forms.Form):
         # Otherwise, the user is trying to join a specific realm.
         realm = self.realm
         from_multiuse_invite = self.from_multiuse_invite
-        if realm is None and not settings.REALMS_HAVE_SUBDOMAINS:
-            realm = get_realm_by_email_domain(email)
 
         if realm is None:
-            if settings.REALMS_HAVE_SUBDOMAINS:
-                raise ValidationError(_("The organization you are trying to "
-                                        "join using {email} does not "
-                                        "exist.").format(email=email))
-            else:
-                raise ValidationError(_("Your email address, {email}, does not "
-                                        "correspond to any existing "
-                                        "organization.").format(email=email))
+            raise ValidationError(_("The organization you are trying to "
+                                    "join using {email} does not "
+                                    "exist.").format(email=email))
 
         if not from_multiuse_invite and realm.invite_required:
             raise ValidationError(_("Please request an invite for {email} "

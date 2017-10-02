@@ -2068,24 +2068,3 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://zulip.testserver', response.url)
-
-    def test_login_without_subdomains(self):
-        # type: () -> None
-        request = HostRequestMock(host="localhost")
-        setattr(request, 'session', self.client.session)
-        setattr(request, 'get_host', lambda: 'localhost')
-        user_profile = self.example_user('hamlet')
-        user_profile.backend = 'zproject.backends.GitHubAuthBackend'
-        full_name = 'Hamlet'
-        invalid_subdomain = False
-        with self.settings(REALMS_HAVE_SUBDOMAINS=False):
-            response = login_or_register_remote_user(
-                request,
-                user_profile.email,
-                user_profile,
-                full_name=full_name,
-                invalid_subdomain=invalid_subdomain)
-            user_id = get_session_dict_user(getattr(request, 'session'))
-            self.assertEqual(user_id, user_profile.id)
-            self.assertEqual(response.status_code, 302)
-            self.assertIn('http://localhost', response.url)

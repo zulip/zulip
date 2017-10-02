@@ -12,7 +12,7 @@ from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm, get_realm_by_email_domain
+    get_realm
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -146,11 +146,8 @@ class SocialAuthMixin(ZulipAuthMixin):
         if user is None:
             user = {}
 
-        if return_data is None:
-            return_data = {}
-
-        if response is None:
-            response = {}
+        assert return_data is not None
+        assert response is not None
 
         return self._common_authenticate(self,
                                          realm_subdomain=realm_subdomain,
@@ -427,10 +424,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
         # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
-            if settings.REALMS_HAVE_SUBDOMAINS:
-                self._realm = get_realm(realm_subdomain)
-            elif settings.LDAP_EMAIL_ATTR is not None:
-                self._realm = get_realm_by_email_domain(username)
+            self._realm = get_realm(realm_subdomain)
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
             if user_profile is None:
@@ -439,9 +433,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 return None
             return user_profile
         except Realm.DoesNotExist:
-            return None
+            return None  # nocoverage # TODO: this may no longer be possible
         except ZulipLDAPException:
-            return None
+            return None  # nocoverage # TODO: this may no longer be possible
 
     def get_or_create_user(self, username, ldap_user):
         # type: (str, _LDAPUser) -> Tuple[UserProfile, bool]
@@ -452,7 +446,6 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                     raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (settings.LDAP_EMAIL_ATTR,))
 
                 username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
-                self._realm = get_realm_by_email_domain(username)
 
             user_profile = get_user_profile_by_email(username)
             if not user_profile.is_active or user_profile.realm.deactivated:
@@ -505,7 +498,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         # type: (*Any, **Any) -> Optional[Text]
         try:
             return kwargs['response']['email']
-        except KeyError:
+        except KeyError:  # nocoverage # TODO: investigate
             return None
 
     def get_full_name(self, *args, **kwargs):

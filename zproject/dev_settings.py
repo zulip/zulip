@@ -7,16 +7,10 @@ from typing import Set
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
 EMAIL_LOG_DIR = "/var/log/zulip/email.log"
-# Default to subdomains disabled in development until we can update
-# the development documentation to make sense with subdomains.
-REALMS_HAVE_SUBDOMAINS = False
 # Check if test_settings.py set EXTERNAL_HOST.
 EXTERNAL_HOST = os.getenv('EXTERNAL_HOST')
 if EXTERNAL_HOST is None:
-    if REALMS_HAVE_SUBDOMAINS:
-        EXTERNAL_HOST = 'zulipdev.com:9991'
-    else:
-        EXTERNAL_HOST = 'localhost:9991'
+    EXTERNAL_HOST = 'zulipdev.com:9991'
 ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that

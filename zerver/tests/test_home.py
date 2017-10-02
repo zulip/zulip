@@ -238,7 +238,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 32)
+        self.assert_length(queries2, 33)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')

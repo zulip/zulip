@@ -351,16 +351,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         self.assertEqual(self.backend.get_full_name(response={'email': None}), '')
 
-    def test_github_backend_do_auth_without_subdomains(self):
-        # type: () -> None
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=self.do_auth), \
-                mock.patch('zerver.views.auth.do_login'):
-            response = dict(email=self.email, name=self.name)
-            result = self.backend.do_auth(response=response)
-            assert(result is not None)
-            self.assertNotIn('subdomain=1', result.url)
-
     def test_github_backend_do_auth_with_non_existing_subdomain(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
@@ -529,9 +519,9 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=email, name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('Your email address, {}, does not '
-                                    'correspond to any existing '
-                                    'organization.'.format(email), result)
+            self.assert_in_response('Your email address, {}, is not '
+                                    'in one of the domains that are allowed to register '
+                                    'for accounts in this organization.'.format(email), result)
 
     def test_github_backend_new_user(self):
         # type: () -> None
@@ -1086,51 +1076,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
 class GoogleLoginTest(GoogleOAuthTest):
-    def test_google_oauth2_success(self):
-        # type: () -> None
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
-        account_response = ResponseMock(200, account_data)
-        self.google_oauth2_test(token_response, account_response, subdomain="")
-
-        user_profile = self.example_user('hamlet')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
-    def test_google_oauth2_registration(self):
-        # type: () -> None
-        """If the user doesn't exist yet, Google auth can be used to register an account"""
-        email = "newuser@zulip.com"
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=email)])
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain="")
-        self.assert_in_response('No account found for',
-                                result)
-        self.assert_in_response('newuser@zulip.com. Would you like to register instead?',
-                                result)
-        # Click confirm registration button.
-        result = self.client_post('/register/',
-                                  {'email': email})
-        self.assertEqual(result.status_code, 302)
-        self.client_get(result.url)
-        assert Confirmation.objects.all().count() == 1
-        confirmation = Confirmation.objects.all().first()
-        url = confirmation_url(confirmation.confirmation_key,
-                               settings.EXTERNAL_HOST, Confirmation.USER_REGISTRATION)
-        result = self.client_get(url)
-        key_match = re.search('value="(?P<key>[0-9a-z]+)" name="key"', result.content.decode("utf-8"))
-        result = self.client_post('/accounts/register/',
-                                  {'full_name': "New User",
-                                   'password': 'test_password',
-                                   'key': key_match.group("key"),
-                                   'terms': True})
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://testserver/")
-
     @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_google_oauth2_subdomains_homepage(self):
