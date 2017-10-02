@@ -6,7 +6,7 @@ img {
 }
 
 body {
-    background-color: #f5f9f8;
+    background: #f5f9f8;
     font-family: sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
@@ -31,7 +31,7 @@ table td {
 }
 
 .body {
-    background-color: #f5f9f8;
+    background: #f5f9f8;
     width: 100%;
 }
 
@@ -136,7 +136,7 @@ a:hover {
     margin: 20px auto;
     width: 200px;
     border: 1px solid #7fd1ba;
-    background-color: #7fd1ba;
+    background: #7fd1ba;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
@@ -144,6 +144,7 @@ a:hover {
     font-family: sans-serif;
     text-decoration: none;
     text-align: center;
+    text-shadow: none;
 }
 
 a.button:hover {
