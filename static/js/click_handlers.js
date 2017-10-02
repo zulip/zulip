@@ -403,6 +403,11 @@ $(function () {
         $('#logout_form').submit();
     });
 
+    $('body').on('click', '.login_button', function () {
+        $('#login_form').submit();
+        loader.show_loader(login_button);
+    });
+
     $('.restart_get_events_button').click(function () {
         server_events.restart_get_events({dont_block: true});
     });

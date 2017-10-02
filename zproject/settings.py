@@ -903,6 +903,7 @@ JS_SPECS = {
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',
+            'js/loader.js',
             'js/util.js',
             'js/dynamic_text.js',
             'js/lightbox_canvas.js',
