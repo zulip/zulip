@@ -217,18 +217,19 @@ def remote_user_jwt(request):
 
     email = "%s@%s" % (remote_user, email_domain)
 
+    realm = get_realm(subdomain)
+    if realm is None:
+        raise JsonableError(_("Wrong subdomain"))
+
     try:
         # We do all the authentication we need here (otherwise we'd have to
         # duplicate work), but we need to call authenticate with some backend so
         # that the request.backend attribute gets set.
         return_data = {}  # type: Dict[str, bool]
         user_profile = authenticate(username=email,
-                                    realm_subdomain=subdomain,
+                                    realm_subdomain=realm.subdomain,
                                     return_data=return_data,
                                     use_dummy_backend=True)
-        if return_data.get('invalid_subdomain'):
-            logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (subdomain, email,))
-            raise JsonableError(_("Wrong subdomain"))
     except UserProfile.DoesNotExist:
         user_profile = None
 
