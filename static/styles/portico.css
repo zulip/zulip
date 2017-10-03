@@ -1255,7 +1255,7 @@ input.new-organization-button {
     position: relative;
     display: block;
     background-color: hsl(210, 22%, 96%);
-    border: 1px solid hsl(0, 0%, 93%);
+    border: 1px solid hsl(210, 22%, 90%);
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
@@ -1263,7 +1263,7 @@ input.new-organization-button {
 
 .markdown .tip {
     background-color: hsl(46, 63%, 95%);
-    border: 1px solid hsl(49, 20%, 84%);
+    border: 1px solid hsl(46, 63%, 84%);
 }
 
 .markdown .warn p,
