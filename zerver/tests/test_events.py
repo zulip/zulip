@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # See http://zulip.readthedocs.io/en/latest/events-system.html for
 # high-level documentation on how this system works.
-from typing import Any, Callable, Dict, List, Optional, Union, Text, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Text, Tuple, Union
 import os
 import shutil
 
@@ -544,6 +544,10 @@ class EventsRegisterTest(ZulipTestCase):
             ('flags', check_list(None)),
             ('message_id', check_int),
             ('message_ids', check_list(check_int)),
+            ('prior_mention_user_ids', check_list(check_int)),
+            ('mention_user_ids', check_list(check_int)),
+            ('presence_idle_userids', check_list(check_int)),
+            ('stream_push_user_ids', check_list(check_int)),
             ('orig_content', check_string),
             ('orig_rendered_content', check_string),
             ('orig_subject', check_string),
@@ -552,6 +556,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('rendered_content', check_string),
             ('sender', check_string),
             ('stream_id', check_int),
+            ('stream_name', check_string),
             ('subject', check_string),
             ('subject_links', check_list(None)),
             ('user_id', check_int),
@@ -562,9 +567,14 @@ class EventsRegisterTest(ZulipTestCase):
         propagate_mode = 'change_all'
         content = 'new content'
         rendered_content = render_markdown(message, content)
+        prior_mention_user_ids = set()  # type: Set[int]
+        mentioned_user_ids = set()  # type: Set[int]
+
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
-                                      propagate_mode, content, rendered_content),
+                                      propagate_mode, content, rendered_content,
+                                      prior_mention_user_ids,
+                                      mentioned_user_ids),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])

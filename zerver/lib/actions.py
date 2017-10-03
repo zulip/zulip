@@ -3146,8 +3146,10 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
-def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
-    # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text]) -> int
+def do_update_message(user_profile, message, subject, propagate_mode,
+                      content, rendered_content,
+                      prior_mention_user_ids, mention_user_ids):
+    # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text], Set[int], Set[int]) -> int
     event = {'type': 'update_message',
              # TODO: We probably want to remove the 'sender' field
              # after confirming it isn't used by any consumers.
@@ -3158,6 +3160,10 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         'user_id': user_profile.id,
     }  # type: Dict[str, Any]
     changed_messages = [message]
+
+    if message.recipient.type == Recipient.STREAM:
+        stream_id = message.recipient.type_id
+        event['stream_name'] = Stream.objects.get(id=stream_id).name
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the
@@ -3204,6 +3210,14 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
             check_attachment_reference_change(prev_content, message)
+
+        # TODO: We may want a slightly leaner of this function for updates.
+        info = get_recipient_info(message.recipient,
+                                  message.sender_id)
+        event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
+        event['prior_mention_user_ids'] = list(prior_mention_user_ids)
+        event['mention_user_ids'] = list(mention_user_ids)
+        event['presence_idle_userids'] = filter_presence_idle_userids(info['active_user_ids'])
 
     if subject is not None:
         orig_subject = message.topic_name()
