@@ -1287,6 +1287,10 @@ input.new-organization-button {
     margin: 0px 30px 15px;
 }
 
+.markdown ol p {
+    margin: 0 0 2px;
+}
+
 .markdown .indicator {
     position: relative;
     display: inline-block;
