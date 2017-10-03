@@ -19,6 +19,8 @@ var presence_descriptions = {
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
+var meta = {};
+
 // When you start Zulip, has_focus should be true, but it might not be the
 // case after a server-initiated reload.
 exports.has_focus = document.hasFocus && document.hasFocus();
@@ -242,7 +244,7 @@ function focus_lost() {
 }
 
 function filter_user_ids(user_ids) {
-    var user_list = $(".user-list-filter");
+    var user_list = meta.$user_list_filter;
     if (user_list.length === 0) {
         // We may have received an activity ping response after
         // initiating a reload, in which case the user list may no
@@ -557,7 +559,7 @@ function maybe_select_person(e) {
         e.stopPropagation();
 
         var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
-        var user_list = $(".user-list-filter");
+        var user_list = meta.$user_list_filter;
         var search_term = user_list.expectOne().val().trim();
         if ((topPerson !== undefined) && (search_term !== '')) {
             // undefined if there are no results
@@ -578,7 +580,9 @@ function focus_user_filter(e) {
 }
 
 $(function () {
-    $(".user-list-filter").expectOne()
+    meta.$user_list_filter = $(".user-list-filter");
+
+    meta.$user_list_filter.expectOne()
         .on('click', focus_user_filter)
         .on('input', update_users_for_search)
         .on('keydown', maybe_select_person)
