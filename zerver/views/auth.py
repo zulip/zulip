@@ -228,7 +228,7 @@ def remote_user_jwt(request):
         # that the request.backend attribute gets set.
         return_data = {}  # type: Dict[str, bool]
         user_profile = authenticate(username=email,
-                                    realm_subdomain=realm.subdomain,
+                                    realm=realm,
                                     return_data=return_data,
                                     use_dummy_backend=True)
     except UserProfile.DoesNotExist:
@@ -417,7 +417,7 @@ def authenticate_remote_user(realm, email_address):
         return None, return_data
 
     user_profile = authenticate(username=email_address,
-                                realm_subdomain=realm.subdomain,
+                                realm=realm,
                                 use_dummy_backend=True,
                                 return_data=return_data)
     return user_profile, return_data

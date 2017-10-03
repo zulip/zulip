@@ -130,11 +130,14 @@ class AuthBackendTest(ZulipTestCase):
 
     def test_dummy_backend(self):
         # type: () -> None
+        realm = get_realm("zulip")
         username = self.get_username()
         self.verify_backend(ZulipDummyBackend(),
                             good_kwargs=dict(username=username,
+                                             realm=realm,
                                              use_dummy_backend=True),
                             bad_kwargs=dict(username=username,
+                                            realm=realm,
                                             use_dummy_backend=False))
 
     def setup_subdomain(self, user_profile):

@@ -232,7 +232,7 @@ def accounts_register(request):
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
         auth_result = authenticate(username=user_profile.email,
-                                   realm_subdomain=realm.subdomain,
+                                   realm=realm,
                                    return_data=return_data,
                                    use_dummy_backend=True)
         if return_data.get('invalid_subdomain'):
