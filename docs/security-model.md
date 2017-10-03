@@ -60,23 +60,34 @@ strength allowed is controlled by two settings in
   set a password that `zxcvbn` estimates to be guessable in less than
   `PASSWORD_MIN_GUESSES`, then Zulip rejects the password.
 
+  By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
+  significant protection against online attacks, while limiting the
+  burden imposed on users choosing a password.
+
+  <!--- Why 10000?  See password-strength.md. -->
+
   Estimating the guessability of a password is a complex problem and
   impossible to efficiently do perfectly. For background or when
-  considering an alternate value for this setting, recommended reading
-  includes the article ["Passwords and the Evolution of Imperfect
-  Authentication"][BHOS15] and the [2016 zxcvbn paper][zxcvbn-paper].
+  considering an alternate value for this setting, the article
+  ["Passwords and the Evolution of Imperfect Authentication"][BHOS15]
+  is recommended.  The [2016 zxcvbn paper][zxcvbn-paper] adds useful
+  information about the performance of zxcvbn, and [a large 2012 study
+  of Yahoo users][Bon12] is informative about the strength of the
+  passwords users choose.
 
 <!---
   If the BHOS15 link ever goes dead: it's reference 30 of the zxcvbn
-  paper, aka https://dl.acm.org/citation.cfm?id=2699390 (but the
-  ACM has it paywalled.)
+  paper, aka https://dl.acm.org/citation.cfm?id=2699390 , in the
+  _Communications of the ACM_ aka CACM.  (But the ACM has it paywalled.)
   .
-  Hooray for USENIX: the zxcvbn paper's canonical link is not paywalled.
+  Hooray for USENIX and IEEE: the other papers' canonical links are
+  not paywalled.  The Yahoo study is reference 5 in BHOS15.
 -->
 
 [zxcvbn]: https://github.com/dropbox/zxcvbn
-[zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
 [BHOS15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
+[Bon12]: http://ieeexplore.ieee.org/document/6234435/
 
 ## Messages and History
 
