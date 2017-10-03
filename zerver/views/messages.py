@@ -1087,6 +1087,8 @@ def update_message_backend(request, user_profile,
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
     links_for_embed = set()  # type: Set[Text]
+    prior_mention_user_ids = set()  # type: Set[int]
+    mention_user_ids = set()  # type: Set[int]
     if content is not None:
         content = content.strip()
         if content == "":
@@ -1094,6 +1096,7 @@ def update_message_backend(request, user_profile,
         content = truncate_body(content)
 
         user_info = get_user_info_for_message_updates(message.id)
+        prior_mention_user_ids = user_info['mention_user_ids']
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
@@ -1105,8 +1108,13 @@ def update_message_backend(request, user_profile,
                                                    user_profile.realm)
         links_for_embed |= message.links_for_preview
 
+        mention_user_ids = message.mentions_user_ids
+
     number_changed = do_update_message(user_profile, message, subject,
-                                       propagate_mode, content, rendered_content)
+                                       propagate_mode, content, rendered_content,
+                                       prior_mention_user_ids,
+                                       mention_user_ids)
+
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)
     if links_for_embed and bugdown.url_embed_preview_enabled_for_realm(message):
