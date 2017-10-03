@@ -99,10 +99,10 @@ body {
     height: calc(100vh - 64px - 10px - 10px);
     padding: 10px 20px 10px 20px;
 
-    background-color: #278676;
-    color: #dae0df;
-
+    border-right: 1px solid hsl(219, 10%, 97%);
     overflow: auto;
+
+    background: hsl(219, 10%, 97%);
 
     -webkit-overflow-scrolling: touch;
 }
@@ -113,8 +113,6 @@ body {
     font-weight: 400;
     margin-bottom: 0px;
     line-height: 100%;
-
-    color: #fff;
     cursor: pointer;
 }
 
@@ -132,6 +130,9 @@ body {
 
 .help .sidebar h1 {
     font-size: 1.5em;
+    text-transform: uppercase;
+
+    opacity: 0.5;
 }
 
 .help .sidebar h3 {
@@ -1355,7 +1356,7 @@ input.new-organization-button {
         position: fixed;
         top: 70px;
         left: 9px;
-        fill: #fff;
+        fill: hsl(222, 33%, 33%);
         z-index: 2;
 
 
