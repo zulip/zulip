@@ -49,6 +49,18 @@ secret/embarrassing, etc.
   [#new members](https://chat.zulip.org/#narrow/stream/new.20members),
   using your name as the topic.
 
+## High traffic community
+
+The chat.zulip.org community sends several thousand messages every
+single week, about half of them to streams that we have included in
+the default streams for new users for discoverability.  Keeping up
+with **everything** happening in the Zulip project is both difficult
+and rarely a useful goal.
+
+To make the best use of your time, we highly recommend that you
+unsubscribe from streams that you aren't interested in, and mute
+streams that are only of occasional interest.
+
 ## Streams
 
 There are a few streams worth highlighting that are relevant for
