@@ -158,7 +158,7 @@ python-twitter==3.3
 polib==1.0.8
 
 # Needed for cloning virtual environments
--e git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6
+-e git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98babccdca0456#egg=virtualenv-clone==0.2.6.zulip1
 
 # Needed for reading json as stream
 ijson==2.3
