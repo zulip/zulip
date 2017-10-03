@@ -426,7 +426,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         try:
             self._realm = get_realm(realm_subdomain)
             username = self.django_to_ldap_username(username)
-            user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
+            user_profile = ZulipLDAPAuthBackendBase.authenticate(self,
+                                                                 username=username,
+                                                                 password=password)
             if user_profile is None:
                 return None
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
