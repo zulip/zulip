@@ -339,6 +339,13 @@
     .stream_row .description {
         display: none;
     }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
 }
 
 @media only screen and (min-device-width: 300px) and (max-device-width: 700px) {
