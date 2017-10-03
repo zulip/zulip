@@ -384,7 +384,12 @@ def finish_google_oauth2(request):
 
     email_address = email['value']
 
-    if not subdomain or mobile_flow_otp is not None:
+    try:
+        realm = Realm.objects.get(string_id=subdomain)
+    except Realm.DoesNotExist:  # nocoverage
+        return redirect_to_subdomain_login_url()
+
+    if mobile_flow_otp is not None:
         # When request was not initiated from subdomain.
         user_profile, return_data = authenticate_remote_user(request, email_address,
                                                              subdomain=subdomain)
@@ -393,11 +398,6 @@ def finish_google_oauth2(request):
                                              full_name, invalid_subdomain,
                                              mobile_flow_otp=mobile_flow_otp,
                                              is_signup=is_signup)
-
-    try:
-        realm = Realm.objects.get(string_id=subdomain)
-    except Realm.DoesNotExist:  # nocoverage
-        return redirect_to_subdomain_login_url()
 
     return redirect_and_log_into_subdomain(
         realm, full_name, email_address, is_signup=is_signup)
