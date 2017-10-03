@@ -20,6 +20,7 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 
 from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
+from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_response_from_error
@@ -233,6 +234,7 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_request(self, request):
         # type: (HttpRequest) -> None
+        maybe_tracemalloc_listen()
         request._log_data = dict()
         record_request_start_data(request._log_data)
         if connection.connection is not None:

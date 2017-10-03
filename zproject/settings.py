@@ -1167,6 +1167,7 @@ ZULIP_PATHS = [
     ("ANALYTICS_LOCK_DIR", "/home/zulip/deployments/analytics-lock-dir"),
     ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
     ("SOFT_DEACTIVATION_LOG_PATH", "/var/log/zulip/soft_deactivation.log"),
+    ("TRACEMALLOC_DUMP_DIR", "/var/log/zulip/tracemalloc"),
 ]
 
 # The Event log basically logs most significant database changes,
