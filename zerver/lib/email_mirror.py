@@ -148,6 +148,8 @@ def mark_missed_message_address_as_used(address):
 def construct_zulip_body(message, realm):
     # type: (message.Message, Realm) -> Text
     body = extract_body(message)
+    # Remove null characters, since Zulip will reject
+    body = body.replace("\x00", "")
     body = filter_footer(body)
     body += extract_and_upload_attachments(message, realm)
     if not body:
