@@ -391,8 +391,7 @@ def finish_google_oauth2(request):
 
     if mobile_flow_otp is not None:
         # When request was not initiated from subdomain.
-        user_profile, return_data = authenticate_remote_user(request, email_address,
-                                                             subdomain=subdomain)
+        user_profile, return_data = authenticate_remote_user(realm, email_address)
         invalid_subdomain = bool(return_data.get('invalid_subdomain'))
         return login_or_register_remote_user(request, email_address, user_profile,
                                              full_name, invalid_subdomain,
@@ -402,8 +401,8 @@ def finish_google_oauth2(request):
     return redirect_and_log_into_subdomain(
         realm, full_name, email_address, is_signup=is_signup)
 
-def authenticate_remote_user(request, email_address, subdomain=None):
-    # type: (HttpRequest, str, Optional[Text]) -> Tuple[UserProfile, Dict[str, Any]]
+def authenticate_remote_user(realm, email_address):
+    # type: (Realm) -> Tuple[UserProfile, Dict[str, Any]]
     return_data = {}  # type: Dict[str, bool]
     if email_address is None:
         # No need to authenticate if email address is None. We already
@@ -413,11 +412,9 @@ def authenticate_remote_user(request, email_address, subdomain=None):
         logging.warning("Email address was None while trying to authenticate "
                         "remote user.")
         return None, return_data
-    if subdomain is None:
-        subdomain = get_subdomain(request)
 
     user_profile = authenticate(username=email_address,
-                                realm_subdomain=subdomain,
+                                realm_subdomain=realm.subdomain,
                                 use_dummy_backend=True,
                                 return_data=return_data)
     return user_profile, return_data
@@ -436,8 +433,9 @@ def log_into_subdomain(request):
         logging.warning('Subdomain cookie has bad signature.')
         return HttpResponse(status=400)
 
+    subdomain = get_subdomain(request)
     data = ujson.loads(state)
-    if data['subdomain'] != get_subdomain(request):
+    if data['subdomain'] != subdomain:
         logging.warning('Login attempt on invalid subdomain')
         return HttpResponse(status=400)
 
@@ -450,7 +448,13 @@ def log_into_subdomain(request):
         user_profile = None
         return_data = {}  # type: Dict[str, Any]
     else:
-        user_profile, return_data = authenticate_remote_user(request, email_address)
+        # We can be reasonably confident that this subdomain actually
+        # has a corresponding realm, since it was referenced in a
+        # signed cookie.  But we probably should add some error
+        # handling for the case where the realm disappeared in the
+        # meantime.
+        realm = get_realm(subdomain)
+        user_profile, return_data = authenticate_remote_user(realm, email_address)
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
