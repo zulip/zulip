@@ -14,7 +14,11 @@
     };
 
     $(".sidebar h2").click(function (e) {
-        $(e.target).next().slideToggle('fast');
+        var $next = $(e.target).next();
+
+        if ($next.is("ul")) {
+            $next.slideToggle("fast");
+        }
     });
 
     $(".sidebar a").click(function (e) {
