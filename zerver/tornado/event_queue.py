@@ -617,6 +617,26 @@ def build_offline_notification(user_profile_id, message_id):
 
 def missedmessage_hook(user_profile_id, client, last_for_client):
     # type: (int, ClientDescriptor, bool) -> None
+    """The receiver_is_off_zulip logic used to determine whether a user
+    has no active client suffers from a somewhat fundamental race
+    condition.  If the client is no longer on the Internet,
+    receiver_is_off_zulip will still return true for
+    IDLE_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
+    garbage-collected.  This would cause us to reliably miss
+    push/email notifying users for messages arriving during the
+    IDLE_EVENT_QUEUE_TIMEOUT_SECS after they suspend their laptop (for
+    example).  We address this by, when the queue is garbage-collected
+    at the end of those 10 minutes, checking to see if it's the last
+    one, and if so, potentially triggering notifications to the user
+    at that time, resulting in at most a IDLE_EVENT_QUEUE_TIMEOUT_SECS
+    delay in the arrival of their notifications.
+
+    As Zulip's APIs get more popular and the mobile apps start using
+    long-lived event queues for perf optimization, future versions of
+    this will likely need to replace checking `last_for_client` with
+    something more complicated, so that we only consider clients like
+    web browsers, not the mobile apps or random API scripts.
+    """
     # Only process missedmessage hook when the last queue for a
     # client has been garbage collected
     if not last_for_client:
