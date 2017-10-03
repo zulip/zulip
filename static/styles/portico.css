@@ -528,8 +528,9 @@ input.text-error {
     margin-top: 8px;
 
     font-size: 1.2em;
-    font-weight: 300;
-    color: #aaa;
+    font-weight: 400;
+    color: #333;
+    opacity: 0.5;
 }
 
 .header-main .logo pipe {
