@@ -200,7 +200,7 @@ exports.update_settings_for_subscribed = function (sub) {
     }
 
     // Display the swatch and subscription stream_settings
-    stream_edit.show_sub(sub);
+    stream_edit.show_sub_settings(sub);
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
@@ -212,7 +212,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
 
     exports.rerender_subscribers_count(sub);
 
-    stream_edit.collapse(sub);
+    stream_edit.hide_sub_settings(sub);
 
     row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };

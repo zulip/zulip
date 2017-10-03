@@ -37,12 +37,12 @@ function rerender_subscribers_list(sub) {
     }
 }
 
-exports.collapse = function (sub) {
+exports.hide_sub_settings = function (sub) {
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     $settings.find(".regular_subscription_settings").removeClass('in');
 };
 
-exports.show_sub = function (sub) {
+exports.show_sub_settings = function (sub) {
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     $settings.find(".regular_subscription_settings").addClass('in');
 };
