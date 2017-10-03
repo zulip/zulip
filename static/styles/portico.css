@@ -105,13 +105,31 @@ body {
     -webkit-overflow-scrolling: touch;
 }
 
+.help .sidebar h1,
 .help .sidebar h2 {
     font-size: 1.2em;
     font-weight: 400;
     margin-bottom: 0px;
+    line-height: 100%;
 
-    text-transform: uppercase;
     color: #fff;
+    cursor: pointer;
+}
+
+.help .sidebar h2::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    content: "\f107";
+    margin-right: 5px;
+}
+
+.help .sidebar h1 {
+    font-size: 1.5em;
 }
 
 .help .sidebar h3 {
@@ -126,6 +144,7 @@ body {
 
 .help .sidebar ul {
     margin-left: 25px;
+    display: none;
 }
 
 .help .sidebar li {
@@ -137,7 +156,8 @@ body {
     cursor: pointer;
 }
 
-.help .sidebar li a {
+.help .sidebar li a,
+.help .sidebar h1 a {
     color: inherit;
     display: block;
 }

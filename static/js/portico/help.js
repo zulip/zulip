@@ -13,6 +13,10 @@
         });
     };
 
+    $(".sidebar h2").click(function (e) {
+        $(e.target).next().slideToggle('fast');
+    });
+
     $(".sidebar a").click(function (e) {
         var path = $(this).attr("href");
 
