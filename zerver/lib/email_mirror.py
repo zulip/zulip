@@ -145,6 +145,14 @@ def mark_missed_message_address_as_used(address):
         redis_client.delete(key)
         raise ZulipEmailForwardError('Missed message address has already been used')
 
+def construct_zulip_body(message, realm):
+    # type: (message.Message, Realm) -> Text
+    body = extract_body(message)
+    body = filter_footer(body)
+    body += extract_and_upload_attachments(message, realm)
+    if not body:
+        body = '(No email body)'
+    return body
 
 def send_to_missed_message_address(address, message):
     # type: (Text, message.Message) -> None
@@ -166,10 +174,7 @@ def send_to_missed_message_address(address, message):
     else:
         recipient_str = display_recipient
 
-    body = filter_footer(extract_body(message))
-    body += extract_and_upload_attachments(message, user_profile.realm)
-    if not body:
-        body = '(No email body)'
+    body = construct_zulip_body(message, user_profile.realm)
 
     if recipient.type == Recipient.STREAM:
         recipient_type_name = 'stream'
@@ -307,8 +312,7 @@ def find_emailgateway_recipient(message):
 def process_stream_message(to, subject, message, debug_info):
     # type: (Text, Text, message.Message, Dict[str, Any]) -> None
     stream = extract_and_validate(to)
-    body = filter_footer(extract_body(message))
-    body += extract_and_upload_attachments(message, stream.realm)
+    body = construct_zulip_body(message, stream.realm)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logging.info("Successfully processed email to %s (%s)" % (
