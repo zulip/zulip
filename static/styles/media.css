@@ -219,18 +219,7 @@
     .column-left.expanded .bottom_sidebar {
         margin-top: 10px;
     }
-}
 
-@media (max-width: 350px) {
-    html {
-        overflow-x: hidden;
-    }
-    .stream_row .description {
-        display: none;
-    }
-}
-
-@media (max-width: 500px) {
     .compose_stream_button,
     .compose_private_button {
         padding: 5px 10px 5px 10px;
@@ -341,7 +330,34 @@
     .message_content {
         padding-right: 50px;
     }
+}
 
+@media (max-width: 370px) {
+    #subject.recipient_box {
+        width: calc(100% - 175px);
+        min-width: 95px;
+    }
+
+    .compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}
+
+@media (max-width: 350px) {
+    html {
+        overflow-x: hidden;
+    }
+    .stream_row .description {
+        display: none;
+    }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
 }
 
 @media only screen and (min-device-width: 300px) and (max-device-width: 700px) {
