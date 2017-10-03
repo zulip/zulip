@@ -154,15 +154,14 @@ def make_raw(query, exclude=None):
     for instance in query:
         data = model_to_dict(instance, exclude=exclude)
         """
-        In Django 1.10, model_to_dict resolves ManyToManyField as a QuerySet.
-        Previously, we used to get primary keys. Following code converts the
-        QuerySet into primary keys.
-        For reference: https://www.mail-archive.com/django-updates@googlegroups.com/msg163020.html
+        In Django 1.11.5, model_to_dict evaluates the QuerySet of
+        many-to-many field to give us a list of instances. We require
+        a list of primary keys, so we get the primary keys from the
+        instances below.
         """
         for field in instance._meta.many_to_many:
             value = data[field.name]
-            if isinstance(value, QuerySet):
-                data[field.name] = [row.pk for row in value]
+            data[field.name] = [row.id for row in value]
 
         rows.append(data)
 
