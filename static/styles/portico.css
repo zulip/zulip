@@ -13,6 +13,10 @@ body {
     margin: 0 auto -56px;
 }
 
+.no-underline:hover {
+    text-decoration: none;
+}
+
 .normal {
     font-weight: normal;
 }
@@ -128,11 +132,16 @@ body {
     margin-right: 5px;
 }
 
-.help .sidebar h1 {
-    font-size: 1.5em;
-    text-transform: uppercase;
+.help .sidebar h2.no-arrow::before {
+    content: "";
+}
 
-    opacity: 0.5;
+.help .sidebar h2.no-arrow {
+    margin-left: 12px;
+}
+
+.help .sidebar h2.no-arrow a {
+    color: inherit;
 }
 
 .help .sidebar h3 {
