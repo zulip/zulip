@@ -43,37 +43,40 @@ announcement).
 ### Passwords
 
 Zulip stores user passwords using the standard PBKDF2 algorithm.
-Password strength is checked and weak passwords are visually
-discouraged using the popular
-[zxcvbn](https://github.com/dropbox/zxcvbn) library.  The minimum
-password strength allowed is controlled by two settings in
-`/etc/zulip/settings.py`; `PASSWORD_MIN_LENGTH` and
-`PASSWORD_MIN_ZXCVBN_QUALITY`.  The former is self-explanatory; we
-will explain the latter.
 
-Password strength estimation is a complicated topic that we can't go
-into great detail on here; we recommend reading the zxvcbn website for
-details if you are not familiar with password strength analysis.
+When the user is choosing a password, Zulip checks the password's
+strength using the popular [zxcvbn][zxcvbn] library.  Weak passwords
+are rejected, and strong passwords encouraged.  The minimum password
+strength allowed is controlled by two settings in
+`/etc/zulip/settings.py`:
 
-In Zulip's configuration, a password has quality `X` if zxcvbn
-estimates that it would take `e^(X * 22)` seconds to crack the
-password with a specific attack scenario.  The scenario Zulip uses is
-one where an the attacker breaks into the Zulip server and steals the
-hashed passwords; in that case, with a slow hash, the attacker would
-be able to make roughly 10,000 attempts per second.  E.g. a password
-with quality 0.5 (the default), it would take an attacker about 16
-hours to crack such a password in this sort of offline attack.
+* `PASSWORD_MIN_LENGTH`: The minimum acceptable length, in characters.
+  Shorter passwords are rejected even if they pass the `zxcvbn` test
+  controlled by `PASSWORD_MIN_GUESSES`.
 
-Another important attack scenario is the online attacks (i.e. an
-attacker sending tons of login requests guessing different passwords
-to a Zulip server over the web).  Those attacks are much slower (more
-like 10/second without rate limiting), and you should estimate the
-time to guess a password as correspondingly longer.
+* `PASSWORD_MIN_GUESSES`: The minimum acceptable strength of the
+  password, in terms of the estimated number of passwords an attacker
+  is likely to guess before trying this one. If the user attempts to
+  set a password that `zxcvbn` estimates to be guessable in less than
+  `PASSWORD_MIN_GUESSES`, then Zulip rejects the password.
 
-As a server administrators, you must balance the security risks
-associated with attackers guessing weak passwords against the
-usability challenges associated with requiring strong passwords in
-your organization.
+  Estimating the guessability of a password is a complex problem and
+  impossible to efficiently do perfectly. For background or when
+  considering an alternate value for this setting, recommended reading
+  includes the article ["Passwords and the Evolution of Imperfect
+  Authentication"][BHOS15] and the [2016 zxcvbn paper][zxcvbn-paper].
+
+<!---
+  If the BHOS15 link ever goes dead: it's reference 30 of the zxcvbn
+  paper, aka https://dl.acm.org/citation.cfm?id=2699390 (but the
+  ACM has it paywalled.)
+  .
+  Hooray for USENIX: the zxcvbn paper's canonical link is not paywalled.
+-->
+
+[zxcvbn]: https://github.com/dropbox/zxcvbn
+[zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
+[BHOS15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
 
 ## Messages and History
 

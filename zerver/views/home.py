@@ -179,7 +179,7 @@ def home_real(request):
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
         password_min_length = settings.PASSWORD_MIN_LENGTH,
-        password_min_quality = settings.PASSWORD_MIN_ZXCVBN_QUALITY,
+        password_min_guesses  = settings.PASSWORD_MIN_GUESSES,
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,

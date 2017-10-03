@@ -30,16 +30,15 @@ exports.password_quality = function (password, bar, password_field) {
     }
 
     var min_length = password_field.data('minLength');
-    var min_quality = password_field.data('minQuality');
+    var min_guesses = password_field.data('minGuesses');
 
     var result = zxcvbn(password);
-    var crack_time = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
-    var quality = Math.min(1, Math.log(1 + crack_time) / 22);
     var acceptable = (password.length >= min_length
-                      && quality >= min_quality);
+                      && result.guesses >= min_guesses);
 
     if (bar !== undefined) {
-        var bar_progress = quality;
+        var t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
+        var bar_progress = Math.min(1, Math.log(1 + t) / 22);
 
         // Even if zxcvbn loves your short password, the bar should be
         // filled at most 1/3 of the way, because we won't accept it.

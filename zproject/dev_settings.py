@@ -45,4 +45,4 @@ INLINE_URL_EMBED_PREVIEW = True
 
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
-PASSWORD_MIN_ZXCVBN_QUALITY = 0
+PASSWORD_MIN_GUESSES = 0
