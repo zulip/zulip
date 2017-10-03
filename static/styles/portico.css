@@ -146,12 +146,12 @@ body {
 }
 
 .help .sidebar ul {
-    margin-left: 25px;
     display: none;
+    margin: 10px 0px 10px 19px;
 }
 
 .help .sidebar li {
-    list-style-type: circle;
+    list-style-type: none;
     font-size: 0.95;
     font-weight: 400;
     line-height: 1.7;
