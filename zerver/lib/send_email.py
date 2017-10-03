@@ -23,35 +23,6 @@ class FromAddress(object):
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
-def log_email(email, template_prefix):
-    # type: (EmailMultiAlternatives, str) -> None
-    """Used in development to record sent emails in a nice HTML log"""
-    html_message = 'Missing HTML message'
-    if len(email.alternatives) > 0:
-        html_message = email.alternatives[0][0]
-
-    context = {
-        'template': template_prefix + ".html",
-        'subject': email.subject,
-        'from_email': email.from_email,
-        'recipients': email.to,
-        'body': email.body,
-        'html_message': html_message
-    }
-
-    new_email = loader.render_to_string('zerver/email.html', context)
-
-    # Read in the pre-existing log, so that we can add the new entry
-    # at the top.
-    try:
-        with open(settings.EMAIL_CONTENT_LOG_PATH, "r") as f:
-            previous_emails = f.read()
-    except FileNotFoundError:
-        previous_emails = ""
-
-    with open(settings.EMAIL_CONTENT_LOG_PATH, "w+") as f:
-        f.write(new_email + previous_emails)
-
 def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
                 from_address=None, reply_to_email=None, context=None):
     # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Dict[str, Any]]) -> EmailMultiAlternatives
@@ -117,9 +88,6 @@ def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
     template = template_prefix.split("/")[-1]
     logger.info("Sending %s email to %s" % (template, mail.to))
 
-    if settings.DEVELOPMENT:
-        log_email(mail, template_prefix)
-
     if mail.send() == 0:
         logger.error("Error sending %s email to %s" % (template, mail.to))
         raise EmailNotDeliveredException
@@ -135,13 +103,10 @@ def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name
     email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
 
-    if settings.DEVELOPMENT:
-        mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
-                           from_address=from_address, context=context)
-        # Technically, this will be called.  But we currently don't
-        # run the `manage.py deliver_email` backend job in the
-        # development environment.
-        log_email(mail, template_prefix)
+    if settings.DEVELOPMENT and not settings.TEST_SUITE:
+        send_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
+                   from_address=from_address, context=context)
+        # For logging the email
 
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
