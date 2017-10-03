@@ -214,6 +214,10 @@
     width: 25px;
 }
 
+.emoji-popover-emoji:not(.reacted):hover {
+    background-color: hsl(0, 0%, 93%);
+}
+
 .emoji-popover-emoji.hide {
     display: none;
 }
