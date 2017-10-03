@@ -295,6 +295,12 @@ function get_num_unread(user_id) {
 function info_for(user_id) {
     var status = presence.get_status(user_id);
     var person = people.get_person_from_user_id(user_id);
+
+    // if the user is you or a bot, do not show in presence data.
+    if (person.is_bot || person.user_id === page_params.user_id) {
+        return;
+    }
+
     return {
         href: narrow.pm_with_uri(person.email),
         name: person.full_name,
@@ -348,9 +354,21 @@ exports.build_user_sidebar = function () {
         return;
     }
 
-    var user_ids = filter_and_sort(presence.get_user_ids());
+    var user_ids;
 
-    var user_info = _.map(user_ids, info_for);
+    if (meta.$user_list_filter.val().length) {
+        user_ids = filter_and_sort(presence.get_user_ids());
+    } else {
+        user_ids = filter_and_sort(people.get_realm_persons().map(function (person) {
+            return person.user_id;
+        }));
+    }
+
+    var user_info = _.map(user_ids, info_for).filter(function (person) {
+        // filtered bots and yourself are set to "undefined" in the `info_for`
+        // function.
+        return typeof person !== "undefined";
+    });
     var html = templates.render('user_presence_rows', {users: user_info});
     $('#user_presences').html(html);
 
