@@ -291,7 +291,7 @@ exports.process_enter_key = function (e) {
 
     // This handles when pressing enter while looking at drafts.
     // It restores draft that is focused.
-    if (drafts.drafts_overlay_open()) {
+    if (overlays.drafts_open()) {
         drafts.drafts_handle_events(e, "enter");
         return true;
     }
@@ -406,7 +406,7 @@ exports.process_hotkey = function (e, hotkey) {
         case 'up_arrow':
         case 'down_arrow':
         case 'backspace':
-            if (drafts.drafts_overlay_open()) {
+            if (overlays.drafts_open()) {
                 drafts.drafts_handle_events(e, event_name);
                 return true;
             }
@@ -420,8 +420,8 @@ exports.process_hotkey = function (e, hotkey) {
             subs.keyboard_sub();
             return true;
         }
-        if (overlays.lightbox_open()) {
-            overlays.close_active();
+        if (event_name === 'show_lightbox' && overlays.lightbox_open()) {
+            overlays.close_overlay('lightbox');
             return true;
         }
         return false;
@@ -597,6 +597,9 @@ exports.process_hotkey = function (e, hotkey) {
             narrow.narrow_to_next_topic();
             return true;
         case 'open_drafts':
+            if (overlays.is_active() && !overlays.drafts_open()) {
+                return false;
+            }
             drafts.toggle();
             return true;
         case 'reply_message': // 'r': respond to message

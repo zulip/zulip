@@ -147,11 +147,3 @@ var draft_2 = {
 
     drafts.initialize();
 }());
-
-(function test_drafts_overlay_open() {
-    var overlay = $("#draft_overlay");
-    assert(!drafts.drafts_overlay_open());
-    overlay.addClass("show");
-    assert(drafts.drafts_overlay_open());
-}());
-

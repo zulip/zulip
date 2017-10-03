@@ -14,9 +14,6 @@
 set_global('activity', {
 });
 
-set_global('drafts', {
-});
-
 set_global('page_params', {
 });
 
@@ -225,7 +222,13 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('C', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
     assert_mapping('g', 'gear_menu.open');
+
+    overlays.is_active = return_true;
+    overlays.drafts_open = return_true;
     assert_mapping('d', 'drafts.toggle');
+    overlays.drafts_open = return_false;
+    assert_unmapped('d');
+    overlays.is_active = return_false;
 
     // Next, test keys that only work on a selected message.
     var message_view_only_keys = '@*+RjJkKsSuvi:GM';
@@ -317,7 +320,6 @@ function stubbing(func_name_to_stub, test_function) {
 
     list_util.inside_list = return_false;
     global.current_msg_list.empty = return_true;
-    global.drafts.drafts_overlay_open = return_false;
     overlays.settings_open = return_false;
     overlays.streams_open = return_false;
     overlays.lightbox_open = return_false;
@@ -377,8 +379,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('down_arrow', 'settings.handle_down_arrow');
     overlays.settings_open = return_false;
 
-    global.drafts.drafts_overlay_open = return_true;
+    overlays.is_active = return_true;
+    overlays.drafts_open = return_true;
     assert_mapping('up_arrow', 'drafts.drafts_handle_events');
     assert_mapping('down_arrow', 'drafts.drafts_handle_events');
-    global.drafts.drafts_overlay_open = return_false;
+    overlays.is_active = return_false;
+    overlays.drafts_open = return_false;
 }());
