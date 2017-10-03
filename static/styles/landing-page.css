@@ -1778,6 +1778,10 @@ nav ul li.active::after {
     color: #fff;
 }
 
+.portico-landing.why-page .hero.small-hero {
+    padding: 120px 50px 30px 50px;
+}
+
 .portico-landing.why-page .hero h1 {
     margin: 0px 0px 20px 0px;
 
