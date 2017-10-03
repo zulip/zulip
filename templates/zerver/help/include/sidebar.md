@@ -97,10 +97,8 @@
 * [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
 * [Analytics](/help/analytics)
 
-## Desktop Application
+## Apps
 * [Installation guides](/help/desktop-app-install-guide)
-
-## Miscellaneous
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
 <!-- Zulip on macOS -->
@@ -108,8 +106,6 @@
 <!-- Zulip on iOS -->
 <!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
-* [The Zulip browser window](/help/the-zulip-browser-window)
-* [Zulip glossary](/help/zulip-glossary)
 
 ## Organization Settings
 
@@ -149,6 +145,7 @@
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
 
-## Linking to a Zulip server
-
+## Miscellaneous
+* [The Zulip browser window](/help/the-zulip-browser-window)
 * [Join Zulip chat badge](/help/join-zulip-chat-badge)
+* [Zulip glossary](/help/zulip-glossary)
