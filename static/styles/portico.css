@@ -1298,7 +1298,7 @@ input.new-organization-button {
 
 .markdown ol > li > div.tip,
 .markdown ol > li > div.warn {
-    margin: 0px 30px 15px;
+    margin: 5px 25px 5px;
 }
 
 .markdown ol p {
