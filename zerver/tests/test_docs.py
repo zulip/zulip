@@ -76,19 +76,19 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
 
-        # For reaching full coverage for clear_emails function
-        self._test('/emails/', 'manually generate most of the emails by clicking')
-        if os.path.isfile(settings.EMAIL_CONTENT_LOG_PATH):
-            os.remove(settings.EMAIL_CONTENT_LOG_PATH)
-        result = self.client_get('/emails/clear/')
-        self.assertEqual(result.status_code, 302)
-        result = self.client_get(result['Location'])
-        self.assertIn('manually generate most of the emails by clicking', str(result.content))
+        with self.settings(EMAIL_BACKEND='zproject.backends.EmailLogBackEnd'):
+            # For reaching full coverage for clear_emails function
+            result = self.client_get('/emails/clear/')
+            self.assertEqual(result.status_code, 302)
+            result = self.client_get(result['Location'])
+            self.assertIn('manually generate most of the emails by clicking', str(result.content))
 
-        result = self.client_get('/emails/generate/')
-        self.assertEqual(result.status_code, 302)
-        self.assertIn('emails', result['Location'])
-        self._test('/register/', 'Sign up for Zulip')
+            result = self.client_get('/emails/generate/')
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('emails', result['Location'])
+
+            self._test('/emails/', 'manually generate most of the emails by clicking')
+            self._test('/register/', 'Sign up for Zulip')
 
         result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)
         self.assertEqual(result.status_code, 404)
