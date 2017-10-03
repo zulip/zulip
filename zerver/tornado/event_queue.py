@@ -819,14 +819,100 @@ def process_userdata_event(event_template, users):
             if client.accepts_event(user_event):
                 client.add_event(user_event)
 
+def process_message_update_event(event_template, users):
+    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
+    prior_mention_user_ids = set(event_template.get('prior_mention_user_ids', []))
+    mention_user_ids = set(event_template.get('mention_user_ids', []))
+    presence_idle_user_ids = set(event_template.get('presence_idle_userids', []))
+    stream_push_user_ids = set(event_template.get('stream_push_user_ids', []))
+    push_notify_user_ids = set(event_template.get('push_notify_user_ids', []))
+
+    stream_name = event_template.get('stream_name')
+    message_id = event_template['message_id']
+
+    for user_data in users:
+        user_profile_id = user_data['id']
+        user_event = dict(event_template)  # shallow copy, but deep enough for our needs
+        for key in user_data.keys():
+            if key != "id":
+                user_event[key] = user_data[key]
+
+        maybe_enqueue_notifications_for_message_update(
+            user_profile_id=user_profile_id,
+            message_id=message_id,
+            stream_name=stream_name,
+            prior_mention_user_ids=prior_mention_user_ids,
+            mention_user_ids=mention_user_ids,
+            presence_idle_user_ids=presence_idle_user_ids,
+            stream_push_user_ids=stream_push_user_ids,
+            push_notify_user_ids=push_notify_user_ids,
+        )
+
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(user_event):
+                client.add_event(user_event)
+
+def maybe_enqueue_notifications_for_message_update(user_profile_id,
+                                                   message_id,
+                                                   stream_name,
+                                                   prior_mention_user_ids,
+                                                   mention_user_ids,
+                                                   presence_idle_user_ids,
+                                                   stream_push_user_ids,
+                                                   push_notify_user_ids):
+    # type: (UserProfile, int, Text, Set[int], Set[int], Set[int], Set[int], Set[int]) -> None
+    private_message = (stream_name is None)
+
+    if private_message:
+        # We don't do offline notifications for PMs, because
+        # we already notified the user of the original message
+        return
+
+    if (user_profile_id in prior_mention_user_ids):
+        # Don't spam people with duplicate mentions.  This is
+        # especially important considering that most message
+        # edits are simple typo corrections.
+        return
+
+    stream_push_notify = (user_profile_id in stream_push_user_ids)
+
+    if stream_push_notify:
+        # Currently we assume that if this flag is set to True, then
+        # the user already was notified about the earlier message,
+        # so we short circuit.  We may handle this more rigorously
+        # in the future by looking at something like an AlreadyNotified
+        # model.
+        return
+
+    # We can have newly mentioned people in an updated message.
+    mentioned = (user_profile_id in mention_user_ids)
+
+    always_push_notify = user_profile_id in push_notify_user_ids
+
+    idle = (user_profile_id in presence_idle_user_ids) or \
+        receiver_is_off_zulip(user_profile_id)
+
+    maybe_enqueue_notifications(
+        user_profile_id=user_profile_id,
+        message_id=message_id,
+        private_message=private_message,
+        mentioned=mentioned,
+        stream_push_notify=stream_push_notify,
+        stream_name=stream_name,
+        always_push_notify=always_push_notify,
+        idle=idle,
+    )
+
 def process_notification(notice):
     # type: (Mapping[str, Any]) -> None
     event = notice['event']  # type: Mapping[str, Any]
     users = notice['users']  # type: Union[Iterable[int], Iterable[Mapping[str, Any]]]
-    if event['type'] in ["update_message", "delete_message"]:
-        process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
-    elif event['type'] == "message":
+    if event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
+    elif event['type'] == "update_message":
+        process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
+    elif event['type'] == "delete_message":
+        process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
     else:
         process_event(event, cast(Iterable[int], users))
 
