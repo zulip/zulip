@@ -151,7 +151,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # Password strength requirements; learn about configuration at
 # http://zulip.readthedocs.io/en/latest/security-model.html.
 # PASSWORD_MIN_LENGTH = 6
-# PASSWORD_MIN_ZXCVBN_QUALITY = 0.5
+# PASSWORD_MIN_GUESSES = 600*1000*1000
 
 # Controls whether Zulip sends "new login" email notifications.
 #SEND_LOGIN_EMAILS = True

@@ -32,7 +32,7 @@
                            value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
                            maxlength="100"
                            data-min-length="{{password_min_length}}"
-                           data-min-quality="{{password_min_quality}}" required />
+                           data-min-guesses="{{password_min_guesses}}" required />
                     {% if form.new_password1.errors %}
                         {% for error in form.new_password1.errors %}
                         <div class="alert alert-error">{{ error }}</div>
