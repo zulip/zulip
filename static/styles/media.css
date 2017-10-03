@@ -332,6 +332,18 @@
     }
 }
 
+@media (max-width: 370px) {
+    #subject.recipient_box {
+        width: calc(100% - 175px);
+        min-width: 95px;
+    }
+
+    .compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}
+
 @media (max-width: 350px) {
     html {
         overflow-x: hidden;
