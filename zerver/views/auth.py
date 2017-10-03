@@ -204,11 +204,11 @@ def remote_user_jwt(request):
     remote_user = payload.get("user", None)
     if remote_user is None:
         raise JsonableError(_("No user specified in JSON web token claims"))
-    realm = payload.get('realm', None)
-    if realm is None:
+    email_domain = payload.get('realm', None)
+    if email_domain is None:
         raise JsonableError(_("No realm specified in JSON web token claims"))
 
-    email = "%s@%s" % (remote_user, realm)
+    email = "%s@%s" % (remote_user, email_domain)
 
     try:
         # We do all the authentication we need here (otherwise we'd have to
