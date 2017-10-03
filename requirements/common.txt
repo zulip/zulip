@@ -3,7 +3,7 @@
 # and requirements/prod_lock.txt.
 # See requirements/README.md for more detail.
 # Django itself; we use a slightly patched version
-Django==1.11.4
+Django==1.11.5
 
 # needed for mypy TypedDict
 mypy_extensions==0.3.0
