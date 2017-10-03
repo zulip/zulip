@@ -324,4 +324,4 @@ class TestMapArrays(ZulipTestCase):
                           'Python API': [2, 4, 6],
                           'SomethingRandom': [4, 5, 6],
                           'GitHub webhook': [7, 7, 9],
-                          'Android app': [64, 63, 65]})
+                          'Old Android app': [64, 63, 65]})
