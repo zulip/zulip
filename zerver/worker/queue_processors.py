@@ -4,6 +4,10 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 import signal
 import sys
 import os
+from functools import wraps
+
+import smtplib
+import socket
 
 from zulip_bots.lib import ExternalBotHandler, StateHandler
 from django.conf import settings
@@ -16,7 +20,7 @@ from zerver.models import \
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
-from zerver.lib.queue import SimpleQueueClient, queue_json_publish
+from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails
 from zerver.lib.push_notifications import handle_push_notification
@@ -98,6 +102,27 @@ def check_and_send_restart_signal():
     except Exception:
         pass
 
+def retry_send_email_failures(func):
+    # type: (Callable[[Any, Dict[str, Any]], None]) -> Callable[[QueueProcessingWorker, Dict[str, Any]], None]
+    # If we don't use cast() and use QueueProcessingWorker instead of Any in
+    # function type annotation then mypy complains.
+    func = cast(Callable[[QueueProcessingWorker, Dict[str, Any]], None], func)
+
+    @wraps(func)
+    def wrapper(worker, data):
+        # type: (QueueProcessingWorker, Dict[str, Any]) -> None
+        try:
+            func(worker, data)
+        except (smtplib.SMTPServerDisconnected, socket.gaierror):
+
+            def on_failure(event):
+                # type: (Dict[str, Any]) -> None
+                logging.exception("Event {} failed".format(event['id']))
+
+            retry_event(worker.queue_name, data, on_failure)
+
+    return wrapper
+
 class QueueProcessingWorker(object):
     queue_name = None  # type: str
 
@@ -108,11 +133,11 @@ class QueueProcessingWorker(object):
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
     def consume(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         raise WorkerDeclarationException("No consumer defined!")
 
     def consume_wrapper(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         try:
             self.consume(data)
         except Exception:
@@ -245,8 +270,9 @@ class MissedMessageWorker(QueueProcessingWorker):
 
 @assign_queue('missedmessage_email_senders')
 class MissedMessageSendingWorker(QueueProcessingWorker):
+    @retry_send_email_failures
     def consume(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         try:
             send_email_from_dict(data)
         except EmailNotDeliveredException:
