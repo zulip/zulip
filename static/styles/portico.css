@@ -130,6 +130,8 @@ body {
 
     content: "\f107";
     margin-right: 5px;
+
+    opacity: 0.5;
 }
 
 .help .sidebar h2.no-arrow::before {
