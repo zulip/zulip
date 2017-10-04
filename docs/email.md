@@ -44,6 +44,22 @@ from a queue. Documentation on our queueing system is available
 
 ## Testing
 
-All emails are printed to the console in the development environment. A
-great way to see what most of our emails look like (with fixture data) is by
-going to `emails/` in the browser.
+All the emails sent in the development environment can be accessed by visiting
+`/emails` in the browser. Sending emails in development environment mainly
+means invoking `send()` function of the email. This does not actually
+send the emails through SMTP server as we use `EmailLogBackEnd` and
+`django.core.mail.backends.locmem.EmailBackend` as email backends in dev
+environment.
+
+`EmailLogBackEnd` is used while running the `./tools/run-dev/py` server. It is
+a custom email backend which does mainly two things.
+* Logs the emails that are sent in the development environment to
+`var/log/email_content.log`. When you access `/emails` the content
+of this file is displayed in the browser.
+* Print a friendly message on console to visit `/emails` for accessing emails.
+
+While running test suite we use `django.core.mail.backends.locmem.EmailBackend`
+as email backend. The `locmem` backend stores messages in a special attribute
+of the django.core.mail module. The outbox attribute is created when the first
+message is sent. It’s a list with an EmailMessage instance for each message that
+would be sent.

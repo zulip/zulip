@@ -60,7 +60,7 @@ POLL_TIMEOUT = 1000
 # Don't use the real message log for tests
 EVENT_LOG_DIR = '/tmp/zulip-test-event-log'
 
-# Print our emails rather than sending them
+# Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 # The test suite uses EmailAuthBackend
