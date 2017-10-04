@@ -129,8 +129,8 @@ class TestNotifyNewUser(ZulipTestCase):
 
     def test_notify_realm_of_new_user(self) -> None:
         new_user = self.example_user('cordelia')
-        stream = self.make_stream('announce')
-        new_user.realm.notifications_stream_id = stream.id
+        stream = self.make_stream('core team')
+        new_user.realm.signup_notifications_stream_id = stream.id
         new_user.realm.save()
         new_user = self.example_user('cordelia')
         notify_new_user(new_user)
@@ -138,4 +138,4 @@ class TestNotifyNewUser(ZulipTestCase):
         message = self.get_last_message()
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, 'announce')
+        self.assertEqual(actual_stream.name, 'core team')
