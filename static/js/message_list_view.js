@@ -708,6 +708,17 @@ MessageListView.prototype = {
             return;
         }
 
+        if (!activity.has_focus) {
+            // Don't autoscroll if the window hasn't had focus
+            // recently.  This in intended to help protect us from
+            // auto-scrolling downwards when the window is in the
+            // background and might be having some functionality
+            // throttled by modern Chrome's aggressive power-saving
+            // features.
+            blueslip.log("Suppressing scrolldown due to inactivity");
+            return;
+        }
+
         // This next decision is fairly debatable.  For a big message that
         // would push the pointer off the screen, we do a partial autoscroll,
         // which has the following implications:
