@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="portico-container">
+<div class="portico-container" data-platform="{{ platform }}">
     <div class="portico-wrap">
         {% include 'zerver/portico-header.html' %}
         <div class="app portico-page {% block portico_class_name %}{% endblock %}">
