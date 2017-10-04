@@ -80,7 +80,7 @@ class RegistrationForm(forms.Form):
 
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
-        realm_creation = kwargs['realm_creation']
+        self.realm_creation = kwargs['realm_creation']
         del kwargs['realm_creation']
 
         super(RegistrationForm, self).__init__(*args, **kwargs)
@@ -88,7 +88,7 @@ class RegistrationForm(forms.Form):
             self.fields['terms'] = forms.BooleanField(required=True)
         self.fields['realm_name'] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH,
-            required=realm_creation)
+            required=self.realm_creation)
 
     def clean_full_name(self):
         # type: () -> Text
