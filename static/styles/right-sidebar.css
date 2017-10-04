@@ -15,6 +15,7 @@
     list-style-position: inside; /* Draw the bullets inside our box */
     margin-left: 0;
     overflow: auto;
+    max-height: 100%;
 }
 
 #user_presences:hover,
@@ -81,7 +82,8 @@
 }
 
 .user_unknown .user-status-indicator {
-    display: none;
+    background-color: none;
+    border-color: gray;
 }
 
 #user_presences a,

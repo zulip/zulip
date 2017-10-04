@@ -534,6 +534,10 @@ exports.get_all_persons = function () {
     return people_by_user_id_dict.values();
 };
 
+exports.get_all_persons_ids = function () {
+    return people_by_user_id_dict.keys();
+};
+
 exports.get_realm_persons = function () {
     return realm_people_dict.values();
 };

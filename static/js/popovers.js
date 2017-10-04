@@ -48,8 +48,6 @@ function user_last_seen_time_status(user_id) {
         return i18n.t("Active now");
     }
     if (status === "unknown") {
-        // We are not using this anywhere right now as the user presence indicator
-        // is hidden for this case
         return i18n.t("Unknown");
     }
     if (page_params.realm_is_zephyr_mirror_realm) {

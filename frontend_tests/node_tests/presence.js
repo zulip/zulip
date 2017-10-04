@@ -174,7 +174,7 @@ people.initialize_current_user(me.user_id);
     );
 
     assert(!presence.presence_info[bot.user_id]);
-
+    assert.deepEqual(presence.get_mobile(bot.user_id), false);
     // Make it seem like realm has a lot of people
     var get_realm_count = people.get_realm_count;
     people.get_realm_count = function () { return 1000; };
