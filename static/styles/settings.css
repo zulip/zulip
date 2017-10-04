@@ -440,6 +440,14 @@ input[type=checkbox].inline-block {
     padding: 1px 4px 1px 2px;
 }
 
+#attachments-settings table th.upload-size {
+    width: 50px;
+}
+
+#attachments-settings table th.upload-actions {
+    width: 75px;
+}
+
 .grey-bg {
     background: hsl(0, 0%, 89%);
     padding: 10px;
