@@ -6,22 +6,15 @@ Zulip's features can be extended by the means of bots and integrations.
   If this is what you are looking for, please check out the [integrations guide](
   http://zulip.readthedocs.io/en/latest/integration-guide.html?highlight=integrations).
 * **Bots**, as a more general concept, intercept and react to messages.
-  If this is what you are looking for, read on!
 
-The purpose of this documentation is to provide you with information about Zulip's
-bot system.
+*This guide is about running bots. If you want to write a bot, check out our [guide for
+ writing bots](writing-bots-in-zulip.html).*
 
 On this page you'll find:
 
-* A step-by-step [tutorial](#how-to-run-a-bot) on how to run a bot.
+* A step-by-step [tutorial](#running-a-bot) on how to run a bot.
+* A [guide](#zulip-botserver) on running a Zulip botserver.
 * Common [problems](#common-problems) when developing/running bots and their solutions.
-
-Contributions to this guide are very welcome, so if you run into any
-issues following these instructions or come up with any tips or tools
-that help with writing bots, please visit
-[#integrations](https://chat.zulip.org/#narrow/stream/integrations) on the
-[Zulip development community server](https://chat.zulip.org), open an
-issue, or submit a pull request to share your ideas!
 
 ## Installing the `zulip_bots` package
 
@@ -32,7 +25,7 @@ To install it, run `pip install zulip_bots`.
 *Hint: Do you want to install the latest version? Check out [this](
  writing-bots-guide.html#installing-a-development-version-of-the-zulip-bots-package) guide.*
 
-## How to run a bot
+## Running a bot
 
 This guide will show you how to run a bot on a running Zulip
 server.  It assumes you want to use one of the existing `zulip_bots/bots`
