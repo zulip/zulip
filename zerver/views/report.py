@@ -101,10 +101,16 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
     except Exception:
         version = None
 
+    # Get the IP address of the request
+    remote_ip = request.META.get('HTTP_X_REAL_IP')
+    if remote_ip is None:
+        remote_ip = request.META['REMOTE_ADDR']
+
     queue_json_publish('error_reports', dict(
         type = "browser",
         report = dict(
             host = request.get_host().split(":")[0],
+            ip_address = remote_ip,
             user_email = user_profile.email,
             user_full_name = user_profile.full_name,
             user_visible = ui_message,

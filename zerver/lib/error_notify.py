@@ -43,6 +43,7 @@ def email_browser_error(report):
 
     body = ("User: %(user_full_name)s <%(user_email)s> on %(deployment)s\n\n"
             "Message:\n%(message)s\n\nStacktrace:\n%(stacktrace)s\n\n"
+            "IP address: %(ip_address)s\n"
             "User agent: %(user_agent)s\n"
             "href: %(href)s\n"
             "Server path: %(server_path)s\n"
