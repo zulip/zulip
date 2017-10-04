@@ -42,8 +42,23 @@ is fine. If you're sending emails in a loop, you probably want to send it
 from a queue. Documentation on our queueing system is available
 [here](queuing.html).
 
-## Testing
+## Development and testing
 
-All emails are printed to the console in the development environment. A
-great way to see what most of our emails look like (with fixture data) is by
-going to `emails/` in the browser.
+All the emails sent in the development environment can be accessed by
+visiting `/emails` in the browser.  The way that this works is that
+we've set the email backend (aka what happens when you call the email
+`.send()` method in Django) in the development environment to be our
+our custom backend, `EmailLogBackEnd`.  It does the following:
+
+* Logs any sent emails to `var/log/email_content.log`. This log is
+  displayed by the `/emails` endpoint
+  (e.g. http://zulip.zulipdev.com:9991/emails).
+* Print a friendly message on console advertising `/emails` to make
+  this nice and discoverable.
+
+While running the backend test suite, we use
+`django.core.mail.backends.locmem.EmailBackend` as the email
+backend. The `locmem` backend stores messages in a special attribute
+of the django.core.mail module, "outbox". The outbox attribute is
+created when the first message is sent. It’s a list with an
+EmailMessage instance for each message that would be sent.
