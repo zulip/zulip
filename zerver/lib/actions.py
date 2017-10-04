@@ -2821,7 +2821,7 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
     realm.notifications_stream = notifications_stream
 
     signup_notifications_stream, _ = create_stream_if_needed(
-        realm, "core team", invite_only=True,
+        realm, Realm.INITIAL_PRIVATE_STREAM_NAME, invite_only=True,
         stream_description="A private stream for core team members.")
     realm.signup_notifications_stream = signup_notifications_stream
 
