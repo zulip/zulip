@@ -9,7 +9,7 @@ from django.utils.timezone import utc as timezone_utc
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, DataCollector, \
     sql_data_collector, LoggingCountStat, do_aggregate_to_summary_table, \
-    do_drop_all_analytics_tables, DependentCountStat
+    do_drop_all_analytics_tables, do_drop_single_stat, DependentCountStat
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, Anomaly, installation_epoch, \
     last_successful_fill
@@ -781,6 +781,34 @@ class TestDeleteStats(AnalyticsTestCase):
         do_drop_all_analytics_tables()
         for table in list(analytics.models.values()):
             self.assertFalse(table.objects.exists())
+
+    def test_do_drop_single_stat(self):
+        # type: () -> None
+        user = self.create_user()
+        stream = self.create_stream_with_recipient()[0]
+        count_args_to_delete = {'property': 'to_delete', 'end_time': self.TIME_ZERO, 'value': 10}
+        count_args_to_save = {'property': 'to_save', 'end_time': self.TIME_ZERO, 'value': 10}
+
+        for count_args in [count_args_to_delete, count_args_to_save]:
+            UserCount.objects.create(user=user, realm=user.realm, **count_args)
+            StreamCount.objects.create(stream=stream, realm=stream.realm, **count_args)
+            RealmCount.objects.create(realm=user.realm, **count_args)
+            InstallationCount.objects.create(**count_args)
+        FillState.objects.create(property='to_delete', end_time=self.TIME_ZERO, state=FillState.DONE)
+        FillState.objects.create(property='to_save', end_time=self.TIME_ZERO, state=FillState.DONE)
+        Anomaly.objects.create(info='test anomaly')
+
+        analytics = apps.get_app_config('analytics')
+        for table in list(analytics.models.values()):
+            self.assertTrue(table.objects.exists())
+
+        do_drop_single_stat('to_delete')
+        for table in list(analytics.models.values()):
+            if table._meta.db_table == 'analytics_anomaly':
+                self.assertTrue(table.objects.exists())
+            else:
+                self.assertFalse(table.objects.filter(property='to_delete').exists())
+                self.assertTrue(table.objects.filter(property='to_save').exists())
 
 class TestActiveUsersAudit(AnalyticsTestCase):
     def setUp(self):

@@ -232,6 +232,14 @@ def do_drop_all_analytics_tables():
     FillState.objects.all().delete()
     Anomaly.objects.all().delete()
 
+def do_drop_single_stat(property):
+    # type: (str) -> None
+    UserCount.objects.filter(property=property).delete()
+    StreamCount.objects.filter(property=property).delete()
+    RealmCount.objects.filter(property=property).delete()
+    InstallationCount.objects.filter(property=property).delete()
+    FillState.objects.filter(property=property).delete()
+
 ## DataCollector-level operations ##
 
 def do_pull_by_sql_query(property, start_time, end_time, query, group_by):
