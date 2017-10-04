@@ -95,6 +95,11 @@ def zulip_default_context(request):
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
 
+    if hasattr(request, "client") and request.client.name == "ZulipElectron":
+        platform = "ZulipElectron"
+    else:
+        platform = "ZulipWeb"
+
     return {
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
@@ -137,6 +142,7 @@ def zulip_default_context(request):
         'settings_path': settings_path,
         'secrets_path': secrets_path,
         'settings_comments_path': settings_comments_path,
+        'platform': platform,
     }
 
 
