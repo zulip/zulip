@@ -217,8 +217,8 @@ class Command(makemessages.Command):
 
             yield os.path.join(path, self.get_namespace())
 
-    def get_new_strings(self, old_strings, translation_strings):
-        # type: (Mapping[str, str], List[str]) -> Dict[str, str]
+    def get_new_strings(self, old_strings, translation_strings, locale):
+        # type: (Mapping[str, str], List[str], str) -> Dict[str, str]
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
@@ -226,7 +226,11 @@ class Command(makemessages.Command):
         new_strings = {}  # Dict[str, str]
         for k in translation_strings:
             k = k.replace('\\n', '\n')
-            new_strings[k] = old_strings.get(k, k)
+            if locale == 'en':
+                # For English language, translation is equal to the key.
+                new_strings[k] = old_strings.get(k, k)
+            else:
+                new_strings[k] = old_strings.get(k, "")
 
         plurals = {k: v for k, v in old_strings.items() if k.endswith('_plural')}
         for plural_key, value in plurals.items():
@@ -250,7 +254,8 @@ class Command(makemessages.Command):
             new_strings = {
                 force_text(k): v
                 for k, v in self.get_new_strings(old_strings,
-                                                 translation_strings).items()
+                                                 translation_strings,
+                                                 locale).items()
             }
             with open(output_path, 'w') as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)
