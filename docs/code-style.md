@@ -92,7 +92,7 @@ object before the first thread wrote out its change.
 
 ### Using raw saves to update important model objects
 
-In most cases, we already have a function in zephyr/lib/actions.py with
+In most cases, we already have a function in zerver/lib/actions.py with
 a name like do\_activate\_user that will correctly handle lookups,
 caching, and notifying running browsers via the event system about your
 change. So please check whether such a function exists before writing
@@ -239,7 +239,7 @@ We never use tabs anywhere in source code we write, but we have some
 third-party files which contain tabs.
 
 Keep third-party static files under the directory
-`zephyr/static/third/`, with one subdirectory per third-party project.
+`static/third/`, with one subdirectory per third-party project.
 
 We don't have an absolute hard limit on line length, but we should avoid
 extremely long lines. A general guideline is: refactor stuff to get it
@@ -302,20 +302,21 @@ rather than
 and combine adjacent on-ready functions, if they are logically related.
 
 The best way to build complicated DOM elements is a Mustache template
-like `zephyr/static/templates/message.handlebars`. For simpler things
+like `static/templates/message_reactions.handlebars`. For simpler things
 you can use jQuery DOM building APIs like so:
 
-    var new_tr = $('<tr />').attr('id', zephyr.id);
+    var new_tr = $('<tr />').attr('id', object.id);
 
-Passing a HTML string to jQuery is fine for simple hardcoded things:
+Passing a HTML string to jQuery is fine for simple hardcoded things
+that don't need internationalization:
 
-    foo.append('<p id="selected">foo</p>');
+    foo.append('<p id="selected">/</p>');
 
 but avoid programmatically building complicated strings.
 
 We used to favor attaching behaviors in templates like so:
 
-    <p onclick="select_zephyr({{id}})">
+    <p onclick="select_zerver({{id}})">
 
 but there are some reasons to prefer attaching events using jQuery code:
 
