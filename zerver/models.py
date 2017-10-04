@@ -206,6 +206,7 @@ class Realm(models.Model):
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
+    INITIAL_PRIVATE_STREAM_NAME = u'core team'
 
     def authentication_methods_dict(self):
         # type: () -> Dict[Text, bool]

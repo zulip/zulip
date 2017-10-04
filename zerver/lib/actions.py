@@ -2792,7 +2792,8 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
     notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
     realm.notifications_stream = notifications_stream
 
-    signup_notifications_stream, _ = create_stream_if_needed(realm, "core team", invite_only=True)
+    signup_notifications_stream, _ = create_stream_if_needed(realm, Realm.INITIAL_PRIVATE_STREAM_NAME,
+                                                             invite_only=True)
     realm.signup_notifications_stream = signup_notifications_stream
 
     realm.save(update_fields=['notifications_stream', 'signup_notifications_stream'])
