@@ -288,7 +288,8 @@ def add_new_user_history(user_profile, streams):
                                                        if not stream.invite_only])
     recent_messages = Message.objects.filter(recipient_id__in=recipients,
                                              pub_date__gt=one_week_ago).order_by("-id")
-    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))
+    last_kmessages = recent_messages.values_list('id', flat=True)[0:1000]
+    message_ids_to_use = list(reversed(last_kmessages))
     if len(message_ids_to_use) == 0:
         return
 
