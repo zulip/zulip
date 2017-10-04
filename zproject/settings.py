@@ -769,6 +769,7 @@ PIPELINE = {
         'portico': {
             'source_filenames': (
                 'third/zocial/zocial.css',
+                'styles/components.css',
                 'styles/portico.css',
                 'styles/portico-signin.css',
                 'styles/pygments.css',
@@ -790,6 +791,7 @@ PIPELINE = {
                 'third/spectrum/spectrum.css',
                 'third/thirdparty-fonts.css',
                 'styles/components.css',
+                'styles/app_components.css',
                 'styles/zulip.css',
                 'styles/alerts.css',
                 'styles/settings.css',
@@ -817,6 +819,7 @@ PIPELINE = {
                 'third/thirdparty-fonts.css',
                 'node_modules/katex/dist/katex.css',
                 'styles/components.css',
+                'styles/app_components.css',
                 'styles/zulip.css',
                 'styles/alerts.css',
                 'styles/settings.css',
