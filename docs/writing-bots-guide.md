@@ -1,18 +1,24 @@
-# Writing bots in Zulip
+# Writing interactive bots
 
-Zulip's features can be extended by the means of bots and integrations.
+Zulip's API supports a few different ways of integrating with a
+third-party service.
 
-* **Integrations** are used to connect Zulip with different chat, scheduling and workflow software.
-  If this is what you are looking for, please check out the [integrations guide](
+* **Incoming webhook integrations**, for when you just want notifications from
+  a tool to be sent into Zulip.  See the
+  [integrations guide](
   http://zulip.readthedocs.io/en/latest/integration-guide.html?highlight=integrations).
-* **Bots**, as a more general concept, intercept and react to messages.
+* **Interactive bots**, for when you want the tool to react to
+  messages in Zulip.
 
-*This guide is about writing and testing bots. If you just want to run a bot, check out our [guide for
- running bots](running-bots-in-zulip.html).*
+* This guide is about writing and testing interactive bots. We assume
+ familiarity with our
+ [guide for running bots](running-bots-guide.html).
 
 On this page you'll find:
-* A step-by-step [guide](#installing-a-development-version-of-the-zulip-bots-package) on how to set up
-  a development environment for bots.
+* A step-by-step
+  [guide](#installing-a-development-version-of-the-zulip-bots-package)
+  on how to set up a development environment for writing bots with all
+  of our nice tooling to make it easy to write and test your work.
 * A [guide](#writing-a-bot) on writing a bot.
 * A [guide](#adding-a-bot-to-zulip) on adding a bot to Zulip.
 * A [guide](#testing-a-bot-s-output) on testing a bot's output.
@@ -28,12 +34,14 @@ On this page you'll find:
 
 3. `./tools/provision` - install all requirements in a Python virtualenv.
 
-4. Run the `source <activation/path>` command printed in the previous step to activate the virtualenv.
+4. Run the `source <activation/path>` command printed in the previous
+   step to activate the virtualenv.
 
 5. *Finished*. You should now see the name of your venv preceding your prompt, e.g. `(ZULIP-~1)`.
 
-*Hint: `./tools/provision` installs `zulip`, `zulip_bots`, and `zulip_botserver` in developer
- mode. This enables you to make changes to the code after the packages are installed.*
+*Hint: `./tools/provision` installs `zulip`, `zulip_bots`, and
+ `zulip_botserver` in developer mode. This enables you to make changes
+ to the code after the packages are installed.*
 
 ## Writing a bot
 
