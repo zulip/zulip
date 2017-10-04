@@ -101,7 +101,7 @@ class RegistrationForm(forms.Form):
         # type: () -> str
         subdomain = self.cleaned_data['realm_subdomain']
         if not subdomain:
-            return ''
+            return '.'
         check_subdomain_available(subdomain)
         return subdomain
 

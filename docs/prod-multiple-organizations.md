@@ -45,5 +45,6 @@ the homepage for the server is a copy of the Zulip homepage.
 Most Zulip servers host a single Zulip organization on the root domain
 (i.e. `zulip.example.com`).  The way this is implemented internally
 involves the organization having the empty string (`''`) as its
-"subdomain".  You can mix having an organization on the root domain
-and some others on subdomains (e.g. `it.zulip.example.com`).
+"subdomain" and dot (`'.'`) as the "string_id".  You can mix having an
+organization on the root domain and some others on subdomains
+(e.g. `it.zulip.example.com`).

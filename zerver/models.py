@@ -258,6 +258,8 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def subdomain(self):
         # type: () -> Optional[Text]
+        if self.string_id == ".":
+            return ""
         return self.string_id
 
     @property
