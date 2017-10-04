@@ -1752,7 +1752,8 @@ input.new-organization-button {
 }
 
 .error_page {
-    min-height: calc(100vh - 64px);
+    padding: 20px 0px;
+    min-height: calc(100vh - 290px);
     background-color: #c9e9e0;
     font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
 }
