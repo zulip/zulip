@@ -177,11 +177,17 @@ class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
     default_msec_format = '%s.%03d'
 
-    _fmt = '%(asctime)s %(zulip_level_abbrev)-4s [%(zulip_origin)s] %(message)s'
-
     def __init__(self):
         # type: () -> None
-        super().__init__(fmt=self._fmt)
+        super().__init__(fmt=self._compute_fmt())
+
+    def _compute_fmt(self):
+        # type: () -> str
+        pieces = ['%(asctime)s', '%(zulip_level_abbrev)-4s']
+        if settings.LOGGING_SHOW_PID:
+            pieces.append('pid:%(process)d')
+        pieces.extend(['[%(zulip_origin)s]', '%(message)s'])
+        return ' '.join(pieces)
 
     def format(self, record):
         # type: (logging.LogRecord) -> str
