@@ -78,10 +78,10 @@ def process_count_stat(stat, fill_to_time):
     else:
         raise AssertionError("Unknown frequency: %s" % (stat.frequency,))
 
-    if floor_to_hour(fill_to_time) != fill_to_time:
-        raise ValueError("fill_to_time must be on an hour boundary: %s" % (fill_to_time,))
     if fill_to_time.tzinfo is None:
         raise ValueError("fill_to_time must be timezone aware: %s" % (fill_to_time,))
+    if floor_to_hour(fill_to_time) != fill_to_time:
+        raise ValueError("fill_to_time must be on an hour boundary: %s" % (fill_to_time,))
 
     fill_state = FillState.objects.filter(property=stat.property).first()
     if fill_state is None:

@@ -18,13 +18,15 @@ def convert_to_UTC(dt):
 
 def floor_to_hour(dt):
     # type: (datetime.datetime) -> datetime.datetime
+    verify_UTC(dt)
     return datetime.datetime(*dt.timetuple()[:4]) \
-                   .replace(tzinfo=dt.tzinfo)
+                   .replace(tzinfo=timezone_utc)
 
 def floor_to_day(dt):
     # type: (datetime.datetime) -> datetime.datetime
+    verify_UTC(dt)
     return datetime.datetime(*dt.timetuple()[:3]) \
-                   .replace(tzinfo=dt.tzinfo)
+                   .replace(tzinfo=timezone_utc)
 
 def ceiling_to_hour(dt):
     # type: (datetime.datetime) -> datetime.datetime

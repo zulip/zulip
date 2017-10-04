@@ -1,4 +1,5 @@
-from zerver.lib.timestamp import floor_to_hour, floor_to_day, timestamp_to_datetime
+from zerver.lib.timestamp import floor_to_hour, floor_to_day, \
+    timestamp_to_datetime, verify_UTC
 from analytics.lib.counts import CountStat
 
 from datetime import datetime, timedelta
@@ -10,6 +11,8 @@ from typing import List, Optional
 # and time_range(Sep 20, Sep 22, day, 5) returns [Sep 18, Sep 19, Sep 20, Sep 21, Sep 22]
 def time_range(start, end, frequency, min_length):
     # type: (datetime, datetime, str, Optional[int]) -> List[datetime]
+    verify_UTC(start)
+    verify_UTC(end)
     if frequency == CountStat.HOUR:
         end = floor_to_hour(end)
         step = timedelta(hours=1)

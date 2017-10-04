@@ -4,7 +4,7 @@ from django.utils.timezone import utc as timezone_utc
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import floor_to_hour, floor_to_day, ceiling_to_hour, \
     ceiling_to_day, timestamp_to_datetime, datetime_to_timestamp, \
-    TimezoneNotUTCException
+    TimezoneNotUTCException, convert_to_UTC
 
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -37,3 +37,10 @@ class TestTimestamp(ZulipTestCase):
                 parser.parse('2017-01-01 00:00:00.123'),
                 parser.parse('2017-01-01 05:00:00.123+05')]:
             self.assertEqual(convert_to_UTC(dt), utc_datetime)
+
+    def test_enforce_UTC(self):
+        # type: () -> None
+        non_utc_datetime = parser.parse('2017-01-01 00:00:00.123')
+        for function in [floor_to_hour, floor_to_day, ceiling_to_hour, ceiling_to_hour]:
+            with self.assertRaises(TimezoneNotUTCException):
+                function(non_utc_datetime)

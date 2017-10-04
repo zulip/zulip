@@ -1,4 +1,3 @@
-
 from django.utils.timezone import get_fixed_timezone, utc
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, \
@@ -275,12 +274,10 @@ class TestTimeRange(ZulipTestCase):
         # type: () -> None
         HOUR = timedelta(hours=1)
         DAY = timedelta(days=1)
-        TZINFO = get_fixed_timezone(-100)  # 100 minutes west of UTC
 
-        # Using 22:59 so that converting to UTC and applying floor_to_{hour,day} do not commute
-        a_time = datetime(2016, 3, 14, 22, 59).replace(tzinfo=TZINFO)
-        floor_hour = datetime(2016, 3, 14, 22).replace(tzinfo=TZINFO)
-        floor_day = datetime(2016, 3, 14).replace(tzinfo=TZINFO)
+        a_time = datetime(2016, 3, 14, 22, 59).replace(tzinfo=utc)
+        floor_hour = datetime(2016, 3, 14, 22).replace(tzinfo=utc)
+        floor_day = datetime(2016, 3, 14).replace(tzinfo=utc)
 
         # test start == end
         self.assertEqual(time_range(a_time, a_time, CountStat.HOUR, None), [])
