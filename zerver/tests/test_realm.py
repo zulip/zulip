@@ -201,6 +201,17 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(notifications_stream)
         self.assertIsNone(realm.get_notifications_stream())
 
+    def test_get_default_signup_notifications_stream(self) -> None:
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.signup_notifications_stream = verona
+        realm.save()
+
+        signup_notifications_stream = realm.get_signup_notifications_stream()
+        self.assertEqual(signup_notifications_stream, verona)
+        do_deactivate_stream(signup_notifications_stream)
+        self.assertIsNone(realm.get_signup_notifications_stream())
+
     def test_change_realm_default_language(self) -> None:
         new_lang = "de"
         realm = get_realm('zulip')
