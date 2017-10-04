@@ -377,20 +377,50 @@ def huddle_users(recipient_id):
     user_ids = sorted(user_ids)
     return ','.join(str(uid) for uid in user_ids)
 
-def aggregate_dict(input_rows, lookup_fields, input_field, output_field):
-    # type: (List[Dict[str, Any]], List[str], str, str) -> List[Dict[str, Any]]
+def aggregate_dict(input_dict, lookup_fields, output_field):
+    # type: (Dict[int, Dict[str, Any]], List[str], str) -> List[Dict[str, Any]]
     lookup_dict = dict()  # type: Dict[Any, Dict]
 
-    for input_row in input_rows:
-        lookup_key = tuple([input_row[f] for f in lookup_fields])
+    '''
+    A concrete example might help explain the inputs here:
+
+    input_dict = {
+        1002: dict(stream_id=5, topic='foo'),
+        1003: dict(stream_id=5, topic='foo'),
+        1004: dict(stream_id=6, topic='baz'),
+    }
+
+    lookup_fields = ['stream_id', 'topic']
+    output_field = 'unread_message_ids'
+
+    The first time through the loop:
+        key_to_aggregate = 1002
+        attribute_dict = dict(stream_id=5, topic='foo')
+
+    lookup_dict = {
+        (5, foo): dict(stream_id=5, topic='foo', unread_message_ids=[1002, 1003]),
+        ...
+    }
+
+    result = [
+        dict(stream_id=5, topic='foo', unread_message_ids=[1002, 1003]),
+        ...
+    ]
+    '''
+
+    for key_to_aggregate, attribute_dict in input_dict.items():
+        lookup_key = tuple([attribute_dict[f] for f in lookup_fields])
         if lookup_key not in lookup_dict:
             obj = {}
             for f in lookup_fields:
-                obj[f] = input_row[f]
+                obj[f] = attribute_dict[f]
             obj[output_field] = []
             lookup_dict[lookup_key] = obj
 
-        lookup_dict[lookup_key][output_field].append(input_row[input_field])
+        lookup_dict[lookup_key][output_field].append(key_to_aggregate)
+
+    for dct in lookup_dict.values():
+        dct[output_field].sort()
 
     sorted_keys = sorted(lookup_dict.keys())
 
@@ -427,6 +457,12 @@ def get_muted_recipient_ids(user_profile):
 
 def get_unread_message_ids_per_recipient(user_profile):
     # type: (UserProfile) -> UnreadMessagesResult
+    raw_unread_data = get_raw_unread_data(user_profile)
+    aggregated_data = aggregate_unread_data(raw_unread_data)
+    return aggregated_data
+
+def get_raw_unread_data(user_profile):
+    # type: (UserProfile) -> Dict[str, Any]
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
@@ -455,87 +491,113 @@ def get_unread_message_ids_per_recipient(user_profile):
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
-    def is_row_muted(row):
-        # type: (Dict[str, Any]) -> bool
-        recipient_id = row['message__recipient_id']
-
+    def is_row_muted(recipient_id, topic):
+        # type: (int, Text) -> bool
         if recipient_id in muted_recipient_ids:
             return True
 
-        topic_name = row['message__subject']
-        if topic_mute_checker(recipient_id, topic_name):
+        if topic_mute_checker(recipient_id, topic):
             return True
 
         return False
 
-    active_stream_rows = [row for row in rows if not is_row_muted(row)]
+    huddle_cache = {}  # type: Dict[int, str]
 
-    count = len(active_stream_rows)
+    def get_huddle_users(recipient_id):
+        # type: (int) -> str
+        if recipient_id in huddle_cache:
+            return huddle_cache[recipient_id]
 
-    pm_msgs = [
-        dict(
-            sender_id=row['message__sender_id'],
-            message_id=row['message_id'],
-        ) for row in rows
-        if row['message__recipient__type'] == Recipient.PERSONAL]
+        user_ids_string = huddle_users(recipient_id)
+        huddle_cache[recipient_id] = user_ids_string
+        return user_ids_string
+
+    pm_dict = {}
+    stream_dict = {}
+    unmuted_stream_msgs = set()
+    huddle_dict = {}
+    mentions = set()
+
+    for row in rows:
+        message_id = row['message_id']
+        msg_type = row['message__recipient__type']
+        recipient_id = row['message__recipient_id']
+
+        if msg_type == Recipient.STREAM:
+            stream_id = row['message__recipient__type_id']
+            topic = row['message__subject']
+            stream_dict[message_id] = dict(
+                stream_id=stream_id,
+                topic=topic,
+            )
+            if not is_row_muted(recipient_id, topic):
+                unmuted_stream_msgs.add(message_id)
+
+        elif msg_type == Recipient.PERSONAL:
+            sender_id = row['message__sender_id']
+            pm_dict[message_id] = dict(
+                sender_id=sender_id,
+            )
+
+        elif msg_type == Recipient.HUDDLE:
+            user_ids_string = get_huddle_users(recipient_id)
+            huddle_dict[message_id] = dict(
+                user_ids_string=user_ids_string,
+            )
+
+        is_mentioned = (row['flags'] & UserMessage.flags.mentioned) != 0
+        if is_mentioned:
+            mentions.add(message_id)
+
+    return dict(
+        pm_dict=pm_dict,
+        stream_dict=stream_dict,
+        unmuted_stream_msgs=unmuted_stream_msgs,
+        huddle_dict=huddle_dict,
+        mentions=mentions,
+    )
+
+def aggregate_unread_data(raw_data):
+    # type: (Dict[str, Any]) -> UnreadMessagesResult
+
+    pm_dict = raw_data['pm_dict']
+    stream_dict = raw_data['stream_dict']
+    unmuted_stream_msgs = raw_data['unmuted_stream_msgs']
+    huddle_dict = raw_data['huddle_dict']
+    mentions = list(raw_data['mentions'])
+
+    count = len(pm_dict) + len(unmuted_stream_msgs) + len(huddle_dict)
 
     pm_objects = aggregate_dict(
-        input_rows=pm_msgs,
+        input_dict=pm_dict,
         lookup_fields=[
             'sender_id',
         ],
-        input_field='message_id',
         output_field='unread_message_ids',
     )
 
-    stream_msgs = [
-        dict(
-            stream_id=row['message__recipient__type_id'],
-            topic=row['message__subject'],
-            message_id=row['message_id'],
-        ) for row in rows
-        if row['message__recipient__type'] == Recipient.STREAM]
-
     stream_objects = aggregate_dict(
-        input_rows=stream_msgs,
+        input_dict=stream_dict,
         lookup_fields=[
             'stream_id',
             'topic',
         ],
-        input_field='message_id',
         output_field='unread_message_ids',
     )
-
-    huddle_msgs = [
-        dict(
-            recipient_id=row['message__recipient_id'],
-            message_id=row['message_id'],
-        ) for row in rows
-        if row['message__recipient__type'] == Recipient.HUDDLE]
 
     huddle_objects = aggregate_dict(
-        input_rows=huddle_msgs,
+        input_dict=huddle_dict,
         lookup_fields=[
-            'recipient_id',
+            'user_ids_string',
         ],
-        input_field='message_id',
         output_field='unread_message_ids',
     )
-
-    for huddle in huddle_objects:
-        huddle['user_ids_string'] = huddle_users(huddle['recipient_id'])
-        del huddle['recipient_id']
-
-    mentioned_message_ids = [
-        row['message_id']
-        for row in rows
-        if (row['flags'] & UserMessage.flags.mentioned) != 0]
 
     result = dict(
         pms=pm_objects,
         streams=stream_objects,
         huddles=huddle_objects,
-        mentions=mentioned_message_ids,
+        mentions=mentions,
         count=count)  # type: UnreadMessagesResult
 
     return result
