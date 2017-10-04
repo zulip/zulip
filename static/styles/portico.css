@@ -1498,6 +1498,11 @@ input.new-organization-button {
 }
 
 @media (max-width: 500px) {
+    .error_page .lead {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+
     .markdown .content {
         padding: 30px 10px 80px 10px;
     }
@@ -1796,4 +1801,5 @@ input.new-organization-button {
     color: #39a688;
     font-size: 40px;
     margin-bottom: 30px;
+    line-height: normal;
 }
