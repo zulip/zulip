@@ -352,9 +352,9 @@ styles (separate lines for each selector):
 
 ### Python
 
--   Scripts should start with `#!/usr/bin/env python` and not
+-   Scripts should start with `#!/usr/bin/env python3` and not
     `#/usr/bin/python` (the right Python may not be installed in
-    `/usr/bin`) or `#/usr/bin/env python2.7` (bad for Python 3
+    `/usr/bin`) or `#/usr/bin/env python` (we require Python 3
     compatibility).  Don't put a shebang line on a Python file unless
     it's meaningful to run it as a script. (Some libraries can also be
     run as scripts, e.g. to run a test suite.)
