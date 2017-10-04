@@ -264,19 +264,6 @@ Whitespace guidelines:
 
 ### JavaScript
 
-Don't use `==` and `!=` because these operators perform type coercions,
-which can mask bugs. Always use `===` and `!==`.
-
-End every statement with a semicolon.
-
-`if` statements with no braces are allowed, if the body is simple and
-its extent is abundantly clear from context and formatting.
-
-Anonymous functions should have spaces before and after the argument
-list:
-
-    var x = function (foo, bar) { // ...
-
 When calling a function with an anonymous function as an argument, use
 this style:
 
