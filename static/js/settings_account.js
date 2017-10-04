@@ -159,9 +159,11 @@ exports.set_up = function () {
             data: data,
             success: function (data) {
                 if ('account_email' in data) {
-                    var email_msg = templates.render('dev_env_email_access');
                     settings_change_success(data.account_email);
-                    $("#account-settings-status").append(email_msg);
+                    if (page_params.development_environment) {
+                        var email_msg = templates.render('dev_env_email_access');
+                        $("#account-settings-status").append(email_msg);
+                    }
                 } else {
                     settings_change_success(i18n.t("No changes made."));
                 }
