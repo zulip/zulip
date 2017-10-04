@@ -25,9 +25,7 @@ exports.bytes_to_size = function (bytes) {
     return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
  };
 
-exports.set_up_attachments = function () {
-    // The settings page must be rendered before this function gets called.
-
+function set_up_attachments_success() {
     var attachments = page_params.attachments;
     _.each(attachments, function (attachment) {
 
@@ -84,6 +82,19 @@ exports.set_up_attachments = function () {
         var row = $(e.target).closest(".uploaded_file_row");
         row.remove();
         delete_attachments($(this).data('attachment'));
+    });
+}
+
+exports.set_up_attachments = function () {
+    // The settings page must be rendered before this function gets called.
+
+    channel.get({
+        url: '/json/attachments',
+        idempotent: true,
+        success: function (data) {
+            page_params.attachments = data.attachments;
+            set_up_attachments_success();
+        },
     });
 };
 
