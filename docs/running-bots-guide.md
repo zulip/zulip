@@ -28,8 +28,10 @@ To install it, run `pip install zulip_bots`.
 ## Running a bot
 
 This guide will show you how to run a bot on a running Zulip
-server.  It assumes you want to use one of the existing `zulip_bots/bots`
-bots in your Zulip organization.
+server.  It assumes you want to use one of the existing bots
+found in [`zulip_bots/bots`](
+https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+in your Zulip organization.
 
 *Hint: Looking for an easy way to test a bot's output? Check out [this](
  writing-bots-guide.html#testing-a-bot-s-output) guide.*
