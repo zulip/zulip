@@ -13,7 +13,10 @@ from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic_mutes import build_topic_mute_checker
+from zerver.lib.topic_mutes import (
+    build_topic_mute_checker,
+    topic_is_muted,
+)
 
 from zerver.models import (
     get_display_recipient_by_id,
@@ -552,6 +555,7 @@ def get_raw_unread_data(user_profile):
     return dict(
         pm_dict=pm_dict,
         stream_dict=stream_dict,
+        muted_stream_ids=muted_stream_ids,
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=huddle_dict,
         mentions=mentions,
@@ -602,10 +606,8 @@ def aggregate_unread_data(raw_data):
 
     return result
 
-def apply_unread_message_event(state, message):
-    # type: (Dict[str, Any], Dict[str, Any]) -> None
-    state['count'] += 1
-
+def apply_unread_message_event(user_profile, state, message):
+    # type: (UserProfile, Dict[str, Any], Dict[str, Any]) -> None
     message_id = message['id']
     if message['type'] == 'stream':
         message_type = 'stream'
@@ -622,49 +624,36 @@ def apply_unread_message_event(state, message):
         raise AssertionError("Invalid message type %s" % (message['type'],))
 
     if message_type == 'stream':
-        unread_key = 'streams'
         stream_id = message['stream_id']
         topic = message['subject']
-
-        my_key = (stream_id, topic)  # type: Any
-
-        key_func = lambda obj: (obj['stream_id'], obj['topic'])
-        new_obj = dict(
+        new_row = dict(
             stream_id=stream_id,
             topic=topic,
-            unread_message_ids=[message_id],
         )
-    elif message_type == 'private':
-        unread_key = 'pms'
-        sender_id = message['sender_id']
+        state['stream_dict'][message_id] = new_row
 
-        my_key = sender_id
-        key_func = lambda obj: obj['sender_id']
-        new_obj = dict(
+        if stream_id not in state['muted_stream_ids']:
+            # This next check hits the database.
+            if not topic_is_muted(user_profile, stream_id, topic):
+                state['unmuted_stream_msgs'].add(message_id)
+
+    elif message_type == 'private':
+        sender_id = message['sender_id']
+        new_row = dict(
             sender_id=sender_id,
-            unread_message_ids=[message_id],
         )
+        state['pm_dict'][message_id] = new_row
+
     else:
-        unread_key = 'huddles'
         display_recipient = message['display_recipient']
         user_ids = [obj['id'] for obj in display_recipient]
         user_ids = sorted(user_ids)
-        my_key = ','.join(str(uid) for uid in user_ids)
-        key_func = lambda obj: obj['user_ids_string']
-        new_obj = dict(
-            user_ids_string=my_key,
-            unread_message_ids=[message_id],
+        user_ids_string = ','.join(str(uid) for uid in user_ids)
+        new_row = dict(
+            user_ids_string=user_ids_string,
         )
+        state['huddle_dict'][message_id] = new_row
 
-    if message.get('is_mentioned'):
-        if message_id not in state['mentions']:
-            state['mentions'].append(message_id)
-
-    for obj in state[unread_key]:
-        if key_func(obj) == my_key:
-            obj['unread_message_ids'].append(message_id)
-            obj['unread_message_ids'].sort()
-            return
-
-    state[unread_key].append(new_obj)
-    state[unread_key].sort(key=key_func)
+    mentioned = message.get('is_mentioned', False)
+    if mentioned:
+        state['mentions'].add(message_id)

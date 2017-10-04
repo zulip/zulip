@@ -71,7 +71,11 @@ from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
 )
-from zerver.lib.message import render_markdown
+from zerver.lib.message import (
+    get_unread_message_ids_per_recipient,
+    render_markdown,
+    UnreadMessagesResult,
+)
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
     stub_event_queue_user_events
 from zerver.lib.test_classes import (
@@ -1715,9 +1719,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
                                               'hello3')
 
         def get_unread_data():
-            # type: () -> Dict[str, Any]
-            result = fetch_initial_state_data(user_profile, None, "")['unread_msgs']
-            return result
+            # type: () -> UnreadMessagesResult
+            return get_unread_message_ids_per_recipient(user_profile)
 
         result = get_unread_data()
 
