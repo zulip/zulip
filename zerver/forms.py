@@ -49,6 +49,24 @@ def email_is_not_mit_mailing_list(email):
             else:
                 raise
 
+def check_subdomain_available(subdomain):
+    # type: (str) -> None
+    error_strings = {
+        'too short': _("Subdomain needs to have length 3 or greater."),
+        'extremal dash': _("Subdomain cannot start or end with a '-'."),
+        'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
+        'unavailable': _("Subdomain unavailable. Please choose a different one.")}
+
+    if len(subdomain) < 3:
+        raise ValidationError(error_strings['too short'])
+    if subdomain[0] == '-' or subdomain[-1] == '-':
+        raise ValidationError(error_strings['extremal dash'])
+    if not re.match('^[a-z0-9-]*$', subdomain):
+        raise ValidationError(error_strings['bad character'])
+    if is_reserved_subdomain(subdomain) or \
+       get_realm(subdomain) is not None:
+        raise ValidationError(error_strings['unavailable'])
+
 class RegistrationForm(forms.Form):
     MAX_PASSWORD_LENGTH = 100
     full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
@@ -81,24 +99,10 @@ class RegistrationForm(forms.Form):
 
     def clean_realm_subdomain(self):
         # type: () -> str
-        error_strings = {
-            'too short': _("Subdomain needs to have length 3 or greater."),
-            'extremal dash': _("Subdomain cannot start or end with a '-'."),
-            'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
-            'unavailable': _("Subdomain unavailable. Please choose a different one.")}
-
         subdomain = self.cleaned_data['realm_subdomain']
         if not subdomain:
             return ''
-        if len(subdomain) < 3:
-            raise ValidationError(error_strings['too short'])
-        if subdomain[0] == '-' or subdomain[-1] == '-':
-            raise ValidationError(error_strings['extremal dash'])
-        if not re.match('^[a-z0-9-]*$', subdomain):
-            raise ValidationError(error_strings['bad character'])
-        if is_reserved_subdomain(subdomain) or \
-           get_realm(subdomain) is not None:
-            raise ValidationError(error_strings['unavailable'])
+        check_subdomain_available(subdomain)
         return subdomain
 
 class ToSForm(forms.Form):
