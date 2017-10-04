@@ -19,6 +19,8 @@ var presence_descriptions = {
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
+var meta = {};
+
 // When you start Zulip, has_focus should be true, but it might not be the
 // case after a server-initiated reload.
 exports.has_focus = document.hasFocus && document.hasFocus();
@@ -242,7 +244,7 @@ function focus_lost() {
 }
 
 function filter_user_ids(user_ids) {
-    var user_list = $(".user-list-filter");
+    var user_list = meta.$user_list_filter;
     if (user_list.length === 0) {
         // We may have received an activity ping response after
         // initiating a reload, in which case the user list may no
@@ -293,6 +295,12 @@ function get_num_unread(user_id) {
 function info_for(user_id) {
     var status = presence.get_status(user_id);
     var person = people.get_person_from_user_id(user_id);
+
+    // if the user is you or a bot, do not show in presence data.
+    if (person.is_bot || person.user_id === page_params.user_id) {
+        return;
+    }
+
     return {
         href: narrow.pm_with_uri(person.email),
         name: person.full_name,
@@ -346,9 +354,21 @@ exports.build_user_sidebar = function () {
         return;
     }
 
-    var user_ids = filter_and_sort(presence.get_user_ids());
+    var user_ids;
 
-    var user_info = _.map(user_ids, info_for);
+    if (meta.$user_list_filter.val().length) {
+        user_ids = filter_and_sort(presence.get_user_ids());
+    } else {
+        user_ids = filter_and_sort(people.get_realm_persons().map(function (person) {
+            return person.user_id;
+        }));
+    }
+
+    var user_info = _.map(user_ids, info_for).filter(function (person) {
+        // filtered bots and yourself are set to "undefined" in the `info_for`
+        // function.
+        return typeof person !== "undefined";
+    });
     var html = templates.render('user_presence_rows', {users: user_info});
     $('#user_presences').html(html);
 
@@ -557,7 +577,7 @@ function maybe_select_person(e) {
         e.stopPropagation();
 
         var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
-        var user_list = $(".user-list-filter");
+        var user_list = meta.$user_list_filter;
         var search_term = user_list.expectOne().val().trim();
         if ((topPerson !== undefined) && (search_term !== '')) {
             // undefined if there are no results
@@ -578,7 +598,9 @@ function focus_user_filter(e) {
 }
 
 $(function () {
-    $(".user-list-filter").expectOne()
+    meta.$user_list_filter = $(".user-list-filter");
+
+    meta.$user_list_filter.expectOne()
         .on('click', focus_user_filter)
         .on('input', update_users_for_search)
         .on('keydown', maybe_select_person)
