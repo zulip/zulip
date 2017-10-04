@@ -39,6 +39,7 @@ i18next.use(XHR)
         detection: detectionOptions,
         cache: cacheOptions,
         fallbackLng: 'en',
+        returnEmptyString: false,  // Empty string is not a valid translation.
     }, function () {
         var i;
         initialized = true;
