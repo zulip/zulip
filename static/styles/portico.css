@@ -1369,6 +1369,54 @@ input.new-organization-button {
     max-width: calc(768px + 20px);
 }
 
+.error_page {
+    padding: 20px 0px;
+    min-height: calc(100vh - 290px);
+    background-color: #c9e9e0;
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+}
+
+.error_page .row-fluid {
+    margin-top: 60px;
+}
+
+.error_page img {
+    display: block;
+    clear: right;
+    margin: 0 auto;
+    max-width: 500px;
+    width: 100%;
+}
+
+.error_page .errorbox {
+    margin: auto;
+    border: 2px solid #44A98C;
+    max-width: 500px;
+    background-color: white;
+    box-shadow: 0 0 4px #44A98C;
+    font-size: 18px;
+}
+
+.error_page .errorbox.config-error {
+    max-width: 750px;
+}
+
+.error_page p {
+    color: #333333;
+}
+
+.error_page .errorcontent {
+    text-align: left;
+    padding: 40px 40px 30px 40px;
+}
+
+.error_page .lead {
+    color: #39a688;
+    font-size: 40px;
+    margin-bottom: 20px;
+    line-height: normal;
+}
+
 @media (max-width: 1000px) {
     .app.help .markdown {
         width: calc(100vw - 50px);
@@ -1754,52 +1802,4 @@ input.new-organization-button {
 
 .portico-page.error .portico-page-container {
     padding: 0;
-}
-
-.error_page {
-    padding: 20px 0px;
-    min-height: calc(100vh - 290px);
-    background-color: #c9e9e0;
-    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
-}
-
-.error_page .row-fluid {
-    margin-top: 60px;
-}
-
-.error_page img {
-    display: block;
-    clear: right;
-    margin: 0 auto;
-    max-width: 500px;
-    width: 100%;
-}
-
-.error_page .errorbox {
-    margin: auto;
-    border: 2px solid #44A98C;
-    max-width: 500px;
-    background-color: white;
-    box-shadow: 0 0 4px #44A98C;
-    font-size: 18px;
-}
-
-.error_page .errorbox.config-error {
-    max-width: 750px;
-}
-
-.error_page p {
-    color: #333333;
-}
-
-.error_page .errorcontent {
-    text-align: left;
-    padding: 40px 40px 30px 40px;
-}
-
-.error_page .lead {
-    color: #39a688;
-    font-size: 40px;
-    margin-bottom: 30px;
-    line-height: normal;
 }
