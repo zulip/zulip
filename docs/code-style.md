@@ -343,13 +343,6 @@ attach a jQuery event handler
 (`$('#foo').on('click', function () {...})`) when the DOM is ready
 (inside a `$(function () {...})` block).
 
-Use this format when you have the same block applying to multiple CSS
-styles (separate lines for each selector):
-
-    selector1,
-    selector2 {
-    };
-
 ### Python
 
 -   Scripts should start with `#!/usr/bin/env python3` and not
