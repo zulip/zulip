@@ -1,14 +1,9 @@
-# Running bots in Zulip
+# Interactive bots
 
-Zulip's features can be extended by the means of bots and integrations.
-
-* **Integrations** are used to connect Zulip with different chat, scheduling and workflow software.
-  If this is what you are looking for, please check out the [integrations guide](
-  http://zulip.readthedocs.io/en/latest/integration-guide.html?highlight=integrations).
-* **Bots**, as a more general concept, intercept and react to messages.
-
-*This guide is about running bots. If you want to write a bot, check out our [guide for
- writing bots](writing-bots-in-zulip.html).*
+Zulip's API has a powerful framework for interactive bots that react
+the messages in Zulip.  This page documents how to run a bot
+implemented using that framework, both on your laptop for quick
+testing as well in a production server environment.
 
 On this page you'll find:
 
@@ -17,13 +12,6 @@ On this page you'll find:
 * Common [problems](#common-problems) when developing/running bots and their solutions.
 
 ## Installing the `zulip_bots` package
-
-The `zulip_bots` package comes with all you need to run a bot.
-
-To install it, run `pip install zulip_bots`.
-
-*Hint: Do you want to install the latest version? Check out [this](
- writing-bots-guide.html#installing-a-development-version-of-the-zulip-bots-package) guide.*
 
 ## Running a bot
 
@@ -48,7 +36,12 @@ You need:
 **Note: Please be considerate when testing experimental bots on
   public servers such as chat.zulip.org.**
 
-1. [Install all requirements](#installing-the-zulip-bots-package).
+1. Run `pip install zulip_bots` to install the package.
+
+*Hint: Do you want to install the latest development version? Check
+ out [this](
+ writing-bots-guide.html#installing-a-development-version-of-the-zulip-bots-package)
+ guide.*
 
 2. Register a new bot user on the Zulip server's web interface.
 
@@ -80,15 +73,12 @@ You need:
       INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
       ```
 
-    * Congrats! Now, your bot should be ready to test.
+    * Congrats! Your bot is running.
 
-### Testing the helloworld bot
-
-* The `helloworld` bot is a simple bot that responds with a 'beep boop'
-  when queried. It can be used as a template to build more complex
-  bots.
-* In a stream and topic of your choice, type `@<your bot name>`.
-  The `helloworld` bot should respond with "beep boop".
+You can now play around with the bot and get it configured the way you
+like.  Eventually, you'll probably want to run it in a production
+environment where it'll stay up, by deploying it on a server using the
+Zulip Botserver.
 
 ## Zulip Botserver
 
