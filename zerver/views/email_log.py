@@ -46,28 +46,37 @@ def generate_all_emails(request):
     host_kwargs = {'HTTP_HOST': realm.host}
 
     # Password reset email
-    client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
+    result = client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
+    assert result.status_code == 302
 
     # Confirm account email
-    client.post('/accounts/home/', {'email': unregistered_email_1}, **host_kwargs)
+    result = client.post('/accounts/home/', {'email': unregistered_email_1}, **host_kwargs)
+    assert result.status_code == 302
 
     # Find account email
-    client.post('/accounts/find/', {'emails': registered_email}, **host_kwargs)
+    result = client.post('/accounts/find/', {'emails': registered_email}, **host_kwargs)
+    assert result.status_code == 302
 
     # New login email
-    client.login(username=registered_email)
+    logged_in = client.login(username=registered_email)
+    assert logged_in
 
     # New user invite and reminder emails
-    client.post("/json/invites", {"invitee_emails": unregistered_email_2, "stream": ["Denmark"], "custom_body": ""}, **host_kwargs)
+    result = client.post("/json/invites",
+                         {"invitee_emails": unregistered_email_2, "stream": ["Denmark"], "custom_body": ""},
+                         **host_kwargs)
+    assert result.status_code == 200
 
     # Verification for new email
-    client.patch('/json/settings', urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}), **host_kwargs)
+    result = client.patch('/json/settings', urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}), **host_kwargs)
+    assert result.status_code == 200
 
     # Email change successful
     key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest('id').confirmation_key
     url = confirmation_url(key, realm.host, Confirmation.EMAIL_CHANGE)
     user_profile = get_user(registered_email, realm)
-    client.get(url)
+    result = client.get(url)
+    assert result.status_code == 302
     user_profile.emails = "hamlet@zulip.com"
     user_profile.save()
 
