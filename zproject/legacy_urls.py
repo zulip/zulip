@@ -24,7 +24,6 @@ legacy_urls = [
 
     url(r'^json/fetch_api_key$', zerver.views.auth.json_fetch_api_key),
     # This old-style tutorial is due to be eliminated soon.
-    url(r'^json/tutorial_send_message$', zerver.views.tutorial.json_tutorial_send_message),
     url(r'^json/tutorial_status$', zerver.views.tutorial.json_tutorial_status),
     # A version of these reporting views may make sense to support in
     # the API for getting mobile analytics, but we may want something
