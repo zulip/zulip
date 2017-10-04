@@ -1,7 +1,14 @@
-
 import datetime
 import calendar
 from django.utils.timezone import utc as timezone_utc
+
+class TimezoneNotUTCException(Exception):
+    pass
+
+def verify_UTC(dt):
+    # type: (datetime.datetime) -> None
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != timezone_utc.utcoffset(dt):
+        raise TimezoneNotUTCException("Datetime %s does not have a UTC timezone." % (dt,))
 
 def floor_to_hour(dt):
     # type: (datetime.datetime) -> datetime.datetime
@@ -31,11 +38,7 @@ def timestamp_to_datetime(timestamp):
     # type: (float) -> datetime.datetime
     return datetime.datetime.fromtimestamp(float(timestamp), tz=timezone_utc)
 
-class TimezoneNotUTCException(Exception):
-    pass
-
 def datetime_to_timestamp(dt):
     # type: (datetime.datetime) -> int
-    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != timezone_utc.utcoffset(dt):
-        raise TimezoneNotUTCException("Datetime %s to be converted does not have a UTC timezone." % (dt,))
+    verify_UTC(dt)
     return calendar.timegm(dt.timetuple())
