@@ -341,9 +341,6 @@ attach a jQuery event handler
 -   Scripts should be executed directly (`./script.py`), so that the
     interpreter is implicitly found from the shebang line, rather than
     explicitly overridden (`python script.py`).
--   The first import in a file should be
-    `from __future__ import absolute_import`, per [PEP
-    328](http://docs.python.org/2/whatsnew/2.5.html#pep-328-absolute-and-relative-imports)
 -   Put all imports together at the top of the file, absent a compelling
     reason to do otherwise.
 -   Unpacking sequences doesn't require list brackets:
