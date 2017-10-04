@@ -196,6 +196,21 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
 
+    // Sometimes the window.location.reload that we attempt has no
+    // immediate effect (likely by browsers trying to save power by
+    // skipping requested reloads), which can leave the Zulip app in a
+    // broken state and cause lots of confusing tracebacks.  So, we
+    // set ourselves to try reloading a bit later, both periodically
+    // and when the user focuses the window.
+    $(window).on('focus', function () {
+        blueslip.log("Retrying on-focus page reload");
+        window.location.reload(true);
+    });
+    setInterval(function () {
+        blueslip.log("Retrying page reload due to 30s timer");
+        window.location.reload(true);
+    }, 30000);
+
     try {
         server_events.cleanup_event_queue();
     } catch (ex) {
