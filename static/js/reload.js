@@ -204,6 +204,17 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     }
 
     window.location.reload(true);
+
+    // in theory, we should just continually trigger this because if the `setTimeout`
+    // occurs, then it still hasn't reloaded and eventually this will happen when the
+    // user is active on the page again, which will allow it to actually reload in
+    // chrome.
+    // there's also essentially no overhead to this function so there's no problem
+    // with running it in the background, especially since we're about to clear tab
+    // memory anyways.
+    setInterval(function () {
+        window.location.reload(true);
+    }, 5000);
 }
 
 exports.initiate = function (options) {
