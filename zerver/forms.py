@@ -9,6 +9,12 @@ from django.core.urlresolvers import reverse
 from django.core.validators import validate_email
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, user_email_is_unique, \
@@ -220,19 +226,53 @@ class ZulipPasswordResetForm(PasswordResetForm):
                    from_name="Zulip Account Security",
                    from_address=FromAddress.NOREPLY, context=context)
 
-    def save(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        """Currently we don't support accounts in multiple subdomains using
-        a single email addresss. We override this function so that we can
-        inject request parameter in context. This parameter will be used
-        by send_mail function.
-
-        Once we start supporting accounts with the same email in
-        multiple subdomains, we may be able to delete or refactor this
-        function.
+    def save(self,
+             domain_override=None,  # type: Optional[bool]
+             subject_template_name='registration/password_reset_subject.txt',  # type: Text
+             email_template_name='registration/password_reset_email.html',  # type: Text
+             use_https=False,  # type: bool
+             token_generator=default_token_generator,  # type: PasswordResetTokenGenerator
+             from_email=None,  # type: Optional[Text]
+             request=None,  # type: HttpRequest
+             html_email_template_name=None,  # type: Optional[Text]
+             extra_email_context=None  # type: Optional[Dict[str, Any]]
+             ):
+        # type: (...) -> None
         """
-        setattr(self, 'request', kwargs.get('request'))
-        super(ZulipPasswordResetForm, self).save(*args, **kwargs)
+        Currently we don't support accounts in multiple subdomains using a
+        single email addresss. Once we start supporting accounts with the same
+        email in multiple subdomains, we may be able to delete or refactor this
+        function.
+
+        Generates a one-use only link for resetting password and sends to the
+        user.
+        """
+        setattr(self, 'request', request)
+        email = self.cleaned_data["email"]
+        users = list(self.get_users(email))
+
+        for user in users:
+            if not domain_override:
+                current_site = get_current_site(request)
+                site_name = current_site.name
+                domain = current_site.domain
+            else:
+                site_name = domain = domain_override
+            context = {
+                'email': email,
+                'domain': domain,
+                'site_name': site_name,
+                'uid': urlsafe_base64_encode(force_bytes(user.id)),
+                'user': user,
+                'token': token_generator.make_token(user),
+                'protocol': 'https' if use_https else 'http',
+            }
+            if extra_email_context is not None:
+                context.update(extra_email_context)
+            self.send_mail(
+                subject_template_name, email_template_name, context, from_email,
+                email, html_email_template_name=html_email_template_name,
+            )
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
