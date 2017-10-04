@@ -28,3 +28,12 @@ class TestTimestamp(ZulipTestCase):
                 parser.parse('2017-01-01 00:00:00.123')]:
             with self.assertRaises(TimezoneNotUTCException):
                 datetime_to_timestamp(dt)
+
+    def test_convert_to_UTC(self):
+        # type: () -> None
+        utc_datetime = parser.parse('2017-01-01 00:00:00.123 UTC')
+        for dt in [
+                parser.parse('2017-01-01 00:00:00.123').replace(tzinfo=timezone_utc),
+                parser.parse('2017-01-01 00:00:00.123'),
+                parser.parse('2017-01-01 05:00:00.123+05')]:
+            self.assertEqual(convert_to_UTC(dt), utc_datetime)

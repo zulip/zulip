@@ -20,7 +20,8 @@ from zerver.decorator import has_request_variables, REQ, require_server_admin, \
     zulip_login_required, to_non_negative_int, to_utc_datetime
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, timestamp_to_datetime
+from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, \
+    timestamp_to_datetime, convert_to_UTC
 from zerver.models import Realm, UserProfile, UserActivity, \
     UserActivityInterval, Client
 
@@ -83,6 +84,10 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
 
     # Most likely someone using our API endpoint. The /stats page does not
     # pass a start or end in its requests.
+    if start is not None:
+        start = convert_to_UTC(start)
+    if end is not None:
+        end = convert_to_UTC(end)
     if start is not None and end is not None and start > end:
         raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})

@@ -10,6 +10,12 @@ def verify_UTC(dt):
     if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != timezone_utc.utcoffset(dt):
         raise TimezoneNotUTCException("Datetime %s does not have a UTC timezone." % (dt,))
 
+def convert_to_UTC(dt):
+    # type: (datetime.datetime) -> datetime.datetime
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone_utc)
+    return dt.astimezone(timezone_utc)
+
 def floor_to_hour(dt):
     # type: (datetime.datetime) -> datetime.datetime
     return datetime.datetime(*dt.timetuple()[:4]) \
