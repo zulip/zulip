@@ -135,7 +135,7 @@ analyzed.
 
 Say you have a method `greet(name_key)` defined as follows:
 
-    def greet(name_key):
+    def greet(name_key: str) -> str:
         name = fetch_database(name_key)
         return "Hello " + name
 
@@ -143,7 +143,7 @@ Say you have a method `greet(name_key)` defined as follows:
 
 * In your test, you want to call `greet("Mario")` and verify that it returns the correct greeting:
 
-        def test_greet():
+        def test_greet() -> str:
             greeting = greet("Mario")
             assert greeting == "Hello Mr. Mario Mario"
 
@@ -160,7 +160,7 @@ Say you have a method `greet(name_key)` defined as follows:
 
     from unittest.mock import MagickMock # Our mocking class that will replace `fetch_database()`
 
-    def test_greet():
+    def test_greet() -> None:
         # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
         # but doesn't do any database lookup. We "fill" the shell with a return value; This value will be returned on every
         # call to `fetch_database()`.
@@ -231,7 +231,8 @@ On the other hand, if we had used `import os.urandom`, we would need to call `mo
 
       @mock.patch('module.ClassName', foo=42, return_value='I am a mock')
       def my_function(my_mock):
-        # In here, 'module.ClassName' will behave as in the previous example.
+          # ...
+          # In here, 'module.ClassName' will behave as in the previous example.
 
 * Mocking a class attribute:
 
