@@ -57,7 +57,7 @@ def send_initial_realm_messages(realm):
          'topic': "welcome",
          'content': "This is a message on stream `%s` with the topic `welcome`. We'll use this stream "
          "for system-generated notifications." % (Realm.DEFAULT_NOTIFICATION_STREAM_NAME,)},
-        {'stream': "core team",
+        {'stream': Realm.INITIAL_PRIVATE_STREAM_NAME,
          'topic': "private streams",
          'content': "This is a private stream. Only admins and people you invite "
          "to the stream will be able to see that this stream exists."},

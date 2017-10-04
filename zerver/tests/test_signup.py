@@ -1265,7 +1265,7 @@ class RealmCreationTest(ZulipTestCase):
             # Check welcome messages
             for stream_name, text, message_count in [
                     ('announce', 'This is', 1),
-                    ('core team', 'This is', 1),
+                    (Realm.INITIAL_PRIVATE_STREAM_NAME, 'This is', 1),
                     ('general', 'Welcome to', 1),
                     ('new members', 'stream is', 1),
                     ('zulip', 'Here is', 3)]:

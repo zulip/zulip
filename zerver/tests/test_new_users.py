@@ -4,7 +4,7 @@ from django.contrib.auth.signals import user_logged_in
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.signals import get_device_browser, get_device_os
 from zerver.lib.actions import notify_new_user
-from zerver.models import Recipient, Stream
+from zerver.models import Recipient, Stream, Realm
 from zerver.lib.initial_password import initial_password
 
 class SendLoginEmailTest(ZulipTestCase):
@@ -129,7 +129,7 @@ class TestNotifyNewUser(ZulipTestCase):
 
     def test_notify_realm_of_new_user(self) -> None:
         new_user = self.example_user('cordelia')
-        stream = self.make_stream('core team')
+        stream = self.make_stream(Realm.INITIAL_PRIVATE_STREAM_NAME)
         new_user.realm.signup_notifications_stream_id = stream.id
         new_user.realm.save()
         new_user = self.example_user('cordelia')
@@ -138,4 +138,4 @@ class TestNotifyNewUser(ZulipTestCase):
         message = self.get_last_message()
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, 'core team')
+        self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
