@@ -135,6 +135,7 @@ DEFAULT_SETTINGS = {
     'ERROR_REPORTING': True,
     'BROWSER_ERROR_REPORTING': False,
     'LOGGING_SHOW_MODULE': False,
+    'LOGGING_SHOW_PID': False,
 
     # File uploads and avatars
     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
