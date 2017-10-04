@@ -1767,6 +1767,7 @@ input.new-organization-button {
     clear: right;
     margin: 0 auto;
     max-width: 500px;
+    width: 100%;
 }
 
 .error_page .errorbox {
