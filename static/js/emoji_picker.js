@@ -358,12 +358,21 @@ function update_emoji_showcase($focused_emoji) {
     $(".emoji-showcase-container").html(rendered_showcase);
 }
 
-function may_be_change_focused_emoji(next_section, next_index) {
+function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) {
     var next_emoji = get_rendered_emoji(next_section, next_index);
     if (next_emoji) {
         current_section = next_section;
         current_index = next_index;
-        next_emoji.focus();
+        if (!preserve_scroll) {
+            next_emoji.focus();
+        } else {
+            var $emoji_map = $(".emoji-popover-emoji-map");
+            var start = $emoji_map.scrollTop();
+            next_emoji.focus();
+            if ($emoji_map.scrollTop() !== start) {
+                $emoji_map.scrollTop(start);
+            }
+        }
         update_emoji_showcase(next_emoji);
         return true;
     }
@@ -722,7 +731,7 @@ exports.register_click_handlers = function () {
         var emoji_id = $(this).data("emoji-id");
         var emoji_coordinates = get_emoji_coordinates(emoji_id);
 
-        may_be_change_focused_emoji(emoji_coordinates.section, emoji_coordinates.index);
+        may_be_change_focused_emoji(emoji_coordinates.section, emoji_coordinates.index, true);
     });
 };
 
