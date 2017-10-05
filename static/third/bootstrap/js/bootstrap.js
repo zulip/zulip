@@ -1874,6 +1874,9 @@
         height: this.$element[0].offsetHeight
       })
 
+      // Zulip patch: Workaround for iOS safari problems
+      pos.top = this.$element.offset().top;
+
       var top_pos = pos.top + pos.height
       if (this.dropup) {
         top_pos = pos.top - this.$menu.outerHeight()
