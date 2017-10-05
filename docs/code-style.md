@@ -261,15 +261,7 @@ parenthesis for the outer call are together on the same line. This style
 isn't necessarily appropriate for calls with multiple anonymous
 functions or other arguments following them.
 
-Use
-
-    $(function () { ...
-
-rather than
-
-    $(document).ready(function () { ...
-
-and combine adjacent on-ready functions, if they are logically related.
+Combine adjacent on-ready functions, if they are logically related.
 
 The best way to build complicated DOM elements is a Mustache template
 like `static/templates/message_reactions.handlebars`. For simpler things

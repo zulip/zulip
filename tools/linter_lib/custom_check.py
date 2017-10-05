@@ -187,6 +187,10 @@ def build_custom_checkers(by_lang):
         {'pattern': 'report.error\(["\']',
          'description': 'Argument to report_error should be a literal string enclosed '
                         'by i18n.t()'},
+        {'pattern': '\$\(document\)\.ready\(',
+         'description': "`Use $(f) rather than `$(document).ready(f)`",
+         'good_lines': ['$(function () {foo();}'],
+         'bad_lines': ['$(document).ready(function () {foo();}']},
     ]) + whitespace_rules
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
