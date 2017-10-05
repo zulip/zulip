@@ -117,20 +117,13 @@ function maybe_add_update_list_entry(entry) {
     }
 }
 
-function render_date_span(elem, rendered_time, rendered_time_above) {
+function render_date_span(elem, rendered_time) {
     elem.text("");
-    if (rendered_time_above !== undefined) {
-        var pieces = [
-            '<i class="date-direction icon-vector-caret-up"></i>',
-            rendered_time_above.time_str,
-            '<hr class="date-line">',
-            '<i class="date-direction icon-vector-caret-down"></i>',
-            rendered_time.time_str,
+    var pieces = [
+        '<i class="date-direction icon-vector-caret-down"></i>',
+        rendered_time.time_str,
         ];
-        elem.append(pieces);
-        return elem;
-    }
-    elem.append(rendered_time.time_str);
+    elem.append(pieces);
     return elem.attr('title', rendered_time.formal_time_str);
 }
 
@@ -148,12 +141,8 @@ exports.render_date = function (time, time_above, today) {
     next_timerender_id += 1;
     var rendered_time = exports.render_now(time, today);
     var node = $("<span />").attr('class', className);
-    if (time_above !== undefined) {
-        var rendered_time_above = exports.render_now(time_above, today);
-        node = render_date_span(node, rendered_time, rendered_time_above);
-    } else {
-        node = render_date_span(node, rendered_time);
-    }
+    node = render_date_span(node, rendered_time);
+
     maybe_add_update_list_entry({
       needs_update: rendered_time.needs_update,
       className: className,
