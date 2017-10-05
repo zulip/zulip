@@ -242,8 +242,6 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 
 Whitespace guidelines:
 
--   Put one space between keywords like `if` and `while` and their
-    associated open paren.
 -   Put no space before or after the open paren for function calls and
     no space before the close paren for function calls.
 
