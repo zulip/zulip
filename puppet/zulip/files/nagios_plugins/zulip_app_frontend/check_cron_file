@@ -9,7 +9,7 @@ import time
 if False:
     from typing import Tuple
 
-def nagios_from_file(results_file):
+def nagios_from_file(results_file, max_time_diff=60 * 2):
     # type: (str) -> Tuple[int, str]
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
@@ -29,8 +29,8 @@ def nagios_from_file(results_file):
     else:
         timestamp = int(pieces[0])
 
-        time_diff = time.time() - timestamp
-        if time_diff > 60 * 2:
+        time_diff = int(time.time() - timestamp)
+        if time_diff > max_time_diff:
             ret = 3
             state = 'UNKNOWN'
             data = "Results file is stale"
@@ -43,7 +43,10 @@ def nagios_from_file(results_file):
 
 if __name__ == "__main__":
     RESULTS_FILE = sys.argv[1]
-    ret, result = nagios_from_file(RESULTS_FILE)
+    extra_args = {}
+    if len(sys.argv) > 2:
+        extra_args['max_time_diff'] = int(sys.argv[2])
+    ret, result = nagios_from_file(RESULTS_FILE, **extra_args)
 
     print(result)
     exit(ret)
