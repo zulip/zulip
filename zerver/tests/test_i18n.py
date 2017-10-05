@@ -142,6 +142,6 @@ class FrontendRegexTestCase(TestCase):
         ]
 
         for input_text, expected in data:
-            result = list(command.extract_strings(input_text).keys())
+            result = command.extract_strings(input_text)
             self.assertEqual(len(result), 1)
             self.assertEqual(result[0], expected)
