@@ -63,6 +63,15 @@ function get_max_index(section) {
     }
 }
 
+function get_emoji_id(section, index) {
+    var type = "emoji_picker_emoji";
+    if (search_is_active) {
+        type = "emoji_search_result";
+    }
+    var emoji_id = [type, section, index].join("_");
+    return emoji_id;
+}
+
 function show_search_results() {
     $(".emoji-popover-emoji-map").hide();
     $(".emoji-popover-category-tabs").hide();
@@ -203,11 +212,7 @@ function get_selected_emoji() {
 }
 
 function get_rendered_emoji(section, index) {
-    var type = "emoji_picker_emoji";
-    if (search_is_active) {
-        type = "emoji_search_result";
-    }
-    var emoji_id = [type, section, index].join("_");
+    var emoji_id = get_emoji_id(section, index);
     var emoji = $(".emoji-popover-emoji[data-emoji-id='" + emoji_id + "']");
     if (emoji.length > 0) {
         return emoji;
