@@ -485,7 +485,7 @@ def redirect_to_misconfigured_ldap_notice(error_type):
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     if request.user.is_authenticated:
-        return HttpResponseRedirect("/")
+        return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.find_account')
         return HttpResponseRedirect(redirect_url)
