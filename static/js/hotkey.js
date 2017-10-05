@@ -65,7 +65,7 @@ var keypress_mappings = {
     43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
     47: {name: 'search', message_view_only: false}, // '/'
-    58: {name: 'open_reactions', message_view_only: true}, // ':'
+    58: {name: 'toggle_reactions_popover', message_view_only: true}, // ':'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
@@ -670,7 +670,7 @@ exports.process_hotkey = function (e, hotkey) {
         case 'show_sender_info':
             popovers.show_sender_info();
             return true;
-        case 'open_reactions': // ':': open reactions to message
+        case 'toggle_reactions_popover': // ':': open reactions to message
             reactions.open_reactions_popover();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
