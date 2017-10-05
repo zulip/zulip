@@ -228,5 +228,5 @@ var load = function () {
 if (document.readyState === "complete") {
     load();
 } else {
-    $(document).ready(load);
+    $(load);
 }

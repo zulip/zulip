@@ -151,7 +151,7 @@ function report_error(msg, stack, opts) {
                 // For (1) we just don't show the message if the ui
                 // hasn't been loaded yet.  The user will probably
                 // get another error once it does.  We can't solve
-                // (2) by using $(document).ready() because the
+                // (2) by using $(document).ready because the
                 // callback never gets called (I think what's going
                 // on here is if the exception was raised by a
                 // function that was called as a result of the DOM

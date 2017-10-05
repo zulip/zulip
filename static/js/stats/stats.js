@@ -60,7 +60,7 @@ function update_last_full_update(end_times) {
     $('#id_last_full_update').closest('.last-update').show();
 }
 
-$(document).ready(function () {
+$(function () {
     $('span[data-toggle="tooltip"]').tooltip({
         animation: false,
         placement: 'top',
