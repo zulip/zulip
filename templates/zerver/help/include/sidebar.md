@@ -95,7 +95,6 @@
 * [Bots and integrations](/help/add-a-bot-or-integration)
 * [Enable high contrast mode](/help/enable-high-contrast-mode)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
-* [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
 * [View organization statistics](/help/analytics)
 
 ## Apps
@@ -108,15 +107,19 @@
 <!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
-## Organization Settings
-
-* [Update your organization's settings](/help/change-your-organization-settings)
+## Organization Basics
 * [Change your organization name](/help/change-your-organizations-name)
 * [Change your organization description](/help/change-your-organizations-description)
 * [Change your organization avatar](/help/change-your-organizations-avatar)
+* [Update your organization's settings](/help/change-your-organization-settings)
+* [Link to your Zulip from the web](/help/join-zulip-chat-badge)
+* [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
 * [Restrict new users by email domain](/help/restrict-user-email-addresses-to-certain-domains)
 * [Allow joining without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
+* [Set the default language for new users](/help/change-the-default-language-for-your-organization)
+
+## Organization Settings
 * [Restrict stream creation](/help/only-allow-admins-to-create-new-streams-feature)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
@@ -125,7 +128,6 @@
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/restrict-editing-of-old-messages-and-topics)
 * [Require topics in stream messages](/help/require-users-to-include-topics-in-stream-messages)
-* [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
 <!-- Configure authentication methods -->
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
@@ -145,6 +147,3 @@
 * [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
-
-## Miscellaneous
-* [Link to your Zulip from the web](/help/join-zulip-chat-badge)
