@@ -139,11 +139,11 @@ major focus area for the project.
 
 * [Make the Zulip Tornado service support horizontal
   scaling](https://github.com/zulip/zulip/issues/445)
-* [Make presence system scale well to 10000 users in a
-  realm.](https://github.com/zulip/zulip/issues/728)
+* <strike>[Make presence system scale well to 5000 users in a
+  realm.](https://github.com/zulip/zulip/issues/728)</strike>
 * <strike>[Support running queue workers multithreaded in production to
-  decrease minimum memory</strike>
-  footprint](https://github.com/zulip/zulip/issues/34)
+  decrease minimum memory
+  footprint](https://github.com/zulip/zulip/issues/34)</strike>
 * [Improve @-mentioning syntax based on stronger unique
   identifiers](https://github.com/zulip/zulip/issues/374)
 
@@ -204,8 +204,8 @@ of its size, it takes work to keep it that way.
   with Zulip.](https://github.com/zulip/zulip/issues/672)
 * [Write a visual design / frontend style guide for
   Zulip](https://github.com/zulip/zulip/issues/979)
-* [Update all screenshots to show the current Zulip
-  UI](https://github.com/zulip/zulip/issues/599)
+* <strike>[Update all screenshots to show the current Zulip
+  UI](https://github.com/zulip/zulip/issues/599)</strike>
 
 ### Nice to have
 
@@ -247,8 +247,8 @@ moving quickly, we're
 To support a great mobile experiences, we need to make some
 improvements in the Zulip server.
 
-* [Push notifications bouncer service for GCM and
-  APNS](https://github.com/zulip/zulip/issues/1767)
+* <strike>[Push notifications bouncer service for GCM and
+  APNS](https://github.com/zulip/zulip/issues/1767)</strike>
 * [A slick process for doing mobile login without typing your password
   on your phone](https://github.com/zulip/zulip/issues/2185)
 * [`@here` mention support (that doesn’t spam people not currently
@@ -264,9 +264,9 @@ The new
 is implemented in [Electron](http://electron.atom.io/), and primarily
 needs work on installer tooling to finish replacing the old app.
 
-* Finish releasing the Electron app to replace the old desktop app
-* [Support having multiple Zulip realms open
-  simultaneously](https://github.com/zulip/zulip-electron/issues/1)
+* <strike>Finish releasing the Electron app to replace the old desktop app</strike>
+* <strike>[Support having multiple Zulip realms open
+  simultaneously](https://github.com/zulip/zulip-electron/issues/1)</strike>
 
 ## Community
 
