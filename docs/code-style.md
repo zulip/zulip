@@ -240,11 +240,6 @@ we should still avoid extremely long lines. A general guideline is:
 refactor stuff to get it under 85 characters, unless that makes the
 code a lot uglier, in which case it's fine to go up to 120 or so.
 
-Whitespace guidelines:
-
--   Put no space before or after the open paren for function calls and
-    no space before the close paren for function calls.
-
 ### JavaScript
 
 When calling a function with an anonymous function as an argument, use
