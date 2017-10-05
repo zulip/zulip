@@ -78,11 +78,11 @@ def remove_topic_mute(user_profile, stream_id, topic_name):
     )
     row.delete()
 
-def topic_is_muted(user_profile, stream, topic_name):
-    # type: (UserProfile, Stream, Text) -> bool
+def topic_is_muted(user_profile, stream_id, topic_name):
+    # type: (UserProfile, int, Text) -> bool
     is_muted = MutedTopic.objects.filter(
         user_profile=user_profile,
-        stream_id=stream.id,
+        stream_id=stream_id,
         topic_name__iexact=topic_name,
     ).exists()
     return is_muted

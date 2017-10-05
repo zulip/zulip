@@ -18,7 +18,7 @@ def mute_topic(user_profile, stream_name, topic_name):
     # type: (UserProfile, str, str) -> HttpResponse
     (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
 
-    if topic_is_muted(user_profile, stream, topic_name):
+    if topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(_("Topic already muted"))
 
     do_mute_topic(user_profile, stream, recipient, topic_name)
@@ -29,7 +29,7 @@ def unmute_topic(user_profile, stream_name, topic_name):
     error = _("Topic is not there in the muted_topics list")
     stream = access_stream_for_unmute_topic(user_profile, stream_name, error)
 
-    if not topic_is_muted(user_profile, stream, topic_name):
+    if not topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(error)
 
     do_unmute_topic(user_profile, stream, topic_name)

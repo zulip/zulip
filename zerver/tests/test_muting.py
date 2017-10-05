@@ -28,8 +28,8 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertIn([u'Verona', u'Verona3'], get_topic_mutes(user))
 
         stream = get_stream(u'Verona', user.realm)
-        self.assertTrue(topic_is_muted(user, stream, 'Verona3'))
-        self.assertTrue(topic_is_muted(user, stream, 'verona3'))
+        self.assertTrue(topic_is_muted(user, stream.id, 'Verona3'))
+        self.assertTrue(topic_is_muted(user, stream.id, 'verona3'))
 
     def test_remove_muted_topic(self):
         # type: () -> None
