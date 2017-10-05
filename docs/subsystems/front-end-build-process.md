@@ -36,7 +36,7 @@ add it to the appropriate place under `static/`.
   repository, and then provision (to have `yarn` download them) before
   continuing.  Your commit should also update `PROVISION_VERSION` in
   `version.py`.  When adding modules to `package.json`, please pin
-  specific versions of them (don't using carets `^`, tildes `~`, etc).
+  specific versions of them (don't use carets `^`, tildes `~`, etc).
   We prefer fixed versions so that when the upstream providers release
   new versions with incompatible APIs, it can't break Zulip.  We
   update those versions periodically to ensure we're running a recent
