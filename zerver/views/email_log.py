@@ -30,7 +30,7 @@ def clear_emails(request):
     # type: (HttpRequest) -> HttpResponse
     try:
         os.remove(settings.EMAIL_CONTENT_LOG_PATH)
-    except FileNotFoundError:
+    except FileNotFoundError:  # nocoverage
         pass
     return redirect(email_page)
 
