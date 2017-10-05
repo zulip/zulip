@@ -232,35 +232,20 @@ with the exception of `_.any`, which we prefer over the less clear
 
 ### General
 
-Indentation is four space characters for Python, JS, CSS, and shell
-scripts. Indentation is two space characters for HTML templates.
-
-We never use tabs anywhere in source code we write, but we have some
-third-party files which contain tabs.
-
 Keep third-party static files under the directory
 `static/third/`, with one subdirectory per third-party project.
 
-We don't have an absolute hard limit on line length, but we should avoid
-extremely long lines. A general guideline is: refactor stuff to get it
-under 85 characters, unless that makes the code a lot uglier, in which
-case it's fine to go up to 120 or so.
+We have an absolute hard limit on line length only for some files, but
+we should still avoid extremely long lines. A general guideline is:
+refactor stuff to get it under 85 characters, unless that makes the
+code a lot uglier, in which case it's fine to go up to 120 or so.
 
 Whitespace guidelines:
 
--   Put one space (or more for alignment) around binary arithmetic and
-    equality operators.
--   Put one space around each part of the ternary operator.
 -   Put one space between keywords like `if` and `while` and their
     associated open paren.
--   Put one space between the closing paren for `if` and `while`-like
-    constructs and the opening curly brace. Put the curly brace on the
-    same line unless doing otherwise improves readability.
 -   Put no space before or after the open paren for function calls and
     no space before the close paren for function calls.
--   For the comma operator and colon operator in languages where it is
-    used for inline dictionaries, put no space before it and at least
-    one space after. Only use more than one space for alignment.
 
 ### JavaScript
 
