@@ -15,7 +15,7 @@ from django.conf import settings
 from analytics.models import RealmCount, UserCount
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from zerver.lib.timestamp import floor_to_hour
-from zerver.models import UserProfile, Message
+from zerver.models import UserProfile, Message, Realm
 
 from typing import Any, Dict
 
@@ -57,8 +57,13 @@ class Command(BaseCommand):
 
     def run_update_analytics_counts(self, options):
         # type: (Dict[str, Any]) -> None
-        fill_to_time = parse_datetime(options['time'])
+        # installation_epoch relies on there being at least one realm; we
+        # shouldn't run the analytics code if that condition isn't satisfied
+        if not Realm.objects.exists():
+            logger.info("No realms, stopping update_analytics_counts")
+            return
 
+        fill_to_time = parse_datetime(options['time'])
         if options['utc']:
             fill_to_time = fill_to_time.replace(tzinfo=timezone_utc)
         if fill_to_time.tzinfo is None:
