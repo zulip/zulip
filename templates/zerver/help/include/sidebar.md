@@ -23,6 +23,8 @@
 ## Sending Messages
 * [Send a stream message](/help/send-a-stream-message)
 * [Private messages](/help/send-a-private-message)
+* [Send a private message](/help/send-someone-a-private-message)
+* [Group private messages](/help/send-a-group-of-people-a-private-message)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
@@ -39,6 +41,9 @@
 * [Make an announcement](/help/make-an-announcement)
 * [Write in a different language](/help/send-a-message-in-a-different-language)
 * [Reply to a message](/help/reply-to-a-message)
+* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Edit the topic of a message](/help/change-the-topic-of-a-message)
+* [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading Messages
 * [Navigation and unread counts](/help/unread-counter-and-pointer)
@@ -50,27 +55,21 @@
 * [Emoji reactions](/help/add-an-emoji-reaction-to-a-message)
 * [Share a message or conversation](/help/share-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
-
-## Editing Messages
-* [Edit or delete a message](/help/edit-or-delete-a-message)
-* [Edit the topic of a message](/help/change-the-topic-of-a-message)
 * [View a message's edit history](/help/view-a-messages-edit-history)
+* [View messages from a stream](/help/view-messages-from-a-stream)
+* [View messages from a topic](/help/view-messages-from-a-topic)
+* [View messages from a user](/help/view-messages-from-a-user)
+* [View messages containing files or links](/help/view-messages-containing-files-or-links)
 
 ## People
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
 * [Invite another user](/help/invite-a-friend-to-zulip)
-* [Send a private message](/help/send-someone-a-private-message)
-* [Group private messages](/help/send-a-group-of-people-a-private-message)
 
 ## Streams & Topics
 * [About streams and topics](/help/about-streams-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your stream subscriptions](/help/browse-and-subscribe-to-streams#browse-streams)
-* [View messages from a stream](/help/view-messages-from-a-stream)
-* [View messages from a topic](/help/view-messages-from-a-topic)
-* [View messages from a user](/help/view-messages-from-a-user)
-* [View messages containing files or links](/help/view-messages-containing-files-or-links)
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)
