@@ -2,7 +2,7 @@ set_global('$', global.make_zjquery());
 
 set_global('page_params', {
     realm_users: [],
-    user_id: 5,
+    user_id: 999,
 });
 
 set_global('ui', {
@@ -238,6 +238,7 @@ presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
 presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
     var users = activity.build_user_sidebar();
@@ -263,6 +264,15 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             name: 'Norbert Oswald',
             href: '#narrow/pm-with/5-norbert',
             user_id: norbert.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined,
+        },
+        {
+            name: 'Zoe Yang',
+            href: '#narrow/pm-with/6-zoe',
+            user_id: zoe.user_id,
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
@@ -381,6 +391,9 @@ presence.presence_info = {};
 presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
 presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
 presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
+presence.presence_info[mark.user_id] = { status: activity.IDLE };
+presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
 (function test_filter_user_ids() {
     var user_filter = $('.user-list-filter');
@@ -497,6 +510,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 
 // Reset jquery here.
 set_global('$', global.make_zjquery());
+activity.initialize_filter_state();
 
 (function test_insert_unfiltered_user_with_filter() {
     // This test only tests that we do not explode when

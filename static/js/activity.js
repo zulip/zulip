@@ -597,7 +597,8 @@ function focus_user_filter(e) {
     update_clear_search_button();
 }
 
-$(function () {
+exports.initialize_filter_state = function () {
+    // Exported just for the test suite.
     meta.$user_list_filter = $(".user-list-filter");
 
     meta.$user_list_filter.expectOne()
@@ -606,8 +607,11 @@ $(function () {
         .on('keydown', maybe_select_person)
         .on('blur', update_clear_search_button);
     $('#clear_search_people_button').on('click', exports.clear_search);
-});
+};
 
+$(function () {
+    exports.initialize_filter_state();
+});
 
 return exports;
 
