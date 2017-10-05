@@ -1,14 +1,9 @@
 from django.conf.urls import url
 import zerver.views
 import zerver.views.streams
-import zerver.views.invite
-import zerver.views.user_settings
 import zerver.views.auth
 import zerver.views.tutorial
 import zerver.views.report
-import zerver.views.upload
-import zerver.views.messages
-import zerver.views.muting
 
 # Future endpoints should add to urls.py, which includes these legacy urls
 
