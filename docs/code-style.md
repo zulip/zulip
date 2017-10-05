@@ -308,11 +308,6 @@ Don't use the tag name in a selector unless you have to. In other words,
 use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
 type changes in the future.
 
-Don't use inline event handlers (`onclick=`, etc. attributes). Instead,
-attach a jQuery event handler
-(`$('#foo').on('click', function () {...})`) when the DOM is ready
-(inside a `$(function () {...})` block).
-
 ### Python
 
 -   Scripts should start with `#!/usr/bin/env python3` and not

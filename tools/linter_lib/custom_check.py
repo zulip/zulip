@@ -430,6 +430,13 @@ def build_custom_checkers(by_lang):
         {'pattern': '\Walt=["\']{{ ?["\']',
          'description': "alt argument should be enclosed by _().",
          },
+        {'pattern': r'\bon\w+ ?=',
+         'description': "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
+                        "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
+                        "the DOM is ready (inside a $(function () {...}) block).",
+         'exclude': set(['templates/zerver/dev_login.html']),
+         'good_lines': ["($('#foo').on('click', function () {}"],
+         'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
     ]  # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
