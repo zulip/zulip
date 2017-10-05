@@ -9,7 +9,8 @@ import ujson
 from typing import Any, Dict, List, Text, Union
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    emoji_names_for_picker, EMOJISETS
+    get_extended_codepoint_to_name, get_extended_name_to_codepoint, get_extended_names_list, \
+    get_new_emoji_dicts, emoji_names_for_picker, EMOJISETS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -197,6 +198,12 @@ def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified
 
     name_to_codepoint = {name: unified_reactions_data[name] for name in names}
     codepoint_to_name = generate_codepoint_to_name_map(names, unified_reactions_data)
+
+    # Extend to use new emojis from iamcal dataset(See `emoji_can_be_included()` in emoji_setup_utils).
+    new_emoji_dicts = get_new_emoji_dicts(unified_reactions_data, emoji_data)
+    names = get_extended_names_list(names, new_emoji_dicts)
+    name_to_codepoint = get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts)
+    codepoint_to_name = get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts)
 
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,

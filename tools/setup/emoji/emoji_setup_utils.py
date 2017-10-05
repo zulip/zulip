@@ -266,3 +266,53 @@ def generate_codepoint_to_name_map(names, unified_reactions_data):
     for name in names:
         codepoint_to_name[str(unified_reactions_data[name])] = str(name)
     return codepoint_to_name
+
+def emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
+    # type: (Dict[Text, Any], List[Text]) -> bool
+    # This function returns True if an emoji in new(not included in old emoji dataset) and is
+    # safe to be included. Currently emojis which are represented by a sequence of codepoints
+    # or emojis with ZWJ are not to be included until we implement a mechanism for dealing with
+    # their unicode versions.
+    # `:fried_egg:` emoji is banned for now, due to a name collision with `:egg:` emoji in
+    # `unified_reactions.json` dataset, until we completely switch to iamcal dataset.
+    if emoji_dict["short_name"] == "fried_egg":
+        return False
+    codepoint = emoji_dict["unified"].lower()
+    if '-' not in codepoint and emoji_dict["category"] != "Skin Tones" and \
+            emoji_is_universal(emoji_dict) and codepoint not in unified_reactions_codepoints:
+        return True
+    return False
+
+def get_new_emoji_dicts(unified_reactions_data, emoji_data):
+    # type: (Dict[Text, Text], List[Dict[Text, Any]]) -> List[Dict[Text, Any]]
+    unified_reactions_codepoints = [unified_reactions_data[name] for name in unified_reactions_data]
+    new_emoji_dicts = []
+    for emoji_dict in emoji_data:
+        if emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
+            new_emoji_dicts.append(emoji_dict)
+    return new_emoji_dicts
+
+def get_extended_names_list(names, new_emoji_dicts):
+    # type: (List[Text], List[Dict[Text, Any]]) -> List[Text]
+    extended_names_list = names[:]
+    for emoji_dict in new_emoji_dicts:
+        extended_names_list.append(emoji_dict["short_name"])
+    return extended_names_list
+
+def get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts):
+    # type: (Dict[Text, Text], List[Dict[Text, Any]]) -> Dict[Text, Text]
+    extended_name_to_codepoint = name_to_codepoint.copy()
+    for emoji_dict in new_emoji_dicts:
+        emoji_name = emoji_dict["short_name"]
+        codepoint = emoji_dict["unified"].lower()
+        extended_name_to_codepoint[emoji_name] = codepoint
+    return extended_name_to_codepoint
+
+def get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts):
+    # type: (Dict[Text, Text], List[Dict[Text, Any]]) -> Dict[Text, Text]
+    extended_codepoint_to_name = codepoint_to_name.copy()
+    for emoji_dict in new_emoji_dicts:
+        emoji_name = emoji_dict["short_name"]
+        codepoint = emoji_dict["unified"].lower()
+        extended_codepoint_to_name[codepoint] = emoji_name
+    return extended_codepoint_to_name
