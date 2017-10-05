@@ -355,12 +355,14 @@ exports.build_user_sidebar = function () {
 
     var user_ids;
 
-    if (meta.$user_list_filter.val().length) {
-        user_ids = filter_and_sort(presence.get_user_ids());
-    } else {
+    if (meta.$user_list_filter.val().length > 0) {
+        // If there's a filter, select from all users, not just those
+        // recently active.
         user_ids = filter_and_sort(people.get_realm_persons().map(function (person) {
             return person.user_id;
         }));
+    } else {
+        user_ids = filter_and_sort(presence.get_user_ids());
     }
 
     var user_info = _.map(user_ids, info_for).filter(function (person) {
