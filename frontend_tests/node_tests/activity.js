@@ -249,7 +249,6 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
         },
         {
             name: 'Jill Hill',
@@ -258,7 +257,6 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
         },
         {
             name: 'Norbert Oswald',
@@ -267,7 +265,6 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
         },
         {
             name: 'Zoe Yang',
@@ -276,7 +273,6 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
         },
         {
             name: 'Alice Smith',
@@ -285,7 +281,6 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
-            mobile: undefined,
         },
         {
             name: 'Marky Mark',
@@ -294,7 +289,6 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
-            mobile: undefined,
         },
     ]);
 }());
