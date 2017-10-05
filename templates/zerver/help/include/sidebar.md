@@ -3,6 +3,8 @@
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 
+# Using Zulip
+
 ## Account Basics
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
@@ -106,6 +108,8 @@
 <!-- Zulip on iOS -->
 <!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
+
+# Zulip Administration
 
 ## Organization Basics
 * [Change your organization name](/help/change-your-organizations-name)
