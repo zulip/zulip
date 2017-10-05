@@ -2,11 +2,6 @@ var topic_list = (function () {
 
 var exports = {};
 
-// Once we are ready to clean up CSS for some of the features
-// hidden by this flag, we should just revert the whole commit
-// here (do `git blame` on this line).
-var waiting_on_css_polish_for_more_topics = true;
-
 // We can only ever have one active widget.
 var active_widget;
 
@@ -156,26 +151,17 @@ exports.widget = function (parent_elem, my_stream_id) {
     self.show_spinner = function () {
         // The spinner will go away once we get results and redraw
         // the whole list.
-        if (waiting_on_css_polish_for_more_topics) {
-            return;
-        }
         var spinner = self.dom.find('.searching-for-more-topics');
         spinner.show();
     };
 
     self.show_no_more_topics = function () {
-        if (waiting_on_css_polish_for_more_topics) {
-            return;
-        }
         var elem = self.dom.find('.no-more-topics-found');
         elem.show();
         self.no_more_topics = true;
     };
 
     self.show_help_link = function () {
-        if (waiting_on_css_polish_for_more_topics) {
-            return;
-        }
         var elem = self.dom.find('.sidebar-topics-help');
         elem.show();
     };
@@ -287,7 +273,9 @@ exports.zoom_in = function () {
     $('#stream-filters-container').scrollTop(0);
     $('#stream-filters-container').perfectScrollbar('update');
     active_widget.show_spinner();
-    topic_data.get_server_history(stream_id, on_success);
+    setTimeout(function () {
+        topic_data.get_server_history(stream_id, on_success);
+    }, 2000);
 };
 
 exports.set_click_handlers = function (callbacks) {
