@@ -20,7 +20,7 @@ class Graph(object):
             self.nodes.add(child)
 
     def copy(self):
-        # type: () -> Graph
+        # type: () -> 'Graph'
         return Graph(self.edges())
 
     def num_edges(self):
@@ -28,7 +28,7 @@ class Graph(object):
         return len(self.edges())
 
     def minus_edge(self, edge):
-        # type: (Edge) -> Graph
+        # type: (Edge) -> 'Graph'
         edges = self.edges().copy()
         edges.remove(edge)
         return Graph(edges)
