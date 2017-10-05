@@ -11,13 +11,14 @@
 * [Set your avatar](/help/change-your-avatar)
 * [Change your default language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-date-and-time-format)
-* [Enable high contrast mode](/help/enable-high-contrast-mode)
-* [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
 <!-- Find your Zulip organization -->
+* [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
+* [Zulip glossary](/help/zulip-glossary)
+* [The Zulip browser window](/help/the-zulip-browser-window)
 
 ## Sending Messages
 * [Send a stream message](/help/send-a-stream-message)
@@ -92,8 +93,9 @@
 * [Add an alert word](/help/add-an-alert-word)
 
 ## Tools & Customization
-* [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Bots and integrations](/help/add-a-bot-or-integration)
+* [Enable high contrast mode](/help/enable-high-contrast-mode)
+* [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
 * [View organization statistics](/help/analytics)
 
@@ -146,6 +148,4 @@
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
 
 ## Miscellaneous
-* [The Zulip browser window](/help/the-zulip-browser-window)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
-* [Zulip glossary](/help/zulip-glossary)
