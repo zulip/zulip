@@ -370,6 +370,14 @@ def build_custom_checkers(by_lang):
          'description': "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
          'good_lines': ["logging.warning('I am a warning.')", "logger.warning('warning')"],
          'bad_lines': ["logging.warn('I am a warning.')", "logger.warn('warning')"]},
+        {'pattern': '#!/usr/bin/python',
+         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/python`",
+         'good_lines': ['#!/usr/bin/env python3'],
+         'bad_lines': ['#!/usr/bin/python', '#!/usr/bin/python3']},
+        {'pattern': '#!/usr/bin/env python$',
+         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`.",
+         'good_lines': ["#!/usr/bin/env python3"],
+         'bad_lines': ["#!/usr/bin/env python"]},
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',

@@ -298,12 +298,9 @@ type changes in the future.
 
 ### Python
 
--   Scripts should start with `#!/usr/bin/env python3` and not
-    `#/usr/bin/python` (the right Python may not be installed in
-    `/usr/bin`) or `#/usr/bin/env python` (we require Python 3
-    compatibility).  Don't put a shebang line on a Python file unless
-    it's meaningful to run it as a script. (Some libraries can also be
-    run as scripts, e.g. to run a test suite.)
+-   Don't put a shebang line on a Python file unless it's meaningful to
+    run it as a script. (Some libraries can also be run as scripts, e.g.
+    to run a test suite.)
 -   Scripts should be executed directly (`./script.py`), so that the
     interpreter is implicitly found from the shebang line, rather than
     explicitly overridden (`python script.py`).
