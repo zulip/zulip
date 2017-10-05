@@ -214,8 +214,11 @@
     width: 25px;
 }
 
-.emoji-popover-emoji:not(.reacted):hover {
+.emoji-popover-emoji:not(.reacted):hover,
+.emoji-popover-emoji:not(.reacted):focus,
+.emoji-popover-emoji:not(.reacted):active {
     background-color: hsl(0, 0%, 93%);
+    outline: none;
 }
 
 .emoji-popover-emoji.hide {
