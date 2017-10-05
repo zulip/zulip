@@ -1,11 +1,41 @@
 {% extends "zerver/base.html" %}
 {% block content %}
 <div class="container">
-    <div class="alert">
-        All the emails sent in the Zulip development environment are logged here. You can also
-        manually generate most of the emails by clicking <a href="/emails/generate">here</a>.
-        To clear this log click <a href="/emails/clear">here</a>
+    <div style="position: fixed">
+        <div class="alert">
+            All the emails sent in the Zulip development environment are logged here. You can also
+            manually generate most of the emails by clicking <a href="/emails/generate">here</a>.
+            To clear this log click <a href="/emails/clear">here</a>
+        </div>
+        <div style="text-align:right">
+            <label>
+                <input type="checkbox" id="toggle"/>
+                <strong>Show text only version</strong>
+            </label>
+        </div>
     </div>
-    {{ log |safe }}
+    <script type="text/javascript">
+    $('#toggle').change(function() {
+        if($('.email-text').css('display') == 'none') {
+            $(".email-text").each(function() {
+                $(this).css("display", "block");
+            });
+            $(".email-html").each(function() {
+                $(this).css("display", "none");
+            });
+        }
+        else {
+            $(".email-text").each(function() {
+                $(this).css("display", "none");
+            });
+            $(".email-html").each(function() {
+                $(this).css("display", "block");
+            });
+        }
+    });
+    </script>
+    <div style="padding-top:100px">
+        {{ log |safe }}
+    </div>
 </div>
 {% endblock %}
