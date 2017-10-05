@@ -718,9 +718,8 @@ exports.register_click_handlers = function () {
         reset_emoji_showcase();
     });
 
-    $("body").on("mouseenter", ".emoji-popover-emoji .emoji", function () {
-        var hovered_emoji = $(this).parent();
-        var emoji_id = hovered_emoji.data("emoji-id");
+    $("body").on("mouseenter", ".emoji-popover-emoji", function () {
+        var emoji_id = $(this).data("emoji-id");
         var emoji_coordinates = get_emoji_coordinates(emoji_id);
 
         may_be_change_focused_emoji(emoji_coordinates.section, emoji_coordinates.index);
