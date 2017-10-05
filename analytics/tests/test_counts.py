@@ -15,7 +15,7 @@ from analytics.models import BaseCount, InstallationCount, RealmCount, \
     last_successful_fill
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, update_user_activity_interval
-from zerver.lib.timestamp import floor_to_day
+from zerver.lib.timestamp import floor_to_day, TimezoneNotUTCException
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
     Huddle, Client, UserActivityInterval, RealmAuditLog, get_client, get_user
 
@@ -198,8 +198,8 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat = self.make_dummy_count_stat('test stat')
         with self.assertRaises(ValueError):
             process_count_stat(stat, installation_epoch() + 65*self.MINUTE)
-        with self.assertRaises(ValueError):
-            process_count_stat(stat, installation_epoch().replace(tzinfo=None) + self.HOUR)
+        with self.assertRaises(TimezoneNotUTCException):
+            process_count_stat(stat, installation_epoch().replace(tzinfo=None))
 
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
     # It is important that do_delete_counts_at_hour not delete any of the collected

@@ -8,7 +8,7 @@ from analytics.models import InstallationCount, RealmCount, \
 from zerver.models import Realm, UserProfile, Message, Stream, \
     UserActivityInterval, RealmAuditLog, models
 from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
-    ceiling_to_hour
+    ceiling_to_hour, verify_UTC
 
 from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
 
@@ -78,8 +78,7 @@ def process_count_stat(stat, fill_to_time):
     else:
         raise AssertionError("Unknown frequency: %s" % (stat.frequency,))
 
-    if fill_to_time.tzinfo is None:
-        raise ValueError("fill_to_time must be timezone aware: %s" % (fill_to_time,))
+    verify_UTC(fill_to_time)
     if floor_to_hour(fill_to_time) != fill_to_time:
         raise ValueError("fill_to_time must be on an hour boundary: %s" % (fill_to_time,))
 
