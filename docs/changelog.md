@@ -138,7 +138,7 @@ Full feature Changelog:
 - Fixed bugs in scrolling up using the home key repeatedly.
 - Fixed a bug where private messages from multiple users could be
   included in a single missed-message email.
-- Fixed issues with @-all mention state being last on reload.
+- Fixed issues with inconsistent visual display of @-all mentions.
 - Fixed zombie process leaks on servers with <4GB of RAM.
 - Fixed markdown previews of /me messages.
 - Fixed a subtle bug involving timestamps of locally echoed messages.
