@@ -175,7 +175,8 @@ exports.setup_page = function (callback) {
     }
 
     function format_drafts(data) {
-        var drafts = _.mapObject(data, function (draft, id) {
+        var drafts = {};
+        _.each(data, function (draft, id) {
             var formatted;
             if (draft.type === "stream") {
                 // In case there is no stream for the draft, we need a
@@ -194,8 +195,6 @@ exports.setup_page = function (callback) {
                     raw_content: draft.content,
 
                 };
-
-                markdown.apply_markdown(formatted);
             } else {
                 var emails = util.extract_pm_recipients(draft.private_message_recipient);
                 var recipients = _.map(emails, function (email) {
@@ -213,9 +212,25 @@ exports.setup_page = function (callback) {
                     recipients: recipients,
                     raw_content: draft.content,
                 };
-                markdown.apply_markdown(formatted);
             }
-            return formatted;
+
+            try {
+                markdown.apply_markdown(formatted);
+            } catch (error) {
+                // In the unlikely event that there is syntax in the
+                // draft content which our markdown processor is
+                // unable to process, we delete the draft, so that the
+                // drafts overlay can be opened without any errors.
+                // We also report the exception to the server so that
+                // the bug can be fixed.
+                draft_model.deleteDraft(id);
+                blueslip.error("Error in rendering draft.", {
+                    draft_content: draft.content,
+                }, error.stack);
+                return;
+            }
+
+            drafts[id] = formatted;
         });
         return drafts;
     }
