@@ -300,9 +300,6 @@ type changes in the future.
 -   Don't put a shebang line on a Python file unless it's meaningful to
     run it as a script. (Some libraries can also be run as scripts, e.g.
     to run a test suite.)
--   Scripts should be executed directly (`./script.py`), so that the
-    interpreter is implicitly found from the shebang line, rather than
-    explicitly overridden (`python script.py`).
 -   Put all imports together at the top of the file, absent a compelling
     reason to do otherwise.
 -   Unpacking sequences doesn't require list brackets:
