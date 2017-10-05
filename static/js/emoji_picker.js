@@ -72,6 +72,16 @@ function get_emoji_id(section, index) {
     return emoji_id;
 }
 
+function get_emoji_coordinates(emoji_id) {
+    // Emoji id is of the following form: <emoji_type>_<section_number>_<index>
+    // <emoji_type> itself contains two underscores. See `get_emoji_id()`.
+    var emoji_info = emoji_id.split("_");
+    return {
+        section: parseInt(emoji_info[3], 10),
+        index: parseInt(emoji_info[4], 10),
+    };
+}
+
 function show_search_results() {
     $(".emoji-popover-emoji-map").hide();
     $(".emoji-popover-category-tabs").hide();
