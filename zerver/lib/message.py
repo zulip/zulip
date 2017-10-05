@@ -440,7 +440,7 @@ def get_inactive_recipient_ids(user_profile):
         for row in rows]
     return inactive_recipient_ids
 
-def get_muted_recipient_ids(user_profile):
+def get_muted_stream_ids(user_profile):
     # type: (UserProfile) -> List[int]
     rows = Subscription.objects.filter(
         user_profile=user_profile,
@@ -448,12 +448,12 @@ def get_muted_recipient_ids(user_profile):
         active=True,
         in_home_view=False,
     ).values(
-        'recipient_id'
+        'recipient__type_id'
     )
-    muted_recipient_ids = [
-        row['recipient_id']
+    muted_stream_ids = [
+        row['recipient__type_id']
         for row in rows]
-    return muted_recipient_ids
+    return muted_stream_ids
 
 def get_unread_message_ids_per_recipient(user_profile):
     # type: (UserProfile) -> UnreadMessagesResult
@@ -487,13 +487,13 @@ def get_raw_unread_data(user_profile):
 
     rows = list(reversed(user_msgs))
 
-    muted_recipient_ids = get_muted_recipient_ids(user_profile)
+    muted_stream_ids = get_muted_stream_ids(user_profile)
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
-    def is_row_muted(recipient_id, topic):
-        # type: (int, Text) -> bool
-        if recipient_id in muted_recipient_ids:
+    def is_row_muted(stream_id, recipient_id, topic):
+        # type: (int, int, Text) -> bool
+        if stream_id in muted_stream_ids:
             return True
 
         if topic_mute_checker(recipient_id, topic):
@@ -530,7 +530,7 @@ def get_raw_unread_data(user_profile):
                 stream_id=stream_id,
                 topic=topic,
             )
-            if not is_row_muted(recipient_id, topic):
+            if not is_row_muted(stream_id, recipient_id, topic):
                 unmuted_stream_msgs.add(message_id)
 
         elif msg_type == Recipient.PERSONAL:
