@@ -308,7 +308,6 @@ function info_for(user_id) {
         num_unread: get_num_unread(user_id),
         type: status,
         type_desc: presence_descriptions[status],
-        mobile: presence.get_mobile(user_id),
     };
 }
 

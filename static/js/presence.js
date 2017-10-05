@@ -42,10 +42,6 @@ exports.get_status = function (user_id) {
     return "unknown";
 };
 
-exports.get_mobile = function (user_id) {
-    return exports.presence_info[user_id].mobile;
-};
-
 exports.get_user_ids = function () {
     var user_ids = Object.keys(exports.presence_info);
     return user_ids;
