@@ -78,7 +78,7 @@ Full feature Changelog:
 - Added a confirmation dialogue when inviting many users to a new stream.
 - Added new notification setting to always get push notifications on a stream.
 - Added new "getting started" guides to the user documentation.
-- Added support for installing a zulip server from a Git checkout.
+- Added support for installing a Zulip server from a Git checkout.
 - Added support for mentioning a user when editing a message.
 - Added an OpsGenie integration.
 - Added support for organization administrators deleting private streams.
