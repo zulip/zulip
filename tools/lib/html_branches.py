@@ -22,7 +22,7 @@ class HtmlTreeBranch(object):
     """
 
     def __init__(self, tags, fn):
-        # type: (List[TagInfo], Optional[str]) -> None
+        # type: (List['TagInfo'], Optional[str]) -> None
         self.tags = tags
         self.fn = fn
         self.line = tags[-1].token.line
@@ -189,8 +189,8 @@ def html_tag_tree(text):
 
 
 def build_id_dict(templates):
-    # type: (List[str]) -> (Dict[str,List[str]])
-    template_id_dict = defaultdict(list)  # type: (Dict[str,List[str]])
+    # type: (List[str]) -> (Dict[str, List[str]])
+    template_id_dict = defaultdict(list)  # type: (Dict[str, List[str]])
 
     for fn in templates:
         text = open(fn).read()
