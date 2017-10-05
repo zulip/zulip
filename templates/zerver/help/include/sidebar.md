@@ -5,7 +5,7 @@
 
 # Using Zulip
 
-## Account Basics
+## Account basics
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
 * [Manage your password](/help/change-your-password)
@@ -22,7 +22,7 @@
 * [Zulip glossary](/help/zulip-glossary)
 * [The Zulip browser window](/help/the-zulip-browser-window)
 
-## Sending Messages
+## Sending messages
 * [Send a stream message](/help/send-a-stream-message)
 * [Private messages](/help/send-a-private-message)
 * [Send a private message](/help/send-someone-a-private-message)
@@ -47,7 +47,7 @@
 * [Edit the topic of a message](/help/change-the-topic-of-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
-## Reading Messages
+## Reading messages
 * [Navigation and unread counts](/help/unread-counter-and-pointer)
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
@@ -67,7 +67,7 @@
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
 * [Invite another user](/help/invite-a-friend-to-zulip)
 
-## Streams & Topics
+## Streams & topics
 * [About streams and topics](/help/about-streams-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
@@ -93,7 +93,7 @@
 * [Digest emails](/help/configure-email-digest-notifications)
 * [Add an alert word](/help/add-an-alert-word)
 
-## Tools & Customization
+## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
 * [Enable high contrast mode](/help/enable-high-contrast-mode)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
@@ -109,9 +109,9 @@
 <!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
-# Zulip Administration
+# Zulip administration
 
-## Organization Basics
+## Organization basics
 * [Change your organization name](/help/change-your-organizations-name)
 * [Change your organization description](/help/change-your-organizations-description)
 * [Change your organization avatar](/help/change-your-organizations-avatar)
@@ -123,7 +123,7 @@
 * [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 
-## Organization Settings
+## Organization settings
 * [Restrict stream creation](/help/only-allow-admins-to-create-new-streams-feature)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
@@ -136,14 +136,14 @@
 <!-- Configure authentication methods -->
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 
-## Users & Bots
+## Users & bots
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Make a user an administrator](/help/make-a-user-an-administrator)
 * [Change a user's name](/help/change-a-users-name)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
-## Stream Management
+## Stream management
 * [Delete a stream](/help/delete-a-stream)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
