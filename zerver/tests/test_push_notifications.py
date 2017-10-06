@@ -294,6 +294,7 @@ class PushNotificationTest(BouncerTestCase):
             recipient=recipient,
             subject='Test Message',
             content='This is test content',
+            rendered_content='This is test content',
             pub_date=now(),
             sending_client=self.sending_client,
         )
@@ -682,6 +683,7 @@ class TestGetGCMPayload(PushNotificationTest):
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.content = 'a' * 210
+        message.rendered_content = 'a' * 210
         message.save()
         message.triggers = {
             'private_message': False,
@@ -697,7 +699,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
             "time": apn.datetime_to_timestamp(message.pub_date),
-            "content": 'a' * 200 + '...',
+            "content": 'a' * 200 + '…',
             "content_truncated": True,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
