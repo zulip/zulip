@@ -357,9 +357,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_python_to_js_filter() {
     // The only way to reach python_to_js_filter is indirectly, hence the call
     // to set_realm_filters.
-    markdown.set_realm_filters([[ '/a(?im)a/g'], [ '/a(?L)a/g' ]]);
+    markdown.set_realm_filters([['/a(?im)a/g'], ['/a(?L)a/g']]);
     var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
-    var expected_value = [ /\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g ];
+    var expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
 }());
 

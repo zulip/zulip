@@ -25,8 +25,8 @@ var emoji_see_no_evil = {
     emoji_url: 'TBD',
 };
 
-var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
-                   emoji_panda_face, emoji_see_no_evil ];
+var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
+                  emoji_panda_face, emoji_see_no_evil];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -285,7 +285,7 @@ global.people.add(deactivated_user);
         ct.add_topic('Sweden', 'more ice');
         ct.add_topic('Sweden', 'even more ice');
         ct.add_topic('Sweden', '<&>');
-        var topics = [ '<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice' ];
+        var topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
         $('#stream').val('Sweden');
         var actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
@@ -315,22 +315,22 @@ global.people.add(deactivated_user);
         // it is a result of the topics already being sorted after adding
         // them with ct.add_topic().
         options.query = 'furniture';
-        actual_value = options.sorter([ 'furniture' ]);
-        expected_value = [ 'furniture' ];
+        actual_value = options.sorter(['furniture']);
+        expected_value = ['furniture'];
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
         options.query = 'ice';
-        actual_value = options.sorter([ 'even more ice', 'ice', 'more ice' ]);
-        expected_value = [ 'ice', 'even more ice', 'more ice' ];
+        actual_value = options.sorter(['even more ice', 'ice', 'more ice']);
+        expected_value = ['ice', 'even more ice', 'more ice'];
         assert.deepEqual(actual_value, expected_value);
 
         // The sorter should return the query as the first element if there
         // isn't a topic with such name.
         // This only happens if typeahead is providing other suggestions.
         options.query = 'e';  // Letter present in "furniture" and "ice"
-        actual_value = options.sorter([ 'furniture', 'ice' ]);
-        expected_value = [ 'e', 'furniture', 'ice' ];
+        actual_value = options.sorter(['furniture', 'ice']);
+        expected_value = ['e', 'furniture', 'ice'];
         assert.deepEqual(actual_value, expected_value);
 
         // Don't make any suggestions if this query doesn't match any
@@ -349,7 +349,7 @@ global.people.add(deactivated_user);
         //
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [ othello, cordelia, deactivated_user ];
+        var expected_value = [othello, cordelia, deactivated_user];
         assert.deepEqual(actual_value, expected_value);
 
         // options.highlighter()
@@ -422,14 +422,14 @@ global.people.add(deactivated_user);
         // beginning first, and then the rest of them in REVERSE order of
         // the input.
         options.query = 'othello';
-        actual_value = options.sorter([ othello ]);
-        expected_value = [ othello ];
+        actual_value = options.sorter([othello]);
+        expected_value = [othello];
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
         options.query = 'co';  // Matches everything ("x@zulip.COm")
-        actual_value = options.sorter([ othello, deactivated_user, cordelia ]);
-        expected_value = [ cordelia, deactivated_user, othello ];
+        actual_value = options.sorter([othello, deactivated_user, cordelia]);
+        expected_value = [cordelia, deactivated_user, othello];
         assert.deepEqual(actual_value, expected_value);
 
         options.query = 'non-existing-user';
@@ -511,31 +511,31 @@ global.people.add(deactivated_user);
 
         // options.sorter()
         fake_this = { completing: 'emoji', token: 'ta' };
-        actual_value = options.sorter.call(fake_this, [ emoji_stadium, emoji_tada ]);
-        expected_value = [ emoji_tada, emoji_stadium ];
+        actual_value = options.sorter.call(fake_this, [emoji_stadium, emoji_tada]);
+        expected_value = [emoji_tada, emoji_stadium];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'co' };
-        actual_value = options.sorter.call(fake_this, [ othello, cordelia ]);
-        expected_value = [ cordelia, othello ];
+        actual_value = options.sorter.call(fake_this, [othello, cordelia]);
+        expected_value = [cordelia, othello];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'stream', token: 'de' };
-        actual_value = options.sorter.call(fake_this, [ sweden_stream, denmark_stream ]);
-        expected_value = [ denmark_stream, sweden_stream ];
+        actual_value = options.sorter.call(fake_this, [sweden_stream, denmark_stream]);
+        expected_value = [denmark_stream, sweden_stream];
         assert.deepEqual(actual_value, expected_value);
 
         // Matches in the descriptions affect the order as well.
         // Testing "co" for "cold", in both streams' description. It's at the
         // beginning of Sweden's description, so that one should go first.
         fake_this = { completing: 'stream', token: 'co' };
-        actual_value = options.sorter.call(fake_this, [ denmark_stream, sweden_stream ]);
-        expected_value = [ sweden_stream, denmark_stream ];
+        actual_value = options.sorter.call(fake_this, [denmark_stream, sweden_stream]);
+        expected_value = [sweden_stream, denmark_stream];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'syntax', token: 'ap' };
-        actual_value = options.sorter.call(fake_this, [ 'abap', 'applescript' ]);
-        expected_value = [ 'applescript', 'abap' ];
+        actual_value = options.sorter.call(fake_this, ['abap', 'applescript']);
+        expected_value = ['applescript', 'abap'];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'non-existing-completion' };

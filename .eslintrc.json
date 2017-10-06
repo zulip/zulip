@@ -158,6 +158,7 @@
     },
     "rules": {
         "array-callback-return": "error",
+        "array-bracket-spacing": "error",
         "arrow-spacing": [ "error", { "before": true, "after": true } ],
         "block-scoped-var": 2,
         "brace-style": [ "error", "1tbs", { "allowSingleLine": true } ],
