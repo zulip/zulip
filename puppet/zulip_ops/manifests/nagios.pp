@@ -85,7 +85,7 @@ class zulip_ops::nagios {
     mode       => 644,
     owner      => "root",
     group      => "root",
-    source => '/root/zulip/api/integrations/nagios/zulip_nagios.cfg',
+    source => '/usr/local/share/zulip/integrations/nagios/zulip_nagios.cfg',
     notify => Service["nagios3"],
   }
 
