@@ -916,7 +916,7 @@ class TestValidateApiKey(ZulipTestCase):
         profile = validate_api_key(HostRequestMock(host="zulip.testserver"),
                                    self.webhook_bot.email, self.webhook_bot.api_key,
                                    is_webhook=True)
-        self.assertEqual(profile.pk, self.webhook_bot.pk)
+        self.assertEqual(profile.id, self.webhook_bot.id)
 
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):
         # type: () -> None
