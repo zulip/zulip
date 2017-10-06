@@ -34,14 +34,14 @@ exports.initialize_casper = function () {
         return;
     }
     casper.zulip_initialized = true;
-    // These initialization steps will fail if they run before
-    // casper.start has been called.
+    /* These initialization steps will fail if they run before
+       casper.start has been called.
 
-    // Fail if we get a JavaScript error in the page's context.
-    // Based on the example at http://phantomjs.org/release-1.5.html
-    //
-    // casper.on('error') doesn't work (it never gets called) so we
-    // set this at the PhantomJS level.
+       Fail if we get a JavaScript error in the page's context.
+       Based on the example at http://phantomjs.org/release-1.5.html
+   
+       casper.on('error') doesn't work (it never gets called) so we
+       set this at the PhantomJS level.*/
     casper.page.onError = function (msg, trace) {
         casper.test.error(msg);
         casper.echo('Traceback:');
@@ -74,8 +74,8 @@ exports.initialize_casper = function () {
         });
     });
 
-    // This function should always be enclosed within a then() otherwise
-    // it might not exist on casper object.
+    /* This function should always be enclosed within a then() otherwise
+       it might not exist on casper object.*/
     casper.waitForSelectorText = function (selector, text, then, onTimeout, timeout) {
         this.waitForSelector(selector, function _then() {
             this.waitFor(function _check() {
@@ -129,8 +129,8 @@ exports.then_log_out = function () {
     });
 };
 
-// Put the specified string into the field_selector, then
-// select the menu item matching item by typing str.
+/* Put the specified string into the field_selector, then
+   select the menu item matching item by typing str.*/
 exports.select_item_via_typeahead = function (field_selector, str, item) {
     casper.then(function () {
         casper.test.info('Looking in ' + field_selector + ' to select ' + str + ', ' + item);
@@ -143,13 +143,13 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
                 .val(str)
                 .trigger($.Event('keyup', { which: 0 }));
 
-            // You might think these steps should be split by casper.then,
-            // but apparently that's enough to make the typeahead close (??),
-            // but not the first time.
+            /* You might think these steps should be split by casper.then,
+               but apparently that's enough to make the typeahead close (??),
+               but not the first time.
 
-            // Trigger the typeahead.
-            // Reaching into the guts of Bootstrap Typeahead like this is not
-            // great, but I found it very hard to do it any other way.
+               Trigger the typeahead.
+               Reaching into the guts of Bootstrap Typeahead like this is not
+               great, but I found it very hard to do it any other way.*/
 
             var tah = $(field_selector).data().typeahead;
             tah.mouseenter({
@@ -161,9 +161,9 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
 };
 
 exports.enable_page_console = function () {
-    // Call this (after casper.start) to enable printing page-context
-    // console.log (plus some CasperJS-specific messages) to the
-    // terminal.
+    /* Call this (after casper.start) to enable printing page-context
+       console.log (plus some CasperJS-specific messages) to the
+       terminal.*/
     casper.on('remote.message', function (msg) {
         casper.echo(msg);
     });
