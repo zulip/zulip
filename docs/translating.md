@@ -103,8 +103,8 @@ translating, you should check out the
 4. Translators translate the strings in Transifex.
 
 5. The translations are downloaded back into the codebase by a
-   maintainer, using `tx pull -a -f --mode=developer` (since we don't
-   use the Transifex review flow).
+   maintainer, using `tools/sync-translations` (which invokes `tx
+   pull`, internally).
 
 ## Translators' workflow
 
