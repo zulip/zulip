@@ -1,71 +1,89 @@
+<% @hosts_loadbalancer.each do |host| -%>
 define host{
        use              generic-host
-       host_name        lb0
-       alias            lb0
-       address          lb0.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,pageable_servers
        }
+<% end -%>
 
+<% @hosts_app_prod.each do |host| -%>
 define host{
        use              generic-host
-       host_name        prod0
-       alias            prod0
-       address          prod0.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,web,frontends,pageable_servers
        }
+<% end -%>
 
+<% @hosts_app_staging.each do |host| -%>
 define host{
        use              generic-host
-       host_name        staging
-       alias            staging
-       address          staging.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,web,frontends,not_pageable_servers
        }
+<% end -%>
 
+<% @hosts_zmirror.each do |host| -%>
 define host{
        use              generic-host
-       host_name        zmirror
-       alias            zmirror
-       address          zmirror.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,zmirror
        }
+<% end -%>
 
+<% @hosts_zmirrorp.each do |host| -%>
 define host{
        use              generic-host
-       host_name        zmirrorp
-       alias            zmirrorp
-       address          zmirrorp.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,zmirror
        }
+<% end -%>
 
+<% @hosts_postgres_primary.each do |host| -%>
 define host{
        use              generic-host
-       host_name        postgres1
-       alias            postgres1
-       address          postgres1.zulip.net
-       hostgroups       all,postgres_appdb,pageable_servers
-       }
-
-define host{
-       use              generic-host
-       host_name        postgres3
-       alias            postgres3
-       address          postgres3.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,postgres,postgres_appdb_primary,pageable_servers
        }
+<% end -%>
 
+<% @hosts_postgres_secondary.each do |host| -%>
 define host{
        use              generic-host
-       host_name        stats
-       alias            stats
-       address          stats.zulip.net
-       hostgroups       all,not_pageable_servers
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,postgres_appdb,pageable_servers
        }
+<% end -%>
 
+<% @hosts_stats.each do |host| -%>
 define host{
        use              generic-host
-       host_name        redis0
-       alias            redis0
-       address          redis0.zulip.net
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
        hostgroups       all,not_pageable_servers
        }
+<% end -%>
+
+<% @hosts_redis.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,not_pageable_servers, redis
+       }
+<% end -%>

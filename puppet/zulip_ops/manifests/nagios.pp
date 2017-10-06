@@ -12,6 +12,17 @@ class zulip_ops::nagios {
   $nagios_test_email = zulipconf("nagios", "test_email", undef)
   $nagios_pager_email = zulipconf("nagios", "pager_email", undef)
 
+  $hosts_domain = zulipconf("nagios", "hosts_domain", undef)
+  $hosts_zmirror = split(zulipconf("nagios", "hosts_zmirror", undef), ",")
+  $hosts_zmirrorp = split(zulipconf("nagios", "hosts_zmirrorp", undef), ",")
+  $hosts_app_prod = split(zulipconf("nagios", "hosts_app_prod", undef), ",")
+  $hosts_app_staging = split(zulipconf("nagios", "hosts_app_staging", undef), ",")
+  $hosts_postgres_primary = split(zulipconf("nagios", "hosts_postgres_primary", undef), ",")
+  $hosts_postgres_secondary = split(zulipconf("nagios", "hosts_postgres_secondary", undef), ",")
+  $hosts_redis = split(zulipconf("nagios", "hosts_redis", undef), ",")
+  $hosts_loadbalancer = split(zulipconf("nagios", "hosts_loadbalancer", undef), ",")
+  $hosts_stats = split(zulipconf("nagios", "hosts_stats", undef), ",")
+
   apache2site { 'nagios':
     require => [File['/etc/apache2/sites-available/'],
                 Apache2mod['headers'], Apache2mod['ssl'],
