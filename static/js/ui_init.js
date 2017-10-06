@@ -94,8 +94,8 @@ $(function () {
         var max_scroll = this.scrollHeight - self.innerHeight() - 1;
 
         e.stopPropagation();
-        if (   ((delta < 0) && (scroll <= 0))
-            || ((delta > 0) && (scroll >= max_scroll))) {
+        if (((delta < 0) && (scroll <= 0)) ||
+            ((delta > 0) && (scroll >= max_scroll))) {
             e.preventDefault();
         }
     });

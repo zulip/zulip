@@ -646,7 +646,7 @@ exports.initialize = function () {
             clone_file_input = $('#file_input').clone(true);
         }
         $("#compose #file_input").trigger("click");
-    } );
+    });
 
     function show_preview(rendered_content) {
         var preview_html;

@@ -310,7 +310,7 @@
                 "asyncArrow": "always"
             }
         ],
-        "space-in-parens": 0,
+        "space-in-parens": 2,
         "space-infix-ops": 0,
         "spaced-comment": 0,
         "strict": 0,

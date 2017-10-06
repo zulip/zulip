@@ -111,7 +111,7 @@ function get_stream_suggestions(last, operators) {
 }
 
 function get_group_suggestions(all_persons, last, operators) {
-    if (last.operator !== 'pm-with' ) {
+    if (last.operator !== 'pm-with') {
         return [];
     }
 

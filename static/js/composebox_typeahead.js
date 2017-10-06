@@ -53,15 +53,15 @@ function query_matches_person(query, person) {
     // Case-insensitive.
     query = query.toLowerCase();
 
-    return ( person.email    .toLowerCase().indexOf(query) !== -1
-         ||  person.full_name.toLowerCase().indexOf(query) !== -1);
+    return (person.email.toLowerCase().indexOf(query) !== -1
+            || person.full_name.toLowerCase().indexOf(query) !== -1);
 }
 
 function query_matches_stream(query, stream) {
     query = query.toLowerCase();
 
-    return ( stream.name       .toLowerCase().indexOf(query) !== -1
-         ||  stream.description.toLowerCase().indexOf(query) !== -1);
+    return (stream.name.toLowerCase().indexOf(query) !== -1
+            || stream.description.toLowerCase().indexOf(query) !== -1);
 }
 
 // Case-insensitive
@@ -493,7 +493,7 @@ exports.initialize = function () {
     }
 
     // limit number of items so the list doesn't fall off the screen
-    $( "#stream" ).typeahead({
+    $("#stream").typeahead({
         source: function () {
             return stream_data.subscribed_streams();
         },
@@ -510,7 +510,7 @@ exports.initialize = function () {
         },
     });
 
-    $( "#subject" ).typeahead({
+    $("#subject").typeahead({
         source: function () {
             var stream_name = $("#stream").val();
             return exports.topics_seen_for(stream_name);
@@ -529,7 +529,7 @@ exports.initialize = function () {
         },
     });
 
-    $( "#private_message_recipient" ).typeahead({
+    $("#private_message_recipient").typeahead({
         source: people.get_all_persons, // This is a function.
         items: 5,
         dropup: true,
@@ -572,7 +572,7 @@ exports.initialize = function () {
 
     exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true, syntax: true});
 
-    $( "#private_message_recipient" ).blur(function () {
+    $("#private_message_recipient").blur(function () {
         var val = $(this).val();
         var recipients = typeahead_helper.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));

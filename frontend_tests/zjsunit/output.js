@@ -10,7 +10,7 @@ function mkdir_p(path) {
     try {
         fs.mkdirSync(path);
     } catch (e) {
-        if ( e.code !== 'EEXIST' ) {
+        if (e.code !== 'EEXIST') {
             throw e;
         }
     }

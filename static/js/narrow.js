@@ -69,9 +69,9 @@ exports.activate = function (raw_operators, opts) {
         }
     } else if (filter.has_operator("is")) {
         exports.narrow_title = filter.operands("is")[0];
-    } else if (filter.has_operator("pm-with") ) {
+    } else if (filter.has_operator("pm-with")) {
         exports.narrow_title = "private";
-    } else if (filter.has_operator("group-pm-with") ) {
+    } else if (filter.has_operator("group-pm-with")) {
         exports.narrow_title = "private group";
     }
 

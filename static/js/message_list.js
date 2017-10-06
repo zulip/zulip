@@ -666,7 +666,7 @@ exports.MessageList.prototype = {
             var index = self._items.indexOf(current_message);
 
             if (index === -1) {
-                if ( !self.muting_enabled && current_msg_list === self) {
+                if (!self.muting_enabled && current_msg_list === self) {
                     blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
                 }
                 return;

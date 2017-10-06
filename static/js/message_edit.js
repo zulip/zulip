@@ -305,7 +305,7 @@ function edit_message(row, raw_content) {
 
     if (feature_flags.propagate_topic_edits && !message.locally_echoed) {
         var original_topic = message.subject;
-        message_edit_topic.keyup( function () {
+        message_edit_topic.keyup(function () {
             var new_topic = message_edit_topic.val();
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });

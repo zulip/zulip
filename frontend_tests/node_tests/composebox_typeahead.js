@@ -885,7 +885,7 @@ global.people.add(deactivated_user);
         assert.deepEqual(item, { primary: 'py' });
         th_render_typeahead_item_called = true;
     };
-    ct.content_highlighter.call(fake_this, 'py' );
+    ct.content_highlighter.call(fake_this, 'py');
 
     fake_this = { completing: 'something-else' };
     assert(!ct.content_highlighter.call(fake_this));

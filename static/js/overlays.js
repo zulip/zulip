@@ -104,7 +104,7 @@ exports.open_modal = function (name) {
 
 exports.close_overlay = function (name) {
     if (name !== open_overlay_name) {
-        blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open." );
+        blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open.");
         return;
     }
 
@@ -123,7 +123,7 @@ exports.close_overlay = function (name) {
     $('.header').attr("aria-hidden", "false");
 
     if (!close_handler) {
-        blueslip.error("Overlay close handler for " + name + " not properly setup." );
+        blueslip.error("Overlay close handler for " + name + " not properly setup.");
         return;
     }
 
@@ -152,7 +152,7 @@ exports.close_modal = function (name) {
 
     if (exports.active_modal() !== name) {
         blueslip.error("Trying to close " + name +
-            " modal when " + exports.active_modal() + " is open." );
+            " modal when " + exports.active_modal() + " is open.");
         return;
     }
 
