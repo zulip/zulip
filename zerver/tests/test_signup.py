@@ -400,7 +400,7 @@ class LoginTest(ZulipTestCase):
         """
         self.login(self.example_email("cordelia"))
         response = self.client_get("/login/")
-        self.assertEqual(response["Location"], "/")
+        self.assertEqual(response["Location"], "http://zulip.testserver")
 
 class InviteUserTest(ZulipTestCase):
 
