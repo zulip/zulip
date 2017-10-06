@@ -419,7 +419,6 @@ class PersonalMessagesTest(ZulipTestCase):
         self.assertEqual(most_recent_message(sender).recipient, recipient)
         self.assertEqual(most_recent_message(receiver).recipient, recipient)
 
-    @slow("assert_personal checks several profiles")
     def test_personal(self):
         # type: () -> None
         """
@@ -428,7 +427,6 @@ class PersonalMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         self.assert_personal(self.example_email("hamlet"), self.example_email("othello"))
 
-    @slow("assert_personal checks several profiles")
     def test_non_ascii_personal(self):
         # type: () -> None
         """

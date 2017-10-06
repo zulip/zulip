@@ -1888,7 +1888,6 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure we don't make O(streams) queries
         self.assert_length(queries, 19)
 
-    @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
         # type: () -> None
         """
@@ -1900,7 +1899,6 @@ class SubscriptionAPITest(ZulipTestCase):
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee_email, invitee_realm, invite_streams)
 
-    @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal_invite_only(self):
         # type: () -> None
         """
@@ -1913,7 +1911,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_adding_subscriptions_for_principal(invitee_email, invitee_realm, invite_streams,
                                                        invite_only=True)
 
-    @slow("common_subscribe_to_streams is slow")
     def test_non_ascii_subscription_for_principal(self):
         # type: () -> None
         """
@@ -2561,7 +2558,6 @@ class GetSubscribersTest(ZulipTestCase):
 
         test_admin_case()
 
-    @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
         # type: () -> None
         """
