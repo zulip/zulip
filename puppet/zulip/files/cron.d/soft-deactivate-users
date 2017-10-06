@@ -3,4 +3,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=zulip
 
 # Cron job to soft deactivate long term idle users daily.
-0 5 * * * zulip /home/zulip/deployments/current/manage.py soft_activate_deactivate_users -d >/dev/null
+0 5 * * * zulip /home/zulip/deployments/current/manage.py soft_deactivate_users -d >/dev/null

@@ -56,7 +56,7 @@ class Command(ZulipBaseCommand):
         if activate:
             if not user_emails:
                 print('You need to specify at least one user to use the activate option.')
-                self.print_help("./manage.py", "soft_activate_deactivate_users")
+                self.print_help("./manage.py", "soft_deactivate_users")
                 sys.exit(1)
 
             users_to_activate = UserProfile.objects.filter(
@@ -96,5 +96,5 @@ class Command(ZulipBaseCommand):
                 users_deactivated = do_soft_deactivate_users(users_to_deactivate)
                 logger.info('Soft Deactivated %d user(s)' % (len(users_deactivated)))
         else:
-            self.print_help("./manage.py", "soft_activate_deactivate_users")
+            self.print_help("./manage.py", "soft_deactivate_users")
             sys.exit(1)
