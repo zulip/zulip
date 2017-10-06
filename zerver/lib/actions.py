@@ -1930,22 +1930,19 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users):
-    # type: (Stream, Iterable[UserProfile], Iterable[UserProfile]) -> Set[int]
+def get_peer_user_ids_for_stream_change(stream, altered_user_ids, subscribed_user_ids):
+    # type: (Stream, Iterable[int], Iterable[int]) -> Set[int]
     '''
-    altered_users is a list of users that we are adding/removing
-    subscribed_users is the list of already subscribed users
+    altered_user_ids is a list of user_ids that we are adding/removing
+    subscribed_user_ids is the list of already subscribed user_ids
 
     Based on stream policy, we notify the correct bystanders, while
     not notifying altered_users (who get subscribers via another event)
     '''
 
-    altered_user_ids = [user.id for user in altered_users]
-
     if stream.invite_only:
         # PRIVATE STREAMS
-        all_subscribed_ids = [user.id for user in subscribed_users]
-        return set(all_subscribed_ids) - set(altered_user_ids)
+        return set(subscribed_user_ids) - set(altered_user_ids)
 
     else:
         # PUBLIC STREAMS
@@ -2099,19 +2096,21 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             continue
 
-        new_users = [user for user in users if (user.id, stream.id) in new_streams]
+        new_user_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
+        subscribed_users = all_subs_by_stream[stream.id]
+        subscribed_user_ids = [u.id for u in subscribed_users]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,
-            altered_users=new_users,
-            subscribed_users=all_subs_by_stream[stream.id]
+            altered_user_ids=new_user_ids,
+            subscribed_user_ids=subscribed_user_ids,
         )
 
         if peer_user_ids:
-            for added_user in new_users:
+            for new_user_id in new_user_ids:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
-                             user_id=added_user.id)
+                             user_id=new_user_id)
                 send_event(event, peer_user_ids)
 
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
@@ -2212,11 +2211,15 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
             continue
 
         altered_users = altered_user_dict[stream.id]
+        altered_user_ids = [u.id for u in altered_users]
+
+        subscribed_users = all_subs_by_stream[stream.id]
+        subscribed_user_ids = [u.id for u in subscribed_users]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,
-            altered_users=altered_users,
-            subscribed_users=all_subs_by_stream[stream.id]
+            altered_user_ids=altered_user_ids,
+            subscribed_user_ids=subscribed_user_ids,
         )
 
         if peer_user_ids:
