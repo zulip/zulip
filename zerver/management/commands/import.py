@@ -7,6 +7,7 @@ from zerver.models import Realm, Stream, UserProfile, Recipient, Subscription, \
     Message, UserMessage, Huddle, DefaultStream, RealmDomain, RealmFilter, Client
 from zerver.lib.export import do_import_realm
 
+import argparse
 import os
 import subprocess
 
@@ -34,6 +35,7 @@ Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] 
                             default=False,
                             action="store_true",
                             help='Import into an existing nonempty database.')
+        parser.formatter_class = argparse.RawTextHelpFormatter
 
     def new_instance_check(self, model):
         # type: (Model) -> None
