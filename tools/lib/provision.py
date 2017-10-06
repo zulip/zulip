@@ -43,7 +43,8 @@ NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
 # TODO: De-duplicate this with emoji_dump.py
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if 'TRAVIS' in os.environ:
+is_travis = 'TRAVIS' in os.environ
+if is_travis:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
@@ -254,7 +255,7 @@ def main(options):
     # Import tools/setup_venv.py instead of running it so that we get an
     # activated virtualenv for the rest of the provisioning process.
     from tools.setup import setup_venvs
-    setup_venvs.main(options.is_travis)
+    setup_venvs.main(is_travis)
 
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
@@ -289,7 +290,7 @@ def main(options):
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
     run(["tools/inline-email-css"])
-    if options.is_travis and not options.is_production_travis:
+    if is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
@@ -379,14 +380,10 @@ if __name__ == "__main__":
                         default=False,
                         help="Ignore all provisioning optimizations.")
 
-    parser.add_argument('--travis', action='store_true', dest='is_travis',
-                        default=False,
-                        help="Provision for Travis but without production settings.")
-
     parser.add_argument('--production-travis', action='store_true',
                         dest='is_production_travis',
                         default=False,
-                        help="Provision for Travis but with production settings.")
+                        help="Provision for Travis with production settings.")
 
     parser.add_argument('--docker', action='store_true',
                         dest='is_docker',
