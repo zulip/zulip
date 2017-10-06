@@ -191,6 +191,11 @@ def build_custom_checkers(by_lang):
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],
          'bad_lines': ['$(document).ready(function () {foo();}']},
+        {'pattern': 'style ?=',
+         'description': "Don't use the `style=` attribute. Instead, define logical classes and"
+                        "put your styles in external files such as `zulip.css`.",
+         'good_lines': ['#my-style {color: blue;}'],
+         'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]) + whitespace_rules
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
@@ -441,6 +446,11 @@ def build_custom_checkers(by_lang):
          'exclude': set(['templates/zerver/dev_login.html']),
          'good_lines': ["($('#foo').on('click', function () {}"],
          'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
+        {'pattern': 'style ?=',
+         'description': "Don't use the `style=` attribute. Instead, define logical classes and"
+                        "put your styles in external files such as `zulip.css`.",
+         'good_lines': ['#my-style {color: blue;}'],
+         'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]  # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
