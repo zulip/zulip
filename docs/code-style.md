@@ -160,22 +160,6 @@ Don't use it:
 [[2]](https://google.github.io/styleguide/javascriptguide.xml#for-in_loop),
 [[3]](http://www.jslint.com/help.html#forin)
 
-### jQuery global state
-
-Don't mess with jQuery global state once the app has loaded. Code like
-this is very dangerous:
-
-    $.ajaxSetup({ async: false });
-    $.get(...);
-    $.ajaxSetup({ async: true });
-
-jQuery and the browser are free to run other code while the request is
-pending, which could perform other Ajax requests with the altered
-settings.
-
-Instead, switch to the more general `$.ajax`\_ function, which can take
-options like `async`.
-
 ### Translation tags
 
 Remember to
