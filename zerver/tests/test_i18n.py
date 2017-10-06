@@ -40,10 +40,11 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
-            response = self.fetch('get', '/login/', 200,
+            response = self.fetch('get', '/integrations/', 200,
                                   HTTP_ACCEPT_LANGUAGE=lang)
             self.assert_in_response(word, response)
 
@@ -52,6 +53,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
@@ -59,7 +61,7 @@ class TranslationTestCase(ZulipTestCase):
             # into an ascii otherwise SimpleCookie will raise an exception
             self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
 
-            response = self.fetch('get', '/login/', 200)
+            response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
 
     def test_i18n_urls(self):
@@ -67,10 +69,11 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
-            response = self.fetch('get', '/{}/login/'.format(lang), 200)
+            response = self.fetch('get', '/{}/integrations/'.format(lang), 200)
             self.assert_in_response(word, response)
 
 
