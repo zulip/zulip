@@ -203,7 +203,13 @@ def build_custom_checkers(by_lang):
          'good_lines': ['#my-style {color: blue;}'],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]) + whitespace_rules
+    calling_scripts_rule = {
+        'pattern': 'python[23]? \w+\.py',
+        'description': "Use `./<my_program>.py` instead of `python <my_program>.py.",
+        'good_lines': ['./program.py'],
+        'bad_lines': ['python program.py']}
     python_rules = cast(RuleList, [
+        calling_scripts_rule,
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],
@@ -370,12 +376,25 @@ def build_custom_checkers(by_lang):
          'description': "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
          'good_lines': ["logging.warning('I am a warning.')", "logger.warning('warning')"],
          'bad_lines': ["logging.warn('I am a warning.')", "logger.warn('warning')"]},
+        {'pattern': '#!/usr/bin/python',
+         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/python`",
+         'good_lines': ['#!/usr/bin/env python3'],
+         'bad_lines': ['#!/usr/bin/python', '#!/usr/bin/python3']},
+        {'pattern': '#!/usr/bin/env python$',
+         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`.",
+         'good_lines': ["#!/usr/bin/env python3"],
+         'bad_lines': ["#!/usr/bin/env python"]},
+        {'pattern': '\.pk',
+         'description': "Use `id` instead of `pk`.",
+         'good_lines': ['if my_django_model.id == 42'],
+         'bad_lines': ['if my_django_model.pk == 42']}
     ]) + whitespace_rules
-    bash_rules = [
+    bash_rules = cast(RuleList, [
+        calling_scripts_rule,
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
-    ] + whitespace_rules[0:1]  # type: RuleList
+    ]) + whitespace_rules[0:1]  # type: RuleList
     css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},

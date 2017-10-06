@@ -49,7 +49,7 @@ class WebsocketClient(object):
         session_auth_hash = self.user_profile.get_session_auth_hash()
         engine = import_module(settings.SESSION_ENGINE)
         session = engine.SessionStore()  # type: ignore # import_module
-        session[SESSION_KEY] = self.user_profile._meta.pk.value_to_string(self.user_profile)
+        session[SESSION_KEY] = self.user_profile._meta.id.value_to_string(self.user_profile)
         session[BACKEND_SESSION_KEY] = auth_backend
         session[HASH_SESSION_KEY] = session_auth_hash
         session.save()
