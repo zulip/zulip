@@ -175,7 +175,7 @@ class QueueProcessingWorker(object):
 @assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         user_profile = get_user_profile_by_id(data['user_id'])
         logging.info("Processing signup for user %s in realm %s" % (
             user_profile.email, user_profile.realm.string_id))
