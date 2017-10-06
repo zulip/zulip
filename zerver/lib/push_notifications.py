@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import base64
 import binascii
@@ -398,6 +399,16 @@ def get_mobile_push_content(rendered_content):
     elem = LH.fromstring(rendered_content)
     plain_text = process(elem)
     return plain_text
+
+def truncate_content(content):
+    # type: (Text) -> Text
+    # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
+    # of three dots as this saves two extra characters for textual
+    # content. This function will need to be updated to handle unicode
+    # combining characters and tags when we start supporting themself.
+    if len(content) <= 200:
+        return content
+    return content[:200] + "…"
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
