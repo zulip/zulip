@@ -7,6 +7,10 @@ class zulip_ops::nagios {
                       "nagios3",
                       ]
   package { $nagios_packages: ensure => "installed" }
+  $nagios_format_users = join($zulip_ops::base::users, ",")
+  $nagios_alert_email = zulipconf("nagios", "alert_email", undef)
+  $nagios_test_email = zulipconf("nagios", "test_email", undef)
+  $nagios_pager_email = zulipconf("nagios", "pager_email", undef)
 
   apache2site { 'nagios':
     require => [File['/etc/apache2/sites-available/'],
@@ -43,7 +47,6 @@ class zulip_ops::nagios {
     notify => Service["nagios3"],
   }
 
-  $nagios_format_users = join($zulip_ops::base::users, ",")
   file { "/etc/nagios3/cgi.cfg":
     require => Package[nagios3],
     owner  => "root",

@@ -21,7 +21,7 @@ define contact{
         host_notification_options       d,r
         service_notification_commands   notify-service-by-email
         host_notification_commands      notify-host-by-email
-        email                           monitoring@zulip.com
+        email                           <%= @nagios_alert_email %>
         }
 
 define contact{
@@ -33,7 +33,7 @@ define contact{
         host_notification_options       d,r
         service_notification_commands   notify-service-by-email
         host_notification_commands      notify-host-by-email
-        email                           monitoring@zulip.com
+        email                           <%= @nagios_test_email %>
         }
 
 ###############################################################################
