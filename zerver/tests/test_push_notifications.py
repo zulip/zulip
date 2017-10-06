@@ -7,6 +7,7 @@ import time
 from typing import Any, Dict, List, Union, SupportsInt, Text
 
 import gcm
+import os
 import ujson
 
 from django.test import TestCase, override_settings
@@ -27,7 +28,8 @@ from zerver.models import (
     Stream,
 )
 from zerver.lib import push_notifications as apn
-from zerver.lib.push_notifications import DeviceToken
+from zerver.lib.push_notifications import get_mobile_push_content, \
+    DeviceToken
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -35,6 +37,9 @@ from zerver.lib.test_classes import (
 
 from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
 from django.utils.timezone import now
+
+ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
+FIXTURES_FILE_PATH = os.path.join(ZERVER_DIR, "fixtures", "markdown_test_cases.json")
 
 class BouncerTestCase(ZulipTestCase):
     def setUp(self):
@@ -294,6 +299,7 @@ class PushNotificationTest(BouncerTestCase):
             recipient=recipient,
             subject='Test Message',
             content='This is test content',
+            rendered_content='This is test content',
             pub_date=now(),
             sending_client=self.sending_client,
         )
@@ -682,6 +688,7 @@ class TestGetGCMPayload(PushNotificationTest):
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.content = 'a' * 210
+        message.rendered_content = 'a' * 210
         message.save()
         message.triggers = {
             'private_message': False,
@@ -697,7 +704,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
             "time": apn.datetime_to_timestamp(message.pub_date),
-            "content": 'a' * 200 + '...',
+            "content": 'a' * 200 + '…',
             "content_truncated": True,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -1131,3 +1138,38 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
 
         self.user.enable_stream_push_notifications = False
         self.assertFalse(receives_stream_notifications(self.user))
+
+class TestPushNotificationsContent(ZulipTestCase):
+    def test_fixtures(self):
+        # type: () -> None
+        with open(FIXTURES_FILE_PATH) as fp:
+            fixtures = ujson.load(fp)
+        tests = fixtures["regular_tests"]
+        for test in tests:
+            if "text_content" in test:
+                output = get_mobile_push_content(test["expected_output"])
+                self.assertEqual(output, test["text_content"])
+
+    def test_backend_only_fixtures(self):
+        # type: () -> None
+        fixtures = [
+            {
+                'name': 'realm_emoji',
+                'rendered_content': '<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/1/emoji/green_tick.png" title="green tick"> realm emoji.</p>',
+                'expected_output': 'Testing :green_tick: realm emoji.',
+            },
+            {
+                'name': 'mentions',
+                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-email="cordelia@zulip.com" data-user-id="3">@Cordelia Lear</span>.</p>',
+                'expected_output': 'Mentioning @Cordelia Lear.',
+            },
+            {
+                'name': 'stream_names',
+                'rendered_content': '<p>Testing stream names <a class="stream" data-stream-id="5" href="/#narrow/stream/Verona">#Verona</a>.</p>',
+                'expected_output': 'Testing stream names #Verona.',
+            },
+        ]
+
+        for test in fixtures:
+            actual_output = get_mobile_push_content(test["rendered_content"])
+            self.assertEqual(actual_output, test["expected_output"])

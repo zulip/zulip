@@ -3,9 +3,12 @@ import base64
 import binascii
 from functools import partial
 import logging
+import lxml.html as LH
 import os
+import re
 import time
 import random
+
 from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
 
 from apns2.client import APNsClient
@@ -364,12 +367,56 @@ def get_alert_from_message(message):
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
 
+def get_mobile_push_content(rendered_content):
+    # type: (Text) -> Text
+    def get_text(elem):
+        # type: (LH.HtmlElement) -> Text
+        # Convert default emojis to their unicode equivalent.
+        classes = elem.get("class", "")
+        if "emoji" in classes:
+            match = re.search("emoji-(?P<emoji_code>\S+)", classes)
+            if match:
+                emoji_code = match.group('emoji_code')
+                char_repr = ""
+                for codepoint in emoji_code.split('-'):
+                    char_repr += chr(int(codepoint, 16))
+                return char_repr
+        # Handles realm emojis, avatars etc.
+        if elem.tag == "img":
+            return elem.get("alt", "")
+
+        return elem.text or ""
+
+    def process(elem):
+        # type: (LH.HtmlElement) -> Text
+        plain_text = get_text(elem)
+        for child in elem:
+                plain_text += process(child)
+        plain_text += elem.tail or ""
+        return plain_text
+
+    elem = LH.fromstring(rendered_content)
+    plain_text = process(elem)
+    return plain_text
+
+def truncate_content(content):
+    # type: (Text) -> Text
+    # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
+    # of three dots as this saves two extra characters for textual
+    # content. This function will need to be updated to handle unicode
+    # combining characters and tags when we start supporting themself.
+    if len(content) <= 200:
+        return content
+    return content[:200] + "…"
+
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
+    text_content = get_mobile_push_content(message.rendered_content)
+    truncated_content = truncate_content(text_content)
     return {
         'alert': {
             'title': get_alert_from_message(message),
-            'body': message.content[:200],
+            'body': truncated_content,
         },
         # TODO: set badge count in a better way
         'badge': 0,
@@ -382,10 +429,8 @@ def get_apns_payload(message):
 
 def get_gcm_payload(user_profile, message):
     # type: (UserProfile, Message) -> Dict[str, Any]
-    content = message.content
-    content_truncated = (len(content) > 200)
-    if content_truncated:
-        content = content[:200] + "..."
+    text_content = get_mobile_push_content(message.rendered_content or "")
+    truncated_content = truncate_content(text_content)
 
     android_data = {
         'user': user_profile.email,
@@ -393,8 +438,8 @@ def get_gcm_payload(user_profile, message):
         'alert': get_alert_from_message(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
-        'content': content,
-        'content_truncated': content_truncated,
+        'content': truncated_content,
+        'content_truncated': len(text_content) > 200,
         'sender_email': message.sender.email,
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
