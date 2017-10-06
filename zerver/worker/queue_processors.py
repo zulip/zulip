@@ -190,6 +190,8 @@ class SignupWorker(QueueProcessingWorker):
             if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
                 logging.warning("Attempted to sign up already existing email to list: %s" %
                                 (data['email_address'],))
+            elif r.status_code == 400:
+                retry_event('signups', data, lambda e: r.raise_for_status())
             else:
                 r.raise_for_status()
 
