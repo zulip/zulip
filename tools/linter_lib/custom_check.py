@@ -68,9 +68,9 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
                     else:
                         raise Exception("Invalid strip rule")
                 if re.search(pattern, line_to_check):
-                    if (rule.get("exclude_pattern") and
-                            re.search(rule['exclude_pattern'], line_to_check)):
-                        continue
+                    if rule.get("exclude_pattern"):
+                        if re.search(rule['exclude_pattern'], line_to_check):
+                            continue
                     print_err(identifier, color, '{} at {} line {}:'.format(
                         rule['description'], fn, i+1))
                     print_err(identifier, color, line)
@@ -470,6 +470,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
         {'pattern': 'style ?=',
          'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
+         'exclude_pattern': r'.*style ?=["' + "'" + '](display: ?none|background: {{|color: {{|background-color: {{).*',
          'exclude': set([
              # KaTeX output uses style attribute
              'templates/zerver/markdown_help.html',
@@ -478,22 +479,10 @@ def build_custom_checkers(by_lang):
              # Group PMs color is dynamically calculated
              'static/templates/group_pms.handlebars',
 
-             # Subscription templates with stream color need the color
-             'static/templates/stream_sidebar_row.handlebars',
-             'static/templates/single_message.handlebars',
+             # exclude_pattern above handles color, but have other issues:
              'static/templates/draft.handlebars',
              'static/templates/subscription.handlebars',
-             'static/templates/subscription_settings.handlebars',
-             'static/templates/subscription_setting_icon.handlebars',
-
-             # A bunch of files uses `display: none` for initial state
-             'static/templates/settings/account-settings.handlebars',
-             'templates/zerver/compose.html',
-             'templates/zerver/navbar.html',
-             'templates/zerver/index.html',
-             'static/templates/message_edit_form.handlebars',
-             'static/templates/compose-invite-users.handlebars',
-             'static/templates/recipient_row.handlebars',
+             'static/templates/single_message.handlebars',
 
              # Old-style email templates need to use inline style
              # attributes; it should be possible to clean these up
@@ -501,6 +490,12 @@ def build_custom_checkers(by_lang):
              'templates/zerver/emails/digest.html',
              'templates/zerver/emails/missed_message.html',
              'templates/zerver/emails/email_base_messages.html',
+
+             # Probably just needs to be changed to display: none so the exclude works
+             'templates/zerver/navbar.html',
+
+             # Needs the width cleaned up; display: none is fine
+             'static/templates/settings/account-settings.handlebars',
 
              # Inline styling for an svg; could be moved to CSS files?
              'templates/zerver/landing_nav.html',
@@ -523,7 +518,7 @@ def build_custom_checkers(by_lang):
              'templates/corporate/zephyr.html',
              'templates/corporate/zephyr-mirror.html',
          ]),
-         'good_lines': ['#my-style {color: blue;}'],
+         'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]  # type: RuleList
     handlebars_rules = html_rules + [
