@@ -465,7 +465,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(state1.keys(), state2.keys())
 
         # The far more likely scenario is that some section of
-        # our enormous payload does get updated properly.  We
+        # our enormous payload does not get updated properly.  We
         # want the diff here to be developer-friendly, hence
         # the somewhat tedious code to provide useful output.
         if state1 != state2:  # nocoverage
