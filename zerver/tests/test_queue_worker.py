@@ -7,7 +7,7 @@ import smtplib
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase
-from mock import patch
+from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.test_helpers import simulated_queue_client
@@ -82,6 +82,37 @@ class WorkerTest(ZulipTestCase):
                     patch('zerver.lib.queue.queue_json_publish',
                           side_effect=fake_publish), \
                     patch('logging.exception'):
+                worker.start()
+
+        self.assertEqual(data['failed_tries'], 4)
+
+    def test_signups_worker_retries(self):
+        # type: () -> None
+        """Tests the retry logic of signups queue."""
+        fake_client = self.FakeClient()
+
+        user_id = self.example_user('hamlet').id
+        data = {'user_id': user_id, 'failed_tries': 0, 'id': 'test_missed'}
+        fake_client.queue.append(('signups', data))
+
+        def fake_publish(queue_name, event, processor):
+            # type: (str, Dict[str, Any], Callable[[Any], None]) -> None
+            fake_client.queue.append((queue_name, event))
+
+        fake_response = MagicMock()
+        fake_response.status_code = 400
+        fake_response.text = ujson.dumps({'title': ''})
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.SignupWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.requests.post',
+                       return_value=fake_response), \
+                    patch('zerver.lib.queue.queue_json_publish',
+                          side_effect=fake_publish), \
+                    patch('logging.info'), \
+                    self.settings(MAILCHIMP_API_KEY='one-two',
+                                  PRODUCTION=True,
+                                  ZULIP_FRIENDS_LIST_ID='id'):
                 worker.start()
 
         self.assertEqual(data['failed_tries'], 4)

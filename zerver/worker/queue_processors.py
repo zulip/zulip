@@ -175,7 +175,7 @@ class QueueProcessingWorker(object):
 @assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
-        # type: (Mapping[str, Any]) -> None
+        # type: (Dict[str, Any]) -> None
         user_profile = get_user_profile_by_id(data['user_id'])
         logging.info("Processing signup for user %s in realm %s" % (
             user_profile.email, user_profile.realm.string_id))
@@ -190,6 +190,8 @@ class SignupWorker(QueueProcessingWorker):
             if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
                 logging.warning("Attempted to sign up already existing email to list: %s" %
                                 (data['email_address'],))
+            elif r.status_code == 400:
+                retry_event('signups', data, lambda e: r.raise_for_status())
             else:
                 r.raise_for_status()
 
