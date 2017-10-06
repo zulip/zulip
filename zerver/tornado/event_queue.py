@@ -906,7 +906,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id,
 def process_notification(notice):
     # type: (Mapping[str, Any]) -> None
     event = notice['event']  # type: Mapping[str, Any]
-    users = notice['users']  # type: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+    users = notice['users']  # type: Union[List[int], List[Mapping[str, Any]]]
     start_time = time.time()
     if event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
