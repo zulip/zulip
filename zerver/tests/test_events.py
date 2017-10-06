@@ -435,7 +435,7 @@ class EventsRegisterTest(ZulipTestCase):
                 raise AssertionError('Test is invalid--state actually does change here.')
 
         normal_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
-        self.match_states(hybrid_state, normal_state)
+        self.match_states(hybrid_state, normal_state, events)
         return events
 
     def assert_on_error(self, error):
@@ -443,8 +443,8 @@ class EventsRegisterTest(ZulipTestCase):
         if error:
             raise AssertionError(error)
 
-    def match_states(self, state1, state2):
-        # type: (Dict[str, Any], Dict[str, Any]) -> None
+    def match_states(self, state1, state2, events):
+        # type: (Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]) -> None
         def normalize(state):
             # type: (Dict[str, Any]) -> None
             state['realm_users'] = {u['email']: u for u in state['realm_users']}
@@ -460,7 +460,42 @@ class EventsRegisterTest(ZulipTestCase):
                 state['realm_bots'] = {u['email']: u for u in state['realm_bots']}
         normalize(state1)
         normalize(state2)
-        self.assertEqual(state1, state2)
+
+        # If this assertions fails, we have unusual problems.
+        self.assertEqual(state1.keys(), state2.keys())
+
+        # The far more likely scenario is that some section of
+        # our enormous payload does get updated properly.  We
+        # want the diff here to be developer-friendly, hence
+        # the somewhat tedious code to provide useful output.
+        if state1 != state2:
+            print('\n---States DO NOT MATCH---')
+            print('\nEVENTS:\n')
+
+            # Printing out the events is a big help to
+            # developers.
+            import json
+            for event in events:
+                print(json.dumps(event, indent=4))
+
+            print('\nMISMATCHES:\n')
+            for k in state1:
+                if state1[k] != state2[k]:
+                    print('\nkey = ' + k)
+                    try:
+                        self.assertEqual(state1[k], state2[k])
+                    except AssertionError as e:
+                        print(e)
+            print('''
+                NOTE:
+
+                    This is an advanced test that verifies how
+                    we apply events after fetching data.  If you
+                    do not know how to debug it, you can ask for
+                    help on chat.
+                ''')
+
+            raise AssertionError('Mismatching states')
 
     def check_events_dict(self, required_keys):
         # type: (List[Tuple[str, Validator]]) -> Validator
