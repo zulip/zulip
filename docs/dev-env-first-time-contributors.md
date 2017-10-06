@@ -457,10 +457,10 @@ restart itself or reload data appropriately when you make changes. So,
 to see your changes, all you usually have to do is reload your
 browser.  More details on how this works are available below.
 
-Don't forget to read through the [code style
-guidelines](code-style.html#general) for details about how to configure your
-editor for Zulip. For example, indentation should be set to 4 spaces rather
-than tabs.
+Zulip's whitespace rules are all enforced by linters, so be sure to
+run `tools/lint` often to make sure you're following our coding style
+(or use `tools/setup-git-repo` to run it on just the changed files
+automatically whenever you commit).
 
 #### Understanding run-dev.py debugging output
 
