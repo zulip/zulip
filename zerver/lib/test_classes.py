@@ -450,11 +450,15 @@ class ZulipTestCase(TestCase):
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, queries, count):
-        # type: (Sized, int) -> None
-        actual_count = len(queries)
-        return self.assertTrue(actual_count == count,
-                               "len(%s) == %s, != %s" % (queries, actual_count, count))
+    def assert_length(self, items, count):
+        # type: (List, int) -> None
+        actual_count = len(items)
+        if actual_count != count:  # nocoverage
+            print('ITEMS:\n')
+            for item in items:
+                print(item)
+            print("\nexpected length: %s\nactual length: %s" % (count, actual_count))
+            raise AssertionError('List is unexpected size!')
 
     def assert_json_error_contains(self, result, msg_substring, status_code=400):
         # type: (HttpResponse, Text, int) -> None
