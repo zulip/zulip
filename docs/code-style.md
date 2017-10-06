@@ -205,10 +205,7 @@ with the exception of `_.any`, which we prefer over the less clear
 
 ## More arbitrary style things
 
-### General
-
-Keep third-party static files under the directory
-`static/third/`, with one subdirectory per third-party project.
+### Line length
 
 We have an absolute hard limit on line length only for some files, but
 we should still avoid extremely long lines. A general guideline is:
@@ -295,6 +292,5 @@ All significant new features should come with tests. See testing.
 
 ### Third party code
 
-When adding new third-party packages to our codebase, please include
-"[third]" at the beginning of the commit message. You don't necessarily
-need to do this when patching third-party code that's already in tree.
+See [our docs on dependencies](dependencies.html) for discussion of
+rules about integrating third-party projects.
