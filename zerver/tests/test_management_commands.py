@@ -13,6 +13,7 @@ from django.test import TestCase
 from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
+from zerver.lib.test_runner import slow
 from zerver.models import get_realm, UserProfile, Realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
@@ -111,6 +112,7 @@ class TestCommandsCanStart(TestCase):
             )
         )
 
+    @slow("Aggregate of runs dozens of individual --help tests")
     def test_management_commands_show_help(self):
         # type: () -> None
         with stdout_suppressed() as stdout:

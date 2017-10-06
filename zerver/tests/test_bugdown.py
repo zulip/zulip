@@ -19,6 +19,7 @@ from zerver.lib.request import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.test_runner import slow
 from zerver.lib.str_utils import force_str
 from zerver.models import (
     realm_in_local_realm_filters_cache,
@@ -176,6 +177,7 @@ class BugdownTest(ZulipTestCase):
 
         return test_fixtures, data['linkify_tests']
 
+    @slow("Aggregate of runs dozens of individual markdown tests")
     def test_bugdown_fixtures(self):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()

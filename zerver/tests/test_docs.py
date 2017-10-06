@@ -11,6 +11,7 @@ from zproject.settings import DEPLOY_ROOT
 from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
 from zerver.views.integrations import (
     add_api_uri_context,
@@ -46,6 +47,7 @@ class DocPageTest(ZulipTestCase):
             for s in extra_strings:
                 self.assertIn(s, str(result.content))
 
+    @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self):
         # type: () -> None
         self._test('/api/', 'We hear you like APIs')

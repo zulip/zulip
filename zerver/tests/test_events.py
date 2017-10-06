@@ -81,6 +81,7 @@ from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.test_runner import slow
 from zerver.lib.topic_mutes import (
     add_topic_mute,
 )
@@ -999,9 +1000,9 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    @slow("Actually runs several full-stack fetching tests")
     def test_change_realm_property(self):
         # type: () -> None
-
         for prop in Realm.property_types:
             self.do_set_realm_property_test(prop)
 
@@ -1077,9 +1078,8 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         # Test every transition among the four possibilities {T,F} x {0, non-0}
         for (allow_message_editing, message_content_edit_limit_seconds) in \
-            ((True, 0), (False, 0), (True, 0), (False, 1234), (True, 0), (True, 1234), (True, 0),
-             (False, 0), (False, 1234), (False, 0), (True, 1234), (False, 0),
-             (True, 1234), (True, 600), (False, 600), (False, 1234), (True, 600)):
+            ((True, 0), (False, 0), (False, 1234),
+             (True, 600), (False, 0), (True, 1234)):
             events = self.do_test(
                 lambda: do_set_realm_message_editing(self.user_profile.realm,
                                                      allow_message_editing,
@@ -1176,11 +1176,13 @@ class EventsRegisterTest(ZulipTestCase):
             if setting_name == "timezone":
                 error = timezone_schema_checker('events[1]', events[1])
 
+    @slow("Actually runs several full-stack fetching tests")
     def test_set_user_display_settings(self):
         # type: () -> None
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
 
+    @slow("Actually runs several full-stack fetching tests")
     def test_change_notification_settings(self):
         # type: () -> None
         for notification_setting, v in self.user_profile.notification_setting_types.items():

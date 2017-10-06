@@ -13,6 +13,7 @@ from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.test_runner import slow
 from zerver.context_processors import common_context
 
 
@@ -40,6 +41,7 @@ class TemplateTestCase(ZulipTestCase):
     is done that the output looks right).  Please see `get_context`
     function documentation for more information.
     """
+    @slow("Tests a large number of different templates")
     @override_settings(TERMS_OF_SERVICE=None)
     def test_templates(self):
         # type: () -> None

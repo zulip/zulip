@@ -9,6 +9,7 @@ from django.test import TestCase
 from typing import List, Optional
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_runner import slow
 from zerver.models import Stream
 from zproject import urls
 
@@ -27,6 +28,7 @@ class PublicURLTest(ZulipTestCase):
                              msg="Expected %d, received %d for %s to %s" % (
                                  expected_status, response.status_code, method, url))
 
+    @slow("Tests dozens of endpoints, including all of our /help/ documents")
     def test_public_urls(self):
         # type: () -> None
         """
