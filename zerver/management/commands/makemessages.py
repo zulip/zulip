@@ -29,7 +29,7 @@ http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja
 
 """
 
-from typing import Any, Dict, Iterable, Mapping, Text
+from typing import Any, Dict, Iterable, Mapping, Text, List
 
 from argparse import ArgumentParser
 import os
@@ -137,14 +137,14 @@ class Command(makemessages.Command):
             template.constant_re = old_constant_re
 
     def extract_strings(self, data):
-        # type: (str) -> Dict[str, str]
-        translation_strings = {}  # type: Dict[str, str]
+        # type: (str) -> List[str]
+        translation_strings = []  # type: List[str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
                 match = ' '.join(line.strip() for line in match.splitlines())
                 match = match.replace('\n', '\\n')
-                translation_strings[match] = ""
+                translation_strings.append(match)
 
         return translation_strings
 
@@ -157,8 +157,8 @@ class Command(makemessages.Command):
         return data
 
     def get_translation_strings(self):
-        # type: () -> Dict[str, str]
-        translation_strings = {}  # type: Dict[str, str]
+        # type: () -> List[str]
+        translation_strings = []  # type: List[str]
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
@@ -167,7 +167,7 @@ class Command(makemessages.Command):
                     continue
                 with open(os.path.join(dirpath, filename), 'r') as reader:
                     data = reader.read()
-                    translation_strings.update(self.extract_strings(data))
+                    translation_strings.extend(self.extract_strings(data))
 
         dirname = os.path.join(settings.DEPLOY_ROOT, 'static/js')
         for filename in os.listdir(dirname):
@@ -175,9 +175,9 @@ class Command(makemessages.Command):
                 with open(os.path.join(dirname, filename)) as reader:
                     data = reader.read()
                     data = self.ignore_javascript_comments(data)
-                    translation_strings.update(self.extract_strings(data))
+                    translation_strings.extend(self.extract_strings(data))
 
-        return translation_strings
+        return list(set(translation_strings))
 
     def get_template_dir(self):
         # type: () -> str
@@ -217,8 +217,8 @@ class Command(makemessages.Command):
 
             yield os.path.join(path, self.get_namespace())
 
-    def get_new_strings(self, old_strings, translation_strings):
-        # type: (Mapping[str, str], Iterable[str]) -> Dict[str, str]
+    def get_new_strings(self, old_strings, translation_strings, locale):
+        # type: (Mapping[str, str], List[str], str) -> Dict[str, str]
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
@@ -226,7 +226,11 @@ class Command(makemessages.Command):
         new_strings = {}  # Dict[str, str]
         for k in translation_strings:
             k = k.replace('\\n', '\n')
-            new_strings[k] = old_strings.get(k, k)
+            if locale == 'en':
+                # For English language, translation is equal to the key.
+                new_strings[k] = old_strings.get(k, k)
+            else:
+                new_strings[k] = old_strings.get(k, "")
 
         plurals = {k: v for k, v in old_strings.items() if k.endswith('_plural')}
         for plural_key, value in plurals.items():
@@ -238,7 +242,7 @@ class Command(makemessages.Command):
         return new_strings
 
     def write_translation_strings(self, translation_strings):
-        # type: (Iterable[str]) -> None
+        # type: (List[str]) -> None
         for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
             self.stdout.write("[frontend] processing locale {}".format(locale))
             try:
@@ -250,7 +254,8 @@ class Command(makemessages.Command):
             new_strings = {
                 force_text(k): v
                 for k, v in self.get_new_strings(old_strings,
-                                                 translation_strings).items()
+                                                 translation_strings,
+                                                 locale).items()
             }
             with open(output_path, 'w') as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)

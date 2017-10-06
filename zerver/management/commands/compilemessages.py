@@ -115,7 +115,7 @@ class Command(compilemessages.Command):
         with open(self.get_json_filename(locale_path, locale)) as reader:
             for key, value in ujson.load(reader).items():
                 total += 1
-                if key == value:
+                if value == '':
                     not_translated += 1
 
         return (total - not_translated) * 100 // total
