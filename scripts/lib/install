@@ -2,13 +2,13 @@
 set -e
 
 usage() {
-    echo "Usage: install [--hostname=zulip.example.com] [--email=admin@example.com] [--help]"
+    echo "Usage: install [--hostname=zulip.example.com] [--zulip-admin=admin@example.com] [--outgoing-email-host=smtp.gmail.com] [--outgoing-email-host-username=example] [--help]"
     exit 0
 };
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,zulip-admin: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -17,8 +17,18 @@ while true; do
             shift
             shift
             ;;
-        --email)
+        --zulip-admin)
             ZULIP_ADMINISTRATOR="$2"
+            shift
+            shift
+            ;;
+        --outgoing-email-host)
+            EMAIL_HOST="$2"
+            shift
+            shift
+            ;;
+        --outgoing-email-host-username)
+            EMAIL_HOST_USER="$2"
             shift
             shift
             ;;
@@ -145,6 +155,12 @@ if [ "$has_appserver" = 0 ]; then
     fi
     if [ -n "ZULIP_ADMINISTRATOR" ]; then
         sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
+    fi
+    if [ -n "EMAIL_HOST" ]; then
+        sed -i "s/^EMAIL_HOST =.*/EMAIL_HOST = '$EMAIL_HOST'/" /etc/zulip/settings.py
+    fi
+    if [ -n "EMAIL_HOST_USER" ]; then
+        sed -i "s/^EMAIL_HOST_USER =.*/EMAIL_HOST_USER = '$EMAIL_HOST_USER'/" /etc/zulip/settings.py
     fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
 fi
