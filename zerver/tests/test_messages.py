@@ -213,7 +213,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         def assert_message_received(to_user, from_user):
             # type: (UserProfile, UserProfile) -> None
             messages = get_user_messages(to_user)
-            self.assertEqual(messages[-1].sender.pk, from_user.pk)
+            self.assertEqual(messages[-1].sender.id, from_user.id)
 
         def assert_invalid_email():
             # type: () -> Any

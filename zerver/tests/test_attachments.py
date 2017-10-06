@@ -30,7 +30,7 @@ class AttachmentsTests(ZulipTestCase):
         user_profile = self.example_user('cordelia')
         self.login(user_profile.email)
         with mock.patch('zerver.lib.attachments.delete_message_image', side_effect=Exception()):
-            result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
+            result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_error(result, "An error occured while deleting the attachment. Please try again later.")
 
     @mock.patch('zerver.lib.attachments.delete_message_image')
@@ -38,7 +38,7 @@ class AttachmentsTests(ZulipTestCase):
         # type: (Any) -> None
         user_profile = self.example_user('cordelia')
         self.login(user_profile.email)
-        result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
+        result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_success(result)
         attachments = user_attachments(user_profile)
         self.assertEqual(attachments, [])
@@ -55,7 +55,7 @@ class AttachmentsTests(ZulipTestCase):
         # type: () -> None
         user_profile = self.example_user('iago')
         self.login(user_profile.email)
-        result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
+        result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_error(result, 'Invalid attachment')
         user_profile_to_remove = self.example_user('cordelia')
         attachments = user_attachments(user_profile_to_remove)
@@ -68,5 +68,5 @@ class AttachmentsTests(ZulipTestCase):
 
     def test_delete_unauthenticated(self):
         # type: () -> None
-        result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
+        result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_error(result, 'Not logged in: API authentication or user session required', status_code=401)

@@ -52,7 +52,7 @@ class Command(ZulipBaseCommand):
                 'email': user_profile.email,
                 'domain': user_profile.realm.host,
                 'site_name': "zulipo",
-                'uid': urlsafe_base64_encode(force_bytes(user_profile.pk)),
+                'uid': urlsafe_base64_encode(force_bytes(user_profile.id)),
                 'user': user_profile,
                 'token': token_generator.make_token(user_profile),
                 'protocol': 'https' if use_https else 'http',
