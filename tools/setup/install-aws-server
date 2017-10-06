@@ -116,6 +116,12 @@ env VIRTUALENV_NEEDED=$VIRTUALENV_NEEDED PUPPET_CLASSES="$type" \
   ./scripts/setup/install
 EOF
 
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/home/zulip/.ssh/id_rsa
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file".pub root@"$server":/home/zulip/.ssh/id_rsa.pub
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
+chown zulip:zulip /home/zulip/.ssh/id_rsa*
+chmod 600 /home/zulip/.ssh/id_rsa*
+EOF
 set +x
 cat <<EOF
 
