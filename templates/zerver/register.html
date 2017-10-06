@@ -97,10 +97,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 <div class="input-box">
-                    <label for="id_team_subdomain" class="inline-block label-title">
-                        {{ _('Subdomain') }}
+                    <label class="static org-url">
+                        {{ _('Organization URL') }}
                     </label>
-                    <div class="inline-block">
+                    {% if root_domain_available %}
+                    <label class="checkbox static" for="realm_in_root_domain">
+                        <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+                            {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+                        <span></span>
+                        Use {{ external_host }}
+                    </label>
+                    {% endif %}
+
+                    <div class="inline-block" id="subdomain_section" {% if root_domain_available and
+                        not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                        <div class="or">or</div>
                         <div class="inline-block relative">
                             <input id="id_team_subdomain"
                                 class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"

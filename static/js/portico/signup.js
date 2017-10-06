@@ -68,4 +68,13 @@ $(function () {
             $(this).val($.trim($(this).val()));
         }
     });
+
+    var show_subdomain_section = function (bool) {
+        var action = bool ? "hide" : "show";
+        $("#subdomain_section")[action]();
+    };
+
+    $("#realm_in_root_domain").change(function () {
+        show_subdomain_section($(this).is(":checked"));
+    });
 });
