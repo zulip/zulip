@@ -922,6 +922,7 @@ JS_SPECS = {
             'node_modules/string.prototype.codepointat/codepointat.js',
             'node_modules/winchan/winchan.js',
             'node_modules/handlebars/dist/handlebars.runtime.js',
+            'node_modules/to-markdown/dist/to-markdown.js',
             'third/marked/lib/marked.js',
             'generated/emoji/emoji_codes.js',
             'generated/pygments_data.js',
