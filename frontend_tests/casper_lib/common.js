@@ -237,11 +237,11 @@ exports.then_send_message = function (type, params) {
     });
 };
 
-// Get message headings (recipient rows) and bodies out of the DOM.
-// casper.evaluate plays weird tricks with a closure, evaluating
-// it in the web page's context.  Passing arguments from the test
-// script's context is awkward (c.f. the various appearances of
-// 'table' here).
+/* Get message headings (recipient rows) and bodies out of the DOM.
+   casper.evaluate plays weird tricks with a closure, evaluating
+   it in the web page's context.  Passing arguments from the test
+   script's context is awkward (c.f. the various appearances of
+   'table' here).*/
 exports.get_rendered_messages = function (table) {
     return casper.evaluate(function (table) {
         var tbl = $('#'+table);
