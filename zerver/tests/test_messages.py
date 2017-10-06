@@ -638,7 +638,6 @@ class StreamMessagesTest(ZulipTestCase):
                                   **self.api_auth(email))
         self.assert_json_error(result, "User not authorized for this query")
 
-    @slow('checks all users')
     def test_message_to_stream(self):
         # type: () -> None
         """
@@ -647,7 +646,6 @@ class StreamMessagesTest(ZulipTestCase):
         """
         self.assert_stream_message("Scotland")
 
-    @slow('checks all users')
     def test_non_ascii_stream_message(self):
         # type: () -> None
         """
@@ -660,7 +658,8 @@ class StreamMessagesTest(ZulipTestCase):
         non_ascii_stream_name = u"hümbüǵ"
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
-        for user_profile in UserProfile.objects.filter(realm=realm):
+        for user_profile in UserProfile.objects.filter(is_active=True, is_bot=False,
+                                                       realm=realm)[0:3]:
             self.subscribe(user_profile, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
