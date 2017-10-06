@@ -373,6 +373,10 @@ def build_custom_checkers(by_lang):
          'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`.",
          'good_lines': ["#!/usr/bin/env python3"],
          'bad_lines': ["#!/usr/bin/env python"]},
+        {'pattern': '\.pk',
+         'description': "Use `id` instead of `pk`.",
+         'good_lines': ['if my_django_model.id == 42'],
+         'bad_lines': ['if my_django_model.pk == 42']}
     ]) + whitespace_rules
     bash_rules = cast(RuleList, [
         calling_scripts_rule,
