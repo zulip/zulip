@@ -313,16 +313,6 @@ type changes in the future.
 
 -   For string formatting, use `x % (y,)` rather than `x % y`, to avoid
     ambiguity if `y` happens to be a tuple.
--   When selecting by id, don't use `foo.pk` when you mean `foo.id`.
-    E.g.
-
-        recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)
-
-    should be written as
-
-        recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)
-
-    in case we ever change the primary keys.
 
 ### Tests
 

@@ -68,6 +68,9 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
                     else:
                         raise Exception("Invalid strip rule")
                 if re.search(pattern, line_to_check):
+                    if (rule.get("exclude_pattern") and
+                            re.search(rule['exclude_pattern'], line_to_check)):
+                        continue
                     print_err(identifier, color, '{} at {} line {}:'.format(
                         rule['description'], fn, i+1))
                     print_err(identifier, color, line)
@@ -378,6 +381,11 @@ def build_custom_checkers(by_lang):
          'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`.",
          'good_lines': ["#!/usr/bin/env python3"],
          'bad_lines': ["#!/usr/bin/env python"]},
+        {'pattern': '\.pk',
+         'exclude_pattern': '[.]_meta[.]pk',
+         'description': "Use `id` instead of `pk`.",
+         'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
+         'bad_lines': ['if my_django_model.pk == 42']}
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
