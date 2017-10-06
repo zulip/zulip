@@ -26,6 +26,14 @@ class zulip_ops::nagios {
     notify => Service["nagios3"],
   }
 
+  file { "/etc/nagios3/conf.d/contacts.cfg":
+    require => Package[nagios3],
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    content => template("zulip_ops/nagios3/contacts.cfg.template.erb"),
+    notify => Service["nagios3"],
+  }
   file { "/etc/nagios3/conf.d/hosts.cfg":
     require => Package[nagios3],
     owner  => "root",
