@@ -40,7 +40,7 @@ tar -xf zulip-server-latest.tar.gz
 Then, run the Zulip install script:
 ```
 sudo -s  # If not already root
-./zulip-server-*/scripts/setup/install
+./zulip-server-*/scripts/setup/install --hostname <hostname> --email <admin email>
 ```
 
 This may take a while to run, since it will install a large number of
@@ -63,6 +63,8 @@ symbolic link to it.
 * Installs Zulip's various dependencies.
 * Cconfigures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
+* Edits `/ect/zulip/settings.py` by inserting the value of hostname into
+  `EXTERNAL_HOST` and the value of email into `ZULIP_ADMINISTRATOR`.
 
 ## Step 3: Configure Zulip
 
@@ -88,9 +90,7 @@ heading `### MANDATORY SETTINGS`.  These settings include:
 
 - If desired, you can also configure additional
   [authentication backends](prod-authentication-methods.html) while
-  you're editing /etc/zulip/settings.py.  Note, however, that the
-  default (email) backend must be enabled when you complete Step 6
-  (creating an organization) below.
+  you're editing /etc/zulip/settings.py.
 
 ## Step 4: Test email configuration
 
