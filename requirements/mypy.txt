@@ -1,7 +1,4 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev_lock.txt.
 # See requirements/README.md for more detail.
-six==1.10.0
--e git+https://github.com/python/mypy.git@5ca89e5cc77bbaeffbb5d6310301139cbaaae48f#egg=mypy==0.530-dev
-typed-ast==1.1.0
-typing==3.6.2
+mypy==0.530

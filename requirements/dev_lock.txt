@@ -8,7 +8,6 @@
 # For details, see requirements/README.md .
 #
 git+https://github.com/zulip/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd7f84e1ac#egg=fakeldap==0.5.1.zulip1
-git+https://github.com/python/mypy.git@5ca89e5cc77bbaeffbb5d6310301139cbaaae48f#egg=mypy==0.530-dev
 git+https://github.com/zulip/pyoembed.git@d6d34a6a73404ef6bffe79109da68feb224ef8c6#egg=pyoembed==0.1.1.zulip1
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
@@ -79,6 +78,7 @@ markdown==2.6.9           # via markdown-include
 markupsafe==1.0
 mock==2.0.0
 moto==1.1.10
+mypy==0.530
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.3
 oauth2client==4.1.2
@@ -148,7 +148,7 @@ tornado==4.5.2
 traitlets==4.3.2          # via ipython
 transifex-client==0.12.4
 twisted==17.5.0
-typed-ast==1.1.0
+typed-ast==1.1.0          # via mypy
 typing==3.6.2
 uritemplate==3.0.0
 urllib3==1.22             # via requests, transifex-client
