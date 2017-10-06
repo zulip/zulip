@@ -26,6 +26,15 @@ class zulip_ops::nagios {
     notify => Service["nagios3"],
   }
 
+  file { "/etc/nagios3/conf.d/hosts.cfg":
+    require => Package[nagios3],
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    content => template("zulip_ops/nagios3/hosts.cfg.template.erb"),
+    notify => Service["nagios3"],
+  }
+
   $nagios_format_users = join($zulip_ops::base::users, ",")
   file { "/etc/nagios3/cgi.cfg":
     require => Package[nagios3],
