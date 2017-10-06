@@ -3,9 +3,12 @@ import base64
 import binascii
 from functools import partial
 import logging
+import lxml.html as LH
 import os
+import re
 import time
 import random
+
 from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
 
 from apns2.client import APNsClient
@@ -363,6 +366,38 @@ def get_alert_from_message(message):
         return "New stream message from %s in %s" % (sender_str, message.stream_name,)
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
+
+def get_mobile_push_content(rendered_content):
+    # type: (Text) -> Text
+    def get_text(elem):
+        # type: (LH.HtmlElement) -> Text
+        # Convert default emojis to their unicode equivalent.
+        classes = elem.get("class", "")
+        if "emoji" in classes:
+            match = re.search("emoji-(?P<emoji_code>\S+)", classes)
+            if match:
+                emoji_code = match.group('emoji_code')
+                char_repr = ""
+                for codepoint in emoji_code.split('-'):
+                    char_repr += chr(int(codepoint, 16))
+                return char_repr
+        # Handles realm emojis, avatars etc.
+        if elem.tag == "img":
+            return elem.get("alt", "")
+
+        return elem.text or ""
+
+    def process(elem):
+        # type: (LH.HtmlElement) -> Text
+        plain_text = get_text(elem)
+        for child in elem:
+                plain_text += process(child)
+        plain_text += elem.tail or ""
+        return plain_text
+
+    elem = LH.fromstring(rendered_content)
+    plain_text = process(elem)
+    return plain_text
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
