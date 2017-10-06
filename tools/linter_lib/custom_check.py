@@ -191,6 +191,17 @@ def build_custom_checkers(by_lang):
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],
          'bad_lines': ['$(document).ready(function () {foo();}']},
+        {'pattern': 'style ?=',
+         'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
+         'exclude': set([
+             'frontend_tests/node_tests/compose.js',
+             'frontend_tests/node_tests/templates.js',
+             'static/js/compose.js',
+             'static/js/dynamic_text.js',
+             'static/js/stream_color.js',
+         ]),
+         'good_lines': ['#my-style {color: blue;}'],
+         'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]) + whitespace_rules
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
@@ -441,6 +452,63 @@ def build_custom_checkers(by_lang):
          'exclude': set(['templates/zerver/dev_login.html']),
          'good_lines': ["($('#foo').on('click', function () {}"],
          'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
+        {'pattern': 'style ?=',
+         'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
+         'exclude': set([
+             # KaTeX output uses style attribute
+             'templates/zerver/markdown_help.html',
+             # 5xx page doesn't have external CSS
+             'static/html/5xx.html',
+             # Group PMs color is dynamically calculated
+             'static/templates/group_pms.handlebars',
+
+             # Subscription templates with stream color need the color
+             'static/templates/stream_sidebar_row.handlebars',
+             'static/templates/single_message.handlebars',
+             'static/templates/draft.handlebars',
+             'static/templates/subscription.handlebars',
+             'static/templates/subscription_settings.handlebars',
+             'static/templates/subscription_setting_icon.handlebars',
+
+             # A bunch of files uses `display: none` for initial state
+             'static/templates/settings/account-settings.handlebars',
+             'templates/zerver/compose.html',
+             'templates/zerver/navbar.html',
+             'templates/zerver/index.html',
+             'static/templates/message_edit_form.handlebars',
+             'static/templates/compose-invite-users.handlebars',
+             'static/templates/recipient_row.handlebars',
+
+             # Old-style email templates need to use inline style
+             # attributes; it should be possible to clean these up
+             # when we convert these templates to use premailer.
+             'templates/zerver/emails/digest.html',
+             'templates/zerver/emails/missed_message.html',
+             'templates/zerver/emails/email_base_messages.html',
+
+             # Inline styling for an svg; could be moved to CSS files?
+             'templates/zerver/landing_nav.html',
+             'templates/zerver/home.html',
+             'templates/zerver/features.html',
+             'templates/zerver/portico-header.html',
+
+             # Miscellaneous violations to be cleaned up
+             'static/templates/user_info_popover_title.handlebars',
+             'static/templates/subscription_invites_warning_modal.handlebars',
+             'templates/zerver/reset_confirm.html',
+             'templates/zerver/config_error.html',
+             'templates/zerver/dev_env_email_access_details.html',
+             'templates/zerver/confirm_continue_registration.html',
+             'templates/zerver/register.html',
+             'templates/zerver/accounts_send_confirm.html',
+             'templates/zerver/integrations/index.html',
+             'templates/zerver/help/main.html',
+             'templates/analytics/realm_summary_table.html',
+             'templates/corporate/zephyr.html',
+             'templates/corporate/zephyr-mirror.html',
+         ]),
+         'good_lines': ['#my-style {color: blue;}'],
+         'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]  # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
