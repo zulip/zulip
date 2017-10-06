@@ -40,14 +40,6 @@ class zulip_ops::nagios {
     ensure => running,
   }
 
-  file { '/usr/local/bin/pagerduty_nagios.pl':
-    ensure     => file,
-    mode       => 755,
-    owner      => "root",
-    group      => "root",
-    source     => 'puppet:///modules/zulip_ops/pagerduty_nagios.pl',
-  }
-
   file { [ '/etc/nagios3/conf.d/extinfo_nagios2.cfg',
            '/etc/nagios3/conf.d/services_nagios2.cfg',
            '/etc/nagios3/conf.d/contacts_nagios2.cfg',

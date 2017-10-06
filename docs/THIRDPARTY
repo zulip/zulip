@@ -64,10 +64,6 @@ Copyright: 2003-2009 Edgewall Software
  2003-2004 Jonas Borgström <jonas@edgewall.com>
 License: BSD-3-Clause
 
-Files: puppet/zulip_internal/files/pagerduty_nagios.pl
-Copyright: 2011, PagerDuty, Inc.
-License: BSD-3-Clause
-
 Files: puppet/zulip_internal/files/zulip-ec2-configure-interfaces
 Copyright: 2013-2017, Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Expat
