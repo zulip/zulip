@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import base64
 import binascii
@@ -412,10 +411,12 @@ def truncate_content(content):
 
 def get_apns_payload(message):
     # type: (Message) -> Dict[str, Any]
+    text_content = get_mobile_push_content(message.rendered_content)
+    truncated_content = truncate_content(text_content)
     return {
         'alert': {
             'title': get_alert_from_message(message),
-            'body': message.content[:200],
+            'body': truncated_content,
         },
         # TODO: set badge count in a better way
         'badge': 0,
@@ -428,10 +429,8 @@ def get_apns_payload(message):
 
 def get_gcm_payload(user_profile, message):
     # type: (UserProfile, Message) -> Dict[str, Any]
-    content = message.content
-    content_truncated = (len(content) > 200)
-    if content_truncated:
-        content = content[:200] + "..."
+    text_content = get_mobile_push_content(message.rendered_content or "")
+    truncated_content = truncate_content(text_content)
 
     android_data = {
         'user': user_profile.email,
@@ -439,8 +438,8 @@ def get_gcm_payload(user_profile, message):
         'alert': get_alert_from_message(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
-        'content': content,
-        'content_truncated': content_truncated,
+        'content': truncated_content,
+        'content_truncated': len(text_content) > 200,
         'sender_email': message.sender.email,
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
