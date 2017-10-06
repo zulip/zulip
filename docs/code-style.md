@@ -147,16 +147,9 @@ number without any explicit conversion.
 
 ### JavaScript var
 
-Always declare JavaScript variables using `var`:
-
-    var x = ...;
-
-In a function, `var` is necessary or else `x` will be a global variable.
-For variables declared at global scope, this has no effect, but we do it
-for consistency.
-
-JavaScript has function scope only, not block scope. This means that a
-`var` declaration inside a `for` or `if` acts the same as a `var`
+Always declare JavaScript variables using `var`.  JavaScript has
+function scope only, not block scope. This means that a `var`
+declaration inside a `for` or `if` acts the same as a `var`
 declaration at the beginning of the surrounding `function`. To avoid
 confusion, declare all variables at the top of a function.
 
