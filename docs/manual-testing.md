@@ -150,7 +150,7 @@ populated and where the focus is placed.
     - use R to reply to the author of a PM
     - use R to reply to the author of a PM stream
     - use c to compose a stream message
-    - use C to compose a new PM
+    - use x to compose a new PM
 
 - Buttons
     - Narrow to a stream and click on "New topic"

@@ -60,7 +60,7 @@ to the author of the selected message (outlined in blue).
 * **New stream message**: `c` — Allows the user to begin composing a new stream
 message.
 
-* **New private message**: `C` — Allows the user to begin composing a new
+* **New private message**: `x` — Allows the user to begin composing a new
 private message.
 
 * **Reply to message mentioning the author**: `@` — Allows the user to begin
