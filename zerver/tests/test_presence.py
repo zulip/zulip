@@ -47,7 +47,7 @@ class ActivityTest(ZulipTestCase):
         with queries_captured() as queries:
             self.client_get('/activity')
 
-        self.assert_length(queries, 3)
+        self.assert_length(queries, 4)
 
 class TestClientModel(ZulipTestCase):
     def test_client_stringification(self):

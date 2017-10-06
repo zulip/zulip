@@ -93,6 +93,9 @@ CACHES['database'] = {
     }
 }
 
+# Disable caching on sessions to make query counts consistent
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
 # Use production config from Webpack in tests
 if CASPER_TESTS:
     WEBPACK_FILE = 'webpack-stats-production.json'
