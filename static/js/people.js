@@ -92,7 +92,7 @@ exports.get_user_id = function (email) {
     }
     var user_id = person.user_id;
     if (!user_id) {
-        blueslip.error('No userid found for ' + email);
+        blueslip.error('No user_id found for ' + email);
         return undefined;
     }
 
