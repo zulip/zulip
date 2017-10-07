@@ -269,14 +269,6 @@ function matches_filter(user_id) {
     return (filter_user_ids([user_id]).length === 1);
 }
 
-function filter_and_sort(user_ids) {
-    user_ids = filter_user_ids(user_ids);
-    user_ids = sort_users(user_ids);
-    return user_ids;
-}
-
-exports._filter_and_sort = filter_and_sort;
-
 function get_num_unread(user_id) {
     if (unread.suppress_unread_counts) {
         return 0;
@@ -345,15 +337,7 @@ exports.build_user_sidebar = function () {
         return;
     }
 
-    var user_ids;
-
-    if (exports.get_filter_text()) {
-        // If there's a filter, select from all users, not just those
-        // recently active.
-        user_ids = filter_and_sort(people.get_realm_human_user_ids());
-    } else {
-        user_ids = filter_and_sort(presence.get_user_ids());
-    }
+    var user_ids = exports.get_filtered_and_sorted_user_ids();
 
     var user_info = _.map(user_ids, info_for).filter(function (person) {
         // filtered bots and yourself are set to "undefined" in the `info_for`
@@ -592,6 +576,23 @@ function focus_user_filter(e) {
     e.stopPropagation();
     update_clear_search_button();
 }
+
+exports.get_filtered_and_sorted_user_ids = function () {
+    var user_ids;
+
+    if (exports.get_filter_text()) {
+        // If there's a filter, select from all users, not just those
+        // recently active.
+        user_ids = filter_user_ids(people.get_realm_human_user_ids());
+    } else {
+        // From large realms, the user_ids in presence may exclude
+        // users who have been idle more than three weeks.  When the
+        // filter text is blank, we show only those recently active users.
+        user_ids = presence.get_user_ids();
+    }
+
+    return sort_users(user_ids);
+};
 
 exports.set_user_list_filter = function () {
     meta.$user_list_filter = $(".user-list-filter");

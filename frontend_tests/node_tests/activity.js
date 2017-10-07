@@ -250,6 +250,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
+presence.presence_info[me.user_id] = { status: activity.ACTIVE };
 
 activity.set_user_list_filter();
 
@@ -407,33 +408,42 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
     var user_filter = $('.user-list-filter');
     user_filter.val(''); // no search filter
 
-    var user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+    activity.set_user_list_filter();
+
+    var user_ids = activity.get_filtered_and_sorted_user_ids();
+    assert.deepEqual(user_ids, [
+        alice.user_id,
+        fred.user_id,
+        jill.user_id,
+        norbert.user_id,
+        zoe.user_id,
+        mark.user_id,
+    ]);
 
     user_filter.val('abc'); // no match
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, []);
 
     user_filter.val('fred'); // match fred
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [fred.user_id]);
 
     user_filter.val('fred,alice'); // match fred and alice
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
     user_filter.val('fr,al'); // match fred and alice partials
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
     presence.presence_info[alice.user_id] = { status: activity.IDLE };
     user_filter.val('fr,al'); // match fred and alice partials and idle user
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
 
     $.stub_selector('.user-list-filter', []);
     presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 }());
 
