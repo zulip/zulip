@@ -98,6 +98,10 @@ def render_markdown_path(markdown_file_path, context=None):
             context['recommended_stream_name'] = integration.stream_name
         if hasattr(integration, 'url'):
             context['integration_url'] = integration.url[3:]
+        if hasattr(integration, 'hubot_docs_url'):
+            context['hubot_docs_url'] = integration.hubot_docs_url
+            # HACK: The actual file doesn't exist; we rewrite it here.
+            markdown_file_path = 'zerver/integrations/hubot_common.md'
 
     jinja = engines['Jinja2']
     markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]

@@ -205,10 +205,14 @@ class HubotLozenge(Integration):
 
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
-        self.git_url = git_url
+        self.hubot_docs_url = git_url
+
         super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
+            # HACK: This isn't actually used.  We'll rewrite this to
+            # `hubot_common.md` in `app_filters.py`
+            doc = 'zerver/integrations/%s.md' % (name,),
             legacy=legacy
         )
 
@@ -456,7 +460,6 @@ BOT_INTEGRATIONS = [
 # Note: These are not actually displayed anywhere; we're keeping them
 # around so they can be migrated into the newer HUBOT_INTEGRATIONS
 HUBOT_LOZENGES_LEGACY = {
-    'assembla': HubotLozenge('assembla', ['project-management', 'version-control']),
     'bonusly': HubotLozenge('bonusly', ['hr']),
     'chartbeat': HubotLozenge('chartbeat', ['marketing']),
     'darksky': HubotLozenge('darksky', ['misc'], display_name='Dark Sky', logo_alt='Dark Sky logo'),
@@ -470,8 +473,16 @@ HUBOT_LOZENGES_LEGACY = {
     'youtube': HubotLozenge('youtube', ['misc'], display_name='YouTube', logo_alt='YouTube logo')
 }
 
-for integration in WEBHOOK_INTEGRATIONS:
-    INTEGRATIONS[integration.name] = integration
+HUBOT_INTEGRATIONS = {
+    HubotLozenge('assembla', ['version-control', 'project-management'],
+                 display_name='Assembla', logo_alt='Assembla'),
+}
+
+for hubot_integration in HUBOT_INTEGRATIONS:
+    INTEGRATIONS[hubot_integration.name] = hubot_integration
+
+for webhook_integration in WEBHOOK_INTEGRATIONS:
+    INTEGRATIONS[webhook_integration.name] = webhook_integration
 
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
