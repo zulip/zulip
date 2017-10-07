@@ -62,6 +62,9 @@ initialize();
     assert.equal(_.size(realm_persons), 1);
     assert.equal(realm_persons[0].full_name, 'Isaac Newton');
 
+    var human_user_ids = people.get_realm_human_user_ids();
+    assert.deepEqual(human_user_ids, [isaac.user_id]);
+
     // Now deactivate isaac
     people.deactivate(isaac);
     person = people.realm_get(email);

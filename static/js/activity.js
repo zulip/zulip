@@ -244,21 +244,13 @@ function focus_lost() {
 }
 
 function filter_user_ids(user_ids) {
-    var user_list = meta.$user_list_filter;
-    if (user_list.length === 0) {
-        // We may have received an activity ping response after
-        // initiating a reload, in which case the user list may no
-        // longer be available.
-        // Return user list: useful for testing user list performance fix
+    var filter_text = exports.get_filter_text();
+
+    if (filter_text === '') {
         return user_ids;
     }
 
-    var search_term = user_list.expectOne().val().trim();
-    if (search_term === '') {
-        return user_ids;
-    }
-
-    var search_terms = search_term.toLowerCase().split(",");
+    var search_terms = filter_text.toLowerCase().split(",");
     search_terms = _.map(search_terms, function (s) {
         return s.trim();
     });
@@ -276,14 +268,6 @@ function matches_filter(user_id) {
     // too hard at it, but it should be fine for now.
     return (filter_user_ids([user_id]).length === 1);
 }
-
-function filter_and_sort(user_ids) {
-    user_ids = filter_user_ids(user_ids);
-    user_ids = sort_users(user_ids);
-    return user_ids;
-}
-
-exports._filter_and_sort = filter_and_sort;
 
 function get_num_unread(user_id) {
     if (unread.suppress_unread_counts) {
@@ -353,17 +337,7 @@ exports.build_user_sidebar = function () {
         return;
     }
 
-    var user_ids;
-
-    if (meta.$user_list_filter.val().length > 0) {
-        // If there's a filter, select from all users, not just those
-        // recently active.
-        user_ids = filter_and_sort(people.get_realm_persons().map(function (person) {
-            return person.user_id;
-        }));
-    } else {
-        user_ids = filter_and_sort(presence.get_user_ids());
-    }
+    var user_ids = exports.get_filtered_and_sorted_user_ids();
 
     var user_info = _.map(user_ids, info_for).filter(function (person) {
         // filtered bots and yourself are set to "undefined" in the `info_for`
@@ -488,9 +462,14 @@ exports.initialize = function () {
                       page_params.initial_servertime);
     delete page_params.presences;
 
+    exports.set_user_list_filter();
+
     exports.build_user_sidebar();
     exports.update_huddles();
 
+    exports.set_user_list_filter_handlers();
+
+    $('#clear_search_people_button').on('click', exports.clear_search);
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
     focus_ping(false);
@@ -598,21 +577,49 @@ function focus_user_filter(e) {
     update_clear_search_button();
 }
 
-exports.initialize_filter_state = function () {
-    // Exported just for the test suite.
-    meta.$user_list_filter = $(".user-list-filter");
+exports.get_filtered_and_sorted_user_ids = function () {
+    var user_ids;
 
+    if (exports.get_filter_text()) {
+        // If there's a filter, select from all users, not just those
+        // recently active.
+        user_ids = filter_user_ids(people.get_realm_human_user_ids());
+    } else {
+        // From large realms, the user_ids in presence may exclude
+        // users who have been idle more than three weeks.  When the
+        // filter text is blank, we show only those recently active users.
+        user_ids = presence.get_user_ids();
+    }
+
+    return sort_users(user_ids);
+};
+
+exports.set_user_list_filter = function () {
+    meta.$user_list_filter = $(".user-list-filter");
+};
+
+exports.set_user_list_filter_handlers = function () {
     meta.$user_list_filter.expectOne()
         .on('click', focus_user_filter)
         .on('input', update_users_for_search)
         .on('keydown', maybe_select_person)
         .on('blur', update_clear_search_button);
-    $('#clear_search_people_button').on('click', exports.clear_search);
 };
 
-$(function () {
-    exports.initialize_filter_state();
-});
+exports.get_filter_text = function () {
+    if (!meta.$user_list_filter) {
+        // This may be overly defensive, but there may be
+        // situations where get called before everything is
+        // fully intialized.  The empty string is a fine
+        // default here.
+        blueslip.warn('get_filter_text() is called before initialization');
+        return '';
+    }
+
+    var user_filter = meta.$user_list_filter.expectOne().val().trim();
+
+    return user_filter;
+};
 
 return exports;
 
