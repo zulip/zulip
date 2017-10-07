@@ -355,15 +355,7 @@ def apply_event(state, event, user_profile, include_subscribers):
             return
 
         if event['op'] in ["add"]:
-            if include_subscribers:
-                # Convert the emails to user_profile IDs since that's what register() returns
-                # TODO: Clean up this situation by making the event also have IDs
-                for item in event["subscriptions"]:
-                    item["subscribers"] = [
-                        get_user(email, user_profile.realm).id
-                        for email in item["subscribers"]
-                    ]
-            else:
+            if not include_subscribers:
                 # Avoid letting 'subscribers' entries end up in the list
                 for i, sub in enumerate(event['subscriptions']):
                     event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])

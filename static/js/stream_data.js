@@ -292,17 +292,6 @@ exports.set_subscribers = function (sub, user_ids) {
     sub.subscribers = Dict.from_array(user_ids || []);
 };
 
-exports.set_subscriber_emails = function (sub, emails) {
-    _.each(emails, function (email) {
-        var user_id = people.get_user_id(email);
-        if (!user_id) {
-            blueslip.error("We tried to set invalid subscriber: " + email);
-        } else {
-            sub.subscribers.set(user_id, true);
-        }
-    });
-};
-
 exports.add_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
