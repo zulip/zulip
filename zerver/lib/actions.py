@@ -1019,7 +1019,7 @@ def do_send_messages(messages_maybe_none):
         sender = message['message'].sender
         message_type = message_dict_no_markdown['type']
 
-        presence_idle_userids = get_active_presence_idle_userids(
+        presence_idle_user_ids = get_active_presence_idle_user_ids(
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
@@ -1032,7 +1032,7 @@ def do_send_messages(messages_maybe_none):
             message=message['message'].id,
             message_dict_markdown=message_dict_markdown,
             message_dict_no_markdown=message_dict_no_markdown,
-            presence_idle_userids=presence_idle_userids,
+            presence_idle_user_ids=presence_idle_user_ids,
         )
 
         users = [
@@ -3261,7 +3261,7 @@ def do_update_message(user_profile, message, subject, propagate_mode,
         event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)
         event['mention_user_ids'] = list(mention_user_ids)
-        event['presence_idle_userids'] = filter_presence_idle_userids(info['active_user_ids'])
+        event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
 
     if subject is not None:
         orig_subject = message.topic_name()
@@ -3530,7 +3530,7 @@ def gather_subscriptions(user_profile):
 
     return (subscribed, unsubscribed)
 
-def get_active_presence_idle_userids(realm, sender_id, message_type, active_user_ids, user_flags):
+def get_active_presence_idle_user_ids(realm, sender_id, message_type, active_user_ids, user_flags):
     # type: (Realm, int, str, Set[int], Dict[int, List[str]]) -> List[int]
     '''
     Given a list of active_user_ids, we build up a subset
@@ -3555,9 +3555,9 @@ def get_active_presence_idle_userids(realm, sender_id, message_type, active_user
         if mentioned or private_message:
             user_ids.add(user_id)
 
-    return filter_presence_idle_userids(user_ids)
+    return filter_presence_idle_user_ids(user_ids)
 
-def filter_presence_idle_userids(user_ids):
+def filter_presence_idle_user_ids(user_ids):
     # type: (Set[int]) -> List[int]
     if not user_ids:
         return []
