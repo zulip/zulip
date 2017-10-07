@@ -26,6 +26,7 @@ from zerver.models import (
 
 import datetime
 from email.utils import formataddr
+import lxml.html
 import re
 import subprocess
 import ujson
@@ -69,18 +70,10 @@ def topic_narrow_url(realm, stream, topic):
 
 def relative_to_full_url(base_url, content):
     # type: (Text, Text) -> Text
-    # URLs for uploaded content and avatars are of the form:
-    # "/user_uploads/abc.png".
-    # "/avatar/username@example.com?s=30".
-    # Make them full paths. Explanation for all the regexes below:
-    # (\=['\"]) matches anything that starts with `=` followed by `"` or `'`.
-    # ([^\r\n\t\f <]) matches any character which is not a whitespace or `<`.
-    # ([^<]+>) matches any sequence of characters which does not contain `<`
-    # and ends in `>`.
-    # The last positive lookahead ensures that we replace URLs only within a tag.
-    content = re.sub(
-        r"(?<=\=['\"])/(user_uploads|avatar)/([^\r\n\t\f <]*)(?=[^<]+>)",
-        base_url + r"/\1/\2", content)
+    # Convert relative URLs to absolute URLs.
+    elem = lxml.html.fromstring(content)
+    elem.make_links_absolute(base_url)
+    content = lxml.html.tostring(elem).decode("utf-8")
 
     # Inline images can't be displayed in the emails as the request
     # from the mail server can't be authenticated because it has no
@@ -88,24 +81,6 @@ def relative_to_full_url(base_url, content):
     # leave the link.
     content = re.sub(
         r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
-
-    # Convert the zulip emoji's relative url to absolute one.
-    content = re.sub(
-        r"(?<=\=['\"])/static/generated/emoji/images/emoji/unicode/zulip.png(?=[^<]+>)",
-        base_url + r"/static/generated/emoji/images/emoji/unicode/zulip.png",
-        content)
-
-    # Realm emoji should use absolute URLs when referenced in missed-message emails.
-    content = re.sub(
-        r"(?<=\=['\"])/user_avatars/(\d+)/emoji/(?=[^<]+>)",
-        base_url + r"/user_avatars/\1/emoji/", content)
-
-    # Stream links need to be converted from relative to absolute. They
-    # have href values in the form of "/#narrow/stream/...".
-    content = re.sub(
-        r"(?<=\=['\"])/#narrow/stream/(?=[^<]+>)",
-        base_url + r"/#narrow/stream/",
-        content)
 
     return content
 
