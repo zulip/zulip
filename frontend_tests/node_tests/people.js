@@ -548,7 +548,7 @@ initialize();
     people.add(person);
 
     global.blueslip.error = function (msg) {
-        assert.equal(msg, 'No userid found for person@example.com');
+        assert.equal(msg, 'No user_id found for person@example.com');
     };
     var user_id = people.get_user_id('person@example.com');
     assert.equal(user_id, undefined);
