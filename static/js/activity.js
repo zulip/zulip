@@ -488,9 +488,14 @@ exports.initialize = function () {
                       page_params.initial_servertime);
     delete page_params.presences;
 
+    exports.set_user_list_filter();
+
     exports.build_user_sidebar();
     exports.update_huddles();
 
+    exports.set_user_list_filter_handlers();
+
+    $('#clear_search_people_button').on('click', exports.clear_search);
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
     focus_ping(false);
@@ -598,20 +603,17 @@ function focus_user_filter(e) {
     update_clear_search_button();
 }
 
-exports.initialize_filter_state = function () {
+exports.set_user_list_filter = function () {
     meta.$user_list_filter = $(".user-list-filter");
+};
 
+exports.set_user_list_filter_handlers = function () {
     meta.$user_list_filter.expectOne()
         .on('click', focus_user_filter)
         .on('input', update_users_for_search)
         .on('keydown', maybe_select_person)
         .on('blur', update_clear_search_button);
-    $('#clear_search_people_button').on('click', exports.clear_search);
 };
-
-$(function () {
-    exports.initialize_filter_state();
-});
 
 return exports;
 

@@ -240,6 +240,8 @@ presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
+activity.set_user_list_filter();
+
 (function test_presence_list_full_update() {
     var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
@@ -369,6 +371,7 @@ $('.user-list-filter').is = function (sel) {
     };
     compose_actions.start = function () {};
 
+    activity.set_user_list_filter_handlers();
     var keydown_handler = $('.user-list-filter').get_on_handler('keydown');
     keydown_handler(e);
 }());
@@ -504,7 +507,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
 // Reset jquery here.
 set_global('$', global.make_zjquery());
-activity.initialize_filter_state();
+activity.set_user_list_filter();
 
 (function test_insert_unfiltered_user_with_filter() {
     // This test only tests that we do not explode when
