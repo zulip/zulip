@@ -599,7 +599,6 @@ function focus_user_filter(e) {
 }
 
 exports.initialize_filter_state = function () {
-    // Exported just for the test suite.
     meta.$user_list_filter = $(".user-list-filter");
 
     meta.$user_list_filter.expectOne()
