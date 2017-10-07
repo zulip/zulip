@@ -9,6 +9,33 @@ $(function () {
         return common.password_warning(password_field.val(), password_field);
     });
 
+    var timer;
+
+    common.autofocus('#email');
+
+    $('#email').on("keydown", function () {
+        clearTimeout(timer);
+    });
+    $('#email').on("keyup", function () {
+        clearTimeout(timer);
+        timer = setTimeout(checkRealm, 1000, $('#email').val());
+    });
+
+    function checkRealm (email_value) {
+        $.ajax({
+          url: "/json/check_realm/" + email_value,
+          dataType: "json",
+        }).done(function (data) {
+            if (data.message === "OK") {
+                $("#message_error").removeClass("alert-error").addClass("alert-info");
+                $("#message_error").html("The organization name is valid.");
+            } else {
+                $("#message_error").removeClass("alert-info").addClass("alert-error");
+                $("#message_error").html(data['message']);
+            }
+        });
+    }
+
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
         return function (element) {

@@ -420,7 +420,7 @@ v1_api_and_json_patterns = [
 ]
 
 v1_api_and_json_patterns += [
-    url(r'^check_realm/(?P<realm_str>.*)$', zerver.views.realm.check_realm, name='zerver.views.check_realm'),
+    url(r'^check_subdomain/(?P<realm_str>.*)$', zerver.views.realm.check_realm, name='zerver.views.check_realm'),
 ]
 
 # Include the dual-use patterns twice
