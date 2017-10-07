@@ -24,7 +24,7 @@ def random_api_key() -> Text:
 def create_user_profile(realm: Realm, email: Text, password: Optional[Text],
                         active: bool, bot_type: Optional[int], full_name: Text,
                         short_name: Text, bot_owner: Optional[UserProfile],
-                        is_mirror_dummy: bool, tos_version: Text,
+                        is_mirror_dummy: bool, tos_version: Optional[Text],
                         timezone: Optional[Text],
                         tutorial_status: Optional[Text] = UserProfile.TUTORIAL_WAITING,
                         enter_sends: bool = False) -> UserProfile:
