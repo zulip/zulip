@@ -148,7 +148,7 @@ stream_data.add_sub('Frontend', frontend);
 
     set_global('stream_data', {
         subscribe_myself: noop,
-        set_subscriber_emails: noop,
+        set_subscribers: noop,
         get_colors: noop,
     });
     set_global('subs', { update_settings_for_subscribed: noop });
@@ -218,16 +218,12 @@ stream_data.add_sub('Frontend', frontend);
     // Test assigning subscriber emails
     with_overrides(function (override) {
         global.with_stub(function (stub) {
-            override('stream_data.set_subscriber_emails', stub.f);
-            var emails = [
-                'me@example.com',
-                'you@example.com',
-                'zooly@zulip.com',
-            ];
-            stream_events.mark_subscribed(frontend, emails, '');
+            override('stream_data.set_subscribers', stub.f);
+            var user_ids = [15, 20, 25];
+            stream_events.mark_subscribed(frontend, user_ids, '');
             var args = stub.get_args('sub', 'subscribers');
             assert.deepEqual(frontend, args.sub);
-            assert.deepEqual(emails, args.subscribers);
+            assert.deepEqual(user_ids, args.subscribers);
         });
 
         // assign self as well

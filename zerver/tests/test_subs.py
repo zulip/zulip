@@ -1288,6 +1288,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         self.user_profile = self.example_user('hamlet')
         self.test_email = self.user_profile.email
+        self.test_user = self.user_profile
         self.login(self.test_email)
         self.test_realm = self.user_profile.realm
         self.streams = self.get_streams(self.test_email, self.test_realm)
@@ -1615,8 +1616,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_multi_user_subscription(self):
         # type: () -> None
-        email1 = self.example_email("cordelia")
-        email2 = self.example_email("iago")
+        user1 = self.example_user("cordelia")
+        user2 = self.example_user("iago")
         realm = get_realm("zulip")
         streams_to_sub = ['multi_user_stream']
         events = []  # type: List[Mapping[str, Any]]
@@ -1625,7 +1626,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.common_subscribe_to_streams(
                     self.test_email,
                     streams_to_sub,
-                    dict(principals=ujson.dumps([email1, email2])),
+                    dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
         self.assert_length(queries, 39)
 
@@ -1635,7 +1636,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.assertEqual(ev['event']['op'], 'add')
                 self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
-                    set([email1, email2])
+                    set([user1.id, user2.id])
                 )
             else:
                 # Check "peer_add" events for streams users were
@@ -1664,7 +1665,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['users'], [get_user(self.test_email, self.test_realm).id])
         self.assertEqual(
             set(add_event['event']['subscriptions'][0]['subscribers']),
-            set([email1, email2, self.test_email])
+            set([user1.id, user2.id, self.test_user.id])
         )
 
         self.assertEqual(len(add_peer_event['users']), 17)
@@ -1679,6 +1680,7 @@ class SubscriptionAPITest(ZulipTestCase):
         events = []
         user_profile = self.example_user('othello')
         email3 = user_profile.email
+        user3 = user_profile
         realm3 = user_profile.realm
         stream = get_stream('multi_user_stream', realm)
         with tornado_redirected_to_list(events):
@@ -1692,7 +1694,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['users'], [get_user(email3, realm3).id])
         self.assertEqual(
             set(add_event['event']['subscriptions'][0]['subscribers']),
-            set([email1, email2, email3, self.test_email])
+            set([user1.id, user2.id, user3.id, self.test_user.id])
         )
 
         # We don't send a peer_add event to othello
@@ -1733,7 +1735,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['users'], [user_profile.id])
         self.assertEqual(
             set(add_event['event']['subscriptions'][0]['subscribers']),
-            set([user_profile.email, existing_user_profile.email])
+            set([user_profile.id, existing_user_profile.id])
         )
 
         # We don't send a peer_add event to othello
