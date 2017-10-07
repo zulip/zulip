@@ -166,7 +166,7 @@ def private_stream_user_ids(stream):
 
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
 
-def bot_owner_userids(user_profile):
+def bot_owner_user_ids(user_profile):
     # type: (UserProfile) -> Set[int]
     is_private_bot = (
         user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only or
@@ -413,7 +413,7 @@ def notify_created_bot(user_profile):
         bot['owner'] = user_profile.bot_owner.email
 
     event = dict(type="realm_bot", op="add", bot=bot)
-    send_event(event, bot_owner_userids(user_profile))
+    send_event(event, bot_owner_user_ids(user_profile))
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
@@ -567,7 +567,7 @@ def do_deactivate_user(user_profile, acting_user=None, _cascade=True):
                      bot=dict(email=user_profile.email,
                               user_id=user_profile.id,
                               full_name=user_profile.full_name))
-        send_event(event, bot_owner_userids(user_profile))
+        send_event(event, bot_owner_user_ids(user_profile))
 
     if _cascade:
         bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
@@ -2363,7 +2363,7 @@ def do_change_full_name(user_profile, full_name, acting_user):
                active_user_ids(user_profile.realm_id))
     if user_profile.is_bot:
         send_event(dict(type='realm_bot', op='update', bot=payload),
-                   bot_owner_userids(user_profile))
+                   bot_owner_user_ids(user_profile))
 
 def do_change_bot_owner(user_profile, bot_owner, acting_user):
     # type: (UserProfile, UserProfile, UserProfile) -> None
@@ -2379,7 +2379,7 @@ def do_change_bot_owner(user_profile, bot_owner, acting_user):
                              user_id=user_profile.id,
                              owner_id=user_profile.bot_owner.id,
                              )),
-               bot_owner_userids(user_profile))
+               bot_owner_user_ids(user_profile))
 
 def do_change_tos_version(user_profile, tos_version):
     # type: (UserProfile, Text) -> None
@@ -2406,7 +2406,7 @@ def do_regenerate_api_key(user_profile, acting_user):
                                  user_id=user_profile.id,
                                  api_key=user_profile.api_key,
                                  )),
-                   bot_owner_userids(user_profile))
+                   bot_owner_user_ids(user_profile))
 
 def do_change_avatar_fields(user_profile, avatar_source):
     # type: (UserProfile, Text) -> None
@@ -2426,7 +2426,7 @@ def do_change_avatar_fields(user_profile, avatar_source):
                                  user_id=user_profile.id,
                                  avatar_url=avatar_url(user_profile),
                                  )),
-                   bot_owner_userids(user_profile))
+                   bot_owner_user_ids(user_profile))
 
     payload = dict(
         email=user_profile.email,
@@ -2492,7 +2492,7 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_sending_stream=stream_name,
                                  )),
-                   bot_owner_userids(user_profile))
+                   bot_owner_user_ids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
     # type: (UserProfile, Optional[Stream], bool) -> None
@@ -2515,7 +2515,7 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_events_register_stream=stream_name,
                                  )),
-                   bot_owner_userids(user_profile))
+                   bot_owner_user_ids(user_profile))
 
 def do_change_default_all_public_streams(user_profile, value, log=True):
     # type: (UserProfile, bool, bool) -> None
@@ -2532,7 +2532,7 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
                                  user_id=user_profile.id,
                                  default_all_public_streams=user_profile.default_all_public_streams,
                                  )),
-                   bot_owner_userids(user_profile))
+                   bot_owner_user_ids(user_profile))
 
 def do_change_is_admin(user_profile, value, permission='administer'):
     # type: (UserProfile, bool, str) -> None
