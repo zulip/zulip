@@ -119,6 +119,17 @@ presence.presence_info = presence_info;
     assert.equal(presence.get_status(zoe.user_id), "unknown");
 }());
 
+(function test_reload_defaults() {
+    var warned;
+
+    blueslip.warn = function (msg) {
+        assert.equal(msg, 'get_filter_text() is called before initialization');
+        warned = true;
+    };
+    assert.equal(activity.get_filter_text(), '');
+    assert(warned);
+}());
+
 (function test_sort_users() {
     var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 

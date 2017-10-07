@@ -244,21 +244,13 @@ function focus_lost() {
 }
 
 function filter_user_ids(user_ids) {
-    var user_list = meta.$user_list_filter;
-    if (user_list.length === 0) {
-        // We may have received an activity ping response after
-        // initiating a reload, in which case the user list may no
-        // longer be available.
-        // Return user list: useful for testing user list performance fix
+    var filter_text = exports.get_filter_text();
+
+    if (filter_text === '') {
         return user_ids;
     }
 
-    var search_term = user_list.expectOne().val().trim();
-    if (search_term === '') {
-        return user_ids;
-    }
-
-    var search_terms = search_term.toLowerCase().split(",");
+    var search_terms = filter_text.toLowerCase().split(",");
     search_terms = _.map(search_terms, function (s) {
         return s.trim();
     });
@@ -355,7 +347,7 @@ exports.build_user_sidebar = function () {
 
     var user_ids;
 
-    if (meta.$user_list_filter.val().length > 0) {
+    if (exports.get_filter_text()) {
         // If there's a filter, select from all users, not just those
         // recently active.
         user_ids = filter_and_sort(people.get_realm_persons().map(function (person) {
@@ -613,6 +605,21 @@ exports.set_user_list_filter_handlers = function () {
         .on('input', update_users_for_search)
         .on('keydown', maybe_select_person)
         .on('blur', update_clear_search_button);
+};
+
+exports.get_filter_text = function () {
+    if (!meta.$user_list_filter) {
+        // This may be overly defensive, but there may be
+        // situations where get called before everything is
+        // fully intialized.  The empty string is a fine
+        // default here.
+        blueslip.warn('get_filter_text() is called before initialization');
+        return '';
+    }
+
+    var user_filter = meta.$user_list_filter.expectOne().val().trim();
+
+    return user_filter;
 };
 
 return exports;
