@@ -709,7 +709,7 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
 
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
-    presence_idle_userids = set(event_template.get('presence_idle_userids', []))
+    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
     sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
     message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
     message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
@@ -748,7 +748,7 @@ def process_message_event(event_template, users):
         # We first check if a message is potentially mentionable,
         # since receiver_is_off_zulip is somewhat expensive.
         if private_message or mentioned or stream_push_notify:
-            idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_userids)
+            idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
             always_push_notify = user_data.get('always_push_notify', False)
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
@@ -823,7 +823,7 @@ def process_message_update_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
     prior_mention_user_ids = set(event_template.get('prior_mention_user_ids', []))
     mention_user_ids = set(event_template.get('mention_user_ids', []))
-    presence_idle_user_ids = set(event_template.get('presence_idle_userids', []))
+    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
     stream_push_user_ids = set(event_template.get('stream_push_user_ids', []))
     push_notify_user_ids = set(event_template.get('push_notify_user_ids', []))
 

@@ -15,7 +15,7 @@ from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
     do_send_messages,
-    get_active_presence_idle_userids,
+    get_active_presence_idle_user_ids,
     get_user_info_for_message_updates,
     internal_send_private_message,
 )
@@ -2131,7 +2131,7 @@ class AttachmentTest(ZulipTestCase):
             self.assertTrue(attachment.is_claimed())
 
 class MissedMessageTest(ZulipTestCase):
-    def test_presence_idle_userids(self):
+    def test_presence_idle_user_ids(self):
         # type: () -> None
         UserPresence.objects.all().delete()
 
@@ -2145,14 +2145,14 @@ class MissedMessageTest(ZulipTestCase):
 
         def assert_missing(user_ids):
             # type: (List[int]) -> None
-            presence_idle_userids = get_active_presence_idle_userids(
+            presence_idle_user_ids = get_active_presence_idle_user_ids(
                 realm=realm,
                 sender_id=sender.id,
                 message_type=message_type,
                 active_user_ids=recipient_ids,
                 user_flags=user_flags,
             )
-            self.assertEqual(sorted(user_ids), sorted(presence_idle_userids))
+            self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
 
         def set_presence(user_id, client_name, ago):
             # type: (int, Text, int) -> None
