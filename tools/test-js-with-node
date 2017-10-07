@@ -21,8 +21,7 @@ USAGE = '''
     '''
 
 enforce_fully_covered = {
-    # activity.js Removed while we debug some coverage issues
-    # 'static/js/activity.js',
+    'static/js/activity.js',
     'static/js/alert_words.js',
     'static/js/bot_data.js',
     'static/js/channel.js',
