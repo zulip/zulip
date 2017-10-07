@@ -279,6 +279,8 @@ def build_custom_checkers(by_lang):
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/']),
          'description': 'Test strings should not be tagged for translationx'},
+        {'pattern': 'userid',
+         'description': 'We prefer user_id over userid.'},
         {'pattern': 'json_success\({}\)',
          'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
