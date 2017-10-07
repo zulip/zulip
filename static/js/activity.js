@@ -350,9 +350,7 @@ exports.build_user_sidebar = function () {
     if (exports.get_filter_text()) {
         // If there's a filter, select from all users, not just those
         // recently active.
-        user_ids = filter_and_sort(people.get_realm_persons().map(function (person) {
-            return person.user_id;
-        }));
+        user_ids = filter_and_sort(people.get_realm_human_user_ids());
     } else {
         user_ids = filter_and_sort(presence.get_user_ids());
     }

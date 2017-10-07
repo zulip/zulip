@@ -538,6 +538,12 @@ exports.get_realm_persons = function () {
     return realm_people_dict.values();
 };
 
+exports.get_realm_human_user_ids = function () {
+    // This returns user_ids for all non-bot users
+    // in the realm.
+    return realm_people_dict.keys();
+};
+
 exports.is_cross_realm_email = function (email) {
     var person = people.get_by_email(email);
     if (!person) {
