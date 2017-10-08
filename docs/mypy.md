@@ -83,8 +83,7 @@ should already be installed inside the Python 3 virtualenv at
 
 If you'd like to install just the version of `mypy` that we're using
 (useful if e.g. you want `mypy` installed on your laptop outside the
-Vagrant guest), you can do that with `pip install -r
-requirements/mypy.txt`.
+Vagrant guest), you can do that with `pip install 'mypy==5.30'`.
 
 ## Running mypy on Zulip's code locally
 
