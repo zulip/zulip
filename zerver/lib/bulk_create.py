@@ -64,7 +64,8 @@ def bulk_create_streams(realm, stream_dict):
             streams_to_create.append(
                 Stream(
                     realm=realm, name=name, description=options["description"],
-                    invite_only=options["invite_only"]
+                    invite_only=options["invite_only"],
+                    is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 )
             )
     # Sort streams by name before creating them so that we can have a
