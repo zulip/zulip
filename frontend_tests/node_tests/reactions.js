@@ -21,10 +21,21 @@ set_global('emoji', {
             emoji_url: 'TBD',
             deactivated: false,
         },
+        inactive_realm_emoji: {
+            emoji_name: 'inactive_realm_emoji',
+            emoji_url: 'TBD',
+            deactivated: true,
+        },
     },
     active_realm_emojis: {
         realm_emoji: {
             emoji_name: 'realm_emoji',
+            emoji_url: 'TBD',
+        },
+    },
+    deactivated_realm_emojis: {
+        inactive_realm_emoji: {
+            emoji_name: 'inactive_realm_emoji',
             emoji_url: 'TBD',
         },
     },
@@ -75,6 +86,8 @@ var message = {
         {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1'},
         {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1'},
         {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '2'},
+        {emoji_name: 'inactive_realm_emoji', user: {id: 5}, reaction_type: 'realm_emoji',
+         emoji_code: '1'},
 
         // add some bogus user_ids
         {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '3'},
@@ -149,6 +162,19 @@ set_global('current_msg_list', {
          class: 'message_reaction',
       },
       {
+         emoji_name: 'inactive_realm_emoji',
+         reaction_type: 'realm_emoji',
+         emoji_code: '1',
+         emoji_name_css_class: '1',
+         count: 1,
+         user_ids: [5],
+         title: 'You (click to remove) reacted with :inactive_realm_emoji:',
+         emoji_alt_code: undefined,
+         is_realm_emoji: true,
+         url: 'TBD',
+         class: 'message_reaction reacted',
+      },
+      {
          emoji_name: 'smile',
          reaction_type: 'unicode_emoji',
          emoji_code: '1',
@@ -187,6 +213,14 @@ set_global('current_msg_list', {
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         var args = stub.get_args('args').args;
         assert.equal(args.url, '/json/messages/1001/emoji_reactions/alien');
+    });
+
+    emoji_name = 'inactive_realm_emoji'; // Test removing a deactivated realm emoji.
+    global.with_stub(function (stub) {
+        global.channel.del = stub.f;
+        reactions.toggle_emoji_reaction(message_id, emoji_name);
+        var args = stub.get_args('args').args;
+        assert.equal(args.url, '/json/messages/1001/emoji_reactions/inactive_realm_emoji');
     });
 
     emoji_name = 'unknown-emoji';
@@ -308,7 +342,7 @@ set_global('current_msg_list', {
     assert.equal(count_element.html(), '1');
 
     var current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
-    assert.deepEqual(current_emojis, ['smile', '8ball']);
+    assert.deepEqual(current_emojis, ['smile', 'inactive_realm_emoji', '8ball']);
 
     // Next, remove Alice's reaction, which exercises removing the
     // emoji icon.
@@ -321,7 +355,7 @@ set_global('current_msg_list', {
     assert(removed);
 
     current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
-    assert.deepEqual(current_emojis, ['smile']);
+    assert.deepEqual(current_emojis, ['smile', 'inactive_realm_emoji']);
 
 
     // Now add Cali's realm_emoji reaction.
