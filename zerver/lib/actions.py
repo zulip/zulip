@@ -1967,12 +1967,12 @@ def get_user_ids_for_streams(streams):
 
     get_stream_id = itemgetter('recipient__type_id')
 
-    all_subs_by_stream = defaultdict(list)  # type: Dict[int, List[int]]
+    all_subscribers_by_stream = defaultdict(list)  # type: Dict[int, List[int]]
     for stream_id, rows in itertools.groupby(all_subs, get_stream_id):
         user_ids = [row['user_profile_id'] for row in rows]
-        all_subs_by_stream[stream_id] = user_ids
+        all_subscribers_by_stream[stream_id] = user_ids
 
-    return all_subs_by_stream
+    return all_subscribers_by_stream
 
 def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_user=None):
     # type: (Iterable[Stream], Iterable[UserProfile], bool, Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
@@ -2065,13 +2065,13 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     # First, get all users subscribed to the streams that we care about
     # We fetch all subscription information upfront, as it's used throughout
     # the following code and we want to minize DB queries
-    all_subs_by_stream = get_user_ids_for_streams(streams=streams)
+    all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
     def fetch_stream_subscriber_user_ids(stream):
         # type: (Stream) -> List[int]
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             return []
-        user_ids = all_subs_by_stream[stream.id]
+        user_ids = all_subscribers_by_stream[stream.id]
         return user_ids
 
     sub_tuples_by_user = defaultdict(list)  # type: Dict[int, List[Tuple[Subscription, Stream]]]
@@ -2108,7 +2108,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
             continue
 
         new_user_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
-        subscribed_user_ids = all_subs_by_stream[stream.id]
+        subscribed_user_ids = all_subscribers_by_stream[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,
@@ -2214,7 +2214,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
             continue
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
-    all_subs_by_stream = get_user_ids_for_streams(streams=streams)
+    all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
     for stream in streams:
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
@@ -2223,7 +2223,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         altered_users = altered_user_dict[stream.id]
         altered_user_ids = [u.id for u in altered_users]
 
-        subscribed_user_ids = all_subs_by_stream[stream.id]
+        subscribed_user_ids = all_subscribers_by_stream[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,
