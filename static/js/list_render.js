@@ -121,6 +121,13 @@ var list_render = (function () {
             // initializing a new progressive list render instance, you can just
             // update the data of an existing one.
             data: function (data) {
+                // if no args are provided then just return the existing data.
+                // this interface is similar to how many jQuery functions operate,
+                // where a call to the method without data returns the existing data.
+                if (typeof data === "undefined" && arguments.length === 0) {
+                    return meta.list;
+                }
+
                 if (Array.isArray(data)) {
                     meta.list = data;
 
