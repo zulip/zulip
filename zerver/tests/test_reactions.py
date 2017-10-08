@@ -2,6 +2,7 @@
 
 import ujson
 from typing import Any, Mapping, List
+from unittest import mock
 from six import string_types
 
 from zerver.lib.emoji import emoji_name_to_emoji_code
@@ -30,16 +31,6 @@ class ReactionEmojiTest(ZulipTestCase):
         sender = self.example_email("hamlet")
         result = self.client_put('/api/v1/messages/1/emoji_reactions/foo',
                                  **self.api_auth(sender))
-        self.assert_json_error(result, "Emoji 'foo' does not exist")
-
-    def test_remove_invalid_emoji(self):
-        # type: () -> None
-        """
-        Removing invalid emoji fails
-        """
-        sender = self.example_email("hamlet")
-        result = self.client_delete('/api/v1/messages/1/emoji_reactions/foo',
-                                    **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'foo' does not exist")
 
     def test_add_deactivated_realm_emoji(self):
@@ -265,6 +256,40 @@ class ReactionTest(ZulipTestCase):
                                     **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction does not exist")
 
+    def test_remove_existing_reaction_with_renamed_emoji(self):
+        # type: () -> None
+        """
+        Removes an old existing reaction but the name of emoji got changed during
+        various emoji infra changes.
+        """
+        sender = self.example_email("hamlet")
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/smile',
+                                 **self.api_auth(sender))
+        self.assert_json_success(result)
+
+        with mock.patch('zerver.lib.emoji.name_to_codepoint', name_to_codepoint={}):
+            result = self.client_delete('/api/v1/messages/1/emoji_reactions/smile',
+                                        **self.api_auth(sender))
+            self.assert_json_success(result)
+
+    def test_remove_existing_reaction_with_deactivated_realm_emoji(self):
+        # type: () -> None
+        """
+        Removes an old existing reaction but the realm emoji used there has been deactivated.
+        """
+        sender = self.example_email("hamlet")
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/green_tick',
+                                 **self.api_auth(sender))
+        self.assert_json_success(result)
+
+        # Deactivate realm emoji.
+        emoji = RealmEmoji.objects.get(name="green_tick")
+        emoji.deactivated = True
+        emoji.save(update_fields=['deactivated'])
+
+        result = self.client_delete('/api/v1/messages/1/emoji_reactions/green_tick',
+                                    **self.api_auth(sender))
+        self.assert_json_success(result)
 
 class ReactionEventTest(ZulipTestCase):
     def test_add_event(self):

@@ -51,8 +51,6 @@ def remove_reaction_backend(request, user_profile, message_id, emoji_name):
     # cannot see the message (e.g. for messages to private streams).
     message = access_message(user_profile, message_id)[0]
 
-    check_valid_emoji(message.sender.realm, emoji_name)
-
     # We could probably just make this check be a try/except for the
     # IntegrityError from it already existing, but this is a bit cleaner.
     if not Reaction.objects.filter(user_profile=user_profile,
