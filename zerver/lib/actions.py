@@ -1904,8 +1904,8 @@ def maybe_get_subscriber_emails(stream, user_profile):
         subscribers = []
     return subscribers
 
-def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
-    # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[Text]], bool) -> None
+def notify_subscriptions_added(user_profile, sub_pairs, stream_user_ids, no_log=False):
+    # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[int]], bool) -> None
     if not no_log:
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
@@ -1924,7 +1924,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     push_notifications=subscription.push_notifications,
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
-                    subscribers=stream_emails(stream))
+                    subscribers=stream_user_ids(stream))
                for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
                  subscriptions=payload)
@@ -1951,26 +1951,8 @@ def get_peer_user_ids_for_stream_change(stream, altered_user_ids, subscribed_use
         # structure to stay up-to-date.
         return set(active_user_ids(stream.realm_id)) - set(altered_user_ids)
 
-class UserLite(object):
-    '''
-    This is a lightweight object that we use for highly
-    optimized codepaths that sometimes process ~30k subscription
-    rows when bulk-adding streams for newly registered users.
-
-    This little wrapper is a lot less expensive than full-blown
-    UserProfile objects, but it lets the rest of the code work
-    with the nice object syntax.
-
-    Long term, we want to avoid sending around all of these emails,
-    so we can make this class go away and just deal with user_ids.
-    '''
-    def __init__(self, user_id, email):
-        # type: (int, Text) -> None
-        self.id = user_id
-        self.email = email
-
-def query_all_subs_by_stream(streams):
-    # type: (Iterable[Stream]) -> Dict[int, List[UserLite]]
+def get_user_ids_for_streams(streams):
+    # type: (Iterable[Stream]) -> Dict[int, List[int]]
     all_subs = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=[stream.id for stream in streams],
@@ -1979,23 +1961,16 @@ def query_all_subs_by_stream(streams):
     ).values(
         'recipient__type_id',
         'user_profile_id',
-        'user_profile__email',
     ).order_by(
         'recipient__type_id',
     )
 
     get_stream_id = itemgetter('recipient__type_id')
 
-    all_subs_by_stream = defaultdict(list)  # type: Dict[int, List[UserLite]]
+    all_subs_by_stream = defaultdict(list)  # type: Dict[int, List[int]]
     for stream_id, rows in itertools.groupby(all_subs, get_stream_id):
-        users = [
-            UserLite(
-                user_id=row['user_profile_id'],
-                email=row['user_profile__email'],
-            )
-            for row in rows
-        ]
-        all_subs_by_stream[stream_id] = users
+        user_ids = [row['user_profile_id'] for row in rows]
+        all_subs_by_stream[stream_id] = user_ids
 
     return all_subs_by_stream
 
@@ -2090,14 +2065,14 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     # First, get all users subscribed to the streams that we care about
     # We fetch all subscription information upfront, as it's used throughout
     # the following code and we want to minize DB queries
-    all_subs_by_stream = query_all_subs_by_stream(streams=streams)
+    all_subs_by_stream = get_user_ids_for_streams(streams=streams)
 
-    def fetch_stream_subscriber_emails(stream):
-        # type: (Stream) -> List[Text]
+    def fetch_stream_subscriber_user_ids(stream):
+        # type: (Stream) -> List[int]
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             return []
-        users = all_subs_by_stream[stream.id]
-        return [u.email for u in users]
+        user_ids = all_subs_by_stream[stream.id]
+        return user_ids
 
     sub_tuples_by_user = defaultdict(list)  # type: Dict[int, List[Tuple[Subscription, Stream]]]
     new_streams = set()  # type: Set[Tuple[int, int]]
@@ -2123,7 +2098,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
         sub_pairs = sub_tuples_by_user[user_profile.id]
-        notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_emails)
+        notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_user_ids)
 
     # The second batch is events for other users who are tracking the
     # subscribers lists of streams in their browser; everyone for
@@ -2133,8 +2108,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
             continue
 
         new_user_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
-        subscribed_users = all_subs_by_stream[stream.id]
-        subscribed_user_ids = [u.id for u in subscribed_users]
+        subscribed_user_ids = all_subs_by_stream[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,
@@ -2240,7 +2214,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
             continue
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
-    all_subs_by_stream = query_all_subs_by_stream(streams=streams)
+    all_subs_by_stream = get_user_ids_for_streams(streams=streams)
 
     for stream in streams:
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
@@ -2249,8 +2223,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         altered_users = altered_user_dict[stream.id]
         altered_user_ids = [u.id for u in altered_users]
 
-        subscribed_users = all_subs_by_stream[stream.id]
-        subscribed_user_ids = [u.id for u in subscribed_users]
+        subscribed_user_ids = all_subs_by_stream[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,

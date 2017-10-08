@@ -103,7 +103,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {
-        stream_data.set_subscriber_emails(sub, subscribers);
+        stream_data.set_subscribers(sub, subscribers);
     }
 
     subs.update_settings_for_subscribed(sub);
