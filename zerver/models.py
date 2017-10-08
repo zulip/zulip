@@ -842,6 +842,17 @@ class Stream(ModelReprMixin, models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
+
+    # The unique thing about Zephyr public streams is that we never list their
+    # users.  We may try to generalize this concept later, but for now
+    # we just use a concrete field.  (Zephyr public streams aren't exactly like
+    # invite-only streams--while both are private in terms of listing users,
+    # for Zephyr we don't even list users to stream members, yet membership
+    # is more public in the sense that you don't need a Zulip invite to join.
+    # This field is populated directly from UserProfile.is_zephyr_mirror_realm,
+    # and the reason for denormalizing field is performance.
+    is_in_zephyr_realm = models.BooleanField(default=False)  # type: bool
+
     # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
@@ -859,7 +870,7 @@ class Stream(ModelReprMixin, models.Model):
     def is_public(self):
         # type: () -> bool
         # All streams are private in Zephyr mirroring realms.
-        return not self.invite_only and not self.realm.is_zephyr_mirror_realm
+        return not self.invite_only and not self.is_in_zephyr_realm
 
     class Meta(object):
         unique_together = ("name", "realm")

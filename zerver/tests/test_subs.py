@@ -156,7 +156,8 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_error(result, 'Invalid stream id')
 
-        self.subscribe(user_profile, 'private_stream')
+        stream = self.subscribe(user_profile, 'private_stream')
+        self.assertFalse(stream.is_in_zephyr_realm)
 
         do_change_is_admin(user_profile, True)
         params = {
@@ -2570,7 +2571,8 @@ class GetSubscribersTest(ZulipTestCase):
         email = mit_user_profile.email
         users_to_subscribe = [email, self.mit_email("espuser")]
         for email in users_to_subscribe:
-            self.subscribe(get_user(email, mit_user_profile.realm), "mit_stream")
+            stream = self.subscribe(get_user(email, mit_user_profile.realm), "mit_stream")
+            self.assertTrue(stream.is_in_zephyr_realm)
 
         ret = self.common_subscribe_to_streams(
             email,

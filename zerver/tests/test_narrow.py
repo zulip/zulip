@@ -608,7 +608,8 @@ class GetOldMessagesTest(ZulipTestCase):
         # it to ensure that we actually have a stream message in this
         # narrow view.
         lambda_stream_name = u"\u03bb-stream"
-        self.subscribe(self.mit_user("starnine"), lambda_stream_name)
+        stream = self.subscribe(self.mit_user("starnine"), lambda_stream_name)
+        self.assertTrue(stream.is_in_zephyr_realm)
 
         lambda_stream_d_name = u"\u03bb-stream.d"
         self.subscribe(self.mit_user("starnine"), lambda_stream_d_name)
