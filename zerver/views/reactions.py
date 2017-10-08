@@ -12,6 +12,17 @@ from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.models import Reaction, UserMessage, UserProfile
 
+def create_historical_message(user_profile, message):
+    # type: (UserProfile, Message) -> None
+    # Users can see and react to messages sent to streams they
+    # were not a subscriber to; in order to receive events for
+    # those, we give the user a `historical` UserMessage objects
+    # for the message.  This is the same trick we use for starring
+    # messages.
+    UserMessage.objects.create(user_profile=user_profile,
+                               message=message,
+                               flags=UserMessage.flags.historical | UserMessage.flags.read)
+
 @has_request_variables
 def add_reaction_backend(request, user_profile, message_id, emoji_name):
     # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
@@ -30,14 +41,7 @@ def add_reaction_backend(request, user_profile, message_id, emoji_name):
         raise JsonableError(_("Reaction already exists"))
 
     if user_message is None:
-        # Users can see and react to messages sent to streams they
-        # were not a subscriber to; in order to receive events for
-        # those, we give the user a `historical` UserMessage objects
-        # for the message.  This is the same trick we use for starring
-        # messages.
-        UserMessage.objects.create(user_profile=user_profile,
-                                   message=message,
-                                   flags=UserMessage.flags.historical | UserMessage.flags.read)
+        create_historical_message(user_profile, message)
 
     do_add_reaction(user_profile, message, emoji_name)
 
