@@ -255,6 +255,15 @@ exports.on_load_success = function (realm_people_data) {
                 }
             },
             success: function () {
+                var user_table_list = list_render.get("users_table_list");
+
+                var user = _.find(user_table_list.data(), function (user) {
+                    return user.email === email;
+                });
+
+                user.is_active = false;
+                user_table_list.render();
+
                 var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
                 button.prop("disabled", false);
                 button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
