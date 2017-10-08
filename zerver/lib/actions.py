@@ -282,12 +282,10 @@ def add_new_user_history(user_profile, streams):
     """Give you the last 1000 messages on your public streams, so you have
     something to look at in your home view once you finish the
     tutorial."""
-    one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                           type_id__in=[stream.id for stream in streams
                                                        if not stream.invite_only])
-    recent_messages = Message.objects.filter(recipient_id__in=recipients,
-                                             pub_date__gt=one_week_ago).order_by("-id")
+    recent_messages = Message.objects.filter(recipient_id__in=recipients).order_by("-id")
     last_kmessages = recent_messages.values_list('id', flat=True)[0:1000]
     message_ids_to_use = list(reversed(last_kmessages))
     if len(message_ids_to_use) == 0:
@@ -301,8 +299,9 @@ def add_new_user_history(user_profile, streams):
                                  flags=UserMessage.flags.read)
                      for message_id in message_ids_to_use
                      if message_id not in already_ids]
-
     UserMessage.objects.bulk_create(ums_to_create)
+    last_80 = [ms.message_id for ms in ums_to_create[-80:]]
+    UserMessage.objects.filter(message_id__in=last_80, user_profile=user_profile).update(flags=F('flags').bitand(~UserMessage.flags.read))
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
@@ -2954,7 +2953,8 @@ def do_mark_all_as_read(user_profile):
     ).extra(
         where=[UserMessage.where_unread()]
     )
-
+    msg_ids = msgs.order_by('-id').values_list('message_id')[80:]
+    msgs = UserMessage.objects.filter(message_id__in=msg_ids, user_profile=user_profile)
     count = msgs.update(
         flags=F('flags').bitor(UserMessage.flags.read)
     )
