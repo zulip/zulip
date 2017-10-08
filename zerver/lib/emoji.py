@@ -12,8 +12,13 @@ from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
 NAME_TO_CODEPOINT_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
+CODEPOINT_TO_NAME_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "codepoint_to_name.json")
+
 with open(NAME_TO_CODEPOINT_PATH) as fp:
     name_to_codepoint = ujson.load(fp)
+
+with open(CODEPOINT_TO_NAME_PATH) as fp:
+    codepoint_to_name = ujson.load(fp)
 
 def emoji_name_to_emoji_code(realm, emoji_name):
     # type: (Realm, Text) -> Tuple[Text, Text]
@@ -29,6 +34,45 @@ def emoji_name_to_emoji_code(realm, emoji_name):
 def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None
     emoji_name_to_emoji_code(realm, emoji_name)
+
+def emoji_code_is_valid(realm: Realm, emoji_code: str, emoji_type: str) -> bool:
+    # For a given realm and emoji type, determines whether an emoji
+    # code is valid for new reactions, or not.
+    if emoji_type == "realm_emoji":
+        realm_emojis = realm.get_emoji()
+        if emoji_code not in realm_emojis:
+            return False
+        if realm_emojis[emoji_code]["deactivated"]:
+            return False
+        return True
+    elif emoji_type == "zulip_extra_emoji":
+        return emoji_code == "zulip"
+    elif emoji_type == "unicode_emoji":
+        return emoji_code in codepoint_to_name
+
+    # The above are the only valid emoji types
+    return False
+
+def emoji_name_is_valid(emoji_name: str, emoji_code: str, emoji_type: str) -> bool:
+    # Given a realm, emoji code and emoji type, determines whether the
+    # passed emoji name is a valid name for that emoji. It is assumed
+    # here that the emoji code has been checked for validity before
+    # calling this function.
+    if emoji_type == "realm_emoji":
+        return emoji_code == emoji_name
+    elif emoji_type == "zulip_extra_emoji":
+        return emoji_name == "zulip"
+    elif emoji_type == "unicode_emoji":
+        return name_to_codepoint.get(emoji_name) == emoji_code
+    raise AssertionError("Emoji type should have been checked previously")
+
+def check_emoji_name_consistency(emoji_name: str, emoji_code: str, emoji_type: str) -> None:
+    if not emoji_name_is_valid(emoji_name, emoji_code, emoji_type):
+        raise JsonableError(_("Invalid emoji name."))
+
+def check_emoji_code_consistency(realm: Realm, emoji_code: str, emoji_type: str) -> None:
+    if not emoji_code_is_valid(realm, emoji_code, emoji_type):
+        raise JsonableError(_("Emoji for this emoji code not found."))
 
 def check_emoji_admin(user_profile, emoji_name=None):
     # type: (UserProfile, Optional[Text]) -> None

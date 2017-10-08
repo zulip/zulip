@@ -1380,6 +1380,23 @@ def do_remove_reaction_legacy(user_profile, message, emoji_name):
     reaction.delete()
     notify_reaction_update(user_profile, message, reaction, "remove")
 
+def do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type):
+    # type: (UserProfile, Message, Text, Text, Text) -> None
+    reaction = Reaction(user_profile=user_profile, message=message,
+                        emoji_name=emoji_name, emoji_code=emoji_code,
+                        reaction_type=reaction_type)
+    reaction.save()
+    notify_reaction_update(user_profile, message, reaction, "add")
+
+def do_remove_reaction(user_profile, message, emoji_code, reaction_type):
+    # type: (UserProfile, Message, Text, Text) -> None
+    reaction = Reaction.objects.filter(user_profile=user_profile,
+                                       message=message,
+                                       emoji_code=emoji_code,
+                                       reaction_type=reaction_type).get()
+    reaction.delete()
+    notify_reaction_update(user_profile, message, reaction, "remove")
+
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     recipient_user_profiles = get_typing_user_profiles(notification['recipient'],
