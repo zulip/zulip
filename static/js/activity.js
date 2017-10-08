@@ -285,6 +285,13 @@ function info_for(user_id) {
         return;
     }
 
+    // for the intents and purposes of viewing users in the right sidebar,
+    // an unknown status should just be considered "offline", since we don't
+    // care about the semantics of status beyond not being active in any way.
+    if (status === "unknown") {
+        status = "offline";
+    }
+
     return {
         href: narrow.pm_with_uri(person.email),
         name: person.full_name,
