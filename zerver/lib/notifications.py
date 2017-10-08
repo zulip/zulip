@@ -71,9 +71,9 @@ def topic_narrow_url(realm, stream, topic):
 def relative_to_full_url(base_url, content):
     # type: (Text, Text) -> Text
     # Convert relative URLs to absolute URLs.
-    elem = lxml.html.fromstring(content)
+    elem = lxml.html.fromstring(content)  # type: ignore # https://github.com/python/typeshed/issues/525
     elem.make_links_absolute(base_url)
-    content = lxml.html.tostring(elem).decode("utf-8")
+    content = lxml.html.tostring(elem).decode("utf-8")  # type: ignore # https://github.com/python/typeshed/issues/525
 
     # Inline images can't be displayed in the emails as the request
     # from the mail server can't be authenticated because it has no
