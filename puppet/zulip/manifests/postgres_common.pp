@@ -43,12 +43,12 @@ class zulip::postgres_common {
     require => Package["postgresql-${zulip::base::postgres_version}"],
   }
 
-  file { "/usr/local/bin/pg_backup_and_purge.py":
+  file { "/usr/local/bin/pg_backup_and_purge":
     ensure => file,
     owner => "root",
     group => "postgres",
     mode => 754,
-    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge.py",
+    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge",
     require => File["/usr/local/bin/env-wal-e"],
   }
 
