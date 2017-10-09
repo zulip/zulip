@@ -180,7 +180,8 @@ class TestSendWebhookFixtureMessage(TestCase):
         self.assertTrue(ujson_mock.dumps.called)
         self.assertTrue(ujson_mock.loads.called)
         self.assertTrue(open_mock.called)
-        client.post.assert_called_once_with(self.url, {}, content_type="application/json")
+        client.post.assert_called_once_with(self.url, {}, content_type="application/json",
+                                            HTTP_HOST="zulip.testserver")
 
 class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
