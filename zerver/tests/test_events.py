@@ -4,6 +4,7 @@
 from typing import Any, Callable, Dict, List, Optional, Set, Text, Tuple, Union
 import os
 import shutil
+import sys
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -496,6 +497,7 @@ class EventsRegisterTest(ZulipTestCase):
                     help on chat.
                 ''')
 
+            sys.stdout.flush()
             raise AssertionError('Mismatching states')
 
     def check_events_dict(self, required_keys):
