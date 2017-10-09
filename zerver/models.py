@@ -873,6 +873,19 @@ class Stream(ModelReprMixin, models.Model):
         # All streams are private in Zephyr mirroring realms.
         return not self.invite_only and not self.is_in_zephyr_realm
 
+    @property
+    def peers_are_visible(self):
+        # type: () -> bool
+        # This may seem counterintuitive, but you can't see your
+        # peers on a Zephyr public stream, because we have no way
+        # to enumerate them.  You can see your peers on any "regular"
+        # stream, as well as on Zephyr invite-only streams.
+        #     invite_only | true | false
+        #     ------------+------+------
+        #     normal      |  T   |  T
+        #     zephyr      |  T   |  F
+        return (not self.is_in_zephyr_realm) or self.invite_only
+
     class Meta(object):
         unique_together = ("name", "realm")
 

@@ -2075,7 +2075,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
 
     def fetch_stream_subscriber_user_ids(stream):
         # type: (Stream) -> List[int]
-        if stream.is_in_zephyr_realm and not stream.invite_only:
+        if not stream.peers_are_visible:
             return []
         user_ids = all_subscribers_by_stream[stream.id]
         return user_ids
@@ -2110,7 +2110,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     # subscribers lists of streams in their browser; everyone for
     # public streams and only existing subscribers for private streams.
     for stream in streams:
-        if stream.is_in_zephyr_realm and not stream.invite_only:
+        if not stream.peers_are_visible:
             continue
 
         new_user_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
@@ -2223,7 +2223,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
     for stream in streams:
-        if stream.is_in_zephyr_realm and not stream.invite_only:
+        if not stream.peers_are_visible:
             continue
 
         altered_users = altered_user_dict[stream.id]
