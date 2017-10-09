@@ -14,7 +14,10 @@ from zerver.models import get_realm, get_stream, \
     Realm, Stream, UserProfile, get_user, get_bot_services, Service
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
-    avatar_disk_path, get_test_image_file, tornado_redirected_to_list,
+    avatar_disk_path,
+    get_test_image_file,
+    queries_captured,
+    tornado_redirected_to_list,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.bot_lib import get_bot_handler
@@ -88,6 +91,33 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Name too short!')
         self.assert_num_bots_equal(0)
+
+    def test_json_users_with_bots(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
+        self.assert_num_bots_equal(0)
+
+        num_bots = 30
+        for i in range(num_bots):
+            full_name = 'Bot %d' % (i,)
+            short_name = 'bot-%d' % (i,)
+            bot_info = dict(
+                full_name=full_name,
+                short_name=short_name,
+                bot_type=1
+            )
+            result = self.client_post("/json/bots", bot_info)
+            self.assert_json_success(result)
+
+        self.assert_num_bots_equal(num_bots)
+
+        with queries_captured() as queries:
+            users_result = self.client_get('/json/users')
+
+        self.assert_json_success(users_result)
+
+        self.assert_length(queries, 4)
 
     def test_add_bot(self):
         # type: () -> None
