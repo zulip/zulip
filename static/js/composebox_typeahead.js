@@ -140,9 +140,13 @@ function handle_keydown(e) {
                     this_enter_sends = !has_modifier_key;
                 } else {
                     // If enter_sends is not enabled, just hitting
-                    // enter should add a newline, but with a modifier
-                    // key held down, we should send.
-                    this_enter_sends = has_modifier_key;
+                    // enter should add a newline, but with a
+                    // non-shift modifier key held down, we should
+                    // send.  With shift, we shouldn't, because
+                    // shift+enter to get a newline is a common
+                    // keyboard habit for folks for dealing with other
+                    // chat products where enter-always-sends.
+                    this_enter_sends = has_non_shift_modifier_key;
                 }
                 if (this_enter_sends) {
                     e.preventDefault();
