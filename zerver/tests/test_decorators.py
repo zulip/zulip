@@ -1116,8 +1116,8 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def _do_test(self, user_email):
         # type: (Text) -> HttpResponse
-        data = {"status": '"started"'}
-        return self.client_post(r'/json/tutorial_status', data)
+        data = {"password": initial_password(user_email)}
+        return self.client_post(r'/json/fetch_api_key', data)
 
     def _login(self, user_email, user_realm, password=None):
         # type: (Text, Realm, str) -> None
@@ -1153,8 +1153,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
 
     def _do_test(self, user_email):
         # type: (str) -> HttpResponse
-        data = {"status": '"started"'}
-        return self.client_post(r'/json/tutorial_status', data)
+        data = {"password": initial_password(user_email)}
+        return self.client_post(r'/json/fetch_api_key', data)
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
     def test_zulip_login_required_if_subdomain_is_invalid(self):
