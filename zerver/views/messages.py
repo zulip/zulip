@@ -222,7 +222,7 @@ class NarrowBuilder(object):
             # that specific stream.  So it would be a bug to hit this
             # codepath after relying on this term there.  But all streams in
             # a Zephyr realm are private, so that doesn't happen.
-            assert(not stream.is_public())
+            assert(not stream.has_public_history)
 
             m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
             # Since the regex has a `.+` in it and "" is invalid as a

@@ -303,7 +303,7 @@ def access_message(user_profile, message_id):
             # You can't access private messages you didn't receive
             raise JsonableError(_("Invalid message(s)"))
         stream = Stream.objects.get(id=message.recipient.type_id)
-        if not stream.is_public():
+        if not stream.has_public_history:
             # You can't access messages sent to invite-only streams
             # that you didn't receive
             raise JsonableError(_("Invalid message(s)"))

@@ -867,7 +867,8 @@ class Stream(ModelReprMixin, models.Model):
         # type: () -> Text
         return u"<Stream: %s>" % (self.name,)
 
-    def is_public(self):
+    @property
+    def has_public_history(self):
         # type: () -> bool
         # All streams are private in Zephyr mirroring realms.
         return not self.invite_only and not self.is_in_zephyr_realm
