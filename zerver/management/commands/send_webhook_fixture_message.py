@@ -8,13 +8,16 @@ from django.test import Client
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import get_realm
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """
 Create webhook message based on given fixture
 Example:
 ./manage.py send_webhook_fixture_message \
-    --fixture=zerver/fixtures/integration/fixture.json \
+    [--realm=zulip] \
+    --fixture=zerver/webhooks/integration/fixtures/name.json \
     '--url=/api/v1/external/integration?stream=stream_name&api_key=api_key'
 
 """
@@ -33,6 +36,8 @@ Example:
                             help='The url on your Zulip server that you want '
                                  'to post the fixture to')
 
+        self.add_realm_args(parser, help="Specify which realm/subdomain to connect to; default is zulip")
+
     def handle(self, **options):
         # type: (**str) -> None
         if options['fixture'] is None or options['url'] is None:
@@ -46,8 +51,13 @@ Example:
             exit(1)
 
         json = self._get_fixture_as_json(full_fixture_path)
+        realm = self.get_realm(options)
+        if realm is None:
+            realm = get_realm("zulip")
+
         client = Client()
-        client.post(options['url'], json, content_type="application/json")
+        client.post(options['url'], json, content_type="application/json",
+                    HTTP_HOST=realm.host)
 
     def _does_fixture_path_exist(self, fixture_path):
         # type: (str) -> bool
