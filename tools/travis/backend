@@ -18,7 +18,7 @@ set -x
 ./tools/test-migrations
 ./tools/optimize-svg
 ./tools/test-documentation
-./tools/test-help-documentation.py
+./tools/test-help-documentation
 ./tools/test-api
 #./tools/test-run-dev  # Disabled in CI because flaky.
 #./tools/test-queue-worker-reload  # Disabled in CI because flaky.

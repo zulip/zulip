@@ -21,7 +21,7 @@ def profiled(func):
 
     Then view the results like this:
 
-        ./tools/show-profile-results.py test_ratelimit_decrease.profile
+        ./tools/show-profile-results test_ratelimit_decrease.profile
 
     """
     @wraps(func)

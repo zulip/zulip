@@ -44,7 +44,7 @@ run ./tools/test-migrations
 # run ./tools/optimize-svg
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
-run ./tools/test-help-documentation.py $FORCEARG
+run ./tools/test-help-documentation $FORCEARG
 run ./tools/test-api
 # Not running run-dev tests locally; we never have
 # run ./tools/test-run-dev
