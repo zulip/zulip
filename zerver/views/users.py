@@ -17,7 +17,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
-from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.avatar import avatar_url, get_gravatar_url, avatar_url_from_dict
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
@@ -340,20 +340,56 @@ def get_bots_backend(request, user_profile):
 def get_members_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     realm = user_profile.realm
-    admins = set(user_profile.realm.get_admin_users())
-    members = []
-    for profile in UserProfile.objects.select_related().filter(realm=realm):
-        member = {"full_name": profile.full_name,
-                  "is_bot": profile.is_bot,
-                  "is_active": profile.is_active,
-                  "is_admin": (profile in admins),
-                  "bot_type": profile.bot_type,
-                  "email": profile.email,
-                  "user_id": profile.id,
-                  "avatar_url": avatar_url(profile)}
-        if profile.is_bot and profile.bot_owner is not None:
-            member["bot_owner"] = profile.bot_owner.email
-        members.append(member)
+    admin_ids = set(u.id for u in user_profile.realm.get_admin_users())
+
+    query = UserProfile.objects.filter(
+        realm_id=realm.id
+    ).values(
+        'id',
+        'email',
+        'realm_id',
+        'full_name',
+        'is_bot',
+        'is_active',
+        'bot_type',
+        'avatar_source',
+        'avatar_version',
+        'bot_owner__email',
+    )
+
+    def get_member(row):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        email = row['email']
+        user_id = row['id']
+
+        result = dict(
+            user_id=user_id,
+            email=email,
+            full_name=row['full_name'],
+            is_bot=row['is_bot'],
+            is_active=row['is_active'],
+            bot_type=row['bot_type'],
+        )
+
+        result['is_admin'] = user_id in admin_ids
+
+        avatar_user_dict = dict(
+            id=user_id,
+            avatar_source=row['avatar_source'],
+            avatar_version=row['avatar_version'],
+            email=email,
+            realm_id=row['realm_id'],
+        )
+
+        result['avatar_url'] = avatar_url_from_dict(avatar_user_dict)
+
+        if row['bot_owner__email']:
+            result['bot_owner'] = row['bot_owner__email']
+
+        return result
+
+    members = [get_member(row) for row in query]
+
     return json_success({'members': members})
 
 @require_realm_admin
