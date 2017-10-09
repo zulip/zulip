@@ -672,4 +672,5 @@ def apply_unread_message_event(user_profile, state, message):
 
     mentioned = message.get('is_mentioned', False)
     if mentioned:
-        state['mentions'].add(message_id)
+        # state['mentions'].add(message_id)
+        pass
