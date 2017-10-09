@@ -21,6 +21,9 @@ sudo chmod a+rX /home/travis
 # to conflicts over which version of postgres should be running.
 sudo apt-get remove postgresql-9.2 postgresql-client-9.2 postgresql-contrib-9.2 postgresql-9.4 postgresql-client-9.4 postgresql-9.5  postgresql-contrib-9.5 postgresql-client-9.5 postgresql-9.6 postgresql-contrib-9.6 postgresql-client-9.6 -y
 
+# Remove some of Travis's' stupid extra sources.list files
+sudo rm -f /etc/apt/sources.list.d/mongodb*.list
+
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning
 # once again if that fixes our problem.
