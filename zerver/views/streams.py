@@ -166,7 +166,7 @@ def remove_subscriptions_backend(request, user_profile,
 
     for stream in streams:
         if removing_someone_else and stream.invite_only and \
-                not subscribed_to_stream(user_profile, stream):
+                not subscribed_to_stream(user_profile, stream.id):
             # Even as an admin, you can't remove other people from an
             # invite-only stream you're not on.
             return json_error(_("Cannot administer invite-only streams this way"))
@@ -181,10 +181,10 @@ def remove_subscriptions_backend(request, user_profile,
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
                                                           acting_user=user_profile)
 
-    for (subscriber, stream) in removed:
-        result["removed"].append(stream.name)
-    for (subscriber, stream) in not_subscribed:
-        result["not_subscribed"].append(stream.name)
+    for (subscriber, removed_stream) in removed:
+        result["removed"].append(removed_stream.name)
+    for (subscriber, not_subscribed_stream) in not_subscribed:
+        result["not_subscribed"].append(not_subscribed_stream.name)
 
     return json_success(result)
 
@@ -273,8 +273,8 @@ def add_subscriptions_backend(request, user_profile,
 
     bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
 
-    newly_created_stream_names = {stream.name for stream in created_streams}
-    private_stream_names = {stream.name for stream in streams if stream.invite_only}
+    newly_created_stream_names = {s.name for s in created_streams}
+    private_stream_names = {s.name for s in streams if s.invite_only}
 
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
@@ -340,7 +340,7 @@ def add_subscriptions_backend(request, user_profile,
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
     if not authorization_errors_fatal:
-        result["unauthorized"] = [stream.name for stream in unauthorized_streams]
+        result["unauthorized"] = [s.name for s in unauthorized_streams]
     return json_success(result)
 
 @has_request_variables
