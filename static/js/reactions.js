@@ -13,8 +13,28 @@ exports.open_reactions_popover = function () {
     return true;
 };
 
+function should_send_reaction(emoji_name, operation) {
+    // If a default emoji with this name exists then always send it irrespective
+    // of whether a realm emoji with this name exists or not.
+    if (!emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+        // While adding a reaction and a default emoji with this name doesn't
+        // exist then send the request only if there is an active realm emoji
+        // with this name. Preventing user from adding a reaction using a
+        // deactivated realm emoji is probably not the correct behavior but
+        // more work is required to support this functionality.
+        if (operation === "add") {
+            return emoji.active_realm_emojis.hasOwnProperty(emoji_name);
+        }
+        // While removing a reaction and a default emoji with this name doesn't
+        // exist then send the request if there is any realm emoji with this name
+        // whether active or inactive.
+        return emoji.all_realm_emojis.hasOwnProperty(emoji_name);
+    }
+    return true;
+}
+
 function send_reaction_ajax(message_id, emoji_name, operation) {
-    if (!emoji_codes.name_to_codepoint[emoji_name] && !emoji.active_realm_emojis[emoji_name]) {
+    if (!should_send_reaction(emoji_name, operation)) {
         // Emoji doesn't exist
         return;
     }
