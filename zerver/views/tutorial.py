@@ -1,15 +1,14 @@
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
+from zerver.decorator import has_request_variables, REQ
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_string
 from zerver.models import UserProfile
 
-@authenticated_json_post_view
 @has_request_variables
-def json_tutorial_status(request, user_profile,
-                         status=REQ(validator=check_string)):
+def set_tutorial_status(request, user_profile,
+                        status=REQ(validator=check_string)):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
     if status == 'started':
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED

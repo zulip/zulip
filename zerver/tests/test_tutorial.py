@@ -18,7 +18,7 @@ class TutorialTests(ZulipTestCase):
         ]
         for incoming_status, expected_db_status in cases:
             params = dict(status=ujson.dumps(incoming_status))
-            result = self.client_post('/json/tutorial_status', params)
+            result = self.client_post('/json/users/me/tutorial_status', params)
             self.assert_json_success(result)
             user = self.example_user('hamlet')
             self.assertEqual(user.tutorial_status, expected_db_status)

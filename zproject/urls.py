@@ -356,6 +356,10 @@ v1_api_and_json_patterns = [
     url(r'^users/me/hotspots$', rest_dispatch,
         {'POST': 'zerver.views.hotspots.mark_hotspot_as_read'}),
 
+    # users/me/tutorial_status -> zerver.views.tutorial
+    url(r'^users/me/tutorial_status$', rest_dispatch,
+        {'POST': 'zerver.views.tutorial.set_tutorial_status'}),
+
     # settings -> zerver.views.user_settings
     url(r'^settings$', rest_dispatch,
         {'PATCH': 'zerver.views.user_settings.json_change_settings'}),
