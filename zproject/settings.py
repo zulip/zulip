@@ -87,6 +87,15 @@ TUTORIAL_ENABLED = True
 # This is overridden in test_settings.py for the test suites
 CASPER_TESTS = False
 
+# Google Compute Engine has an /etc/boto.cfg that is "nicely
+# configured" to work with GCE's storage service.  However, their
+# configuration is super aggressive broken, in that it means importing
+# boto in a virtualenv that doesn't contain the GCE tools crashes.
+#
+# By using our own path for BOTO_CONFIG, we can cause boto to not
+# process /etc/boto.cfg.
+os.environ['BOTO_CONFIG'] = '/etc/zulip/boto.cfg'
+
 # Import variables like secrets from the prod_settings file
 # Import prod_settings after determining the deployment/machine type
 if PRODUCTION:
