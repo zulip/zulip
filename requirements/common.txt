@@ -170,8 +170,8 @@ beautifulsoup4==4.6.0
 # The Zulip API bindings, from its own repository.
 # We integrate with these tightly, so often it makes sense to pin a
 # version from Git rather than a release.
--e "git+https://github.com/zulip/python-zulip-api.git@0.3.4#egg=zulip==0.3.4_git&subdirectory=zulip"
--e "git+https://github.com/zulip/python-zulip-api.git@0.3.4#egg=zulip_bots==0.3.4+git&subdirectory=zulip_bots"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.5#egg=zulip==0.3.5_git&subdirectory=zulip"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.5#egg=zulip_bots==0.3.5+git&subdirectory=zulip_bots"
 
 # Used for Hesiod lookups, etc.
 py3dns==3.1.0
