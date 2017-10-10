@@ -46,8 +46,10 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
-- **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended), Git,
-  [VirtualBox][vbox-dl-macos], [Vagrant][vagrant-dl-macos].
+- **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended),
+  Git, VirtualBox (version [5.1.8][vbox-dl-macos]
+  recommended -- we find it's more stable than more recent versions),
+  [Vagrant][vagrant-dl-macos].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
