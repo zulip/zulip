@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
 from six import binary_type
 
-from zerver.lib.avatar import avatar_url_from_dict
+from zerver.lib.avatar import get_avatar_field
 import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
@@ -164,12 +164,18 @@ class MessageDict(object):
     ):
         # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
-        avatar_url = avatar_url_from_dict(dict(
+        # TODO: Make client_gravatar configurable.
+        client_gravatar = False
+
+        avatar_url = get_avatar_field(
+            user_id=sender_id,
+            realm_id=sender_realm_id,
+            email=sender_email,
             avatar_source=sender_avatar_source,
             avatar_version=sender_avatar_version,
-            email=sender_email,
-            id=sender_id,
-            realm_id=sender_realm_id))
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
 
         display_recipient = get_display_recipient_by_id(
             recipient_id,
