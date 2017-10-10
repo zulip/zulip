@@ -13,10 +13,6 @@ body {
     margin: 0 auto -56px;
 }
 
-.no-underline:hover {
-    text-decoration: none;
-}
-
 .normal {
     font-weight: normal;
 }
