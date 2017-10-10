@@ -171,32 +171,6 @@ class MessageDict(object):
             id=sender_id,
             realm_id=sender_realm_id))
 
-        display_recipient = get_display_recipient_by_id(
-            recipient_id,
-            recipient_type,
-            recipient_type_id
-        )
-
-        if recipient_type == Recipient.STREAM:
-            display_type = "stream"
-        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
-            assert not isinstance(display_recipient, Text)
-            display_type = "private"
-            if len(display_recipient) == 1:
-                # add the sender in if this isn't a message between
-                # someone and themself, preserving ordering
-                recip = {'email': sender_email,
-                         'full_name': sender_full_name,
-                         'short_name': sender_short_name,
-                         'id': sender_id,
-                         'is_mirror_dummy': sender_is_mirror_dummy}
-                if recip['email'] < display_recipient[0]['email']:
-                    display_recipient = [recip, display_recipient[0]]
-                elif recip['email'] > display_recipient[0]['email']:
-                    display_recipient = [display_recipient[0], recip]
-        else:
-            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
-
         obj = dict(
             id                = message_id,
             sender_email      = sender_email,
@@ -204,16 +178,23 @@ class MessageDict(object):
             sender_short_name = sender_short_name,
             sender_realm_str  = sender_realm_str,
             sender_id         = sender_id,
-            type              = display_type,
-            display_recipient = display_recipient,
+            recipient_type_id = recipient_type_id,
+            recipient_type    = recipient_type,
             recipient_id      = recipient_id,
             subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
-        if obj['type'] == 'stream':
-            obj['stream_id'] = recipient_type_id
+        obj['raw_display_recipient'] = get_display_recipient_by_id(
+            recipient_id,
+            recipient_type,
+            recipient_type_id
+        )
+
+        obj['sender_is_mirror_dummy'] = sender_is_mirror_dummy
+
+        MessageDict.hydrate_recipient_info(obj)
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
@@ -264,6 +245,55 @@ class MessageDict(object):
                             for reaction in reactions]
         return obj
 
+    @staticmethod
+    def hydrate_recipient_info(obj):
+        # type: (Dict[str, Any]) -> None
+        '''
+        This method hyrdrates recipient info with things
+        like full names and emails of senders.  Eventually
+        our clients should be able to hyrdrate these fields
+        themselves with info they already have on users.
+        '''
+
+        display_recipient = obj['raw_display_recipient']
+        recipient_type = obj['recipient_type']
+        recipient_type_id = obj['recipient_type_id']
+        sender_is_mirror_dummy = obj['sender_is_mirror_dummy']
+
+        del obj['raw_display_recipient']
+        del obj['recipient_type']
+        del obj['recipient_type_id']
+        del obj['sender_is_mirror_dummy']
+
+        sender_email = obj['sender_email']
+        sender_full_name = obj['sender_full_name']
+        sender_short_name = obj['sender_short_name']
+        sender_id = obj['sender_id']
+
+        if recipient_type == Recipient.STREAM:
+            display_type = "stream"
+        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
+            assert not isinstance(display_recipient, Text)
+            display_type = "private"
+            if len(display_recipient) == 1:
+                # add the sender in if this isn't a message between
+                # someone and themself, preserving ordering
+                recip = {'email': sender_email,
+                         'full_name': sender_full_name,
+                         'short_name': sender_short_name,
+                         'id': sender_id,
+                         'is_mirror_dummy': sender_is_mirror_dummy}
+                if recip['email'] < display_recipient[0]['email']:
+                    display_recipient = [recip, display_recipient[0]]
+                elif recip['email'] > display_recipient[0]['email']:
+                    display_recipient = [display_recipient[0], recip]
+        else:
+            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
+
+        obj['display_recipient'] = display_recipient
+        obj['type'] = display_type
+        if obj['type'] == 'stream':
+            obj['stream_id'] = recipient_type_id
 
 class ReactionDict(object):
     @staticmethod
