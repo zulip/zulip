@@ -2608,3 +2608,77 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, force_text(message))
+
+class MessageHydrationTest(ZulipTestCase):
+    def test_hydrate_stream_recipient_info(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        cordelia = self.example_user('cordelia')
+
+        stream_id = get_stream('Verona', realm).id
+
+        obj = dict(
+            raw_display_recipient='Verona',
+            recipient_type=Recipient.STREAM,
+            recipient_type_id=stream_id,
+            sender_is_mirror_dummy=False,
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        )
+
+        MessageDict.hydrate_recipient_info(obj)
+
+        self.assertEqual(obj, dict(
+            display_recipient='Verona',
+            stream_id=stream_id,
+            type='stream',
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        ))
+
+    def test_hydrate_pm_recipient_info(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+
+        obj = dict(
+            raw_display_recipient=[
+                dict(
+                    email='aaron@example.com',
+                    full_name='Aaron Smith',
+                ),
+            ],
+            recipient_type=Recipient.PERSONAL,
+            recipient_type_id=None,
+            sender_is_mirror_dummy=False,
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        )
+
+        MessageDict.hydrate_recipient_info(obj)
+
+        self.assertEqual(obj, dict(
+            display_recipient=[
+                dict(
+                    email='aaron@example.com',
+                    full_name='Aaron Smith',
+                ),
+                dict(
+                    email=cordelia.email,
+                    full_name=cordelia.full_name,
+                    id=cordelia.id,
+                    short_name=cordelia.short_name,
+                    is_mirror_dummy=False,
+                ),
+            ],
+            type='private',
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        ))
