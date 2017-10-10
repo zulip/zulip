@@ -57,7 +57,9 @@ def stringify_message_dict(message_dict):
 def message_to_dict(message, apply_markdown):
     # type: (Message, bool) -> Dict[str, Any]
     json = message_to_dict_json(message, apply_markdown)
-    return extract_message_dict(json)
+    obj = extract_message_dict(json)
+    MessageDict.post_process_dicts([obj])
+    return obj
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message, apply_markdown):
@@ -65,6 +67,12 @@ def message_to_dict_json(message, apply_markdown):
     return MessageDict.to_dict_uncached(message, apply_markdown)
 
 class MessageDict(object):
+    @staticmethod
+    def post_process_dicts(objs):
+        # type: (List[Dict[str, Any]]) -> None
+        for obj in objs:
+            MessageDict.hydrate_recipient_info(obj)
+
     @staticmethod
     def to_dict_uncached(message, apply_markdown):
         # type: (Message, bool) -> binary_type
@@ -193,8 +201,6 @@ class MessageDict(object):
         )
 
         obj['sender_is_mirror_dummy'] = sender_is_mirror_dummy
-
-        MessageDict.hydrate_recipient_info(obj)
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 

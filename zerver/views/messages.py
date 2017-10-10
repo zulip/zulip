@@ -749,6 +749,7 @@ def get_messages_backend(request, user_profile,
                                               setter=stringify_message_dict)
 
     message_list = []
+
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
         msg_dict.update({"flags": user_message_flags[message_id]})
@@ -758,6 +759,8 @@ def get_messages_backend(request, user_profile,
         if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
             del msg_dict["edit_history"]
         message_list.append(msg_dict)
+
+    MessageDict.post_process_dicts(message_list)
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
