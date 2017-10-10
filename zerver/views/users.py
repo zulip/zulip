@@ -17,7 +17,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
-from zerver.lib.avatar import avatar_url, get_gravatar_url, avatar_url_from_dict
+from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
@@ -337,8 +337,17 @@ def get_bots_backend(request, user_profile):
 
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
-def get_members_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+@has_request_variables
+def get_members_backend(request, user_profile,
+                        client_gravatar=REQ(validator=check_bool, default=False)):
+    # type: (HttpRequest, UserProfile, bool) -> HttpResponse
+    '''
+    The client_gravatar field here is set to True if clients can compute
+    their own gravatars, which saves us bandwidth.  We want to eventually
+    make this the default behavior, but we have old clients that expect
+    the server to compute this for us.
+    '''
+
     realm = user_profile.realm
     admin_ids = set(u.id for u in user_profile.realm.get_admin_users())
 
@@ -373,15 +382,15 @@ def get_members_backend(request, user_profile):
 
         result['is_admin'] = user_id in admin_ids
 
-        avatar_user_dict = dict(
-            id=user_id,
+        result['avatar_url'] = get_avatar_field(
+            user_id=user_id,
+            email=email,
             avatar_source=row['avatar_source'],
             avatar_version=row['avatar_version'],
-            email=email,
             realm_id=row['realm_id'],
+            medium=False,
+            client_gravatar=client_gravatar,
         )
-
-        result['avatar_url'] = avatar_url_from_dict(avatar_user_dict)
 
         if row['bot_owner__email']:
             result['bot_owner'] = row['bot_owner__email']
