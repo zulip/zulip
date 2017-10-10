@@ -84,9 +84,10 @@ class EmbeddedBotHandler(object):
     def send_message(self, message):
         # type: (Dict[str, Any]) -> None
         if self._rate_limit.is_legal():
-            internal_send_message(realm=self.user_profile.realm, sender_email=message['sender_email'],
-                                  recipient_type_name=message['type'], recipients=message['to'],
-                                  subject=message['subject'], content=message['content'])
+            recipients = message['to'] if message['type'] == 'stream' else ','.join(message['to'])
+            internal_send_message(realm=self.user_profile.realm, sender_email=self.user_profile.email,
+                                  recipient_type_name=message['type'], recipients=recipients,
+                                  subject=message.get('subject', None), content=message['content'])
         else:
             self._rate_limit.show_error_and_exit()
 
@@ -95,7 +96,7 @@ class EmbeddedBotHandler(object):
         if message['type'] == 'private':
             self.send_message(dict(
                 type='private',
-                to=[x['email'] for x in message['display_recipient'] if self.email != x['email']],
+                to=[x['email'] for x in message['display_recipient']],
                 content=response,
                 sender_email=message['sender_email'],
             ))
