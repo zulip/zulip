@@ -10,16 +10,18 @@ from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 from zerver.models import UserProfile
 from six.moves import urllib
 
-def avatar_url(user_profile, medium=False):
-    # type: (UserProfile, bool) -> Text
-    return avatar_url_from_dict(
-        dict(
-            avatar_source=user_profile.avatar_source,
-            avatar_version=user_profile.avatar_version,
-            email=user_profile.email,
-            id=user_profile.id,
-            realm_id=user_profile.realm_id),
-        medium=medium)
+def avatar_url(user_profile, medium=False, client_gravatar=False):
+    # type: (UserProfile, bool, bool) -> Text
+
+    return get_avatar_field(
+        user_id=user_profile.id,
+        realm_id=user_profile.realm_id,
+        email=user_profile.email,
+        avatar_source=user_profile.avatar_source,
+        avatar_version=user_profile.avatar_version,
+        medium=medium,
+        client_gravatar=client_gravatar,
+    )
 
 def avatar_url_from_dict(userdict, medium=False):
     # type: (Dict[str, Any], bool) -> Text
