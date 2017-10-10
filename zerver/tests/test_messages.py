@@ -576,7 +576,12 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 12)
+        '''
+        Part of the reason we have so many queries is that we duplicate
+        a lot of code to generate messages with markdown and without
+        markdown.
+        '''
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self):
         # type: () -> None

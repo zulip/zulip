@@ -1148,8 +1148,6 @@ class Message(AbstractMessage):
             'sender_id',
             'sending_client__name',
             'sender__email',
-            'sender__full_name',
-            'sender__short_name',
             'sender__realm__id',
             'sender__realm__string_id',
             'sender__avatar_source',
