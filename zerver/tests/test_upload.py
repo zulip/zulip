@@ -3,7 +3,10 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from unittest import skip
 
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import (
+    avatar_url,
+    get_avatar_field,
+)
 from zerver.lib.bugdown import url_filename
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
@@ -557,6 +560,51 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         destroy_uploads()
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
+
+    def test_get_avatar_field(self):
+        # type: () -> None
+        with self.settings(AVATAR_SALT="salt"):
+            url = get_avatar_field(
+                user_id=17,
+                realm_id=5,
+                email='foo@example.com',
+                avatar_source=UserProfile.AVATAR_FROM_USER,
+                avatar_version=2,
+                medium=True,
+                client_gravatar=False,
+            )
+
+        self.assertEqual(
+            url,
+            '/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?x=x&version=2'
+        )
+
+        url = get_avatar_field(
+            user_id=9999,
+            realm_id=9999,
+            email='foo@example.com',
+            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            avatar_version=2,
+            medium=True,
+            client_gravatar=False,
+        )
+
+        self.assertEqual(
+            url,
+            'https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=500&version=2'
+        )
+
+        url = get_avatar_field(
+            user_id=9999,
+            realm_id=9999,
+            email='foo@example.com',
+            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            avatar_version=2,
+            medium=True,
+            client_gravatar=True,
+        )
+
+        self.assertEqual(url, None)
 
     def test_avatar_url(self):
         # type: () -> None
