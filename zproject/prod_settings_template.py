@@ -149,6 +149,12 @@ SSO_APPEND_DOMAIN = None  # type: Optional[str]
 # for information on how to sign up for and configure this.
 #PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'
 
+# Whether to redact the content of push notifications.  This is less
+# usable, but avoids sending message content over the wire.  In the
+# future, we're likely to replace this with an end-to-end push
+# notification encryption feature.
+#PUSH_NOTIFICATION_REDACT_CONTENT = False
+
 # Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 

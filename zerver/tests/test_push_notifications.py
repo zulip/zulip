@@ -665,6 +665,30 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
+    def test_get_apns_payload_redacted_content(self):
+        # type: () -> None
+        message = self.get_message(Recipient.HUDDLE)
+        message.triggers = {
+            'private_message': True,
+            'mentioned': False,
+            'stream_push_notify': False,
+        }
+        payload = apn.get_apns_payload(message)
+        expected = {
+            'alert': {
+                'title': "New private group message from King Hamlet",
+                'body': "***REDACTED***",
+            },
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
 class TestGetGCMPayload(PushNotificationTest):
     def test_get_gcm_payload(self):
         # type: () -> None
@@ -738,6 +762,36 @@ class TestGetGCMPayload(PushNotificationTest):
             "stream": "Denmark"
         }
         self.assertDictEqual(payload, expected)
+
+    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
+    def test_get_gcm_payload_redacted_content(self):
+        # type: () -> None
+        message = self.get_message(Recipient.STREAM, 1)
+        message.triggers = {
+            'private_message': False,
+            'mentioned': False,
+            'stream_push_notify': True,
+        }
+        message.stream_name = 'Denmark'
+        user_profile = self.example_user('hamlet')
+        payload = apn.get_gcm_payload(user_profile, message)
+        expected = {
+            "user": user_profile.email,
+            "event": "message",
+            "alert": "New stream message from King Hamlet in Denmark",
+            "zulip_message_id": message.id,
+            "time": apn.datetime_to_timestamp(message.pub_date),
+            "content": "***REDACTED***",
+            "content_truncated": False,
+            "sender_email": self.example_email("hamlet"),
+            "sender_full_name": "King Hamlet",
+            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
+            "recipient_type": "stream",
+            "topic": "Test Message",
+            "stream": "Denmark"
+        }
+        self.assertDictEqual(payload, expected)
+
 
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch('zerver.lib.push_notifications.send_to_push_bouncer')
