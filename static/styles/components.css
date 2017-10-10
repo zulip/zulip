@@ -273,7 +273,7 @@
     color: hsl(0, 0%, 80%);
 
     border-radius: 4px;
-    -webkit-filter: grayscale(1) brightness(0.80);
+    -webkit-filter: brightness(0.80);
 
     cursor: pointer;
 }
@@ -281,7 +281,7 @@
 .new-style label.checkbox input[type=checkbox]:checked ~ span {
     color: transparent;
 
-    background-image: url(/static/images/checkbox-green.png);
+    background-image: url(/static/images/checkbox.svg);
     background-size: 85%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
