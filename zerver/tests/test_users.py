@@ -348,6 +348,42 @@ class ActivateTest(ZulipTestCase):
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
+class BulkUsersTest(ZulipTestCase):
+    def test_client_gravatar_option(self):
+        # type: () -> None
+        self.login(self.example_email('cordelia'))
+
+        hamlet = self.example_user('hamlet')
+
+        def get_hamlet_avatar(client_gravatar):
+            # type: (bool) -> Optional[Text]
+            data = dict(client_gravatar=ujson.dumps(client_gravatar))
+            result = self.client_get('/json/users', data)
+            self.assert_json_success(result)
+            rows = result.json()['members']
+            hamlet_data = [
+                row for row in rows
+                if row['user_id'] == hamlet.id
+            ][0]
+            return hamlet_data['avatar_url']
+
+        self.assertEqual(
+            get_hamlet_avatar(client_gravatar=True),
+            None
+        )
+
+        '''
+        The main purpose of this test is to make sure we
+        return None for avatar_url when client_gravatar is
+        set to True.  And we do a sanity check for when it's
+        False, but we leave it to other tests to validate
+        the specific URL.
+        '''
+        self.assertIn(
+            'gravatar.com',
+            get_hamlet_avatar(client_gravatar=False),
+        )
+
 class GetProfileTest(ZulipTestCase):
 
     def common_update_pointer(self, email, pointer):
