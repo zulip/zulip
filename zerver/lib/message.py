@@ -681,8 +681,8 @@ def aggregate_unread_data(raw_data):
 
     return result
 
-def apply_unread_message_event(user_profile, state, message):
-    # type: (UserProfile, Dict[str, Any], Dict[str, Any]) -> None
+def apply_unread_message_event(user_profile, state, message, flags):
+    # type: (UserProfile, Dict[str, Any], Dict[str, Any], List[str]) -> None
     message_id = message['id']
     if message['type'] == 'stream':
         message_type = 'stream'
@@ -732,6 +732,5 @@ def apply_unread_message_event(user_profile, state, message):
         )
         state['huddle_dict'][message_id] = new_row
 
-    mentioned = message.get('is_mentioned', False)
-    if mentioned:
+    if 'mentioned' in flags:
         state['mentions'].add(message_id)

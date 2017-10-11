@@ -224,9 +224,12 @@ def apply_event(state, event, user_profile, include_subscribers):
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
         if 'raw_unread_msgs' in state:
-            apply_unread_message_event(user_profile,
-                                       state['raw_unread_msgs'],
-                                       event['message'])
+            apply_unread_message_event(
+                user_profile,
+                state['raw_unread_msgs'],
+                event['message'],
+                event['flags'],
+            )
 
     elif event['type'] == "hotspots":
         state['hotspots'] = event['hotspots']

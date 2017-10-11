@@ -511,7 +511,6 @@ class EventsRegisterTest(ZulipTestCase):
 
         for i in range(3):
             content = 'mentioning... @**' + user.full_name + '** hello ' + str(i)
-            print('i = %d' % (i,))
             self.do_test(
                 lambda: self.send_message(self.example_email('cordelia'),
                                           "Verona",
