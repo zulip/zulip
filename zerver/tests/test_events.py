@@ -93,7 +93,11 @@ from zerver.lib.validator import (
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
-from zerver.tornado.event_queue import allocate_client_descriptor, EventQueue
+from zerver.tornado.event_queue import (
+    allocate_client_descriptor,
+    clear_client_event_queues_for_testing,
+    EventQueue,
+)
 from zerver.tornado.views import get_events_backend
 
 from collections import OrderedDict
@@ -405,6 +409,14 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
                 num_events=1):
         # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
+
+        '''
+        Make sure we have a clean slate of client descriptors for these tests.
+        If we don't do this, then certain failures will only manifest when you
+        run multiple tests.
+        '''
+        clear_client_event_queues_for_testing()
+
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,

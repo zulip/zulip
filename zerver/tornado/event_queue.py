@@ -336,6 +336,16 @@ gc_hooks = []  # type: List[Callable[[int, ClientDescriptor, bool], None]]
 
 next_queue_id = 0
 
+def clear_client_event_queues_for_testing():
+    # type: () -> None
+    assert(settings.TEST_SUITE)
+    clients.clear()
+    user_clients.clear()
+    realm_clients_all_streams.clear()
+    gc_hooks.clear()
+    global next_queue_id
+    next_queue_id = 0
+
 def add_client_gc_hook(hook):
     # type: (Callable[[int, ClientDescriptor, bool], None]) -> None
     gc_hooks.append(hook)
