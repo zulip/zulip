@@ -613,9 +613,11 @@ exports.register_click_handlers = function () {
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
+    // Expanded sidebars on mobile view count as popovers as well.
     return popovers.actions_popped() || user_sidebar_popped() ||
         stream_popover.stream_popped() || stream_popover.topic_popped() ||
-        message_info_popped() || emoji_picker.reactions_popped();
+        message_info_popped() || emoji_picker.reactions_popped() ||
+        $("[class^='column-'].expanded").length;
 };
 
 exports.hide_all = function () {
