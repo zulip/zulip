@@ -89,6 +89,10 @@ function get_events_success(events) {
     });
 
     if (messages.length !== 0) {
+        // Sort by ID, so that if we get multiple messages back from
+        // the server out-of-order, we'll still end up with our
+        // message lists in order.
+        messages = _.sortBy(messages, 'id');
         try {
             messages = echo.process_from_server(messages);
             message_events.insert_new_messages(messages);

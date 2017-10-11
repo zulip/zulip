@@ -55,7 +55,11 @@ exports.MessageList.prototype = {
                     return;
                 }
 
-                // Put messages in correct order on either side of the message list
+                // Put messages in correct order on either side of the
+                // message list.  This code path assumes that messages
+                // is a (1) sorted, and (2) consecutive block of
+                // messages that belong in this message list; those
+                // facts should be ensured by the caller.
                 if (self.empty() || msg.id > self.last().id) {
                     bottom_messages.push(msg);
                 } else if (msg.id < self.first().id) {
