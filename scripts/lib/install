@@ -107,6 +107,9 @@ mkdir -p /etc/zulip
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
     fi
 ) > /etc/zulip/zulip.conf
+# Shut down an existing puppet service
+sudo service puppet-agent stop
+sudo service puppet stop
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
