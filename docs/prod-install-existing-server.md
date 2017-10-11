@@ -40,23 +40,6 @@ Zulip's puppet configuration will change the ownership of
 `/var/log/nginx` so that the `zulip` user can access it.  Depending on
 your configuration, this may or may not cause problems.
 
-### Puppet
-
-If you have a puppet server running on your server, you will get an
-error message about not being able to connect to the client during the
-install process:
-
-```shell
-puppet-agent[29873]: Could not request certificate: Failed to open TCP connection to puppet:8140
-```
-
-So you'll need to shutdown any puppet servers.
-
-```shell
-$ sudo service puppet-agent stop
-$ sudo service puppet stop
-```
-
 ### Postgres
 
 If you have an existing postgres database, note that Zulip will use
