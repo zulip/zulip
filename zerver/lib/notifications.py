@@ -71,9 +71,26 @@ def topic_narrow_url(realm, stream, topic):
 def relative_to_full_url(base_url, content):
     # type: (Text, Text) -> Text
     # Convert relative URLs to absolute URLs.
-    elem = lxml.html.fromstring(content)  # type: ignore # https://github.com/python/typeshed/issues/525
-    elem.make_links_absolute(base_url)
-    content = lxml.html.tostring(elem).decode("utf-8")  # type: ignore # https://github.com/python/typeshed/issues/525
+    fragment = lxml.html.fromstring(content)  # type: ignore # https://github.com/python/typeshed/issues/525
+
+    # We handle narrow URLs separately because of two reasons:
+    # 1: 'lxml' seems to be having an issue in dealing with URLs that begin
+    # `#` due to which it doesn't add a `/` before joining the base_url to
+    # the relative URL.
+    # 2: We also need to update the title attribute in the narrow links which
+    # is not possible with `make_links_absolute()`.
+    for link_info in fragment.iterlinks():
+        elem, attrib, link, pos = link_info
+        match = re.match("/?#narrow/", link)
+        if match is not None:
+            link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
+            elem.set(attrib, link)
+            # Only manually linked narrow URLs have title attribute set.
+            if elem.get('title') is not None:
+                elem.set('title', link)
+
+    fragment.make_links_absolute(base_url)
+    content = lxml.html.tostring(fragment).decode("utf-8")  # type: ignore # https://github.com/python/typeshed/issues/525
 
     # Inline images can't be displayed in the emails as the request
     # from the mail server can't be authenticated because it has no
