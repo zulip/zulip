@@ -420,6 +420,14 @@ class TestMissedMessages(ZulipTestCase):
         expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
         self.assertEqual(actual_output, expected_output)
 
+        # A narrow URL which begins with a '#'.
+        test_data = '<p><a href="#narrow/stream/test/subject/test.20topic/near/142"' +  \
+                    'title="#narrow/stream/test/subject/test.20topic/near/142">Conversation</a></p>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<p><a href="http://example.com/#narrow/stream/test/subject/test.20topic/near/142" ' + \
+                          'title="http://example.com/#narrow/stream/test/subject/test.20topic/near/142">Conversation</a></p>'
+        self.assertEqual(actual_output, expected_output)
+
     def test_fix_emoji(self):
         # type: () -> None
         # An emoji.
