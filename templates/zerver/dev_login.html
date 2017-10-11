@@ -6,9 +6,6 @@
     <div class="app-main login-page-container dev-login white-box">
         {% if current_realm %}
         <h4 class="login-page-header">Click on a user to log in to {{ current_realm.name }}!</h4>
-        {% else %}
-        <h4 class="login-page-header">Click on a user to log in!</h4>
-        {% endif %}
         <p class="devlogin_subheader">{{ _('(Or visit the <a href="/login">normal login page</a>)') }}</p>
         <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
             action="{{ url('zerver.views.auth.dev_direct_login') }}">
@@ -39,11 +36,14 @@
                 </div>
             </div>
         </form>
+        {% else %}
+        <h4 class="login-page-header">Choose a realm to continue</h4>
+        {% endif %}
         <form name="change_realm" action="{{ url('zerver.views.auth.login_page') }}" method="post">
             {{ csrf_input }}
-            <h2>Realm</h2>
+            <br/>
             <select name="new_realm" onchange="this.form.submit()">
-                <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All Realms</option>
+                <option disabled selected value>-- Choose option --</option>
                 {% for realm in all_realms %}
                 <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
                 {% endfor %}

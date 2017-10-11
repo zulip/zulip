@@ -501,12 +501,12 @@ def login_page(request, **kwargs):
         else:
             realm = get_realm_from_request(request)
 
-        users = get_dev_users(realm)
         extra_context['current_realm'] = realm
         extra_context['all_realms'] = Realm.objects.all()
-
-        extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+        if realm:
+            users = get_dev_users(realm)
+            extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
+            extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
 
         if 'new_realm' in request.POST:
             # If we're switching realms, redirect to that realm

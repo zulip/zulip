@@ -1525,9 +1525,9 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
 
         result = self.client_post('/devlogin/', subdomain="")
-        self.assert_in_success_response(["Click on a user to log in!"], result)
-        self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
-        self.assert_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
+        self.assert_in_success_response(["Choose a realm to continue"], result)
+        self.assert_not_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
+        self.assert_not_in_success_response(["starnine@mit.edu", "espuser@mit.edu"], result)
 
         data = {'new_realm': 'zephyr'}
         result = self.client_post('/devlogin/', data, subdomain="zulip")
