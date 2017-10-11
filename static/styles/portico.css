@@ -469,6 +469,15 @@ input.text-error {
     position: relative;
 }
 
+.portico-container .if-zulip-electron {
+    display: none;
+}
+
+/* detect if the platform is `ZulipDesktop` and if so, hide this tag! */
+.portico-container[data-platform="ZulipElectron"] .if-zulip-electron {
+    display: block;
+}
+
 .footer {
     margin: 20px;
     z-index: 100;
