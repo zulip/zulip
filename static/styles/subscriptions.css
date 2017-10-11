@@ -513,7 +513,7 @@ form#add_new_subscription {
 .subscriptions-container .right .nothing-selected button {
     padding: 6px 10px 8px 10px;
     display: block;
-    margin: 10px auto 0 auto;
+    margin: 0 auto 10px auto;
 }
 
 .subscriptions-container .left {
