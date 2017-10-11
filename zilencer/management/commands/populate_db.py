@@ -207,7 +207,7 @@ class Command(BaseCommand):
         user_profiles = list(UserProfile.objects.all())  # type: List[UserProfile]
 
         # Create a test realm emoji.
-        IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'checkbox-green.png')
+        IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'test-images', 'checkbox.png')
         UPLOADED_EMOJI_FILE_NAME = 'green_tick.png'
         with open(IMAGE_FILE_PATH, 'rb') as fp:
             upload_backend.upload_emoji_image(fp, UPLOADED_EMOJI_FILE_NAME, iago)

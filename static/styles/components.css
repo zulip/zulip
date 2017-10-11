@@ -26,11 +26,11 @@
     line-height: 0.8;
     font-size: 1.3rem;
     text-align: center;
-    border: 1px solid hsl(0, 0%, 75%);
+    border: 1px solid hsl(0, 0%, 60%);
     color: hsl(0, 0%, 80%);
 
     border-radius: 4px;
-    -webkit-filter: grayscale(1);
+    -webkit-filter: brightness(0.80);
 
     cursor: pointer;
 }
@@ -38,14 +38,15 @@
 .new-style label.checkbox input[type=checkbox]:checked ~ span {
     color: transparent;
 
-    background-image: url(/static/images/checkbox-green.png);
+    background-image: url(/static/images/checkbox.svg);
     background-size: 85%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
 }
 
 .new-style label.checkbox input[type=checkbox]:disabled ~ span {
-    opacity: 0.7;
+    opacity: 0.50;
+    cursor: default;
 }
 
 .new-style a.no-style {

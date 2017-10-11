@@ -587,7 +587,7 @@ nav ul li.active::after {
 
     border-radius: 4px;
 
-    background-image: url(/static/images/checkbox-valid.svg);
+    background-image: url(/static/images/checkbox-green.svg);
     background-size: 100% auto;
     background-position: center;
     background-repeat: no-repeat;
@@ -2368,8 +2368,10 @@ nav ul li.active::after {
     width: 20px;
     height: 18px;
 
-    background-image: url(/static/images/checkbox-green.png);
-    background-size: 100% auto;
+    background-image: url(/static/images/checkbox-green.svg);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
 
     -webkit-filter: invert(0.3);
 }
