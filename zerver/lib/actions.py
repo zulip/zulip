@@ -1025,6 +1025,7 @@ def do_send_messages(messages_maybe_none):
             new_messages.append(message)
     messages = new_messages
 
+    links_for_embed = set()  # type: Set[Text]
     # For consistency, changes to the default values for these gets should also be applied
     # to the default args in do_send_message
     for message in messages:
@@ -1034,7 +1035,6 @@ def do_send_messages(messages_maybe_none):
         message['sender_queue_id'] = message.get('sender_queue_id', None)
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
-    for message in messages:
         mention_data = bugdown.MentionData(
             realm_id=message['realm'].id,
             content=message['message'].content,
@@ -1065,9 +1065,7 @@ def do_send_messages(messages_maybe_none):
         message['default_bot_user_ids'] = info['default_bot_user_ids']
         message['service_bot_tuples'] = info['service_bot_tuples']
 
-    links_for_embed = set()  # type: Set[Text]
-    # Render our messages.
-    for message in messages:
+        # Render our messages.
         assert message['message'].rendered_content is None
 
         rendered_content = render_incoming_message(
@@ -1092,7 +1090,7 @@ def do_send_messages(messages_maybe_none):
         mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
         message['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
-    for message in messages:
+        # Update calculated fields of the message
         message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
