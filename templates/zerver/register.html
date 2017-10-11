@@ -135,9 +135,10 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     This is distinct from 'checked', which determines whether the checkbox appears
                     at all. (So, it's not symmetric to the code above.)
                     #}
-                    <input id="id_terms" class="required" type="checkbox" name="terms"
-                           {% if form.terms.value() %}checked="checked"{% endif %} />
-                    <label for="id_terms" class="inline-block">
+                    <label for="id_terms" class="inline-block checkbox">
+                        <input id="id_terms" class="required" type="checkbox" name="terms"
+                               {% if form.terms.value() %}checked="checked"{% endif %} />
+                        <span></span>
                         {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
