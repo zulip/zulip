@@ -484,6 +484,10 @@ def build_custom_checkers(by_lang):
              'templates/zerver/emails/missed_message.html',
              'templates/zerver/emails/email_base_messages.html',
 
+             # Email log templates; should clean up.
+             'templates/zerver/email.html',
+             'templates/zerver/email_log.html',
+
              # Probably just needs to be changed to display: none so the exclude works
              'templates/zerver/navbar.html',
 
