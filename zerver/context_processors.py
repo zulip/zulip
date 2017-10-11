@@ -96,7 +96,7 @@ def zulip_default_context(request):
         settings_comments_path = "/etc/zulip/settings.py"
 
     if hasattr(request, "client") and request.client.name == "ZulipElectron":
-        platform = "ZulipElectron"
+        platform = "ZulipElectron"  # nocoverage
     else:
         platform = "ZulipWeb"
 
