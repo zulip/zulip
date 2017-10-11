@@ -576,7 +576,12 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 12)
+        '''
+        Part of the reason we have so many queries is that we duplicate
+        a lot of code to generate messages with markdown and without
+        markdown.
+        '''
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self):
         # type: () -> None
@@ -587,6 +592,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         row = Message.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
+        MessageDict.post_process_dicts([dct])
         self.assertEqual(dct['display_recipient'], 'Denmark')
 
         stream = get_stream('Denmark', user_profile.realm)
@@ -1275,6 +1281,7 @@ class EditMessageTest(ZulipTestCase):
         msg = Message.objects.get(id=msg_id)
         cached = message_to_dict(msg, False)
         uncached = MessageDict.to_dict_uncached_helper(msg, False)
+        MessageDict.post_process_dicts([uncached])
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.topic_name(), subject)
@@ -2608,3 +2615,77 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, force_text(message))
+
+class MessageHydrationTest(ZulipTestCase):
+    def test_hydrate_stream_recipient_info(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        cordelia = self.example_user('cordelia')
+
+        stream_id = get_stream('Verona', realm).id
+
+        obj = dict(
+            raw_display_recipient='Verona',
+            recipient_type=Recipient.STREAM,
+            recipient_type_id=stream_id,
+            sender_is_mirror_dummy=False,
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        )
+
+        MessageDict.hydrate_recipient_info(obj)
+
+        self.assertEqual(obj, dict(
+            display_recipient='Verona',
+            stream_id=stream_id,
+            type='stream',
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        ))
+
+    def test_hydrate_pm_recipient_info(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+
+        obj = dict(
+            raw_display_recipient=[
+                dict(
+                    email='aaron@example.com',
+                    full_name='Aaron Smith',
+                ),
+            ],
+            recipient_type=Recipient.PERSONAL,
+            recipient_type_id=None,
+            sender_is_mirror_dummy=False,
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        )
+
+        MessageDict.hydrate_recipient_info(obj)
+
+        self.assertEqual(obj, dict(
+            display_recipient=[
+                dict(
+                    email='aaron@example.com',
+                    full_name='Aaron Smith',
+                ),
+                dict(
+                    email=cordelia.email,
+                    full_name=cordelia.full_name,
+                    id=cordelia.id,
+                    short_name=cordelia.short_name,
+                    is_mirror_dummy=False,
+                ),
+            ],
+            type='private',
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        ))

@@ -21,6 +21,7 @@ from zerver.lib.topic_mutes import (
 from zerver.models import (
     get_display_recipient_by_id,
     get_user_profile_by_id,
+    query_for_ids,
     Message,
     Realm,
     Recipient,
@@ -57,7 +58,9 @@ def stringify_message_dict(message_dict):
 def message_to_dict(message, apply_markdown):
     # type: (Message, bool) -> Dict[str, Any]
     json = message_to_dict_json(message, apply_markdown)
-    return extract_message_dict(json)
+    obj = extract_message_dict(json)
+    MessageDict.post_process_dicts([obj])
+    return obj
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message, apply_markdown):
@@ -65,6 +68,14 @@ def message_to_dict_json(message, apply_markdown):
     return MessageDict.to_dict_uncached(message, apply_markdown)
 
 class MessageDict(object):
+    @staticmethod
+    def post_process_dicts(objs):
+        # type: (List[Dict[str, Any]]) -> None
+        MessageDict.bulk_hydrate_sender_info(objs)
+
+        for obj in objs:
+            MessageDict.hydrate_recipient_info(obj)
+
     @staticmethod
     def to_dict_uncached(message, apply_markdown):
         # type: (Message, bool) -> binary_type
@@ -89,8 +100,6 @@ class MessageDict(object):
             sender_email = message.sender.email,
             sender_realm_id = message.sender.realm_id,
             sender_realm_str = message.sender.realm.string_id,
-            sender_full_name = message.sender.full_name,
-            sender_short_name = message.sender.short_name,
             sender_avatar_source = message.sender.avatar_source,
             sender_avatar_version = message.sender.avatar_version,
             sender_is_mirror_dummy = message.sender.is_mirror_dummy,
@@ -123,8 +132,6 @@ class MessageDict(object):
             sender_email = row['sender__email'],
             sender_realm_id = row['sender__realm__id'],
             sender_realm_str = row['sender__realm__string_id'],
-            sender_full_name = row['sender__full_name'],
-            sender_short_name = row['sender__short_name'],
             sender_avatar_source = row['sender__avatar_source'],
             sender_avatar_version = row['sender__avatar_version'],
             sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
@@ -151,8 +158,6 @@ class MessageDict(object):
             sender_email,
             sender_realm_id,
             sender_realm_str,
-            sender_full_name,
-            sender_short_name,
             sender_avatar_source,
             sender_avatar_version,
             sender_is_mirror_dummy,
@@ -162,7 +167,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = avatar_url_from_dict(dict(
             avatar_source=sender_avatar_source,
@@ -171,49 +176,26 @@ class MessageDict(object):
             id=sender_id,
             realm_id=sender_realm_id))
 
-        display_recipient = get_display_recipient_by_id(
-            recipient_id,
-            recipient_type,
-            recipient_type_id
-        )
-
-        if recipient_type == Recipient.STREAM:
-            display_type = "stream"
-        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
-            assert not isinstance(display_recipient, Text)
-            display_type = "private"
-            if len(display_recipient) == 1:
-                # add the sender in if this isn't a message between
-                # someone and themself, preserving ordering
-                recip = {'email': sender_email,
-                         'full_name': sender_full_name,
-                         'short_name': sender_short_name,
-                         'id': sender_id,
-                         'is_mirror_dummy': sender_is_mirror_dummy}
-                if recip['email'] < display_recipient[0]['email']:
-                    display_recipient = [recip, display_recipient[0]]
-                elif recip['email'] > display_recipient[0]['email']:
-                    display_recipient = [display_recipient[0], recip]
-        else:
-            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
-
         obj = dict(
             id                = message_id,
             sender_email      = sender_email,
-            sender_full_name  = sender_full_name,
-            sender_short_name = sender_short_name,
             sender_realm_str  = sender_realm_str,
             sender_id         = sender_id,
-            type              = display_type,
-            display_recipient = display_recipient,
+            recipient_type_id = recipient_type_id,
+            recipient_type    = recipient_type,
             recipient_id      = recipient_id,
             subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
-        if obj['type'] == 'stream':
-            obj['stream_id'] = recipient_type_id
+        obj['raw_display_recipient'] = get_display_recipient_by_id(
+            recipient_id,
+            recipient_type,
+            recipient_type_id
+        )
+
+        obj['sender_is_mirror_dummy'] = sender_is_mirror_dummy
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
@@ -264,6 +246,86 @@ class MessageDict(object):
                             for reaction in reactions]
         return obj
 
+    @staticmethod
+    def bulk_hydrate_sender_info(objs):
+        # type: (List[Dict[str, Any]]) -> None
+
+        sender_ids = list({
+            obj['sender_id']
+            for obj in objs
+        })
+
+        if not sender_ids:
+            return
+
+        query = UserProfile.objects.values(
+            'id',
+            'full_name',
+            'short_name',
+        )
+
+        rows = query_for_ids(query, sender_ids, 'id')
+
+        sender_dict = {
+            row['id']: row
+            for row in rows
+        }
+
+        for obj in objs:
+            sender_id = obj['sender_id']
+            user_row = sender_dict[sender_id]
+            obj['sender_full_name'] = user_row['full_name']
+            obj['sender_short_name'] = user_row['short_name']
+
+    @staticmethod
+    def hydrate_recipient_info(obj):
+        # type: (Dict[str, Any]) -> None
+        '''
+        This method hyrdrates recipient info with things
+        like full names and emails of senders.  Eventually
+        our clients should be able to hyrdrate these fields
+        themselves with info they already have on users.
+        '''
+
+        display_recipient = obj['raw_display_recipient']
+        recipient_type = obj['recipient_type']
+        recipient_type_id = obj['recipient_type_id']
+        sender_is_mirror_dummy = obj['sender_is_mirror_dummy']
+
+        del obj['raw_display_recipient']
+        del obj['recipient_type']
+        del obj['recipient_type_id']
+        del obj['sender_is_mirror_dummy']
+
+        sender_email = obj['sender_email']
+        sender_full_name = obj['sender_full_name']
+        sender_short_name = obj['sender_short_name']
+        sender_id = obj['sender_id']
+
+        if recipient_type == Recipient.STREAM:
+            display_type = "stream"
+        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
+            assert not isinstance(display_recipient, Text)
+            display_type = "private"
+            if len(display_recipient) == 1:
+                # add the sender in if this isn't a message between
+                # someone and themself, preserving ordering
+                recip = {'email': sender_email,
+                         'full_name': sender_full_name,
+                         'short_name': sender_short_name,
+                         'id': sender_id,
+                         'is_mirror_dummy': sender_is_mirror_dummy}
+                if recip['email'] < display_recipient[0]['email']:
+                    display_recipient = [recip, display_recipient[0]]
+                elif recip['email'] > display_recipient[0]['email']:
+                    display_recipient = [display_recipient[0], recip]
+        else:
+            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
+
+        obj['display_recipient'] = display_recipient
+        obj['type'] = display_type
+        if obj['type'] == 'stream':
+            obj['stream_id'] = recipient_type_id
 
 class ReactionDict(object):
     @staticmethod
