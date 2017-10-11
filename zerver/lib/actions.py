@@ -150,7 +150,7 @@ def can_access_stream_user_ids(stream):
 
     # return user ids of users who can access the attributes of
     # a stream, such as its name/description
-    if stream.is_public():
+    if stream.has_public_history:
         return set(active_user_ids(stream.realm_id))
     else:
         return private_stream_user_ids(stream.id)
@@ -1054,7 +1054,7 @@ def do_send_messages(messages_maybe_none):
             if message['stream'] is None:
                 message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
             assert message['stream'] is not None  # assert needed because stubs for django are missing
-            if message['stream'].is_public():
+            if message['stream'].has_public_history:
                 event['realm_id'] = message['stream'].realm_id
                 event['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
@@ -1307,13 +1307,19 @@ def send_stream_creation_event(stream, user_ids):
 def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
     # type: (Realm, Text, bool, Text) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
-        realm=realm, name__iexact=stream_name,
-        defaults={'name': stream_name,
-                  'description': stream_description,
-                  'invite_only': invite_only})
+        realm=realm,
+        name__iexact=stream_name,
+        defaults = dict(
+            name=stream_name,
+            description=stream_description,
+            invite_only=invite_only,
+            is_in_zephyr_realm=realm.is_zephyr_mirror_realm
+        )
+    )
+
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-        if stream.is_public():
+        if stream.has_public_history:
             send_stream_creation_event(stream, active_user_ids(stream.realm_id))
     return stream, created
 
@@ -2069,7 +2075,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
 
     def fetch_stream_subscriber_user_ids(stream):
         # type: (Stream) -> List[int]
-        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+        if not stream.peers_are_visible:
             return []
         user_ids = all_subscribers_by_stream[stream.id]
         return user_ids
@@ -2089,7 +2095,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
         # Users newly added to invite-only streams need a `create`
         # notification, since they didn't have the invite-only stream
         # in their browser yet.
-        if not stream.is_public():
+        if not stream.has_public_history:
             send_stream_creation_event(stream, [user.id for user in new_users])
 
     # The second batch is events for the users themselves that they
@@ -2104,7 +2110,7 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     # subscribers lists of streams in their browser; everyone for
     # public streams and only existing subscribers for private streams.
     for stream in streams:
-        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+        if not stream.peers_are_visible:
             continue
 
         new_user_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
@@ -2217,7 +2223,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
     for stream in streams:
-        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+        if not stream.peers_are_visible:
             continue
 
         altered_users = altered_user_dict[stream.id]
@@ -3867,7 +3873,7 @@ def do_claim_attachments(message):
         user_profile = message.sender
         is_message_realm_public = False
         if message.recipient.type == Recipient.STREAM:
-            is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
+            is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).has_public_history
 
         if not validate_attachment_request(user_profile, path_id):
             # Technically, there are 2 cases here:

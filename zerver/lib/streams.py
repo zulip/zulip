@@ -52,7 +52,7 @@ def access_stream_common(user_profile, stream, error):
         sub = None
 
     # If the stream is in your realm and public, you can access it.
-    if stream.is_public():
+    if stream.has_public_history:
         return (recipient, sub)
 
     # Or if you are subscribed to the stream, you can access it.
@@ -134,7 +134,7 @@ def is_public_stream_by_name(stream_name, realm):
         stream = get_stream(stream_name, realm)
     except Stream.DoesNotExist:
         return False
-    return stream.is_public()
+    return stream.has_public_history
 
 def filter_stream_authorization(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
