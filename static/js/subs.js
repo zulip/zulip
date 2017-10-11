@@ -250,6 +250,12 @@ exports.stream_description_match_stream_ids = [];
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
+    var selected_row = window.location.hash.split(/\//)[1];
+
+    if (parseFloat(selected_row)) {
+        $(".stream-row[data-stream-id='" + selected_row + "']").addClass("active");
+    }
+
     exports.stream_name_match_stream_ids = [];
     exports.stream_description_match_stream_ids = [];
     var others = [];
@@ -366,6 +372,7 @@ exports.setup_page = function (callback) {
             subscriptions: sub_rows,
             hide_all_streams: !should_list_all_streams(),
         };
+
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
         initialize_components();
