@@ -505,8 +505,8 @@ def login_page(request, **kwargs):
         extra_context['current_realm'] = realm
         extra_context['all_realms'] = Realm.objects.all()
 
-        extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+        extra_context['direct_admins'] = [u for u in users if u.is_realm_admin]
+        extra_context['direct_users'] = [u for u in users if not u.is_realm_admin]
 
         if 'new_realm' in request.POST:
             # If we're switching realms, redirect to that realm
@@ -539,6 +539,7 @@ def login_page(request, **kwargs):
 
     return template_response
 
+@csrf_exempt
 def dev_direct_login(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     # This function allows logging in without a password and should only be called in development environments.
