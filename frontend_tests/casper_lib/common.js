@@ -343,7 +343,7 @@ exports.un_narrow = function () {
         // close the compose box
         common.keypress(27); // Esc
     }
-    common.keypress(27); // Esc
+    casper.page.sendEvent('keypress', "H");
 };
 
 return exports;

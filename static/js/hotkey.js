@@ -72,6 +72,7 @@ var keypress_mappings = {
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
     71: {name: 'G_end', message_view_only: true}, // 'G'
+    72: {name: 'clear_search', message_view_only: true}, // 'H'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
@@ -224,8 +225,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    search.clear_search();
-    return true;
+    return false;
 };
 
 // Returns true if we handled it, false if the browser should.
@@ -548,6 +548,9 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Shortcuts that don't require a message
     switch (event_name) {
+        case 'clear_search':
+            search.clear_search();
+            return true;
         case 'compose': // 'c': compose
             compose_actions.start('stream', {trigger: "compose_hotkey"});
             return true;
