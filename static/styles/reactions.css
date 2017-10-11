@@ -27,6 +27,11 @@
     background-color: hsl(195, 50%, 95%);
 }
 
+.emoji-popover-emoji.reacted.reaction:focus {
+    background: hsl(195,55%,88%);
+    outline: none;
+}
+
 .private-message .message_reactions .message_reaction.reacted {
     background-color: hsl(196, 51%, 93%);
     border-color: hsl(193, 38%, 70%);
