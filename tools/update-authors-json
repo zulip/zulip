@@ -18,7 +18,7 @@ import subprocess
 
 from six.moves import range
 import requests
-import simplejson as json
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'

@@ -1,7 +1,7 @@
 from typing import Callable, Text, Union, Optional, Dict, Any, List, Tuple
 
 import os
-import simplejson as json
+import ujson
 
 from django.http import HttpRequest, HttpResponse
 
@@ -445,7 +445,7 @@ def about_view(request):
     # type: (HttpRequest) -> HttpResponse
 
     with open(settings.CONTRIBUTORS_DATA) as f:
-        data = json.load(f)
+        data = ujson.load(f)
 
     return render(
         request,

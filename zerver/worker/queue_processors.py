@@ -54,7 +54,7 @@ import time
 import datetime
 import logging
 import requests
-import simplejson
+import ujson
 from six.moves import cStringIO as StringIO
 import re
 import importlib
@@ -316,7 +316,7 @@ class ErrorReporter(QueueProcessingWorker):
                 'forward_error',
                 method='POST',
                 url='deployments/report_error',
-                make_request=(lambda type, report: {'type': type, 'report': simplejson.dumps(report)}),
+                make_request=(lambda type, report: {'type': type, 'report': ujson.dumps(report)}),
             )
         QueueProcessingWorker.start(self)
 
