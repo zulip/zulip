@@ -381,8 +381,6 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         super(EventsRegisterTest, self).setUp()
         self.user_profile = self.example_user('hamlet')
-        self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
-        self.user_profile.save(update_fields=['tutorial_status'])
 
     def create_bot(self, email):
         # type: (str) -> UserProfile
@@ -1435,6 +1433,9 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_do_mark_hotspot_as_read(self):
         # type: () -> None
+        self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
+        self.user_profile.save(update_fields=['tutorial_status'])
+
         schema_checker = self.check_events_dict([
             ('type', equals('hotspots')),
             ('hotspots', check_list(check_dict_only([
