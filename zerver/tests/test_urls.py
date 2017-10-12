@@ -5,7 +5,7 @@ import os
 import ujson
 
 import django.core.urlresolvers
-from django.test import TestCase
+from django.test import TestCase, Client
 from typing import List, Optional
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -143,3 +143,18 @@ class URLResolutionTest(TestCase):
             if callback_str:
                 (module_name, base_view) = callback_str.rsplit(".", 1)
                 self.check_function_exists(module_name, base_view)
+
+class ErrorPageTest(TestCase):
+    def test_bogus_http_host(self):
+        # type: () -> None
+        # This tests that we've successfully worked around a certain bug in
+        # Django's exception handling.  The enforce_csrf_checks=True,
+        # secure=True, and HTTP_REFERER with an `https:` scheme are all
+        # there to get us down just the right path for Django to blow up
+        # when presented with an HTTP_HOST that's not a valid DNS name.
+        client = Client(enforce_csrf_checks=True)
+        result = client.post('/json/users',
+                             secure=True,
+                             HTTP_REFERER='https://somewhere',
+                             HTTP_HOST='$nonsense')
+        self.assertEqual(result.status_code, 400)
