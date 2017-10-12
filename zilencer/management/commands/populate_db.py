@@ -155,6 +155,42 @@ class Command(BaseCommand):
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
+
+            # These bots are directly referenced from code and thus
+            # are needed for the test suite.
+            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                              for bot in settings.INTERNAL_BOTS]
+            zulip_realm_bots = [
+                ("Zulip New User Bot", "new-user-bot@zulip.com"),
+                ("Zulip Error Bot", "error-bot@zulip.com"),
+                ("Zulip Default Bot", "default-bot@zulip.com"),
+                ("Welcome Bot", "welcome-bot@zulip.com"),
+            ]
+
+            for i in range(options["extra_bots"]):
+                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
+            zulip_realm_bots.extend(all_realm_bots)
+            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+
+            zulip_webhook_bots = [
+                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
+            ]
+            create_users(zulip_realm, zulip_webhook_bots,
+                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+            zulip_outgoing_bots = [
+                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
+            ]
+            aaron = get_user("AARON@zulip.com", zulip_realm)
+            create_users(zulip_realm, zulip_outgoing_bots,
+                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
+            # TODO: Clean up this initial bot creation code
+            Service.objects.create(
+                name="test",
+                user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
+                base_url="http://127.0.0.1:5002/bots/followup",
+                token="abcd1234",
+                interface=1)
+
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
@@ -175,7 +211,8 @@ class Command(BaseCommand):
             subscriptions_to_add = []  # type: List[Subscription]
             event_time = timezone_now()
             all_subscription_logs = []  # type: (List[RealmAuditLog])
-            profiles = UserProfile.objects.select_related().all().order_by("email")  # type: Sequence[UserProfile]
+            profiles = UserProfile.objects.select_related().filter(
+                is_bot=False).order_by("email")  # type: Sequence[UserProfile]
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
                 for type_id in recipient_streams[:int(len(recipient_streams) *
@@ -204,7 +241,7 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = list(UserProfile.objects.all())  # type: List[UserProfile]
+        user_profiles = list(UserProfile.objects.filter(is_bot=False))  # type: List[UserProfile]
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'test-images', 'checkbox.png')
@@ -269,41 +306,6 @@ class Command(BaseCommand):
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                 ]
                 create_users(mit_realm, testsuite_mit_users)
-
-            # These bots are directly referenced from code and thus
-            # are needed for the test suite.
-            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                              for bot in settings.INTERNAL_BOTS]
-            zulip_realm_bots = [
-                ("Zulip New User Bot", "new-user-bot@zulip.com"),
-                ("Zulip Error Bot", "error-bot@zulip.com"),
-                ("Zulip Default Bot", "default-bot@zulip.com"),
-                ("Welcome Bot", "welcome-bot@zulip.com"),
-            ]
-
-            for i in range(options["extra_bots"]):
-                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
-            zulip_realm_bots.extend(all_realm_bots)
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
-
-            zulip_webhook_bots = [
-                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
-            ]
-            create_users(zulip_realm, zulip_webhook_bots,
-                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
-            zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
-            ]
-            aaron = get_user("AARON@zulip.com", zulip_realm)
-            create_users(zulip_realm, zulip_outgoing_bots,
-                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
-            # TODO: Clean up this initial bot creation code
-            Service.objects.create(
-                name="test",
-                user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
-                base_url="http://127.0.0.1:5002/bots/followup",
-                token="abcd1234",
-                interface=1)
 
             create_simple_community_realm()
 
