@@ -15,7 +15,8 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
     is_remote_server
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
+
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
@@ -163,6 +164,25 @@ def process_client(request, user_profile, is_browser_view=False, client_name=Non
     if not remote_server_request:
         update_user_activity(request, user_profile)
 
+class InvalidZulipServerError(JsonableError):
+    code = ErrorCode.INVALID_ZULIP_SERVER
+    data_fields = ['role']
+
+    def __init__(self, role):
+        # type: (Text) -> None
+        self.role = role  # type: Text
+
+    @staticmethod
+    def msg_format():
+        # type: () -> Text
+        return "Zulip server auth failure: {role} is not registered"
+
+class InvalidZulipServerKeyError(JsonableError):
+    @staticmethod
+    def msg_format():
+        # type: () -> Text
+        return "Zulip server auth failure: key does not match role {role}"
+
 def validate_api_key(request, role, api_key, is_webhook=False,
                      client_name=None):
     # type: (HttpRequest, Optional[Text], Text, bool, Optional[Text]) -> Union[UserProfile, RemoteZulipServer]
@@ -175,12 +195,12 @@ def validate_api_key(request, role, api_key, is_webhook=False,
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
-            raise JsonableError(_("Invalid Zulip server: %s") % (role,))
+            raise InvalidZulipServerError(role)
         if api_key != remote_server.api_key:
-            raise JsonableError(_("Invalid API key"))
+            raise InvalidZulipServerKeyError(role)
 
         if not check_subdomain(get_subdomain(request), ""):
-            raise JsonableError(_("This API key only works on the root subdomain"))
+            raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
         request._email = "zulip-server:" + role
         remote_server.rate_limits = ""

@@ -29,7 +29,7 @@ from zerver.models import (
 )
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
-    DeviceToken
+    DeviceToken, PushNotificationBouncerException
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -784,20 +784,20 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
                                      extra_headers={'Content-type':
                                                     'application/json'})
 
-class TestSendToPushBouncer(PushNotificationTest):
-    class Result(object):
-        def __init__(self, status=200, content=ujson.dumps({'msg': 'error'})):
-            # type: (int, str) -> None
-            self.status_code = status
-            self.content = content
+class Result(object):
+    def __init__(self, status=200, content=ujson.dumps({'msg': 'error'})):
+        # type: (int, str) -> None
+        self.status_code = status
+        self.content = content
 
+class TestSendToPushBouncer(PushNotificationTest):
     @mock.patch('requests.request', return_value=Result(status=500))
     def test_500_error(self, mock_request):
         # type: (mock.MagicMock) -> None
-        with self.assertRaises(apn.JsonableError) as exc:
+        with self.assertRaises(PushNotificationBouncerException) as exc:
             apn.send_to_push_bouncer('register', 'register', {'data': True})
-        self.assertEqual(exc.exception.msg,
-                         'Error received from push notification bouncer')
+        self.assertEqual(str(exc.exception),
+                         'Received 500 from push notification bouncer')
 
     @mock.patch('requests.request', return_value=Result(status=400))
     def test_400_error(self, mock_request):
@@ -806,21 +806,35 @@ class TestSendToPushBouncer(PushNotificationTest):
             apn.send_to_push_bouncer('register', 'register', {'msg': True})
         self.assertEqual(exc.exception.msg, 'error')
 
+    def test_400_error_invalid_server_key(self):
+        # type: () -> None
+        from zerver.decorator import InvalidZulipServerError
+        # This is the exception our decorator uses for an invalid Zulip server
+        error_obj = InvalidZulipServerError("testRole")
+        with mock.patch('requests.request',
+                        return_value=Result(status=400,
+                                            content=ujson.dumps(error_obj.to_json()))):
+            with self.assertRaises(PushNotificationBouncerException) as exc:
+                apn.send_to_push_bouncer('register', 'register', {'msg': True})
+        self.assertEqual(str(exc.exception),
+                         'Push notifications bouncer error: '
+                         'Zulip server auth failure: testRole is not registered')
+
     @mock.patch('requests.request', return_value=Result(status=400, content='/'))
     def test_400_error_when_content_is_not_serializable(self, mock_request):
         # type: (mock.MagicMock) -> None
-        with self.assertRaises(apn.JsonableError) as exc:
+        with self.assertRaises(ValueError) as exc:
             apn.send_to_push_bouncer('register', 'register', {'msg': True})
-        self.assertEqual(exc.exception.msg,
-                         'Error received from push notification bouncer')
+        self.assertEqual(str(exc.exception),
+                         'Expected object or value')
 
     @mock.patch('requests.request', return_value=Result(status=300, content='/'))
     def test_300_error(self, mock_request):
         # type: (mock.MagicMock) -> None
-        with self.assertRaises(apn.JsonableError) as exc:
+        with self.assertRaises(PushNotificationBouncerException) as exc:
             apn.send_to_push_bouncer('register', 'register', {'msg': True})
-        self.assertEqual(exc.exception.msg,
-                         'Error received from push notification bouncer')
+        self.assertEqual(str(exc.exception),
+                         'Push notification bouncer returned unexpected status code 300')
 
 class TestNumPushDevicesForUser(PushNotificationTest):
     def test_when_kind_is_none(self):
