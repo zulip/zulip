@@ -88,8 +88,8 @@ def check_tags(text):
             break
     return text
 
-def highlight_html_differences(s1, s2):
-    # type: (Text, Text) -> Text
+def highlight_html_differences(s1, s2, msg_id=None):
+    # type: (Text, Text, Optional[int]) -> Text
     differ = diff_match_patch()
     ops = differ.diff_main(s1, s2)
     differ.diff_cleanupSemantic(ops)
@@ -122,14 +122,17 @@ def highlight_html_differences(s1, s2):
     if not verify_html(retval):
         from zerver.lib.actions import internal_send_message
         from zerver.models import get_system_bot
-        # We probably want more information here
-        logging.getLogger('').error('HTML diff produced mal-formed HTML')
+
+        # Normally, one would just throw a JsonableError, but because
+        # we don't super trust this algorithm, it makes sense to
+        # mostly report the error to the Zulip developers to debug.
+        logging.getLogger('').error('HTML diff produced mal-formed HTML for message %s' % (msg_id,))
 
         if settings.ERROR_BOT is not None:
             subject = "HTML diff failure on %s" % (platform.node(),)
             realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(realm, settings.ERROR_BOT, "stream",
-                                  "errors", subject, "HTML diff produced malformed HTML")
+                                  "errors", subject, "HTML diff produced malformed HTML for message %s" % (msg_id,))
         return s2
 
     return retval

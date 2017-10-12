@@ -1021,7 +1021,8 @@ def fill_edit_history_entries(message_history, message):
             prev_rendered_content = entry['prev_rendered_content']
             entry['content_html_diff'] = highlight_html_differences(
                 prev_rendered_content,
-                entry['rendered_content'])
+                entry['rendered_content'],
+                message.id)
 
     message_history.append(dict(
         topic = prev_topic,
