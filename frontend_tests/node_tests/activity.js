@@ -39,6 +39,13 @@ zrequire('presence');
 zrequire('people');
 zrequire('activity');
 
+set_global('blueslip', {
+    log: function () {},
+});
+
+set_global('reload', {
+    is_in_progress: function () {return false;},
+});
 set_global('resize', {
     resize_page_components: function () {},
 });
@@ -706,4 +713,11 @@ $('.user-list-filter').is = function (sel) {
   assert($('#zephyr-mirror-error').hasClass('show'));
   assert(!activity.new_user_input);
   assert(!activity.has_focus);
+
+  // Now execute the reload-in-progress code path
+  reload.is_in_progress = function () {
+      return true;
+  };
+  activity.initialize();
+
 }());

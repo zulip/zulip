@@ -399,8 +399,11 @@ exports.update_huddles = function () {
     exports.update_scrollbar.group_pms();
 };
 
-
 function focus_ping(want_redraw) {
+    if (reload.is_in_progress()) {
+        blueslip.log("Skipping querying presence because reload in progress");
+        return;
+    }
     channel.post({
         url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,

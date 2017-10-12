@@ -175,7 +175,10 @@ exports.initialize = function reload__initialize() {
 };
 
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
-    if (reload_in_progress) { return; }
+    if (reload_in_progress) {
+        blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
+        return;
+    }
 
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
@@ -305,6 +308,7 @@ window.addEventListener('beforeunload', function () {
     // When that happens we reload the page to correct the problem. If this
     // happens before the navigation is complete the user is kept captive at
     // zulip.
+    blueslip.log("Setting reload_in_progress in beforeunload handler");
     reload_in_progress = true;
 });
 
