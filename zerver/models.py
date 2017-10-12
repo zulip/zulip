@@ -4,8 +4,9 @@ from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
-from django.db.models.query import QuerySet
-from django.db.models import Manager, CASCADE
+from django.db.models.query import QuerySet, F
+from django.db.models import Manager, CASCADE, Sum
+from django.db.models.functions import Length
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -1906,3 +1907,40 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+
+class BotUserStateData(models.Model):
+    bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    key = models.TextField(db_index=True)  # type: Text
+    value = models.TextField()  # type: Text
+
+    class Meta(object):
+        unique_together = ("bot_profile", "key")
+
+def get_bot_state(bot_profile, key):
+    # type: (UserProfile, Text) -> Text
+    return BotUserStateData.objects.get(bot_profile=bot_profile, key=key).value
+
+def set_bot_state(bot_profile, key, value):
+    # type: (UserProfile, Text, Text) -> None
+    obj, created = BotUserStateData.objects.get_or_create(bot_profile=bot_profile, key=key,
+                                                          defaults={'value': value})
+    if not created:
+        obj.value = value
+        obj.save()
+
+def is_key_in_bot_state(bot_profile, key):
+    # type: (UserProfile, Text) -> bool
+    return BotUserStateData.objects.filter(bot_profile=bot_profile, key=key).exists()
+
+def get_bot_state_size(bot_profile, key=None):
+    # type: (UserProfile, Optional[Text]) -> int
+    if key is None:
+        return BotUserStateData.objects.filter(bot_profile=bot_profile) \
+                                       .annotate(key_size=Length('key'), value_size=Length('value')) \
+                                       .aggregate(sum=Sum(F('key_size')+F('value_size')))['sum'] or 0
+    else:
+        try:
+            return len(key) + len(BotUserStateData.objects.get(bot_profile=bot_profile, key=key).value)
+        except BotUserStateData.DoesNotExist:
+            return 0
