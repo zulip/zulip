@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
