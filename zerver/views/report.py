@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ, \
     to_non_negative_int
+from zerver.lib.bugdown import privacy_clean_markdown
 from zerver.lib.response import json_success
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.unminify import SourceMap
@@ -105,6 +106,12 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
     remote_ip = request.META.get('HTTP_X_REAL_IP')
     if remote_ip is None:
         remote_ip = request.META['REMOTE_ADDR']
+
+    # For the privacy of our users, we remove any actual text content
+    # in draft_content (from drafts rendering exceptions).  See the
+    # comment on privacy_clean_markdown for more details.
+    if more_info.get('draft_content'):
+        more_info['draft_content'] = privacy_clean_markdown(more_info['draft_content'])
 
     queue_json_publish('error_reports', dict(
         type = "browser",

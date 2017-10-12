@@ -1472,7 +1472,7 @@ def maybe_update_realm_filters(realm_filters_key):
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
 _privacy_re = re.compile(u'\\w', flags=re.UNICODE)
-def _sanitize_for_log(content):
+def privacy_clean_markdown(content):
     # type: (Text) -> Text
     return repr(_privacy_re.sub('x', content))
 
@@ -1650,7 +1650,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     except Exception:
         from zerver.lib.actions import internal_send_message
 
-        cleaned = _sanitize_for_log(content)
+        cleaned = privacy_clean_markdown(content)
 
         # Output error to log as well as sending a zulip and email
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
