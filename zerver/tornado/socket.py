@@ -121,7 +121,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         # type: (Dict[str, Any]) -> None
         if self.authenticated:
             self.session.send_message({'req_id': msg['req_id'], 'type': 'response',
-                                       'response': {'result': 'error', 'msg': 'Already authenticated'}})
+                                       'response': {'result': 'error',
+                                                    'msg': 'Already authenticated'}})
             return
 
         user_profile = get_user_profile(self.browser_session_id)
@@ -129,6 +130,10 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             raise JsonableError(_('Unknown or missing session'))
         self.session.user_profile = user_profile
 
+        if 'csrf_token' not in msg['request']:
+            # Debugging code to help with understanding #6961
+            logging.error("Invalid websockets auth request: %s" % (msg['request'],))
+            raise JsonableError(_('CSRF token entry missing from request'))
         if not _compare_salted_tokens(msg['request']['csrf_token'], self.csrf_token):
             raise JsonableError(_('CSRF token does not match that in cookie'))
 
