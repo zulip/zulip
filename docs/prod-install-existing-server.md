@@ -18,24 +18,6 @@ dedicated VM to install Zulip on instead (or [use zulipchat.com](https://zulipch
 
 ### Nginx
 
-Copy your existing nginx configuration to a backup and then merge the
-one created by Zulip into it:
-
-```shell
-sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
-wget -O /tmp/nginx.conf.zulip \
-    https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/files/nginx/nginx.conf
-sudo meld /etc/nginx/nginx.conf /tmp/nginx.conf.zulip  # be sure to merge to the right
-```
-
-After the zulip installation completes, then you can overwrite (or
-merge) your new nginx.conf with the installed one:
-
-```shell
-$ sudo meld /tmp/nginx.conf.zulip /etc/nginx/nginx.conf  # be sure to merge to the right
-$ sudo service nginx restart
-```
-
 Zulip's puppet configuration will change the ownership of
 `/var/log/nginx` so that the `zulip` user can access it.  Depending on
 your configuration, this may or may not cause problems.
