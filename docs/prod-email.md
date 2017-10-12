@@ -32,12 +32,19 @@ We don't recommend using an inbox product like Gmail for outgoing
 email, because Gmail's anti-spam measures make this annoying.  But if
 you want to use a Gmail account to send outgoing email anyway, here's
 how to make it work:
-* Create a totally new Gmail account for your Zulip server.
-* Read this Google support answer and configure that account as
-["less secure"](https://support.google.com/accounts/answer/6010255);
-Gmail doesn't allow servers to send outgoing email by default.
+* Create a totally new Gmail account for your Zulip server; you don't
+  want Zulip's automated emails to come from your personal email address.
+* If you're using 2-factor authentication on the Gmail account, you'll
+  need to use an
+  [app-specific password](https://support.google.com/accounts/answer/185833).
+* If you're not using 2-factor authentication, read this Google
+  support answer and configure that account as
+  ["less secure"](https://support.google.com/accounts/answer/6010255);
+  Gmail doesn't allow servers to send outgoing email by default.
 * Note also that the rate limits for Gmail are also quite low
-(e.g. 100 / day), so it's easy to get rate-limited.
+  (e.g. 100 / day), so it's easy to get rate-limited if your server
+  has significant traffic.  For more active servers, we recommend
+  moving to a free account from a transaction email service.
 
 ### Logging outgoing email to a file for prototyping
 
