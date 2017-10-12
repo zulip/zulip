@@ -7,14 +7,15 @@ import time
 import re
 import importlib
 from zerver.lib.actions import internal_send_message
-from zerver.models import UserProfile
+from zerver.models import UserProfile, \
+    get_bot_state, set_bot_state, get_bot_state_size, is_key_in_bot_state
 from zerver.lib.integrations import EMBEDDED_BOTS
 
 from six.moves import configparser
 
 if False:
     from mypy_extensions import NoReturn
-from typing import Any, Optional, List, Dict
+from typing import Any, Optional, List, Dict, Text
 from types import ModuleType
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +33,36 @@ def get_bot_handler(service_name):
     bot_module = importlib.import_module(bot_module_name)  # type: Any
     return bot_module.handler_class()
 
+class StateHandlerError(Exception):
+    pass
+
+class StateHandler(object):
+    state_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
+
+    def __init__(self, user_profile):
+        # type: (UserProfile) -> None
+        self.user_profile = user_profile
+
+    def __getitem__(self, key):
+        # type: (Text) -> Text
+        return get_bot_state(self.user_profile, key)
+
+    def __setitem__(self, key, value):
+        # type: (Text, Text) -> None
+        old_entry_size = get_bot_state_size(self.user_profile, key)
+        new_entry_size = len(key) + len(value)
+        old_state_size = get_bot_state_size(self.user_profile)
+        new_state_size = old_state_size + (new_entry_size - old_entry_size)
+        if new_state_size > self.state_size_limit:
+            raise StateHandlerError("Cannot set state. Request would require {} bytes storage. "
+                                    "The current storage limit is {}.".format(new_state_size, self.state_size_limit))
+        else:
+            set_bot_state(self.user_profile, key, value)
+
+    def __contains__(self, key):
+        # type: (Text) -> bool
+        return is_key_in_bot_state(self.user_profile, key)
+
 class EmbeddedBotHandler(object):
     def __init__(self, user_profile):
         # type: (UserProfile) -> None
@@ -40,6 +71,7 @@ class EmbeddedBotHandler(object):
         self._rate_limit = RateLimit(20, 5)
         self.full_name = user_profile.full_name
         self.email = user_profile.email
+        self.state = StateHandler(user_profile)
 
     def send_message(self, message):
         # type: (Dict[str, Any]) -> None

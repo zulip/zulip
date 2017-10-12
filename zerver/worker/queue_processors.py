@@ -9,7 +9,6 @@ from functools import wraps
 import smtplib
 import socket
 
-from zulip_bots.lib import ExternalBotHandler, StateHandler
 from django.conf import settings
 from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
@@ -506,11 +505,6 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         # type: (UserProfile) -> EmbeddedBotHandler
         return EmbeddedBotHandler(user_profile)
 
-    # TODO: Handle stateful bots properly
-    def get_state_handler(self):
-        # type: () -> StateHandler
-        return StateHandler()
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         user_profile_id = event['user_profile_id']
@@ -528,4 +522,4 @@ class EmbeddedBotWorker(QueueProcessingWorker):
             bot_handler.handle_message(
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile),
-                state_handler=self.get_state_handler())
+                state_handler=None)
