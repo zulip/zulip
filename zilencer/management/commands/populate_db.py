@@ -136,12 +136,6 @@ class Command(BaseCommand):
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
-            # Create welcome bot as the first required bot
-            zulip_welcome_bot = [
-                ("Welcome Bot", "welcome-bot@zulip.com"),
-            ]
-            create_users(zulip_realm, zulip_welcome_bot, bot_type=UserProfile.DEFAULT_BOT)
-
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
             names = [
@@ -284,7 +278,9 @@ class Command(BaseCommand):
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
+                ("Welcome Bot", "welcome-bot@zulip.com"),
             ]
+
             for i in range(options["extra_bots"]):
                 zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
             zulip_realm_bots.extend(all_realm_bots)
