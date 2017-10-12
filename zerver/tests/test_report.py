@@ -119,7 +119,7 @@ class TestReport(ZulipTestCase):
             user_agent='agent',
             href='href',
             log='log',
-            more_info=dict(foo='bar'),
+            more_info=dict(foo='bar', draft_content="**draft**"),
         ))
 
         publish_mock = mock.patch('zerver.views.report.queue_json_publish')
@@ -135,7 +135,7 @@ class TestReport(ZulipTestCase):
         for k in set(params) - set(['ui_message', 'more_info']):
             self.assertEqual(report[k], params[k])
 
-        self.assertEqual(report['more_info'], dict(foo='bar'))
+        self.assertEqual(report['more_info'], dict(foo='bar', draft_content="'**xxxxx**'"))
         self.assertEqual(report['user_email'], email)
 
         with self.settings(BROWSER_ERROR_REPORTING=False):
