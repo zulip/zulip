@@ -123,7 +123,7 @@ presence.presence_info = presence_info;
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
-    assert.equal(presence.get_status(zoe.user_id), "unknown");
+    assert.equal(presence.get_status(zoe.user_id), "offline");
 }());
 
 (function test_reload_defaults() {

@@ -39,7 +39,7 @@ exports.get_status = function (user_id) {
     if (user_id in exports.presence_info) {
         return exports.presence_info[user_id].status;
     }
-    return "unknown";
+    return "offline";
 };
 
 exports.get_user_ids = function () {
