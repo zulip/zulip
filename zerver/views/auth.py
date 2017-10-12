@@ -402,7 +402,7 @@ def finish_google_oauth2(request):
         realm, full_name, email_address, is_signup=is_signup)
 
 def authenticate_remote_user(realm, email_address):
-    # type: (Realm) -> Tuple[UserProfile, Dict[str, Any]]
+    # type: (Realm, str) -> Tuple[UserProfile, Dict[str, Any]]
     return_data = {}  # type: Dict[str, bool]
     if email_address is None:
         # No need to authenticate if email address is None. We already
