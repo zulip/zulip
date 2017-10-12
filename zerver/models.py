@@ -1743,6 +1743,23 @@ class DefaultStream(models.Model):
     class Meta(object):
         unique_together = ("realm", "stream")
 
+class DefaultStreamGroup(models.Model):
+    MAX_NAME_LENGTH = 60
+    name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    streams = models.ManyToManyField('Stream')  # type: Manager
+
+    class Meta(object):
+        unique_together = ("realm", "name")
+
+    def to_dict(self):
+        # type: () -> Dict[str, Any]
+        return dict(name=self.name, streams=[stream.to_dict() for stream in self.streams.all()])
+
+def get_default_stream_groups(realm):
+    # type: (Realm) -> List[DefaultStreamGroup]
+    return DefaultStreamGroup.objects.filter(realm=realm)
+
 class AbstractScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # JSON representation of arguments to consumer
