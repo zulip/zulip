@@ -982,14 +982,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_if_each_embedded_bot_service_exists(self):
         # type: () -> None
-        # Each bot has its bot handler class name as Bot_nameHandler. For instance encrypt bot has
-        # its class name as EncryptHandler.
-        class_bot_handler = "<class 'zulip_bots.bots.{name}.{name}.{Name}Handler'>"
         for embedded_bot in EMBEDDED_BOTS:
-            embedded_bot_handler = get_bot_handler(embedded_bot.name)
-            bot_name = embedded_bot.name
-            bot_handler_class_name = class_bot_handler.format(name=bot_name, Name=bot_name.title())
-            self.assertEqual(str(type(embedded_bot_handler)), bot_handler_class_name)
+            self.assertIsNotNone(get_bot_handler(embedded_bot.name))
 
     def test_outgoing_webhook_interface_type(self):
         # type: () -> None
