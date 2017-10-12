@@ -230,6 +230,16 @@ exports.process_from_server = function process_from_server(messages) {
             sent_messages.mark_disparity(message.local_id);
         }
 
+        // Update our flags based on what the server gave us.
+        client_message.flags = message.flags;
+        message_store.set_message_booleans(client_message, client_message.flags);
+
+        // We don't try to highlight alert words locally, so we have to
+        // do it now.  (Note that we will indeed highlight alert words in
+        // messages that we sent to ourselves, since we might want to test
+        // that our alert words are set up correctly.)
+        alert_words.process_message(client_message);
+
         // Previously, the message had the "local echo" timestamp set
         // by the browser; if there was some round-trip delay to the
         // server, the actual server-side timestamp could be slightly
