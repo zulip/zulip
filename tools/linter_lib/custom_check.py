@@ -82,6 +82,10 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         if exclude_lines:
             print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
 
+    # TODO: Move the below into more of a framework.
+    firstline = None
+    if line_tups:
+        firstline = line_tups[0][3]  # line_fully_stripped for the first line.
     lastLine = None
     for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
         if isinstance(line, bytes):
@@ -96,6 +100,22 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             failed = True
         lastLine = line
+
+    if firstline:
+        if os.path.splitext(fn)[1] and 'zerver/' in fn:
+            shebang_rules = [{'pattern': '^#!',
+                              'description': "zerver library code shouldn't have a shebang line."}]
+        else:
+            shebang_rules = [{'pattern': '#!/usr/bin/python',
+                              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/python`"},
+                             {'pattern': '#!/usr/bin/env python$',
+                              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}]
+        for rule in shebang_rules:
+            if re.search(rule['pattern'], firstline):
+                print_err(identifier, color,
+                          '{} at {} line 1:'.format(rule['description'], fn))
+                print_err(identifier, color, firstline)
+                failed = True
 
     if lastLine and ('\n' not in lastLine):
         print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
@@ -366,14 +386,6 @@ def build_custom_checkers(by_lang):
          'description': "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
          'good_lines': ["logging.warning('I am a warning.')", "logger.warning('warning')"],
          'bad_lines': ["logging.warn('I am a warning.')", "logger.warn('warning')"]},
-        {'pattern': '#!/usr/bin/python',
-         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/python`",
-         'good_lines': ['#!/usr/bin/env python3'],
-         'bad_lines': ['#!/usr/bin/python', '#!/usr/bin/python3']},
-        {'pattern': '#!/usr/bin/env python$',
-         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`.",
-         'good_lines': ["#!/usr/bin/env python3"],
-         'bad_lines': ["#!/usr/bin/env python"]},
         {'pattern': '\.pk',
          'exclude_pattern': '[.]_meta[.]pk',
          'description': "Use `id` instead of `pk`.",
