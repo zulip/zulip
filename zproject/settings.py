@@ -783,6 +783,7 @@ PIPELINE = {
                 'styles/portico-signin.css',
                 'styles/pygments.css',
                 'third/thirdparty-fonts.css',
+                'icons/style.css',
                 'styles/fonts.css',
             ),
             'output_filename': 'min/portico.css'
@@ -799,6 +800,7 @@ PIPELINE = {
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
                 'third/thirdparty-fonts.css',
+                'icons/style.css',
                 'styles/components.css',
                 'styles/app_components.css',
                 'styles/zulip.css',
@@ -826,6 +828,7 @@ PIPELINE = {
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
                 'third/thirdparty-fonts.css',
+                'icons/style.css',
                 'node_modules/katex/dist/katex.css',
                 'styles/components.css',
                 'styles/app_components.css',
