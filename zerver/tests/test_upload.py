@@ -24,7 +24,6 @@ from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
-from zilencer.models import Deployment
 
 from zerver.views.upload import upload_file_backend
 
@@ -451,19 +450,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user2_email = 'test-og-bot@zulip.com'
         user3_email = 'other-user@uploadtest.example.com'
 
-        dep = Deployment()
-        dep.base_api_url = "https://zulip.com/api/"
-        dep.base_site_url = "https://zulip.com/"
-        # We need to save the object before we can access
-        # the many-to-many relationship 'realms'
-        dep.save()
-        dep.realms = [get_realm("zulip")]
-        dep.save()
-
         r1 = Realm.objects.create(string_id=test_subdomain, invite_required=False)
         RealmDomain.objects.create(realm=r1, domain=test_subdomain)
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
 
         create_user(user1_email, test_subdomain)
         create_user(user2_email, 'zulip')

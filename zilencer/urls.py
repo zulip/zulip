@@ -10,8 +10,6 @@ i18n_urlpatterns = []  # type: Any
 
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
-    url('^deployment/report_error$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_error'}),
     url('^remotes/push/register$', rest_dispatch,
         {'POST': 'zilencer.views.remote_server_register_push'}),
     url('^remotes/push/unregister$', rest_dispatch,

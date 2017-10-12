@@ -12,7 +12,6 @@ from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
     generate_key, confirmation_url
-from zilencer.models import Deployment
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password, gather_subscriptions

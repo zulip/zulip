@@ -9,7 +9,6 @@ from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zerver.lib.cache import get_stream_cache_key, cache_delete
 from zerver.lib.str_utils import force_text
-from zilencer.models import Deployment
 
 from zerver.lib.addressee import Addressee
 
@@ -181,17 +180,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 
-    def setUp(self):
-        # type: () -> None
-        dep = Deployment()
-        dep.base_api_url = "https://zulip.com/api/"
-        dep.base_site_url = "https://zulip.com/"
-        # We need to save the object before we can access
-        # the many-to-many relationship 'realms'
-        dep.save()
-        dep.realms = [get_realm("zulip")]
-        dep.save()
-
     def create_user(self, email):
         # type: (Text) -> UserProfile
         subdomain = email.split("@")[1]
@@ -203,13 +191,9 @@ class TestCrossRealmPMs(ZulipTestCase):
                                                'support@3.example.com'])
     def test_realm_scenarios(self):
         # type: () -> None
-        r1 = self.make_realm('1.example.com')
+        self.make_realm('1.example.com')
         r2 = self.make_realm('2.example.com')
-        r3 = self.make_realm('3.example.com')
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
-        deployment.realms.add(r2)
-        deployment.realms.add(r3)
+        self.make_realm('3.example.com')
 
         def assert_message_received(to_user, from_user):
             # type: (UserProfile, UserProfile) -> None

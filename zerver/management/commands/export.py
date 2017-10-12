@@ -32,7 +32,7 @@ class Command(ZulipBaseCommand):
     * Users' passwords and API keys (users will need to use SSO or reset password)
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
     * ScheduledEmail (Not relevant on a new server)
-    * Deployment (Unused)
+    * RemoteZulipServer (Unlikely to be migrated)
     * third_party_api_results cache (this means rerending all old
       messages could be expensive)
 

@@ -3,10 +3,9 @@ from django.utils.translation import ugettext as _
 from django.utils import timezone
 from django.http import HttpResponse, HttpRequest
 
-from zilencer.models import Deployment, RemotePushDeviceToken, RemoteZulipServer
+from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 from zerver.decorator import has_request_variables, REQ
-from zerver.lib.error_notify import do_report_error
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
 from zerver.lib.request import JsonableError
@@ -28,11 +27,6 @@ def validate_bouncer_token_request(entity, token, kind):
         raise JsonableError(_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
-
-@has_request_variables
-def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, Deployment, Text, Dict[str, Any]) -> HttpResponse
-    return do_report_error(deployment.name, type, report)
 
 @has_request_variables
 def remote_server_register_push(request, entity, user_id=REQ(),
