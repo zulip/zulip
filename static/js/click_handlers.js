@@ -714,6 +714,11 @@ $(function () {
 
     // MAIN CLICK HANDLER
 
+    var prevFocus;  // Previously focused input element
+    $('input, textarea').focus(function () {
+        prevFocus = $(this);
+    });
+
     $(document).on('click', function (e) {
         if (e.button !== 0 || $(e.target).is(".drag")) {
             // Firefox emits right click events on the document, but not on
@@ -727,11 +732,13 @@ $(function () {
             popovers.hide_all();
         }
 
-        if (compose_state.composing()) {
-            if ($(e.target).is("a")) {
-                // Refocus compose message text box if link is clicked
-                $("#new_message_content").focus();
-            } else if (!$(e.target).closest(".overlay").length &&
+        if ($(e.target).is("a")) {
+            // Refocus the previously focused element
+            if (prevFocus !== undefined) {
+                prevFocus.focus();
+            }
+        } else if (compose_state.composing()) {
+            if (!$(e.target).closest(".overlay").length &&
             !window.getSelection().toString() &&
             !$(e.target).closest('.popover-content').length) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
