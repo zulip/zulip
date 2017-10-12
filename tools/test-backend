@@ -23,23 +23,20 @@ target_fully_covered = {path for target in [
     'analytics/models.py',
     'analytics/tests/*.py',
     'analytics/views.py',
-    'zerver/context_processors.py',
+    # zerver/ and zerver/lib/ are important core files
+    'zerver/*.py',
     'zerver/lib/*.py',
-    'zerver/logging_handlers.py',
-    # As a project, we require 100% test coverage in the views files.
-    'zerver/views/*.py',
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
     'zerver/tests/*.py',
+    # As a project, we require 100% test coverage in the views files.
+    'zerver/views/*.py',
+    'zproject/backends.py',
+    'confirmation/models.py',
+    'zerver/webhooks/*/*.py',
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
-    'zproject/backends.py',
-    # Uncovered but in exclude list and we'd like to have included soon
-    'confirmation/models.py',
-    'zerver/decorator.py',
-    'zerver/models.py',
-    'zerver/webhooks/*/*.py',
 ] for path in glob.glob(target)}
 
 not_yet_fully_covered = {
@@ -52,6 +49,7 @@ not_yet_fully_covered = {
     # Major lib files should have 100% coverage
     'confirmation/models.py',
     'zerver/decorator.py',
+    'zerver/forms.py',
     'zerver/lib/actions.py',
     'zerver/lib/addressee.py',
     'zerver/lib/bugdown/__init__.py',
@@ -69,6 +67,11 @@ not_yet_fully_covered = {
     'zerver/lib/upload.py',
     'zerver/models.py',
     # Other lib files that ideally would coverage, but aren't sorted
+    'zerver/__init__.py',
+    'zerver/apps.py',
+    'zerver/filters.py',
+    'zerver/middleware.py',
+    'zerver/storage.py',
     'zerver/lib/bot_lib.py',
     'zerver/lib/camo.py',
     'zerver/lib/db.py',
