@@ -110,9 +110,12 @@ aren't receiving emails from Zulip:
   exceptions Zulip encounters.
 * Zulip's email sending configuration is based on the standard Django
   [SMTP backend](https://docs.djangoproject.com/en/1.10/topics/email/#smtp-backend)
-  configuration.  The one thing we've changed from the defaults is
-  reading `EMAIL_HOST_PASSWORD` from the `email_password` entry in the
-  Zulip secrets file, so that secrets don't live in the
-  `/etc/zulip/settings.py` file.  So if you're having trouble getting
-  your email provider working, you may want to search for
-  documentation related to using your email provider with Django.
+  configuration.  So if you're having trouble getting your email
+  provider working, you may want to search for documentation related
+  to using your email provider with Django.  The one thing we've
+  changed from the defaults is reading the email password from the
+  `email_password` entry in the Zulip secrets file, as part of our
+  policy of not having any secret information in the
+  `/etc/zulip/settings.py` file.  In other words, if Django
+  documentation references setting `EMAIL_HOST_PASSWORD`, you should
+  instead set `email_password` in `/etc/zulip/zulip-secrets.conf`.
