@@ -4,7 +4,7 @@ import requests
 import mock
 from mock import call
 import time
-from typing import Any, Dict, List, Union, SupportsInt, Text
+from typing import Any, Dict, List, Optional, Union, SupportsInt, Text
 
 import gcm
 import os
@@ -29,7 +29,7 @@ from zerver.models import (
 )
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
-    DeviceToken, PushNotificationBouncerException
+    DeviceToken, PushNotificationBouncerException, get_apns_client
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -550,10 +550,17 @@ class TestAPNs(PushNotificationTest):
         return list(PushDeviceToken.objects.filter(
             user=self.user_profile, kind=PushDeviceToken.APNS))
 
-    def send(self, payload_data={}):
-        # type: (Dict[str, Any]) -> None
+    def send(self, devices=None, payload_data={}):
+        # type: (Optional[List[PushDeviceToken]], Dict[str, Any]) -> None
+        if devices is None:
+            devices = self.devices()
         apn.send_apple_push_notification(
-            self.user_profile.id, self.devices(), payload_data)
+            self.user_profile.id, devices, payload_data)
+
+    def test_get_apns_client(self):
+        # type: () -> None
+        """Just a quick check that the initialization code doesn't crash"""
+        get_apns_client()
 
     def test_success(self):
         # type: () -> None
@@ -566,6 +573,15 @@ class TestAPNs(PushNotificationTest):
                 mock_logging.info.assert_any_call(
                     "APNs: Success sending for user %d to device %s",
                     self.user_profile.id, device.token)
+
+    def test_success_no_devices(self):
+        # type: () -> None
+        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+            mock_apns.get_notification_result.return_value = 'Success'
+            self.send(devices=[])
+            mock_logging.warning.assert_not_called()
+            mock_logging.info.assert_not_called()
 
     def test_http_retry(self):
         # type: () -> None
@@ -583,6 +599,26 @@ class TestAPNs(PushNotificationTest):
                 mock_logging.info.assert_any_call(
                     "APNs: Success sending for user %d to device %s",
                     self.user_profile.id, device.token)
+
+    def test_http_retry_eventually_fails(self):
+        # type: () -> None
+        import hyper
+        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+            mock_apns.get_notification_result.side_effect = itertools.chain(
+                [hyper.http20.exceptions.StreamResetError()],
+                [hyper.http20.exceptions.StreamResetError()],
+                [hyper.http20.exceptions.StreamResetError()],
+                [hyper.http20.exceptions.StreamResetError()],
+                [hyper.http20.exceptions.StreamResetError()],
+            )
+
+            self.send(devices=self.devices()[0:1])
+            self.assertEqual(mock_logging.warning.call_count, 5)
+            mock_logging.warning.assert_called_with(
+                'APNs: Failed to send for user %d to device %s: %s',
+                self.user_profile.id, self.devices()[0].token, 'HTTP error, retries exhausted')
+            self.assertEqual(mock_logging.info.call_count, 1)
 
     def test_modernize_apns_payload(self):
         # type: () -> None

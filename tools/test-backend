@@ -35,6 +35,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/mention.py',
     'zerver/lib/message.py',
     'zerver/lib/name_restrictions.py',
+    'zerver/lib/push_notifications.py',
     'zerver/lib/realm_icon.py',
     'zerver/lib/retention.py',
     'zerver/lib/streams.py',
@@ -87,7 +88,6 @@ not_yet_fully_covered = {
     'zerver/lib/i18n.py',
     'zerver/lib/message.py',
     'zerver/lib/notifications.py',
-    'zerver/lib/push_notifications.py',
     'zerver/lib/upload.py',
     'zerver/models.py',
     # Webhook integrations with incomplete coverage
