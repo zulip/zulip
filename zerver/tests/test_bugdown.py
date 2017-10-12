@@ -10,6 +10,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
+from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
 from zerver.lib.mention import possible_mentions
 from zerver.lib.message import render_markdown
@@ -34,6 +35,7 @@ from zerver.models import (
     Realm,
     RealmFilter,
     Recipient,
+    UserProfile,
 )
 
 import copy
@@ -165,6 +167,39 @@ class FencedBlockPreprocessorTest(TestCase):
 def bugdown_convert(text):
     # type: (Text) -> Text
     return bugdown.convert(text, message_realm=get_realm('zulip'))
+
+class BugdownMiscTest(ZulipTestCase):
+    def test_get_full_name_info(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+
+        def make_user(email, full_name):
+            # type: (Text, Text) -> UserProfile
+            return create_user(
+                email=email,
+                password='whatever',
+                realm=realm,
+                full_name=full_name,
+                short_name='whatever',
+            )
+
+        fred1 = make_user('fred1@example.com', 'Fred Flintstone')
+        fred1.is_active = False
+        fred1.save()
+
+        fred2 = make_user('fred2@example.com', 'Fred Flintstone')
+
+        fred3 = make_user('fred3@example.com', 'Fred Flintstone')
+        fred3.is_active = False
+        fred3.save()
+
+        dct = bugdown.get_full_name_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
+        self.assertEqual(set(dct.keys()), {'fred flintstone', 'cordelia lear'})
+        self.assertEqual(dct['fred flintstone'], dict(
+            email='fred2@example.com',
+            full_name='Fred Flintstone',
+            id=fred2.id
+        ))
 
 class BugdownTest(ZulipTestCase):
     def load_bugdown_tests(self):

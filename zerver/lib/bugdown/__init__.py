@@ -1530,7 +1530,8 @@ def get_full_name_info(realm_id, full_names):
     }
 
     rows = UserProfile.objects.filter(
-        realm_id=realm_id
+        realm_id=realm_id,
+        is_active=True,
     ).filter(
         functools.reduce(lambda a, b: a | b, q_list),
     ).values(
