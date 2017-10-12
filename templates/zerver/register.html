@@ -75,6 +75,19 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endif %}
             </section>
 
+            {% if default_stream_groups %}
+            <div class="input-group m-10 inline-block">
+                <label for="default_stream_group">{{ _('What parts of the organization are you interested in?') }}</label>
+                {% for default_stream_group in default_stream_groups %}
+                <div class="input-group radio">
+                    <input class="inline-block" type="checkbox" name="default_stream_group" value="{{ default_stream_group.name }}"
+                    {% if "default_stream_group" in  form.data and default_stream_group.name in form.data.getlist('default_stream_group') %} checked {% endif %} />
+                    <label for="id_radio_{{ default_stream_group.name }}" class="inline-block">{{ default_stream_group.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <section class="org-registration">
                 {% if creating_new_team %}
                 <div class="input-box">

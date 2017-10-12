@@ -45,8 +45,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, \
-    Client, DefaultStream, UserPresence, PushDeviceToken, ScheduledEmail, \
-    MAX_SUBJECT_LENGTH, \
+    Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
+    ScheduledEmail, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, \
@@ -309,8 +309,9 @@ def add_new_user_history(user_profile, streams):
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
 # * subscribe the user to newsletter if newsletter_data is specified
-def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None):
-    # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> None
+def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None,
+                           default_stream_group_names=[]):
+    # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]], List[str]) -> None
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams = prereg_user.streams.all()
@@ -323,6 +324,16 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     # add the default streams
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
+    for default_stream_group_name in default_stream_group_names:
+        try:
+            default_stream_group = DefaultStreamGroup.objects.get(name=default_stream_group_name, realm=user_profile.realm)
+        except DefaultStreamGroup.DoesNotExist:
+            raise JsonableError(_('Invalid default stream group %s' % (default_stream_group_name,)))
+
+        default_stream_group_streams = default_stream_group.streams.all()
+        for stream in default_stream_group_streams:
+            if stream not in streams:
+                streams.add(stream)
 
     bulk_add_subscriptions(streams, [user_profile], acting_user=acting_user)
 
@@ -425,8 +436,8 @@ def do_create_user(email, password, realm, full_name, short_name,
                    timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
-                   newsletter_data=None):
-    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+                   newsletter_data=None, default_stream_group_names=[]):
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]], List[str]) -> UserProfile
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                active=active, is_realm_admin=is_realm_admin,
@@ -447,7 +458,8 @@ def do_create_user(email, password, realm, full_name, short_name,
         notify_created_bot(user_profile)
     else:
         process_new_human_user(user_profile, prereg_user=prereg_user,
-                               newsletter_data=newsletter_data)
+                               newsletter_data=newsletter_data,
+                               default_stream_group_names=default_stream_group_names)
     return user_profile
 
 def do_activate_user(user_profile):

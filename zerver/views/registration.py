@@ -14,7 +14,7 @@ from django.core import validators
 from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, PreregistrationUser, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user_profile_by_email
+    get_realm, get_user_profile_by_email, get_default_stream_groups
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -180,6 +180,7 @@ def accounts_register(request):
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
+        default_stream_groups = request.POST.getlist('default_stream_group')
 
         timezone = u""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
@@ -230,7 +231,8 @@ def accounts_register(request):
                                           prereg_user=prereg_user, is_realm_admin=realm_creation,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
-                                          newsletter_data={"IP": request.META['REMOTE_ADDR']})
+                                          newsletter_data={"IP": request.META['REMOTE_ADDR']},
+                                          default_stream_group_names=default_stream_groups)
 
         if realm_creation:
             setup_initial_private_stream(user_profile)
@@ -271,6 +273,7 @@ def accounts_register(request):
                  'password_required': password_auth_enabled(realm) and password_required,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
+                 'default_stream_groups': get_default_stream_groups(realm),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
