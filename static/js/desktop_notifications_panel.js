@@ -5,7 +5,12 @@ var exports = {};
 var resize_app = function () {
     var panels_height = $("#panels").height();
     $("body > .app").height("calc(100% - " + panels_height + "px)");
+    // the floating recipient bar is usually positioned 10px below the
+    // header, so add that to the panels height to get the new `top` value.
+    $("#floating_recipient_bar").css("top", panels_height + $(".header").height() + 10 + "px");
 };
+
+exports.resize_app = resize_app;
 
 var show_step = function (step) {
     $("#panels [data-step]").hide().filter("[data-step=" + step + "]").show();
