@@ -41,23 +41,29 @@ if ! git diff --exit-code >/dev/null; then
     exit 1
 fi
 
-TMP_CHECKOUT=$TMPDIR/$prefix/
+TMP_CHECKOUT=$TMPDIR/$prefix
 TARBALL=$TMPDIR/$prefix.tar
+BASEDIR=$(pwd)
 
 # .gitattributes lists the files that are not exported
 git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
+cd "$TMPDIR"
+tar -xf "$TARBALL"
+for i in `cat "$TMP_CHECKOUT"/tools/release-tarball-exclude.txt`; do
+    rm -r --interactive=never "$TMP_CHECKOUT/$i";
+done
+tar -cf "$TARBALL" "$prefix"
+rm -rf "$prefix"
 
 if tar -tf "$TARBALL" | grep -q -e ^zerver/tests; then
-	echo "Excluded files remain in tarball!";
-	echo "Versions of git 1.8.1.1 - 1.8.1.6 have broken .gitattributes syntax";
-	exit 1;
-else
-	echo "Check for excluded files passed";
+    echo "BUG: Excluded files remain in tarball!"
+    exit 1
 fi
+cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
-git checkout-index -f -a --prefix "$TMP_CHECKOUT"
+git checkout-index -f -a --prefix "$TMP_CHECKOUT/"
 cd "$TMP_CHECKOUT"
 
 # create var/log directory in the new temporary checkout
