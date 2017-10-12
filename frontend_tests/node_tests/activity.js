@@ -42,6 +42,20 @@ set_global('blueslip', {
     log: function () {},
 });
 
+set_global('popovers', {
+    hide_all: function () {},
+    show_userlist_sidebar: function () {
+        $('.column-right').addClass('expanded');
+    },
+});
+
+set_global('stream_popover', {
+    show_streamlist_sidebar: function () {
+        $('.column-left').addClass('expanded');
+    },
+});
+
+
 set_global('reload', {
     is_in_progress: function () {return false;},
 });
@@ -583,7 +597,19 @@ $('.user-list-filter').is = function (sel) {
 
 (function test_initiate_search() {
     $('.user-list-filter').blur();
+    $('.user-list-filter').closest = function (selector) {
+        assert.equal(selector, ".app-main [class^='column-']");
+        return $.create('right-sidebar').addClass('column-right');
+    };
     activity.initiate_search();
+    assert.equal($('.column-right').hasClass('expanded'), true);
+    assert.equal($('.user-list-filter').is_focused(), true);
+    $('.user-list-filter').closest = function (selector) {
+        assert.equal(selector, ".app-main [class^='column-']");
+        return $.create('left-sidebar').addClass('column-left');
+    };
+    activity.initiate_search();
+    assert.equal($('.column-left').hasClass('expanded'), true);
     assert.equal($('.user-list-filter').is_focused(), true);
 }());
 
