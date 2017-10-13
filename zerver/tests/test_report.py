@@ -138,6 +138,12 @@ class TestReport(ZulipTestCase):
         self.assertEqual(report['more_info'], dict(foo='bar', draft_content="'**xxxxx**'"))
         self.assertEqual(report['user_email'], email)
 
+        # Teset with no more_info
+        del params['more_info']
+        with publish_mock as m, subprocess_mock:
+            result = self.client_post("/json/report_error", params)
+        self.assert_json_success(result)
+
         with self.settings(BROWSER_ERROR_REPORTING=False):
             result = self.client_post("/json/report_error", params)
         self.assert_json_success(result)

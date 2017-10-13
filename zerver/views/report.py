@@ -86,11 +86,13 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       ui_message=REQ(validator=check_bool), user_agent=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, bool, Text, Text, Text, Dict[str, Any]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, bool, Text, Text, Text, Optional[Dict[str, Any]]) -> HttpResponse
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error (below)"""
     if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
+    if more_info is None:
+        more_info = {}
 
     js_source_map = get_js_source_map()
     if js_source_map:
