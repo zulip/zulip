@@ -1657,13 +1657,10 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
                           % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
-        if settings.ERROR_BOT is not None:
-            error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
-            internal_send_message(error_bot_realm, settings.ERROR_BOT, "stream",
-                                  "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(
             subject, "Failed message: %s\n\n%s\n\n" % (cleaned, traceback.format_exc()),
             fail_silently=False)
+
         raise BugdownRenderingException()
     finally:
         current_message = None
