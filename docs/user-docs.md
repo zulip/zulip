@@ -1,9 +1,24 @@
 # General user guide documentation
 
 Our goal is for Zulip to have complete, high-quality user-appealing
-documentation about use Zulip's features and perform certain tasks, such as
-setting up an organization. This system is designed to make writing and
-maintaining such documentation highly efficient.
+documentation about Zulip's features and how to perform certain tasks, such
+as setting up an organization.
+
+There are two types of documents: articles about specific features, and a
+handful of longer guides.
+
+The feature articles serve a few different purposes:
+* Feature discovery, for someone browing the `/help` page, and looking at
+  the set of titles.
+* Public documentation of our featureset, for someone googling "can zulip do .."
+* Canned responses to support questions; if someone emails a zulip admin
+  asking "how do I change my name", they can reply with a link to the doc.
+* Feature explanations for new Zulip users and admins, especially for
+  organization settings.
+
+This system is designed to make writing and maintaining such documentation
+highly efficient. We link to the docs extensively from the landing pages and
+in-product, so it's important to keep the docs up to date.
 
 ## Editing and testing
 
