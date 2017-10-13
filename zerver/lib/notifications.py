@@ -89,15 +89,16 @@ def relative_to_full_url(base_url, content):
             if elem.get('title') is not None:
                 elem.set('title', link)
 
-    fragment.make_links_absolute(base_url)
-    content = lxml.html.tostring(fragment).decode("utf-8")  # type: ignore # https://github.com/python/typeshed/issues/525
-
     # Inline images can't be displayed in the emails as the request
     # from the mail server can't be authenticated because it has no
-    # user_profile object linked to it. So we scrub the image but
-    # leave the link.
-    content = re.sub(
-        r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
+    # user_profile object linked to it. So we scrub the inline image
+    # container.
+    inline_image_containers = fragment.find_class("message_inline_image")
+    for container in inline_image_containers:
+        container.drop_tree()
+
+    fragment.make_links_absolute(base_url)
+    content = lxml.html.tostring(fragment).decode("utf-8")  # type: ignore # https://github.com/python/typeshed/issues/525
 
     return content
 
