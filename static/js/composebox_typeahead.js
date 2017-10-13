@@ -445,9 +445,13 @@ exports.compose_matches_sorter = function (matches) {
     }
 };
 
-exports.initialize_compose_typeahead = function (selector, completions) {
-    completions = $.extend(
-        {mention: false, emoji: false, stream: false, syntax: false}, completions);
+exports.initialize_compose_typeahead = function (selector) {
+    var completions = {
+        mention: true,
+        emoji: true,
+        stream: true,
+        syntax: true,
+    };
 
     $(selector).typeahead({
         items: 5,
@@ -574,7 +578,7 @@ exports.initialize = function () {
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });
 
-    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true, syntax: true});
+    exports.initialize_compose_typeahead("#new_message_content");
 
     $("#private_message_recipient").blur(function () {
         var val = $(this).val();
