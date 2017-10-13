@@ -256,7 +256,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         except AuthFailed:
             return None
         except SocialAuthBaseException as e:
-            logging.exception(e)
+            logging.warning(str(e))
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
