@@ -251,12 +251,12 @@ class SocialAuthMixin(ZulipAuthMixin):
         to the login page.
         """
         try:
-            # Call the auth_complete method of BaseOAuth2 is Python Social Auth
+            # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
             return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
         except AuthFailed:
             return None
         except SocialAuthBaseException as e:
-            logging.exception(e)
+            logging.warning(str(e))
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
