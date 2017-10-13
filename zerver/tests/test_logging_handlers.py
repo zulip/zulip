@@ -6,12 +6,13 @@ import sys
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
-from django.test import RequestFactory
+from django.test import RequestFactory, TestCase
+from django.utils.log import AdminEmailHandler
 from functools import wraps
 from mock import patch
 if False:
     from mypy_extensions import NoReturn
-from typing import Any, Callable, Dict, Mapping, Optional, Text
+from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
 
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
@@ -203,3 +204,23 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertIn("stack_trace", report)
+
+class LoggingConfigTest(TestCase):
+    @staticmethod
+    def all_loggers():
+        # type: () -> Iterator[logging.Logger]
+        # There is no documented API for enumerating the loggers; but the
+        # internals of `logging` haven't changed in ages, so just use them.
+        loggerDict = logging.Logger.manager.loggerDict  # type: ignore
+        for logger in loggerDict.values():
+            if not isinstance(logger, logging.Logger):
+                continue
+            yield logger
+
+    def test_django_emails_disabled(self):
+        # type: () -> None
+        for logger in self.all_loggers():
+            # The `handlers` attribute is undocumented, but see comment on
+            # `all_loggers`.
+            for handler in logger.handlers:
+                assert not isinstance(handler, AdminEmailHandler)

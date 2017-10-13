@@ -1274,6 +1274,12 @@ LOGGING = {
         },
 
         # Django, alphabetized
+        'django': {
+            # Django's default logging config has already set some
+            # things on this logger.  Just mentioning it here causes
+            # `logging.config` to reset it to defaults, as if never
+            # configured; which is what we want for it.
+        },
         'django.request': {
             'level': 'WARNING',
             'filters': ['skip_boring_404s'],
