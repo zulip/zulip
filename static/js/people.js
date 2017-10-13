@@ -530,6 +530,10 @@ exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(person.user_id);
 };
 
+exports.realm_user_is_active_human = function (id) {
+    return !!realm_people_dict.get(id);
+};
+
 exports.get_all_persons = function () {
     return people_by_user_id_dict.values();
 };

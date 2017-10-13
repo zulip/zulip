@@ -57,3 +57,11 @@ a.no-underline,
 a.no-underline:hover {
     text-decoration: none;
 }
+
+.half-opacity {
+    opacity: 0.5;
+}
+
+.italic {
+    font-style: italic;
+}

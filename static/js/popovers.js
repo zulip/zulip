@@ -100,6 +100,7 @@ function show_user_info_popover(element, user, message) {
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
+            is_active: people.realm_user_is_active_human(user.user_id),
         };
 
         var ypos = elt.offset().top;

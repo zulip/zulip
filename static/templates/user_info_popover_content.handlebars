@@ -3,21 +3,29 @@
     <div class="popover_info">
         <li class="user_{{presence_status}}">
             <b>{{user_full_name}}</b>
+            {{#if is_active }}
             <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+            {{/if}}
         </li>
 
+        {{#if is_active }}
         <li class='my_email'>{{user_email}}</li>
+        {{else}}
+        <li class='my_email half-opacity italic'>(This user has been deactivated)</li>
+        {{/if}}
 
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
     </div>
     <hr />
+    {{#if is_active }}
     <li>
         <a href="#" class="{{ private_message_class }}">
             <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} (R)
         </a>
     </li>
+    {{/if}}
     <li>
         <a class="mention_user">
             <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} (@)
