@@ -1270,8 +1270,8 @@ function render(template_name, args) {
     var html = render('user_info_popover_content', args);
     global.write_handlebars_output("user_info_popover_content", html);
 
-    var a = $(html).find("a.compose_private_message");
-    assert.equal(a.text().trim(), 'Send private message (R)');
+    var a = $(html).find("a.narrow_to_private_messages");
+    assert.equal(a.text().trim(), 'View private messages');
 }());
 
 (function user_info_popover_title() {
