@@ -1764,6 +1764,7 @@ nav ul li.active::after {
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0px;
+    color: hsl(222, 20%, 40%);
 }
 
 .portico-landing.why-page .main {
@@ -1808,12 +1809,12 @@ nav ul li.active::after {
 .portico-landing.why-page .main li {
     color: #555;
     line-height: 1.6;
-    font-size: 1.2em;
+    font-size: 1em;
 }
 
 .portico-landing.why-page .main p {
-    font-size: 1.2em;
-    line-height: 1.6;
+    font-size: 1em;
+    margin: 0px 0px 20px;
 }
 
 .portico-landing.why-page .main h3 {

@@ -20,19 +20,19 @@ If you haven't read [why Zulip](/why-zulip), read that first. We've also
 collected a list of features we think will be of particular interest for
 companies using Zulip.
 
-**On-premise and in the cloud**
+### On-premise and in the cloud
 
 High quality export and import tools make it easy to start with Zulip in the
 cloud, knowing that you can move to a on-premise deployment (or back) if
 your budget or security needs change.
 
-**No vendor lock-in**
+### No vendor lock-in
 
 Zulip's license (Apache 2) and [published code base](github.com/zulip/zulip)
 means you will always be able to run Zulip on your own servers, for free,
 forever.
 
-**Highly customizable**
+### Highly customizable
 
 In addition to Zulip's well-designed API and extensive integration library,
 Zulip's codebase is easy to get into. With over 100K words of developer
@@ -47,11 +47,11 @@ artificial message delay feature for emergency training. Think of a product
 you use every day at work. What would you change about it if your dev ops
 team could have a go at it for a week?
 
-**Scale to thousands of users**
+### Scale to thousands of users
 
 Zulip teams are still snappy at thousands of users.
 
-**Hundreds of integrations**
+### Hundreds of integrations
 
 Get events from GitHub, Stripe, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Use topics to give
@@ -60,13 +60,13 @@ external sites with
 [custom linkification filters](/help/add-a-custom-linkification-filter) like
 `Z1234` for Zendesk ticket #1234.
 
-**Rich message formatting**
+### Rich message formatting
 
 Zulip's [chat-optimized Markdown](/help/format-your-message-using-markdown)
 helps you express your ideas clearly with bulleted lists, code blocks,
 pasted screenshots, uploaded files, and more.
 
-**Easy authentication**
+### Easy authentication
 
 Restrict sign-up by email domain, use a single sign-on solution, or send
 invitations by email.
