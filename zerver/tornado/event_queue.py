@@ -942,7 +942,7 @@ def send_notification_http(data):
         process_notification(data)
 
 def send_notification(data):
-    # type: (Mapping[str, Any]) -> None
+    # type: (Dict[str, Any]) -> None
     queue_json_publish("notify_tornado", data, send_notification_http)
 
 def send_event(event, users):
