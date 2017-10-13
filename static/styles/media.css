@@ -189,6 +189,15 @@
     }
 }
 
+@media (max-width: 767px) {
+    /* Override Bootstrap's responsive grid to display input at full width */
+    .input-append .stream-list-filter {
+        /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 34px);
+        margin-left: 10px;
+    }
+}
+
 @media (max-width: 500px) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
