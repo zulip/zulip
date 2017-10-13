@@ -192,7 +192,7 @@ mind:
   integrations in [the Zulip integration writing
   guide](https://zulip.readthedocs.io/en/latest/integration-guide.html).
 
-* [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
+* [Bite Size](https://github.com/zulip/zulip/labels/good%20first%20issue):
   Smaller projects that might be a great first contribution.
 
 * [Documentation](https://github.com/zulip/zulip/labels/area%3A%20documentation):
