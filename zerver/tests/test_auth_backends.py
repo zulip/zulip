@@ -646,7 +646,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
         with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
                         side_effect=AuthStateForbidden('State forbidden')), \
-                mock.patch('zproject.backends.logging.exception'):
+                mock.patch('zproject.backends.logging.warning'):
             result = self.client_get(reverse('social:complete', args=['github']))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
