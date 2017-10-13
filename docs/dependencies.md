@@ -192,7 +192,7 @@ reasoning here.
 * We use [yarn][], a `pip`-like tool for JavaScript, to download most
   JavaScript dependencies.  Yarn talks to standard the [npm][]
   repository.  We use the standard `package.json` file to declare our
-  direct dependencies, with sections for for development and
+  direct dependencies, with sections for development and
   production.  Yarn takes care of pinning the versions of indirect
   dependencies in the `yarn.lock` file; `yarn upgrade` updates the
   `yarn.lock` files.
