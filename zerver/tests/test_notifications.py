@@ -428,6 +428,16 @@ class TestMissedMessages(ZulipTestCase):
                           'title="http://example.com/#narrow/stream/test/subject/test.20topic/near/142">Conversation</a></p>'
         self.assertEqual(actual_output, expected_output)
 
+        # Scrub inline images.
+        test_data = '<p>See this <a href="/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +   \
+                    'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>' +    \
+                    '<div class="message_inline_image"><a href="/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" ' +    \
+                    'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<div><p>See this <a href="http://example.com/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +  \
+                          'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
+        self.assertEqual(actual_output, expected_output)
+
     def test_fix_emoji(self):
         # type: () -> None
         # An emoji.
