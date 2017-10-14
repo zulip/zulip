@@ -97,8 +97,6 @@ APNS_MAX_RETRIES = 3
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, payload_data):
     # type: (int, List[DeviceToken], Dict[str, Any]) -> None
-    if not devices:
-        return
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
