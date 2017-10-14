@@ -741,7 +741,7 @@ def get_messages_backend(request, user_profile,
     id_fetcher = lambda row: row['id']
 
     message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
-                                              Message.get_raw_db_rows,
+                                              MessageDict.get_raw_db_rows,
                                               message_ids,
                                               id_fetcher=id_fetcher,
                                               cache_transformer=cache_transformer,

@@ -47,6 +47,25 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 
 MAX_UNREAD_MESSAGES = 5000
 
+def sew_messages_and_reactions(messages, reactions):
+    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]
+    """Given a iterable of messages and reactions stitch reactions
+    into messages.
+    """
+    # Add all messages with empty reaction item
+    for message in messages:
+        message['reactions'] = []
+
+    # Convert list of messages into dictionary to make reaction stitching easy
+    converted_messages = {message['id']: message for message in messages}
+
+    for reaction in reactions:
+        converted_messages[reaction['message_id']]['reactions'].append(
+            reaction)
+
+    return list(converted_messages.values())
+
+
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
     return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
@@ -119,6 +138,41 @@ class MessageDict(object):
             recipient_type_id = message.recipient.type_id,
             reactions = Reaction.get_raw_db_rows([message.id])
         )
+
+    @staticmethod
+    def get_raw_db_rows(needed_ids):
+        # type: (List[int]) -> List[Dict[str, Any]]
+        # This is a special purpose function optimized for
+        # callers like get_messages_backend().
+        fields = [
+            'id',
+            'subject',
+            'pub_date',
+            'last_edit_time',
+            'edit_history',
+            'content',
+            'rendered_content',
+            'rendered_content_version',
+            'recipient_id',
+            'recipient__type',
+            'recipient__type_id',
+            'sender_id',
+            'sending_client__name',
+            'sender__email',
+            'sender__realm__id',
+            'sender__realm__string_id',
+            'sender__avatar_source',
+            'sender__avatar_version',
+            'sender__is_mirror_dummy',
+        ]
+        messages = Message.objects.filter(id__in=needed_ids).values(*fields)
+        """Adding one-many or Many-Many relationship in values results in N X
+        results.
+
+        Link: https://docs.djangoproject.com/en/1.8/ref/models/querysets/#values
+        """
+        reactions = Reaction.get_raw_db_rows(needed_ids)
+        return sew_messages_and_reactions(messages, reactions)
 
     @staticmethod
     def build_dict_from_raw_db_row(row, apply_markdown):
