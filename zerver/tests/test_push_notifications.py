@@ -574,15 +574,6 @@ class TestAPNs(PushNotificationTest):
                     "APNs: Success sending for user %d to device %s",
                     self.user_profile.id, device.token)
 
-    def test_success_no_devices(self):
-        # type: () -> None
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
-                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
-            mock_apns.get_notification_result.return_value = 'Success'
-            self.send(devices=[])
-            mock_logging.warning.assert_not_called()
-            mock_logging.info.assert_not_called()
-
     def test_http_retry(self):
         # type: () -> None
         import hyper
