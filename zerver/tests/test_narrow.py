@@ -41,7 +41,6 @@ from zerver.views.messages import (
 )
 
 from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional, Text
-from six.moves import range
 import os
 import re
 import ujson

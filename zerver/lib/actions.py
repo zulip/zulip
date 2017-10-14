@@ -74,7 +74,6 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation, create_confirmation_link
 from six.moves import filter
 from six.moves import map
-from six.moves import range
 from six import unichr
 
 from zerver.lib.create_user import random_api_key

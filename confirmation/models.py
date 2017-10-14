@@ -22,7 +22,6 @@ from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite
 from random import SystemRandom
-from six.moves import range
 import string
 from typing import Any, Dict, Optional, Text, Union
 

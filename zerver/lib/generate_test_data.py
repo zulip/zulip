@@ -2,7 +2,6 @@ import itertools
 import ujson
 import random
 from typing import List, Dict, Any, Text, Optional
-from six.moves import range
 
 def load_config():
     # type: () -> Dict [str, Any]

@@ -8,7 +8,6 @@ import shutil
 import ujson
 
 from mock import patch, MagicMock
-from six.moves import range
 from typing import Any, Dict, List, Set
 
 from zerver.lib.actions import (

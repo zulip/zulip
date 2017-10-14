@@ -68,7 +68,6 @@ import DNS
 import mock
 import time
 import ujson
-from six.moves import range
 from typing import Any, Dict, List, Optional, Text
 
 from collections import namedtuple

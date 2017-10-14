@@ -55,7 +55,7 @@ import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
-from six.moves import range, html_parser
+from six.moves import html_parser
 
 FullNameInfo = TypedDict('FullNameInfo', {
     'id': int,
