@@ -1294,6 +1294,15 @@ def fix_bitfield_keys(data, table, field_name):
         item[field_name] = item[field_name + '_mask']
         del item[field_name + '_mask']
 
+def fix_realm_authentication_bitfield(data, table, field_name):
+    # type: (TableData, TableName, Field) -> None
+    """Used to fixup the authentication_methods bitfield to be a string"""
+    for item in data[table]:
+        values_as_bitstring = ''.join(['1' if field[1] else '0' for field in
+                                       item[field_name]])
+        values_as_int = int(values_as_bitstring, 2)
+        item[field_name] = values_as_int
+
 def bulk_import_model(data, model, table, dump_file_id=None):
     # type: (TableData, Any, TableName, str) -> None
     # TODO, deprecate dump_file_id
@@ -1425,6 +1434,7 @@ def do_import_realm(import_dir):
 
     convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
     fix_datetime_fields(data, 'zerver_realm')
+    fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
     realm = Realm(**data['zerver_realm'][0])
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]
