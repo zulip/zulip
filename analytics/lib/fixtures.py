@@ -1,4 +1,4 @@
-from __future__ import division, absolute_import
+from __future__ import division
 
 from zerver.models import Realm, UserProfile, Stream, Message
 from analytics.models import InstallationCount, RealmCount, UserCount, StreamCount
