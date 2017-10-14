@@ -76,6 +76,11 @@ class MessageDict(object):
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj)
 
+            del obj['raw_display_recipient']
+            del obj['recipient_type']
+            del obj['recipient_type_id']
+            del obj['sender_is_mirror_dummy']
+
     @staticmethod
     def to_dict_uncached(message, apply_markdown):
         # type: (Message, bool) -> binary_type
@@ -297,12 +302,6 @@ class MessageDict(object):
         recipient_type = obj['recipient_type']
         recipient_type_id = obj['recipient_type_id']
         sender_is_mirror_dummy = obj['sender_is_mirror_dummy']
-
-        del obj['raw_display_recipient']
-        del obj['recipient_type']
-        del obj['recipient_type_id']
-        del obj['sender_is_mirror_dummy']
-
         sender_email = obj['sender_email']
         sender_full_name = obj['sender_full_name']
         sender_short_name = obj['sender_short_name']
