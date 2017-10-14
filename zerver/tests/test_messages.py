@@ -22,6 +22,7 @@ from zerver.lib.actions import (
 from zerver.lib.message import (
     MessageDict,
     message_to_dict,
+    sew_messages_and_reactions,
 )
 
 from zerver.lib.test_helpers import (
@@ -45,7 +46,7 @@ from zerver.models import (
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_recipient, get_system_bot, get_user, Reaction,
-    sew_messages_and_reactions, flush_per_request_caches
+    flush_per_request_caches
 )
 
 from zerver.lib.actions import (
@@ -574,7 +575,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
                           content="whatever", subject="my topic")
         message = most_recent_message(user_profile)
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         MessageDict.post_process_dicts([dct])
         self.assertEqual(dct['display_recipient'], 'Denmark')
@@ -693,7 +694,7 @@ class MessageDictTest(ZulipTestCase):
         flush_per_request_caches()
         t = time.time()
         with queries_captured() as queries:
-            rows = list(Message.get_raw_db_rows(ids))
+            rows = list(MessageDict.get_raw_db_rows(ids))
 
             for row in rows:
                 MessageDict.build_dict_from_raw_db_row(row, False)
@@ -728,7 +729,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         expected_content = '<p>hello <strong>world</strong></p>'
         self.assertEqual(dct['content'], expected_content)
@@ -759,7 +760,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         error_content = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
         self.assertEqual(dct['content'], error_content)
@@ -785,7 +786,7 @@ class MessageDictTest(ZulipTestCase):
         reaction = Reaction.objects.create(
             message=message, user_profile=sender,
             emoji_name='simple_smile')
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         msg_dict = MessageDict.build_dict_from_raw_db_row(
             row, apply_markdown=True)
         self.assertEqual(msg_dict['reactions'][0]['emoji_name'],
