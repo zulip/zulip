@@ -75,6 +75,11 @@ class MessageDict(object):
 
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj)
+            MessageDict.set_sender_avatar(obj)
+
+            del obj['sender_realm_id']
+            del obj['sender_avatar_source']
+            del obj['sender_avatar_version']
 
             del obj['raw_display_recipient']
             del obj['recipient_type']
@@ -174,19 +179,6 @@ class MessageDict(object):
     ):
         # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
-        # TODO: Make client_gravatar configurable.
-        client_gravatar = False
-
-        avatar_url = get_avatar_field(
-            user_id=sender_id,
-            realm_id=sender_realm_id,
-            email=sender_email,
-            avatar_source=sender_avatar_source,
-            avatar_version=sender_avatar_version,
-            medium=False,
-            client_gravatar=client_gravatar,
-        )
-
         obj = dict(
             id                = message_id,
             sender_email      = sender_email,
@@ -197,8 +189,11 @@ class MessageDict(object):
             recipient_id      = recipient_id,
             subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
-            avatar_url        = avatar_url,
             client            = sending_client_name)
+
+        obj['sender_realm_id'] = sender_realm_id
+        obj['sender_avatar_source'] = sender_avatar_source
+        obj['sender_avatar_version'] = sender_avatar_version
 
         obj['raw_display_recipient'] = get_display_recipient_by_id(
             recipient_id,
@@ -331,6 +326,28 @@ class MessageDict(object):
         obj['type'] = display_type
         if obj['type'] == 'stream':
             obj['stream_id'] = recipient_type_id
+
+    @staticmethod
+    def set_sender_avatar(obj):
+        # type: (Dict[str, Any]) -> None
+        sender_id = obj['sender_id']
+        sender_realm_id = obj['sender_realm_id']
+        sender_email = obj['sender_email']
+        sender_avatar_source = obj['sender_avatar_source']
+        sender_avatar_version = obj['sender_avatar_version']
+
+        # TODO: Make client_gravatar configurable.
+        client_gravatar = False
+
+        obj['avatar_url'] = get_avatar_field(
+            user_id=sender_id,
+            realm_id=sender_realm_id,
+            email=sender_email,
+            avatar_source=sender_avatar_source,
+            avatar_version=sender_avatar_version,
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
 
 class ReactionDict(object):
     @staticmethod
