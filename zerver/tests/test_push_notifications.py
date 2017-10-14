@@ -965,9 +965,9 @@ class GCMNotSetTest(GCMTest):
         # type: (mock.MagicMock) -> None
         apn.gcm = None
         apn.send_android_push_notification_to_user(self.user_profile, {})
-        mock_warning.assert_called_with("Attempting to send a GCM push "
-                                        "notification, but no API key was "
-                                        "configured")
+        mock_warning.assert_called_with(
+            "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
+            "and ANDROID_GCM_API_KEY are both unset")
 
 class GCMIOErrorTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.gcm.json_request')

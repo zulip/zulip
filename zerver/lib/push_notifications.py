@@ -155,7 +155,8 @@ def send_android_push_notification_to_user(user_profile, data):
 def send_android_push_notification(devices, data, remote=False):
     # type: (List[DeviceToken], Dict[str, Any], bool) -> None
     if not gcm:
-        logging.warning("Attempting to send a GCM push notification, but no API key was configured")
+        logging.warning("Skipping sending a GCM push notification since "
+                        "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
     reg_ids = [device.token for device in devices]
 
