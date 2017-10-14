@@ -58,7 +58,6 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
 ```
-from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
