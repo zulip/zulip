@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from six.moves import range
-
 from django.db.utils import IntegrityError
 
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor

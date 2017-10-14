@@ -6,7 +6,6 @@ import base64
 import ujson
 import os
 import string
-from six.moves import range
 
 from typing import Optional, Text
 

@@ -22,7 +22,6 @@ from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
 from datetime import datetime, timedelta
 import ujson
 
-from six.moves import range
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 class AnalyticsTestCase(TestCase):

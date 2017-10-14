@@ -104,7 +104,6 @@ from collections import OrderedDict
 import mock
 import time
 import ujson
-from six.moves import range
 
 
 class LogEventsTest(ZulipTestCase):

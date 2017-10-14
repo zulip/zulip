@@ -24,7 +24,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p
-from six.moves import range
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 # Custom mypy types follow:

@@ -11,8 +11,6 @@ from zerver.lib.retention import get_expired_messages, move_message_to_archive
 
 from typing import Any, List
 
-from six.moves import range
-
 
 class TestRetentionLib(ZulipTestCase):
     """

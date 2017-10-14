@@ -57,7 +57,7 @@ from django.http import HttpResponse
 import mock
 import random
 import ujson
-from six.moves import range, urllib, zip
+from six.moves import urllib, zip
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self):

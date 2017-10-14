@@ -16,7 +16,6 @@ import argparse
 from datetime import date
 import subprocess
 
-from six.moves import range
 import requests
 import json
 

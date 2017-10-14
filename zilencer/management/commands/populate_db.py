@@ -20,7 +20,6 @@ import random
 import os
 import ujson
 import itertools
-from six.moves import range
 from typing import Any, Callable, Dict, List, Iterable, Mapping, Optional, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None
