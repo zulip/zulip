@@ -126,12 +126,7 @@ class MessageDict(object):
             rendered_content = message.rendered_content,
             rendered_content_version = message.rendered_content_version,
             sender_id = message.sender.id,
-            sender_email = message.sender.email,
             sender_realm_id = message.sender.realm_id,
-            sender_realm_str = message.sender.realm.string_id,
-            sender_avatar_source = message.sender.avatar_source,
-            sender_avatar_version = message.sender.avatar_version,
-            sender_is_mirror_dummy = message.sender.is_mirror_dummy,
             sending_client_name = message.sending_client.name,
             recipient_id = message.recipient.id,
             recipient_type = message.recipient.type,
@@ -158,12 +153,7 @@ class MessageDict(object):
             'recipient__type_id',
             'sender_id',
             'sending_client__name',
-            'sender__email',
-            'sender__realm__id',
-            'sender__realm__string_id',
-            'sender__avatar_source',
-            'sender__avatar_version',
-            'sender__is_mirror_dummy',
+            'sender__realm_id',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
         """Adding one-many or Many-Many relationship in values results in N X
@@ -193,12 +183,7 @@ class MessageDict(object):
             rendered_content = row['rendered_content'],
             rendered_content_version = row['rendered_content_version'],
             sender_id = row['sender_id'],
-            sender_email = row['sender__email'],
-            sender_realm_id = row['sender__realm__id'],
-            sender_realm_str = row['sender__realm__string_id'],
-            sender_avatar_source = row['sender__avatar_source'],
-            sender_avatar_version = row['sender__avatar_version'],
-            sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
+            sender_realm_id = row['sender__realm_id'],
             sending_client_name = row['sending_client__name'],
             recipient_id = row['recipient_id'],
             recipient_type = row['recipient__type'],
@@ -219,24 +204,17 @@ class MessageDict(object):
             rendered_content,
             rendered_content_version,
             sender_id,
-            sender_email,
             sender_realm_id,
-            sender_realm_str,
-            sender_avatar_source,
-            sender_avatar_version,
-            sender_is_mirror_dummy,
             sending_client_name,
             recipient_id,
             recipient_type,
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, int, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         obj = dict(
             id                = message_id,
-            sender_email      = sender_email,
-            sender_realm_str  = sender_realm_str,
             sender_id         = sender_id,
             recipient_type_id = recipient_type_id,
             recipient_type    = recipient_type,
@@ -246,16 +224,12 @@ class MessageDict(object):
             client            = sending_client_name)
 
         obj['sender_realm_id'] = sender_realm_id
-        obj['sender_avatar_source'] = sender_avatar_source
-        obj['sender_avatar_version'] = sender_avatar_version
 
         obj['raw_display_recipient'] = get_display_recipient_by_id(
             recipient_id,
             recipient_type,
             recipient_type_id
         )
-
-        obj['sender_is_mirror_dummy'] = sender_is_mirror_dummy
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
@@ -322,9 +296,14 @@ class MessageDict(object):
             'id',
             'full_name',
             'short_name',
+            'email',
+            'realm__string_id',
+            'avatar_source',
+            'avatar_version',
+            'is_mirror_dummy',
         )
 
-        rows = query_for_ids(query, sender_ids, 'id')
+        rows = query_for_ids(query, sender_ids, 'zerver_userprofile.id')
 
         sender_dict = {
             row['id']: row
@@ -336,6 +315,11 @@ class MessageDict(object):
             user_row = sender_dict[sender_id]
             obj['sender_full_name'] = user_row['full_name']
             obj['sender_short_name'] = user_row['short_name']
+            obj['sender_email'] = user_row['email']
+            obj['sender_realm_str'] = user_row['realm__string_id']
+            obj['sender_avatar_source'] = user_row['avatar_source']
+            obj['sender_avatar_version'] = user_row['avatar_version']
+            obj['sender_is_mirror_dummy'] = user_row['is_mirror_dummy']
 
     @staticmethod
     def hydrate_recipient_info(obj):
