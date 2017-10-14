@@ -2621,15 +2621,8 @@ class MessageHydrationTest(ZulipTestCase):
 
         MessageDict.hydrate_recipient_info(obj)
 
-        self.assertEqual(obj, dict(
-            display_recipient='Verona',
-            stream_id=stream_id,
-            type='stream',
-            sender_email=cordelia.email,
-            sender_full_name=cordelia.full_name,
-            sender_short_name=cordelia.short_name,
-            sender_id=cordelia.id,
-        ))
+        self.assertEqual(obj['display_recipient'], 'Verona')
+        self.assertEqual(obj['type'], 'stream')
 
     def test_hydrate_pm_recipient_info(self):
         # type: () -> None
@@ -2653,8 +2646,9 @@ class MessageHydrationTest(ZulipTestCase):
 
         MessageDict.hydrate_recipient_info(obj)
 
-        self.assertEqual(obj, dict(
-            display_recipient=[
+        self.assertEqual(
+            obj['display_recipient'],
+            [
                 dict(
                     email='aaron@example.com',
                     full_name='Aaron Smith',
@@ -2667,9 +2661,5 @@ class MessageHydrationTest(ZulipTestCase):
                     is_mirror_dummy=False,
                 ),
             ],
-            type='private',
-            sender_email=cordelia.email,
-            sender_full_name=cordelia.full_name,
-            sender_short_name=cordelia.short_name,
-            sender_id=cordelia.id,
-        ))
+        )
+        self.assertEqual(obj['type'], 'private')
