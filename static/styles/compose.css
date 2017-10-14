@@ -192,16 +192,19 @@ table.compose_table {
     top: 5px;
 }
 
-#compose_invite_users {
+#compose_invite_users,
+#compose_private_stream_alert {
     /* Don't overlap into the compose_close × */
     margin-right: 10px;
 }
 
-.compose_invite_user {
+.compose_invite_user,
+.compose_private_stream_alert {
     padding: 4px 0px 4px 0px;
 }
 
-.compose_invite_close {
+.compose_invite_close,
+.compose_private_stream_alert_close {
     display: inline;
     margin-top: 4px;
 
@@ -209,7 +212,8 @@ table.compose_table {
 }
 
 .compose-all-everyone-controls,
-.compose_invite_user_controls {
+.compose_invite_user_controls,
+.compose_private_stream_alert_controls {
     float: right;
     -webkit-transform: translateY(-13%);
     -ms-transform: translateY(-13%);

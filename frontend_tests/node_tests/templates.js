@@ -518,6 +518,15 @@ function render(template_name, args) {
     assert.equal(a.text(), "Narrow to here");
 }());
 
+(function compose_private_stream_alert() {
+    var args = {
+      name: 'Demark',
+      invite_only: true,
+    };
+    var html = render('compose_private_stream_alert', args);
+    global.write_handlebars_output("compose_stream_alert", html);
+}());
+
 (function dev_env_email_access() {
     var html = render('dev_env_email_access');
     global.write_handlebars_output("dev_env_email_access", html);

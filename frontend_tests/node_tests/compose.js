@@ -1062,6 +1062,64 @@ function test_with_mock_socket(test_params) {
         preventDefault: noop,
     };
 
+    (function test_stream_name_completed_triggered() {
+        var handler = $(document).get_on_handler('streamname_completed.zulip');
+
+        var data = {
+            stream: {
+                name: 'Denmark',
+            },
+        };
+
+        function test_noop_case(invite_only) {
+            compose_state.set_message_type('stream');
+            data.stream.invite_only = invite_only;
+            handler({}, data);
+            assert.equal($('#compose_private_stream_alert').visible(), false);
+        }
+
+        test_noop_case(false);
+
+        $("#compose_private").hide();
+        compose_state.set_message_type('stream');
+
+        var checks = [
+           (function () {
+               var called;
+               templates.render = function (template_name, context) {
+                   called = true;
+                   assert.equal(template_name, 'compose_private_stream_alert');
+                   assert.equal(context.invite_only, true);
+                   assert.equal(context.stream_name, 'Denmark');
+                   return 'fake-compose_private_stream_alert-template';
+               };
+               return function () { assert(called); };
+           }()),
+
+           (function () {
+              var called;
+              $("#compose_private_stream_alert").append = function (html) {
+                  called = true;
+                  assert.equal(html, 'fake-compose_private_stream_alert-template');
+              };
+              return function () { assert(called); };
+           }()),
+        ];
+
+        data = {
+           stream: {
+               invite_only: true,
+               name: 'Denmark',
+           },
+        };
+
+        handler({}, data);
+        assert.equal($('#compose_private_stream_alert').visible(), true);
+
+        _.each(checks, function (f) { f(); });
+
+    }());
+
     (function test_attach_files_compose_clicked() {
         var handler = $("#compose")
                         .get_on_handler("click", "#attach_files");

@@ -68,6 +68,11 @@ exports.clear_invites = function () {
     $("#compose_invite_users").empty();
 };
 
+exports.clear_private_stream_alert = function () {
+    $("#compose_private_stream_alert").hide();
+    $("#compose_private_stream_alert").empty();
+};
+
 exports.reset_user_acknowledged_all_everyone_flag = function () {
     user_acknowledged_all_everyone = undefined;
 };
@@ -307,6 +312,7 @@ exports.enter_with_preview_open = function () {
 
 exports.finish = function () {
     exports.clear_invites();
+    exports.clear_private_stream_alert();
 
     if (! compose.validate()) {
         return false;
@@ -629,6 +635,39 @@ exports.initialize = function () {
 
         if (all_invites.children().length === 0) {
             all_invites.hide();
+        }
+    });
+
+    // Show a warning if a private stream is linked
+    $(document).on('streamname_completed.zulip', function (event, data) {
+        if (compose_state.get_message_type() !== 'stream') {
+            return;
+        }
+
+        if (data !== undefined && data.stream !== undefined) {
+            var invite_only = data.stream.invite_only;
+            var stream_name = data.stream.name;
+
+            if (invite_only) {
+                var warning_area = $("#compose_private_stream_alert");
+                var context = { stream_name: stream_name, invite_only: invite_only };
+                var new_row = templates.render("compose_private_stream_alert", context);
+
+                warning_area.append(new_row);
+                warning_area.show();
+            }
+        }
+
+    });
+
+    $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', function (event) {
+        var stream_alert_row = $(event.target).parents('.compose_private_stream_alert');
+        var stream_alert = $("#compose_private_stream_alert");
+
+        stream_alert_row.remove();
+
+        if (stream_alert.children().length === 0) {
+            stream_alert.hide();
         }
     });
 

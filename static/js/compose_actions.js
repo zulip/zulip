@@ -92,6 +92,7 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose.clear_all_everyone_warnings();
+    compose.clear_private_stream_alert();
     compose.reset_user_acknowledged_all_everyone_flag();
 
     exports.clear_textarea();
