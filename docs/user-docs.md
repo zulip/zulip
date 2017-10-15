@@ -8,7 +8,7 @@ There are two types of documents: articles about specific features, and a
 handful of longer guides.
 
 The feature articles serve a few different purposes:
-* Feature discovery, for someone browing the `/help` page, and looking at
+* Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
 * Public documentation of our featureset, for someone googling "can zulip do .."
 * Canned responses to support questions; if someone emails a zulip admin
