@@ -12,7 +12,7 @@ you need:
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
 
-## Step 1: Install SSL Certificates
+## Install SSL Certificates
 
 Zulip runs over `https` only, and requires SSL certificates in order to
 work. It looks for the certificates in `/etc/ssl/private/zulip.key`
@@ -20,14 +20,14 @@ and `/etc/ssl/certs/zulip.combined-chain.crt`.  Note that Zulip uses
 `nginx` as its webserver and thus [expects a chained certificate
 bundle](http://nginx.org/en/docs/http/configuring_https_servers.html).
 
-If you need an SSL certificate, see [our SSL certificate
+1. If you need an SSL certificate, see [our SSL certificate
 documentation](ssl-certificates.html).  If you already have an SSL
 certificate, just install (or symlink) it into place at the above
 paths, and move on to the next step.
 
-## Step 2: Download and install latest release
+## Download and install latest release
 
-Download and unpack [the latest built server
+2. Download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
@@ -40,7 +40,7 @@ tar -xf zulip-server-latest.tar.gz
 If you'd like to verify the download, we
 [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 
-Then, run the Zulip install script:
+3. Run the Zulip install script:
 ```
 sudo -s  # If not already root
 ./zulip-server-*/scripts/setup/install
@@ -67,9 +67,9 @@ symbolic link to it.
 * Cconfigures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
 
-## Step 3: Configure Zulip
+## Configure Zulip
 
-Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
+4. Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
 providing values for the mandatory settings, which are all found under the
 heading `### MANDATORY SETTINGS`.  These settings include:
 
@@ -95,16 +95,17 @@ heading `### MANDATORY SETTINGS`.  These settings include:
   default (email) backend must be enabled when you complete Step 6
   (creating an organization) below.
 
-## Step 4: Test email configuration
+## Test email configuration
 
-[Test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
-This is important to test now, because email configuration errors are
+5. [Test your outgoing email
+   configuration](prod-email.html#testing-and-troubleshooting).  This is
+   important to test now, because email configuration errors are
 common, and your outgoing email configuration needs to be working in
 order for you to complete the installation.
 
-## Step 5: Initialize Zulip database
+## Initialize Zulip database
 
-At this point, you are done doing things as root. The remaining
+6. At this point, you are done doing things as root. The remaining
 commands are run as the `zulip` user using `su zulip`. To initialize
 the Zulip database for your production install, run:
 
@@ -120,9 +121,9 @@ This completes the process of installing Zulip on your server.
 However, in order to use Zulip, you'll need to create an organization
 in your Zulip installation.
 
-## Step 6: Create a Zulip organization and login
+## Create a Zulip organization and login
 
-* Run the organization (realm) creation [management
+7. Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
 
   ```
@@ -133,11 +134,11 @@ command](prod-maintain-secure-upgrade.html#management-commands) :
   This will print out a secure one-time-use link that allows creation of a
   new Zulip organization on your server.
 
-* Open the generated link with your web browser. You'll see the "Create
+8. Open the generated link with your web browser. You'll see the "Create
 organization" page ([screenshot here](_static/zulip-create-realm.png)).
 Enter your email address and click *Create organization*.
 
-* Check your email to find the confirmation email and click the
+9. Check your email to find the confirmation email and click the
 link. You'll be prompted to finish setting up your organization and
 initial administrator user ([screenshot
 here](_static/zulip-create-user-and-org.png)).  Complete this form and
@@ -146,7 +147,7 @@ log in!
 **Congratulations!** You are logged in as an organization
 administrator for your new Zulip organization.
 
-## Step 7: Next steps
+## Next steps
 
 * Subscribe to the extremely low-traffic
 [Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
