@@ -696,8 +696,11 @@ class MessageDictTest(ZulipTestCase):
         with queries_captured() as queries:
             rows = list(MessageDict.get_raw_db_rows(ids))
 
-            for row in rows:
+            objs = [
                 MessageDict.build_dict_from_raw_db_row(row, False)
+                for row in rows
+            ]
+            MessageDict.post_process_dicts(objs)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1.5ms per message to
@@ -706,7 +709,7 @@ class MessageDictTest(ZulipTestCase):
         # slower.
         error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
         self.assertTrue(delay < 0.0015 * num_ids, error_msg)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
