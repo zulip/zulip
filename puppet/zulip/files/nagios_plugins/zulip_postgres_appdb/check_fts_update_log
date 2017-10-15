@@ -3,8 +3,6 @@
 """
 Nagios plugin to check the length of the FTS update log.
 """
-from __future__ import print_function
-
 import sys
 sys.path.append('/home/zulip/deployments/current')
 try:

@@ -2,8 +2,6 @@
 """ Nagios plugin paired with a cron job.  This just verifies that the
 file output by the cron job is correct.
 """
-from __future__ import print_function
-
 import sys
 import time
 

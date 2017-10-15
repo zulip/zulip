@@ -8,8 +8,6 @@ It supports both munin and nagios outputs
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-from __future__ import print_function
-
 import sys
 import optparse
 import random
