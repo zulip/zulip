@@ -52,6 +52,11 @@ import a database dump from one or more JSON files."""
         # type: (str) -> None
         call_command('flush', verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
+        subprocess.check_call(['supervisorctl', 'stop', 'all'])
+        subprocess.check_call([os.path.join(settings.DEPLOY_ROOT,
+                               "scripts/setup/postgres-init-db")])
+        subprocess.check_call(['sudo', os.path.join(settings.DEPLOY_ROOT,
+                               "scripts/setup/initialize-database")])
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
