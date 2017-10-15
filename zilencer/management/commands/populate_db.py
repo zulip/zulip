@@ -1,5 +1,3 @@
-from __future__ import division
-
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 from django.db.models import F, Max
