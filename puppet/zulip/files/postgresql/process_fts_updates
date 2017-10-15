@@ -6,8 +6,6 @@
 # message ID to the `fts_update_log` table.  In the background, this
 # program processes `fts_update_log`, updating the postgres full-text
 # search column search_tsvector in the main zerver_message.
-from __future__ import print_function
-
 import sys
 
 # We want to use a virtualenv in production, which will be in /home/zulip/deployments/current.
