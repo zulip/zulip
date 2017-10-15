@@ -18,6 +18,17 @@
                     <div class="controls">
                         <textarea rows="2" id="custom_invite_body" name="custom_body" placeholder="{{ _('Custom message') }}"></textarea>
                     </div>
+                    {% if is_admin %}
+                    <label class="control-label" id="invited_as_admin" for"invited_as_admin">{{ _('User(s) join as') }}</label>
+                    <div class="controls">
+                        <label class="radio">
+                            <input type="radio" name="invited_as_admin" value="false" checked/>{{ _('Regular users') }}
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="invited_as_admin" value="true"/>{{ _('Organization administrators') }}
+                        </label>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="alert" id="invite_status"></div>
                 {% if development_environment %}

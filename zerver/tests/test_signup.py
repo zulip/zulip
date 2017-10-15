@@ -404,8 +404,8 @@ class LoginTest(ZulipTestCase):
 
 class InviteUserTest(ZulipTestCase):
 
-    def invite(self, users, streams, body=''):
-        # type: (Text, List[Text], str) -> HttpResponse
+    def invite(self, users, streams, body='', invited_as_admin="false"):
+        # type: (Text, List[Text], str, str) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -418,6 +418,7 @@ class InviteUserTest(ZulipTestCase):
         return self.client_post("/json/invites",
                                 {"invitee_emails": users,
                                  "stream": streams,
+                                 "invited_as_admin": invited_as_admin,
                                  "custom_body": body})
 
     def check_sent_emails(self, correct_recipients, custom_body=None, custom_from_name=None):
@@ -451,6 +452,32 @@ class InviteUserTest(ZulipTestCase):
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee], custom_from_name="Hamlet")
+
+    def test_successful_invite_user_as_admin_from_admin_account(self):
+        # type: () -> None
+        """
+        Test that a new user invited to a stream receives some initial
+        history but only from public streams.
+        """
+        self.login(self.example_email('iago'))
+        invitee = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee, ["Denmark"], invited_as_admin="true"))
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user('alice')
+        self.assertTrue(invitee_profile.is_realm_admin)
+
+    def test_invite_user_as_admin_from_normal_account(self):
+        # type: () -> None
+        """
+        Test that a new user invited to a stream receives some initial
+        history but only from public streams.
+        """
+        self.login(self.example_email('hamlet'))
+        invitee = self.nonreg_email('alice')
+        response = self.invite(invitee, ["Denmark"], invited_as_admin="true")
+        self.assert_json_error(response, "Must be a realm administrator")
 
     def test_successful_invite_user_with_custom_body(self):
         # type: () -> None
@@ -563,7 +590,7 @@ class InviteUserTest(ZulipTestCase):
                            UserMessage.objects.filter(user_profile=invitee_profile)]
         self.assertTrue(public_msg_id in invitee_msg_ids)
         self.assertFalse(secret_msg_id in invitee_msg_ids)
-
+        self.assertFalse(invitee_profile.is_realm_admin)
         # Test that exactly 2 new Zulip messages were sent, both notifications.
         last_3_messages = list(reversed(list(Message.objects.all().order_by("-id")[0:3])))
         first_msg = last_3_messages[0]
