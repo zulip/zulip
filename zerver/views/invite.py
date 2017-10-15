@@ -11,7 +11,7 @@ from zerver.lib.actions import do_invite_users, \
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_name
-from zerver.lib.validator import check_string, check_list
+from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.models import PreregistrationUser, Stream, UserProfile
 
 import re
@@ -19,9 +19,13 @@ import re
 @has_request_variables
 def invite_users_backend(request, user_profile,
                          invitee_emails_raw=REQ("invitee_emails"),
+                         invite_as_admin=REQ(validator=check_bool, default=False),
                          body=REQ("custom_body", default=None)):
-    # type: (HttpRequest, UserProfile, str, Optional[str]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, Optional[bool], Optional[str]) -> HttpResponse
+
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
+        return json_error(_("Must be a realm administrator"))
+    if invite_as_admin and not user_profile.is_realm_admin:
         return json_error(_("Must be a realm administrator"))
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
@@ -48,7 +52,7 @@ def invite_users_backend(request, user_profile,
             return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
-    do_invite_users(user_profile, invitee_emails, streams, body)
+    do_invite_users(user_profile, invitee_emails, streams, invite_as_admin, body)
     return json_success()
 
 def get_invitee_emails_set(invitee_emails_raw):
