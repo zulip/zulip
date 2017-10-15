@@ -1160,18 +1160,11 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-.message_sender .bot-icon {
-    position: relative;
+.message_sender i.zulip-icon.bot {
+    color: hsl(180, 5%, 74%);
+    font-size: 12px;
     vertical-align: top;
-    top: -4px;
-
-    height: 20px;
-    width: 20px;
-}
-
-.message_sender .sender-status .bot-icon {
-    top: -1px;
-    margin-left: -3px;
+    padding: 0 2px;
 }
 
 .actions_hover:hover {
