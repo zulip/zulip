@@ -721,6 +721,33 @@ This is equivalent of running a halt followed by an up (aka rebooting
 the guest).  After this, you can do `vagrant provision` and `vagrant
 ssh`.
 
+#### ssl read error
+
+If you receive the following error while running `vagrant up`:
+
+```
+SSL read: error:00000000:lib(0):func(0):reason(0), errno 104
+```
+
+It means that either your network connection is unstable and/or very
+slow. To resolve it, run `vagrant up` until it works (possibly on a
+better network connection).
+
+#### Unmet dependencies error
+
+When running `vagrant up` or `provision`, if you see the following error:
+
+```
+==> default: E:unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).
+```
+
+It means that your local apt repository has been corrupted, which can
+usually be resolved by executing the command:
+
+```
+apt-get -f install
+```
+
 #### ssh connection closed by remote host
 
 On running `vagrant ssh`, if you see the following error:
