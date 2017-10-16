@@ -142,14 +142,15 @@ function copy_handler() {
 
 $(function () {
     $(document).on('copy', copy_handler);
-    $("#new_message_content").bind("paste", function(event){
+    $("#new_message_content").bind("paste", function (event) {
         event.preventDefault();
         var clipboardData = (event.originalEvent || event).clipboardData;
-        var text = clipboardData.getData('text/html') || clipboardData.getData('text/plain') || document.execCommand('insertHTML', false, '<pre>' + text + '</pre>');
+        var text = clipboardData.getData('text/html') || clipboardData.getData('text/plain')
+        document.execCommand('insertHTML', false, '<pre>' + text + '</pre>');
         var html = toMarkdown(text);
         var div = document.createElement("div");
         div.innerHTML = html;
-        var text = div.textContent || div.innerText || "";
+        text = div.textContent || div.innerText || "";
         this.value = text;
     });
 });
