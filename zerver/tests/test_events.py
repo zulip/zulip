@@ -50,7 +50,7 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     do_remove_alert_words,
     do_remove_default_stream,
-    do_remove_reaction,
+    do_remove_reaction_legacy,
     do_remove_realm_domain,
     do_remove_realm_emoji,
     do_remove_realm_filter,
@@ -761,7 +761,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_remove_reaction(self):
+    def test_remove_reaction_legacy(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('reaction')),
@@ -781,7 +781,7 @@ class EventsRegisterTest(ZulipTestCase):
         message = Message.objects.get(id=message_id)
         do_add_reaction_legacy(self.user_profile, message, "tada")
         events = self.do_test(
-            lambda: do_remove_reaction(
+            lambda: do_remove_reaction_legacy(
                 self.user_profile, message, "tada"),
             state_change_expected=False,
         )

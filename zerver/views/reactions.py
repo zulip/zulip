@@ -5,7 +5,8 @@ from typing import Text
 
 from zerver.decorator import authenticated_json_post_view,\
     has_request_variables, REQ, to_non_negative_int
-from zerver.lib.actions import do_add_reaction_legacy, do_remove_reaction
+from zerver.lib.actions import do_add_reaction_legacy,\
+    do_remove_reaction_legacy
 from zerver.lib.emoji import check_valid_emoji
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
@@ -62,6 +63,6 @@ def remove_reaction_backend(request, user_profile, message_id, emoji_name):
                                    emoji_name=emoji_name).exists():
         raise JsonableError(_("Reaction does not exist"))
 
-    do_remove_reaction(user_profile, message, emoji_name)
+    do_remove_reaction_legacy(user_profile, message, emoji_name)
 
     return json_success()

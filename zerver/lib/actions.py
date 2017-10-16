@@ -1344,7 +1344,7 @@ def do_add_reaction_legacy(user_profile, message, emoji_name):
     reaction.save()
     notify_reaction_update(user_profile, message, reaction, "add")
 
-def do_remove_reaction(user_profile, message, emoji_name):
+def do_remove_reaction_legacy(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
     reaction = Reaction.objects.filter(user_profile=user_profile,
                                        message=message,
