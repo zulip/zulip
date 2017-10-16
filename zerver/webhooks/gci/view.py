@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from typing import Dict, Any, Optional, Text
 
 
-GCI_MESSAGE_TEMPLATE = u'**{student}** {action} task [{task_name}]({task_url}).'
+GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url}).'
 GCI_SUBJECT_TEMPLATE = u'Task: {task_name}'
 
 
@@ -17,8 +17,44 @@ class UnknownEventType(Exception):
 def get_abandon_event_body(payload):
     # type: (Dict[Text, Any]) -> Text
     return GCI_MESSAGE_TEMPLATE.format(
-        student=payload['task_claimed_by'],
+        actor=payload['task_claimed_by'],
         action='{}ed'.format(payload['type']),
+        task_name=payload['task_definition_name'],
+        task_url=payload['task_definition_url'],
+    )
+
+def get_submit_event_body(payload):
+    # type: (Dict[Text, Any]) -> Text
+    return GCI_MESSAGE_TEMPLATE.format(
+        actor=payload['task_claimed_by'],
+        action='{}ted'.format(payload['type']),
+        task_name=payload['task_definition_name'],
+        task_url=payload['task_definition_url'],
+    )
+
+def get_comment_event_body(payload):
+    # type: (Dict[Text, Any]) -> Text
+    return GCI_MESSAGE_TEMPLATE.format(
+        actor=payload['author'],
+        action='{}ed on'.format(payload['type']),
+        task_name=payload['task_definition_name'],
+        task_url=payload['task_definition_url'],
+    )
+
+def get_claim_event_body(payload):
+    # type: (Dict[Text, Any]) -> Text
+    return GCI_MESSAGE_TEMPLATE.format(
+        actor=payload['task_claimed_by'],
+        action='{}ed'.format(payload['type']),
+        task_name=payload['task_definition_name'],
+        task_url=payload['task_definition_url'],
+    )
+
+def get_approve_event_body(payload):
+    # type: (Dict[Text, Any]) -> Text
+    return GCI_MESSAGE_TEMPLATE.format(
+        actor=payload['author'],
+        action='{}d'.format(payload['type']),
         task_name=payload['task_definition_name'],
         task_url=payload['task_definition_url'],
     )
@@ -42,6 +78,10 @@ def api_gci_webhook(request, user_profile, stream=REQ(default='gci'),
 
 EVENTS_FUNCTION_MAPPER = {
     'abandon': get_abandon_event_body,
+    'comment': get_comment_event_body,
+    'submit': get_submit_event_body,
+    'claim': get_claim_event_body,
+    'approve': get_approve_event_body,
 }
 
 def get_event(payload):
@@ -50,8 +90,7 @@ def get_event(payload):
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
-    # TODO raise UnknownEventType as we support more events
-    return None  # nocoverage
+    raise UnknownEventType(u"Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
 
 def get_body_based_on_event(event):
     # type: (Text) -> Any
