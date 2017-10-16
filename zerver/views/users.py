@@ -441,8 +441,8 @@ def get_profile_backend(request, user_profile):
                   full_name      = user_profile.full_name,
                   email          = user_profile.email,
                   is_bot         = user_profile.is_bot,
-                  is_admin       = user_profile.is_realm_admin,
-                #   short_name     = user_profile.short_name)
+                  is_admin       = user_profile.is_realm_admin)
+                
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
