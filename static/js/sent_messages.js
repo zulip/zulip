@@ -27,7 +27,7 @@ function report_send_time(send_time, receive_time,
     }
 
     channel.post({
-        url: '/json/report_send_time',
+        url: '/json/report/send_times',
         data: data,
     });
 }

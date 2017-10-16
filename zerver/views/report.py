@@ -31,14 +31,13 @@ def get_js_source_map():
         ])
     return js_source_map
 
-@authenticated_json_post_view
 @has_request_variables
-def json_report_send_time(request, user_profile,
-                          time=REQ(converter=to_non_negative_int),
-                          received=REQ(converter=to_non_negative_int, default="(unknown)"),
-                          displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
-                          locally_echoed=REQ(validator=check_bool, default=False),
-                          rendered_content_disparity=REQ(validator=check_bool, default=False)):
+def report_send_times(request, user_profile,
+                      time=REQ(converter=to_non_negative_int),
+                      received=REQ(converter=to_non_negative_int, default="(unknown)"),
+                      displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
+                      locally_echoed=REQ(validator=check_bool, default=False),
+                      rendered_content_disparity=REQ(validator=check_bool, default=False)):
     # type: (HttpRequest, UserProfile, int, int, int, bool, bool) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
         % (time, received, displayed, locally_echoed, rendered_content_disparity)
@@ -54,12 +53,11 @@ def json_report_send_time(request, user_profile,
         statsd.incr('render_disparity')
     return json_success()
 
-@authenticated_json_post_view
 @has_request_variables
-def json_report_narrow_time(request, user_profile,
-                            initial_core=REQ(converter=to_non_negative_int),
-                            initial_free=REQ(converter=to_non_negative_int),
-                            network=REQ(converter=to_non_negative_int)):
+def report_narrow_times(request, user_profile,
+                        initial_core=REQ(converter=to_non_negative_int),
+                        initial_free=REQ(converter=to_non_negative_int),
+                        network=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
@@ -68,11 +66,10 @@ def json_report_narrow_time(request, user_profile,
     statsd.timing("narrow.network.%s" % (base_key,), network)
     return json_success()
 
-@authenticated_json_post_view
 @has_request_variables
-def json_report_unnarrow_time(request, user_profile,
-                              initial_core=REQ(converter=to_non_negative_int),
-                              initial_free=REQ(converter=to_non_negative_int)):
+def report_unnarrow_times(request, user_profile,
+                          initial_core=REQ(converter=to_non_negative_int),
+                          initial_free=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
@@ -80,12 +77,11 @@ def json_report_unnarrow_time(request, user_profile,
     statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
     return json_success()
 
-@authenticated_json_post_view
 @has_request_variables
-def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
-                      ui_message=REQ(validator=check_bool), user_agent=REQ(),
-                      href=REQ(), log=REQ(),
-                      more_info=REQ(validator=check_dict([]), default=None)):
+def report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
+                 ui_message=REQ(validator=check_bool), user_agent=REQ(),
+                 href=REQ(), log=REQ(),
+                 more_info=REQ(validator=check_dict([]), default=None)):
     # type: (HttpRequest, UserProfile, Text, Text, bool, Text, Text, Text, Optional[Dict[str, Any]]) -> HttpResponse
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error (below)"""
