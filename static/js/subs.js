@@ -52,6 +52,14 @@ function get_active_data() {
     };
 }
 
+function get_hash_safe() {
+    if (typeof window !== "undefined" && typeof window.location.hash === "string") {
+        return window.location.hash.substr(1);
+    }
+
+    return "";
+}
+
 function export_hash(hash) {
     var hash_components = {
         base: hash.shift(),
@@ -250,7 +258,7 @@ exports.stream_description_match_stream_ids = [];
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
-    var selected_row = window.location.hash.split(/\//)[1];
+    var selected_row = get_hash_safe().split(/\//)[1];
 
     if (parseFloat(selected_row)) {
         $(".stream-row[data-stream-id='" + selected_row + "']").addClass("active");
