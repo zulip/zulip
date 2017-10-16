@@ -24,6 +24,7 @@ var zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
     mentioned_message_count: 0,
+    favicon_message_count: 0,
     stream_count: new Dict(),
     topic_count: new Dict(),
     pm_count: new Dict(),
@@ -406,6 +407,61 @@ stream_data.get_stream_id = function () {
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
+}());
+
+(function test_favicon_notification() {
+    narrow_state.active = function () {
+        return false;
+    };
+    stream_data.is_subscribed = function () {
+        return true;
+    };
+    stream_data.maybe_get_stream_name = function (stream_id) {
+        if (stream_id === 100) {
+            return 'temp_stream';
+        }
+    };
+    stream_data.receives_push_notifications = function (stream_name) {
+        if (stream_name === 'temp_stream') {
+            return true;
+        }
+    };
+
+    var counts = unread.get_counts();
+    assert.equal(counts.favicon_message_count, 0);
+
+    var message1 = {
+        id: 15,
+        type: 'stream',
+        stream_id: 999,
+        subject: 'lunch',
+        alerted: true,
+    };
+
+    var message2 = {
+        id: 16,
+        type: 'stream',
+        stream_id: 999,
+        subject: 'lUnch',
+        mentioned: true,
+    };
+
+    var message3 = {
+        id: 17,
+        type: 'stream',
+        stream_id: 100,
+        subject: 'luNch',
+    };
+
+    unread.process_loaded_messages([message1, message2, message3]);
+
+    counts = unread.get_counts();
+    assert.equal(counts.favicon_message_count, 3);
+    unread.mark_as_read(message1.id);
+    unread.mark_as_read(message2.id);
+    unread.mark_as_read(message3.id);
+    counts = unread.get_counts();
+    assert.equal(counts.favicon_message_count, 0);
 }());
 
 (function test_declare_bankruptcy() {

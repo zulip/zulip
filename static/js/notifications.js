@@ -123,8 +123,16 @@ if (window.bridge !== undefined) {
 
 var new_message_count = 0;
 
-exports.update_title_count = function (count) {
-    new_message_count = count;
+exports.update_title_count = function (res) {
+
+    if (page_params.enable_all_favicon_dekstop_notifications) {
+        new_message_count = res.home_unread_messages;
+    } else {
+        // Count private message && mentioned message && alert word message &&
+        // stream push message notifications in favicon notification
+        new_message_count = res.favicon_message_count;
+    }
+
     exports.redraw_title();
 };
 
@@ -680,7 +688,10 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params.enable_digest_emails = setting;
     } else if (notification_name === "pm_content_in_desktop_notifications") {
         page_params.pm_content_in_desktop_notifications = setting;
+    } else if (notification_name === "enable_all_favicon_dekstop_notifications") {
+        page_params.enable_all_favicon_dekstop_notifications = setting;
     }
+
 };
 
 return exports;

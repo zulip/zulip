@@ -418,6 +418,8 @@ paths:
 
                        * `default_language`:
 
+                       * `enable_all_favicon_dekstop_notifications`:
+
                        * `enable_desktop_notifications`:
 
                        * `enable_digest_emails`:
@@ -941,6 +943,8 @@ definitions:
         type: string
       default_language:
         type: string
+      enable_all_favicon_dekstop_notifications:
+        type: boolean
       enable_desktop_notifications:
         type: boolean
       enable_digest_emails:

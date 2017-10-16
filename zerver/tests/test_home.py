@@ -61,6 +61,7 @@ class HomeTest(ZulipTestCase):
             "emoji_alt_code",
             "emojiset",
             "emojiset_choices",
+            "enable_all_favicon_dekstop_notifications",
             "enable_desktop_notifications",
             "enable_digest_emails",
             "enable_offline_email_notifications",

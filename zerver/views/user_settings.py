@@ -170,6 +170,7 @@ def update_display_settings_backend(
 @has_request_variables
 def json_change_notify_settings(
         request: HttpRequest, user_profile: UserProfile,
+        enable_all_favicon_dekstop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),

@@ -405,6 +405,14 @@ exports.receives_desktop_notifications = function (stream_name) {
     return sub.desktop_notifications;
 };
 
+exports.receives_push_notifications = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.push_notifications;
+};
+
 exports.receives_audible_notifications = function (stream_name) {
     var sub = exports.get_sub(stream_name);
     if (sub === undefined) {

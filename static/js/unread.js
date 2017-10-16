@@ -324,6 +324,7 @@ exports.unread_topic_counter = (function () {
 }());
 
 exports.unread_mentions_counter = make_id_set();
+exports.unread_favicon_counter = make_id_set();
 
 exports.message_unread = function (message) {
     if (message === undefined) {
@@ -368,6 +369,7 @@ exports.process_loaded_messages = function (messages) {
 
         if (message.type === 'private') {
             exports.unread_pm_counter.add(message);
+            exports.unread_favicon_counter.add(message.id);
         }
 
         if (message.type === 'stream') {
@@ -376,11 +378,24 @@ exports.process_loaded_messages = function (messages) {
                 message.subject,
                 message.id
             );
+
+            var stream_name = stream_data.maybe_get_stream_name(message.stream_id);
+            if (stream_name) {
+                if (stream_data.receives_push_notifications(stream_name)) {
+                    exports.unread_favicon_counter.add(message.id);
+                }
+            }
         }
 
         if (message.mentioned) {
             exports.unread_mentions_counter.add(message.id);
+            exports.unread_favicon_counter.add(message.id);
         }
+
+        if (message.alerted) {
+            exports.unread_favicon_counter.add(message.id);
+        }
+
     });
 };
 
@@ -391,6 +406,7 @@ exports.mark_as_read = function (message_id) {
     exports.unread_pm_counter.del(message_id);
     exports.unread_topic_counter.del(message_id);
     exports.unread_mentions_counter.del(message_id);
+    exports.unread_favicon_counter.del(message_id);
     unread_messages.del(message_id);
 };
 
@@ -398,6 +414,7 @@ exports.declare_bankruptcy = function () {
     exports.unread_pm_counter.clear();
     exports.unread_topic_counter.clear();
     exports.unread_mentions_counter.clear();
+    exports.unread_favicon_counter.clear();
     unread_messages.clear();
 };
 
@@ -409,6 +426,7 @@ exports.get_counts = function () {
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
     res.mentioned_message_count = exports.unread_mentions_counter.count();
+    res.favicon_message_count = exports.unread_favicon_counter.count();
 
     // This sets stream_count, topic_count, and home_unread_messages
     var topic_res = exports.unread_topic_counter.get_counts();

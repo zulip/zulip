@@ -544,6 +544,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     ### Notifications settings. ###
 
+    # Favicon desktop notification
+    enable_all_favicon_dekstop_notifications = models.BooleanField(default=True)  # type: bool
+
     # Stream notifications.
     enable_stream_desktop_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_email_notifications = models.BooleanField(default=False)  # type: bool
@@ -653,6 +656,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     notification_setting_types = dict(
+        enable_all_favicon_dekstop_notifications=bool,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_offline_email_notifications=bool,
