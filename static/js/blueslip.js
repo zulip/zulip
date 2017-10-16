@@ -128,7 +128,7 @@ function report_error(msg, stack, opts) {
     // setup is done or do it ourselves and then retry.
     $.ajax({
         type:     'POST',
-        url:      '/json/report_error',
+        url:      '/json/report/error',
         dataType: 'json',
         data:     { message: msg,
                     stacktrace: stack,

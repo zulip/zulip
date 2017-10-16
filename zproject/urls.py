@@ -421,6 +421,16 @@ v1_api_and_json_patterns = [
     url(r'^events$', rest_dispatch,
         {'GET': 'zerver.tornado.views.get_events_backend',
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
+
+    # report -> zerver.views.report
+    url(r'^report/error$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_error'}),
+    url(r'^report/send_times$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_send_times'}),
+    url(r'^report/narrow_times$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_narrow_times'}),
+    url(r'^report/unnarrow_times$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_unnarrow_times'}),
 ]
 
 # Include the dual-use patterns twice

@@ -89,7 +89,7 @@ def is_slow_query(time_delta, path):
     if time_delta < 1.2:
         return False
     is_exempt = \
-        path in ["/activity", "/json/report_error",
+        path in ["/activity", "/json/report/error",
                  "/api/v1/deployments/report_error"] \
         or path.startswith("/realm_activity/") \
         or path.startswith("/user_activity/")
