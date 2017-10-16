@@ -7,9 +7,11 @@ from zerver.lib.actions import (
     do_create_user,
     get_service_bot_events,
 )
+from zerver.lib.bot_lib import StateHandler, StateHandlerError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,
+    BotUserStateData,
     UserProfile,
     Recipient,
 )
@@ -117,6 +119,57 @@ class TestServiceBotBasics(ZulipTestCase):
         )
 
         self.assertEqual(event_dict, expected)
+
+class TestServiceBotStateHandler(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.user_profile = self.example_user("othello")
+        self.bot_profile = do_create_user(email="embedded-bot-1@zulip.com",
+                                          password="test",
+                                          realm=get_realm("zulip"),
+                                          full_name="EmbeddedBo1",
+                                          short_name="embedded-bot-1",
+                                          bot_type=UserProfile.EMBEDDED_BOT,
+                                          bot_owner=self.user_profile)
+        self.second_bot_profile = do_create_user(email="embedded-bot-2@zulip.com",
+                                                 password="test",
+                                                 realm=get_realm("zulip"),
+                                                 full_name="EmbeddedBot2",
+                                                 short_name="embedded-bot-2",
+                                                 bot_type=UserProfile.EMBEDDED_BOT,
+                                                 bot_owner=self.user_profile)
+
+    def test_basic_storage_and_retrieval(self):
+        # type: () -> None
+        state_handler = StateHandler(self.bot_profile)
+        state_handler['some key'] = 'some value'
+        state_handler['some other key'] = 'some other value'
+        self.assertEqual(state_handler['some key'], 'some value')
+        self.assertEqual(state_handler['some other key'], 'some other value')
+        self.assertFalse('nonexistent key' in state_handler)
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: state_handler['nonexistent key'])
+
+        second_state_handler = StateHandler(self.second_bot_profile)
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: second_state_handler['some key'])
+        second_state_handler['some key'] = 'yet another value'
+        self.assertEqual(state_handler['some key'], 'some value')
+        self.assertEqual(second_state_handler['some key'], 'yet another value')
+
+    def test_storage_limit(self):
+        # type: () -> None
+        # Reduce maximal state size for faster test string construction.
+        StateHandler.state_size_limit = 100
+        state_handler = StateHandler(self.bot_profile)
+        key = 'capacity-filling entry'
+        state_handler[key] = 'x' * (state_handler.state_size_limit - len(key))
+
+        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 132 bytes storage. "
+                                                         "The current storage limit is 100."):
+            state_handler['too much data'] = 'a few bits too long'
+
+        second_state_handler = StateHandler(self.second_bot_profile)
+        second_state_handler['another big entry'] = 'x' * (state_handler.state_size_limit - 40)
+        second_state_handler['normal entry'] = 'abcd'
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 
