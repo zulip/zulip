@@ -174,6 +174,8 @@ def update_display_settings_backend(request, user_profile,
 @human_users_only
 @has_request_variables
 def json_change_notify_settings(request, user_profile,
+                                enable_all_favicon_dekstop_notifications=REQ(validator=check_bool,
+                                                                             default=None),
                                 enable_stream_desktop_notifications=REQ(validator=check_bool,
                                                                         default=None),
                                 enable_stream_push_notifications=REQ(validator=check_bool,
@@ -194,7 +196,7 @@ def json_change_notify_settings(request, user_profile,
                                                          default=None),
                                 pm_content_in_desktop_notifications=REQ(validator=check_bool,
                                                                         default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     result = {}
 
     # Stream notification settings.
