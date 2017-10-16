@@ -515,13 +515,15 @@ urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
 
 def handler400(request, exception):
     # type: (HttpRequest, Exception) -> HttpResponse
+    #
     # This behaves exactly like the default Django implementation in
     # the case where you haven't made a template "400.html", which we
     # haven't -- except that it doesn't call `@requires_csrf_token` to
     # attempt to set a `csrf_token` variable that the template could
-    # use if there were a template.  We skip @requires_csrf_token because that
-    # codepath can raise an error on a bad request, which is exactly
-    # the case we're trying to handle when we get here.
+    # use if there were a template.  We skip @requires_csrf_token
+    # because that codepath can raise an error on a bad request, which
+    # is exactly the case we're trying to handle when we get here.
+    # Bug filed upstream: https://code.djangoproject.com/ticket/28693
     #
     # This function is used just because it has this special name in
     # the root urls.py file; for more details, see:
