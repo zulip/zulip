@@ -124,7 +124,7 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
                                             .order_by('id'))
     return [{'email': user_profile.email,
              'full_name': user_profile.full_name,
-             'short_name': user_profile.short_name,
+            #  'short_name': user_profile.short_name,
              'id': user_profile.id,
              'is_mirror_dummy': user_profile.is_mirror_dummy} for user_profile in user_profile_list]
 
@@ -533,7 +533,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
-    short_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
+    # short_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
     # pointer points to Message.id, NOT UserMessage.id.
     pointer = models.IntegerField()  # type: int
     last_pointer_updater = models.CharField(max_length=64)  # type: Text
