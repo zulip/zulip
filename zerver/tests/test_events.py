@@ -25,7 +25,7 @@ from zerver.lib.actions import (
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
-    do_add_reaction,
+    do_add_reaction_legacy,
     do_add_realm_domain,
     do_add_realm_filter,
     do_change_avatar_fields,
@@ -735,7 +735,7 @@ class EventsRegisterTest(ZulipTestCase):
             state_change_expected=True,
         )
 
-    def test_send_reaction(self):
+    def test_add_reaction_legacy(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('reaction')),
@@ -754,7 +754,7 @@ class EventsRegisterTest(ZulipTestCase):
         message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
-            lambda: do_add_reaction(
+            lambda: do_add_reaction_legacy(
                 self.user_profile, message, "tada"),
             state_change_expected=False,
         )
@@ -779,7 +779,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
-        do_add_reaction(self.user_profile, message, "tada")
+        do_add_reaction_legacy(self.user_profile, message, "tada")
         events = self.do_test(
             lambda: do_remove_reaction(
                 self.user_profile, message, "tada"),

@@ -5,7 +5,7 @@ from typing import Text
 
 from zerver.decorator import authenticated_json_post_view,\
     has_request_variables, REQ, to_non_negative_int
-from zerver.lib.actions import do_add_reaction, do_remove_reaction
+from zerver.lib.actions import do_add_reaction_legacy, do_remove_reaction
 from zerver.lib.emoji import check_valid_emoji
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
@@ -43,7 +43,7 @@ def add_reaction_backend(request, user_profile, message_id, emoji_name):
     if user_message is None:
         create_historical_message(user_profile, message)
 
-    do_add_reaction(user_profile, message, emoji_name)
+    do_add_reaction_legacy(user_profile, message, emoji_name)
 
     return json_success()
 
