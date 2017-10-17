@@ -545,8 +545,7 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        muting_ui.unmute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
+        muting_ui.unmute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });
