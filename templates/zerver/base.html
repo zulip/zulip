@@ -30,6 +30,12 @@
         {{ render_bundle('common') }}
         {% block customhead %}
         {% endblock %}
+
+        <!-- this is required because we want to put a custom head in
+        `zerver/portico.html` that isn't overwritten like the
+        `customhead` -->
+        {% block porticocustomhead %}
+        {% endblock %}
     </head>
 
     <body>
