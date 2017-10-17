@@ -8,8 +8,17 @@ import localstorage from './localstorage';
 
 window.i18n = i18next;
 
+function loadPath(languages) {
+    var language = languages[0];
+    if (language.indexOf('-') >= 0) {
+        language = language.replace('-', '_');  // Change zh-Hans to zh_Hans.
+    }
+
+    return '/static/locale/' + language + '/translations.json';
+}
+
 var backendOptions = {
-    loadPath: '/static/locale/__lng__/translations.json',
+    loadPath: loadPath,
 };
 var callbacks = [];
 var initialized = false;
