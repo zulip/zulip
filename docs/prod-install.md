@@ -90,12 +90,6 @@ heading `### MANDATORY SETTINGS`.  These settings include:
   [our guide for outgoing email](prod-email.html) for help configuring
   this.
 
-- If desired, you can also configure additional
-  [authentication backends](prod-authentication-methods.html) while
-  you're editing /etc/zulip/settings.py.  Note, however, that the
-  default (email) backend must be enabled when you complete Step 6
-  (creating an organization) below.
-
 ## Step 4: Test email configuration
 
 [Test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
