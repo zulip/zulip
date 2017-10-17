@@ -24,9 +24,13 @@ var emoji_see_no_evil = {
     emoji_name: 'see_no_evil',
     emoji_url: 'TBD',
 };
+var emoji_thumbs_up = {
+    emoji_name: '+1',
+    emoji_url: 'TBD',
+};
 
 var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
-                  emoji_panda_face, emoji_see_no_evil];
+                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -781,15 +785,20 @@ global.people.add(deactivated_user);
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
     assert_typeahead_equals(" :", false);
+    assert_typeahead_equals(":)", false);
+    assert_typeahead_equals(":4", false);
     assert_typeahead_equals("test :-P", false);
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoj:i", false);
+    assert_typeahead_equals("hi emoji :D", false);
+    assert_typeahead_equals("hi emoji :t", emoji_list);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
     assert_typeahead_equals("hi emoji :da_", emoji_list);
     assert_typeahead_equals("hi emoji :da ", emoji_list);
     assert_typeahead_equals("hi emoji\n:da", emoji_list);
     assert_typeahead_equals("hi emoji\n :ra", emoji_list);
+    assert_typeahead_equals(":+", emoji_list);
     assert_typeahead_equals(":la", emoji_list);
     assert_typeahead_equals(" :lee", emoji_list);
     assert_typeahead_equals("hi :see no", emoji_list);
