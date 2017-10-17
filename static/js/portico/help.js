@@ -1,3 +1,5 @@
+const Ps = require('perfect-scrollbar');
+
 (function () {
     var html_map = {};
     var loading = {
@@ -17,12 +19,16 @@
         var $next = $(e.target).next();
 
         if ($next.is("ul")) {
-            $next.slideToggle("fast");
+            $next.slideToggle("fast", "swing", function () {
+                Ps.update($(".markdown")[0]);
+            });
         }
     });
 
     $(".sidebar a").click(function (e) {
         var path = $(this).attr("href");
+        var container = $(".markdown")[0];
+
 
         if (loading.name === path) {
             return;
@@ -32,6 +38,7 @@
 
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
+            Ps.update(container);
         } else {
             loading.name = path;
 
@@ -39,16 +46,31 @@
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
+                Ps.update(container);
             });
         }
 
+        container.scrollTop = 0;
         $(".sidebar").removeClass("show");
 
         e.preventDefault();
-
-        var container = $(".markdown")[0];
-        container.scrollTop = 0;
     });
+
+    Ps.initialize($(".markdown")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+    });
+
+    Ps.initialize($(".sidebar")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+    });
+
+    window.onresize = function () {
+        Ps.update($(".markdown")[0]);
+    };
 
     window.addEventListener("popstate", function () {
         var path = window.location.pathname;
