@@ -20,7 +20,7 @@ from zerver.models import (
     get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient,
     flush_per_request_caches, DefaultStream, Realm,
 )
-from zerver.views.home import home, sent_time_in_epoch_seconds
+from zerver.views.home import home, sent_time_in_epoch_seconds, JSONEncoderForHTML
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -699,3 +699,41 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
+
+    # Test EncoderForHTML
+    # Taken from
+    # https://github.com/simplejson/simplejson/blob/8edc82afcf6f7512b05fba32baa536fe756bd273/simplejson/tests/test_encode_for_html.py
+    # License: MIT
+    def test_JSONEncoderForHTML(self):
+        # type: () -> None
+        import json
+        self.decoder = json.JSONDecoder()
+        self.encoder = JSONEncoderForHTML()
+
+        def test_basic_encode():
+            # type: () -> None
+            self.assertEqual(r'"\u0026"', self.encoder.encode('&'))
+            self.assertEqual(r'"\u003c"', self.encoder.encode('<'))
+            self.assertEqual(r'"\u003e"', self.encoder.encode('>'))
+
+        def test_basic_roundtrip():
+            # type: () -> None
+            for char in '&<>':
+                self.assertEqual(
+                    char, self.decoder.decode(
+                        self.encoder.encode(char)))
+
+        def test_prevent_script_breakout():
+            # type: () -> None
+            bad_string = '</script><script>alert("gotcha")</script>'
+            self.assertEqual(
+                r'"\u003c/script\u003e\u003cscript\u003e'
+                r'alert(\"gotcha\")\u003c/script\u003e"',
+                self.encoder.encode(bad_string))
+            self.assertEqual(
+                bad_string, self.decoder.decode(
+                    self.encoder.encode(bad_string)))
+
+        test_basic_encode()
+        test_basic_roundtrip()
+        test_prevent_script_breakout()
