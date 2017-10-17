@@ -2903,8 +2903,7 @@ def update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
     event = {'user_profile_id': user_profile.id,
              'time': datetime_to_timestamp(log_time)}
-    queue_json_publish("user_activity_interval", event,
-                       lambda e: do_update_user_activity_interval(user_profile, log_time))
+    queue_json_publish("user_activity_interval", event, lambda x: None, call_consume_in_tests=True)
 
 def update_user_presence(user_profile, client, log_time, status,
                          new_user_input):
@@ -2914,9 +2913,7 @@ def update_user_presence(user_profile, client, log_time, status,
              'time': datetime_to_timestamp(log_time),
              'client': client.name}
 
-    queue_json_publish("user_presence", event,
-                       lambda e: do_update_user_presence(user_profile, client,
-                                                         log_time, status))
+    queue_json_publish("user_presence", event, lambda x: None, call_consume_in_tests=True)
 
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
