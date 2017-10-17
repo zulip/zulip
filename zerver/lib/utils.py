@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple, Text
+import ast
 import base64
 import errno
 import hashlib
@@ -185,3 +186,16 @@ def is_remote_server(identifier: Text) -> bool:
     and UserProfiles.
     """
     return "@" not in identifier
+
+def is_valid_python_code(txt: str) -> bool:
+    """
+    This function checks if a string is a valid python source code.
+    Taken from https://stackoverflow.com/a/11854793/595474
+    """
+    try:
+        ast.parse(txt)
+    except SyntaxError:  # nocoverage
+        return False  # nocoverage
+    return True
+
+
