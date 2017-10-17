@@ -32,6 +32,7 @@ preparing a new release.
 * Update `version` and/or `release` in `docs/conf.py` (ReadTheDocs meta tags).
 * Use `build-release-tarball` to generate a final release tarball.
 * Post the release tarball on zulip.org and update zulip.org.
+* Add the sha256sum of the release to the file SHA256SUMS.txt in https://www.zulip.org/dist/releases/
 * Create a git tag and push the tag.
 * Upload the release on GitHub so it doesn't provide a broken release tarball.
 * Email zulip-announce with the release notes
