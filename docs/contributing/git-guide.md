@@ -273,7 +273,7 @@ the main server app, this is [zulip/zulip][github-zulip-zulip].
 Next, clone your fork to your local machine:
 
 ```
-$ git clone git@github.com:christi3k/zulip.git
+$ git clone --config pull.rebase git@github.com:christi3k/zulip.git
 Cloning into 'zulip'
 remote: Counting objects: 86768, done.
 remote: Compressing objects: 100% (15/15), done.
@@ -282,6 +282,14 @@ Receiving objects: 100% (86768/86768), 112.96 MiB | 523.00 KiB/s, done.
 Resolving deltas: 100% (61106/61106), done.
 Checking connectivity... done.
 ```
+
+(The `--config pull.rebase` option configures Git so that `git pull`
+will behave like `git pull --rebase` by default.  Using `git pull
+--rebase` to update your changes to resolve merge conflicts is
+expected by essentially all of open source projects, including Zulip.
+You can also set that option after cloning using `git config --add
+pull.rebase true`, or just be careful to always run `git pull
+--rebase`, never `git pull`).
 
 Note: If you receive an error while cloning, you may not have [added your ssh
 key to GitHub][github-help-add-ssh-key].
