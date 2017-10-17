@@ -158,8 +158,7 @@ def home_real(request):
     url_lang = '/{}'.format(request.LANGUAGE_CODE)
     if not request.path.startswith(url_lang):
         translation.activate(default_language)
-
-    request.session[translation.LANGUAGE_SESSION_KEY] = default_language
+        request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
