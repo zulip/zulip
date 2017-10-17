@@ -133,7 +133,6 @@ exports.set_up = function () {
         submitHandler: function () {
             var bot_type = $('#create_bot_type :selected').val();
             var full_name = $('#create_bot_name').val();
-            var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var payload_url = $('#create_payload_url').val();
             var interface_type = $('#create_interface_type').val();
             var formData = new FormData();
@@ -141,7 +140,6 @@ exports.set_up = function () {
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('bot_type', bot_type);
             formData.append('full_name', full_name);
-            formData.append('short_name', short_name);
 
             // If the selected bot_type is Outgoing webhook
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
@@ -161,7 +159,6 @@ exports.set_up = function () {
                 success: function () {
                     $('#bot_table_error').hide();
                     $('#create_bot_name').val('');
-                    $('#create_bot_short_name').val('');
                     $('#create_payload_url').val('');
                     $('#payload_url_inputbox').hide();
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
