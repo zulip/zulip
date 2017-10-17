@@ -92,7 +92,6 @@ requests-oauthlib==0.8.0
 requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
-simplejson==3.11.1
 six==1.11.0
 smmap==0.9.0
 social-auth-app-django==1.2.0
