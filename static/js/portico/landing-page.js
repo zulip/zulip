@@ -201,21 +201,6 @@ var events = function () {
         $("nav ul").addClass("show");
     });
 
-    $('nav a .logout').on('click', function () {
-        $('#logout_form').submit();
-        return false;
-    });
-
-    $("body").click(function (e) {
-        var $this = $(e.target);
-
-        if ($this.is(".dropdown") || $this.closest(".dropdown").length) {
-            $(".dropdown").addClass("show");
-        } else {
-            $(".dropdown").removeClass("show");
-        }
-    });
-
     if (path_parts().includes("apps")) {
         apps_events();
     }
