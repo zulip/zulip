@@ -22,6 +22,7 @@ from zerver.lib.actions import (
 from zerver.lib.message import (
     MessageDict,
     message_to_dict,
+    sew_messages_and_reactions,
 )
 
 from zerver.lib.test_helpers import (
@@ -45,7 +46,7 @@ from zerver.models import (
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_recipient, get_system_bot, get_user, Reaction,
-    sew_messages_and_reactions, flush_per_request_caches
+    flush_per_request_caches
 )
 
 from zerver.lib.actions import (
@@ -574,7 +575,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
                           content="whatever", subject="my topic")
         message = most_recent_message(user_profile)
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         MessageDict.post_process_dicts([dct])
         self.assertEqual(dct['display_recipient'], 'Denmark')
@@ -693,10 +694,13 @@ class MessageDictTest(ZulipTestCase):
         flush_per_request_caches()
         t = time.time()
         with queries_captured() as queries:
-            rows = list(Message.get_raw_db_rows(ids))
+            rows = list(MessageDict.get_raw_db_rows(ids))
 
-            for row in rows:
+            objs = [
                 MessageDict.build_dict_from_raw_db_row(row, False)
+                for row in rows
+            ]
+            MessageDict.post_process_dicts(objs)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1.5ms per message to
@@ -705,7 +709,7 @@ class MessageDictTest(ZulipTestCase):
         # slower.
         error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
         self.assertTrue(delay < 0.0015 * num_ids, error_msg)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
@@ -728,7 +732,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         expected_content = '<p>hello <strong>world</strong></p>'
         self.assertEqual(dct['content'], expected_content)
@@ -759,7 +763,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         error_content = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
         self.assertEqual(dct['content'], error_content)
@@ -785,7 +789,7 @@ class MessageDictTest(ZulipTestCase):
         reaction = Reaction.objects.create(
             message=message, user_profile=sender,
             emoji_name='simple_smile')
-        row = Message.get_raw_db_rows([message.id])[0]
+        row = MessageDict.get_raw_db_rows([message.id])[0]
         msg_dict = MessageDict.build_dict_from_raw_db_row(
             row, apply_markdown=True)
         self.assertEqual(msg_dict['reactions'][0]['emoji_name'],
@@ -2621,15 +2625,8 @@ class MessageHydrationTest(ZulipTestCase):
 
         MessageDict.hydrate_recipient_info(obj)
 
-        self.assertEqual(obj, dict(
-            display_recipient='Verona',
-            stream_id=stream_id,
-            type='stream',
-            sender_email=cordelia.email,
-            sender_full_name=cordelia.full_name,
-            sender_short_name=cordelia.short_name,
-            sender_id=cordelia.id,
-        ))
+        self.assertEqual(obj['display_recipient'], 'Verona')
+        self.assertEqual(obj['type'], 'stream')
 
     def test_hydrate_pm_recipient_info(self):
         # type: () -> None
@@ -2653,8 +2650,9 @@ class MessageHydrationTest(ZulipTestCase):
 
         MessageDict.hydrate_recipient_info(obj)
 
-        self.assertEqual(obj, dict(
-            display_recipient=[
+        self.assertEqual(
+            obj['display_recipient'],
+            [
                 dict(
                     email='aaron@example.com',
                     full_name='Aaron Smith',
@@ -2667,9 +2665,5 @@ class MessageHydrationTest(ZulipTestCase):
                     is_mirror_dummy=False,
                 ),
             ],
-            type='private',
-            sender_email=cordelia.email,
-            sender_full_name=cordelia.full_name,
-            sender_short_name=cordelia.short_name,
-            sender_id=cordelia.id,
-        ))
+        )
+        self.assertEqual(obj['type'], 'private')
