@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings
@@ -72,10 +73,7 @@ class Integration(object):
         self.categories = list(map((lambda c: CATEGORIES[c]), categories))
 
         if logo is None:
-            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
-                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
-            else:
-                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
+            logo = self.get_logo_url()
         self.logo = logo
 
         if display_name is None:
@@ -94,6 +92,23 @@ class Integration(object):
         # type: (Dict[Any, Any]) -> None
         self.doc_context = context
 
+    def get_logo_url(self):
+        # type: () -> Optional[str]
+        logo_file_path_svg = str(pathlib.PurePath(
+            settings.STATIC_ROOT,
+            *self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name).split('/')[1:]
+        ))
+        logo_file_path_png = str(pathlib.PurePath(
+            settings.STATIC_ROOT,
+            *self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name).split('/')[1:]
+        ))
+        if os.path.isfile(logo_file_path_svg):
+            return self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
+        elif os.path.isfile(logo_file_path_png):
+            return self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
+
+        return None
+
 class BotIntegration(Integration):
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/generated/bots/{name}/logo.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/generated/bots/{name}/logo.svg'
@@ -111,10 +126,9 @@ class BotIntegration(Integration):
         )
 
         if logo is None:
-            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)):
-                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
-            elif os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
-                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
+            logo_url = self.get_logo_url()
+            if logo_url is not None:
+                logo = logo_url
             else:
                 # TODO: Add a test for this by initializing one in a test.
                 logo = self.ZULIP_LOGO_STATIC_PATH_PNG  # nocoverage
