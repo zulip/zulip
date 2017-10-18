@@ -204,6 +204,25 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                                          True, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
 
-        # Clean up the state
+        # Clear the event queue, now repeat with stream message with stream_push_notify
+        # on a muted stream, which we should not push notify for
+        client_descriptor.event_queue.pop()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        sub.in_home_view = False
+        sub.save()
+        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
+                                   content="what's up everyone?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            # Clear the event queue, before repeating with a private message
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False,
+                                         False, "Denmark", False, True,
+                                         {'email_notified': False, 'push_notified': False}))
+
+        # Clean up the state we just changed (not necessary unless we add more test code below)
         sub.push_notifications = True
+        sub.in_home_view = True
         sub.save()

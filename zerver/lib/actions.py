@@ -782,6 +782,7 @@ def get_recipient_info(recipient, sender_id):
         ).values(
             'user_profile_id',
             'push_notifications',
+            'in_home_view',
         ).order_by('user_profile_id')
         user_ids = [
             row['user_profile_id']
@@ -790,7 +791,8 @@ def get_recipient_info(recipient, sender_id):
         stream_push_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
-            if row['push_notifications']
+            # Note: muting a stream overrides stream_push_notify
+            if row['push_notifications'] and row['in_home_view']
         }
 
     elif recipient.type == Recipient.HUDDLE:
