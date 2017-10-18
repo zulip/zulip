@@ -1425,7 +1425,13 @@ def do_import_realm(import_dir):
 
     convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
     fix_datetime_fields(data, 'zerver_realm')
-    realm = Realm(**data['zerver_realm'][0])
+    zr = data['zerver_realm'][0]
+    # Convert the authentication methods from list of (name, bool) to bitfield
+    auth_methods_in_bitfield = ''.join(['1' if a[1] else '0' for a in zr["authentication_methods"]])
+    # Convert the authentication methods to integer
+    auth_method_in_int = int(auth_methods_in_bitfield, 2)
+    zr["authentication_methods"] = auth_method_in_int
+    realm = Realm(**zr)
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]
     else:
