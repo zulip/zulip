@@ -146,8 +146,8 @@ def build_custom_checkers(by_lang):
          'description': 'Fix tab-based whitespace'},
     ]  # type: RuleList
     comma_whitespace_rule = [
-        {'pattern': ', {2,}[^# ]',
-         'exclude': set(['zerver/tests']),
+        {'pattern': ', {2,}[^#/ ]',
+         'exclude': set(['zerver/tests', 'frontend_tests/node_tests']),
          'description': "Remove multiple whitespaces after ','",
          'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
          'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
@@ -232,7 +232,7 @@ def build_custom_checkers(by_lang):
          ]),
          'good_lines': ['#my-style {color: blue;}'],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
-    ]) + whitespace_rules
+    ]) + whitespace_rules + comma_whitespace_rule
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
