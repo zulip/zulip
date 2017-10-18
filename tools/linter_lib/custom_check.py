@@ -390,7 +390,12 @@ def build_custom_checkers(by_lang):
          'exclude_pattern': '[.]_meta[.]pk',
          'description': "Use `id` instead of `pk`.",
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
-         'bad_lines': ['if my_django_model.pk == 42']}
+         'bad_lines': ['if my_django_model.pk == 42']},
+        {'pattern': ', {2,}[^# ]',
+         'exclude': set(['zerver/tests']),
+         'description': "Remove multiple whitespaces after ','",
+         'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
+         'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
     ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
