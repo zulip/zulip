@@ -145,6 +145,13 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
     ]  # type: RuleList
+    comma_whitespace_rule = [
+        {'pattern': ', {2,}[^# ]',
+         'exclude': set(['zerver/tests']),
+         'description': "Remove multiple whitespaces after ','",
+         'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
+         'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
+    ]  # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
         # Two spaces trailing a line with other content is okay--it's a markdown line break.
         # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -391,12 +398,7 @@ def build_custom_checkers(by_lang):
          'description': "Use `id` instead of `pk`.",
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
          'bad_lines': ['if my_django_model.pk == 42']},
-        {'pattern': ', {2,}[^# ]',
-         'exclude': set(['zerver/tests']),
-         'description': "Remove multiple whitespaces after ','",
-         'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
-         'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
-    ]) + whitespace_rules
+    ]) + whitespace_rules + comma_whitespace_rule
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
@@ -421,7 +423,7 @@ def build_custom_checkers(by_lang):
          'description': "medium CSS attribute is under-specified, please use pixels."},
         {'pattern': ' thick[; ]',
          'description': "thick CSS attribute is under-specified, please use pixels."},
-    ]) + whitespace_rules  # type: RuleList
+    ]) + whitespace_rules + comma_whitespace_rule
     prose_style_rules = [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)',  # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
