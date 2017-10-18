@@ -436,7 +436,7 @@ def build_custom_checkers(by_lang):
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
         {'pattern': 'Terms of service',
          'description': "The S in Terms of Service is capitalized"},
-    ]  # type: RuleList
+    ] + comma_whitespace_rule  # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
