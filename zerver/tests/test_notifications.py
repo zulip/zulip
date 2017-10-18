@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from django.test import override_settings
 from email.utils import formataddr
 from mock import patch, MagicMock
-from six.moves import range
 from typing import Any, Dict, List, Text
 
 from zerver.lib.notifications import fix_emojis, \

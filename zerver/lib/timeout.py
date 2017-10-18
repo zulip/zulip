@@ -6,7 +6,6 @@ import sys
 import time
 import ctypes
 import threading
-from six.moves import range
 
 # Based on http://code.activestate.com/recipes/483752/
 

@@ -13,7 +13,7 @@ from time import sleep
 
 from django.conf import settings
 from django.http import HttpRequest
-from six.moves import range, map, zip_longest
+from six.moves import map, zip_longest
 from zerver.lib.str_utils import force_text
 
 T = TypeVar('T')

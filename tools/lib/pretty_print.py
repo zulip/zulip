@@ -6,7 +6,6 @@ from .template_parser import (
     Token,
     is_django_block_tag,
 )
-from six.moves import range
 import subprocess
 
 def pretty_print_html(html, num_spaces=4):

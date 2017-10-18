@@ -22,7 +22,6 @@ import mock
 import time
 
 from six.moves import urllib
-from six.moves import range
 from typing import Text
 
 class MITNameTest(ZulipTestCase):
