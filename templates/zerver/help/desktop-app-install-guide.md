@@ -8,7 +8,8 @@ To install the latest stable release (recommended for most users),
 find your operating system below.  If you're interested in an early
 look at the newest features, consider the [beta releases](#beta-releases).
 
-## [Installing on Mac](#installing-on-mac)
+<!-- Following links are used in the /apps page and shouldn't be changed without updating the links -->
+## [Installing on Mac](#installing-on-macOS)
 
 ### Disk image (recommended)
 <!-- TODO why zip? -->
