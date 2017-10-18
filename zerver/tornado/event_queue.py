@@ -673,8 +673,14 @@ def missedmessage_hook(user_profile_id, client, last_for_client):
         idle = True
 
         message_id = event['message']['id']
+        # Pass on the information on whether a push or email notification was already sent.
+        already_notified = dict(
+            push_notified = event.get("push_notified", False),
+            email_notified = event.get("email_notified", False),
+        )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
-                                    stream_push_notify, stream_name, always_push_notify, idle)
+                                    stream_push_notify, stream_name, always_push_notify, idle,
+                                    already_notified)
 
 def receiver_is_off_zulip(user_profile_id):
     # type: (int) -> bool
@@ -687,8 +693,8 @@ def receiver_is_off_zulip(user_profile_id):
 
 def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                 mentioned, stream_push_notify, stream_name,
-                                always_push_notify, idle):
-    # type: (int, int, bool, bool, bool, Optional[str], bool, bool) -> Dict[str, bool]
+                                always_push_notify, idle, already_notified):
+    # type: (int, int, bool, bool, bool, Optional[str], bool, bool, Dict[str, bool]) -> Dict[str, bool]
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -702,8 +708,9 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
             'stream_push_notify': stream_push_notify,
         }
         notice['stream_name'] = stream_name
-        queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-        notified['push_notified'] = True
+        if not already_notified.get("push_notified"):
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
+            notified['push_notified'] = True
 
     # Send missed_message emails if a private message or a
     # mention.  Eventually, we'll add settings to allow email
@@ -712,8 +719,9 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
     if idle and (private_message or mentioned):
         # We require RabbitMQ to do this, as we can't call the email handler
         # from the Tornado process. So if there's no rabbitmq support do nothing
-        queue_json_publish("missedmessage_emails", notice, lambda notice: None)
-        notified['email_notified'] = True
+        if not already_notified.get("email_notified"):
+            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+            notified['email_notified'] = True
 
     return notified
 
@@ -763,7 +771,7 @@ def process_message_event(event_template, users):
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                                  mentioned, stream_push_notify, stream_name,
-                                                 always_push_notify, idle)
+                                                 always_push_notify, idle, {})
             result['stream_push_notify'] = stream_push_notify
             extra_user_data[user_profile_id] = result
 
@@ -909,6 +917,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id,
         stream_name=stream_name,
         always_push_notify=always_push_notify,
         idle=idle,
+        already_notified={},
     )
 
 def process_notification(notice):
