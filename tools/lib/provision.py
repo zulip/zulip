@@ -176,8 +176,10 @@ def setup_shell_profile(shell_profile):
     def write_command(command):
         # type: (str) -> None
         if os.path.exists(shell_profile_path):
-            with open(shell_profile_path, 'a+') as shell_profile_file:
-                if command not in shell_profile_file.read():
+            with open(shell_profile_path, 'r') as shell_profile_file:
+                lines = [line.strip() for line in shell_profile_file.readlines()]
+            if command not in lines:
+                with open(shell_profile_path, 'a+') as shell_profile_file:
                     shell_profile_file.writelines(command + '\n')
         else:
             with open(shell_profile_path, 'w') as shell_profile_file:
