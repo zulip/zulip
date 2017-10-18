@@ -38,6 +38,10 @@
     list-style-type: none;
 }
 
+#user_presences .arrow {
+    top: 0px;
+}
+
 #group-pm-title {
     margin: 10px 0px 0px 0px;
     display: inline-block;
