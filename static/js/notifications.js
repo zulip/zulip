@@ -98,6 +98,10 @@ exports.initialize = function () {
     }
 };
 
+exports.permission_state = function () {
+    return window.Notification.permission;
+};
+
 // For web pages, the initial favicon is the same as the favicon we
 // set for no unread messages and the initial page title is the same
 // as the page title we set for no unread messages.  However, for the

@@ -27,7 +27,10 @@ exports.initialize = function () {
         // if the user said to never show banner on this computer again, it will
         // be stored as `true` so we want to negate that.
         !ls.get("dontAskForNotifications") &&
-        !notifications.granted_desktop_notifications_permission()
+        // if permission has not been granted yet.
+        !notifications.granted_desktop_notifications_permission() &&
+        // if permission is allowed to be requested (e.g. not in "denied" state).
+        notifications.permission_state() !== "denied"
     );
 
     if (should_show_notifications) {
