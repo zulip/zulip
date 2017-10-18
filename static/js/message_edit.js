@@ -117,7 +117,7 @@ exports.save = function (row, from_topic_edited_only) {
         data: request,
         success: function () {
             if (msg_list === current_msg_list) {
-                row.find(".message_edit").slideUp(250);    
+                row.find(".message_edit").slideUp(250);
             }
         },
         error: function (xhr) {
@@ -375,7 +375,7 @@ exports.end = function (row) {
     if (message !== undefined &&
         currently_editing_messages[message.id] !== undefined) {
         var scroll_by = currently_editing_messages[message.id].scrolled_by;
-        message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
+        var scroll_value= message_viewport.scrollTop() - scroll_by;
 
         // Clean up resize event listeners
         var listeners = currently_editing_messages[message.id].listeners;
@@ -387,7 +387,7 @@ exports.end = function (row) {
         }
 
         delete currently_editing_messages[message.id];
-        current_msg_list.hide_edit_message(row);
+        current_msg_list.hide_edit_message(row, scroll_value);
     }
     if (row !== undefined) {
         current_msg_list.hide_edit_topic(row);

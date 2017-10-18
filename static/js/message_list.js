@@ -510,11 +510,12 @@ exports.MessageList.prototype = {
         row.find(".message_edit_content").autosize();
     },
 
-    hide_edit_message: function MessageList_hide_edit_message(row) {
+    hide_edit_message: function MessageList_hide_edit_message(row, scroll_value) {
         row.find(".message_edit").slideUp(250);
         row.find(".message_content, .status-message").slideDown(250);
         row.find(".message_edit_form").empty();
         row.trigger("mouseleave");
+        message_viewport.scrollTop(scroll_value);
     },
 
     show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
