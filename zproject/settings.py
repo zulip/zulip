@@ -538,9 +538,10 @@ CACHES = {
     'database': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'third_party_api_results',
-        # Basically never timeout.  Setting to 0 isn't guaranteed
-        # to work, see https://code.djangoproject.com/ticket/9595
-        'TIMEOUT': 2000000000,
+        # This cache shouldn't timeout; we're really just using the
+        # cache API to store the results of requests to third-party
+        # APIs like the Twitter API permanently.
+        'TIMEOUT': None,
         'OPTIONS': {
             'MAX_ENTRIES': 100000000,
             'CULL_FREQUENCY': 10,
