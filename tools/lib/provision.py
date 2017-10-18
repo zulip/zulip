@@ -328,8 +328,9 @@ def main(options):
         else:
             print("RabbitMQ is already configured.")
 
+        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
         if options.is_force or not is_template_database_current(
-                migration_status="var/migration_status_dev",
+                migration_status=migration_status_path,
                 settings="zproject.settings",
                 database_name="zulip",
         ):
