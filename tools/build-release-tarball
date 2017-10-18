@@ -113,6 +113,7 @@ pip download --no-deps -r requirements/prod.txt -d $TMPDIR/$prefix/pip_packages
 cd "$TMPDIR"
 
 tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
+tar --append -f "$TARBALL" "$prefix/pip_packages"
 
 rm -rf "$prefix"
 
