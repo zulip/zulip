@@ -52,12 +52,12 @@
     display: block;
     width: 8px;
     height: 8px;
+    margin: 0px 5px;
     border-radius: 50%;
     border: 1px solid;
     float: left;
     position: relative;
     top: 5px;
-    margin-right: 0.5em;
 }
 
 .user_active .user-status-indicator,
@@ -146,7 +146,7 @@
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
     position: absolute;
-    right: 29px;
+    right: 24px;
     top: 4px;
     padding: 1px 4px 2px 4px;
     background: hsl(105, 2%, 50%);
@@ -160,7 +160,7 @@
 }
 
 .group-pms-sidebar-entry .count {
-    right: 26px;
+    right: 24px;
 }
 
 .user_sidebar_entry .count,
