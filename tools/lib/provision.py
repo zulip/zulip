@@ -355,13 +355,14 @@ def main(options):
             with open(path, 'r') as file_to_hash:
                 sha1sum.update(force_bytes(file_to_hash.read()))
 
+        compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
         new_compilemessages_hash = sha1sum.hexdigest()
-        run(['touch', 'var/last_compilemessages_hash'])
-        with open('var/last_compilemessages_hash', 'r') as hash_file:
+        run(['touch', compilemessages_hash_path])
+        with open(compilemessages_hash_path, 'r') as hash_file:
             last_compilemessages_hash = hash_file.read()
 
         if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
-            with open('var/last_compilemessages_hash', 'w') as hash_file:
+            with open(compilemessages_hash_path, 'w') as hash_file:
                 hash_file.write(new_compilemessages_hash)
             run(["./manage.py", "compilemessages"])
         else:
