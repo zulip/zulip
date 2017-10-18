@@ -52,6 +52,14 @@ function get_active_data() {
     };
 }
 
+function get_hash_safe() {
+    if (typeof window !== "undefined" && typeof window.location.hash === "string") {
+        return window.location.hash.substr(1);
+    }
+
+    return "";
+}
+
 function export_hash(hash) {
     var hash_components = {
         base: hash.shift(),
@@ -80,6 +88,21 @@ function selectText(element) {
 function should_list_all_streams() {
     return !page_params.realm_is_zephyr_mirror_realm;
 }
+
+// this finds the stream that is actively open in the settings and focused in
+// the left side.
+exports.active_stream = function () {
+    var hash_components = window.location.hash.substr(1).split(/\//);
+
+    // if the string casted to a number is valid, and another component
+    // after exists then it's a stream name/id pair.
+    if (typeof parseFloat(hash_components[1]) === "number" && hash_components[2]) {
+        return {
+            id: parseFloat(hash_components[1]),
+            name: hash_components[2],
+        };
+    }
+};
 
 exports.toggle_home = function (sub) {
     stream_muting.update_in_home_view(sub, ! sub.in_home_view);
@@ -199,6 +222,11 @@ exports.update_settings_for_subscribed = function (sub) {
         add_sub_to_table(sub);
     }
 
+    var active_stream = exports.active_stream();
+    if (active_stream.stream_id === sub.id) {
+        stream_edit.rerender_subscribers_list(sub);
+    }
+
     // Display the swatch and subscription stream_settings
     stream_edit.show_sub_settings(sub);
 };
@@ -213,6 +241,11 @@ exports.update_settings_for_unsubscribed = function (sub) {
     exports.rerender_subscribers_count(sub);
 
     stream_edit.hide_sub_settings(sub);
+
+    var active_stream = exports.active_stream();
+    if (active_stream.stream_id === sub.id) {
+        stream_edit.rerender_subscribers_list(sub);
+    }
 
     row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
@@ -250,6 +283,12 @@ exports.stream_description_match_stream_ids = [];
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
+    var selected_row = get_hash_safe().split(/\//)[1];
+
+    if (parseFloat(selected_row)) {
+        $(".stream-row[data-stream-id='" + selected_row + "']").addClass("active");
+    }
+
     exports.stream_name_match_stream_ids = [];
     exports.stream_description_match_stream_ids = [];
     var others = [];
@@ -366,6 +405,7 @@ exports.setup_page = function (callback) {
             subscriptions: sub_rows,
             hide_all_streams: !should_list_all_streams(),
         };
+
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
         initialize_components();
