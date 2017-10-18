@@ -4,6 +4,7 @@ import ujson
 from django.http import HttpRequest, HttpResponse
 from typing import Any, Callable, Dict, Tuple
 
+from zerver.lib.actions import do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Subscription, UserProfile, get_stream
@@ -201,6 +202,24 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False,
+                                         True, "Denmark", False, True,
+                                         {'email_notified': False, 'push_notified': False}))
+
+        # Clear the event queue, now repeat with stream message with stream_push_notify
+        # on a muted topic, which we should not push notify for
+        client_descriptor.event_queue.pop()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        do_mute_topic(user_profile, stream, sub.recipient, "mutingtest")
+        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
+                                   content="what's up everyone?", subject="mutingtest")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            # Clear the event queue, before repeating with a private message
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False,
+                                         # BUG: That next True should be False, see #7059
                                          True, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
 
