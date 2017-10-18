@@ -333,7 +333,7 @@ def export_from_config(response, config, seed_object=None, context=None):
         rows = list(query)
 
     elif config.id_source:
-        # In this mode,  we are the figurative Blog, and we now
+        # In this mode, we are the figurative Blog, and we now
         # need to look at the current response to get all the
         # blog ids from the Article rows we fetched previously.
         model = config.model
