@@ -15,7 +15,7 @@ import ujson
 import shutil
 import subprocess
 import tempfile
-from zerver.lib.avatar_hash import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path_from_ids
 from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
@@ -865,9 +865,9 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
     if processing_avatars:
         bucket_list = bucket.list()
         for user_profile in UserProfile.objects.filter(realm=realm):
-            avatar_hash = user_avatar_hash(user_profile.email)
-            avatar_hash_values.add(avatar_hash)
-            avatar_hash_values.add(avatar_hash + ".original")
+            avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
+            avatar_hash_values.add(avatar_path)
+            avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
@@ -977,13 +977,13 @@ def export_avatars_from_local(realm, local_dir, output_dir):
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
 
-        avatar_hash = user_avatar_hash(user.email)
-        wildcard = os.path.join(local_dir, avatar_hash + '.*')
+        avatar_path = user_avatar_path_from_ids(user.id, realm.id)
+        wildcard = os.path.join(local_dir, avatar_path + '.*')
 
         for local_path in glob.glob(wildcard):
             logging.info('Copying avatar file for user %s from %s' % (
                 user.email, local_path))
-            fn = os.path.basename(local_path)
+            fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
             mkdir_p(str(os.path.dirname(output_path)))
             subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
@@ -1324,10 +1324,10 @@ def import_uploads_local(import_dir, processing_avatars=False):
 
     for record in records:
         if processing_avatars:
-            # For avatars, we need to rehash the user's email with the
+            # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
-            avatar_hash = user_avatar_hash(record['user_profile_email'])
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_hash)
+            avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
+            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path)
             if record['s3_path'].endswith('.original'):
                 file_path += '.original'
             else:
@@ -1355,8 +1355,8 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
         if processing_avatars:
             # For avatars, we need to rehash the user's email with the
             # new server's avatar salt
-            avatar_hash = user_avatar_hash(record['user_profile_email'])
-            key.key = avatar_hash
+            avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
+            key.key = avatar_path
             if record['s3_path'].endswith('.original'):
                 key.key += '.original'
         else:
