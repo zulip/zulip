@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import argparse
+import os
 from typing import Any
+from django.conf import settings
 from django.db import DEFAULT_DB_ALIAS
 from django.core.management.base import BaseCommand
 
 from zerver.lib.test_fixtures import get_migration_status
-
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
 class Command(BaseCommand):
     help = "Get status of migrations."
@@ -26,7 +28,9 @@ class Command(BaseCommand):
         # type: (*Any, **Any) -> None
         result = get_migration_status(**options)
         if options['output'] is not None:
-            with open(options['output'], 'w') as f:
+            uuid_var_path = get_dev_uuid_var_path()
+            path = os.path.join(uuid_var_path, options['output'])
+            with open(path, 'w') as f:
                 f.write(result)
         else:
             self.stdout.write(result)
