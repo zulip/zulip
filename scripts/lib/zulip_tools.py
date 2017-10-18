@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import json
+import uuid
 
 if False:
     from typing import Sequence, Set, Text, Any
@@ -109,6 +110,27 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+def get_dev_uuid_var_path(create_if_missing=False):
+    # type: (bool) -> str
+    zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    uuid_path = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
+    if os.path.exists(uuid_path):
+        with open(uuid_path) as f:
+            zulip_uuid = f.read().strip()
+    else:
+        if create_if_missing:
+            zulip_uuid = str(uuid.uuid4())
+            # We need sudo here, since the path will be under /srv/ in the
+            # development environment.
+            subprocess.check_call(["sudo", "/bin/bash", "-c",
+                                   "echo %s > %s" % (zulip_uuid, uuid_path)])
+        else:
+            raise AssertionError("Missing UUID file; please run tools/provision!")
+
+    result_path = os.path.join(zulip_path, "var", zulip_uuid)
+    mkdir_p(result_path)
+    return result_path
 
 def get_deployment_lock(error_rerun_script):
     # type: (str) -> None

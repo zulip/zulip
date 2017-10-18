@@ -13,7 +13,8 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
+from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
+    get_dev_uuid_var_path
 from scripts.lib.setup_venv import VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
@@ -67,7 +68,8 @@ if ram_gb < 1.5:
     sys.exit(1)
 
 try:
-    run(["mkdir", "-p", VAR_DIR_PATH])
+    UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
+    run(["mkdir", "-p", UUID_VAR_PATH])
     if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
@@ -209,7 +211,7 @@ def main(options):
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
-    apt_hash_file_path = 'var/apt_dependencies_hash'
+    apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
     try:
         hash_file = open(apt_hash_file_path, 'r+')
         last_apt_dependencies_hash = hash_file.read()
