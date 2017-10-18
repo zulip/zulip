@@ -14,6 +14,10 @@
             "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",
             "./static/js/portico/help.js"
     ],
+    "api": [
+        "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",
+        "./static/js/portico/api.js"
+    ],
     "katex": "./node_modules/katex/dist/katex.min.js",
     "landing-page": "./static/js/portico/landing-page.js",
     "integrations": "./static/js/portico/integrations.js",
