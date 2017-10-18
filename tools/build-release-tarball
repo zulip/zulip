@@ -107,6 +107,9 @@ find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png'
 echo "$GITID" > build_id
 echo "$version" > version
 
+cd "$BASEDIR"
+pip download --no-deps -r requirements/prod.txt -d $TMPDIR/$prefix/pip_packages
+
 cd "$TMPDIR"
 
 tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
