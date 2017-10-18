@@ -5,7 +5,8 @@ from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager, CASCADE
+from django.db.models.functions import Length
+from django.db.models import Manager, CASCADE, Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -1906,3 +1907,31 @@ def get_bot_services(user_profile_id):
 def get_service_profile(user_profile_id, service_name):
     # type: (str, str) -> Service
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+
+# BotUserData class is primarily for saving data that is particularly specific to
+# the bot and the user. This can be visualised as saving the state (data) of the interaction
+# between a user and a bot.
+# This is mainly useful for bots that need to save states like virtualfs bot and other bots that
+# can play games like tic-tac-toe, checkers, chess, rummy, etc; where the users can pause/stop
+# playing and resume the game after logging in again, or reset the game.
+# The functionality to start/pause/restart bot-user data is yet to be added.
+# This would have 1MB limit per user (to begin with, can be changed later).
+class BotUserData(models.Model):
+    bot_profile = models.ForeignKey(UserProfile, related_name='+', on_delete=CASCADE)  # type: UserProfile
+    user_profile = models.ForeignKey(UserProfile, related_name='+', on_delete=CASCADE)  # type: UserProfile
+    # JSON key-value pair mapping for a particular user in a specific bot.
+    # Some type of validator can be added to check if it is a json or similar.
+    user_data = models.TextField()  # type: Text
+
+    class Meta(object):
+        unique_together = ('bot_profile', 'user_profile')
+
+def get_bot_data_for_user(user_profile_id):
+    # type: (UserProfile) -> int
+    # This function returns the data stored per user, this information can be used keep a check
+    # on the upper limit of data stored for each user.
+    bot_data_for_user = BotUserData.objects.filter(
+        user_profile__id=user_profile_id).annotate(
+            len_bot_user_data=Length('user_data')).aggregate(
+                sum_bot_data=Sum('len_bot_user_data'))
+    return bot_data_for_user['sum_bot_data']
