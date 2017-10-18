@@ -19,6 +19,14 @@ class Command(BaseCommand):
                             default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
                             'Defaults to the "default" database.')
 
+        parser.add_argument('--output', action='store',
+                            help='Path to store the status to (default to stdout).')
+
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        self.stdout.write(get_migration_status(**options))
+        result = get_migration_status(**options)
+        if options['output'] is not None:
+            with open(options['output'], 'w') as f:
+                f.write(result)
+        else:
+            self.stdout.write(result)
