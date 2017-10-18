@@ -171,6 +171,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=False,
             idle=True,
+            already_notified={},
         )
 
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
@@ -337,6 +338,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=True,
             idle=False,
+            already_notified={},
         )
 
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
@@ -374,6 +376,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=True,
             idle=False,
+            already_notified={},
         )
 
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
@@ -411,6 +414,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=False,
             idle=True,
+            already_notified={},
         )
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
 
@@ -445,6 +449,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=False,
             idle=False,
+            already_notified={},
         )
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
 
