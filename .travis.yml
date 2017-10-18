@@ -2,6 +2,9 @@
 # high-level documentation on our Travis CI setup.
 dist: trusty
 install:
+  # Disable broken riak sources.list in Travis base image 2017-10-18
+  - rm -vf "/etc/apt/sources.list.d/*riak*"
+
   # Disable Travis CI's built-in NVM installation
   - mispipe "mv ~/.nvm ~/.travis-nvm-disabled" ts
 
