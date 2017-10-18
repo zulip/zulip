@@ -85,7 +85,7 @@ class SimpleQueueClient:
         # type: (str, Callable[[], None]) -> None
         '''Ensure that a given queue has been declared, and then call
            the callback with no arguments.'''
-        if not self.connection.is_open:
+        if self.connection is None or not self.connection.is_open:
             self._connect()
 
         if queue_name not in self.queues:
@@ -112,11 +112,12 @@ class SimpleQueueClient:
         # Union because of zerver.middleware.write_log_line uses a str
         try:
             self.publish(queue_name, ujson.dumps(body))
-        except (AttributeError, pika.exceptions.AMQPConnectionError):
+            return
+        except pika.exceptions.AMQPConnectionError:
             self.log.warning("Failed to send to rabbitmq, trying to reconnect and send again")
-            self._reconnect()
 
-            self.publish(queue_name, ujson.dumps(body))
+        self._reconnect()
+        self.publish(queue_name, ujson.dumps(body))
 
     def register_consumer(self, queue_name, consumer):
         # type: (str, Consumer) -> None
