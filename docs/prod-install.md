@@ -37,9 +37,8 @@ wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
 
-This is an optional step, but if you find it necessary, the sha256sum of the
-tarball can be inspected by comparing the downloaded tarball to the list at
-https://www.zulip.org/dist/releases/SHA256SUMS.txt.
+If you'd like to verify the download, we
+[publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 
 Then, run the Zulip install script:
 ```
