@@ -137,16 +137,6 @@ exports.handle_updates = function (muted_topics) {
     exports.rerender();
 };
 
-exports.mute_topic = function (stream, topic) {
-    muting.add_muted_topic(stream, topic);
-    unread_ui.update_unread_counts();
-};
-
-exports.unmute_topic = function (stream, topic) {
-    muting.remove_muted_topic(stream, topic);
-    unread_ui.update_unread_counts();
-};
-
 exports.update_muted_topics = function (muted_topics) {
     muting.set_muted_topics(muted_topics);
     unread_ui.update_unread_counts();
@@ -163,7 +153,8 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
 
 exports.mute = function (stream, topic) {
     stream_popover.hide_topic_popover();
-    exports.mute_topic(stream, topic);
+    muting.add_muted_topic(stream, topic);
+    unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_mute(stream, topic);
     exports.notify_with_undo_option(stream, topic);
@@ -175,7 +166,8 @@ exports.unmute = function (stream, topic) {
     // if someone accidentally unmutes a stream rather than if they mute it
     // and miss out on info.
     stream_popover.hide_topic_popover();
-    exports.unmute_topic(stream, topic);
+    muting.remove_muted_topic(stream, topic);
+    unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_unmute(stream, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
