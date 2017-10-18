@@ -11,7 +11,7 @@
         {{#if is_active }}
         <li class='my_email'>{{user_email}}</li>
         {{else}}
-        <li class='my_email half-opacity italic'>(This user has been deactivated)</li>
+        <li class='my_email half-opacity italic'>{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
 
         {{#if user_time}}
