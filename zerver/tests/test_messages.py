@@ -450,7 +450,7 @@ class StreamMessagesTest(ZulipTestCase):
         a_subscriber_email = non_bot_subscribers[0].email
         self.login(a_subscriber_email)
         self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
-                          subject, content)
+                          content=content, subject=subject)
 
         # Did all of the subscribers get the message?
         new_subscriber_messages = []
