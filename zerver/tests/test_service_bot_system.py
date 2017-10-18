@@ -228,8 +228,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             trigger = 'mention'
             message_type = Recipient._type_names[Recipient.STREAM]
 
-            def check_values_passed(queue_name, trigger_event, x):
-                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
+            def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
+                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["failed_tries"], 0)
                 self.assertEqual(trigger_event["message"]["content"], content)
@@ -281,8 +281,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             recipient_email = self.bot_profile.email
             message_type = Recipient.PERSONAL
 
-            def check_values_passed(queue_name, trigger_event, x):
-                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
+            def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
+                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
                 self.assertEqual(trigger_event["trigger"], "private_message")
@@ -327,8 +327,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             message_type = Recipient.HUDDLE
             profile_ids = [self.bot_profile.id, self.second_bot_profile.id]
 
-            def check_values_passed(queue_name, trigger_event, x):
-                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
+            def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
+                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertIn(trigger_event["user_profile_id"], profile_ids)
                 profile_ids.remove(trigger_event["user_profile_id"])

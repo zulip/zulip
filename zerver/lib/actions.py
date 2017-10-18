@@ -1178,7 +1178,8 @@ def do_send_messages(messages_maybe_none):
                         "user_profile_id": event["user_profile_id"],
                         "failed_tries": 0,
                     },
-                    lambda x: None
+                    lambda x: None,
+                    call_consume_in_tests=True
                 )
 
     # Note that this does not preserve the order of message ids
