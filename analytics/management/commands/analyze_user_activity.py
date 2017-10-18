@@ -1,5 +1,3 @@
-from __future__ import division
-
 from typing import Any, Dict
 
 from zerver.lib.statistics import seconds_usage_between
