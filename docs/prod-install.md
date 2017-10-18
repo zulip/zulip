@@ -27,7 +27,7 @@ paths, and move on to the next step.
 
 ## Step 2: Download and install latest release
 
-If you haven't already, download and unpack [the latest built server
+Download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
@@ -97,8 +97,7 @@ heading `### MANDATORY SETTINGS`.  These settings include:
 
 ## Step 4: Test email configuration
 
-If you haven't already,
-[test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
+[Test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
 This is important to test now, because email configuration errors are
 common, and your outgoing email configuration needs to be working in
 order for you to complete the installation.
