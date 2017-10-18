@@ -344,7 +344,7 @@ def get_subject_based_on_event(event, payload):
     return get_repo_name(payload)
 
 def get_event(request, payload, branches):
-    # type: (HttpRequest,  Dict[str, Any], Optional[Text]) -> Optional[str]
+    # type: (HttpRequest, Dict[str, Any], Optional[Text]) -> Optional[str]
     event = request.META['HTTP_X_GITLAB_EVENT']
     if event == 'Issue Hook':
         action = payload['object_attributes'].get('action')
