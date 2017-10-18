@@ -313,7 +313,16 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block .stream-name {
-    overflow-wrap: break-word;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+    line-height: 1;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: calc(100% - 50px);
 }
 
 #stream_filters .subscription_block.stream-with-count {
