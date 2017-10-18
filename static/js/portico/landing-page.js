@@ -47,6 +47,7 @@ var apps_events = function () {
             description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_WINDOWS,
             show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-windows"
         },
         mac: {
             image: "/static/images/landing-page/macbook.png",
@@ -54,6 +55,7 @@ var apps_events = function () {
             description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_MAC,
             show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-macOS"
         },
         android: {
             image: "/static/images/app-screenshots/zulip-android.png",
@@ -73,6 +75,7 @@ var apps_events = function () {
             description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_LINUX,
             show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-linux"
         },
     };
 
@@ -128,7 +131,7 @@ var apps_events = function () {
         $(".info .description").text(version_info.description);
         $(".info .link").attr("href", version_info.link);
         $(".image img").attr("src", version_info.image);
-        $download_instructions.find("a").attr("href", "/help/desktop-app-install-guide#" + version);
+        $download_instructions.find("a").attr("href", version_info.install_guide);
 
         if (version_info.show_instructions) {
             $download_instructions.show();
