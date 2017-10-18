@@ -8,8 +8,7 @@ Contents:
 
 ## Installing directly on Ubuntu
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
@@ -63,8 +62,7 @@ Install the following non-Python dependencies:
 
 #### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 ```
@@ -122,8 +120,7 @@ Now continue with the [All Systems](#all-systems) instructions below.
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
@@ -144,8 +141,7 @@ Now continue with the [All Systems](#all-systems) instructions below.
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
@@ -163,8 +159,7 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git``
 
@@ -198,8 +193,7 @@ sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
 # We need these packages to compile tsearch-extras
 sudo yum groupinstall "Development Tools"
 
-# clone Zulip's git repo using -c flag to set the git pull mode to be
-# rebase by default in the repository configuration and cd into it
+# clone Zulip's git repo and cd into it
 cd && git clone -c pull.rebase https://github.com/zulip/zulip && cd zulip/
 
 ## NEEDS TESTING: The next few DB setup items may not be required at all.
@@ -224,8 +218,7 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
@@ -260,8 +253,7 @@ Finally continue with the [All Systems](#all-systems) instructions below.
 
 ### Common to Fedora/CentOS instructions
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
@@ -381,8 +373,7 @@ proxy in the environment as follows:
 
 ## Using Docker (experimental)
 
-Start by cloning this repository using -c flag to set the git pull
-mode to be rebase by default in the repository configuration:
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
 `git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
