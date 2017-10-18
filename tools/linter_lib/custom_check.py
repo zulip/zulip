@@ -424,7 +424,7 @@ def build_custom_checkers(by_lang):
         {'pattern': ' thick[; ]',
          'description': "thick CSS attribute is under-specified, please use pixels."},
     ]) + whitespace_rules + comma_whitespace_rule
-    prose_style_rules = [
+    prose_style_rules = cast(RuleList, [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)',  # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
         {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]',  # exclude usage in hrefs/divs
@@ -436,7 +436,7 @@ def build_custom_checkers(by_lang):
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
         {'pattern': 'Terms of service',
          'description': "The S in Terms of Service is capitalized"},
-    ] + comma_whitespace_rule  # type: RuleList
+    ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
