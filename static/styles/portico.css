@@ -187,9 +187,19 @@ body {
 .markdown h4[id]:before {
     display: block;
     content: " ";
-    margin-top: -40px;
-    height: 40px;
     visibility: hidden;
+}
+
+.markdown h1[id]:before {
+    margin-top: -30px;
+    height: 30px;
+}
+
+.markdown h2[id]:before,
+.markdown h3[id]:before,
+.markdown h4[id]:before {
+    margin-top: -10px;
+    height: 10px;
 }
 
 .markdown ul,
