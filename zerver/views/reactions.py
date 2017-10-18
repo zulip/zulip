@@ -10,7 +10,7 @@ from zerver.lib.emoji import check_valid_emoji
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
-from zerver.models import Reaction, UserMessage, UserProfile
+from zerver.models import Message, Reaction, UserMessage, UserProfile
 
 def create_historical_message(user_profile, message):
     # type: (UserProfile, Message) -> None
