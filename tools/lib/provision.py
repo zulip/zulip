@@ -369,7 +369,7 @@ def main(options):
         else:
             print("No need to run `manage.py compilemessages`.")
 
-    version_file = os.path.join(ZULIP_PATH, 'var/provision_version')
+    version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
     print('writing to %s\n' % (version_file,))
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
