@@ -48,6 +48,7 @@ i18next.use(XHR)
         detection: detectionOptions,
         cache: cacheOptions,
         fallbackLng: 'en',
+        load: 'currentOnly',  // Only download the active language.
         returnEmptyString: false,  // Empty string is not a valid translation.
     }, function () {
         var i;
