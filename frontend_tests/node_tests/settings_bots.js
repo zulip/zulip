@@ -1,5 +1,6 @@
 set_global("page_params", {
     realm_uri: "https://chat.example.com",
+    realm_embedded_bots: ["converter", "xkcd"],
 });
 
 set_global("avatar", {});
@@ -91,9 +92,15 @@ function test_create_bot_type_input_box_toggle(f) {
         }
     };
 
+    var embedded_bots_added = 0;
+    $('#select_service_name').append = function () {
+        embedded_bots_added += 1;
+    };
+
     avatar.build_bot_create_widget = function () {};
     avatar.build_bot_edit_widget = function () {};
 
     settings_bots.set_up();
+    assert(embedded_bots_added === page_params.realm_embedded_bots.length);
 }());
 
