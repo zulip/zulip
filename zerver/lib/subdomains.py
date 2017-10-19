@@ -4,19 +4,21 @@ from django.conf import settings
 from django.http import HttpRequest
 from typing import Optional, Text
 
+from zerver.models import get_realm, Realm
+
 def _extract_subdomain(request):
     # type: (HttpRequest) -> Text
     domain = request.get_host().lower()
     index = domain.find("." + settings.EXTERNAL_HOST)
     if index == -1:
-        return ""
+        return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
     return domain[0:index]
 
 def get_subdomain(request):
     # type: (HttpRequest) -> Text
     subdomain = _extract_subdomain(request)
     if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
-        return ""
+        return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
     return subdomain
 
 def is_subdomain_root_or_alias(request):
