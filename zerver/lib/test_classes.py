@@ -306,7 +306,8 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
                                  realm_subdomain="zuliptest",
-                                 from_confirmation='', full_name=None, timezone=u'', **kwargs):
+                                 from_confirmation='', full_name=None, timezone=u'',
+                                 **kwargs):
         # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
@@ -318,16 +319,17 @@ class ZulipTestCase(TestCase):
         """
         if full_name is None:
             full_name = email.replace("@", "_")
-        return self.client_post('/accounts/register/',
-                                {'full_name': full_name,
-                                 'password': password,
-                                 'realm_name': realm_name,
-                                 'realm_subdomain': realm_subdomain,
-                                 'key': find_key_by_email(email),
-                                 'timezone': timezone,
-                                 'terms': True,
-                                 'from_confirmation': from_confirmation},
-                                **kwargs)
+        payload = {
+            'full_name': full_name,
+            'password': password,
+            'realm_name': realm_name,
+            'realm_subdomain': realm_subdomain,
+            'key': find_key_by_email(email),
+            'timezone': timezone,
+            'terms': True,
+            'from_confirmation': from_confirmation,
+        }
+        return self.client_post('/accounts/register/', payload, **kwargs)
 
     def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
         # type: (Text, Text) -> Text
