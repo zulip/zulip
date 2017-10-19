@@ -1034,6 +1034,7 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
+            'js/desktop_notifications_panel.js'
         ],
         'output_filename': 'min/app.js'
     },

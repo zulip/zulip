@@ -8,7 +8,6 @@ var notice_memory = {};
 // case after a server-initiated reload.
 var window_has_focus = document.hasFocus && document.hasFocus();
 
-var asked_permission_already = false;
 var supports_sound;
 
 var unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
@@ -97,19 +96,10 @@ exports.initialize = function () {
                                       .attr("src", "/static/audio/zulip.mp3"));
         }
     }
+};
 
-    if (notifications_api) {
-        $(document).click(function () {
-            if (!page_params.enable_desktop_notifications || asked_permission_already) {
-                return;
-            }
-            if (notifications_api.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-                notifications_api.requestPermission(function () {
-                    asked_permission_already = true;
-                });
-            }
-        });
-    }
+exports.permission_state = function () {
+    return window.Notification.permission;
 };
 
 // For web pages, the initial favicon is the same as the favicon we
@@ -479,6 +469,17 @@ function should_send_audible_notification(message) {
 
     return false;
 }
+
+exports.granted_desktop_notifications_permission = function () {
+    return browser_desktop_notifications_on();
+};
+
+
+exports.request_desktop_notifications_permission = function () {
+    if (notifications_api) {
+        return notifications_api.requestPermission();
+    }
+};
 
 exports.received_messages = function (messages) {
     _.each(messages, function (message) {
