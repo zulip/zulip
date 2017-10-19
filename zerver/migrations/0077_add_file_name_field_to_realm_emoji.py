@@ -5,6 +5,7 @@ import os
 import io
 import logging
 import requests
+import urllib
 
 from mimetypes import guess_type
 
@@ -67,6 +68,9 @@ class Uploader(object):
     def upload_emoji(self, realm_id, image_url, emoji_name):
         # type: (int, Text, Text) -> Optional[Text]
         file_name, dst_path_id = self.get_dst_path_id(realm_id, image_url, emoji_name)
+        if image_url.startswith("/"):
+            # Handle relative URLs.
+            image_url = urllib.parse.urljoin(settings.EXTERNAL_HOST, image_url)
         try:
             response = requests.get(image_url, stream=True)
         except ConnectionError:
