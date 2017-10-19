@@ -13,6 +13,8 @@ from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 
 parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
 parser.add_argument("deploy_path")
+parser.add_argument("--local-dir", type=str, default=None,
+                    help="Directory which contains downloaded PIP packages")
 args = parser.parse_args()
 
 # install dependencies for setting up the virtualenv
@@ -28,7 +30,8 @@ venv_name = "zulip-venv" if sys.version_info[0] == 2 else "zulip-py3-venv"
 cached_venv_path = setup_virtualenv(
     os.path.join(args.deploy_path, venv_name),
     os.path.join(ZULIP_PATH, "requirements", "prod.txt"),
-    virtualenv_args=['-p', 'python{}'.format(python_version)])
+    virtualenv_args=['-p', 'python{}'.format(python_version)],
+    local_dir=args.local_dir)
 
 current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
 run(['ln', '-nsf', venv_name, current_venv_path])
