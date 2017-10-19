@@ -101,7 +101,6 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/home.html',
             'templates/zerver/login.html',
             'templates/zerver/markdown_help.html',
-            'templates/zerver/search_operators.html',
             'zerver/webhooks/taiga/doc.html',
             'zerver/webhooks/zendesk/doc.html',
         ]
