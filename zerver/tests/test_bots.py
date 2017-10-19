@@ -1001,3 +1001,39 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info['interface_type'] = Service.GENERIC
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
+
+    def test_create_embedded_bot(self, **extras):
+        # type: (**Any) -> None
+        self.login(self.example_email('hamlet'))
+
+        # Test to create embedded bot with correct service_name
+        bot_info = {
+            'full_name': 'Embedded test bot',
+            'short_name': 'embeddedservicebot',
+            'bot_type': UserProfile.EMBEDDED_BOT,
+            'service_name': 'converter',
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "embeddedservicebot-bot@zulip.testserver"
+        bot_realm = get_realm('zulip')
+        bot = get_user(bot_email, bot_realm)
+        services = get_bot_services(bot.id)
+        service = services[0]
+
+        self.assertEqual(len(services), 1)
+        self.assertEqual(service.name, "converter")
+        self.assertEqual(service.user_profile, bot)
+
+        # Test to create embedded bot with incorrect service_name
+        bot_info = {
+            'full_name': 'Embedded test bot',
+            'short_name': 'embeddedservicebot',
+            'bot_type': UserProfile.EMBEDDED_BOT,
+            'service_name': 'not_existing_service',
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Invalid service name.')

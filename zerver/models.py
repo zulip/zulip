@@ -515,6 +515,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         DEFAULT_BOT,
         INCOMING_WEBHOOK_BOT,
         OUTGOING_WEBHOOK_BOT,
+        EMBEDDED_BOT,
     ]
 
     SERVICE_BOT_TYPES = [
@@ -1898,6 +1899,9 @@ class Service(models.Model):
         GENERIC: GENERIC_INTERFACE,
         SLACK: SLACK_INTERFACE,
     }  # type: Dict[int, Text]
+
+    # Contains JSON-format text
+    service_config = models.TextField(default=u'{}')  # type: Text
 
     def interface_name(self):
         # type: () -> Text

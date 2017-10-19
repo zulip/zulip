@@ -6,11 +6,10 @@ import sys
 import time
 import re
 import importlib
+import ujson
 from zerver.lib.actions import internal_send_message
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_service_profile
 from zerver.lib.integrations import EMBEDDED_BOTS
-
-from six.moves import configparser
 
 if False:
     from mypy_extensions import NoReturn
@@ -68,11 +67,9 @@ class EmbeddedBotHandler(object):
                 sender_email=message['sender_email'],
             ))
 
-    def get_config_info(self, bot_name, section=None):
-        # type: (str, Optional[str]) -> Dict[str, Any]
-        conf_file_path = os.path.realpath(os.path.join(
-            our_dir, '..', 'bots', bot_name, bot_name + '.conf'))
-        section = section or bot_name
-        config = configparser.ConfigParser()
-        config.readfp(open(conf_file_path))  # type: ignore # likely typeshed issue
-        return dict(config.items(section))
+    def get_config_info(self, bot_name):
+        # type: (str) -> Dict[str, Any]
+        service_profile = get_service_profile(user_profile_id=self.user_profile.id, service_name=bot_name)
+
+        config_dict = ujson.loads(service_profile.service_config)
+        return config_dict
