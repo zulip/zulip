@@ -3690,7 +3690,8 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
 
         event = {"email": prereg_user.email, "referrer_id": user_profile.id, "email_body": body}
         queue_json_publish("invites", event,
-                           lambda event: do_send_confirmation_email(prereg_user, user_profile, body))
+                           lambda event: None,
+                           call_consume_in_tests=True)
 
     if skipped:
         raise InvitationError(_("Some of those addresses are already using Zulip, "
