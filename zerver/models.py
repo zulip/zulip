@@ -259,6 +259,8 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def subdomain(self):
         # type: () -> Optional[Text]
+        if self.string_id == ".":
+            return ""
         return self.string_id
 
     @property
@@ -308,6 +310,11 @@ def name_changes_disabled(realm):
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
+
+
+def check_realm_allowed_in_root_domain():
+    # type: () -> bool
+    return not settings.ROOT_DOMAIN_LANDING_PAGE and not get_realm('.')
 
 class RealmDomain(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm

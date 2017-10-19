@@ -17,8 +17,8 @@ from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
-from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    get_realm, email_to_domain, email_allowed_for_realm
+from zerver.models import Realm, get_user_profile_by_email, UserProfile, get_realm, \
+    email_to_domain, email_allowed_for_realm, check_realm_allowed_in_root_domain
 from zproject.backends import password_auth_enabled
 
 import logging
@@ -80,7 +80,7 @@ class RegistrationForm(forms.Form):
 
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
-        realm_creation = kwargs['realm_creation']
+        self.realm_creation = kwargs['realm_creation']
         del kwargs['realm_creation']
 
         super(RegistrationForm, self).__init__(*args, **kwargs)
@@ -88,7 +88,7 @@ class RegistrationForm(forms.Form):
             self.fields['terms'] = forms.BooleanField(required=True)
         self.fields['realm_name'] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH,
-            required=realm_creation)
+            required=self.realm_creation)
 
     def clean_full_name(self):
         # type: () -> Text
@@ -100,8 +100,10 @@ class RegistrationForm(forms.Form):
     def clean_realm_subdomain(self):
         # type: () -> str
         subdomain = self.cleaned_data['realm_subdomain']
-        if not subdomain:
-            return ''
+        if not subdomain and not self.realm_creation:
+            return ""
+        if 'realm_in_root_domain' in self.data and check_realm_allowed_in_root_domain():
+            return '.'
         check_subdomain_available(subdomain)
         return subdomain
 

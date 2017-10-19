@@ -97,10 +97,17 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 <div class="input-box">
-                    <label for="id_team_subdomain" class="inline-block label-title">
-                        {{ _('Subdomain') }}
-                    </label>
-                    <div class="inline-block">
+                    {% if allow_realm_in_root_domain %}
+                    <label class="inline-block" for="realm_in_root_domain">Use {{ external_host }} as the domain of this organization</label>
+                    <br/>
+                    <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+                        {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+                    {% endif %}
+                    <div class="inline-block" id="subdomain_section" {% if allow_realm_in_root_domain and
+                        not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                        <label for="id_team_subdomain" class="inline-block label-title">
+                            {{ _('Subdomain') }}
+                        </label>
                         <div class="inline-block relative">
                             <input id="id_team_subdomain"
                                 class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
@@ -207,6 +214,17 @@ $('#id_team_subdomain').on('input', function (e) {
 
     e.target.setSelectionRange(start, end);
 });
+
+$("#realm_in_root_domain").change(function () {
+    var subdomain_section = $("#subdomain_section")
+    if ($(this).is(':checked')) {
+        subdomain_section.hide();
+        $('#id_team_subdomain').val('');
+    } else {
+        subdomain_section.show();
+    }
+});
+
 </script>
 
 {% endblock %}
