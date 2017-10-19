@@ -13,7 +13,7 @@ if 'TRAVIS' in os.environ:
 
 if False:
     # Don't add a runtime dependency on typing
-    from typing import List, Optional, Tuple, Set
+    from typing import List, Optional, Tuple, Set, Text
 
 VENV_DEPENDENCIES = [
     "build-essential",
@@ -46,11 +46,24 @@ THUMBOR_VENV_DEPENDENCIES = [
     "gifsicle",
 ]
 
-def install_venv_deps(requirements_file):
-    # type: (str) -> None
+def install_from_local_dir(local_dir):
+    # type: (Text) -> None
+    packages = [os.path.join(local_dir, p) for p in os.listdir(local_dir)]
+    # Using the shell command and passing all the packages at the same time
+    # seems faster than installing one package per iteration in a loop.
+    run(['pip', 'install',
+         '--no-deps',  # Ignore dependencies; stops warnings
+         '--no-index',  # Don't use internet
+         ' '.join(packages)], shell=True)
+
+def install_venv_deps(requirements_file, local_dir=None):
+    # type: (str, Optional[Text]) -> None
     pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
     run(["pip", "install", "-U", "--requirement", pip_requirements])
-    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
+    if local_dir is not None:
+        install_from_local_dir(local_dir)
+    else:
+        run(["pip", "install", "--no-deps", "--requirement", requirements_file])
 
 def get_index_filename(venv_path):
     # type: (str) -> str
@@ -216,8 +229,9 @@ def do_patch_activate_script(venv_path):
     file_obj.write("".join(lines))
     file_obj.close()
 
-def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False):
-    # type: (Optional[str], str, Optional[List[str]], bool) -> str
+def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False,
+                     local_dir=None):
+    # type: (Optional[str], str, Optional[List[str]], bool, Optional[Text]) -> str
 
     # Check if a cached version already exists
     path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
@@ -229,7 +243,8 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
         cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path))
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
-        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
+        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [],
+                            local_dir=local_dir)
         run(["touch", success_stamp])
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
@@ -241,8 +256,8 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
     return cached_venv_path
 
-def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
-    # type: (str, str, List[str]) -> None
+def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args, local_dir=None):
+    # type: (str, str, List[str], Optional[Text]) -> None
 
     # Setup Python virtualenv
     new_packages = set(get_package_names(requirements_file))
@@ -262,9 +277,9 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 
     try:
-        install_venv_deps(requirements_file)
+        install_venv_deps(requirements_file, local_dir=local_dir)
     except subprocess.CalledProcessError:
         # Might be a failure due to network connection issues. Retrying...
         print(WARNING + "`pip install` failed; retrying..." + ENDC)
-        install_venv_deps(requirements_file)
+        install_venv_deps(requirements_file, local_dir=local_dir)
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
