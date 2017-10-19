@@ -384,6 +384,7 @@ def mirror_email_message(data):
             "message": data['msg_text'],
             "rcpt_to": rcpt_to
         },
-        lambda x: None
+        lambda x: None,
+        call_consume_in_tests=True
     )
     return {"status": "success"}

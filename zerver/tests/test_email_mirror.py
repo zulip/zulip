@@ -530,8 +530,8 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             mail_template = template_file.read()
         mail = mail_template.format(stream_to_address=to_address, sender=sender)
 
-        def check_queue_json_publish(queue_name, event, processor):
-            # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None]) -> None
+        def check_queue_json_publish(queue_name, event, processor, call_consume_in_tests):
+            # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None], bool) -> None
             self.assertEqual(queue_name, "email_mirror")
             self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
 
