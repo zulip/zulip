@@ -152,6 +152,7 @@ def construct_zulip_body(message, realm):
     body = body.replace("\x00", "")
     body = filter_footer(body)
     body += extract_and_upload_attachments(message, realm)
+    body = body.strip()
     if not body:
         body = '(No email body)'
     return body
