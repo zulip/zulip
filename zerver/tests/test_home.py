@@ -113,6 +113,7 @@ class HomeTest(ZulipTestCase):
             "realm_description",
             "realm_domains",
             "realm_email_changes_disabled",
+            "realm_embedded_bots",
             "realm_emoji",
             "realm_filters",
             "realm_icon_source",

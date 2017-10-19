@@ -18,6 +18,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.hotspots import get_next_hotspots
+from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
@@ -156,6 +157,11 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
+
+    # This does not yet have an apply_event counterpart, since currently,
+    # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
+    if want('realm_embedded_bots'):
+        state['realm_embedded_bots'] = list(bot.name for bot in EMBEDDED_BOTS)
 
     if want('subscription'):
         subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
