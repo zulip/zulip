@@ -166,7 +166,9 @@ exports.process_escape_key = function (e) {
     }
 
     if (message_edit.is_editing(current_msg_list.selected_id())) {
-        message_edit.end(current_msg_list.selected_row());
+        row = $(".message_edit_content").filter(":focus").closest(".message_row");
+        row.find('.message_edit_content').blur();
+        message_edit.end(row);
         return true;
     }
 
