@@ -78,30 +78,6 @@ var timerender = require('js/timerender.js');
 
 (function test_render_date_renders_time_html() {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var message_time  = today.clone();
-    var expected_html = i18n.t('Today');
-
-    var attrs = new Dict();
-    var span_stub = $('<span />');
-
-    span_stub.attr = function (name, val) {
-        attrs.set(name, val);
-        return span_stub;
-    };
-
-    span_stub.append = function (str) {
-        span_stub.html(str);
-        return span_stub;
-    };
-
-    var actual = timerender.render_date(message_time, undefined, today);
-    assert.equal(expected_html, actual.html());
-    assert.equal(attrs.get('title'), 'Friday, April 12, 2019');
-    assert.equal(attrs.get('class'), 'timerender0');
-}());
-
-(function test_render_date_renders_time_above_html() {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var message_time = today.clone();
     var message_time_above = today.clone().addDays(-1);
 
@@ -114,9 +90,6 @@ var timerender = require('js/timerender.js');
     };
 
     var expected = [
-        '<i class="date-direction icon-vector-caret-up"></i>',
-        i18n.t('Yesterday'),
-        '<hr class="date-line">',
         '<i class="date-direction icon-vector-caret-down"></i>',
         i18n.t('Today'),
     ];
