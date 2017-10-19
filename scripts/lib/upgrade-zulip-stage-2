@@ -37,6 +37,8 @@ parser.add_argument("--skip-migrations", dest="skip_migrations", action='store_t
                     help="Skip doing migrations.")
 parser.add_argument("--from-git", dest="from_git", action='store_true',
                     help="Upgrading from git, so run update-prod-static.")
+parser.add_argument("--force-download-pip", default=False, action='store_true',
+                    help="Directory which contains downloaded PIP packages")
 args = parser.parse_args()
 
 deploy_path = args.deploy_path
@@ -57,8 +59,13 @@ if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
 
 # Now we should have an environment setup where we can run our tools;
 # first, creating the production venv.
-subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
-                       deploy_path])
+cmd = [os.path.join(deploy_path, "scripts", "lib", "create-production-venv")]
+# If force_download_pip is true, download packages unconditionally. If it is
+# false, download packages only when pip_packages directory is not available.
+if not args.force_download_pip and os.path.exists(os.path.join(deploy_path, 'pip_packages')):
+    cmd.append('--local-dir=pip_packages')
+cmd.append(deploy_path)
+subprocess.check_call(cmd)
 
 # Make sure the right version of node is installed
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"),
