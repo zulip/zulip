@@ -189,7 +189,7 @@ li.hidden-filter {
 }
 
 #global_filters .count {
-    margin-right: 15px;
+    margin-right: 20px;
     margin-top: 2px;
     display: none;
 
@@ -197,7 +197,7 @@ li.hidden-filter {
 }
 
 #stream_filters .count {
-    margin-right: 10px;
+    margin-right: 15px;
 }
 
 .topic-box {
@@ -231,12 +231,12 @@ li.hidden-filter {
 }
 
 .topic-unread-count {
-    right: 25px;
+    right: 30px;
     top: 2px;
 }
 
 .private_message_count {
-    right: 15px;
+    right: 20px;
 }
 
 ul.filters i {
@@ -249,7 +249,7 @@ ul.filters i {
 ul.filters .arrow {
     position: absolute;
     top: 2px;
-    right: 5px;
+    right: 10px;
     font-size: 0.8em;
     display: none;
 }

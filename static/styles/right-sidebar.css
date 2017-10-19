@@ -104,7 +104,7 @@
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: 218px;
+    width: 208px;
     display: block;
 }
 
@@ -146,7 +146,7 @@
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
     position: absolute;
-    right: 24px;
+    right: 29px;
     top: 4px;
     padding: 1px 4px 2px 4px;
     background: hsl(105, 2%, 50%);
@@ -160,7 +160,7 @@
 }
 
 .group-pms-sidebar-entry .count {
-    right: 24px;
+    right: 29px;
 }
 
 .user_sidebar_entry .count,
