@@ -1194,6 +1194,61 @@ class RealmCreationTest(ZulipTestCase):
                                                realm_subdomain = 'a-0',
                                                realm_name = realm_name)
         self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://a-0.testserver/accounts/login/subdomain/')
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_subdomain_restrictions_root_domain(self):
+        # type: () -> None
+        password = "test"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        result = self.client_post('/create_realm/', {'email': email})
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
+        # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.submit_reg_form_for_user(email, password,
+                                                   realm_subdomain = '',
+                                                   realm_name = realm_name)
+            self.assert_in_response('unavailable', result)
+
+        # test valid use of root domain
+        result = self.submit_reg_form_for_user(email, password,
+                                               realm_subdomain = '',
+                                               realm_name = realm_name)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://testserver/accounts/login/subdomain/')
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_subdomain_restrictions_root_domain_option(self):
+        # type: () -> None
+        password = "test"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        result = self.client_post('/create_realm/', {'email': email})
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
+        # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.submit_reg_form_for_user(email, password,
+                                                   realm_subdomain = 'abcdef',
+                                                   realm_in_root_domain = 'true',
+                                                   realm_name = realm_name)
+            self.assert_in_response('unavailable', result)
+
+        # test valid use of root domain
+        result = self.submit_reg_form_for_user(email, password,
+                                               realm_subdomain = 'abcdef',
+                                               realm_in_root_domain = 'true',
+                                               realm_name = realm_name)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://testserver/accounts/login/subdomain/')
 
     def test_is_root_domain_available(self):
         # type: () -> None

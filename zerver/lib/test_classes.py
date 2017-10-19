@@ -307,8 +307,8 @@ class ZulipTestCase(TestCase):
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
                                  realm_subdomain="zuliptest",
                                  from_confirmation='', full_name=None, timezone=u'',
-                                 **kwargs):
-        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
+                                 realm_in_root_domain=None, **kwargs):
+        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -329,6 +329,8 @@ class ZulipTestCase(TestCase):
             'terms': True,
             'from_confirmation': from_confirmation,
         }
+        if realm_in_root_domain is not None:
+            payload['realm_in_root_domain'] = realm_in_root_domain
         return self.client_post('/accounts/register/', payload, **kwargs)
 
     def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):

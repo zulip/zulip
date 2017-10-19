@@ -15,7 +15,7 @@ from zerver.lib.actions import do_change_password, user_email_is_unique, \
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.subdomains import get_subdomain, check_subdomain
+from zerver.lib.subdomains import get_subdomain, check_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     get_realm, email_to_domain, email_allowed_for_realm
@@ -57,6 +57,10 @@ def check_subdomain_available(subdomain):
         'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
         'unavailable': _("Subdomain unavailable. Please choose a different one.")}
 
+    if subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+        if is_root_domain_available():
+            return
+        raise ValidationError(error_strings['unavailable'])
     if len(subdomain) < 3:
         raise ValidationError(error_strings['too short'])
     if subdomain[0] == '-' or subdomain[-1] == '-':
@@ -100,10 +104,13 @@ class RegistrationForm(forms.Form):
     def clean_realm_subdomain(self):
         # type: () -> str
         if not self.realm_creation:
-            return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+            # This field is only used if realm_creation
+            return ""
+
         subdomain = self.cleaned_data['realm_subdomain']
-        if not subdomain:
-            return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        if 'realm_in_root_domain' in self.data:
+            subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+
         check_subdomain_available(subdomain)
         return subdomain
 
