@@ -348,6 +348,12 @@ exports.register_click_handlers = function () {
         show_user_info_popover(this, user, message);
     });
 
+    $("#main_div").on("click", ".user-mention", function (e) {
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        show_message_info_popover(this, rows.id(row));
+    });
+
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
