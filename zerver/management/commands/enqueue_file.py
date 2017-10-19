@@ -57,4 +57,6 @@ You can use "-" to represent stdin.
             # Verify that payload is valid json.
             data = ujson.loads(payload)
 
+            # This is designed to use the `error` method rather than
+            # the call_consume_in_tests flow.
             queue_json_publish(queue_name, data, error)

@@ -393,6 +393,8 @@ class MessageSenderWorker(QueueProcessingWorker):
         self.redis_client.hmset(redis_key, {'status': 'complete',
                                             'response': resp_content})
 
+        # Since this sends back to Tornado, we can't use
+        # call_consume_in_tests here.
         queue_json_publish(server_meta['return_queue'], result, lambda e: None)
 
 @assign_queue('digest_emails')
