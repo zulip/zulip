@@ -44,6 +44,7 @@ from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
     one_click_unsubscribe_link
+from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
@@ -1193,6 +1194,16 @@ class RealmCreationTest(ZulipTestCase):
                                                realm_subdomain = 'a-0',
                                                realm_name = realm_name)
         self.assertEqual(result.status_code, 302)
+
+    def test_is_root_domain_available(self):
+        # type: () -> None
+        self.assertTrue(is_root_domain_available())
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            self.assertFalse(is_root_domain_available())
+        realm = get_realm("zulip")
+        realm.string_id = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        realm.save()
+        self.assertFalse(is_root_domain_available())
 
 class UserSignUpTest(ZulipTestCase):
 

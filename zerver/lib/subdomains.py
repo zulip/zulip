@@ -32,3 +32,9 @@ def check_subdomain(realm_subdomain, user_subdomain):
         if realm_subdomain != user_subdomain:
             return False
     return True
+
+def is_root_domain_available():
+    # type: () -> bool
+    if settings.ROOT_DOMAIN_LANDING_PAGE:
+        return False
+    return get_realm(Realm.SUBDOMAIN_FOR_ROOT_DOMAIN) is None

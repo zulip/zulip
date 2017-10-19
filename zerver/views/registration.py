@@ -29,7 +29,7 @@ from zerver.decorator import require_post, has_request_variables, \
 from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
-from zerver.lib.subdomains import get_subdomain
+from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zproject.backends import password_auth_enabled
 
@@ -247,6 +247,7 @@ def accounts_register(request):
                  'creating_new_team': realm_creation,
                  'password_required': password_auth_enabled(realm) and password_required,
                  'password_auth_enabled': password_auth_enabled(realm),
+                 'root_domain_available': is_root_domain_available(),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
