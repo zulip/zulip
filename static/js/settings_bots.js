@@ -86,6 +86,12 @@ exports.set_up = function () {
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
+    page_params.realm_embedded_bots.forEach(function (bot_name) {
+        $('#select_service_name').append($('<option>', {
+            value: bot_name,
+            text: bot_name,
+        }));
+    });
     $('#select_service_name').val('converter'); // TODO: Use 'select a bot'.
 
     $('#download_flaskbotrc').click(function () {
