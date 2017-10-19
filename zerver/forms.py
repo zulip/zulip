@@ -99,9 +99,11 @@ class RegistrationForm(forms.Form):
 
     def clean_realm_subdomain(self):
         # type: () -> str
+        if not self.realm_creation:
+            return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
         subdomain = self.cleaned_data['realm_subdomain']
         if not subdomain:
-            return ''
+            return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
         check_subdomain_available(subdomain)
         return subdomain
 
