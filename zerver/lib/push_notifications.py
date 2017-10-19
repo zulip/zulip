@@ -388,14 +388,14 @@ def get_alert_from_message(message):
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE and message.triggers['private_message']:
+    if message.recipient.type == Recipient.HUDDLE and message.trigger == 'private_message':
         return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL and message.triggers['private_message']:
+    elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
         return "New private message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.STREAM and message.triggers['mentioned']:
+    elif message.recipient.type == Recipient.STREAM and message.trigger == 'mentioned':
         return "New mention from %s" % (sender_str,)
     elif (message.recipient.type == Recipient.STREAM and
-            (message.triggers['stream_push_notify'] and message.stream_name)):
+            (message.trigger == 'stream_push_notify' and message.stream_name)):
         return "New stream message from %s in %s" % (sender_str, message.stream_name,)
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
@@ -503,12 +503,7 @@ def handle_push_notification(user_profile_id, missed_message):
         umessage = UserMessage.objects.get(user_profile=user_profile,
                                            message__id=missed_message['message_id'])
         message = umessage.message
-        triggers = missed_message['triggers']
-        message.triggers = {
-            'private_message': triggers['private_message'],
-            'mentioned': triggers['mentioned'],
-            'stream_push_notify': triggers['stream_push_notify'],
-        }
+        message.trigger = missed_message['trigger']
         message.stream_name = missed_message.get('stream_name', None)
 
         if umessage.flags.read:
