@@ -14,6 +14,8 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
     su_to_zulip, get_deployment_lock, release_deployment_lock
 
 parser = argparse.ArgumentParser(description="Script to upgrade Zulip.")
+parser.add_argument('--force-download-pip', action='store_true', default=False,
+                    help='Force download PIP packages')
 parser.add_argument('tarball', help='Path to the upgrade tarball')
 args = parser.parse_args()
 
@@ -50,6 +52,10 @@ try:
     # version is much better for fixing bugs in the upgrade process).
     deploy_path = deploy_path.strip()
     os.chdir(deploy_path)
-    subprocess.check_call([os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path])
+    cmd = [os.path.abspath("./scripts/lib/upgrade-zulip-stage-2")]
+    if args.force_download_pip:
+        cmd.append('--force-download-pip')
+    cmd.append(deploy_path)
+    subprocess.check_call(cmd)
 finally:
     release_deployment_lock()
