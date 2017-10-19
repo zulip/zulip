@@ -94,9 +94,12 @@ def check_html_templates(templates, all_dups):
         # and might eventually require more scrutiny for things like
         # localization.  See github #1236.
         bad_files = [
+            # These use various whitespace-dependent formatting that
+            # prevent cleaning them.
             'templates/corporate/zephyr-mirror.html',
             'templates/zerver/api.html',
             'templates/zerver/api_endpoints.html',
+            # These just need to be reindented
             'templates/zerver/features.html',
             'templates/zerver/home.html',
             'templates/zerver/login.html',
