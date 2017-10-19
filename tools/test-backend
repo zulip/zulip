@@ -95,7 +95,6 @@ not_yet_fully_covered = {
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/str_utils.py',
     'zerver/lib/stream_recipient.py',
-    'zerver/lib/subdomains.py',
     'zerver/lib/tex.py',
     'zerver/lib/timeout.py',
     'zerver/lib/unminify.py',
