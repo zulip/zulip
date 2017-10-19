@@ -29,7 +29,6 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.queue import queue_json_publish
 from zerver.lib.email_mirror import logger, process_message, \
     extract_and_validate, ZulipEmailForwardError, \
     mark_missed_message_address_as_used, is_missed_message_address
