@@ -257,7 +257,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         sender,
         "stream",
         signups_stream,
-        user_profile.realm.string_id,
+        user_profile.realm.display_subdomain,
         "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
             user_profile.full_name,
             user_profile.email,
@@ -2667,7 +2667,7 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
         signup_message = "Signups enabled"
         admin_realm = get_system_bot(settings.NEW_USER_BOT).realm
         internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
-                              "signups", string_id, signup_message)
+                              "signups", realm.display_subdomain, signup_message)
     return realm
 
 def do_change_notification_settings(user_profile, name, value, log=True):

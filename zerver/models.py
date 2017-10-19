@@ -263,6 +263,15 @@ class Realm(ModelReprMixin, models.Model):
         return self.string_id
 
     @property
+    def display_subdomain(self):
+        # type: () -> Text
+        """Likely to be temporary function to avoid signup messages being sent
+        to an empty topic"""
+        if self.string_id == "":
+            return "."
+        return self.string_id
+
+    @property
     def uri(self):
         # type: () -> str
         if self.subdomain not in [None, ""]:
