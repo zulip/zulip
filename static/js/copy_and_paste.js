@@ -1,6 +1,6 @@
 var copy_and_paste = (function () {
 
-var exports = {}; // we don't actually export anything yet, but that's ok
+var exports = {};
 
 function find_boundary_tr(initial_tr, iterate_row) {
     var j;
@@ -140,21 +140,23 @@ function copy_handler() {
     },0);
 }
 
+exports.paste_handler = function (event) {
+    event.preventDefault();
+    var clipboardData = event.originalEvent.clipboardData;
+    // Retrieve html. If html not available, retrieve plain text
+    var html = clipboardData.getData('text/html') || clipboardData.getData('text/plain');
+    html = toMarkdown(html);
+    var div = document.createElement("div");
+    div.innerHTML = html;
+    // Using textContent for modern browsers, innerText works for Internet Explorer
+    var text = div.textContent || div.innerText || "";
+    this.value = text;
+};
+
 $(function () {
     $(document).on('copy', copy_handler);
-    $("#new_message_content").bind("paste", function (event) {
-        event.preventDefault();
-        var clipboardData = (event.originalEvent || event).clipboardData;
-        var text = clipboardData.getData('text/html') || clipboardData.getData('text/plain')
-        document.execCommand('insertHTML', false, '<pre>' + text + '</pre>');
-        var html = toMarkdown(text);
-        var div = document.createElement("div");
-        div.innerHTML = html;
-        text = div.textContent || div.innerText || "";
-        this.value = text;
-    });
+    $("#new_message_content").bind('paste', exports.paste_handler);
 });
-
 
 return exports;
 }());
