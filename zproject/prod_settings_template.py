@@ -81,6 +81,13 @@ EMAIL_USE_TLS = True
 # zulip.example.com).
 #NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
+# Many countries and bulk mailers require certain types of email to display
+# a physical mailing address to comply with anti-spam legislation.
+# Non-commercial and non-public-facing installations are unlikely to need
+# this setting.
+# The address should have no newlines.
+#PHYSICAL_ADDRESS = ''
+
 ### AUTHENTICATION SETTINGS
 #
 # Enable at least one of the following authentication backends.

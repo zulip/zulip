@@ -115,9 +115,10 @@ else:
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 DEFAULT_SETTINGS = {
-    # Basic Django email settings
+    # Basic email settings
     'EMAIL_HOST': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+    'PHYSICAL_ADDRESS': '',
 
     # Google auth
     'GOOGLE_OAUTH2_CLIENT_ID': None,

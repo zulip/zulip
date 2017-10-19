@@ -23,7 +23,3 @@ Team Zulip
 
 PS: Check us out on Twitter (@zulip) or star us on GitHub
 (https://github.com/zulip/zulip)!
-
-Unsubscribe from welcome emails (but there's only one more and aren't you a
-little curious?):
-{{ unsubscribe_link }}
