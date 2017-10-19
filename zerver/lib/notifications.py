@@ -445,7 +445,7 @@ def enqueue_welcome_emails(user):
     })
     send_future_email(
         "zerver/emails/followup_day1", to_user_id=user.id, from_name=from_name,
-        from_address=from_address, context=context, delay=datetime.timedelta(hours=1))
+        from_address=from_address, context=context)
     send_future_email(
         "zerver/emails/followup_day2", to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(days=1))
