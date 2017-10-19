@@ -102,8 +102,6 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/login.html',
             # Can't clean this because of `preserve_spaces`
             'templates/zerver/markdown_help.html',
-            'zerver/webhooks/taiga/doc.html',
-            'zerver/webhooks/zendesk/doc.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
@@ -122,8 +120,6 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/login.html',
         'templates/zerver/markdown_help.html',
         'templates/zerver/navbar.html',
-        'zerver/webhooks/stripe/doc.html',
-        'zerver/webhooks/wordpress/doc.html',
     ]
     # TODO: Clean these files
     for fn in templates:
