@@ -1083,7 +1083,7 @@ def do_send_messages(messages_maybe_none):
                 'message_content': message['message'].content,
                 'message_realm_id': message['realm'].id,
                 'urls': links_for_embed}
-            queue_json_publish('embed_links', event_data, lambda x: None)
+            queue_json_publish('embed_links', event_data, lambda x: None, call_consume_in_tests=True)
 
         if (settings.ENABLE_FEEDBACK and settings.FEEDBACK_BOT and
                 message['message'].recipient.type == Recipient.PERSONAL):
