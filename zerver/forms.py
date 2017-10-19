@@ -15,8 +15,8 @@ from zerver.lib.actions import do_change_password, user_email_is_unique, \
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.subdomains import get_subdomain, check_subdomain
 from zerver.lib.users import check_full_name
-from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     get_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled

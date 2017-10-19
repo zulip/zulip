@@ -25,7 +25,7 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from django.contrib.auth import authenticate
 from zerver.lib.users import check_full_name
 from zerver.lib.request import JsonableError
-from zerver.lib.utils import check_subdomain, get_subdomain
+from zerver.lib.subdomains import check_subdomain, get_subdomain
 
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy

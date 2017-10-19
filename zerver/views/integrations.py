@@ -12,7 +12,7 @@ import ujson
 from zerver.decorator import has_request_variables, REQ
 from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
-from zerver.lib.utils import get_subdomain
+from zerver.lib.subdomains import get_subdomain
 from zerver.templatetags.app_filters import render_markdown_path
 
 def add_api_uri_context(context, request):

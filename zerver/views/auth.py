@@ -26,7 +26,7 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
     get_realm

@@ -17,7 +17,7 @@ from zproject.backends import (
 )
 from zerver.lib.bugdown import convert
 from zerver.lib.send_email import FromAddress
-from zerver.lib.utils import get_subdomain
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 
 from version import ZULIP_VERSION

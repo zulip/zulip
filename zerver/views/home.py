@@ -24,7 +24,8 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
-from zerver.lib.utils import statsd, get_subdomain
+from zerver.lib.subdomains import get_subdomain
+from zerver.lib.utils import statsd
 
 import calendar
 import datetime

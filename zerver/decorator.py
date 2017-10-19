@@ -12,9 +12,9 @@ from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.subdomains import get_subdomain, check_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
-    is_remote_server
+from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \

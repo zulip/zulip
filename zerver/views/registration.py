@@ -29,7 +29,7 @@ from zerver.decorator import require_post, has_request_variables, \
 from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
-from zerver.lib.utils import get_subdomain
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.timezone import get_all_timezones
 from zproject.backends import password_auth_enabled
 

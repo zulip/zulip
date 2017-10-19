@@ -8,10 +8,11 @@ from django.utils.translation import ugettext as _
 from django.utils.deprecation import MiddlewareMixin
 
 from zerver.lib.response import json_error, json_response_from_error
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
-from zerver.lib.utils import statsd, get_subdomain
+from zerver.lib.utils import statsd
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
