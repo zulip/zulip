@@ -821,7 +821,6 @@ class AbstractPushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, unique=True)  # type: bytes
     last_updated = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
     # [optional] Contains the app id of the device if it is an iOS device
@@ -833,6 +832,7 @@ class AbstractPushDeviceToken(models.Model):
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
+    token = models.CharField(max_length=4096, unique=True)  # type: bytes
 
 def generate_email_token_for_stream():
     # type: () -> str
