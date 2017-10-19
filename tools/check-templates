@@ -100,6 +100,7 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/features.html',
             'templates/zerver/home.html',
             'templates/zerver/login.html',
+            # Can't clean this because of `preserve_spaces`
             'templates/zerver/markdown_help.html',
             'zerver/webhooks/taiga/doc.html',
             'zerver/webhooks/zendesk/doc.html',
