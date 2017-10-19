@@ -471,7 +471,11 @@ function should_send_audible_notification(message) {
 }
 
 exports.granted_desktop_notifications_permission = function () {
-    return browser_desktop_notifications_on();
+    return (notifications_api &&
+            // 0 is PERMISSION_ALLOWED
+            notifications_api.checkPermission() === 0) ||
+        // window.bridge is the legacy desktop app
+        (window.bridge !== undefined);
 };
 
 
