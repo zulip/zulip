@@ -21,7 +21,6 @@ from zerver.lib.actions import (
 
 from zerver.lib.message import (
     MessageDict,
-    message_to_dict,
     sew_messages_and_reactions,
 )
 
@@ -560,12 +559,7 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        '''
-        Part of the reason we have so many queries is that we duplicate
-        a lot of code to generate messages with markdown and without
-        markdown.
-        '''
-        self.assert_length(queries, 15)
+        self.assert_length(queries, 13)
 
     def test_stream_message_dict(self):
         # type: () -> None
@@ -1351,7 +1345,9 @@ class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[Text], Optional[Text]) -> Message
         msg = Message.objects.get(id=msg_id)
-        cached = message_to_dict(msg, apply_markdown=False)
+        cached = MessageDict.wide_dict(msg)
+        MessageDict.finalize_payload(cached, apply_markdown=False)
+
         uncached = MessageDict.to_dict_uncached_helper(msg)
         MessageDict.post_process_dicts([uncached], apply_markdown=False, client_gravatar=False)
         self.assertEqual(cached, uncached)
