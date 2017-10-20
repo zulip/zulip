@@ -669,11 +669,7 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_apns_payload_redacted_content(self):
         # type: () -> None
         message = self.get_message(Recipient.HUDDLE)
-        message.triggers = {
-            'private_message': True,
-            'mentioned': False,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'private_message'
         payload = apn.get_apns_payload(message)
         expected = {
             'alert': {
@@ -767,11 +763,7 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_gcm_payload_redacted_content(self):
         # type: () -> None
         message = self.get_message(Recipient.STREAM, 1)
-        message.triggers = {
-            'private_message': False,
-            'mentioned': False,
-            'stream_push_notify': True,
-        }
+        message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
         user_profile = self.example_user('hamlet')
         payload = apn.get_gcm_payload(user_profile, message)
