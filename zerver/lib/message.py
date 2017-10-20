@@ -106,22 +106,26 @@ class MessageDict(object):
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj)
             MessageDict.set_sender_avatar(obj, client_gravatar)
+            MessageDict.finalize_payload(obj, apply_markdown)
 
-            if apply_markdown:
-                obj['content_type'] = 'text/html'
-                obj['content'] = obj['rendered_content']
-            else:
-                obj['content_type'] = 'text/x-markdown'
+    @staticmethod
+    def finalize_payload(obj, apply_markdown):
+        # type: (Dict[str, Any], bool) -> None
+        if apply_markdown:
+            obj['content_type'] = 'text/html'
+            obj['content'] = obj['rendered_content']
+        else:
+            obj['content_type'] = 'text/x-markdown'
 
-            del obj['rendered_content']
-            del obj['sender_realm_id']
-            del obj['sender_avatar_source']
-            del obj['sender_avatar_version']
+        del obj['rendered_content']
+        del obj['sender_realm_id']
+        del obj['sender_avatar_source']
+        del obj['sender_avatar_version']
 
-            del obj['raw_display_recipient']
-            del obj['recipient_type']
-            del obj['recipient_type_id']
-            del obj['sender_is_mirror_dummy']
+        del obj['raw_display_recipient']
+        del obj['recipient_type']
+        del obj['recipient_type_id']
+        del obj['sender_is_mirror_dummy']
 
     @staticmethod
     def to_dict_uncached(message):
