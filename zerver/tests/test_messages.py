@@ -575,8 +575,8 @@ class StreamMessagesTest(ZulipTestCase):
                           content="whatever", subject="my topic")
         message = most_recent_message(user_profile)
         row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
-        MessageDict.post_process_dicts([dct], client_gravatar=False)
+        dct = MessageDict.build_dict_from_raw_db_row(row)
+        MessageDict.post_process_dicts([dct], apply_markdown=True, client_gravatar=False)
         self.assertEqual(dct['display_recipient'], 'Denmark')
 
         stream = get_stream('Denmark', user_profile.realm)
@@ -760,6 +760,8 @@ class MessageDictTest(ZulipTestCase):
                     recipient=recipient,
                     subject='whatever',
                     content='whatever %d' % i,
+                    rendered_content='DOES NOT MATTER',
+                    rendered_content_version=bugdown.version,
                     pub_date=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
@@ -780,10 +782,10 @@ class MessageDictTest(ZulipTestCase):
             rows = list(MessageDict.get_raw_db_rows(ids))
 
             objs = [
-                MessageDict.build_dict_from_raw_db_row(row, False)
+                MessageDict.build_dict_from_raw_db_row(row)
                 for row in rows
             ]
-            MessageDict.post_process_dicts(objs, client_gravatar=False)
+            MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1.5ms per message to
@@ -816,9 +818,9 @@ class MessageDictTest(ZulipTestCase):
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
         row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
+        dct = MessageDict.build_dict_from_raw_db_row(row)
         expected_content = '<p>hello <strong>world</strong></p>'
-        self.assertEqual(dct['content'], expected_content)
+        self.assertEqual(dct['rendered_content'], expected_content)
         message = Message.objects.get(id=message.id)
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, bugdown.version)
@@ -847,9 +849,9 @@ class MessageDictTest(ZulipTestCase):
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
         row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
+        dct = MessageDict.build_dict_from_raw_db_row(row)
         error_content = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
-        self.assertEqual(dct['content'], error_content)
+        self.assertEqual(dct['rendered_content'], error_content)
 
     def test_reaction(self):
         # type: () -> None
@@ -873,8 +875,7 @@ class MessageDictTest(ZulipTestCase):
             message=message, user_profile=sender,
             emoji_name='simple_smile')
         row = MessageDict.get_raw_db_rows([message.id])[0]
-        msg_dict = MessageDict.build_dict_from_raw_db_row(
-            row, apply_markdown=True)
+        msg_dict = MessageDict.build_dict_from_raw_db_row(row)
         self.assertEqual(msg_dict['reactions'][0]['emoji_name'],
                          reaction.emoji_name)
         self.assertEqual(msg_dict['reactions'][0]['user']['id'],
@@ -1350,9 +1351,9 @@ class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[Text], Optional[Text]) -> Message
         msg = Message.objects.get(id=msg_id)
-        cached = message_to_dict(msg, False)
-        uncached = MessageDict.to_dict_uncached_helper(msg, False)
-        MessageDict.post_process_dicts([uncached], client_gravatar=False)
+        cached = message_to_dict(msg, apply_markdown=False)
+        uncached = MessageDict.to_dict_uncached_helper(msg)
+        MessageDict.post_process_dicts([uncached], apply_markdown=False, client_gravatar=False)
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.topic_name(), subject)

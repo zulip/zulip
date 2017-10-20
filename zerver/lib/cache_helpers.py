@@ -15,6 +15,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_id_cache_key, \
     user_profile_cache_key, get_remote_cache_time, get_remote_cache_requests, \
     cache_set_many, to_dict_cache_key_id
+from zerver.lib.message import MessageDict
 from importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
@@ -33,7 +34,13 @@ def message_fetch_objects():
 
 def message_cache_items(items_for_remote_cache, message):
     # type: (Dict[Text, Tuple[binary_type]], Message) -> None
-    items_for_remote_cache[to_dict_cache_key_id(message.id, True)] = (message.to_dict_uncached(True),)
+    '''
+    Note: this code is untested, and the caller has been
+    commented out for a while.
+    '''
+    key = to_dict_cache_key_id(message.id)
+    value = MessageDict.to_dict_uncached(message)
+    items_for_remote_cache[key] = (value,)
 
 def user_cache_items(items_for_remote_cache, user_profile):
     # type: (Dict[Text, Tuple[UserProfile]], UserProfile) -> None

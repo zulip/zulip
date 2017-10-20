@@ -737,10 +737,10 @@ def get_messages_backend(request, user_profile,
                 search_fields[message_id] = get_search_fields(rendered_content, subject,
                                                               content_matches, subject_matches)
 
-    cache_transformer = lambda row: MessageDict.build_dict_from_raw_db_row(row, apply_markdown)
+    cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row['id']
 
-    message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
+    message_dicts = generic_bulk_cached_fetch(to_dict_cache_key_id,
                                               MessageDict.get_raw_db_rows,
                                               message_ids,
                                               id_fetcher=id_fetcher,
@@ -760,7 +760,7 @@ def get_messages_backend(request, user_profile,
             del msg_dict["edit_history"]
         message_list.append(msg_dict)
 
-    MessageDict.post_process_dicts(message_list, client_gravatar)
+    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar)
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,

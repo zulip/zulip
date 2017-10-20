@@ -14,7 +14,7 @@ from zerver.models import (
     Reaction, UserMessage
 )
 from zerver.lib.message import (
-    MessageDict,
+    message_to_dict,
 )
 from zerver.lib.narrow import (
     build_narrow_filter,
@@ -1219,8 +1219,7 @@ class GetOldMessagesTest(ZulipTestCase):
         m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
-        # Use to_dict_uncached_helper directly to avoid having to deal with remote cache
-        d = MessageDict.to_dict_uncached_helper(m, True)
+        d = message_to_dict(m, True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
     def common_check_get_messages_query(self, query_params, expected):
