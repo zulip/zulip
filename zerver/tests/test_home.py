@@ -138,6 +138,7 @@ class HomeTest(ZulipTestCase):
             "realm_presence_disabled",
             "realm_restricted_to_domain",
             "realm_show_digest_email",
+            "realm_signup_notifications_stream_id",
             "realm_uri",
             "realm_user_groups",
             "realm_users",
@@ -399,6 +400,17 @@ class HomeTest(ZulipTestCase):
         user.is_active = False
         user.save()
         return user
+
+    def test_signup_notifications_stream(self):
+        # type: () -> None
+        email = self.example_email("hamlet")
+        realm = get_realm('zulip')
+        realm.signup_notifications_stream = get_stream('Denmark', realm)
+        realm.save()
+        self.login(email)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['realm_signup_notifications_stream_id'], get_stream('Denmark', realm).id)
 
     @slow('creating users and loading home page')
     def test_people(self):

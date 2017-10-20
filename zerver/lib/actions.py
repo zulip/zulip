@@ -573,6 +573,18 @@ def do_set_realm_notifications_stream(realm, stream, stream_id):
     )
     send_event(event, active_user_ids(realm.id))
 
+def do_set_realm_signup_notifications_stream(realm, stream, stream_id):
+    # type: (Realm, Stream, int) -> None
+    realm.signup_notifications_stream = stream
+    realm.save(update_fields=['signup_notifications_stream'])
+    event = dict(
+        type="realm",
+        op="update",
+        property="signup_notifications_stream_id",
+        value=stream_id
+    )
+    send_event(event, active_user_ids(realm.id))
+
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """

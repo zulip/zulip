@@ -8,6 +8,7 @@ from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_set_realm_authentication_methods,
     do_set_realm_notifications_stream,
+    do_set_realm_signup_notifications_stream,
     do_set_realm_property,
 )
 from zerver.lib.i18n import get_available_language_codes
@@ -40,8 +41,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  waiting_period_threshold=REQ(converter=to_non_negative_int, default=None),
                  authentication_methods=REQ(validator=check_dict([]), default=None),
                  notifications_stream_id=REQ(validator=check_int, default=None),
+                 signup_notifications_stream_id=REQ(validator=check_int, default=None),
                  message_retention_days=REQ(converter=to_not_negative_int_or_none, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[Dict[Any,Any]], Optional[int], Optional[int]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[Dict[Any,Any]], Optional[int], Optional[int], Optional[int]) -> HttpResponse
     realm = user_profile.realm
 
     # Additional validation/error checking beyond types go here, so
@@ -92,8 +94,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                                      message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
-    # Realm.notifications_stream is not a boolean, Text or integer field, and thus doesn't fit
-    # into the do_set_realm_property framework.
+    # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
+    # Text or integer field, and thus doesn't fit into the do_set_realm_property framework.
     if notifications_stream_id is not None:
         if realm.notifications_stream is None or (realm.notifications_stream.id !=
                                                   notifications_stream_id):
@@ -104,5 +106,16 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
             do_set_realm_notifications_stream(realm, new_notifications_stream,
                                               notifications_stream_id)
             data['notifications_stream_id'] = notifications_stream_id
+
+    if signup_notifications_stream_id is not None:
+        if realm.signup_notifications_stream is None or (realm.signup_notifications_stream.id !=
+                                                         signup_notifications_stream_id):
+            new_signup_notifications_stream = None
+            if signup_notifications_stream_id >= 0:
+                (new_signup_notifications_stream, recipient, sub) = access_stream_by_id(
+                    user_profile, signup_notifications_stream_id)
+            do_set_realm_signup_notifications_stream(realm, new_signup_notifications_stream,
+                                                     signup_notifications_stream_id)
+            data['signup_notifications_stream_id'] = signup_notifications_stream_id
 
     return json_success(data)

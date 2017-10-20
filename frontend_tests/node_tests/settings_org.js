@@ -387,6 +387,31 @@ function test_disable_notifications_stream(disable_notifications_stream) {
                  'translated: Failed to change notifications stream!');
 }
 
+function test_disable_signup_notifications_stream(disable_signup_notifications_stream) {
+    var success_callback;
+    var error_callback;
+    channel.patch = function (req) {
+        assert.equal(req.url, '/json/realm');
+        assert.equal(req.data.signup_notifications_stream_id, '-1');
+        success_callback = req.success;
+        error_callback = req.error;
+    };
+
+    disable_signup_notifications_stream();
+
+    var response_data = {
+        signup_notifications_stream_id: -1,
+    };
+
+    success_callback(response_data);
+    assert.equal($('#admin-realm-signup-notifications-stream-status').val(),
+                 'translated: Signup notifications stream disabled!');
+
+    error_callback({});
+    assert.equal($('#admin-realm-signup-notifications-stream-status').val(),
+                 'translated: Failed to change signup notifications stream!');
+}
+
 function test_change_allow_subdomains(change_allow_subdomains) {
     var ev = {
         stopPropagation: noop,
@@ -460,6 +485,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
+    $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
     var submit_settings_form;
     var submit_permissions_form;
@@ -505,6 +531,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     test_change_invite_required(callbacks.change_invite_required);
     test_change_message_editing(callbacks.change_message_editing);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
+    test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
 }());
 
@@ -562,4 +589,19 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     settings_org.render_notifications_stream_ui();
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
+
+    elem = $('#realm_signup_notifications_stream_name');
+    stream_data.get_sub_by_id = function (stream_id) {
+        assert.equal(stream_id, 75);
+        return { name: 'some_stream' };
+    };
+    settings_org.render_signup_notifications_stream_ui(75);
+    assert.equal(elem.text(), '#some_stream');
+    assert(!elem.hasClass('text-warning'));
+
+    stream_data.get_sub_by_id = noop;
+    settings_org.render_signup_notifications_stream_ui();
+    assert.equal(elem.text(), 'translated: Disabled');
+    assert(elem.hasClass('text-warning'));
+
 }());
