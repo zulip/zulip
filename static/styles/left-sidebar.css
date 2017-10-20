@@ -367,13 +367,11 @@ li.topic-list-item {
 li.show-more-private-messages,
 li.expanded_private_message {
     position: relative;
-    padding-left: 24px;
-    padding-bottom: 1px;
-    padding-top: 2px;
+    padding: 1px 0px 1px 24px;
 }
 
 li.expanded_private_message a {
-    margin-top: 3px;
+    margin: 2px 0px;
 }
 
 .show-all-streams a {
