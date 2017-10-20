@@ -100,7 +100,6 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/api.html',
             'templates/zerver/api_endpoints.html',
             # These just need to be reindented
-            'templates/zerver/features.html',
             'templates/zerver/login.html',
             # Can't clean this because of `preserve_spaces`
             'templates/zerver/markdown_help.html',
