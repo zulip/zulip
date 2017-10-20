@@ -1,5 +1,6 @@
 {
   "\"__file_name__\" was too large; the maximum file size is 25MiB.": "\"__file_name__\" byl příliš velký; největší velikost souboru je 25 MiB.",
+  "(This user has been deactivated)": "",
   "(no topic)": "(žádný předmět hovoru)",
   "24-hour time (17:00 instead of 5:00 PM)": "24hodinový čas (17:00 místo 5:00 odpoledne)",
   "<b>Private:</b> must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users": "<b>Soukromá:</b> musí být pozván členem; noví členové mohou vidět pouze zprávy poslané až poté, co se připojili; skryto uživatelům, kteří nejsou správci",
@@ -189,6 +190,7 @@
   "Filter settings": "Nastavení filtrování",
   "Filter streams": "Filtrovat skupiny",
   "Filter users": "Filtrovat uživatele",
+  "First time? Read our <a href=\"/help/create-a-stream\" target=\"_blank\">guidelines</a> for creating and naming streams.": "",
   "For more information on public/private streams, check out our <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "Další údaje k veřejným/soukromým skupinám zjistíte v našich <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">dokumentech</a>.",
   "Forgotten it?": "Zapomněl jste?",
   "Formatting": "Formátování",
@@ -292,7 +294,6 @@
   "No users match your current filter.": "Vašemu nynějšímu filtru neodpovídají žádní uživatelé.",
   "None": "Žádný",
   "Note that any bots that you maintain will be disabled.": "Povšimněte si, že všichni vámi spravovaní roboti budou zakázáni.",
-  "Nothing selected.": "Nic není vybráno.",
   "Nothing to preview": "Nic k náhledu",
   "Notifications": "Oznámení",
   "Notifications are triggered when a message arrives and Zulip isn't in focus or the message is offscreen.": "Oznámení jsou spuštěna, když přijde zpráva a okno Zulipu není zaměřeno nebo je zpráva mimo plátno obrazovky. ",
