@@ -176,7 +176,8 @@ class TestSendWebhookFixtureMessage(TestCase):
 
         client = client_mock()
 
-        call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
+        with self.assertRaises(SystemExit):
+            call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
         self.assertTrue(ujson_mock.dumps.called)
         self.assertTrue(ujson_mock.loads.called)
         self.assertTrue(open_mock.called)
