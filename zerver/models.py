@@ -246,10 +246,7 @@ class Realm(ModelReprMixin, models.Model):
     def get_bot_domain(self):
         # type: () -> str
         # Remove the port. Mainly needed for development environment.
-        external_host = settings.EXTERNAL_HOST.split(':')[0]
-        if self.subdomain not in [None, ""]:
-            return "%s.%s" % (self.string_id, external_host)
-        return external_host
+        return self.host.split(':')[0]
 
     def get_notifications_stream(self):
         # type: () -> Optional[Realm]
