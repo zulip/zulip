@@ -1,4 +1,4 @@
-
+import json
 import logging
 import os
 import signal
@@ -42,10 +42,12 @@ class StateHandler(object):
     def __init__(self, user_profile):
         # type: (UserProfile) -> None
         self.user_profile = user_profile
+        self.marshal = lambda obj: json.dumps(obj)
+        self.demarshal = lambda obj: json.loads(obj)
 
     def __getitem__(self, key):
         # type: (Text) -> Text
-        return get_bot_state(self.user_profile, key)
+        return self.demarshal(get_bot_state(self.user_profile, key))
 
     def __setitem__(self, key, value):
         # type: (Text, Text) -> None
@@ -56,8 +58,14 @@ class StateHandler(object):
         if new_state_size > self.state_size_limit:
             raise StateHandlerError("Cannot set state. Request would require {} bytes storage. "
                                     "The current storage limit is {}.".format(new_state_size, self.state_size_limit))
+        elif type(key) is not str:
+            raise StateHandlerError("Cannot set state. The key type is {}, but it should be str.".format(type(key)))
         else:
-            set_bot_state(self.user_profile, key, value)
+            marshaled_value = self.marshal(value)
+            if type(marshaled_value) is not str:
+                raise StateHandlerError("Cannot set state. The value type is {}, but it "
+                                        "should be str.".format(type(marshaled_value)))
+            set_bot_state(self.user_profile, key, marshaled_value)
 
     def __contains__(self, key):
         # type: (Text) -> bool
