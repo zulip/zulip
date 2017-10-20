@@ -218,7 +218,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         user = get_user_profile_by_email(to_email)
         attempted_subdomain = get_subdomain(self.request)
         context['attempted_realm'] = False
-        if not check_subdomain(user.realm.subdomain, attempted_subdomain):
+        if not check_subdomain(attempted_subdomain, user.realm.subdomain):
             context['attempted_realm'] = get_realm(attempted_subdomain)
 
         send_email('zerver/emails/password_reset', to_user_id=user.id,
