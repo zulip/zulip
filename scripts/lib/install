@@ -39,6 +39,9 @@ fi
 # Do set -x after option parsing is complete
 set -x
 
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+export LC_ALL="en_US.UTF-8"
+
 # Specify options for apt.
 APT_OPTIONS="${APT_OPTIONS:-}"
 # Install additional packages using apt.
