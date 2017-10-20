@@ -142,55 +142,55 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
     def test_basic_storage_and_retrieval(self):
         # type: () -> None
-        state_handler = StateHandler(self.bot_profile)
-        state_handler['some key'] = 'some value'
-        state_handler['some other key'] = 'some other value'
-        self.assertEqual(state_handler['some key'], 'some value')
-        self.assertEqual(state_handler['some other key'], 'some other value')
-        self.assertFalse('nonexistent key' in state_handler)
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: state_handler['nonexistent key'])
+        storage = StateHandler(self.bot_profile)
+        storage['some key'] = 'some value'
+        storage['some other key'] = 'some other value'
+        self.assertEqual(storage['some key'], 'some value')
+        self.assertEqual(storage['some other key'], 'some other value')
+        self.assertFalse('nonexistent key' in storage)
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: storage['nonexistent key'])
 
-        second_state_handler = StateHandler(self.second_bot_profile)
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: second_state_handler['some key'])
-        second_state_handler['some key'] = 'yet another value'
-        self.assertEqual(state_handler['some key'], 'some value')
-        self.assertEqual(second_state_handler['some key'], 'yet another value')
+        second_storage = StateHandler(self.second_bot_profile)
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: second_storage['some key'])
+        second_storage['some key'] = 'yet another value'
+        self.assertEqual(storage['some key'], 'some value')
+        self.assertEqual(second_storage['some key'], 'yet another value')
 
     def test_marshaling(self):
         # type: () -> None
-        state_handler = StateHandler(self.bot_profile)
+        storage = StateHandler(self.bot_profile)
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        state_handler['some key'] = serializable_obj  # type: ignore # Ignore for testing.
-        self.assertEqual(state_handler['some key'], serializable_obj)
+        storage['some key'] = serializable_obj  # type: ignore # Ignore for testing.
+        self.assertEqual(storage['some key'], serializable_obj)
 
     def test_invalid_calls(self):
         # type: () -> None
-        state_handler = StateHandler(self.bot_profile)
-        state_handler.marshal = lambda obj: obj
-        state_handler.demarshal = lambda obj: obj
+        storage = StateHandler(self.bot_profile)
+        storage.marshal = lambda obj: obj
+        storage.demarshal = lambda obj: obj
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
         with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The value type is "
                                                          "<class 'dict'>, but it should be str."):
-            state_handler['some key'] = serializable_obj  # type: ignore # We intend to test an invalid type.
+            storage['some key'] = serializable_obj  # type: ignore # We intend to test an invalid type.
         with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The key type is "
                                                          "<class 'dict'>, but it should be str."):
-            state_handler[serializable_obj] = 'some value'  # type: ignore # We intend to test an invalid type.
+            storage[serializable_obj] = 'some value'  # type: ignore # We intend to test an invalid type.
 
     def test_storage_limit(self):
         # type: () -> None
         # Reduce maximal state size for faster test string construction.
         StateHandler.state_size_limit = 100
-        state_handler = StateHandler(self.bot_profile)
+        storage = StateHandler(self.bot_profile)
         key = 'capacity-filling entry'
-        state_handler[key] = 'x' * (state_handler.state_size_limit - len(key))
+        storage[key] = 'x' * (storage.state_size_limit - len(key))
 
         with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 134 bytes storage. "
                                                          "The current storage limit is 100."):
-            state_handler['too much data'] = 'a few bits too long'
+            storage['too much data'] = 'a few bits too long'
 
-        second_state_handler = StateHandler(self.second_bot_profile)
-        second_state_handler['another big entry'] = 'x' * (state_handler.state_size_limit - 40)
-        second_state_handler['normal entry'] = 'abcd'
+        second_storage = StateHandler(self.second_bot_profile)
+        second_storage['another big entry'] = 'x' * (storage.state_size_limit - 40)
+        second_storage['normal entry'] = 'abcd'
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 
