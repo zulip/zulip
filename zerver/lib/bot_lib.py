@@ -79,7 +79,7 @@ class EmbeddedBotHandler(object):
         self._rate_limit = RateLimit(20, 5)
         self.full_name = user_profile.full_name
         self.email = user_profile.email
-        self.state = StateHandler(user_profile)
+        self.storage = StateHandler(user_profile)
 
     def send_message(self, message):
         # type: (Dict[str, Any]) -> None
