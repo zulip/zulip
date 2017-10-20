@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import mock
 from typing import Any, Union, Mapping, Callable
 
@@ -155,6 +156,26 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(state_handler['some key'], 'some value')
         self.assertEqual(second_state_handler['some key'], 'yet another value')
 
+    def test_marshaling(self):
+        # type: () -> None
+        state_handler = StateHandler(self.bot_profile)
+        serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
+        state_handler['some key'] = serializable_obj  # type: ignore # Ignore for testing.
+        self.assertEqual(state_handler['some key'], serializable_obj)
+
+    def test_invalid_calls(self):
+        # type: () -> None
+        state_handler = StateHandler(self.bot_profile)
+        state_handler.marshal = lambda obj: obj
+        state_handler.demarshal = lambda obj: obj
+        serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
+        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The value type is "
+                                                         "<class 'dict'>, but it should be str."):
+            state_handler['some key'] = serializable_obj  # type: ignore # We intend to test an invalid type.
+        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The key type is "
+                                                         "<class 'dict'>, but it should be str."):
+            state_handler[serializable_obj] = 'some value'  # type: ignore # We intend to test an invalid type.
+
     def test_storage_limit(self):
         # type: () -> None
         # Reduce maximal state size for faster test string construction.
@@ -163,7 +184,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         key = 'capacity-filling entry'
         state_handler[key] = 'x' * (state_handler.state_size_limit - len(key))
 
-        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 132 bytes storage. "
+        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 134 bytes storage. "
                                                          "The current storage limit is 100."):
             state_handler['too much data'] = 'a few bits too long'
 
