@@ -216,7 +216,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         how we send all other mail in the codebase.
         """
         user = get_user_profile_by_email(to_email)
-        attempted_subdomain = get_subdomain(getattr(self, 'request'))
+        attempted_subdomain = get_subdomain(self.request)
         context['attempted_realm'] = False
         if not check_subdomain(user.realm.subdomain, attempted_subdomain):
             context['attempted_realm'] = get_realm(attempted_subdomain)
