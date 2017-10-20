@@ -20,7 +20,6 @@ from zerver.lib.addressee import (
 )
 from zerver.lib.cache import (
     delete_user_profile_caches,
-    to_dict_cache_key,
     to_dict_cache_key_id,
 )
 from zerver.lib.context_managers import lockfile
@@ -2625,9 +2624,7 @@ def do_rename_stream(stream, new_name, log=True):
     # clearer than trying to set them. display_recipient is the out of
     # date field in all cases.
     cache_delete_many(
-        to_dict_cache_key_id(message.id, True) for message in messages)
-    cache_delete_many(
-        to_dict_cache_key_id(message.id, False) for message in messages)
+        to_dict_cache_key_id(message.id) for message in messages)
     new_email = encode_email_address(stream)
 
     # We will tell our users to essentially
@@ -3193,10 +3190,10 @@ def update_to_dict_cache(changed_messages):
     message_ids = []
     for changed_message in changed_messages:
         message_ids.append(changed_message.id)
-        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
-        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
+        key = to_dict_cache_key_id(changed_message.id)
+        value = MessageDict.to_dict_uncached(changed_message)
+        items_for_remote_cache[key] = (value,)
+
     cache_set_many(items_for_remote_cache)
     return message_ids
 

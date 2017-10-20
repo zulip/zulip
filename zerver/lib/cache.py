@@ -449,17 +449,15 @@ def flush_stream(sender, **kwargs):
            Q(default_events_register_stream=stream)).exists():
         cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
 
-# TODO: Rename to_dict_cache_key_id and to_dict_cache_key
-def to_dict_cache_key_id(message_id, apply_markdown):
-    # type: (int, bool) -> Text
-    return u'message_dict:%d:%d' % (message_id, apply_markdown)
+def to_dict_cache_key_id(message_id):
+    # type: (int) -> Text
+    return u'message_dict:%d' % (message_id,)
 
-def to_dict_cache_key(message, apply_markdown):
-    # type: (Message, bool) -> Text
-    return to_dict_cache_key_id(message.id, apply_markdown)
+def to_dict_cache_key(message):
+    # type: (Message) -> Text
+    return to_dict_cache_key_id(message.id)
 
 def flush_message(sender, **kwargs):
     # type: (Any, **Any) -> None
     message = kwargs['instance']
-    cache_delete(to_dict_cache_key(message, False))
-    cache_delete(to_dict_cache_key(message, True))
+    cache_delete(to_dict_cache_key_id(message.id))
