@@ -245,6 +245,12 @@ DEFAULT_SETTINGS.update({
     # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
     'SYSTEM_ONLY_REALMS': {"zulip"},
 
+    # Alternate hostnames to serve particular realms on, in addition to
+    # their usual subdomains.  Keys are realm string_ids (aka subdomains),
+    # and values are alternate hosts.
+    # The values will also be added to ALLOWED_HOSTS.
+    'REALM_HOSTS': {},
+
     # Whether the server is using the Pgroonga full-text search
     # backend.  Plan is to turn this on for everyone after further
     # testing.
@@ -411,9 +417,11 @@ USE_X_FORWARDED_HOST = True
 
 # Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado),
 ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
-# and with hosts corresponding to EXTERNAL_HOST.
+# ... with hosts corresponding to EXTERNAL_HOST,
 ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
                   '.' + EXTERNAL_HOST.split(":")[0]]
+# ... and with the hosts in REALM_HOSTS.
+ALLOWED_HOSTS += REALM_HOSTS.values()
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
