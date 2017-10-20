@@ -45,11 +45,11 @@ class StateHandler(object):
         self.marshal = lambda obj: json.dumps(obj)
         self.demarshal = lambda obj: json.loads(obj)
 
-    def __getitem__(self, key):
+    def get(self, key):
         # type: (Text) -> Text
         return self.demarshal(get_bot_state(self.user_profile, key))
 
-    def __setitem__(self, key, value):
+    def put(self, key, value):
         # type: (Text, Text) -> None
         old_entry_size = get_bot_state_size(self.user_profile, key)
         new_entry_size = len(key) + len(value)
@@ -67,7 +67,7 @@ class StateHandler(object):
                                         "should be str.".format(type(marshaled_value)))
             set_bot_state(self.user_profile, key, marshaled_value)
 
-    def __contains__(self, key):
+    def contains(self, key):
         # type: (Text) -> bool
         return is_key_in_bot_state(self.user_profile, key)
 

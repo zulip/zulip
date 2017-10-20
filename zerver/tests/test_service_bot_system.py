@@ -143,25 +143,26 @@ class TestServiceBotStateHandler(ZulipTestCase):
     def test_basic_storage_and_retrieval(self):
         # type: () -> None
         storage = StateHandler(self.bot_profile)
-        storage['some key'] = 'some value'
-        storage['some other key'] = 'some other value'
-        self.assertEqual(storage['some key'], 'some value')
-        self.assertEqual(storage['some other key'], 'some other value')
-        self.assertFalse('nonexistent key' in storage)
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: storage['nonexistent key'])
+        storage.put('some key', 'some value')
+        storage.put('some other key', 'some other value')
+        self.assertEqual(storage.get('some key'), 'some value')
+        self.assertEqual(storage.get('some other key'), 'some other value')
+        self.assertTrue(storage.contains('some key'))
+        self.assertFalse(storage.contains('nonexistent key'))
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: storage.get('nonexistent key'))
 
         second_storage = StateHandler(self.second_bot_profile)
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: second_storage['some key'])
-        second_storage['some key'] = 'yet another value'
-        self.assertEqual(storage['some key'], 'some value')
-        self.assertEqual(second_storage['some key'], 'yet another value')
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: second_storage.get('some key'))
+        second_storage.put('some key', 'yet another value')
+        self.assertEqual(storage.get('some key'), 'some value')
+        self.assertEqual(second_storage.get('some key'), 'yet another value')
 
     def test_marshaling(self):
         # type: () -> None
         storage = StateHandler(self.bot_profile)
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        storage['some key'] = serializable_obj  # type: ignore # Ignore for testing.
-        self.assertEqual(storage['some key'], serializable_obj)
+        storage.put('some key', serializable_obj)  # type: ignore # Ignore for testing.
+        self.assertEqual(storage.get('some key'), serializable_obj)
 
     def test_invalid_calls(self):
         # type: () -> None
@@ -171,10 +172,10 @@ class TestServiceBotStateHandler(ZulipTestCase):
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
         with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The value type is "
                                                          "<class 'dict'>, but it should be str."):
-            storage['some key'] = serializable_obj  # type: ignore # We intend to test an invalid type.
+            storage.put('some key', serializable_obj)  # type: ignore # We intend to test an invalid type.
         with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The key type is "
                                                          "<class 'dict'>, but it should be str."):
-            storage[serializable_obj] = 'some value'  # type: ignore # We intend to test an invalid type.
+            storage.put(serializable_obj, 'some value')  # type: ignore # We intend to test an invalid type.
 
     def test_storage_limit(self):
         # type: () -> None
@@ -182,15 +183,15 @@ class TestServiceBotStateHandler(ZulipTestCase):
         StateHandler.state_size_limit = 100
         storage = StateHandler(self.bot_profile)
         key = 'capacity-filling entry'
-        storage[key] = 'x' * (storage.state_size_limit - len(key))
+        storage.put(key, 'x' * (StateHandler.state_size_limit - len(key)))
 
         with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 134 bytes storage. "
                                                          "The current storage limit is 100."):
-            storage['too much data'] = 'a few bits too long'
+            storage.put('too much data', 'a few bits too long')
 
         second_storage = StateHandler(self.second_bot_profile)
-        second_storage['another big entry'] = 'x' * (storage.state_size_limit - 40)
-        second_storage['normal entry'] = 'abcd'
+        second_storage.put('another big entry', 'x' * (StateHandler.state_size_limit - 40))
+        second_storage.put('normal entry', 'abcd')
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 
