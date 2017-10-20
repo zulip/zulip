@@ -5,9 +5,9 @@ All notable changes to the Zulip server are documented in this file.
 ### Unreleased
 
 This section lists notable unreleased changes; it is generally updated
-bursts.
+in bursts.
 
-Highlights:
+**Highlights:**
 
 - Migrated the project to run exclusively on Python 3.
 - Completely redesigned the emoji picker with a beautiful new design,
@@ -32,8 +32,6 @@ Highlights:
   compatibility with older server versions often, but it makes sense
   in this case, since the new API is necessary for providing a
   performant mobile experience.
-- Fixed Zulip's historically buggy support for running multiple
-  organizations (realms) on a single Zulip server.
 - Fixed a number of issues with untranslateable strings.  Zulip is now
   fully translated into Spanish, German, Czech, and Japanese, with
   significant translations for a number of other languages.
@@ -44,26 +42,26 @@ Highlights:
   users; chat.zulip.org serves 300MAUs and over 3000 total users on a
   VM with just 8GB of RAM (and its CPU is essentially always idle).
 
-Upgrade notes:
+**Upgrade notes:**
 
-* There are some significant database migrations that will be in the
-next release that can take several minutes to run.  These migrations
-will be automatically run during the upgrade process, but before
-user-facing downtime begins to avoid disruption.  However, if you'd
-like to watch the downtime part of the upgrade process carefully, we
-recommend
-[running these migrations manually](expensive-migrations.html) before
-starting the upgrade.
+* Zulip 1.7 contains some significant database migrations that can
+  take several minutes to run.  The upgrade process automatically
+  minimizes disruption by running these first, before beginning the
+  user-facing downtime.  However, if you'd like to watch the downtime
+  phase of the upgrade closely, we recommend [running them first
+  manually](expensive-migrations.html).
 
-* We fixed Zulip's previously buggy support for multiple organizations
-on the same Zulip server.  A consequence of doing this correctly means
-is that we require each organization to have its own subdomain.  This
-change should have no effect for the vast major of Zulip servers that
-only have one organization.  If you manage a server that hosts
-multiple organizations, you'll want to read
-[our guide on multiple organizations](prod-multiple-organizations.html).
+* We've removed support for an uncommon legacy deployment model where
+  a Zulip server served multiple organizations on the same domain.
+  Installs with multiple organizations now require each organization
+  to have its own subdomain.
 
-Full feature Changelog:
+  This change should have no effect for the vast majority of Zulip
+  servers that only have one organization.  If you manage a server
+  that hosts multiple organizations, you'll want to read [our guide on
+  multiple organizations](prod-multiple-organizations.html).
+
+**Full feature changelog:**
 
 - Simplified the process for installing a new Zulip server, as well as
   fixing the most common roadbumps and confusing error messages.
@@ -162,7 +160,7 @@ Full feature Changelog:
 
 ### 1.6.0 -- 2017-06-06
 
-Highlights:
+**Highlights:**
 
 - A complete visual redesign of the logged-out pages, including login,
 registration, integrations, etc.
@@ -196,7 +194,7 @@ Zulip apps.
 [electron-app]: https://github.com/zulip/zulip-electron/releases
 [ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 
-Full feature Changelog:
+**Full feature changelog:**
 
 * Added Basecamp, Gogs, Greenhouse, Home Assistant, Slack, Splunk, and
   WordPress webhook integrations.
@@ -296,7 +294,7 @@ Full feature Changelog:
 
 ### 1.5.0 -- 2017-02-06
 
-Highlights:
+**Highlights:**
 
 - Completely redesigned the Manage streams interface.
 - Added support for emoji reactions to messages.
@@ -310,7 +308,7 @@ Highlights:
   setting, `INLINE_URL_EMBED_PREVIEW`, is disabled by default in this
   release).
 
-Full feature Changelog:
+**Full feature changelog:**
 
 - Added an emoji picker/browser to the compose box.
 - Added markdown preview support to the compose box.
