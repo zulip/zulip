@@ -23,7 +23,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, \
     get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
-from zerver.lib.utils import mkdir_p
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 # Custom mypy types follow:
@@ -940,7 +939,7 @@ def export_uploads_from_local(realm, local_dir, output_dir):
     for attachment in Attachment.objects.filter(realm_id=realm.id):
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
-        mkdir_p(os.path.dirname(output_path))
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         subprocess.check_call(["cp", "-a", local_path, output_path])
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
@@ -984,7 +983,7 @@ def export_avatars_from_local(realm, local_dir, output_dir):
                 user.email, local_path))
             fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
-            mkdir_p(str(os.path.dirname(output_path)))
+            os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
             subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,

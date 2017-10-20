@@ -116,17 +116,6 @@ def generate_random_token(length):
     # type: (int) -> str
     return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
 
-def mkdir_p(path):
-    # type: (str) -> None
-    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
 def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=None):
     # type: (List[Any], Set[int], int, int) -> Iterable[Any]
     '''
