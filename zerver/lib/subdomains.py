@@ -17,10 +17,10 @@ def get_subdomain(request):
     # X-Forwarded-Host, it passes right through the same way.  So our
     # logic is a bit complicated to allow for that variation.
     #
-    # For EXTERNAL_HOST, we take a missing port to mean that any port
-    # should be accepted in Host.  It's not totally clear that's the
-    # right behavior, but it keeps compatibility with older versions
-    # of Zulip, so that's a start.
+    # For both EXTERNAL_HOST and REALM_HOSTS, we take a missing port
+    # to mean that any port should be accepted in Host.  It's not
+    # totally clear that's the right behavior, but it keeps
+    # compatibility with older versions of Zulip, so that's a start.
 
     host = request.get_host().lower()
 
@@ -31,6 +31,11 @@ def get_subdomain(request):
         if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
             return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
         return subdomain
+
+    for subdomain, realm_host in settings.REALM_HOSTS.items():
+        if re.search('^%s(:\d+)?$' % (realm_host,),
+                     host):
+            return subdomain
 
     return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 

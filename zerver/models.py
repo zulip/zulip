@@ -280,9 +280,10 @@ class Realm(models.Model):
     @staticmethod
     def host_for_subdomain(subdomain):
         # type: (str) -> str
-        if subdomain not in [None, ""]:
-            return "%s.%s" % (subdomain, settings.EXTERNAL_HOST)
-        return settings.EXTERNAL_HOST
+        if subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+            return settings.EXTERNAL_HOST
+        default_host = "%s.%s" % (subdomain, settings.EXTERNAL_HOST)
+        return settings.REALM_HOSTS.get(subdomain, default_host)
 
     @property
     def is_zephyr_mirror_realm(self):
