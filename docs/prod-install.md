@@ -162,12 +162,20 @@ new releases, security issues, etc.
 
 ## Troubleshooting
 
-If you get an error after `scripts/setup/install` completes, check the
-bottom of `/var/log/zulip/errors.log` for a traceback, and consult the
-[troubleshooting section](prod-troubleshooting.html) for advice on how
-to debug.
+* The `zulip` user's password.  By default, the `zulip` user doesn't
+have a password, and is intended to be accessed by `su zulip` from the
+`root` user (or via SSH keys or a password, if you want to set those
+up, but that's up to you as the system administrator).  Most people
+who are prompted for a password when running `su zulip` turn out to
+already have switched to the `zulip` user earlier in their session,
+and can just skip that step.
 
-If that doesn't help, please visit
+* If you get an error after `scripts/setup/install` completes, check
+the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
+the [troubleshooting section](prod-troubleshooting.html) for advice on
+how to debug.
+
+* If that doesn't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
 in the [Zulip development community server](chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
