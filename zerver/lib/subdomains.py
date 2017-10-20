@@ -26,16 +26,11 @@ def is_subdomain_root_or_alias(request):
     subdomain = _extract_subdomain(request)
     return not subdomain or subdomain in settings.ROOT_SUBDOMAIN_ALIASES
 
-def check_subdomain(realm_subdomain, user_subdomain):
-    # type: (Optional[Text], Text) -> bool
-    if realm_subdomain is not None:
-        if realm_subdomain != user_subdomain:
-            return False
-    return True
-
 def user_matches_subdomain(realm_subdomain, user_profile):
     # type: (Optional[Text], UserProfile) -> bool
-    return check_subdomain(realm_subdomain, user_profile.realm.subdomain)
+    if realm_subdomain is None:
+        return True
+    return user_profile.realm.subdomain == realm_subdomain
 
 def is_root_domain_available():
     # type: () -> bool
