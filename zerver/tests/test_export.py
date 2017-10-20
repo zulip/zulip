@@ -6,7 +6,6 @@ from django.test import TestCase
 import os
 import shutil
 import ujson
-import pathlib
 
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Set
@@ -185,7 +184,7 @@ class ExportTest(ZulipTestCase):
         # type: () -> str
         output_dir = 'var/test-export'
         rm_tree(output_dir)
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
     def _export_realm(self, realm, exportable_user_ids=None):

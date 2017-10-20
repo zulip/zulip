@@ -5,7 +5,6 @@ import errno
 import hashlib
 import logging
 import os
-import pathlib
 import pwd
 import re
 import shutil
@@ -119,7 +118,7 @@ def get_dev_uuid_var_path(create_if_missing=False):
             raise AssertionError("Missing UUID file; please run tools/provision!")
 
     result_path = os.path.join(zulip_path, "var", zulip_uuid)
-    pathlib.Path(result_path).mkdir(parents=True, exist_ok=True)
+    os.makedirs(result_path, exist_ok=True)
     return result_path
 
 def get_deployment_lock(error_rerun_script):

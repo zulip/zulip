@@ -11,7 +11,6 @@ from django.db.models.query import QuerySet
 import glob
 import logging
 import os
-import pathlib
 import ujson
 import shutil
 import subprocess
@@ -940,7 +939,7 @@ def export_uploads_from_local(realm, local_dir, output_dir):
     for attachment in Attachment.objects.filter(realm_id=realm.id):
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
-        pathlib.Path(os.path.dirname(output_path)).mkdir(parents=True, exist_ok=True)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         subprocess.check_call(["cp", "-a", local_path, output_path])
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
@@ -984,7 +983,7 @@ def export_avatars_from_local(realm, local_dir, output_dir):
                 user.email, local_path))
             fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
-            pathlib.Path(str(os.path.dirname(output_path))).mkdir(parents=True, exist_ok=True)
+            os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
             subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,

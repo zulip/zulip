@@ -2,7 +2,6 @@
 import os
 import shutil
 import sys
-import pathlib
 import subprocess
 import logging
 
@@ -35,7 +34,7 @@ try:
     # we can unpack using the Zulip user even if the original path was
     # not readable by the Zulip user.
     logging.info("Archiving the tarball under %s" % (TARBALL_ARCHIVE_PATH,))
-    pathlib.Path(TARBALL_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
+    os.makedirs(TARBALL_ARCHIVE_PATH, exist_ok=True)
     archived_tarball_path = os.path.join(TARBALL_ARCHIVE_PATH, os.path.basename(tarball_path))
     shutil.copy(tarball_path, archived_tarball_path)
     subprocess.check_output(["chown", "-R", "zulip:zulip", TARBALL_ARCHIVE_PATH])
