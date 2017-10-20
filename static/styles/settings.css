@@ -519,7 +519,8 @@ input[type=checkbox].inline-block {
     text-align: left;
 }
 
-#realm_notifications_stream_label > button {
+#realm_notifications_stream_label > button,
+#realm_signup_notifications_stream_label > button {
     margin: 0px 5px;
 }
 
@@ -1125,11 +1126,13 @@ input[type=checkbox].inline-block {
     border-radius: 0px;
 }
 
-#id_realm_notifications_stream .dropdown-search > input[type=text] {
+#id_realm_notifications_stream .dropdown-search > input[type=text],
+#id_realm_signup_notifications_stream .dropdown-search > input[type=text] {
     margin: 9px;
 }
 
-#id_realm_notifications_stream .dropdown-list-body {
+#id_realm_notifications_stream .dropdown-list-body,
+#id_realm_signup_notifications_stream .dropdown-list-body {
     position: relative;
     height: auto;
     max-height: 200px;

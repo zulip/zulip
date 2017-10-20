@@ -139,7 +139,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     var search_input = $("#id_realm_notifications_stream .dropdown-search > input[type=text]");
 
     list_render(dropdown_list_body, stream_list, {
-        name: "admin-realm-dropdown-stream-list",
+        name: "admin-realm-notifications-stream-dropdown-list",
         modifier: function (item) {
             return templates.render("admin-realm-dropdown-stream-list", { stream: item });
         },
@@ -165,6 +165,48 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
+exports.render_signup_notifications_stream_ui = function (stream_id) {
+    var elem = $('#realm_signup_notifications_stream_name');
+
+    var name = stream_data.maybe_get_stream_name(stream_id);
+
+    if (!name) {
+        elem.text(i18n.t("Disabled"));
+        elem.addClass("text-warning");
+        return;
+    }
+
+    // Happy path
+    elem.text('#' + name);
+    elem.removeClass('text-warning');
+};
+
+exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
+    var dropdown_list_body = $("#id_realm_signup_notifications_stream .dropdown-list-body").expectOne();
+    var search_input = $("#id_realm_signup_notifications_stream .dropdown-search > input[type=text]");
+
+    list_render(dropdown_list_body, stream_list, {
+        name: "admin-realm-signup-notifications-stream-dropdown-list",
+        modifier: function (item) {
+            return templates.render("admin-realm-dropdown-stream-list", { stream: item });
+        },
+        filter: {
+            element: search_input,
+            callback: function (item, value) {
+                return item.name.toLowerCase().indexOf(value) >= 0;
+            },
+        },
+    }).init();
+
+    $("#id_realm_signup_notifications_stream .dropdown-search").click(function (e) {
+        e.stopPropagation();
+    });
+
+    $("#id_realm_signup_notifications_stream .dropdown-toggle").click(function () {
+        search_input.val("").trigger("input");
+    });
+};
+
 function property_type_status_element(element) {
     return $("#admin-realm-" + element.split('_').join('-') + "-status").expectOne();
 }
@@ -176,9 +218,12 @@ function _set_up() {
 
     // Populate notifications stream modal
     if (page_params.is_admin) {
-        exports.populate_notifications_stream_dropdown(stream_data.get_streams_for_settings_page());
+        var streams = stream_data.get_streams_for_settings_page();
+        exports.populate_notifications_stream_dropdown(streams);
+        exports.populate_signup_notifications_stream_dropdown(streams);
     }
     exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id);
+    exports.render_signup_notifications_stream_ui(page_params.realm_signup_notifications_stream_id);
 
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
@@ -689,6 +734,52 @@ function _set_up() {
 
     $(".notifications-stream-disable").click(function () {
         update_notifications_stream(-1);
+    });
+
+    var signup_notifications_stream_status = $("#admin-realm-signup-notifications-stream-status").expectOne();
+    function update_signup_notifications_stream(new_signup_notifications_stream_id) {
+        exports.render_signup_notifications_stream_ui(new_signup_notifications_stream_id);
+        signup_notifications_stream_status.hide();
+        var stringified_id = JSON.stringify(parseInt(new_signup_notifications_stream_id, 10));
+        var url = "/json/realm";
+        var data = {
+            signup_notifications_stream_id: stringified_id,
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+
+            success: function (response_data) {
+                if (response_data.signup_notifications_stream_id !== undefined) {
+                    if (response_data.signup_notifications_stream_id < 0) {
+                        ui_report.success(i18n.t("Signup notifications stream disabled!"), signup_notifications_stream_status);
+                    } else {
+                        ui_report.success(i18n.t("Signup notifications stream changed!"), signup_notifications_stream_status);
+                    }
+                }
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed to change signup notifications stream!"), xhr, signup_notifications_stream_status);
+            },
+        });
+    }
+
+    dropdown_menu = $("#id_realm_signup_notifications_stream .dropdown-menu");
+    $("#id_realm_signup_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
+        if (e.type === "keypress") {
+            if (e.which === 13) {
+               dropdown_menu.dropdown("toggle");
+            } else {
+                return;
+            }
+        }
+
+        update_signup_notifications_stream($(this).attr("data-stream-id"));
+    });
+
+    $(".signup-notifications-stream-disable").click(function () {
+        update_signup_notifications_stream(-1);
     });
 
     function upload_realm_icon(file_input) {
