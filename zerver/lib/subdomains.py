@@ -6,17 +6,13 @@ from typing import Optional, Text
 
 from zerver.models import get_realm, Realm, UserProfile
 
-def _extract_subdomain(request):
-    # type: (HttpRequest) -> Text
-    domain = request.get_host().lower()
-    index = domain.find("." + settings.EXTERNAL_HOST)
-    if index == -1:
-        return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-    return domain[0:index]
-
 def get_subdomain(request):
     # type: (HttpRequest) -> Text
-    subdomain = _extract_subdomain(request)
+    host = request.get_host().lower()
+    index = host.find("." + settings.EXTERNAL_HOST)
+    if index == -1:
+        return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+    subdomain = host[0:index]
     if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
         return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
     return subdomain
