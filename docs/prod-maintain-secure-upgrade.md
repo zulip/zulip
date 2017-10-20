@@ -95,9 +95,15 @@ restart the server.
 
 ### Applying Ubuntu system updates
 
-While the Zulip upgrade script runs `apt-get upgrade`, you are responsible for
-running this on your system on a regular basis between Zulip upgrades to
-ensure that it is up to date with the latest security patches.
+The Zulip upgrade script will automatically run `apt-get update` and
+then `apt-get upgrade`.  If you'd like to minimize downtime, you
+should do an apt upgrade before running the Zulip upgrade script (and
+then restart the server and check everything is working) before
+running the upgrade script.
+
+Also note that you are responsible for running this on your system on
+a regular basis between Zulip upgrades to ensure that your system is
+up to date with the latest upstream security patches.
 
 ### API and your Zulip URL
 
