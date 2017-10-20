@@ -6,6 +6,7 @@ from django.test import TestCase
 import os
 import shutil
 import ujson
+import pathlib
 
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Set
@@ -23,7 +24,6 @@ from zerver.lib.upload import (
     upload_message_image,
 )
 from zerver.lib.utils import (
-    mkdir_p,
     query_chunker,
 )
 from zerver.lib.test_classes import (
@@ -185,7 +185,7 @@ class ExportTest(ZulipTestCase):
         # type: () -> str
         output_dir = 'var/test-export'
         rm_tree(output_dir)
-        mkdir_p(output_dir)
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
         return output_dir
 
     def _export_realm(self, realm, exportable_user_ids=None):

@@ -5,6 +5,7 @@ import errno
 import hashlib
 import logging
 import os
+import pathlib
 import pwd
 import re
 import shutil
@@ -100,17 +101,6 @@ if __name__ == '__main__':
     if cmd == 'make_deploy_path':
         print(make_deploy_path())
 
-def mkdir_p(path):
-    # type: (str) -> None
-    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
     zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -129,7 +119,7 @@ def get_dev_uuid_var_path(create_if_missing=False):
             raise AssertionError("Missing UUID file; please run tools/provision!")
 
     result_path = os.path.join(zulip_path, "var", zulip_uuid)
-    mkdir_p(result_path)
+    pathlib.Path(result_path).mkdir(parents=True, exist_ok=True)
     return result_path
 
 def get_deployment_lock(error_rerun_script):
