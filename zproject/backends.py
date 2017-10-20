@@ -237,11 +237,9 @@ class SocialAuthMixin(ZulipAuthMixin):
                                                  invalid_subdomain=bool(invalid_subdomain),
                                                  mobile_flow_otp=mobile_flow_otp,
                                                  is_signup=is_signup)
-        try:
-            realm = Realm.objects.get(string_id=subdomain)
-        except Realm.DoesNotExist:
+        realm = get_realm(subdomain)
+        if realm is None:
             return redirect_to_subdomain_login_url()
-
         return redirect_and_log_into_subdomain(realm, full_name, email_address,
                                                is_signup=is_signup)
 
