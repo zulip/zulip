@@ -562,11 +562,9 @@ def get_messages_backend(request, user_profile,
                          num_before = REQ(converter=to_non_negative_int),
                          num_after = REQ(converter=to_non_negative_int),
                          narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                         use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
-                         client_gravatar=REQ(default=False,
-                                             converter=ujson.loads),
-                         apply_markdown=REQ(default=True,
-                                            converter=ujson.loads)):
+                         use_first_unread_anchor = REQ(validator=check_bool, default=False),
+                         client_gravatar = REQ(validator=check_bool, default=False),
+                         apply_markdown = REQ(validator=check_bool, default=True)):
     # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool, bool) -> HttpResponse
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
