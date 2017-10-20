@@ -518,6 +518,24 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand=self.example_email("othello"))])))
 
+    def test_client_avatar(self):
+        # type: () -> None
+        """
+        The client_gravatar flag determines whether we send avatar_url.
+        """
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
+
+        self.send_message(hamlet.email, self.example_email("iago"), Recipient.PERSONAL)
+
+        result = self.get_and_check_messages({})
+        message = result['messages'][0]
+        self.assertIn('gravatar.com', message['avatar_url'])
+
+        result = self.get_and_check_messages(dict(client_gravatar=ujson.dumps(True)))
+        message = result['messages'][0]
+        self.assertEqual(message['avatar_url'], None)
+
     def test_get_messages_with_narrow_pm_with(self):
         # type: () -> None
         """

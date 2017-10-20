@@ -576,7 +576,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
-        MessageDict.post_process_dicts([dct])
+        MessageDict.post_process_dicts([dct], client_gravatar=False)
         self.assertEqual(dct['display_recipient'], 'Denmark')
 
         stream = get_stream('Denmark', user_profile.realm)
@@ -699,7 +699,7 @@ class MessageDictTest(ZulipTestCase):
                 MessageDict.build_dict_from_raw_db_row(row, False)
                 for row in rows
             ]
-            MessageDict.post_process_dicts(objs)
+            MessageDict.post_process_dicts(objs, client_gravatar=False)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1.5ms per message to
@@ -1268,7 +1268,7 @@ class EditMessageTest(ZulipTestCase):
         msg = Message.objects.get(id=msg_id)
         cached = message_to_dict(msg, False)
         uncached = MessageDict.to_dict_uncached_helper(msg, False)
-        MessageDict.post_process_dicts([uncached])
+        MessageDict.post_process_dicts([uncached], client_gravatar=False)
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.topic_name(), subject)

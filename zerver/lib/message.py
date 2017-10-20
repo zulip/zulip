@@ -78,7 +78,17 @@ def message_to_dict(message, apply_markdown):
     # type: (Message, bool) -> Dict[str, Any]
     json = message_to_dict_json(message, apply_markdown)
     obj = extract_message_dict(json)
-    MessageDict.post_process_dicts([obj])
+
+    '''
+    In this codepath we do net yet optimize for clients
+    that can compute their own gravatar URLs.
+    '''
+    client_gravatar = False
+
+    MessageDict.post_process_dicts(
+        [obj],
+        client_gravatar=client_gravatar,
+    )
     return obj
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
@@ -88,13 +98,13 @@ def message_to_dict_json(message, apply_markdown):
 
 class MessageDict(object):
     @staticmethod
-    def post_process_dicts(objs):
-        # type: (List[Dict[str, Any]]) -> None
+    def post_process_dicts(objs, client_gravatar):
+        # type: (List[Dict[str, Any]], bool) -> None
         MessageDict.bulk_hydrate_sender_info(objs)
 
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj)
-            MessageDict.set_sender_avatar(obj)
+            MessageDict.set_sender_avatar(obj, client_gravatar)
 
             del obj['sender_realm_id']
             del obj['sender_avatar_source']
@@ -366,16 +376,13 @@ class MessageDict(object):
             obj['stream_id'] = recipient_type_id
 
     @staticmethod
-    def set_sender_avatar(obj):
-        # type: (Dict[str, Any]) -> None
+    def set_sender_avatar(obj, client_gravatar):
+        # type: (Dict[str, Any], bool) -> None
         sender_id = obj['sender_id']
         sender_realm_id = obj['sender_realm_id']
         sender_email = obj['sender_email']
         sender_avatar_source = obj['sender_avatar_source']
         sender_avatar_version = obj['sender_avatar_version']
-
-        # TODO: Make client_gravatar configurable.
-        client_gravatar = False
 
         obj['avatar_url'] = get_avatar_field(
             user_id=sender_id,

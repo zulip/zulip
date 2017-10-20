@@ -563,9 +563,11 @@ def get_messages_backend(request, user_profile,
                          num_after = REQ(converter=to_non_negative_int),
                          narrow = REQ('narrow', converter=narrow_parameter, default=None),
                          use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
+                         client_gravatar=REQ(default=False,
+                                             converter=ujson.loads),
                          apply_markdown=REQ(default=True,
                                             converter=ujson.loads)):
-    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool, bool) -> HttpResponse
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
@@ -760,7 +762,7 @@ def get_messages_backend(request, user_profile,
             del msg_dict["edit_history"]
         message_list.append(msg_dict)
 
-    MessageDict.post_process_dicts(message_list)
+    MessageDict.post_process_dicts(message_list, client_gravatar)
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
