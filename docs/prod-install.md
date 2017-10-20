@@ -67,7 +67,7 @@ it's running from (which you unpacked from a tarball above) to a
 directory there, and makes `/home/zulip/deployments/current` as a
 symbolic link to it.
 * Installs Zulip's various dependencies.
-* Cconfigures the various third-party services Zulip uses, including
+* Configures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
 
 ## Step 3: Configure Zulip
