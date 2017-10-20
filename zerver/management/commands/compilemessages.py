@@ -89,6 +89,7 @@ class Command(compilemessages.Command):
                     'name': 'English',
                     'name_local': 'English',
                     'code': 'en',
+                    'locale': 'en',
                 })
                 continue
 
@@ -111,7 +112,8 @@ class Command(compilemessages.Command):
 
             info['name'] = name
             info['name_local'] = name_local
-            info['code'] = locale
+            info['code'] = code
+            info['locale'] = locale
             info['percent_translated'] = percentage
             data['languages'].append(info)
 
