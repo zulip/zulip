@@ -376,14 +376,6 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 };
 
-exports.toggle = function () {
-    if (overlays.drafts_open()) {
-        overlays.close_overlay("drafts");
-    } else {
-        exports.launch();
-    }
-};
-
 exports.launch = function () {
     exports.setup_page(function () {
         overlays.open_overlay({
