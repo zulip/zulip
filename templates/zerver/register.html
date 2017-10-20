@@ -105,7 +105,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
                             {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
                         <span></span>
-                        Use {{ external_host }}
+                        {% trans %}Use {{ external_host }}{% endtrans %}
                     </label>
                     {% endif %}
 
