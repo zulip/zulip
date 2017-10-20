@@ -5,7 +5,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
 from django.http.multipartparser import MultiPartParser
-from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
+from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 from zerver.lib.response import json_error, json_unauthorized, json_success
 from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
@@ -199,7 +199,7 @@ def validate_api_key(request, role, api_key, is_webhook=False,
         if api_key != remote_server.api_key:
             raise InvalidZulipServerKeyError(role)
 
-        if not check_subdomain(get_subdomain(request), ""):
+        if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
         request._email = "zulip-server:" + role
