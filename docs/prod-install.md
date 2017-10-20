@@ -105,11 +105,12 @@ order for you to complete the installation.
 ## Step 5: Initialize Zulip database
 
 At this point, you are done doing things as root. The remaining
-commands are run as the `zulip` user using `su zulip`. To initialize
-the Zulip database for your production install, run:
+commands are run as the `zulip` user. Change to the `zulip` user
+and initialize the Zulip database for your production install:
 
 ```
-su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+su zulip
+/home/zulip/deployments/current/scripts/setup/initialize-database
 ```
 
 The `initialize-database` script will report an error if you did not
