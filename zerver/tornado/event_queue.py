@@ -28,6 +28,7 @@ from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
+from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
@@ -783,12 +784,18 @@ def process_message_event(event_template, users):
     send_to_clients = get_client_info_for_message_event(event_template, users)
 
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
-    message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
-    message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
-    sender_id = message_dict_markdown['sender_id']  # type: int
-    message_id = message_dict_markdown['id']  # type: int
-    message_type = message_dict_markdown['type']  # type: str
-    sending_client = message_dict_markdown['client']  # type: Text
+    message_dict = event_template['message_dict']  # type: Dict[str, Any]
+
+    sender_id = message_dict['sender_id']  # type: int
+    message_id = message_dict['id']  # type: int
+    message_type = message_dict['type']  # type: str
+    sending_client = message_dict['client']  # type: Text
+
+    message_dict_html = copy.deepcopy(message_dict)
+    MessageDict.finalize_payload(message_dict_html, apply_markdown=True)
+
+    message_dict_text = copy.deepcopy(message_dict)
+    MessageDict.finalize_payload(message_dict_text, apply_markdown=False)
 
     # Extra user-specific data to include
     extra_user_data = {}  # type: Dict[int, Any]
@@ -828,9 +835,9 @@ def process_message_event(event_template, users):
             continue
 
         if client.apply_markdown:
-            message_dict = message_dict_markdown
+            message_dict = message_dict_html
         else:
-            message_dict = message_dict_no_markdown
+            message_dict = message_dict_text
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

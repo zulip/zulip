@@ -14,7 +14,7 @@ from zerver.models import (
     Reaction, UserMessage
 )
 from zerver.lib.message import (
-    message_to_dict,
+    MessageDict,
 )
 from zerver.lib.narrow import (
     build_narrow_filter,
@@ -1219,7 +1219,8 @@ class GetOldMessagesTest(ZulipTestCase):
         m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
-        d = message_to_dict(m, True)
+        d = MessageDict.wide_dict(m)
+        MessageDict.finalize_payload(d, apply_markdown=True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
     def common_check_get_messages_query(self, query_params, expected):

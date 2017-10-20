@@ -28,7 +28,6 @@ from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
     MessageDict,
-    message_to_dict,
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
@@ -1098,12 +1097,11 @@ def do_send_messages(messages_maybe_none):
     for message in messages:
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        message_dict_markdown = message_to_dict(message['message'], apply_markdown=True)
-        message_dict_no_markdown = message_to_dict(message['message'], apply_markdown=False)
+        wide_message_dict = MessageDict.wide_dict(message['message'])
 
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
-        message_type = message_dict_no_markdown['type']
+        message_type = wide_message_dict['type']
 
         presence_idle_user_ids = get_active_presence_idle_user_ids(
             realm=sender.realm,
@@ -1116,8 +1114,7 @@ def do_send_messages(messages_maybe_none):
         event = dict(
             type='message',
             message=message['message'].id,
-            message_dict_markdown=message_dict_markdown,
-            message_dict_no_markdown=message_dict_no_markdown,
+            message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
         )
 
@@ -1166,7 +1163,7 @@ def do_send_messages(messages_maybe_none):
             if feedback_bot_id in message['active_user_ids']:
                 queue_json_publish(
                     'feedback_messages',
-                    message_to_dict(message['message'], apply_markdown=False),
+                    wide_message_dict,
                     lambda x: None
                 )
 
@@ -1181,7 +1178,7 @@ def do_send_messages(messages_maybe_none):
                 queue_json_publish(
                     queue_name,
                     {
-                        "message": message_to_dict(message['message'], apply_markdown=False),
+                        "message": wide_message_dict,
                         "trigger": event['trigger'],
                         "user_profile_id": event["user_profile_id"],
                         "failed_tries": 0,

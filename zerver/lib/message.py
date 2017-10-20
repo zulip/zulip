@@ -74,30 +74,41 @@ def stringify_message_dict(message_dict):
     # type: (Dict[str, Any]) -> binary_type
     return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
-def message_to_dict(message, apply_markdown):
-    # type: (Message, bool) -> Dict[str, Any]
-    json = message_to_dict_json(message)
-    obj = extract_message_dict(json)
-
-    '''
-    In this codepath we do net yet optimize for clients
-    that can compute their own gravatar URLs.
-    '''
-    client_gravatar = False
-
-    MessageDict.post_process_dicts(
-        [obj],
-        apply_markdown=apply_markdown,
-        client_gravatar=client_gravatar,
-    )
-    return obj
-
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message):
     # type: (Message) -> binary_type
     return MessageDict.to_dict_uncached(message)
 
 class MessageDict(object):
+    @staticmethod
+    def wide_dict(message):
+        # type: (Message) -> Dict[str, Any]
+        '''
+        The next two lines get the cachable field related
+        to our message object, with the side effect of
+        populating the cache.
+        '''
+        json = message_to_dict_json(message)
+        obj = extract_message_dict(json)
+
+        '''
+        In this codepath we do net yet optimize for clients
+        that can compute their own gravatar URLs.
+        '''
+        client_gravatar = False
+
+        '''
+        The steps below are similar to what we do in
+        post_process_dicts(), except we don't call finalize_payload(),
+        since that step happens later in the queue
+        processor.
+        '''
+        MessageDict.bulk_hydrate_sender_info([obj])
+        MessageDict.hydrate_recipient_info(obj)
+        MessageDict.set_sender_avatar(obj, client_gravatar)
+
+        return obj
+
     @staticmethod
     def post_process_dicts(objs, apply_markdown, client_gravatar):
         # type: (List[Dict[str, Any]], bool, bool) -> None

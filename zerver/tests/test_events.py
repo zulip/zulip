@@ -2109,19 +2109,24 @@ class ClientDescriptorsTest(ZulipTestCase):
         sender_id = hamlet.id
 
         message_event = dict(
-            message_dict_markdown=dict(
-                id=999,
-                content='<b>hello</b>',
-                sender_id=sender_id,
-                type='stream',
-                client='website',
-            ),
-            message_dict_no_markdown=dict(
+            message_dict=dict(
                 id=999,
                 content='**hello**',
+                rendered_content='<b>hello</b>',
                 sender_id=sender_id,
                 type='stream',
                 client='website',
+
+                # NOTE: Some of these fields are clutter, but some
+                #       will be useful when we let clients specify
+                #       that they can compute their own gravatar URLs.
+                sender_realm_id=None,
+                sender_avatar_source=None,
+                sender_avatar_version=None,
+                sender_is_mirror_dummy=None,
+                raw_display_recipient=None,
+                recipient_type=None,
+                recipient_type_id=None,
             ),
         )
 
@@ -2142,6 +2147,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                     sender_id=sender_id,
                     id=999,
                     content='<b>hello</b>',
+                    content_type='text/html',
                     client='website',
                 ),
                 flags=['starred'],
@@ -2156,6 +2162,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                     sender_id=sender_id,
                     id=999,
                     content='**hello**',
+                    content_type='text/x-markdown',
                     client='website',
                 ),
                 flags=['has_alert_word'],
