@@ -24,6 +24,10 @@ exports.initialize = function () {
     var ls = localstorage();
 
     var should_show_notifications = (
+        // notifications *basically* don't work on any mobile platforms, so don't
+        // event show the banners. This prevents trying to access things that
+        // don't exist like `Notification.permission`.
+        !util.is_mobile() &&
         // if the user said to never show banner on this computer again, it will
         // be stored as `true` so we want to negate that.
         !ls.get("dontAskForNotifications") &&
