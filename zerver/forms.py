@@ -22,7 +22,7 @@ from zerver.lib.actions import do_change_password, user_email_is_unique, \
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.subdomains import get_subdomain, check_subdomain, is_root_domain_available
+from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     get_realm, email_to_domain, email_allowed_for_realm
@@ -218,7 +218,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         user = get_user_profile_by_email(to_email)
         attempted_subdomain = get_subdomain(self.request)
         context['attempted_realm'] = False
-        if not check_subdomain(attempted_subdomain, user.realm.subdomain):
+        if not user_matches_subdomain(attempted_subdomain, user):
             context['attempted_realm'] = get_realm(attempted_subdomain)
 
         send_email('zerver/emails/password_reset', to_user_id=user.id,
@@ -293,7 +293,7 @@ Please contact %s to reactivate this group.""" % (
                 u"If you're not sure who that is, try contacting %s.") % (FromAddress.SUPPORT,)
             raise ValidationError(mark_safe(error_msg))
 
-        if not check_subdomain(get_subdomain(self.request), user_profile.realm.subdomain):
+        if not user_matches_subdomain(get_subdomain(self.request), user_profile):
             logging.warning("User %s attempted to password login to wrong subdomain %s" %
                             (user_profile.email, get_subdomain(self.request)))
             raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))

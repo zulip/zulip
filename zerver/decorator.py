@@ -12,7 +12,7 @@ from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.subdomains import get_subdomain, check_subdomain
+from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
@@ -229,7 +229,7 @@ def validate_account_and_subdomain(request, user_profile):
     # in the message_sender worker (which will have already had the
     # subdomain validated), or we're accessing Tornado from and to
     # localhost (aka spoofing a request as the user).
-    if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
+    if (not user_matches_subdomain(get_subdomain(request), user_profile) and
         not (request.method == "SOCKET" and
              request.META['SERVER_NAME'] == "127.0.0.1") and
         not (settings.RUNNING_INSIDE_TORNADO and
@@ -361,7 +361,7 @@ def logged_in_and_active(request):
         return False
     if request.user.realm.deactivated:
         return False
-    return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
+    return user_matches_subdomain(get_subdomain(request), request.user)
 
 def do_login(request, user_profile):
     # type: (HttpRequest, UserProfile) -> None

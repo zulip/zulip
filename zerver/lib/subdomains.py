@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from typing import Optional, Text
 
-from zerver.models import get_realm, Realm
+from zerver.models import get_realm, Realm, UserProfile
 
 def _extract_subdomain(request):
     # type: (HttpRequest) -> Text
@@ -32,6 +32,10 @@ def check_subdomain(realm_subdomain, user_subdomain):
         if realm_subdomain != user_subdomain:
             return False
     return True
+
+def user_matches_subdomain(realm_subdomain, user_profile):
+    # type: (Optional[Text], UserProfile) -> bool
+    return check_subdomain(realm_subdomain, user_profile.realm.subdomain)
 
 def is_root_domain_available():
     # type: () -> bool

@@ -17,7 +17,7 @@ from social_django.strategy import DjangoStrategy
 
 from zerver.lib.actions import do_create_user
 from zerver.lib.request import JsonableError
-from zerver.lib.subdomains import check_subdomain, get_subdomain
+from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
@@ -177,8 +177,8 @@ class SocialAuthMixin(ZulipAuthMixin):
             return_data["inactive_realm"] = True
             return None
 
-        if not check_subdomain(kwargs.get("realm_subdomain"),
-                               user_profile.realm.subdomain):
+        if not user_matches_subdomain(kwargs.get("realm_subdomain"),
+                                      user_profile):
             return_data["invalid_subdomain"] = True
             return None
 
@@ -265,7 +265,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
             user_profile = common_get_active_user_by_email(username)
             if user_profile is None:
                 return None
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 if return_data is not None:
                     return_data["invalid_subdomain"] = True
                 return None
@@ -301,7 +301,7 @@ class EmailAuthBackend(ZulipAuthMixin):
                 return_data['email_auth_disabled'] = True
             return None
         if user_profile.check_password(password):
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 if return_data is not None:
                     return_data["invalid_subdomain"] = True
                 return None
@@ -341,7 +341,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             if user_profile.realm.deactivated:
                 return_data["inactive_realm"] = True
                 return None
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 return_data["invalid_subdomain"] = True
                 return None
             if not google_auth_enabled(realm=user_profile.realm):
@@ -364,7 +364,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         user_profile = common_get_active_user_by_email(email)
         if user_profile is None:
             return None
-        if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+        if not user_matches_subdomain(realm_subdomain, user_profile):
             return None
         if not auth_enabled_helper([u"RemoteUser"], user_profile.realm):
             return None
@@ -427,7 +427,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                                                                  password=password)
             if user_profile is None:
                 return None
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 return None
             return user_profile
         except Realm.DoesNotExist:
