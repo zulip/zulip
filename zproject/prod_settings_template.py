@@ -148,6 +148,8 @@ SSO_APPEND_DOMAIN = None  # type: Optional[str]
 # https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
 # for information on how to sign up for and configure this.
 #PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'
+# Set the below option to True in order to redact the content of push notifications.
+#PUSH_NOTIFICATION_REDACT_CONTENT = True
 
 # Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
