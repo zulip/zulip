@@ -33,8 +33,8 @@ in bursts.
   in this case, since the new API is necessary for providing a
   performant mobile experience.
 - Fixed a number of issues with untranslateable strings.  Zulip is now
-  fully translated into Spanish, German, Czech, and Japanese, with
-  significant translations for a number of other languages.
+  fully translated into Chinese, Spanish, German, Czech, and Japanese,
+  with significant translations for a number of other languages.
 - Added automatic "soft deactivation", which dramatically improves
   performance for organizations with a large number of inactive users,
   without any impact to the experience should those users return.
@@ -61,6 +61,12 @@ in bursts.
   that hosts multiple organizations, you'll want to read [our guide on
   multiple organizations](prod-multiple-organizations.html).
 
+* We simplified the configuration for our password strength checker to
+  be much more intuitive.  If you were using the
+  `PASSWORD_MIN_ZXCVBN_QUALITY` setting,
+  [it has been replaced](a116303604e362796afa54b5d923ea5312b2ea23) by
+  the more intuitive `PASSWORD_MIN_GUESSES`.
+
 **Full feature changelog:**
 
 - Simplified the process for installing a new Zulip server, as well as
@@ -78,10 +84,14 @@ in bursts.
 - Added new "getting started" guides to the user documentation.
 - Added support for installing a Zulip server from a Git checkout.
 - Added support for mentioning a user when editing a message.
-- Added an OpsGenie integration.
+- Added OpsGenie, Google Code-In, Google Search, and xkcd integrations.
 - Added support for organization administrators deleting private streams.
 - Added support for using any LDAP attribute for login username.
 - Added support for searching by group-pm-with.
+- Added support for mentioning users when editing messages.
+- Added a much prettier prompt for enabling desktop notifications.
+- Added a new PHYSICAL_ADDRESS setting to be used in outgoing emails
+  to support compliance with anti-spam regulations.
 - Dramatically improved the search typeahead experience when using
   multiple operators.
 - Improved design for /stats page and added a link to it in the gear menu.
@@ -95,6 +105,7 @@ in bursts.
   Git frequently.
 - Improve mention typeahead sort order to prioritize recent senders in
   a stream.
+- Swapped the 'q' and 'w' hotkeys to better match the UI.
 - Fixed most issues with the registration flow, including adding Oauth
   support for mobile and many corner case problems.
 - Significantly improved sort ordering for the emoji picker.
@@ -140,6 +151,9 @@ in bursts.
 - Fixed zombie process leaks on servers with <4GB of RAM.
 - Fixed markdown previews of /me messages.
 - Fixed a subtle bug involving timestamps of locally echoed messages.
+- Fixed the behavior of key combintions like Ctrl+Enter in the compose box.
+- Worked around Google Compute Engine's default boto configuration,
+  which broke Zulip (and any other app using boto).
 - Zulip now will gracefully handle the Postgres server being restarted.
 - Optimized marking an entire topic as read.
 - Switched from npm to yarn for downloading JS packages.
