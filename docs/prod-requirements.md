@@ -23,8 +23,10 @@ can't support you, but
 
 #### Operating System
 
-Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are supported for running
-Zulip in production. 64-bit is recommended.
+Ubuntu 16.04 Xenial and Ubuntu 14.04 Trusty are supported for running
+Zulip in production.  64-bit is recommended.  We recommend Xenial if
+you have a choice, since 14.04 is approaching end-of-life and you'll
+save yourself the work of upgrading in a few months.
 
 #### Hardware Specifications
 
