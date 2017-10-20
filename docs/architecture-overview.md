@@ -23,12 +23,8 @@ integrations with
 bindings](https://github.com/zulip/zulip-node); and our [full-text
 search PostgreSQL extension](https://github.com/zulip/tsearch_extras).
 
-Our mobile clients are separate code repositories:
-[Android](https://github.com/zulip/zulip-android) and
-[React Native iOS app](https://github.com/zulip/zulip-mobile).  Our
-[legacy desktop application (implemented in QT/WebKit)](https://github.com/zulip/zulip-desktop)
-and our new, alpha
-[cross-platform desktop app (implemented in Electron)](https://github.com/zulip/zulip-electron)
+[Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official mobile Zulip client supporting both iOS and Android, written in JavaScript with React Native. It supersedes our two native apps [zulip-ios](https://github.com/zulip/zulip-ios-legacy) and [zulip-android](https://github.com/zulip/zulip-android). Our [legacy desktop application (implemented in QT/WebKit)](https://github.com/zulip/zulip-desktop)
+and our new, alpha [cross-platform desktop app (implemented in Electron)](https://github.com/zulip/zulip-electron)
 are also separate repositories.
 
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
