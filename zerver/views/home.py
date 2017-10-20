@@ -79,7 +79,7 @@ def home(request):
     # page, not the login form, on the root domain
 
     subdomain = get_subdomain(request)
-    if subdomain != "":
+    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
         return home_real(request)
 
     return render(request, 'zerver/hello.html')

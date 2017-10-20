@@ -660,7 +660,7 @@ def get_auth_backends_data(request):
         realm = Realm.objects.get(string_id=subdomain)
     except Realm.DoesNotExist:
         # If not the root subdomain, this is an error
-        if subdomain != "":
+        if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain"))
         # With the root subdomain, it's an error or not depending
         # whether ROOT_DOMAIN_LANDING_PAGE (which indicates whether

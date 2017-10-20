@@ -13,18 +13,20 @@ from zerver.decorator import has_request_variables, REQ
 from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.subdomains import get_subdomain
+from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
     subdomain = get_subdomain(request)
-    if subdomain or not settings.ROOT_DOMAIN_LANDING_PAGE:
+    if (subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+            or not settings.ROOT_DOMAIN_LANDING_PAGE):
         display_subdomain = subdomain
         html_settings_links = True
     else:
         display_subdomain = 'yourZulipDomain'
         html_settings_links = False
-    if display_subdomain != "":
+    if display_subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
         external_api_path_subdomain = '%s.%s' % (display_subdomain,
                                                  settings.EXTERNAL_API_PATH)
     else:
