@@ -23,9 +23,9 @@ Highlights:
 - Redesigned the /help/ documentation site to have a nice sidebar
   index.
 - We're now recommending the new electron desktop app to everyone.
-  Users should upgrade to the new desktop app; the legacy desktop app
-  from 2014 doesn't support useful browser features like local
-  storage and will be deprecated completely soon.
+  Users using the legacy desktop app from 2014 will receive a
+  notification encouraging them to upgrade.  We wil likely remove
+  support for the legacy desktop app completely in our next release.
 - Added a new API for fetching unread messages organized by topic to
   support the mobile apps.  The React Native mobile apps will likely
   start requiring Zulip 1.7 soon.  We don't intend to break app
