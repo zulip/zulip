@@ -80,7 +80,7 @@ var keypress_mappings = {
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
-    100: {name: 'open_drafts', message_view_only: false}, // 'd'
+    100: {name: 'open_drafts', message_view_only: true}, // 'd'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
@@ -429,6 +429,10 @@ exports.process_hotkey = function (e, hotkey) {
             overlays.close_overlay('lightbox');
             return true;
         }
+        if (event_name === 'open_drafts' && overlays.drafts_open()) {
+            overlays.close_overlay('drafts');
+            return true;
+        }
         return false;
     }
 
@@ -605,7 +609,7 @@ exports.process_hotkey = function (e, hotkey) {
             if (overlays.is_active() && !overlays.drafts_open()) {
                 return false;
             }
-            drafts.toggle();
+            drafts.launch();
             return true;
         case 'reply_message': // 'r': respond to message
             // Note that you can "enter" to respond to messages as well,
