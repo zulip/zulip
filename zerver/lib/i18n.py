@@ -55,11 +55,15 @@ def get_language_list_for_templates(default_language):
             if 'percent_translated' in lang:
                 percent = u"{} ({}%)".format(name, lang['percent_translated'])
 
+            selected = False
+            if default_language in (lang['code'], lang['locale']):
+                selected = True
+
             item[position] = {
                 'name': name,
                 'code': lang['code'],
                 'percent': percent,
-                'selected': True if default_language == lang['code'] else False
+                'selected': selected
             }
 
         formatted_list.append(item)
@@ -69,7 +73,7 @@ def get_language_list_for_templates(default_language):
 def get_language_name(code):
     # type: (str) -> Optional[Text]
     for lang in get_language_list():
-        if lang['code'] == code:
+        if code in (lang['code'], lang['locale']):
             return lang['name']
     return None
 

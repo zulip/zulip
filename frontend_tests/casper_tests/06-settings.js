@@ -263,10 +263,10 @@ casper.thenClick('#default_language');
 
 casper.waitUntilVisible('#default_language_modal');
 
-casper.thenClick('a[data-code="zh_Hans"]');
+casper.thenClick('a[data-code="zh-hans"]');
 
 casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', 'Chinese Simplified is now the default language');
+    casper.test.assertSelectorHasText('#display-settings-status', '简体中文 is now the default language');
     casper.test.info("Reloading the page.");
     casper.reload();
 });
@@ -276,7 +276,7 @@ casper.then(function () {
         casper.test.info("Checking if we are on Chinese page.");
         casper.test.assertEvalEquals(function () {
             return $('#default_language_name').text().trim();
-        }, 'Chinese Simplified');
+        }, '简体中文');
         casper.test.info("Opening German page through i18n url.");
     });
 });
