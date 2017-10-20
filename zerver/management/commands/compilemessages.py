@@ -40,8 +40,8 @@ class Command(compilemessages.Command):
             languages = ujson.load(reader)
             lang_list = []
             for lang_info in languages['languages']:
-                name = lang_info['name']
-                lang_info['name'] = with_language(name, lang_info['code'])
+                lang_info['name'] = lang_info['name_local']
+                del lang_info['name_local']
                 lang_list.append(lang_info)
 
             lang_list.sort(key=lambda lang: lang['name'])
