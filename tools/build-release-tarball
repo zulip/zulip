@@ -116,7 +116,7 @@ find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png'
 
 cd "$TMPDIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/webpack-stats-production.json"
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
 
 rm -rf "$prefix"
 
