@@ -458,7 +458,6 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]) -> None
         def normalize(state):
             # type: (Dict[str, Any]) -> None
-            state['realm_users'] = {u['email']: u for u in state['realm_users']}
             for u in state['never_subscribed']:
                 if 'subscribers' in u:
                     u['subscribers'].sort()
@@ -946,6 +945,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('email', check_string),
                 ('user_id', check_int),
                 ('avatar_url', check_string),
+                ('avatar_url_medium', check_string),
+                ('avatar_source', check_string),
             ])),
         ])
         events = self.do_test(
