@@ -188,8 +188,8 @@ function stubbing(func_name_to_stub, test_function) {
                 set_global('overlays', {
                     is_active: is_active,
                     settings_open: settings_open,
-                    info_overlay_open: info_overlay_open});
-
+                    info_overlay_open: info_overlay_open,
+                });
                 test_normal_typing();
             });
         });
@@ -198,6 +198,9 @@ function stubbing(func_name_to_stub, test_function) {
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;
     overlays.settings_open = return_false;
+    overlays.streams_open = return_false;
+    overlays.lightbox_open = return_false;
+    overlays.drafts_open = return_false;
 
     page_params.can_create_streams = true;
     overlays.streams_open = return_true;
@@ -207,8 +210,9 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('n', 'subs.new_stream_clicked');
     page_params.can_create_streams = false;
     assert_unmapped('n');
-    overlays.is_active = return_false;
     overlays.streams_open = return_false;
+    test_normal_typing();
+    overlays.is_active = return_false;
 
     assert_mapping('?', 'ui.maybe_show_keyboard_shortcuts');
     assert_mapping('/', 'search.initiate_search');
@@ -225,10 +229,11 @@ function stubbing(func_name_to_stub, test_function) {
 
     overlays.is_active = return_true;
     overlays.drafts_open = return_true;
-    assert_mapping('d', 'drafts.toggle');
+    assert_mapping('d', 'overlays.close_overlay');
     overlays.drafts_open = return_false;
-    assert_unmapped('d');
+    test_normal_typing();
     overlays.is_active = return_false;
+    assert_mapping('d', 'drafts.launch');
 
     // Next, test keys that only work on a selected message.
     var message_view_only_keys = '@*+RjJkKsSuvi:GM';
@@ -259,9 +264,16 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('s', 'narrow.by_recipient');
     assert_mapping('S', 'narrow.by_subject');
     assert_mapping('u', 'popovers.show_sender_info');
-    assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'reactions.open_reactions_popover', true);
+
+    overlays.is_active = return_true;
+    overlays.lightbox_open = return_true;
+    assert_mapping('v', 'overlays.close_overlay');
+    overlays.lightbox_open = return_false;
+    test_normal_typing();
+    overlays.is_active = return_false;
+    assert_mapping('v', 'lightbox.show_from_selected_message');
 
     global.emoji_picker.reactions_popped = return_true;
     assert_mapping(':', 'emoji_picker.navigate', true);

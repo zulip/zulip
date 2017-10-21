@@ -555,6 +555,19 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
+    // Prevent navigation in the background when the overlays are active.
+    if (overlays.is_active()) {
+        if (event_name === 'view_selected_stream' && overlays.streams_open()) {
+            subs.view_stream();
+            return true;
+        }
+        if (event_name === 'n_key' && overlays.streams_open() && page_params.can_create_streams) {
+            subs.new_stream_clicked();
+            return true;
+        }
+        return false;
+    }
+
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
@@ -589,26 +602,10 @@ exports.process_hotkey = function (e, hotkey) {
         case 'stream_cycle_forward':
             narrow.stream_cycle_forward();
             return true;
-        case 'view_selected_stream':
-            if (overlays.streams_open()) {
-                subs.view_stream();
-                return true;
-            }
-            break;
         case 'n_key':
-            if (overlays.streams_open()) {
-                if (page_params.can_create_streams) {
-                    subs.new_stream_clicked();
-                    return true;
-                }
-                return false;
-            }
             narrow.narrow_to_next_topic();
             return true;
         case 'open_drafts':
-            if (overlays.is_active() && !overlays.drafts_open()) {
-                return false;
-            }
             drafts.launch();
             return true;
         case 'reply_message': // 'r': respond to message
@@ -619,11 +616,6 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (current_msg_list.empty()) {
-        return false;
-    }
-
-    // Prevent navigation in the background when the overlays are active.
-    if (overlays.is_active()) {
         return false;
     }
 
