@@ -62,12 +62,12 @@ def get_raw_user_data(realm_id):
             is_bot=row['is_bot'],
             full_name=row['full_name'],
             timezone=row['timezone'],
+            is_active = row['is_active'],
         )
 
     return {
         row['id']: user_data(row)
         for row in user_dicts
-        if row['is_active']
     }
 
 def always_want(msg_type):
@@ -274,9 +274,11 @@ def apply_event(state, event, user_profile, include_subscribers):
         person_user_id = person['user_id']
 
         if event['op'] == "add":
+            person = copy.deepcopy(person)
+            person['is_active'] = True
             state['raw_users'][person_user_id] = person
         elif event['op'] == "remove":
-            state['raw_users'].pop(person_user_id, None)
+            state['raw_users'][person_user_id]['is_active'] = False
         elif event['op'] == 'update':
             is_me = (person_user_id == user_profile.id)
 
@@ -571,7 +573,24 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     See the note above; the same technique applies below.
     '''
     if 'raw_users'in ret:
-        ret['realm_users'] = list(ret['raw_users'].values())
+        user_dicts = list(ret['raw_users'].values())
+
+        ret['realm_users'] = [d for d in user_dicts if d['is_active']]
+        ret['realm_non_active_users'] = [d for d in user_dicts if not d['is_active']]
+
+        '''
+        Be aware that we do intentional aliasing in the below code.
+        We can now safely remove the `is_active` field from all the
+        dicts that got partitioned into the two lists above.
+
+        We remove the field because it's already implied, and sending
+        it to clients makes clients prone to bugs where they "trust"
+        the field but don't actually update in live updates.  It also
+        wastes bandwidth.
+        '''
+        for d in user_dicts:
+            d.pop('is_active')
+
         del ret['raw_users']
 
     if len(events) > 0:
