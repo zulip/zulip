@@ -402,24 +402,7 @@ class LoginTest(ZulipTestCase):
         response = self.client_get("/login/")
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
-class InviteUserTest(ZulipTestCase):
-
-    def invite(self, users, streams, body=''):
-        # type: (Text, List[Text], str) -> HttpResponse
-        """
-        Invites the specified users to Zulip with the specified streams.
-
-        users should be a string containing the users to invite, comma or
-            newline separated.
-
-        streams should be a list of strings.
-        """
-
-        return self.client_post("/json/invites",
-                                {"invitee_emails": users,
-                                 "stream": streams,
-                                 "custom_body": body})
-
+class InviteUserBase(ZulipTestCase):
     def check_sent_emails(self, correct_recipients, custom_body=None, custom_from_name=None):
         # type: (List[Text], Optional[str], Optional[str]) -> None
         from django.core.mail import outbox
@@ -439,6 +422,24 @@ class InviteUserTest(ZulipTestCase):
             self.assertIn(custom_from_name, outbox[0].from_email)
 
         self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
+
+class InviteUserTest(InviteUserBase):
+
+    def invite(self, users, streams, body=''):
+        # type: (Text, List[Text], str) -> HttpResponse
+        """
+        Invites the specified users to Zulip with the specified streams.
+
+        users should be a string containing the users to invite, comma or
+            newline separated.
+
+        streams should be a list of strings.
+        """
+
+        return self.client_post("/json/invites",
+                                {"invitee_emails": users,
+                                 "stream": streams,
+                                 "custom_body": body})
 
     def test_successful_invite_user(self):
         # type: () -> None
