@@ -9,7 +9,7 @@ from django.conf import settings
 from importlib import import_module
 from six.moves import filter, map
 from typing import (
-    cast, Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
+    cast, Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
@@ -56,6 +56,17 @@ def get_realm_user_dicts(user_profile):
              'timezone': userdict['timezone']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm_id)]
 
+def always_want(msg_type):
+    # type: (str) -> bool
+    '''
+    This function is used as a helper in
+    fetch_initial_state_data, when the user passes
+    in None for event_types, and we want to fetch
+    info for every event type.  Defining this at module
+    level makes it easier to mock.
+    '''
+    return True
+
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
@@ -66,7 +77,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
 
     if event_types is None:
-        want = lambda msg_type: True
+        # return True always
+        want = always_want  # type: Callable[[str], bool]
     else:
         want = set(event_types).__contains__
 
