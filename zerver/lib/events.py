@@ -45,16 +45,29 @@ from zproject.backends import password_auth_enabled
 from version import ZULIP_VERSION
 
 
-def get_realm_user_dicts(user_profile):
-    # type: (UserProfile) -> List[Dict[str, Text]]
-    return [{'email': userdict['email'],
-             'user_id': userdict['id'],
-             'avatar_url': avatar_url_from_dict(userdict),
-             'is_admin': userdict['is_realm_admin'],
-             'is_bot': userdict['is_bot'],
-             'full_name': userdict['full_name'],
-             'timezone': userdict['timezone']}
-            for userdict in get_active_user_dicts_in_realm(user_profile.realm_id)]
+def get_raw_user_data(realm_id):
+    # type: (int) -> Dict[int, Dict[str, Text]]
+    user_dicts = get_active_user_dicts_in_realm(realm_id)
+
+    def user_data(row):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        avatar_url = avatar_url_from_dict(row)
+        is_admin = row['is_realm_admin']
+
+        return dict(
+            email=row['email'],
+            user_id=row['id'],
+            avatar_url=avatar_url,
+            is_admin=is_admin,
+            is_bot=row['is_bot'],
+            full_name=row['full_name'],
+            timezone=row['timezone'],
+        )
+
+    return {
+        row['id']: user_data(row)
+        for row in user_dicts
+    }
 
 def always_want(msg_type):
     # type: (str) -> bool
@@ -155,7 +168,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_filters'] = realm_filters_for_realm(user_profile.realm_id)
 
     if want('realm_user'):
-        state['realm_users'] = get_realm_user_dicts(user_profile)
+        state['raw_users'] = get_raw_user_data(user_profile.realm_id)
         state['avatar_source'] = user_profile.avatar_source
         state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
         state['avatar_url'] = avatar_url(user_profile)
@@ -257,48 +270,47 @@ def apply_event(state, event, user_profile, include_subscribers):
         state['pointer'] = max(state['pointer'], event['pointer'])
     elif event['type'] == "realm_user":
         person = event['person']
-
-        def our_person(p):
-            # type: (Dict[str, Any]) -> bool
-            return p['user_id'] == person['user_id']
+        person_user_id = person['user_id']
 
         if event['op'] == "add":
-            state['realm_users'].append(person)
+            state['raw_users'][person_user_id] = person
         elif event['op'] == "remove":
-            state['realm_users'] = [user for user in state['realm_users'] if not our_person(user)]
+            state['raw_users'].pop(person_user_id, None)
         elif event['op'] == 'update':
-            if (person['user_id'] == user_profile.id and 'avatar_url' in person and 'avatar_url' in state):
-                state['avatar_source'] = person['avatar_source']
-                state['avatar_url'] = person['avatar_url']
-                state['avatar_url_medium'] = person['avatar_url_medium']
-            if 'avatar_source' in person:
-                # Drop these so that they don't modify the
-                # `realm_user` structure in the `p.update()` line
-                # later; they're only used in the above lines
-                del person['avatar_source']
-                del person['avatar_url_medium']
+            is_me = (person_user_id == user_profile.id)
 
-            for field in ['is_admin', 'email', 'full_name']:
-                if person['user_id'] == user_profile.id and field in person and field in state:
-                    state[field] = person[field]
+            if is_me:
+                if ('avatar_url' in person and 'avatar_url' in state):
+                    state['avatar_source'] = person['avatar_source']
+                    state['avatar_url'] = person['avatar_url']
+                    state['avatar_url_medium'] = person['avatar_url_medium']
 
-            for p in state['realm_users']:
-                if our_person(p):
-                    # In the unlikely event that the current user
-                    # just changed to/from being an admin, we need
-                    # to add/remove the data on all bots in the
-                    # realm.  This is ugly and probably better
-                    # solved by removing the all-realm-bots data
-                    # given to admin users from this flow.
-                    if ('is_admin' in person and 'realm_bots' in state and
-                            user_profile.email == person['email']):
-                        if p['is_admin'] and not person['is_admin']:
-                            state['realm_bots'] = []
-                        if not p['is_admin'] and person['is_admin']:
-                            state['realm_bots'] = get_owned_bot_dicts(user_profile)
+                for field in ['is_admin', 'email', 'full_name']:
+                    if field in person and field in state:
+                        state[field] = person[field]
 
-                    # Now update the person
-                    p.update(person)
+                # In the unlikely event that the current user
+                # just changed to/from being an admin, we need
+                # to add/remove the data on all bots in the
+                # realm.  This is ugly and probably better
+                # solved by removing the all-realm-bots data
+                # given to admin users from this flow.
+                if ('is_admin' in person and 'realm_bots' in state):
+                    prev_state = state['raw_users'][user_profile.id]
+                    was_admin = prev_state['is_admin']
+                    now_admin = person['is_admin']
+
+                    if was_admin and not now_admin:
+                        state['realm_bots'] = []
+                    if not was_admin and now_admin:
+                        state['realm_bots'] = get_owned_bot_dicts(user_profile)
+
+            if person_user_id in state['raw_users']:
+                p = state['raw_users'][person_user_id]
+                for field in p:
+                    if field in person:
+                        p[field] = person[field]
+
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':
             state['realm_bots'].append(event['bot'])
@@ -553,6 +565,13 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     if 'raw_unread_msgs' in ret:
         ret['unread_msgs'] = aggregate_unread_data(ret['raw_unread_msgs'])
         del ret['raw_unread_msgs']
+
+    '''
+    See the note above; the same technique applies below.
+    '''
+    if 'raw_users'in ret:
+        ret['realm_users'] = list(ret['raw_users'].values())
+        del ret['raw_users']
 
     if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']
