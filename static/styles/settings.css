@@ -858,6 +858,11 @@ input[type=checkbox].inline-block {
     width: 100px;
     height: 100px;
 }
+
+.invite-user-link i {
+    text-decoration: none;
+    margin-right: 5px;
+}
 /* -- new settings overlay -- */
 #settings_page {
     min-height: 550px;

@@ -12,6 +12,7 @@ from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
     generate_key, confirmation_url
+from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password, gather_subscriptions
@@ -442,7 +443,6 @@ class InviteUserBase(ZulipTestCase):
 
         self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
 
-class InviteUserTest(InviteUserBase):
     def invite(self, users, streams, body='', invite_as_admin="false"):
         # type: (Text, List[Text], str, str) -> HttpResponse
         """
@@ -460,6 +460,7 @@ class InviteUserTest(InviteUserBase):
                                  "invite_as_admin": invite_as_admin,
                                  "custom_body": body})
 
+class InviteUserTest(InviteUserBase):
     def test_successful_invite_user(self):
         # type: () -> None
         """
@@ -844,6 +845,93 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(len(email_jobs_to_deliver), 0)
+
+class InvitationsTestCase(InviteUserBase):
+    def test_successful_get_open_invitations(self):
+        # type: () -> None
+        """
+        A GET call to /json/invites returns all unexpired invitations.
+        """
+
+        days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', "Wrong")
+        active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', "Wrong")
+        self.assertNotEqual(days_to_activate, "Wrong")
+        self.assertNotEqual(active_value, "Wrong")
+
+        self.login(self.example_email("iago"))
+        user_profile = self.example_user("iago")
+
+        prereg_user_one = PreregistrationUser(email="TestOne@zulip.com", referred_by=user_profile)
+        prereg_user_one.save()
+        expired_datetime = timezone_now() - datetime.timedelta(days=(days_to_activate+1))
+        prereg_user_two = PreregistrationUser(email="TestTwo@zulip.com", referred_by=user_profile)
+        prereg_user_two.save()
+        PreregistrationUser.objects.filter(id=prereg_user_two.id).update(invited_at=expired_datetime)
+        prereg_user_three = PreregistrationUser(email="TestThree@zulip.com",
+                                                referred_by=user_profile, status=active_value)
+        prereg_user_three.save()
+
+        result = self.client_get("/json/invites")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["TestOne@zulip.com"], result)
+        self.assert_not_in_success_response(["TestTwo@zulip.com", "TestThree@zulip.com"], result)
+
+    def test_successful_delete_invitation(self):
+        # type: () -> None
+        """
+        A DELETE call to /json/invites/<ID> should delete the invite and
+        any scheduled invitation reminder emails.
+        """
+        self.login(self.example_email("iago"))
+
+        invitee = "DeleteMe@zulip.com"
+        self.assert_json_success(self.invite(invitee, ['Denmark']))
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+
+        # Verify that the scheduled email exists.
+        ScheduledEmail.objects.get(address__iexact=invitee,
+                                   type=ScheduledEmail.INVITATION_REMINDER)
+
+        result = self.client_delete('/json/invites/' + str(prereg_user.id))
+        self.assertEqual(result.status_code, 200)
+        error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
+        self.assert_json_error(error_result, "Invalid invitation ID.")
+
+        self.assertRaises(ScheduledEmail.DoesNotExist,
+                          lambda: ScheduledEmail.objects.get(address__iexact=invitee,
+                                                             type=ScheduledEmail.INVITATION_REMINDER))
+
+    def test_successful_resend_invitation(self):
+        # type: () -> None
+        """
+        A POST call to /json/invites/<ID>/resend should send an invitation reminder email
+        and delete any scheduled invitation reminder email.
+        """
+        self.login(self.example_email("iago"))
+        invitee = "ResendMe@zulip.com"
+
+        self.assert_json_success(self.invite(invitee, ['Denmark']))
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+
+        # Verify and then clear from the outbox the original invite email
+        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        from django.core.mail import outbox
+        outbox.pop()
+
+        # Verify that the scheduled email exists.
+        ScheduledEmail.objects.get(address__iexact=invitee,
+                                   type=ScheduledEmail.INVITATION_REMINDER)
+        result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
+
+        self.assertEqual(result.status_code, 200)
+        error_result = self.client_post('/json/invites/' + str(9999) + '/resend')
+        self.assert_json_error(error_result, "Invalid invitation ID.")
+
+        self.check_sent_emails([invitee], custom_from_name="Zulip")
+
+        self.assertRaises(ScheduledEmail.DoesNotExist,
+                          lambda: ScheduledEmail.objects.get(address__iexact=invitee,
+                                                             type=ScheduledEmail.INVITATION_REMINDER))
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):

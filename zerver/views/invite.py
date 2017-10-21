@@ -5,11 +5,11 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from typing import List, Optional, Set, Text
 
-from zerver.decorator import authenticated_json_post_view
-from zerver.lib.actions import do_invite_users, \
-    get_default_subs
+from zerver.decorator import authenticated_json_post_view, require_realm_admin, to_non_negative_int
+from zerver.lib.actions import do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
+    get_default_subs, do_get_user_invites
 from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.models import PreregistrationUser, Stream, UserProfile
@@ -65,3 +65,23 @@ def get_invitee_emails_set(invitee_emails_raw):
             email = is_email_with_name.group('email')
         invitee_emails.add(email.strip())
     return invitee_emails
+
+@require_realm_admin
+def get_user_invites(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    all_users = do_get_user_invites(user_profile)
+    return json_success({'invites': all_users})
+
+@require_realm_admin
+@has_request_variables
+def revoke_user_invite(request, user_profile, prereg_id):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    do_revoke_user_invite(prereg_id, user_profile.realm_id)
+    return json_success()
+
+@require_realm_admin
+@has_request_variables
+def resend_user_invite_email(request, user_profile, prereg_id):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    timestamp = do_resend_user_invite_email(prereg_id, user_profile.realm_id)
+    return json_success({'timestamp': timestamp})

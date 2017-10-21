@@ -29,6 +29,9 @@ exports.load_admin_section = function (name) {
         case 'filter-settings':
             section = 'filters';
             break;
+        case 'invites-list-admin':
+            section = 'invites';
+            break;
         default:
             blueslip.error('Unknown admin id ' + name);
             return;
@@ -56,6 +59,9 @@ exports.load_admin_section = function (name) {
         case 'filters':
             settings_filters.set_up();
             break;
+        case 'invites':
+            settings_invites.set_up();
+            break;
         default:
             blueslip.error('programming error for section ' + section);
             return;
@@ -71,6 +77,7 @@ exports.reset_sections = function () {
     settings_users.reset();
     settings_streams.reset();
     settings_filters.reset();
+    settings_invites.reset();
 };
 
 return exports;

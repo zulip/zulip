@@ -4,6 +4,7 @@ from typing import (
 )
 from mypy_extensions import TypedDict
 
+from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -71,6 +72,7 @@ from django.core.mail import EmailMessage
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from confirmation import settings as confirmation_settings
 from six.moves import filter
 from six.moves import map
 from six import unichr
@@ -3804,6 +3806,82 @@ def do_invite_users(user_profile, invitee_emails, streams, invite_as_admin=False
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
                               skipped, sent_invitations=True)
+
+def do_get_user_invites(user_profile):
+    # type: (UserProfile) -> List[Dict[str, Any]]
+    days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
+    active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
+
+    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
+    prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
+        invited_at__gte=lowest_datetime,
+        referred_by__realm=user_profile.realm)
+
+    invites = []
+
+    for invitee in prereg_users:
+        invites.append(dict(email=invitee.email,
+                            ref=invitee.referred_by.email,
+                            invited=invitee.invited_at.strftime("%Y-%m-%d %H:%M:%S"),
+                            id=invitee.id))
+
+    return invites
+
+def do_revoke_user_invite(invite_id, realm_id):
+    # type: (int, int) -> None
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("Invalid invitation ID."))
+
+    if prereg_user.referred_by.realm_id != realm_id:
+        raise JsonableError(_("Invalid invitation ID."))
+
+    email = prereg_user.email
+
+    # Delete both the confirmation objects and the prereg_user object.
+    # TODO: Probably we actaully want to set the confirmation objects
+    # to a "revoked" status so that we can give the user a better
+    # error message.
+    content_type = ContentType.objects.get_for_model(PreregistrationUser)
+    Confirmation.objects.filter(content_type=content_type,
+                                object_id=prereg_user.id).delete()
+    prereg_user.delete()
+    clear_scheduled_invitation_emails(email)
+
+def do_resend_user_invite_email(invite_id, realm_id):
+    # type: (int, int) -> str
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("Invalid invitation ID."))
+
+    if (prereg_user.referred_by.realm_id != realm_id):
+        raise JsonableError(_("Invalid invitation ID."))
+
+    prereg_user.invited_at = timezone_now()
+    prereg_user.save()
+
+    # sends a invitation reminder since 'custom_body' can not be resent
+    # imported here to avoid import cycle error
+    from zerver.context_processors import common_context
+    clear_scheduled_invitation_emails(prereg_user.email)
+
+    link = create_confirmation_link(prereg_user, prereg_user.referred_by.realm.host, Confirmation.INVITATION)
+    context = common_context(prereg_user.referred_by)
+    context.update({
+        'activate_url': link,
+        'referrer_name': prereg_user.referred_by.full_name,
+        'referrer_email': prereg_user.referred_by.email,
+        'referrer_realm_name': prereg_user.referred_by.realm.name,
+    })
+    send_email(
+        "zerver/emails/invitation_reminder",
+        to_email=prereg_user.email,
+        from_address=FromAddress.NOREPLY,
+        context=context)
+
+    return prereg_user.invited_at.strftime("%Y-%m-%d %H:%M:%S")
 
 def notify_realm_emoji(realm):
     # type: (Realm) -> None
