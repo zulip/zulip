@@ -329,10 +329,6 @@ realm_user_dict_fields = [
     'avatar_source', 'avatar_version', 'is_active',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
-def realm_user_dicts_cache_key(realm_id):
-    # type: (int) -> Text
-    return u"realm_user_dicts:%s" % (realm_id,)
-
 def active_user_ids_cache_key(realm_id):
     # type: (int) -> Text
     return u"active_user_ids:%s" % (realm_id,)
@@ -393,11 +389,6 @@ def flush_user_profile(sender, **kwargs):
 
         return False
 
-    # Invalidate our active_users_in_realm info dict if any user has changed
-    # the fields in the dict or become (in)active
-    if changed(realm_user_dict_fields):
-        cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
-
     if changed(['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
 
@@ -424,7 +415,6 @@ def flush_realm(sender, **kwargs):
     delete_user_profile_caches(users)
 
     if realm.deactivated:
-        cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))

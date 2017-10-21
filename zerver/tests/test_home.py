@@ -178,7 +178,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page(stream='Denmark')
 
         self.assert_length(queries, 40)
-        self.assert_length(cache_mock.call_args_list, 10)
+        self.assert_length(cache_mock.call_args_list, 9)
 
         html = result.content.decode('utf-8')
 

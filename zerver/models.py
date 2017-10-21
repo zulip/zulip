@@ -20,8 +20,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     user_profile_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, active_user_ids_cache_key, \
-    get_stream_cache_key, realm_user_dicts_cache_key, \
-    bot_dicts_in_realm_cache_key, realm_user_dict_fields, \
+    get_stream_cache_key, bot_dicts_in_realm_cache_key, \
     bot_dict_fields, flush_message, bot_profile_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
@@ -1441,12 +1440,23 @@ def get_system_bot(email):
     # type: (Text) -> UserProfile
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
-@cache_with_key(realm_user_dicts_cache_key, timeout=3600*24*7)
 def get_realm_user_dicts(realm_id):
     # type: (int) -> List[Dict[str, Any]]
     return UserProfile.objects.filter(
         realm_id=realm_id,
-    ).values(*realm_user_dict_fields)
+    ).values(
+        'avatar_source',
+        'avatar_version',
+        'email',
+        'full_name',
+        'id',
+        'is_active',
+        'is_bot',
+        'is_realm_admin',
+        'realm_id',
+        'short_name',
+        'timezone',
+    )
 
 @cache_with_key(active_user_ids_cache_key, timeout=3600*24*7)
 def active_user_ids(realm_id):
