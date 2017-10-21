@@ -39,7 +39,7 @@ from zerver.lib.upload import get_total_uploads_size_for_user
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
-    get_active_user_dicts_in_realm, realm_filters_for_realm, get_user,\
+    get_realm_user_dicts, realm_filters_for_realm, get_user,\
     get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains
 from zproject.backends import password_auth_enabled
 from version import ZULIP_VERSION
@@ -47,7 +47,7 @@ from version import ZULIP_VERSION
 
 def get_raw_user_data(realm_id):
     # type: (int) -> Dict[int, Dict[str, Text]]
-    user_dicts = get_active_user_dicts_in_realm(realm_id)
+    user_dicts = get_realm_user_dicts(realm_id)
 
     def user_data(row):
         # type: (Dict[str, Any]) -> Dict[str, Any]
@@ -67,6 +67,7 @@ def get_raw_user_data(realm_id):
     return {
         row['id']: user_data(row)
         for row in user_dicts
+        if row['is_active']
     }
 
 def always_want(msg_type):

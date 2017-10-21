@@ -324,14 +324,14 @@ def user_profile_by_api_key_cache_key(api_key):
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
-active_user_dict_fields = [
+realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
-    'avatar_source', 'avatar_version',
+    'avatar_source', 'avatar_version', 'is_active',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
-def active_user_dicts_in_realm_cache_key(realm_id):
+def realm_user_dicts_cache_key(realm_id):
     # type: (int) -> Text
-    return u"active_user_dicts_in_realm:%s" % (realm_id,)
+    return u"realm_user_dicts:%s" % (realm_id,)
 
 def active_user_ids_cache_key(realm_id):
     # type: (int) -> Text
@@ -383,9 +383,9 @@ def flush_user_profile(sender, **kwargs):
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
     if kwargs.get('update_fields') is None or \
-            len(set(active_user_dict_fields + ['is_active', 'email']) &
+            len(set(realm_user_dict_fields) &
                 set(kwargs['update_fields'])) > 0:
-        cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm_id))
+        cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
 
     if kwargs.get('update_fields') is None or \
             ('is_active' in kwargs['update_fields']):
@@ -416,7 +416,7 @@ def flush_realm(sender, **kwargs):
     delete_user_profile_caches(users)
 
     if realm.deactivated:
-        cache_delete(active_user_dicts_in_realm_cache_key(realm.id))
+        cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
