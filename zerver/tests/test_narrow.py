@@ -475,6 +475,32 @@ class GetOldMessagesTest(ZulipTestCase):
 
         return query_ids
 
+    def test_content_types(self):
+        # type: () -> None
+        """
+        Test old `/json/messages` returns reactions.
+        """
+        self.login(self.example_email("hamlet"))
+
+        def get_content_type(apply_markdown):
+            # type: (bool) -> Text
+            req = dict(
+                apply_markdown=ujson.dumps(apply_markdown),
+            )  # type: Dict[str, Any]
+            result = self.get_and_check_messages(req)
+            message = result['messages'][0]
+            return message['content_type']
+
+        self.assertEqual(
+            get_content_type(apply_markdown=False),
+            'text/x-markdown',
+        )
+
+        self.assertEqual(
+            get_content_type(apply_markdown=True),
+            'text/html',
+        )
+
     def test_successful_get_messages_reaction(self):
         # type: () -> None
         """
