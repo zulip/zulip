@@ -986,9 +986,8 @@ def get_client_remote_cache(name):
     (client, _) = Client.objects.get_or_create(name=name)
     return client
 
-# get_stream_backend takes either a realm id or a realm
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
-def get_stream_backend(stream_name, realm_id):
+def get_realm_stream(stream_name, realm_id):
     # type: (Text, int) -> Stream
     return Stream.objects.select_related("realm").get(
         name__iexact=stream_name.strip(), realm_id=realm_id)
@@ -1009,7 +1008,12 @@ def get_active_streams(realm):
 
 def get_stream(stream_name, realm):
     # type: (Text, Realm) -> Stream
-    return get_stream_backend(stream_name, realm.id)
+    '''
+    Callers that don't have a Realm object already available should use
+    get_realm_stream directly, to avoid unnecessarily fetching the
+    Realm object.
+    '''
+    return get_realm_stream(stream_name, realm.id)
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[Text, Any]
