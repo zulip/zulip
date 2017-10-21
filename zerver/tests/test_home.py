@@ -172,9 +172,11 @@ class HomeTest(ZulipTestCase):
         # Verify succeeds once logged-in
         flush_per_request_caches()
         with queries_captured() as queries:
-            result = self._get_home_page(stream='Denmark')
+            with patch('zerver.lib.cache.cache_set') as cache_mock:
+                result = self._get_home_page(stream='Denmark')
 
         self.assert_length(queries, 41)
+        self.assert_length(cache_mock.call_args_list, 10)
 
         html = result.content.decode('utf-8')
 
