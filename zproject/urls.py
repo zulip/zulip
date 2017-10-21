@@ -129,7 +129,12 @@ v1_api_and_json_patterns = [
 
     # invites -> zerver.views.invite
     url(r'^invites$', rest_dispatch,
-        {'POST': 'zerver.views.invite.invite_users_backend'}),
+        {'GET': 'zerver.views.invite.get_user_invites',
+         'POST': 'zerver.views.invite.invite_users_backend'}),
+    url(r'^invites/(?P<prereg_id>[0-9]+)$', rest_dispatch,
+        {'DELETE': 'zerver.views.invite.revoke_user_invite'}),
+    url(r'^invites/resend/(?P<prereg_id>[0-9]+)$', rest_dispatch,
+        {'POST': 'zerver.views.invite.resend_user_invite_email'}),
 
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,

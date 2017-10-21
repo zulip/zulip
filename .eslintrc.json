@@ -50,6 +50,7 @@
         "settings_users": false,
         "settings_streams": false,
         "settings_filters": false,
+        "settings_invites": false,
         "settings": false,
         "resize": false,
         "loading": false,

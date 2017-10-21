@@ -72,6 +72,7 @@ from django.core.mail import EmailMessage
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from confirmation import settings as confirmation_settings
 from six.moves import filter
 from six.moves import map
 from six import unichr
@@ -3698,6 +3699,76 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
                               skipped, sent_invitations=True)
+
+def do_get_user_invites(user_profile):
+    # type: (UserProfile) -> List[Dict[str, Any]]
+    days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
+    active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
+
+    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
+    prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
+        invited_at__gte=lowest_datetime,
+        referred_by__realm=user_profile.realm)
+
+    invites = []
+
+    for invitee in prereg_users:
+        invites.append(dict(email=invitee.email,
+                            ref=invitee.referred_by.email,
+                            invited=invitee.invited_at.strftime("%Y-%m-%d %H:%M:%S"),
+                            id=invitee.id))
+
+    return invites
+
+def do_revoke_user_invite(id, realm_id):
+    # type: (int, int) -> bool
+    try:
+        user = PreregistrationUser.objects.get(id__iexact=id)
+
+        if (user.referred_by.realm_id != realm_id):
+            raise JsonableError(_("Realms do not match"))
+
+        email = user.email
+        user.delete()
+        clear_scheduled_invitation_emails(email)
+        return True
+    except PreregistrationUser.DoesNotExist:
+        return False
+
+def do_resend_user_invite_email(id, realm_id):
+    # type: (int, int) -> Union[str, bool]
+    try:
+        user = PreregistrationUser.objects.get(id__iexact=id)
+
+        if (user.referred_by.realm_id != realm_id):
+            raise JsonableError(_("Realms do not match"))
+
+    except PreregistrationUser.DoesNotExist:
+        return False
+
+    user.invited_at = timezone_now()
+    user.save()
+
+    # sends a invitation reminder since 'custom_body' can not be resent
+    # imported here to avoid import cycle error
+    from zerver.context_processors import common_context
+    clear_scheduled_invitation_emails(user.email)
+
+    link = create_confirmation_link(user, user.referred_by.realm.host, Confirmation.INVITATION)
+    context = common_context(user.referred_by)
+    context.update({
+        'activate_url': link,
+        'referrer_name': user.referred_by.full_name,
+        'referrer_email': user.referred_by.email,
+        'referrer_realm_name': user.referred_by.realm.name,
+    })
+    send_email(
+        "zerver/emails/invitation_reminder",
+        to_email=user.email,
+        from_address=FromAddress.NOREPLY,
+        context=context)
+
+    return user.invited_at.strftime("%Y-%m-%d %H:%M:%S")
 
 def notify_realm_emoji(realm):
     # type: (Realm) -> None
