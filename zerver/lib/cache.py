@@ -401,8 +401,7 @@ def flush_user_profile(sender, **kwargs):
     if changed(['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
 
-    if kwargs.get('updated_fields') is None or \
-            'email' in kwargs['update_fields']:
+    if changed(['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has
