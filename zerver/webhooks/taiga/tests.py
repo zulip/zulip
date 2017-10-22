@@ -221,3 +221,58 @@ class TaigaHookTests(WebhookTestCase):
         # type: () -> None
         message = u':thought_balloon: TomaszKolek commented on issue **New issue**.'
         self.send_and_test_stream_message("issue_changed_comment_added", u'subject', message)
+
+    def test_taiga_epic_created(self):
+        # type: () -> None
+        message = u':package: Eeshan Garg created epic **Zulip is awesome!**'
+        self.send_and_test_stream_message("epic_created", u'subject', message)
+
+    def test_taiga_epic_changed_assigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: Eeshan Garg assigned epic **Zulip is awesome!** to Eeshan Garg.'
+        self.send_and_test_stream_message("epic_changed_assigned", u'subject', message)
+
+    def test_taiga_epic_changed_unassigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: Eeshan Garg unassigned epic **Zulip is awesome!**'
+        self.send_and_test_stream_message("epic_changed_unassigned", u'subject', message)
+
+    def test_taiga_epic_changed_reassigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: Eeshan Garg reassigned epic **Zulip is awesome!** from Eeshan Garg to Angela Johnson.'
+        self.send_and_test_stream_message("epic_changed_reassigned", u'subject', message)
+
+    def test_taiga_epic_changed_blocked(self):
+        # type: () -> None
+        message = u':lock: Eeshan Garg blocked epic **Zulip is awesome!**'
+        self.send_and_test_stream_message("epic_changed_blocked", u'subject', message)
+
+    def test_taiga_epic_changed_unblocked(self):
+        # type: () -> None
+        message = u':unlock: Eeshan Garg unblocked epic **Zulip is awesome!**'
+        self.send_and_test_stream_message("epic_changed_unblocked", u'subject', message)
+
+    def test_taiga_epic_changed_status(self):
+        # type: () -> None
+        message = u':chart_increasing: Eeshan Garg changed status of epic **Zulip is awesome!** from New to In progress.'
+        self.send_and_test_stream_message("epic_changed_status", u'subject', message)
+
+    def test_taiga_epic_changed_renamed(self):
+        # type: () -> None
+        message = u':notebook: Eeshan Garg renamed epic from **Zulip is awesome!** to **Zulip is great!**'
+        self.send_and_test_stream_message("epic_changed_renamed", u'subject', message)
+
+    def test_taiga_epic_changed_description(self):
+        # type: () -> None
+        message = u':notebook: Eeshan Garg updated description of epic **Zulip is great!**'
+        self.send_and_test_stream_message("epic_changed_description", u'subject', message)
+
+    def test_taiga_epic_changed_commented(self):
+        # type: () -> None
+        message = u':thought_balloon: Eeshan Garg commented on epic **Zulip is great!**'
+        self.send_and_test_stream_message("epic_changed_commented", u'subject', message)
+
+    def test_taiga_epic_deleted(self):
+        # type: () -> None
+        message = u':cross_mark: Eeshan Garg deleted epic **Zulip is great!**'
+        self.send_and_test_stream_message("epic_deleted", u'subject', message)

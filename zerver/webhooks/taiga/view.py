@@ -49,6 +49,21 @@ def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
     return json_success()
 
 templates = {
+    'epic': {
+        'create': u':package: %(user)s created epic **%(subject)s**',
+        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned epic **%(subject)s** to %(new)s.',
+        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned epic **%(subject)s**',
+        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned epic **%(subject)s**'
+        ' from %(old)s to %(new)s.',
+        'blocked': u':lock: %(user)s blocked epic **%(subject)s**',
+        'unblocked': u':unlock: %(user)s unblocked epic **%(subject)s**',
+        'changed_status': u':chart_increasing: %(user)s changed status of epic **%(subject)s**'
+        ' from %(old)s to %(new)s.',
+        'renamed': u':notebook: %(user)s renamed epic from **%(old)s** to **%(new)s**',
+        'description_diff': u':notebook: %(user)s updated description of epic **%(subject)s**',
+        'commented': u':thought_balloon: %(user)s commented on epic **%(subject)s**',
+        'delete': u':cross_mark: %(user)s deleted epic **%(subject)s**',
+    },
     'userstory': {
         'create': u':package: %(user)s created user story **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
