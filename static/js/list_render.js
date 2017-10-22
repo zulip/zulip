@@ -371,8 +371,16 @@ $(function () {
             return;
         }
 
+        if ($this.hasClass("active")) {
+            // Table has already been sorted by this property; do not re-sort.
+            return;
+        }
+
         // if `prop_name` is defined, it will trigger the generic codepath,
         // and not if it is undefined.
         list.sort(sort_type, prop_name);
+
+        $this.siblings(".active").removeClass("active");
+        $this.addClass("active");
     });
 });
