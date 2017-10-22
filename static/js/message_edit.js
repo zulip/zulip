@@ -375,7 +375,7 @@ exports.end = function (row) {
     if (message !== undefined &&
         currently_editing_messages[message.id] !== undefined) {
         var scroll_by = currently_editing_messages[message.id].scrolled_by;
-        var scroll_value= message_viewport.scrollTop() - scroll_by;
+        message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
 
         // Clean up resize event listeners
         var listeners = currently_editing_messages[message.id].listeners;
@@ -387,7 +387,7 @@ exports.end = function (row) {
         }
 
         delete currently_editing_messages[message.id];
-        current_msg_list.hide_edit_message(row, scroll_value);
+        current_msg_list.hide_edit_message(row);
     }
     if (row !== undefined) {
         current_msg_list.hide_edit_topic(row);
