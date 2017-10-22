@@ -178,7 +178,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 40)
         self.assert_length(cache_mock.call_args_list, 10)
 
         html = result.content.decode('utf-8')

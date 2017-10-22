@@ -38,6 +38,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from django.conf import settings
 
 import datetime
+import mock
 import os
 import sys
 import time
@@ -259,6 +260,21 @@ class UserProfileTest(ZulipTestCase):
         dct = get_emails_from_user_ids([hamlet.id, othello.id])
         self.assertEqual(dct[hamlet.id], self.example_email("hamlet"))
         self.assertEqual(dct[othello.id], self.example_email("othello"))
+
+    def test_cache_invalidation(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        with mock.patch('zerver.lib.cache.delete_display_recipient_cache') as m:
+            hamlet.full_name = 'Hamlet Junior'
+            hamlet.save(update_fields=["full_name"])
+
+        self.assertTrue(m.called)
+
+        with mock.patch('zerver.lib.cache.delete_display_recipient_cache') as m:
+            hamlet.long_term_idle = True
+            hamlet.save(update_fields=["long_term_idle"])
+
+        self.assertFalse(m.called)
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self):
