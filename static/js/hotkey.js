@@ -546,6 +546,10 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
+    if (overlays.lightbox_open()) {
+        return false;
+    }
+
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
