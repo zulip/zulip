@@ -953,6 +953,26 @@ input[type=checkbox].inline-block {
 #settings_page .table-striped thead th {
     background-color: inherit;
     color: inherit;
+    opacity: 0.5;
+}
+
+#settings_page .table-striped thead th.active {
+    opacity: 1;
+    -webkit-transition: opacity 100ms ease-out;
+    -moz-transition: opacity 100ms ease-out;
+    -o-transition: opacity 100ms ease-out;
+    transition: opacity 100ms ease-out;
+}
+
+#settings_page .table-striped thead th.active:after {
+  content: " \f0d7";
+  white-space: pre;
+  display: inline-block;
+  font: normal normal normal 12px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #settings_page input.search {
