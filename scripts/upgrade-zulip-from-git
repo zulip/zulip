@@ -27,6 +27,10 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_d
 logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",
                     level=logging.INFO)
 
+if os.getuid() != 0:
+    logging.error("Must be run as root.")
+    sys.exit(1)
+
 if len(sys.argv) != 2:
     print(FAIL + "Usage: upgrade-zulip-from-git refname" + ENDC)
     sys.exit(1)
