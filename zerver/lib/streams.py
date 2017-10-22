@@ -8,7 +8,7 @@ from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_recipient, get_stream, \
-    bulk_get_streams
+    bulk_get_streams, get_realm_stream
 
 def access_stream_for_delete(user_profile, stream_id):
     # type: (UserProfile, int) -> Stream
@@ -87,7 +87,7 @@ def access_stream_by_name(user_profile, stream_name):
     # type: (UserProfile, Text) -> Tuple[Stream, Recipient, Subscription]
     error = _("Invalid stream name '%s'" % (stream_name,))
     try:
-        stream = get_stream(stream_name, user_profile.realm)
+        stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
         raise JsonableError(error)
 
