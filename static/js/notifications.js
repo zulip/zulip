@@ -237,8 +237,9 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
                                                                         link_msg_id: link_msg_id,
                                                                         link_text: link_text}));
     exports.clear_compose_notifications();
-    $('#out-of-view-notification').append(notification_html);
-    $('#out-of-view-notification').show();
+    var $out_of_view_notification = $('#out-of-view-notification');
+    $out_of_view_notification.append(notification_html);
+    $out_of_view_notification.show();
 };
 
 function process_notification(notification) {
@@ -606,9 +607,10 @@ exports.notify_messages_outside_current_search = function (messages) {
 };
 
 exports.clear_compose_notifications = function () {
-    $('#out-of-view-notification').empty();
-    $('#out-of-view-notification').stop(true, true);
-    $('#out-of-view-notification').hide();
+    var $out_of_view_notification = $('#out-of-view-notification');
+    $out_of_view_notification.empty();
+    $out_of_view_notification.stop(true, true);
+    $out_of_view_notification.hide();
 };
 
 $(function () {
@@ -637,20 +639,21 @@ exports.reify_message_id = function (opts) {
 };
 
 exports.register_click_handlers = function () {
-    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_subject', function (e) {
+    var $out_of_view_notification = $('#out-of-view-notification');
+    $out_of_view_notification.on('click', '.compose_notification_narrow_by_subject', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         narrow.by_subject(msgid, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', function (e) {
+    $out_of_view_notification.on('click', '.compose_notification_scroll_to_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         current_msg_list.select_id(msgid);
         navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.out-of-view-notification-close', function (e) {
+    $out_of_view_notification.on('click', '.out-of-view-notification-close', function (e) {
         exports.clear_compose_notifications();
         e.stopPropagation();
         e.preventDefault();
