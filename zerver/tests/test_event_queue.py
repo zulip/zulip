@@ -219,8 +219,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False,
-                                         # BUG: That next True should be False, see #7059
-                                         True, "Denmark", False, True,
+                                         False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
 
         # Clear the event queue, now repeat with stream message with stream_push_notify

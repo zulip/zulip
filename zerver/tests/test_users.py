@@ -8,7 +8,7 @@ from django.test import TestCase
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
-    tornado_redirected_to_list,
+    tornado_redirected_to_list, get_subscription,
     most_recent_message, make_client, avatar_disk_path,
     get_test_image_file
 )
@@ -19,7 +19,7 @@ from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
-    get_user, get_realm, get_client, get_stream, \
+    get_user, get_realm, get_client, get_stream, get_recipient, \
     Message, get_context_for_message, ScheduledEmail
 
 from zerver.lib.avatar import avatar_url
@@ -27,10 +27,13 @@ from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.send_email import send_future_email
 from zerver.lib.actions import (
     get_emails_from_user_ids,
+    get_recipient_info,
     do_deactivate_user,
     do_reactivate_user,
     do_change_is_admin,
 )
+from zerver.lib.topic_mutes import add_topic_mute
+from zerver.lib.stream_topic import StreamTopicTarget
 
 from django.conf import settings
 
@@ -347,6 +350,68 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
+
+class RecipientInfoTest(ZulipTestCase):
+    def test_stream_recipient_info(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+
+        realm = hamlet.realm
+
+        stream_name = 'Test Stream'
+        topic_name = 'test topic'
+
+        for user in [hamlet, cordelia, othello]:
+            self.subscribe(user, stream_name)
+
+        stream = get_stream(stream_name, realm)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+
+        stream_topic = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        sub = get_subscription(stream_name, hamlet)
+        sub.push_notifications = True
+        sub.save()
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+
+        all_user_ids = {hamlet.id, cordelia.id, othello.id}
+
+        expected_info = dict(
+            active_user_ids=all_user_ids,
+            push_notify_user_ids=set(),
+            stream_push_user_ids={hamlet.id},
+            um_eligible_user_ids=all_user_ids,
+            long_term_idle_user_ids=set(),
+            service_bot_tuples=[],
+        )
+
+        self.assertEqual(info, expected_info)
+
+        # Now mute Hamlet to omit him from stream_push_user_ids.
+        add_topic_mute(
+            user_profile=hamlet,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name=topic_name,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+
+        self.assertEqual(info['stream_push_user_ids'], set())
 
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self):
