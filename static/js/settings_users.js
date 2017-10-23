@@ -145,8 +145,13 @@ function populate_users(realm_people_data) {
             } else if (presence.presence_info[item.user_id]) {
                 // XDate takes number of milliseconds since UTC epoch.
                 var last_active = presence.presence_info[item.user_id].last_active * 1000;
-                var last_active_date = new XDate(last_active);
-                activity_rendered = timerender.render_date(last_active_date, undefined, today);
+
+                if (!isNaN(last_active)) {
+                    var last_active_date = new XDate(last_active);
+                    activity_rendered = timerender.render_date(last_active_date, undefined, today);
+                } else {
+                    activity_rendered = $("<span></span>").text(i18n.t("Never"));
+                }
             } else {
                 activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
