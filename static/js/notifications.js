@@ -17,6 +17,7 @@ var flashing = false;
 
 var notifications_api;
 if (window.webkitNotifications) {
+    blueslip.error("The `window.webkitNotifications` object should not be used anymore.");
     notifications_api = window.webkitNotifications;
 } else if (window.Notification) {
     // Build a shim to the new notification API
