@@ -565,7 +565,7 @@ class StreamMessagesTest(ZulipTestCase):
         a lot of code to generate messages with markdown and without
         markdown.
         '''
-        self.assert_length(queries, 14)
+        self.assert_length(queries, 15)
 
     def test_stream_message_dict(self):
         # type: () -> None
